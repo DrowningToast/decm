@@ -3,19 +3,67 @@
   "ui": "tui",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "bin/**"
+      ]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": [
+        "^lint"
+      ]
     },
     "check-types": {
-      "dependsOn": ["^check-types"]
+      "dependsOn": [
+        "^check-types"
+      ]
     },
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "backend:build": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
+      "outputs": [
+        "bin/**"
+      ]
+    },
+    "backend:dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "backend:docs": {
+      "inputs": [
+        "apps/backend/**/*.go"
+      ],
+      "outputs": [
+        "apps/backend/docs/**"
+      ]
+    },
+    "gen-api": {
+      "dependsOn": [
+        "backend:docs"
+      ],
+      "inputs": [
+        "apps/backend/docs/**",
+        "packages/api/scripts/**"
+      ],
+      "outputs": [
+        "packages/api/dist/**",
+        "packages/api/src/**",
+        "packages/api/generated/**"
+      ]
     }
   }
 }

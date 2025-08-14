@@ -1,0 +1,51 @@
+---
+globs: "*.json,*.js,*.mjs,*.ts,turbo.json,bunfig.toml"
+---
+
+# Build Configuration Guidelines
+
+## Package Manager & Runtime
+- **Primary**: Bun (specified in root [package.json](mdc:package.json) `packageManager` field)
+- **Monorepo**: Turbo for build orchestration via [turbo.json](mdc:turbo.json)
+- **Workspaces**: Defined in root [package.json](mdc:package.json) workspaces array
+
+## Key Configuration Files
+
+### Turbo Configuration
+[turbo.json](mdc:turbo.json) defines build pipeline:
+- `build` - Production builds with dependency chain
+- `dev` - Development server (persistent, no cache)
+- `lint` - Code linting
+- `check-types` - TypeScript type checking
+
+### TypeScript Configuration
+Located in [packages/typescript-config/](mdc:packages/typescript-config/):
+- `base.json` - Base TypeScript configuration
+- `nextjs.json` - Next.js specific configuration
+- `react-library.json` - React library configuration
+
+### ESLint Configuration  
+Located in [packages/eslint-config/](mdc:packages/eslint-config/):
+- `base.js` - Base ESLint rules
+- `next.js` - Next.js specific rules
+- `react-internal.js` - Internal React component rules
+
+## Bun Specific Files
+- [apps/bunfig.toml](mdc:apps/bunfig.toml) - Bun configuration
+- [apps/build.ts](mdc:apps/build.ts) - Custom build script
+
+## Development Scripts
+```json
+{
+  "dev": "turbo run dev",
+  "build": "turbo run build", 
+  "lint": "turbo run lint",
+  "check-types": "turbo run check-types"
+}
+```
+
+## Configuration Best Practices
+- Extend base configurations from packages for consistency
+- Use Turbo task dependencies (`dependsOn`) for proper build order
+- Configure proper inputs/outputs for Turbo caching
+- Maintain Bun compatibility in all build configurations

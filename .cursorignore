@@ -1,0 +1,53 @@
+# Cursor ignore file for Bun + React monorepo
+# Excludes build outputs, dependencies, caches, logs, and sensitive env files
+
+# OS / VCS
+.DS_Store
+.git/
+
+# Environment files (keep examples)
+.env
+.env.*
+!.env.example
+
+# Dependencies
+**/node_modules/
+
+# Build outputs
+# Generic
+**/dist/
+**/build/
+**/out/
+
+# Next.js / Vercel / Turbo
+**/.next/
+**/.vercel/
+**/.turbo/
+
+# Caches
+**/coverage/
+**/.cache/
+**/.parcel-cache/
+**/.vite/
+
+# Logs
+*.log
+**/*.log
+logs/
+
+# Package manager lockfiles (not needed for AI context)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lock
+bun.lockb
+
+# Test artifacts
+**/cypress/videos/
+**/cypress/screenshots/
+**/playwright-report/
+
+# Temporary directories
+.tmp/
+tmp/
+temp/

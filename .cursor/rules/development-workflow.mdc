@@ -1,0 +1,150 @@
+---
+description: "Complete development workflow for DECM platform"
+---
+
+# DECM Development Workflow
+
+## Full Development Setup
+
+### Prerequisites Check
+1. **Bun installed**: `bun --version` (required: 1.2+)
+2. **Go installed**: `go version` (required: 1.21+)
+3. **Docker installed**: `docker --version`
+4. **Environment**: Copy `.env.example` to `.env`
+
+### Quick Start (3 Terminals)
+
+#### Terminal 1: Database
+```bash
+# Start PostgreSQL database
+bun compose:up
+
+# Verify database is running
+docker-compose -f docker-compose.isolated.yml logs postgres
+```
+
+#### Terminal 2: Backend API
+```bash
+# Start Go Fiber BFF server
+bun backend:dev
+
+# API docs available at: http://localhost:8080/swagger/
+```
+
+#### Terminal 3: Frontend
+```bash
+# Start React development server  
+bun dev
+
+# Frontend available at: http://localhost:3000
+```
+
+## API Development Workflow
+
+### 1. Add New Endpoint (Backend)
+```go
+// Add to apps/backend/api/routes/
+// @Summary Description
+// @Tags category
+// @Router /path [method]
+func handlerName(c *fiber.Ctx) error {
+    // Implementation
+}
+```
+
+### 2. Generate TypeScript Client
+```bash
+# Full API generation pipeline
+bun gen-api
+
+# Or just update docs
+bun backend:docs
+```
+
+### 3. Use in Frontend
+```typescript
+import { ApiClass } from '@decm/api';
+
+const api = new ApiClass({
+  basePath: 'http://localhost:8080/api/v1'
+});
+```
+
+## Common Development Tasks
+
+### Database Management
+```bash
+bun compose:up          # Start database
+bun compose:down        # Stop database
+# Connect: docker-compose -f docker-compose.isolated.yml exec postgres psql -U ${DB_USER} -d ${DB_NAME}
+```
+
+### Backend Development
+```bash
+bun backend:dev         # Development server
+bun backend:build       # Build binary
+bun backend:docs        # Update OpenAPI docs
+```
+
+### Frontend Development  
+```bash
+bun dev                 # React dev server
+bun build              # Production build
+bun lint               # ESLint check
+bun check-types        # TypeScript check
+```
+
+### API Client Generation
+```bash
+bun gen-api            # Complete: docs → TypeScript → build
+bun backend:docs       # Just generate OpenAPI docs (faster)
+```
+
+## Project Structure Context
+
+### Main Applications
+- **Frontend**: [apps/src/](mdc:apps/src/) - React + Tailwind + Radix UI
+- **Backend**: [apps/backend/](mdc:apps/backend/) - Go Fiber BFF API
+- **API Client**: [packages/api/](mdc:packages/api/) - Generated TypeScript client
+
+### Key Configuration Files
+- [package.json](mdc:package.json) - Root scripts and workspace config
+- [turbo.json](mdc:turbo.json) - Build orchestration
+- [docker-compose.isolated.yml](mdc:docker-compose.isolated.yml) - Database services
+- [.env.example](mdc:.env.example) - Environment template
+
+### Development Endpoints
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8080/api/v1
+- **API Docs**: http://localhost:8080/swagger/
+- **Database**: localhost:5432
+
+## Troubleshooting
+
+### Package Manager Error
+If you see `Unsupported package manager specification (bun@1.2.10)`:
+- **Fix**: Use `bun` instead of `npm`/`pnpm`/`yarn`
+
+### Database Connection Issues
+- **Check**: `bun compose:up` and wait for health check
+- **Verify**: Database logs with `docker-compose -f docker-compose.isolated.yml logs postgres`
+
+### API Generation Fails
+- **Ensure**: Backend is buildable (`go build cmd/main.go`)
+- **Check**: OpenAPI annotations are valid
+- **Run**: `bun backend:docs` first, then `bun gen-api`
+
+### Type Errors in Frontend
+- **Update**: API client with `bun gen-api`
+- **Check**: TypeScript compilation with `bun check-types`
+
+## DECM-Specific Features
+
+When developing DECM platform features:
+- **Events**: NFT-based ticketing system
+- **Identity**: Academic verification via LDAP
+- **Credentials**: Blockchain-based certificates
+- **Portfolio**: User achievement collections
+- **Evaluation**: Community feedback system
+
+Always consider Web 3.0 principles: user data ownership, decentralization, blockchain integration.

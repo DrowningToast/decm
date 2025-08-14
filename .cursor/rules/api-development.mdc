@@ -1,0 +1,96 @@
+---
+globs: apps/backend/api/**/*.go
+---
+
+# API Development Patterns
+
+## Handler Structure
+
+Follow this pattern for all API handlers in [apps/backend/api/v1/](mdc:apps/backend/api/v1/):
+
+```go
+// Request/Response types at top of file
+type CreateResourceRequest struct {
+    Field1 string `json:"field1" validate:"required"`
+    Field2 string `json:"field2,omitempty"`
+}
+
+// Route setup function
+func ResourceRoutes(app fiber.Router, h *handlers.Handlers) {
+    resources := app.Group("/resources")
+    resources.Post("/", createResource(h))
+    resources.Get("/:id", getResourceByID(h))
+    // ... more routes
+}
+
+// Handler functions with proper annotations
+// @Summary Description
+// @Description Longer description  
+// @Tags resource-tag
+// @Accept json
+// @Produce json
+// @Param id path string true "Resource ID"
+// @Success 200 {object} interface{} "Success response"
+// @Failure 400 {object} interface{} "Bad request"
+// @Router /api/v1/resources/{id} [get]
+func getResourceByID(h *handlers.Handlers) fiber.Handler {
+    return func(c *fiber.Ctx) error {
+        // 1. Parse and validate input
+        idStr := c.Params("id")
+        id, err := uuid.Parse(idStr)
+        if err != nil {
+            return c.Status(400).JSON(fiber.Map{"error": "Invalid ID"})
+        }
+        
+        // 2. Set context timeout
+        ctx, cancel := context.WithTimeout(c.Context(), 30*time.Second)
+        defer cancel()
+        
+        // 3. Database operation
+        result, err := h.DB.DB.Queries.GetResourceByID(ctx, id)
+        if err != nil {
+            return c.Status(404).JSON(fiber.Map{"error": "Resource not found"})
+        }
+        
+        // 4. Return success response
+        return c.JSON(fiber.Map{"resource": result})
+    }
+}
+```
+
+## Error Handling Standards
+
+- **400**: Invalid request format, validation errors
+- **404**: Resource not found
+- **409**: Conflict (duplicate resources)
+- **500**: Internal server errors, database errors
+
+Always return consistent JSON error format:
+```go
+return c.Status(400).JSON(fiber.Map{"error": "Descriptive error message"})
+```
+
+## Validation Rules
+
+1. Use struct tags for validation: `validate:"required,email"`
+2. Parse UUIDs with proper error handling
+3. Set reasonable limits for pagination (max 100 items)
+4. Validate required fields before database operations
+
+## Route Organization
+
+Add new routes to [apps/backend/api/routes/routes.go](mdc:apps/backend/api/routes/routes.go):
+```go
+// User routes
+v1.UserRoutes(apiV1, h)
+// Add new resource routes here
+v1.NewResourceRoutes(apiV1, h)
+```
+
+## Context and Timeouts
+
+Always use context with timeout for database operations:
+```go
+ctx, cancel := context.WithTimeout(c.Context(), 30*time.Second)
+defer cancel()
+```

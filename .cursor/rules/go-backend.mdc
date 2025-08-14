@@ -1,0 +1,104 @@
+---
+globs: "apps/backend/**/*.go"
+---
+
+# Go Backend Development Guidelines
+
+## Go Fiber BFF API Server
+
+This backend serves as a Backend for Frontend (BFF) API server for the DECM platform.
+
+## Project Structure
+- `cmd/` - Application entry points (main.go with Swagger annotations)
+- `internal/` - Private application code
+  - `config/` - Configuration management
+  - `handlers/` - HTTP request handlers
+  - `middleware/` - Custom middleware (auth, CORS, logging)
+  - `models/` - Data models and types
+  - `services/` - Business logic services
+- `api/` - API definitions and routes
+- `docs/` - Generated OpenAPI documentation
+
+## Development Standards
+
+### Package Organization
+Follow Go conventions:
+```go
+package handlers
+
+import (
+    "decm-backend/internal/config"
+    "decm-backend/internal/models"
+    
+    "github.com/gofiber/fiber/v2"
+)
+```
+
+### Swagger Documentation
+All API endpoints must include Swagger annotations:
+
+```go
+// createEvent godoc
+// @Summary Create a new event
+// @Description Create a new event with NFT tickets
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param event body models.Event true "Event data"
+// @Success 201 {object} models.Event
+// @Failure 400 {object} models.APIResponse
+// @Router /events [post]
+func createEvent(c *fiber.Ctx) error {
+    // Implementation
+}
+```
+
+### Error Handling
+Use consistent error responses:
+```go
+return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+    "error":   true,
+    "message": "Invalid request data",
+    "code":    fiber.StatusBadRequest,
+})
+```
+
+### Configuration
+Use environment-based configuration:
+- Load from root `.env` file using `../../.env` path
+- All config in `internal/config/config.go`
+- Support for database, blockchain, JWT, LDAP settings
+
+### DECM-Specific Considerations
+- **Academic Identity**: LDAP integration for institutional verification
+- **Blockchain**: Web3 wallet authentication and smart contract interaction
+- **NFT Ticketing**: Unique token generation and transfer handling
+- **Credentials**: Immutable certificate issuance on blockchain
+- **CORS**: Configured for frontend at `localhost:3000`
+
+### Middleware Usage
+```go
+// Authentication
+app.Use(middleware.AcademicAuth())
+
+// Role-based access control
+app.Use(middleware.RoleAuth("faculty", "staff"))
+
+// Blockchain wallet verification
+app.Use(middleware.BlockchainAuth())
+```
+
+### API Versioning
+All routes under `/api/v1` group:
+```go
+v1 := app.Group("/api/v1")
+v1.Get("/events", getEvents)
+v1.Post("/events", createEvent)
+```
+
+### Documentation Generation
+After adding/modifying endpoints:
+```bash
+bun backend:docs    # Generate OpenAPI docs
+bun gen-api        # Update TypeScript client
+```

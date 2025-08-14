@@ -1,0 +1,22 @@
+{
+    "name": "@decm/database",
+    "version": "0.1.0",
+    "description": "Database package with SQL migrations and query generation for DECM",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "generate": "sqlc generate",
+        "migrate:up": "migrate -path ./migrations -database $DATABASE_URL up",
+        "migrate:down": "migrate -path ./migrations -database $DATABASE_URL down",
+        "migrate:create": "migrate create -ext sql -dir ./migrations -seq"
+    },
+    "devDependencies": {
+        "typescript": "^5.0.0"
+    },
+    "files": [
+        "dist",
+        "migrations",
+        "queries",
+        "sqlc.yaml"
+    ]
+}

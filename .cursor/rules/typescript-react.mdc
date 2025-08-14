@@ -1,0 +1,49 @@
+---
+globs: "*.ts,*.tsx"
+---
+
+# TypeScript & React Development Rules
+
+## React Best Practices
+- Use **functional components** with hooks (no class components)
+- Prefer `React.FC` type annotation for components when needed
+- Use proper TypeScript interfaces for props and state
+- Import React types from `@types/react` when needed
+
+## TypeScript Standards
+- Use **interfaces** over types for object shapes
+- Provide explicit return types for functions
+- Use proper generics for reusable components
+- Follow the TypeScript configs in [packages/typescript-config/](mdc:packages/typescript-config/)
+
+## Import Patterns
+```tsx
+import React from 'react';
+import { ComponentProps } from 'react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+```
+
+## Component Structure
+```tsx
+interface MyComponentProps {
+  title: string;
+  optional?: boolean;
+}
+
+export function MyComponent({ title, optional = false }: MyComponentProps) {
+  return <div>{title}</div>;
+}
+```
+
+## Hooks Usage
+- Use `useState`, `useEffect`, `useCallback`, `useMemo` appropriately
+- Custom hooks should start with `use` prefix
+- Keep hooks at the top of component function
+
+## Event Handlers
+```tsx
+const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+  // handler logic
+}, [dependencies]);
+```

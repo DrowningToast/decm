@@ -1,0 +1,81 @@
+---
+alwaysApply: true
+---
+
+# Package Manager - Bun Required
+
+## Critical: Use Bun Only
+
+This project is configured to use **Bun** as the package manager. Do NOT use npm, pnpm, or yarn.
+
+### Specified in package.json
+```json
+"packageManager": "bun@1.2.10"
+```
+
+### Correct Usage
+```bash
+# ✅ Correct - Use bun for all commands
+bun install
+bun dev
+bun build
+bun compose:up
+bun backend:dev
+bun gen-api
+
+# ❌ Incorrect - DO NOT use these
+npm run dev
+pnpm compose:up
+yarn build
+```
+
+### Common Error
+If you see:
+```
+Unsupported package manager specification (bun@1.2.10)
+```
+
+**Solution**: Use `bun` instead of `npm`/`pnpm`/`yarn`
+
+### Why Bun?
+- **Runtime**: Project uses Bun runtime for frontend development
+- **Performance**: Faster package installation and script execution
+- **Compatibility**: Entire monorepo configured for Bun ecosystem
+- **Consistency**: All scripts and workflows assume Bun
+
+### Available Scripts
+All scripts in [package.json](mdc:package.json) must be run with `bun`:
+
+```bash
+# Frontend
+bun dev              # React development
+bun build           # Production build
+bun lint            # Code linting
+bun check-types     # TypeScript checking
+
+# Backend  
+bun backend:dev     # Go Fiber server
+bun backend:build   # Go binary build
+bun backend:docs    # Generate OpenAPI docs
+
+# Database
+bun compose:up      # Start PostgreSQL
+bun compose:down    # Stop database
+bun db:generate     # Generate Go code from SQL
+bun db:migrate:up   # Run database migrations
+
+# API Generation
+bun gen-api         # Full TypeScript client generation
+```
+
+### Installation
+If Bun is not installed:
+```bash
+# Install Bun
+curl -fsSL https://bun.sh/install | bash
+
+# Verify installation
+bun --version
+```
+
+**Remember**: Always use `bun` for this project, never other package managers!

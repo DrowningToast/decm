@@ -1,0 +1,114 @@
+---
+description: "Database development patterns and best practices for DECM platform"
+---
+
+# Database Development Guide
+
+## Database Package Structure
+
+The database package is located at [packages/database/](mdc:packages/database/) with:
+- `migrations/` - SQL migration files (sequentially numbered)
+- `queries/` - SQL query definitions for sqlc generation
+- `go/generated/` - Auto-generated Go code (DO NOT EDIT)
+- [connection.go](mdc:packages/database/connection.go) - Database utilities
+- [sqlc.yaml](mdc:packages/database/sqlc.yaml) - sqlc configuration
+
+## Migration Development
+
+### Creating New Migrations
+```bash
+# Always create migrations in pairs (up/down)
+bun db:migrate:create description_of_change
+```
+
+### Migration Rules
+1. **Sequential numbering**: Use format `000001_description.up.sql` and `000001_description.down.sql`
+2. **Dependencies**: Extensions must be installed before tables that use them
+3. **Rollback safety**: Always provide working down migrations with safety checks
+4. **Comments**: Document complex migrations and their purpose
+
+### Current Migration Order
+1. `000001_enable_extensions` - PostgreSQL extensions (uuid-ossp, pg_trgm, citext, pgcrypto)
+2. `000002_create_core_tables` - All DECM platform tables
+
+## Query Development
+
+### Writing Queries
+1. Create `.sql` files in [packages/database/queries/](mdc:packages/database/queries/)
+2. Use sqlc annotations:
+   ```sql
+   -- name: CreateUser :one
+   INSERT INTO users (...) VALUES (...) RETURNING *;
+   
+   -- name: GetUserByID :one
+   SELECT * FROM users WHERE id = $1;
+   
+   -- name: ListUsers :many
+   SELECT * FROM users LIMIT $1 OFFSET $2;
+   ```
+
+### Type Safety Rules
+- Use `pgtype.Text` for nullable TEXT columns
+- Use `pgtype.UUID` for nullable UUID columns  
+- Use `pgtype.Int4` for nullable INTEGER columns
+- Required fields use Go native types (string, int32, uuid.UUID)
+
+### Generating Code
+```bash
+# After modifying queries, regenerate Go code
+bun db:generate
+```
+
+## Database Integration in Backend
+
+### Service Pattern
+- Database access through [DatabaseService](mdc:apps/backend/internal/services/database.go)
+- Handlers receive DatabaseService via dependency injection
+- All queries use context with timeouts (30 seconds default)
+
+### API Handler Pattern
+```go
+func handlerFunction(h *handlers.Handlers) fiber.Handler {
+    return func(c *fiber.Ctx) error {
+        ctx, cancel := context.WithTimeout(c.Context(), 30*time.Second)
+        defer cancel()
+        
+        // Use h.DB.DB.Queries for database operations
+        result, err := h.DB.DB.Queries.SomeQuery(ctx, params)
+        if err != nil {
+            return c.Status(500).JSON(fiber.Map{"error": "Operation failed"})
+        }
+        
+        return c.JSON(result)
+    }
+}
+```
+
+## Environment Configuration
+
+Required environment variables in [.env](mdc:.env):
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_NAME=decm
+DB_SSL_MODE=disable
+```
+
+## Available Commands
+
+```bash
+# Database operations
+bun db:generate              # Generate Go code from SQL
+bun db:migrate:up            # Run migrations up
+bun db:migrate:down          # Run migrations down
+bun db:migrate:create name   # Create new migration
+
+# Docker database
+bun compose:up               # Start PostgreSQL
+bun compose:down             # Stop PostgreSQL
+
+# Backend with auto-migrations
+bun backend:dev              # Start with automatic migrations
+```
