@@ -29,7 +29,7 @@ bun db:migrate:create description_of_change
 
 ### Current Migration Order
 1. `000001_enable_extensions` - PostgreSQL extensions (uuid-ossp, pg_trgm, citext, pgcrypto)
-2. `000002_create_core_tables` - All DECM platform tables
+2. `000002_create_core_tables` - All DECM platform tables with blockchain integration
 
 ## Query Development
 
@@ -47,11 +47,60 @@ bun db:migrate:create description_of_change
    SELECT * FROM users LIMIT $1 OFFSET $2;
    ```
 
-### Type Safety Rules
-- Use `pgtype.Text` for nullable TEXT columns
-- Use `pgtype.UUID` for nullable UUID columns  
-- Use `pgtype.Int4` for nullable INTEGER columns
-- Required fields use Go native types (string, int32, uuid.UUID)
+### Current Database Schema
+
+#### Core Tables
+- **authentication_credentials** - User authentication with public/private keys
+  - `id` SERIAL PRIMARY KEY
+  - `solution_status` INTEGER (0=bring your own key, 1=system managed)
+  - `password`, `private_key`, `public_key` VARCHAR(255) 
+  - `google_connector_ref`, `github_connector_ref` VARCHAR(255)
+  - `is_verified_organizer`, `is_verified_student` INTEGER
+  - Auto-timestamps: `created_at`, `updated_at` TIMESTAMPTZ
+
+- **profiles** - User profile data with privacy controls
+  - `id` SERIAL PRIMARY KEY
+  - `authentication_credential_id` INTEGER REFERENCES authentication_credentials(id)
+  - Privacy flags: `is_*_public` INTEGER for each field
+  - Profile data: `first_name`, `last_name`, `email`, `bio`, `phone_number`, `address`
+  - Academic: `academic_institution`, `academic_email`
+  - `profile_picture_url` VARCHAR(255)
+  - Auto-timestamps: `created_at`, `updated_at` TIMESTAMPTZ
+
+- **events** - Event management with blockchain integration
+  - `id` SERIAL PRIMARY KEY
+  - `chain_id` INTEGER, `contact_address` VARCHAR(255)
+  - `owner_credential_id` INTEGER REFERENCES authentication_credentials(id)
+  - Event details: `title`, `short_description`, `long_description`
+  - Dates: `start_date`, `end_date` TIMESTAMPTZ
+  - Location: `location`, `google_map_query` VARCHAR(255)
+  - Settings: `max_attendees`, `is_public`, `is_booking_request_required`, etc.
+  - Requirements: `*_requirement_status` INTEGER (0=not required, 1=required, 2=optional)
+  - `base_event_certificate_url` VARCHAR(255)
+  - Auto-timestamps: `created_at`, `updated_at` TIMESTAMPTZ
+
+- **event_attendees** - Event participation tracking
+  - `id` SERIAL PRIMARY KEY
+  - `event_id` INTEGER REFERENCES events(id)
+  - `attendee_credential_id` INTEGER REFERENCES authentication_credentials(id)
+  - `contact_address` VARCHAR(255)
+  - `is_attendee_accepted` INTEGER
+  - Provided flags: `*_provided` INTEGER (0=not provided, 1=provided)
+  - Auto-timestamps: `created_at`, `updated_at` TIMESTAMPTZ
+
+- **event_certificates** - Certificate issuance system
+  - `id` SERIAL PRIMARY KEY
+  - `event_id` INTEGER REFERENCES events(id)
+  - `credential_id` INTEGER REFERENCES authentication_credentials(id)
+  - `is_published` INTEGER (0=not published, 1=published)
+  - Auto-timestamps: `created_at`, `updated_at` TIMESTAMPTZ
+
+### Type Safety Rules (sqlc)
+- Use `pgtype.Text` for nullable VARCHAR/TEXT columns
+- Use `pgtype.Int4` for nullable INTEGER columns  
+- Required fields use Go native types (string, int32)
+- All IDs are `int32` (SERIAL maps to int32 in Go)
+- All timestamps are `time.Time` (TIMESTAMPTZ)
 
 ### Generating Code
 ```bash
@@ -84,31 +133,53 @@ func handlerFunction(h *handlers.Handlers) fiber.Handler {
 }
 ```
 
+### Current Schema Integration Notes
+- **authentication_credentials** is the main user table (not "users")
+- **profiles** contains user display information with privacy controls
+- All tables use SERIAL primary keys (map to int32 in Go)
+- Foreign keys reference authentication_credentials.id for user relations
+- Privacy flags use INTEGER (0/1) instead of BOOLEAN for consistency
+- All timestamps are TIMESTAMPTZ with automatic update triggers
+```
+
 ## Environment Configuration
 
 Required environment variables in [.env](mdc:.env):
 ```env
 DB_HOST=localhost
 DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=your_password
+DB_USER=decm_user
+DB_PASSWORD=decm_password
 DB_NAME=decm
 DB_SSL_MODE=disable
 ```
 
+The system automatically reads from `.env` file with fallback to `.env.example`. No hardcoded credentials in scripts!
+
 ## Available Commands
 
 ```bash
-# Database operations
-bun db:generate              # Generate Go code from SQL
-bun db:migrate:up            # Run migrations up
-bun db:migrate:down          # Run migrations down
-bun db:migrate:create name   # Create new migration
+# Complete setup (start + wait + migrate)
+bun db:setup                 # Complete database setup
 
-# Docker database
-bun compose:up               # Start PostgreSQL
-bun compose:down             # Stop PostgreSQL
+# Database lifecycle
+bun db:start                 # Start PostgreSQL container  
+bun db:stop                  # Stop database
+bun db:wait                  # Wait for database readiness
 
-# Backend with auto-migrations
+# Migration management
+bun db:migrate               # Smart migration with error recovery
+bun db:migrate:down          # Rollback migrations
+bun db:migrate:version       # Check migration version
+bun db:migrate:force         # Force migration state
+bun db:reset                 # Complete database reset
+
+# Database tools
+bun db:config                # Show database configuration
+bun db:status                # List all tables
+bun db:console               # Open PostgreSQL interactive console
+bun db:generate              # Generate Go code from SQL queries
+
+# Backend with auto-migrations (legacy)
 bun backend:dev              # Start with automatic migrations
 ```

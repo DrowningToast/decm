@@ -1,0 +1,142 @@
+---
+description: "Database scripts and automation for DECM platform"
+---
+
+# Database Scripts Guide
+
+## Environment-Based Configuration
+
+All database scripts read configuration from `.env` file (never hardcoded):
+
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=decm_user
+DB_PASSWORD=decm_password
+DB_NAME=decm
+DB_SSL_MODE=disable
+```
+
+## Complete Database Scripts
+
+### Setup and Lifecycle
+```bash
+# One-command complete setup
+bun db:setup                 # Start + wait + migrate (recommended)
+
+# Individual components
+bun db:start                 # Start PostgreSQL container
+bun db:stop                  # Stop database
+bun db:wait                  # Wait for database readiness
+```
+
+### Migration Management
+```bash
+# Smart migration (with error recovery)
+bun db:migrate               # Primary migration command
+
+# Migration control
+bun db:migrate:down          # Rollback migrations
+bun db:migrate:version       # Check current version
+bun db:migrate:force         # Force specific version (troubleshooting)
+bun db:reset                 # Complete reset (down + up)
+
+# Migration development
+bun db:migrate:create name   # Create new migration files
+```
+
+### Database Tools
+```bash
+# Configuration and status
+bun db:config                # Show database configuration
+bun db:status                # List all database tables
+bun db:console               # Open interactive PostgreSQL console
+
+# Code generation
+bun db:generate              # Generate Go code from SQL queries (sqlc)
+```
+
+## Script Architecture
+
+### Core Scripts
+- **`scripts/db-env.js`** - Environment configuration reader
+- **`scripts/db-migrate.js`** - Smart migration runner with error recovery
+- **`scripts/wait-for-db.js`** - Database readiness checker
+- **`scripts/db-command.js`** - Universal database command runner
+
+### Features
+- ✅ **No hardcoded credentials** - All from .env file
+- ✅ **Automatic error recovery** - Handles dirty migration states
+- ✅ **Database readiness checking** - Waits for PostgreSQL to be fully ready
+- ✅ **Environment validation** - Checks configuration before operations
+- ✅ **Graceful error handling** - Provides helpful troubleshooting tips
+
+## Migration Error Recovery
+
+The system automatically handles common issues:
+- **Dirty migration state** - Automatically cleans and retries
+- **Database not ready** - Waits up to 60 seconds with health checks
+- **Connection failures** - Provides troubleshooting guidance
+- **Configuration issues** - Validates .env file completeness
+
+## Development Workflow
+
+### New Developer Setup
+```bash
+# 1. Configure environment
+cp .env.example .env
+# Edit .env if needed (defaults work!)
+
+# 2. Complete setup
+bun db:setup
+
+# 3. Verify
+bun db:status
+```
+
+### Creating Migrations
+```bash
+# 1. Create migration files
+bun db:migrate:create add_new_feature
+
+# 2. Edit the generated files:
+#    packages/database/migrations/NNNNNN_add_new_feature.up.sql
+#    packages/database/migrations/NNNNNN_add_new_feature.down.sql
+
+# 3. Run migration
+bun db:migrate
+
+# 4. Generate updated Go code
+bun db:generate
+```
+
+### Troubleshooting
+```bash
+# Check configuration
+bun db:config
+
+# Check migration status
+bun db:migrate:version
+
+# Reset if needed
+bun db:reset
+
+# View database directly
+bun db:console
+```
+
+## Integration with Development
+
+The database scripts integrate seamlessly with the development workflow:
+- **Backend auto-migration** - `bun backend:dev` still runs migrations automatically
+- **API generation** - `bun gen-api` includes database code generation
+- **Development environment** - All scripts respect `.env` configuration
+- **Docker integration** - Scripts manage PostgreSQL container lifecycle
+
+## Security Features
+
+- **Environment-based credentials** - No hardcoded passwords
+- **Configuration validation** - Ensures all required variables are set
+- **Secure connection handling** - Supports SSL modes and connection options
+- **Credential isolation** - Database URLs are constructed dynamically
+- **Development defaults** - Safe defaults that work out of the box

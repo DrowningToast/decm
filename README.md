@@ -50,10 +50,10 @@
 
 ### 🗄️ Database Design
 - **Type-safe Operations**: sqlc generates Go code from SQL
-- **Migration System**: Version-controlled schema changes
-- **Full-text Search**: PostgreSQL trigram matching
-- **UUID Primary Keys**: Blockchain-compatible identifiers
-- **JSON Support**: Flexible metadata storage
+- **Migration System**: Version-controlled schema changes with automatic recovery
+- **Environment Configuration**: No hardcoded credentials, reads from .env
+- **Blockchain Integration**: Contract addresses, chain IDs, and key management
+- **Privacy Controls**: Granular privacy settings for user data
 
 ### 🔒 Security Features
 - **SQL Injection Prevention**: Prepared statements for all queries
@@ -193,39 +193,33 @@ cd packages/api && bun generate  # Generate TypeScript client
 
 ### Core Tables
 
-#### 👤 Users
-- Academic identity with LDAP verification
-- Institution email validation  
-- Web3 wallet integration
-- Full-text search capabilities
+#### 🔐 Authentication Credentials
+- **BYOK Support**: Bring Your Own Key or system-managed keys
+- **OAuth Integration**: Google and GitHub connector support
+- **Verification System**: Organizer and student verification flags
+- **Public Key Infrastructure**: Blockchain-compatible key management
+
+#### 👤 User Profiles
+- **Privacy Controls**: Granular privacy settings for each field
+- **Academic Integration**: Institution and academic email verification
+- **Personal Data**: Contact information with privacy controls
+- **Profile Customization**: Bio, profile pictures, and display preferences
 
 #### 🎯 Events
-- Multi-type event support
-- NFT contract integration
-- Capacity and location management
-- Organizer relationships
+- **Blockchain Integration**: Contract addresses and chain ID support
+- **Requirement System**: Configurable attendee requirements
+- **Verification**: Event verification and validation system
+- **Location Management**: Google Maps integration and location tracking
 
-#### 🎫 NFT Tickets  
-- Blockchain token tracking
-- QR code check-in system
-- Transaction hash recording
-- Seat assignments
+#### 🎫 Event Participation
+- **Attendee Tracking**: Registration and acceptance status
+- **Data Provision**: Track what information users provide
+- **Contact Management**: Blockchain contact addresses for participants
 
-#### 🏆 Credentials
-- Digital certificates and badges
-- Blockchain verification
-- QR code validation  
-- Skills and criteria tracking
-
-#### 📋 Portfolios
-- Personal achievement collections
-- Public/private sharing
-- Token-based access control
-
-#### ⭐ Evaluations
-- Multi-criteria rating system
-- Anonymous feedback support
-- Reputation scoring
+#### 🏆 Event Certificates
+- **Publication Control**: Manage certificate publication status
+- **Event Linking**: Certificates linked to specific events and users
+- **Issuance Tracking**: Track certificate creation and distribution
 
 ## 🌐 API Documentation
 
@@ -233,12 +227,12 @@ cd packages/api && bun generate  # Generate TypeScript client
 - `GET /` - System health with database status
 - `GET /api/v1/health` - API health check
 
-### User Management
-- `POST /api/v1/users` - Create user account
-- `GET /api/v1/users/{id}` - Get user by ID
-- `PUT /api/v1/users/{id}` - Update user profile  
-- `GET /api/v1/users/search?q=query` - Search users
-- `DELETE /api/v1/users/{id}` - Delete user account
+### Authentication & User Management
+- `POST /api/v1/authentication-credentials` - Create authentication credential
+- `GET /api/v1/authentication-credentials/{id}` - Get credential by ID
+- `PUT /api/v1/authentication-credentials/{id}` - Update credential
+- `GET /api/v1/profiles` - Get user profiles
+- `POST /api/v1/profiles` - Create user profile
 
 ### Interactive Documentation
 When the backend is running, visit:
@@ -255,21 +249,20 @@ curl http://localhost:8080/
 # Should return: {"database": true, "status": "healthy", ...}
 ```
 
-### Test User API
+### Test Authentication API
 ```bash
-# Create a new user
-curl -X POST http://localhost:8080/api/v1/users \
+# Create authentication credential
+curl -X POST http://localhost:8080/api/v1/authentication-credentials \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "student@university.edu",
-    "username": "johndoe",
-    "first_name": "John",
-    "last_name": "Doe",
-    "academic_institution": "University of Technology"
+    "solution_status": 1,
+    "public_key": "your_public_key",
+    "is_verified_organizer": 0,
+    "is_verified_student": 1
   }'
 
-# Search users
-curl "http://localhost:8080/api/v1/users/search?q=john&limit=10"
+# Check database tables
+bun db:status
 ```
 
 ## 🔧 Environment Configuration
@@ -284,8 +277,8 @@ ENVIRONMENT=development
 # Database Configuration (PostgreSQL)
 DB_HOST=localhost
 DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=your_password
+DB_USER=decm_user
+DB_PASSWORD=decm_password
 DB_NAME=decm
 DB_SSL_MODE=disable
 
@@ -344,16 +337,18 @@ LDAP_BASE_DN=dc=university,dc=edu
 ## 🚧 Future Roadmap
 
 ### Phase 1: Core Platform ✅
-- [x] Database schema and migrations
-- [x] User management API
-- [x] Authentication system
+- [x] Database schema and migrations with blockchain support
+- [x] Authentication credentials system with BYOK support
+- [x] Environment-based configuration system
+- [x] Smart migration system with error recovery
 - [x] Basic frontend structure
 
-### Phase 2: Event Management 🚧
-- [ ] Event CRUD operations
+### Phase 2: User Profiles & Event Management 🚧
+- [ ] User profile CRUD operations with privacy controls
+- [ ] Event CRUD operations with blockchain integration
 - [ ] Event search and filtering
-- [ ] Organizer dashboard
-- [ ] Event categories and tags
+- [ ] Organizer dashboard with verification system
+- [ ] Event categories and requirement management
 
 ### Phase 3: NFT Ticketing 📋
 - [ ] Smart contract integration
