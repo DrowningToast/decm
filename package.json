@@ -24,7 +24,7 @@
     "db:migrate:create": "cd packages/database && migrate create -ext sql -dir ./migrations -seq",
     "db:migrate:version": "node scripts/db-command.js migrate version",
     "db:reset": "bun run db:migrate:down && bun run db:migrate",
-    "db:generate": "cd packages/database && sqlc generate",
+    "db:generate": "rm -rf packages/database/go/generated && cd packages/database && sqlc generate",
     "db:status": "node scripts/db-command.js psql \"\\dt\"",
     "db:console": "node scripts/db-command.js psql",
     "db:config": "node scripts/db-env.js"

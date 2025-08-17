@@ -9,8 +9,10 @@ CREATE TABLE authentication_credentials (
     -- 1: System managed encrypted private key
     solution_status INTEGER NOT NULL,
 
-    password VARCHAR(255),
-    private_key VARCHAR(255),
+    -- hashed of hashed password using Argon2id
+    hashed_password VARCHAR(255),
+    -- encrypted by a hash of password using AES-256-GCM
+    encrypted_private_key VARCHAR(255),
     public_key VARCHAR(255) NOT NULL UNIQUE,
 
     google_connector_ref VARCHAR(255),
@@ -45,7 +47,7 @@ CREATE TABLE profiles (
     bio VARCHAR(255),
     is_phone_number_public INTEGER NOT NULL,
     phone_number VARCHAR(255),
-is_address_public INTEGER NOT NULL,
+    is_address_public INTEGER NOT NULL,
     address VARCHAR(255),
     is_academic_institution_public INTEGER NOT NULL,
     academic_institution VARCHAR(255),

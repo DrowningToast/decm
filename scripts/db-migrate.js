@@ -22,14 +22,14 @@ function runCommand(command, args, options = {}) {
 	return new Promise((resolve, reject) => {
 		console.log(`📋 Running: ${command} ${args.join(" ")}`);
 
-		const process = spawn(command, args, {
+		const childProcess = spawn(command, args, {
 			stdio: "inherit",
 			env: { ...process.env, DATABASE_URL },
 			cwd: path.join(__dirname, "..", "packages", "database"),
 			...options,
 		});
 
-		process.on("close", (code) => {
+		childProcess.on("close", (code) => {
 			if (code === 0) {
 				resolve();
 			} else {
@@ -37,7 +37,7 @@ function runCommand(command, args, options = {}) {
 			}
 		});
 
-		process.on("error", (error) => {
+		childProcess.on("error", (error) => {
 			reject(error);
 		});
 	});
@@ -45,7 +45,7 @@ function runCommand(command, args, options = {}) {
 
 async function getMigrationVersion() {
 	return new Promise((resolve) => {
-		const process = spawn(
+		const childProcess = spawn(
 			"migrate",
 			["-path", MIGRATIONS_PATH, "-database", DATABASE_URL, "version"],
 			{
@@ -55,11 +55,11 @@ async function getMigrationVersion() {
 		);
 
 		let output = "";
-		process.stdout.on("data", (data) => {
+		childProcess.stdout.on("data", (data) => {
 			output += data.toString();
 		});
 
-		process.on("close", (code) => {
+		childProcess.on("close", (code) => {
 			if (code === 0) {
 				const version = output.trim();
 				resolve(version === "no migration" ? 0 : parseInt(version));
