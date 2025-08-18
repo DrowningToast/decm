@@ -1,0 +1,72 @@
+---
+alwaysApply: true
+description: "DECM security and encryption principles that must be followed"
+---
+
+# DECM Security & Encryption Principles
+
+## 🔐 Core Security Requirements
+
+### 1. PII Encryption is Mandatory
+**ALL** Personally Identifiable Information (PII) MUST be encrypted at rest using PostgreSQL's `pgcrypto` extension.
+
+**PII Fields Requiring Encryption:**
+- User names, emails, phone numbers
+- OAuth connector references  
+- Profile pictures, bio, addresses
+- Academic institution data
+
+### 2. Encryption Key Management
+- ✅ Use `sqlc.arg(encryption_key)` parameter pattern
+- ✅ Keys provided via environment variables
+- ❌ NEVER hardcode encryption keys in code
+- ❌ NEVER commit keys to version control
+
+### 3. Database Query Security
+- ✅ Use parameterized queries (`sqlc.arg()`, `sqlc.narg()`)
+- ✅ Apply encryption functions: `pgp_sym_encrypt()` / `pgp_sym_decrypt()`
+- ✅ Cast CASE expressions to prevent type loss
+- ❌ Never use string interpolation for SQL queries
+
+## 🎯 DECM Project Context
+
+**DECM** = Decentralized Event Management platform with:
+- **NFT-based event ticketing** 
+- **Blockchain-powered digital credentials**
+- **Academic identity verification (LDAP)**
+- **Privacy-first user profiles**
+
+### Web 3.0 Principles Applied:
+1. **User Data Ownership** - Users control their encrypted data
+2. **Decentralization** - Blockchain for immutable records  
+3. **Privacy by Design** - Granular privacy controls (`is_*_public` flags)
+4. **Interoperability** - "Verify Once, Use Everywhere" identity
+
+## 🛠️ Technology Stack Constraints
+
+- **Package Manager**: MUST use Bun (never npm/yarn/pnpm)
+- **Database**: PostgreSQL with pgcrypto extension
+- **Backend**: Go Fiber with sqlc code generation
+- **Frontend**: React 19 + Tailwind CSS
+- **Monorepo**: Turbo + Bun workspaces
+
+## 🚨 Security Red Flags
+
+Watch for these security anti-patterns:
+
+❌ **PII stored unencrypted**
+❌ **Hardcoded encryption keys** 
+❌ **SQL injection vulnerabilities**
+❌ **Missing type safety (`interface{}` types)**
+❌ **Exposed sensitive data in logs/errors**
+
+## 📋 Development Checklist
+
+Before any database changes:
+- [ ] PII fields identified and encrypted
+- [ ] Encryption key parameter added
+- [ ] Type casting applied to CASE expressions  
+- [ ] Generated Go code reviewed (no `interface{}`)
+- [ ] Privacy flags implemented where needed
+
+**Remember**: This is a Web 3.0 platform handling academic credentials and financial NFT transactions. Security cannot be an afterthought.

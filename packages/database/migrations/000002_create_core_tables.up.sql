@@ -15,7 +15,9 @@ CREATE TABLE authentication_credentials (
     encrypted_private_key VARCHAR(255),
     public_key VARCHAR(255) NOT NULL UNIQUE,
 
+    -- PII: OAuth connector references
     google_connector_ref VARCHAR(255),
+    -- PII: OAuth connector references
     github_connector_ref VARCHAR(255),
 
     is_verified_organizer INTEGER NOT NULL,
@@ -34,24 +36,33 @@ CREATE TABLE profiles (
     authentication_credential_id INTEGER NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
 
     is_profile_picture_public INTEGER NOT NULL,
+    -- PII: Profile picture URL
     profile_picture_url VARCHAR(255),
 
     is_first_name_public INTEGER NOT NULL,
+    -- PII: First name
     first_name VARCHAR(128),
     is_last_name_public INTEGER NOT NULL,
+    -- PII: Last name
     last_name VARCHAR(128),
     is_email_public INTEGER NOT NULL,
+    -- PII: Email
     email VARCHAR(255) UNIQUE,
 
     is_bio_public INTEGER NOT NULL,
+    -- PII: Bio
     bio VARCHAR(255),
     is_phone_number_public INTEGER NOT NULL,
+    -- PII: Phone number
     phone_number VARCHAR(255),
     is_address_public INTEGER NOT NULL,
+    -- PII: Address
     address VARCHAR(255),
     is_academic_institution_public INTEGER NOT NULL,
+    -- PII: Academic institution
     academic_institution VARCHAR(255),
     is_academic_email_public INTEGER NOT NULL,
+    -- PII: Academic email
     academic_email VARCHAR(255),
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
