@@ -3,13 +3,14 @@ package datagateway
 import (
 	"context"
 
+	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
 )
 
 type UpdateAuthenticationCredentialParameters struct {
-	SolutionStatus entity.SolutionStatus
-	Password       *string
-	PrivateKey     *string
+	SolutionStatus      entity.SolutionStatus
+	HashedPassword      *string
+	EncryptedPrivateKey *string
 
 	GoogleConnectorRef *string
 	GithubConnectorRef *string
@@ -19,9 +20,9 @@ type UpdateAuthenticationCredentialParameters struct {
 }
 
 type AuthenticationCredentialDataGateway interface {
-	GetAuthenticationCredentialById(ctx context.Context, id int32) (*entity.AuthenticationCredential, error)
-	GetAuthenticationCredentialByPublicKey(ctx context.Context, publicKey string) (*entity.AuthenticationCredential, error)
-	CreateAuthenticationCredential(ctx context.Context, credential entity.AuthenticationCredential) (*entity.AuthenticationCredential, error)
-	UpdateAuthenticationCredential(ctx context.Context, id int32, params UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, error)
+	GetAuthenticationCredentialById(ctx context.Context, id int32) (*entity.AuthenticationCredential, *customerror.Err)
+	GetAuthenticationCredentialByPublicKey(ctx context.Context, publicKey string) (*entity.AuthenticationCredential, *customerror.Err)
+	CreateAuthenticationCredential(ctx context.Context, credential entity.AuthenticationCredential) (*entity.AuthenticationCredential, *customerror.Err)
+	UpdateAuthenticationCredential(ctx context.Context, id int32, params UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, *customerror.Err)
 	DeleteAuthenticationCredential(ctx context.Context, id int32) error
 }

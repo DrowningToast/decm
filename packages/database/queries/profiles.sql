@@ -28,55 +28,55 @@ INSERT INTO profiles (
         WHEN sqlc.narg(profile_picture_url) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(profile_picture_url), sqlc.arg(encryption_key))
         ELSE NULL 
-    END::varchar,
+    END::text,
     sqlc.arg(is_first_name_public),
     CASE 
         WHEN sqlc.narg(first_name) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(first_name), sqlc.arg(encryption_key))
         ELSE NULL 
-    END::varchar,
+    END::text,
     sqlc.arg(is_last_name_public),
     CASE 
         WHEN sqlc.narg(last_name) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(last_name), sqlc.arg(encryption_key))
         ELSE NULL 
-    END::varchar,
+    END::text,
     sqlc.arg(is_email_public),
     CASE 
         WHEN sqlc.narg(email) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(email), sqlc.arg(encryption_key))
         ELSE NULL 
-    END::varchar,
+    END::text,
     sqlc.arg(is_bio_public),
     CASE 
         WHEN sqlc.narg(bio) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(bio), sqlc.arg(encryption_key))
         ELSE NULL 
-    END::varchar,
+    END::text,
     sqlc.arg(is_phone_number_public),
     CASE 
         WHEN sqlc.narg(phone_number) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(phone_number), sqlc.arg(encryption_key))
         ELSE NULL 
-    END::varchar,
+    END::text,
     sqlc.arg(is_address_public),
     CASE 
         WHEN sqlc.narg(address) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(address), sqlc.arg(encryption_key))
         ELSE NULL 
-    END::varchar,
+    END::text,
     sqlc.arg(is_academic_institution_public),
     CASE 
         WHEN sqlc.narg(academic_institution) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(academic_institution), sqlc.arg(encryption_key))
         ELSE NULL 
-    END::varchar,
+    END::text,
     sqlc.arg(is_academic_email_public),
     CASE 
         WHEN sqlc.narg(academic_email) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(academic_email), sqlc.arg(encryption_key))
         ELSE NULL 
-    END::varchar
+    END::text
 ) RETURNING 
     id,
     authentication_credential_id,
@@ -400,55 +400,55 @@ UPDATE profiles SET
         WHEN sqlc.narg(profile_picture_url) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(profile_picture_url), sqlc.arg(encryption_key))
         ELSE profile_picture_url
-    END::varchar,
+    END::text,
     is_first_name_public = COALESCE(sqlc.narg(is_first_name_public), is_first_name_public),
     first_name = CASE 
         WHEN sqlc.narg(first_name) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(first_name), sqlc.arg(encryption_key))
         ELSE first_name
-    END::varchar,
+    END::text,
     is_last_name_public = COALESCE(sqlc.narg(is_last_name_public), is_last_name_public),
     last_name = CASE 
         WHEN sqlc.narg(last_name) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(last_name), sqlc.arg(encryption_key))
         ELSE last_name
-    END::varchar,
+    END::text,
     is_email_public = COALESCE(sqlc.narg(is_email_public), is_email_public),
     email = CASE 
         WHEN sqlc.narg(email) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(email), sqlc.arg(encryption_key))
         ELSE email
-    END::varchar,
+    END::text,
     is_bio_public = COALESCE(sqlc.narg(is_bio_public), is_bio_public),
     bio = CASE 
         WHEN sqlc.narg(bio) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(bio), sqlc.arg(encryption_key))
         ELSE bio
-    END::varchar,
+    END::text,
     is_phone_number_public = COALESCE(sqlc.narg(is_phone_number_public), is_phone_number_public),
     phone_number = CASE 
         WHEN sqlc.narg(phone_number) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(phone_number), sqlc.arg(encryption_key))
         ELSE phone_number
-    END::varchar,
+    END::text,
     is_address_public = COALESCE(sqlc.narg(is_address_public), is_address_public),
     address = CASE 
         WHEN sqlc.narg(address) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(address), sqlc.arg(encryption_key))
         ELSE address
-    END::varchar,
+    END::text,
     is_academic_institution_public = COALESCE(sqlc.narg(is_academic_institution_public), is_academic_institution_public),
     academic_institution = CASE 
         WHEN sqlc.narg(academic_institution) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(academic_institution), sqlc.arg(encryption_key))
         ELSE academic_institution
-    END::varchar,
+    END::text,
     is_academic_email_public = COALESCE(sqlc.narg(is_academic_email_public), is_academic_email_public),
     academic_email = CASE 
         WHEN sqlc.narg(academic_email) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(academic_email), sqlc.arg(encryption_key))
         ELSE academic_email
-    END::varchar,
+    END::text,
     updated_at = NOW()
 WHERE id = sqlc.arg(id) 
 RETURNING 

@@ -6,24 +6,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type mapper struct {
-	piiEncryptionKey string
-}
-
-func NewMapper(piiEncryptionKey string) *mapper {
-	return &mapper{
-		piiEncryptionKey: piiEncryptionKey,
-	}
-}
-
-func (m *mapper) PgTextToStringPtr(text pgtype.Text) *string {
+func PgTextToStringPtr(text pgtype.Text) *string {
 	if text.Valid {
 		return &text.String
 	}
 	return nil
 }
 
-func (m *mapper) StringPtrToPgText(str *string) pgtype.Text {
+func StringPtrToPgText(str *string) pgtype.Text {
 	if str != nil {
 		return pgtype.Text{
 			String: *str,
@@ -57,7 +47,14 @@ func Int32PtrToBoolean(value *int32) bool {
 	return false
 }
 
-func BoolToInt(value bool) int32 {
+func BoolToPgInt4(value bool) pgtype.Int4 {
+	return pgtype.Int4{
+		Int32: BoolToInt32(value),
+		Valid: true,
+	}
+}
+
+func BoolToInt32(value bool) int32 {
 	var intValue int32 = 0
 	if value {
 		intValue = 1
@@ -78,4 +75,18 @@ func IntPtrToBool(value *int32) bool {
 		return *value == 1
 	}
 	return false
+}
+
+func IntPtrToPgInt4(value *int32) pgtype.Int4 {
+	return pgtype.Int4{
+		Int32: *value,
+		Valid: value != nil,
+	}
+}
+
+func Int32ToPgInt4(value int32) pgtype.Int4 {
+	return pgtype.Int4{
+		Int32: value,
+		Valid: true,
+	}
 }

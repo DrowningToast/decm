@@ -7,13 +7,15 @@ import (
 )
 
 type Repository struct {
-	db      pgclient.Client
-	queries *generated.Queries
+	db               pgclient.Client
+	queries          *generated.Queries
+	piiEncryptionKey string
 }
 
-func NewRepository(db pgclient.Client) *Repository {
+func NewRepository(db pgclient.Client, piiEncryptionKey string) *Repository {
 	return &Repository{
-		db:      db,
-		queries: generated.New(db),
+		db:               db,
+		queries:          generated.New(db),
+		piiEncryptionKey: piiEncryptionKey,
 	}
 }

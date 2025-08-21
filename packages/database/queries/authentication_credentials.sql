@@ -17,14 +17,14 @@ INSERT INTO authentication_credentials (
     sqlc.arg(public_key),
     CASE 
         WHEN sqlc.narg(google_connector_ref) IS NOT NULL 
-        THEN pgp_sym_encrypt(sqlc.narg(google_connector_ref), sqlc.arg(encryption_key))
+        THEN pgp_sym_encrypt(sqlc.narg(google_connector_ref), sqlc.arg(encryption_key)::varchar)::varchar
         ELSE NULL 
-    END::varchar,
+    END::text,
     CASE 
         WHEN sqlc.narg(github_connector_ref) IS NOT NULL 
-        THEN pgp_sym_encrypt(sqlc.narg(github_connector_ref), sqlc.arg(encryption_key))
+        THEN pgp_sym_encrypt(sqlc.narg(github_connector_ref), sqlc.arg(encryption_key)::varchar)::varchar
         ELSE NULL 
-    END::varchar,
+    END::text,
     sqlc.arg(is_verified_organizer),
     sqlc.arg(is_verified_student)
 ) RETURNING 
@@ -35,12 +35,12 @@ INSERT INTO authentication_credentials (
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -57,12 +57,12 @@ SELECT
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -81,12 +81,12 @@ SELECT
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -105,12 +105,12 @@ SELECT
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -129,14 +129,14 @@ UPDATE authentication_credentials SET
     public_key = COALESCE(sqlc.narg(public_key), public_key),
     google_connector_ref = CASE 
         WHEN sqlc.narg(google_connector_ref) IS NOT NULL 
-        THEN pgp_sym_encrypt(sqlc.narg(google_connector_ref), sqlc.arg(encryption_key))
+        THEN pgp_sym_encrypt(sqlc.narg(google_connector_ref), sqlc.arg(encryption_key)::varchar)
         ELSE google_connector_ref
-    END::varchar,
+    END::text,
     github_connector_ref = CASE 
         WHEN sqlc.narg(github_connector_ref) IS NOT NULL 
-        THEN pgp_sym_encrypt(sqlc.narg(github_connector_ref), sqlc.arg(encryption_key))
+        THEN pgp_sym_encrypt(sqlc.narg(github_connector_ref), sqlc.arg(encryption_key)::varchar)
         ELSE github_connector_ref
-    END::varchar,
+    END::text,
     is_verified_organizer = COALESCE(sqlc.narg(is_verified_organizer), is_verified_organizer),
     is_verified_student = COALESCE(sqlc.narg(is_verified_student), is_verified_student),
     updated_at = NOW()
@@ -149,12 +149,12 @@ RETURNING
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -175,12 +175,12 @@ RETURNING
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -202,12 +202,12 @@ RETURNING
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -229,12 +229,12 @@ RETURNING
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -244,7 +244,7 @@ RETURNING
 
 -- name: SetGoogleConnector :one
 UPDATE authentication_credentials SET 
-    google_connector_ref = pgp_sym_encrypt(sqlc.arg(google_connector_ref), sqlc.arg(encryption_key))::varchar,
+    google_connector_ref = pgp_sym_encrypt(sqlc.arg(google_connector_ref), sqlc.arg(encryption_key)::varchar)::varchar,
     updated_at = NOW()
 WHERE id = sqlc.arg(id) 
 RETURNING 
@@ -255,12 +255,12 @@ RETURNING
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -270,7 +270,7 @@ RETURNING
 
 -- name: SetGithubConnector :one
 UPDATE authentication_credentials SET 
-    github_connector_ref = pgp_sym_encrypt(sqlc.arg(github_connector_ref), sqlc.arg(encryption_key))::varchar,
+    github_connector_ref = pgp_sym_encrypt(sqlc.arg(github_connector_ref), sqlc.arg(encryption_key)::varchar)::varchar,
     updated_at = NOW()
 WHERE id = sqlc.arg(id) 
 RETURNING 
@@ -281,12 +281,12 @@ RETURNING
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -307,12 +307,12 @@ RETURNING
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -333,12 +333,12 @@ RETURNING
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -355,12 +355,12 @@ SELECT
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -382,12 +382,12 @@ SELECT
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -430,12 +430,12 @@ RETURNING
     public_key,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key))
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,

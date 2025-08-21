@@ -47,13 +47,13 @@ func (entity *AuthenticationCredential) ToModel() *generated.AuthenticationCrede
 	return &generated.AuthenticationCredential{
 		ID:             entity.Id,
 		SolutionStatus: int32(entity.SolutionStatus),
-		Password: pgtype.Text{
-			String: *entity.Password,
-			Valid:  entity.Password != nil,
+		HashedPassword: pgtype.Text{
+			String: *entity.HashedPassword,
+			Valid:  entity.HashedPassword != nil,
 		},
-		PrivateKey: pgtype.Text{
-			String: *entity.PrivateKey,
-			Valid:  entity.PrivateKey != nil,
+		EncryptedPrivateKey: pgtype.Text{
+			String: *entity.EncryptedPrivateKey,
+			Valid:  entity.EncryptedPrivateKey != nil,
 		},
 		PublicKey: entity.PublicKey,
 		GoogleConnectorRef: pgtype.Text{
@@ -77,15 +77,37 @@ func (entity *AuthenticationCredential) ToModel() *generated.AuthenticationCrede
 	}
 }
 
+func MapAuthenticationCredentialToEntity(model generated.AuthenticationCredential) AuthenticationCredential {
+	return AuthenticationCredential{
+		Id:                  model.ID,
+		SolutionStatus:      SolutionStatus(model.SolutionStatus),
+		HashedPassword:      pgmapper.PgTextToStringPtr(model.HashedPassword),
+		EncryptedPrivateKey: pgmapper.PgTextToStringPtr(model.EncryptedPrivateKey),
+		PublicKey:           model.PublicKey,
+		GoogleConnectorRef:  pgmapper.PgTextToStringPtr(model.GoogleConnectorRef),
+		GithubConnectorRef:  pgmapper.PgTextToStringPtr(model.GithubConnectorRef),
+		IsVerifiedOrganizer: model.IsVerifiedOrganizer == 1,
+		IsVerifiedStudent:   model.IsVerifiedStudent == 1,
+		CreatedAt:           model.CreatedAt.Time,
+		UpdatedAt:           model.UpdatedAt.Time,
+	}
+}
+
 func MapAuthenticationCredentialsToEntities(models []generated.AuthenticationCredential) []AuthenticationCredential {
 	entities := make([]AuthenticationCredential, len(models))
 	for i, model := range models {
 		entities[i] = AuthenticationCredential{
-			Id:             model.ID,
-			SolutionStatus: SolutionStatus(model.SolutionStatus),
-			Password:       pgmapper.PgTextToStringPtr(model.Password),
-			PrivateKey:     pgmapper.PgTextToStringPtr(model.PrivateKey),
-			PublicKey:      model.PublicKey,
+			Id:                  model.ID,
+			SolutionStatus:      SolutionStatus(model.SolutionStatus),
+			HashedPassword:      pgmapper.PgTextToStringPtr(model.HashedPassword),
+			EncryptedPrivateKey: pgmapper.PgTextToStringPtr(model.EncryptedPrivateKey),
+			PublicKey:           model.PublicKey,
+			GoogleConnectorRef:  pgmapper.PgTextToStringPtr(model.GoogleConnectorRef),
+			GithubConnectorRef:  pgmapper.PgTextToStringPtr(model.GithubConnectorRef),
+			IsVerifiedOrganizer: model.IsVerifiedOrganizer == 1,
+			IsVerifiedStudent:   model.IsVerifiedStudent == 1,
+			CreatedAt:           model.CreatedAt.Time,
+			UpdatedAt:           model.UpdatedAt.Time,
 		}
 	}
 	return entities

@@ -1,0 +1,230 @@
+---
+globs: packages/database/queries/*.sql,packages/database/sqlc.yaml,packages/database/migrations/*.sql
+description: "Comprehensive database development patterns, PII encryption, and type safety for DECM platform"
+---
+
+# DECM Database Development Guide
+
+## 🔐 Core Security Requirements
+
+### PII Encryption is Mandatory
+**ALL** Personally Identifiable Information (PII) MUST be encrypted at rest using PostgreSQL's `pgcrypto` extension.
+
+**PII Fields Requiring Encryption:**
+- **Authentication Credentials:** `google_connector_ref`, `github_connector_ref`
+- **Profiles:** `profile_picture_url`, `first_name`, `last_name`, `email`, `bio`, `phone_number`, `address`, `academic_institution`, `academic_email`
+
+### Encryption Patterns
+
+**INSERT/UPDATE (Encryption):**
+```sql
+CASE 
+    WHEN sqlc.narg(pii_field) IS NOT NULL 
+    THEN pgp_sym_encrypt(sqlc.narg(pii_field), sqlc.arg(encryption_key))
+    ELSE NULL 
+END::text
+```
+
+**SELECT (Decryption):**
+```sql
+CASE 
+    WHEN pii_field IS NOT NULL 
+    THEN pgp_sym_decrypt(pii_field::bytea, sqlc.arg(encryption_key))
+    ELSE NULL 
+END::text as pii_field
+```
+
+## ⚡ Critical Type Safety Rules
+
+### 1. Always Cast CASE Expressions
+⚠️ **ALWAYS cast CASE expressions based on column nullability:**
+
+- ✅ **Nullable columns** → `::text`
+- ✅ **Non-nullable columns** → `::varchar`
+
+**Why:** sqlc loses type information with CASE expressions ([issue #2937](https://github.com/sqlc-dev/sqlc/issues/2937))
+
+❌ **NEVER do this:**
+```sql
+CASE WHEN condition THEN value ELSE NULL END  -- Generates interface{}
+```
+
+✅ **ALWAYS do this:**
+```sql
+CASE WHEN condition THEN value ELSE NULL END::text     -- Generates string
+CASE WHEN condition THEN value ELSE NULL END::varchar  -- Generates string
+```
+
+### 2. Use Named Arguments
+```sql
+sqlc.arg(field_name)     -- Required field
+sqlc.narg(field_name)    -- Nullable field
+```
+
+### 3. SQLC Configuration
+Add column overrides in `sqlc.yaml` for nullable PII fields:
+
+```yaml
+overrides:
+  - db_type: "text"
+    go_type:
+      import: "github.com/jackc/pgx/v5/pgtype"
+      type: "Text"
+    nullable: true
+```
+
+## 🏗️ Database Structure
+
+### Core Tables
+- **authentication_credentials** - User authentication with encrypted OAuth refs
+- **profiles** - User profiles with encrypted PII fields and privacy controls
+- **events** - Event management with blockchain integration
+- **event_attendees** - Event participation tracking
+- **event_certificates** - Digital credential issuance
+
+### Schema Details
+
+**Nullable columns requiring `::text` casting:**
+- `authentication_credentials`: `hashed_password`, `encrypted_private_key`, `google_connector_ref`, `github_connector_ref`
+- `profiles`: All PII fields listed above
+
+**Non-nullable columns requiring `::varchar` casting:**
+- `public_key` (authentication_credentials)
+- All ID fields and public flags
+
+## 🔄 Development Workflow
+
+### 1. Schema Changes
+1. Create migration in `packages/database/migrations/`
+2. Update `000002_create_core_tables.up.sql` for new tables/columns
+3. Add corresponding rollback in `.down.sql`
+
+### 2. Query Development
+1. Add queries to `packages/database/queries/`
+2. Follow PII encryption patterns for sensitive fields
+3. Use explicit type casting for CASE expressions
+4. Generate Go code: `bun db:generate`
+
+### 3. Required Commands
+```bash
+# Database setup
+bun compose:up          # Start PostgreSQL container
+bun db:migrate:up       # Run migrations
+
+# Code generation
+bun db:generate         # Generate Go structs from SQL
+
+# Backend development
+bun backend:dev         # Start Go server (auto-runs migrations)
+```
+
+## 📋 Complete Example
+
+```sql
+-- name: UpdateProfile :one
+UPDATE profiles SET 
+    first_name = CASE 
+        WHEN sqlc.narg(first_name) IS NOT NULL 
+        THEN pgp_sym_encrypt(sqlc.narg(first_name), sqlc.arg(encryption_key))
+        ELSE first_name
+    END::text,
+    email = CASE 
+        WHEN sqlc.narg(email) IS NOT NULL 
+        THEN pgp_sym_encrypt(sqlc.narg(email), sqlc.arg(encryption_key))
+        ELSE email
+    END::text
+WHERE id = sqlc.arg(id)
+RETURNING 
+    id,
+    CASE 
+        WHEN first_name IS NOT NULL 
+        THEN pgp_sym_decrypt(first_name::bytea, sqlc.arg(encryption_key))
+        ELSE NULL 
+    END::text as first_name,
+    CASE 
+        WHEN email IS NOT NULL 
+        THEN pgp_sym_decrypt(email::bytea, sqlc.arg(encryption_key))
+        ELSE NULL 
+    END::text as email;
+```
+
+## 🎯 Type Safety Results
+
+With correct patterns, SQLC generates optimal Go types:
+
+**Parameters (Input):**
+```go
+// Nullable PII fields
+GoogleConnectorRef  pgtype.Text `json:"google_connector_ref"`
+FirstName          pgtype.Text `json:"first_name"`
+
+// Required fields
+PublicKey          string      `json:"public_key"`
+```
+
+**Return Values (Output):**
+```go
+// Decrypted PII fields (with proper casting)
+GoogleConnectorRef  string `json:"google_connector_ref"`
+FirstName          string `json:"first_name"`
+```
+
+## ❌ Common Gotchas
+
+**Don't do this:**
+- Use CASE without type casting → generates `interface{}`
+- Forget encryption for PII fields → security violation
+- Use positional arguments → maintenance nightmare
+- Hardcode encryption keys → security risk
+
+**Always do this:**
+- Cast CASE expressions: `END::text` or `END::varchar`
+- Encrypt PII: `pgp_sym_encrypt(field, key)`
+- Use named args: `sqlc.arg()` and `sqlc.narg()`
+- Use environment variables for encryption keys
+
+## ✅ Validation Checklist
+
+Before committing database changes:
+- [ ] PII fields identified and encrypted
+- [ ] Encryption key parameter added (`sqlc.arg(encryption_key)`)
+- [ ] Type casting applied to CASE expressions
+- [ ] Check database schema for column nullability
+- [ ] Apply `::text` for nullable columns, `::varchar` for non-nullable
+- [ ] Test with `bun db:generate`
+- [ ] Verify generated Go types are correct (no `interface{}`)
+- [ ] Privacy flags implemented where needed
+
+## 🚨 Security Red Flags
+
+Watch for these security anti-patterns:
+- PII stored unencrypted
+- Hardcoded encryption keys
+- SQL injection vulnerabilities
+- Missing type safety (`interface{}` types)
+- Exposed sensitive data in logs/errors
+
+## 📁 Package Structure
+
+```
+packages/database/
+├── migrations/          # SQL migration files
+├── queries/            # SQL query definitions for sqlc
+├── go/generated/       # Auto-generated Go code (DO NOT EDIT)
+├── connection.go       # Database utilities
+└── sqlc.yaml          # sqlc configuration
+```
+
+## 🌐 Environment Configuration
+
+Required environment variables in `.env`:
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=decm_user
+DB_PASSWORD=decm_password
+DB_NAME=decm
+DB_SSL_MODE=disable
+```
+
+**Remember**: This is a Web 3.0 platform handling academic credentials and financial NFT transactions. Security cannot be an afterthought.
