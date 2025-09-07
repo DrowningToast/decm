@@ -9,18 +9,17 @@
         "build": "tsc",
         "dev": "tsc --watch",
         "clean": "rm -rf dist generated",
-        "generate": "openapi-generator-cli generate -i ../../apps/backend/docs/swagger.json -g typescript-fetch -o ./generated --additional-properties=typescriptThreePlus=true,supportsES6=true,npmName=@decm/api,npmVersion=1.0.0",
-        "postgenerate": "node scripts/postprocess.js"
+        "generate:core": "swagger-typescript-api generate -p ../../apps/backend/core-api/docs/swagger.json -o ./src/apis/core/ -n api.ts --axios --module-name-index 1 --sort-types --extract-request-params --extract-request-body --extract-response-body --extract-response-error --unwrap-response-data --single-http-client",
     },
     "files": [
         "dist/**/*",
         "src/**/*"
     ],
     "dependencies": {
-        "cross-fetch": "^4.0.0"
+        "axios": "^1.6.0"
     },
     "devDependencies": {
-        "@openapitools/openapi-generator-cli": "^2.13.12",
+        "swagger-typescript-api": "^13.2.9",
         "@types/node": "^22.10.4",
         "typescript": "^5.8.3"
     },

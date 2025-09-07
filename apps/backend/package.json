@@ -1,1 +1,23 @@
- 
+{
+    "name": "@decm/backend",
+    "version": "1.0.0",
+    "description": "DECM Backend API - Go Fiber server with PostgreSQL",
+    "main": "go",
+    "scripts": {},
+    "keywords": [
+        "go",
+        "fiber",
+        "api",
+        "backend",
+        "decm"
+    ],
+    "author": "DECM Team",
+    "license": "MIT",
+    "engines": {
+        "go": ">=1.21"
+    },
+    "repository": {
+        "type": "git",
+        "url": "monorepo"
+    }
+}
