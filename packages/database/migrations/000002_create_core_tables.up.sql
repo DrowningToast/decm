@@ -4,7 +4,7 @@
 
 -- authentication credentials table, index by id and email
 CREATE TABLE authentication_credentials (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     -- 0: Bring your own private key
     -- 1: System managed encrypted private key
     solution_status INTEGER NOT NULL,
@@ -30,8 +30,8 @@ CREATE INDEX idx_authentication_credentials_public_key ON authentication_credent
 
 -- Student profile table, index by id and email
 CREATE TABLE profiles (
-    id SERIAL PRIMARY KEY,
-    authentication_credential_id INTEGER NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    authentication_credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
 
     is_profile_picture_public INTEGER NOT NULL,
     profile_picture_url VARCHAR(255),
@@ -63,11 +63,11 @@ CREATE INDEX idx_profiles_id ON profiles(id);
 
 -- events table, index by id and owner_credential_id
 CREATE TABLE events (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
     chain_id INTEGER NOT NULL,
     contact_address VARCHAR(255) NOT NULL,
-    owner_credential_id INTEGER NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
+    owner_credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
 
     title VARCHAR(255) NOT NULL,
     short_description VARCHAR(255) NOT NULL,
@@ -107,9 +107,9 @@ CREATE INDEX idx_events_id ON events(id);
 
 -- event_attendees table, index by event_id and credential_id
 CREATE TABLE event_attendees (
-    id SERIAL PRIMARY KEY,
-    event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-    attendee_credential_id INTEGER NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    attendee_credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
     
     contact_address VARCHAR(255) NOT NULL,
 
@@ -134,9 +134,9 @@ CREATE INDEX idx_event_attendees_attendee_credential_id ON event_attendees(atten
 
 -- event_certificates table, index by event_id and credential_id
 CREATE TABLE event_certificates (
-    id SERIAL PRIMARY KEY,
-    event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-    credential_id INTEGER NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
     
     -- TODO: Add an entity for handling the issuance of the certificate
     

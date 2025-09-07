@@ -3,8 +3,8 @@
 -- name: CreateAuthenticationCredential :one
 INSERT INTO authentication_credentials (
     solution_status,
-    password,
-    private_key,
+    hashed_password,
+    encrypted_private_key,
     public_key,
     google_connector_ref,
     github_connector_ref,
@@ -15,7 +15,7 @@ INSERT INTO authentication_credentials (
 ) RETURNING *;
 
 -- name: GetAuthenticationCredentialByID :one
-SELECT * FROM authentication_credentials WHERE id = $1;
+SELECT * FROM authentication_credentials WHERE id = $1::uuid;
 
 -- name: GetAuthenticationCredentialByPublicKey :one
 SELECT * FROM authentication_credentials WHERE public_key = $1;
@@ -28,59 +28,59 @@ LIMIT $1 OFFSET $2;
 -- name: UpdateAuthenticationCredential :one
 UPDATE authentication_credentials SET 
     solution_status = COALESCE($2, solution_status),
-    password = COALESCE($3, password),
-    private_key = COALESCE($4, private_key),
+    hashed_password = COALESCE($3, hashed_password),
+    encrypted_private_key = COALESCE($4, encrypted_private_key),
     public_key = COALESCE($5, public_key),
     google_connector_ref = COALESCE($6, google_connector_ref),
     github_connector_ref = COALESCE($7, github_connector_ref),
     is_verified_organizer = COALESCE($8, is_verified_organizer),
     is_verified_student = COALESCE($9, is_verified_student),
     updated_at = NOW()
-WHERE id = $1 RETURNING *;
+WHERE id = $1::uuid RETURNING *;
 
 -- name: UpdateAuthenticationCredentialPassword :one
 UPDATE authentication_credentials SET 
-    password = $2,
+    hashed_password = $2,
     updated_at = NOW()
-WHERE id = $1 RETURNING *;
+WHERE id = $1::uuid RETURNING *;
 
 -- name: UpdateAuthenticationCredentialKeys :one
 UPDATE authentication_credentials SET 
-    private_key = $2,
+    encrypted_private_key = $2,
     public_key = $3,
     updated_at = NOW()
-WHERE id = $1 RETURNING *;
+WHERE id = $1::uuid RETURNING *;
 
 -- name: UpdateVerificationStatus :one
 UPDATE authentication_credentials SET 
     is_verified_organizer = $2,
     is_verified_student = $3,
     updated_at = NOW()
-WHERE id = $1 RETURNING *;
+WHERE id = $1::uuid RETURNING *;
 
 -- name: SetGoogleConnector :one
 UPDATE authentication_credentials SET 
     google_connector_ref = $2,
     updated_at = NOW()
-WHERE id = $1 RETURNING *;
+WHERE id = $1::uuid RETURNING *;
 
 -- name: SetGithubConnector :one
 UPDATE authentication_credentials SET 
     github_connector_ref = $2,
     updated_at = NOW()
-WHERE id = $1 RETURNING *;
+WHERE id = $1::uuid RETURNING *;
 
 -- name: RemoveGoogleConnector :one
 UPDATE authentication_credentials SET 
     google_connector_ref = NULL,
     updated_at = NOW()
-WHERE id = $1 RETURNING *;
+WHERE id = $1::uuid RETURNING *;
 
 -- name: RemoveGithubConnector :one
 UPDATE authentication_credentials SET 
     github_connector_ref = NULL,
     updated_at = NOW()
-WHERE id = $1 RETURNING *;
+WHERE id = $1::uuid RETURNING *;
 
 -- name: GetCredentialsByVerificationStatus :many
 SELECT * FROM authentication_credentials 
@@ -108,13 +108,13 @@ SELECT
 FROM authentication_credentials;
 
 -- name: DeleteAuthenticationCredential :exec
-DELETE FROM authentication_credentials WHERE id = $1;
+DELETE FROM authentication_credentials WHERE id = $1::uuid;
 
 -- name: SoftDeleteAuthenticationCredential :one
 -- Note: This would require adding a deleted_at column in future migration
 -- For now, we can use a status update approach
 UPDATE authentication_credentials SET 
-    password = NULL,
-    private_key = NULL,
+    hashed_password = NULL,
+    encrypted_private_key = NULL,
     updated_at = NOW()
-WHERE id = $1 RETURNING *;
+WHERE id = $1::uuid RETURNING *;
