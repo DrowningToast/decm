@@ -7,10 +7,11 @@
   "module": "src/index.tsx",
   "scripts": {
     "dev": "bun --hot src/index.tsx",
-    "start": "NODE_ENV=production bun src/index.tsx",
+    "start": "node_env=production bun src/index.tsx",
     "build": "bun run build.ts"
   },
   "dependencies": {
+    "@decm/api": "workspace:*",
     "@hookform/resolvers": "^4.1.0",
     "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-select": "^2.1.6",
@@ -27,7 +28,7 @@
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.24.2"
   },
-  "devDependencies": {
+  "devdependencies": {
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/bun": "latest"
