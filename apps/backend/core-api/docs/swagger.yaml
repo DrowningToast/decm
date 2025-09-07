@@ -1,0 +1,68 @@
+basePath: /
+definitions:
+  customerror.ErrResponse:
+    description: Response for the client to sign to register
+    properties:
+      message:
+        type: string
+    type: object
+  onboard.getRegisterSignMessageResponse:
+    description: Response for the client to sign to register
+    properties:
+      message:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: DECM (Decentralized Event Management) platform API for NFT ticketing,
+    digital credentials, and academic identity verification.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: DECM Core
+  version: "1.0"
+paths:
+  /onboard/register-with-wallet:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with wallet address
+      operationId: register-with-wallet
+      parameters:
+      - description: Signed message
+        in: body
+        name: signed_message
+        required: true
+        schema:
+          type: string
+      - description: Wallet address
+        in: body
+        name: wallet_address
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Register a new user with wallet address
+  /onboard/sign-message:
+    get:
+      description: Retrieve preset message for the client to sign to register
+      operationId: get-register-sign-message
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/onboard.getRegisterSignMessageResponse'
+      summary: Get preset message for the client to sign to register
+swagger: "2.0"

@@ -34,6 +34,28 @@ func GetErrFiberHandler(logger *slog.Logger) func(ctx *fiber.Ctx, err error) err
 				},
 			)
 		}
+		var fiberErr *fiber.Error
+		if errors.As(err, &fiberErr) {
+			// Log fiber error
+			switch fiberErr.Code {
+			case fiber.StatusBadRequest:
+				logger.WarnContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()))
+			case fiber.StatusUnauthorized:
+				logger.WarnContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()))
+			case fiber.StatusNotFound:
+				logger.WarnContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()))
+			case fiber.StatusInternalServerError:
+				logger.ErrorContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()))
+			default:
+				logger.ErrorContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()))
+			}
+			// Return the error
+			return ctx.Status(fiberErr.Code).JSON(
+				ErrApiResponse{
+					message: fiberErr.Message,
+				},
+			)
+		}
 		// Is unknown general error
 		logger.Error(errors.Wrap(err, "an unknown error has occurred").Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(

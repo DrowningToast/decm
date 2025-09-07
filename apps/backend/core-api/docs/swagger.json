@@ -1,0 +1,100 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "DECM (Decentralized Event Management) platform API for NFT ticketing, digital credentials, and academic identity verification.",
+        "title": "DECM Core",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {},
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/onboard/register-with-wallet": {
+            "post": {
+                "description": "Register a new user with wallet address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Register a new user with wallet address",
+                "operationId": "register-with-wallet",
+                "parameters": [
+                    {
+                        "description": "Signed message",
+                        "name": "signed_message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Wallet address",
+                        "name": "wallet_address",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/onboard/sign-message": {
+            "get": {
+                "description": "Retrieve preset message for the client to sign to register",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get preset message for the client to sign to register",
+                "operationId": "get-register-sign-message",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/onboard.getRegisterSignMessageResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "customerror.ErrResponse": {
+            "description": "Response for the client to sign to register",
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "onboard.getRegisterSignMessageResponse": {
+            "description": "Response for the client to sign to register",
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

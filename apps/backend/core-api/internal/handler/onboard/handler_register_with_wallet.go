@@ -25,7 +25,7 @@ type registerWithWalletRequest struct {
 // @Accept json
 // @Produce json
 // @Success 200
-// @Failure 400 {object} ErrResponse
+// @Failure 400 {object} customerror.ErrResponse
 // @Router /onboard/register-with-wallet [post]
 func (h Handler) RegisterWithWallet(ctx *fiber.Ctx) error {
 	requestBody := registerWithWalletRequest{}

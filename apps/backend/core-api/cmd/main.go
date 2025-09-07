@@ -32,7 +32,7 @@ import (
 	"github.com/gofiber/swagger"
 
 	// fiber-swagger middleware
-	_ "apps/backend/docs/core-api"
+	_ "apps/backend/core-api/docs"
 )
 
 // @title DECM Core
@@ -52,7 +52,7 @@ func main() {
 
 	pgConn, err := pgclient.NewPool(ctx, &cfg.Postgres)
 	if err != nil {
-		logger.ErrorContext(ctx, "failed to create pgxpool", err)
+		logger.ErrorContext(ctx, "failed to create pgxpool", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 	defer func() {
@@ -123,7 +123,7 @@ func main() {
 	// Start HTTP Server
 	go func() {
 		if err := app.Listen(fmt.Sprintf(":%d", cfg.Port)); err != nil {
-			logger.ErrorContext(ctx, "error while server listening", err.Error())
+			logger.ErrorContext(ctx, "error while server listening", slog.String("error", err.Error()))
 			stop() // stop app if HTTP server is stopped
 		}
 	}()

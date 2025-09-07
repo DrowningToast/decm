@@ -22,7 +22,7 @@ var (
 
 type Config struct {
 	Name string `env:"NAME" envDefault:"decm-core-api"`
-	ENV  string `env:"ENV,required" envDefault:"production"`
+	ENV  string `env:"ENVIRONMENT,required"`
 	Port int    `env:"PORT,required" envDefault:"8080"`
 
 	Api      ApiConfig       `envPrefix:"API_"`
