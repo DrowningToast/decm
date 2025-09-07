@@ -20,7 +20,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/onboard/register-with-wallet": {
+        "/api/v1/onboard/register-with-wallet": {
             "post": {
                 "description": "Register a new user with wallet address",
                 "consumes": [
@@ -64,7 +64,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/onboard/sign-message": {
+        "/api/v1/onboard/sign-message": {
             "get": {
                 "description": "Retrieve preset message for the client to sign to register",
                 "produces": [

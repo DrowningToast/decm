@@ -37,15 +37,40 @@ func createEvent(c *fiber.Ctx) error {
 
 ### Error Handling & Patterns
 ```go
-// Consistent error responses
-return c.Status(400).JSON(fiber.Map{"error": "Descriptive error message"})
+// Custom error types with validation
+type requestStruct struct {
+    Field string `json:"field"`
+}
+
+func (r *requestStruct) Parse(ctx *fiber.Ctx) *customerror.Err {
+    if err := ctx.BodyParser(r); err != nil {
+        return customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, err)
+    }
+    return nil
+}
+
+func (r *requestStruct) IsValid() *customerror.Err {
+    if len(r.Field) == 0 {
+        return customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, errors.New("field is required"))
+    }
+    return nil
+}
+
+// Handler with validation pattern
+func (h Handler) HandleRequest(ctx *fiber.Ctx) error {
+    requestBody := requestStruct{}
+    if err := requestBody.Parse(ctx); err != nil {
+        return *err // Custom error handler manages response
+    }
+    if err := requestBody.IsValid(); err != nil {
+        return *err
+    }
+    // Business logic here...
+}
 
 // Context with timeout (required for DB operations)
 ctx, cancel := context.WithTimeout(c.Context(), 30*time.Second)
 defer cancel()
-
-// Database operation
-result, err := h.DB.Queries.GetByID(ctx, id)
 ```
 
 ### API Structure
@@ -91,8 +116,25 @@ const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => 
 
 ## DECM-Specific Patterns
 
-### Go Backend - Academic Integration
+### Go Backend - Authentication & Validation
 ```go
+// Ethereum wallet address validation
+var ethAddressRegex = regexp.MustCompile(`^0x[a-fA-F0-9]{40}$`)
+
+func validateEthAddress(address string) bool {
+    return ethAddressRegex.MatchString(address)
+}
+
+// JWT session management with cookies  
+func setSessionCookie(ctx *fiber.Ctx, jwt string, expiration time.Duration) {
+    cookie := &fiber.Cookie{
+        Name:    "session",
+        Value:   jwt,
+        Expires: time.Now().Add(expiration),
+    }
+    ctx.Cookie(cookie)
+}
+
 // Academic authentication middleware
 app.Use(middleware.AcademicAuth())
 
@@ -102,14 +144,27 @@ app.Use(middleware.BlockchainAuth())
 
 ### TypeScript - API Client Usage
 ```typescript
-import { ApiClass } from '@decm/api';
+import { DefaultApi } from '@decm/api';
 
-const api = new ApiClass({
+const api = new DefaultApi({
   basePath: 'http://localhost:8080/api/v1'
 });
 
-// Type-safe API calls
-const events = await api.getEvents();
+// Type-safe API calls with error handling
+try {
+  const events = await api.getEvents();
+  const signMessage = await api.getRegisterSignMessage();
+  
+  // Authentication flow
+  await api.registerWithWallet({
+    signed_message: signedWalletMessage,
+    wallet_address: userWalletAddress
+  });
+  
+} catch (error) {
+  // Automatically typed error responses
+  console.error('API call failed:', error);
+}
 ```
 
 ### Configuration Management

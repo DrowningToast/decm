@@ -1,0 +1,260 @@
+---
+description: "Wallet-based authentication, JWT sessions, and security patterns for DECM platform"
+---
+
+# Authentication & Security - DECM Platform
+
+## Wallet-Based Authentication Flow
+
+### 1. Registration Process
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant A as API
+    participant W as Wallet
+    
+    C->>A: GET /onboard/sign-message
+    A->>C: Returns preset message
+    C->>W: Sign message with private key
+    W->>C: Signed message
+    C->>A: POST /onboard/register-with-wallet {signed_message, wallet_address}
+    A->>A: Verify signature
+    A->>C: Set JWT session cookie
+```
+
+### 2. Backend Implementation
+
+#### Onboard Endpoints
+```go
+// GET /api/v1/onboard/sign-message
+// @Summary Get preset message for the client to sign to register
+// @Description Retrieve preset message for the client to sign to register
+// @ID get-register-sign-message
+// @Produce json
+// @Success 200 {object} getRegisterSignMessageResponse
+// @Router /onboard/sign-message [get]
+func (h Handler) GetRegisterSignMessage(ctx *fiber.Ctx) error {
+    message := h.OnboardUc.GetRegisterSignMessage()
+    response := getRegisterSignMessageResponse{Message: message}
+    return ctx.Status(fiber.StatusOK).JSON(response)
+}
+
+// POST /api/v1/onboard/register-with-wallet
+// @Summary Register a new user with wallet address
+// @Description Register a new user with wallet address
+// @ID register-with-wallet
+// @Param signed_message body string true "Signed message"
+// @Param wallet_address body string true "Wallet address"
+// @Accept json
+// @Produce json
+// @Success 200
+// @Failure 400 {object} customerror.ErrResponse
+// @Router /onboard/register-with-wallet [post]
+func (h Handler) RegisterWithWallet(ctx *fiber.Ctx) error {
+    requestBody := registerWithWalletRequest{}
+    if err := requestBody.Parse(ctx); err != nil {
+        return *err
+    }
+    if err := requestBody.IsValid(); err != nil {
+        return *err
+    }
+
+    jwt, err := h.OnboardUc.RegisterWithWalletAddress(ctx.UserContext(), 
+        requestBody.SignedMessage, requestBody.WalletAddress)
+    if err != nil {
+        return *err
+    }
+
+    // Set secure JWT session cookie
+    cookie := &fiber.Cookie{
+        Name:     "session",
+        Value:    *jwt,
+        Expires:  time.Now().Add(h.SessionExpiration),
+        HTTPOnly: true,
+        Secure:   true, // HTTPS only in production
+        SameSite: "lax",
+    }
+    ctx.Cookie(cookie)
+
+    return ctx.Status(fiber.StatusOK).Send([]byte(""))
+}
+```
+
+#### Validation Patterns
+```go
+// Ethereum address validation
+var ethAddressRegex = regexp.MustCompile(`^0x[a-fA-F0-9]{40}$`)
+
+type registerWithWalletRequest struct {
+    SignedMessage string `json:"signed_message"`
+    WalletAddress string `json:"wallet_address"`
+}
+
+func (r *registerWithWalletRequest) Parse(ctx *fiber.Ctx) *customerror.Err {
+    if err := ctx.BodyParser(r); err != nil {
+        return customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, err)
+    }
+    return nil
+}
+
+func (r *registerWithWalletRequest) IsValid() *customerror.Err {
+    if len(r.SignedMessage) == 0 {
+        return customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, 
+            errors.New("signed message is required"))
+    }
+    if len(r.WalletAddress) == 0 {
+        return customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, 
+            errors.New("wallet address is required"))
+    }
+    if !ethAddressRegex.MatchString(r.WalletAddress) {
+        return customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, 
+            errors.New("invalid wallet address"))
+    }
+    return nil
+}
+```
+
+### 3. Frontend Implementation
+
+```typescript
+import { DefaultApi } from '@decm/api';
+
+class AuthService {
+  private api = new DefaultApi({
+    basePath: 'http://localhost:8080/api/v1'
+  });
+
+  async getSignMessage(): Promise<string> {
+    const response = await this.api.getRegisterSignMessage();
+    return response.message;
+  }
+
+  async registerWithWallet(walletAddress: string, signedMessage: string): Promise<void> {
+    await this.api.registerWithWallet({
+      signed_message: signedMessage,
+      wallet_address: walletAddress
+    });
+    // JWT cookie automatically set by server
+  }
+
+  // Web3 integration example
+  async connectAndRegister(web3Provider: any) {
+    try {
+      // Get accounts
+      const accounts = await web3Provider.request({
+        method: 'eth_requestAccounts'
+      });
+      const walletAddress = accounts[0];
+
+      // Get message to sign
+      const message = await this.getSignMessage();
+      
+      // Sign message
+      const signedMessage = await web3Provider.request({
+        method: 'personal_sign',
+        params: [message, walletAddress]
+      });
+
+      // Register with backend
+      await this.registerWithWallet(walletAddress, signedMessage);
+      
+      return { success: true, walletAddress };
+    } catch (error) {
+      console.error('Registration failed:', error);
+      throw error;
+    }
+  }
+}
+```
+
+## Security Best Practices
+
+### JWT Session Management
+- **HTTP-Only Cookies**: Prevents XSS access to tokens
+- **Secure Flag**: HTTPS only in production
+- **SameSite**: CSRF protection
+- **Expiration**: Time-limited sessions
+
+### Wallet Security
+- **Message Signing**: Proves wallet ownership without exposing private key
+- **Address Validation**: Regex pattern validation for Ethereum addresses
+- **Signature Verification**: Server-side cryptographic verification
+
+### Error Handling
+```go
+// Custom error types prevent information leakage
+type ErrResponse struct {
+    Message string `json:"message"`
+}
+
+// Generic error messages for security
+customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, err)
+```
+
+### Database Security
+- **PII Encryption**: All personal data encrypted with pgcrypto
+- **Type Safety**: sqlc generates type-safe database operations
+- **Connection Pooling**: Secure connection management
+
+## Available Endpoints
+
+### Authentication Routes
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/onboard/sign-message` | Get message for wallet signing |
+| POST | `/api/v1/onboard/register-with-wallet` | Register with signed wallet message |
+
+### Health & Documentation
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | Health check (liveness) |
+| GET | `/ready` | Readiness probe |
+| GET | `/swagger/` | Interactive API documentation |
+
+## Development Testing
+
+### Backend Testing
+```bash
+# Start services
+bun compose:up     # PostgreSQL
+bun backend:dev    # Go API server
+
+# Test endpoints
+curl http://localhost:8080/onboard/sign-message
+curl -X POST http://localhost:8080/api/v1/onboard/register-with-wallet \
+  -H "Content-Type: application/json" \
+  -d '{"signed_message":"0x...", "wallet_address":"0x..."}'
+```
+
+### Frontend Integration
+```bash
+# Generate TypeScript client
+bun gen-api
+
+# Start development server
+bun dev
+```
+
+## Security Configuration
+
+### Environment Variables
+```bash
+# JWT signing key
+JWT_SECRET=your-secret-key
+
+# Session duration  
+SESSION_EXPIRATION=24h
+
+# Database encryption
+PII_ENCRYPTION_KEY=your-encryption-key
+
+# Environment
+ENVIRONMENT=development|production
+```
+
+### Production Considerations
+- Use HTTPS for all communication
+- Implement rate limiting on authentication endpoints
+- Monitor for suspicious wallet activities
+- Regular security audits of smart contracts
+- Backup and recovery procedures for encrypted data

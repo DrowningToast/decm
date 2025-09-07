@@ -24,7 +24,7 @@ info:
   title: DECM Core
   version: "1.0"
 paths:
-  /onboard/register-with-wallet:
+  /api/v1/onboard/register-with-wallet:
     post:
       consumes:
       - application/json
@@ -53,7 +53,7 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Register a new user with wallet address
-  /onboard/sign-message:
+  /api/v1/onboard/sign-message:
     get:
       description: Retrieve preset message for the client to sign to register
       operationId: get-register-sign-message

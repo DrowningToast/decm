@@ -13,7 +13,7 @@ type getRegisterSignMessageResponse struct {
 // @ID get-register-sign-message
 // @Produce json
 // @Success 200 {object} getRegisterSignMessageResponse
-// @Router /onboard/sign-message [get]
+// @Router /api/v1/onboard/sign-message [get]
 func (h Handler) GetRegisterSignMessage(ctx *fiber.Ctx) error {
 	message := h.OnboardUc.GetRegisterSignMessage()
 

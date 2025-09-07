@@ -25,13 +25,46 @@ bun dev                 # React development server
 
 ## API Development Cycle
 
-### 1. Add Backend Endpoint
+### 1. Add Backend Endpoint - Examples
 ```go
-// @Summary Description
-// @Tags category  
-// @Router /path [method]
-func handlerName(c *fiber.Ctx) error {
-    // Implementation
+// GET endpoint with response struct
+// @Summary Get preset message for the client to sign to register
+// @Description Retrieve preset message for the client to sign to register
+// @ID get-register-sign-message
+// @Produce json
+// @Success 200 {object} getRegisterSignMessageResponse
+// @Router /onboard/sign-message [get]
+func (h Handler) GetRegisterSignMessage(ctx *fiber.Ctx) error {
+    message := h.OnboardUc.GetRegisterSignMessage()
+    response := getRegisterSignMessageResponse{Message: message}
+    return ctx.Status(fiber.StatusOK).JSON(response)
+}
+
+// POST with validation and authentication
+// @Summary Register a new user with wallet address
+// @Description Register a new user with wallet address  
+// @ID register-with-wallet
+// @Param signed_message body string true "Signed message"
+// @Param wallet_address body string true "Wallet address"
+// @Accept json
+// @Produce json
+// @Success 200
+// @Failure 400 {object} customerror.ErrResponse
+// @Router /onboard/register-with-wallet [post]
+func (h Handler) RegisterWithWallet(ctx *fiber.Ctx) error {
+    // Parse and validate request
+    requestBody := registerWithWalletRequest{}
+    if err := requestBody.Parse(ctx); err != nil {
+        return *err
+    }
+    if err := requestBody.IsValid(); err != nil {
+        return *err
+    }
+    // Business logic + JWT session management
+    jwt, err := h.OnboardUc.RegisterWithWalletAddress(...)
+    cookie := &fiber.Cookie{Name: "session", Value: *jwt, ...}
+    ctx.Cookie(cookie)
+    return ctx.Status(fiber.StatusOK).Send([]byte(""))
 }
 ```
 
@@ -40,10 +73,39 @@ func handlerName(c *fiber.Ctx) error {
 bun gen-api             # Full pipeline: docs → client → build
 ```
 
-### 3. Use in Frontend
+### 3. Use in Frontend - Authentication Flow
 ```typescript
-import { ApiClass } from '@decm/api';
-const api = new ApiClass({ basePath: 'http://localhost:8080/api/v1' });
+import { DefaultApi } from '@decm/api';
+
+const api = new DefaultApi({ 
+  basePath: 'http://localhost:8080/api/v1' 
+});
+
+// Complete wallet registration flow
+async function registerUser(web3Provider: any) {
+  // 1. Get wallet address
+  const accounts = await web3Provider.request({ 
+    method: 'eth_requestAccounts' 
+  });
+  const walletAddress = accounts[0];
+
+  // 2. Get message to sign
+  const { message } = await api.getRegisterSignMessage();
+
+  // 3. Sign message with wallet
+  const signedMessage = await web3Provider.request({
+    method: 'personal_sign',
+    params: [message, walletAddress]
+  });
+
+  // 4. Register with backend (sets JWT cookie)
+  await api.registerWithWallet({
+    signed_message: signedMessage,
+    wallet_address: walletAddress
+  });
+
+  console.log('User registered successfully!');
+}
 ```
 
 ## Essential Commands
@@ -106,9 +168,16 @@ bun backend:docs && bun gen-api
 - Follow academic identity verification patterns
 
 ### Blockchain Integration
-- NFT ticket generation for events
-- Digital credential issuance
-- Web3 wallet authentication
+- **Wallet Authentication**: Message signing for user registration
+- **NFT Tickets**: Generation for events (coming soon)
+- **Digital Credentials**: Issuance and verification (coming soon)
+- **Session Management**: JWT cookies with wallet-based authentication
+
+### Current Authentication Endpoints
+```
+GET  /api/v1/onboard/sign-message       # Get message for wallet signing
+POST /api/v1/onboard/register-with-wallet  # Register with signed message
+```
 
 ### Academic Features
 - LDAP integration for institutional verification

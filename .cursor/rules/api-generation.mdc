@@ -17,7 +17,7 @@ bun backend:docs  # Generate OpenAPI docs only (faster)
 
 ## Adding New Endpoints
 
-### 1. Backend (Go)
+### 1. Backend (Go) - Basic Pattern
 ```go
 // @Summary Description
 // @Tags category
@@ -31,20 +31,76 @@ func handlerName(c *fiber.Ctx) error {
 }
 ```
 
-### 2. Generate Client
+### 2. Real Examples - Onboard Endpoints
+```go
+// GET endpoint with response struct
+// @Summary Get preset message for the client to sign to register
+// @Description Retrieve preset message for the client to sign to register
+// @ID get-register-sign-message
+// @Produce json
+// @Success 200 {object} getRegisterSignMessageResponse
+// @Router /onboard/sign-message [get]
+func (h Handler) GetRegisterSignMessage(ctx *fiber.Ctx) error {
+    message := h.OnboardUc.GetRegisterSignMessage()
+    response := getRegisterSignMessageResponse{Message: message}
+    return ctx.Status(fiber.StatusOK).JSON(response)
+}
+
+// POST endpoint with validation and error handling
+// @Summary Register a new user with wallet address  
+// @Description Register a new user with wallet address
+// @ID register-with-wallet
+// @Param signed_message body string true "Signed message"
+// @Param wallet_address body string true "Wallet address" 
+// @Accept json
+// @Produce json
+// @Success 200
+// @Failure 400 {object} customerror.ErrResponse
+// @Router /onboard/register-with-wallet [post]
+func (h Handler) RegisterWithWallet(ctx *fiber.Ctx) error {
+    requestBody := registerWithWalletRequest{}
+    if err := requestBody.Parse(ctx); err != nil {
+        return *err
+    }
+    if err := requestBody.IsValid(); err != nil {
+        return *err 
+    }
+    // Business logic + JWT cookie setting
+    jwt, err := h.OnboardUc.RegisterWithWalletAddress(...)
+    cookie := &fiber.Cookie{Name: "session", Value: *jwt, Expires: time.Now().Add(h.SessionExpiration)}
+    ctx.Cookie(cookie)
+    return ctx.Status(fiber.StatusOK).Send([]byte(""))
+}
+```
+
+### 3. Generate Client
 ```bash
 bun gen-api
 ```
 
-### 3. Frontend Usage
+### 4. Frontend Usage - Generated TypeScript Client
 ```typescript
-import { ApiClass } from '@decm/api';
+import { DefaultApi } from '@decm/api';
 
-const api = new ApiClass({
+const api = new DefaultApi({
   basePath: 'http://localhost:8080/api/v1'
 });
 
-const result = await api.methodName(); // Fully typed!
+// GET endpoint usage
+const signMessage = await api.getRegisterSignMessage();
+console.log(signMessage.message); // Fully typed!
+
+// POST endpoint with validation
+try {
+  await api.registerWithWallet({
+    signed_message: signedMessage,
+    wallet_address: walletAddress
+  });
+  // Success - user registered and JWT cookie set
+} catch (error) {
+  // Handle 400 validation errors automatically typed
+  console.error('Registration failed:', error);
+}
 ```
 
 ## Generated Structure
