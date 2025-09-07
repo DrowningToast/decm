@@ -17,6 +17,8 @@ const (
 	SolutionStatusBYOK    SolutionStatus = 1
 )
 
+// User represented by an authentication credential
+// @description User represented by an authentication credential
 type AuthenticationCredential struct {
 	Id             uuid.UUID      `json:"id"`
 	SolutionStatus SolutionStatus `json:"solution_status"`
@@ -33,7 +35,7 @@ type AuthenticationCredential struct {
 	IsVerifiedStudent   bool      `json:"is_verified_student"`
 	CreatedAt           time.Time `json:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at"`
-}
+} // @name AuthenticationCredential
 
 func (entity *AuthenticationCredential) ToModel() *generated.AuthenticationCredential {
 	var isVerifiedStudent int32 = 0

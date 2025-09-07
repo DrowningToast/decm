@@ -30,7 +30,7 @@
       "cache": false,
       "persistent": true
     },
-    "backend:build": {
+    "build:core": {
       "inputs": [
         "$TURBO_DEFAULT$",
         ".env*"
@@ -39,11 +39,11 @@
         "bin/**"
       ]
     },
-    "backend:dev": {
+    "dev:core": {
       "cache": false,
       "persistent": true
     },
-    "backend:docs": {
+    "docs:core": {
       "inputs": [
         "apps/backend/**/*.go"
       ],
@@ -53,7 +53,7 @@
     },
     "gen-api": {
       "dependsOn": [
-        "backend:docs"
+        "docs:core"
       ],
       "inputs": [
         "apps/backend/docs/**",

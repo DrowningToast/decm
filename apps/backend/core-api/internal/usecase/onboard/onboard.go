@@ -3,10 +3,9 @@ package usecase
 import (
 	"context"
 	"errors"
-	"regexp"
 
 	"apps/backend/common"
-	customerror "apps/backend/common/CustomError"
+	customerror "apps/backend/common/customerror"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/cyptoutils"
@@ -16,22 +15,20 @@ import (
 )
 
 type OnboardUsecase struct {
-	RegisterSignMessage string
+	registerSignMessage string
 
 	AuthenticationCredentialDg datagateway.AuthenticationCredentialDataGateway
 }
 
-func NewOnboardUsecase(registerSignMessage string, authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway) *OnboardUsecase {
+func NewOnboardUsecase(authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway) *OnboardUsecase {
 	return &OnboardUsecase{
-		RegisterSignMessage:        registerSignMessage,
+		registerSignMessage:        "Please sign this message to prove your ownership of the wallet",
 		AuthenticationCredentialDg: authenticationCredentialDg,
 	}
 }
 
-var ethAddressRegex = regexp.MustCompile(`^0x[a-fA-F0-9]{40}$`)
-
 func (u *OnboardUsecase) GetRegisterSignMessage() string {
-	return u.RegisterSignMessage
+	return u.registerSignMessage
 }
 
 // Register authentication credential with wallet address, and generate JWT token
@@ -52,7 +49,7 @@ func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMs
 
 	// Validate the signed message
 	address := ethcommon.HexToAddress(walletAddress)
-	result, err := cyptoutils.VerifySignedMessageByAddress(address, u.RegisterSignMessage, signedMsg)
+	result, err := cyptoutils.VerifySignedMessageByAddress(address, u.registerSignMessage, signedMsg)
 	if err != nil {
 		return nil, customerror.TryParseAsCustomErrWithMsg(&customerror.ErrInternalServer, err, "an error has occured while verifying signed message")
 	}

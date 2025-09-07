@@ -1,4 +1,162 @@
 package main
 
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log/slog"
+	"os"
+	"os/signal"
+	"runtime"
+	"syscall"
+	"time"
+
+	customerror "apps/backend/common/customerror"
+	"apps/backend/common/log"
+	"apps/backend/common/pgclient"
+	"apps/backend/core-api/config"
+	"apps/backend/core-api/internal/handler/onboard"
+	"apps/backend/core-api/internal/repositories/postgres"
+	usecase "apps/backend/core-api/internal/usecase/onboard"
+
+	json "github.com/goccy/go-json"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/favicon"
+	"github.com/gofiber/fiber/v2/middleware/healthcheck"
+	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/fiber/v2/middleware/timeout"
+	"github.com/gofiber/swagger"
+
+	// fiber-swagger middleware
+	_ "apps/backend/docs/core-api"
+)
+
+// @title DECM Core
+// @version 1.0
+// @description DECM (Decentralized Event Management) platform API for NFT ticketing, digital credentials, and academic identity verification.
+// @termsOfService http://swagger.io/terms/
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host localhost:8080
+// @BasePath /
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	cfg := config.LoadConfig()
+	logger := log.LoadLogger()
+
+	pgConn, err := pgclient.NewPool(ctx, &cfg.Postgres)
+	if err != nil {
+		logger.ErrorContext(ctx, "failed to create pgxpool", err)
+		os.Exit(1)
+	}
+	defer func() {
+		pgConn.Close()
+		logger.InfoContext(ctx, "Gracefully closed pgxpool connection")
+	}()
+	logger.Info("Sucessfully connected to pg pool")
+
+	pgRepo := postgres.NewRepository(pgConn, cfg.PIIEncryptionKey)
+
+	onboardUc := usecase.NewOnboardUsecase(pgRepo)
+
+	// Setup HTTP server
+	app := fiber.New(fiber.Config{
+		AppName:            cfg.Name,
+		JSONEncoder:        json.Marshal, // Optimize JSON encoding with go-json
+		JSONDecoder:        json.Unmarshal,
+		ReadBufferSize:     cfg.Api.MaxReadBufferSize,
+		EnableIPValidation: true,
+		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
+			return customerror.GetErrFiberHandler(logger)(ctx, err)
+		},
+	})
+
+	app.Use(favicon.New()).
+		Use(cors.New()).
+		Use(requestid.New()).
+		Use(recover.New(recover.Config{
+			EnableStackTrace: true,
+			StackTraceHandler: func(c *fiber.Ctx, e interface{}) {
+				buf := make([]byte, 1024) // bufLen = 1024
+				buf = buf[:runtime.Stack(buf, false)]
+				logger.ErrorContext(c.UserContext(), "Something went wrong, panic in http handler", slog.Any("panic", e), slog.String("stacktrace", string(buf)))
+			},
+		})).
+		Use(healthcheck.New(healthcheck.Config{
+			LivenessEndpoint: "/",
+			LivenessProbe: func(c *fiber.Ctx) bool {
+				return true
+			},
+			ReadinessEndpoint: "/ready",
+			ReadinessProbe: func(c *fiber.Ctx) bool {
+				if err := pgConn.Ping(ctx); err != nil {
+					return false
+				}
+
+				return true
+			},
+		})).
+		Use(compress.New(compress.Config{
+			Level: compress.LevelDefault,
+		})).
+		Use(timeout.NewWithContext(func(c *fiber.Ctx) error { return c.Next() }, cfg.Api.Timeout))
+
+	// Swagger
+	if config.IsDevelopment() {
+		// programmatically set swagger info
+		app.Get("/swagger/*", swagger.HandlerDefault) // default
+	}
+
+	// API v1
+	apiV1 := app.Group("/api/v1")
+
+	// Onboard handler
+	onboardHandler := onboard.NewHandler(onboardUc)
+	onboardHandler.Mount(apiV1)
+
+	// Start HTTP Server
+	go func() {
+		if err := app.Listen(fmt.Sprintf(":%d", cfg.Port)); err != nil {
+			logger.ErrorContext(ctx, "error while server listening", err.Error())
+			stop() // stop app if HTTP server is stopped
+		}
+	}()
+
+	logger.InfoContext(ctx, "Starting application...",
+		slog.String("name", cfg.Name),
+		slog.String("env", cfg.ENV),
+		slog.Int("port", cfg.Port),
+		slog.Duration("timeout", cfg.Api.Timeout),
+	)
+
+	// Handle slow gracefully shutdown
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		defer logger.InfoContext(ctx, "Gracefully shutting down server")
+
+		go func() {
+			<-ctx.Done()
+			if ctx.Err() == context.DeadlineExceeded {
+				logger.ErrorContext(ctx, "Graceful shutdown timeout, force shutdown", errors.New("graceful shutdown timeout"))
+				os.Exit(1)
+			}
+		}()
+
+		if err := app.ShutdownWithContext(ctx); err != nil {
+			logger.ErrorContext(ctx, "error in shutdown http server", err)
+		} else {
+			logger.InfoContext(ctx, "Gracefully stopped HTTP server")
+		}
+	}()
+
+	// Listen for signals
+	<-ctx.Done()
+	logger.InfoContext(ctx, "Received signal to terminate application")
 }

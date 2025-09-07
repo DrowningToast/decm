@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	customerror "apps/backend/common/CustomError"
-	"apps/backend/common/log"
+	customerror "apps/backend/common/customerror"
 	"apps/backend/core-api/config"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -14,7 +13,6 @@ import (
 
 var (
 	cfg    = config.LoadConfig()
-	logger = log.LoadLogger(cfg.ENV)
 	issuer = "decm-service"
 )
 

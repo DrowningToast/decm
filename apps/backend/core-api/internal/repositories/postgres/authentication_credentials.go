@@ -10,6 +10,7 @@ import (
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -17,7 +18,7 @@ import (
 
 var _ datagateway.AuthenticationCredentialDataGateway = (*Repository)(nil)
 
-func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id int32) (*entity.AuthenticationCredential, *customerror.Err) {
+func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id uuid.UUID) (*entity.AuthenticationCredential, *customerror.Err) {
 	query, err := r.queries.GetAuthenticationCredentialByID(ctx, generated.GetAuthenticationCredentialByIDParams{
 		EncryptionKey: r.piiEncryptionKey,
 		ID:            id,
@@ -117,7 +118,7 @@ func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credent
 	return &entity, nil
 }
 
-func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id int32, params datagateway.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, *customerror.Err) {
+func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params datagateway.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, *customerror.Err) {
 	query, err := r.queries.UpdateAuthenticationCredential(ctx, generated.UpdateAuthenticationCredentialParams{
 		ID:                  id,
 		SolutionStatus:      pgmapper.Int32ToPgInt4(int32(params.SolutionStatus)),
@@ -156,7 +157,7 @@ func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id int3
 	return &entity, nil
 }
 
-func (r *Repository) DeleteAuthenticationCredential(ctx context.Context, id int32) error {
+func (r *Repository) DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error {
 	err := r.queries.DeleteAuthenticationCredential(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

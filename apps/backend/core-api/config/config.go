@@ -40,7 +40,7 @@ type ApiConfig struct {
 }
 
 type JwtConfig struct {
-	SecretKey  string        `env:"SECRET_KEY,required"`
+	SecretKey  string        `env:"SECRET,required"`
 	Expiration time.Duration `env:"EXPIRATION" envDefault:"24h"`
 }
 

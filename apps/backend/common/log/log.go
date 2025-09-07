@@ -1,53 +1,65 @@
 package log
 
 import (
+	"log/slog"
 	"os"
 	"sync"
 
 	"apps/backend/core-api/config"
 
+	sloglogrus "github.com/samber/slog-logrus/v2"
 	"github.com/sirupsen/logrus"
 )
 
 var (
-	Logger     *logrus.Logger
+	Logger     *slog.Logger
 	configOnce sync.Once
 )
 
-func LoadLogger(environment string) *logrus.Logger {
+func LoadLogger() *slog.Logger {
+	cfg := config.LoadConfig()
+	return LoadLoggerInEnvironment(cfg.ENV)
+}
+
+func LoadLoggerInEnvironment(environment string) *slog.Logger {
 	configOnce.Do(
 		func() {
+			logrusLogger := logrus.New()
+			var level slog.Leveler
+
 			if config.IsDevelopment() {
-				logger := logrus.New()
-				logger.SetLevel(logrus.DebugLevel)
-				logger.SetFormatter(&logrus.TextFormatter{
+				level = slog.LevelDebug
+				logrusLogger.SetLevel(logrus.DebugLevel)
+				logrusLogger.SetFormatter(&logrus.TextFormatter{
 					FullTimestamp: true,
 				})
-				logger.SetOutput(os.Stdout)
+				logrusLogger.SetOutput(os.Stdout)
 
-				Logger = logger
 			} else if config.IsTesting() {
-				logger := logrus.New()
-				logger.SetLevel(logrus.DebugLevel)
-				logger.SetFormatter(&logrus.TextFormatter{
+				level = slog.LevelDebug
+				logrusLogger.SetLevel(logrus.DebugLevel)
+				logrusLogger.SetFormatter(&logrus.TextFormatter{
 					FullTimestamp: true,
 				})
-				logger.SetOutput(os.Stdout)
+				logrusLogger.SetOutput(os.Stdout)
 
-				Logger = logger
 			} else if config.IsProduction() {
-				logger := logrus.New()
-				logger.SetLevel(logrus.InfoLevel)
-				logger.SetFormatter(&logrus.TextFormatter{
+				level = slog.LevelInfo
+				logrusLogger.SetLevel(logrus.InfoLevel)
+				logrusLogger.SetFormatter(&logrus.TextFormatter{
 					FullTimestamp: true,
 				})
 				// TODO: Set output to file and stdout
-				logger.SetOutput(os.Stdout)
+				logrusLogger.SetOutput(os.Stdout)
 
-				Logger = logger
 			} else {
 				panic("invalid environment when loading environment level")
 			}
+
+			Logger = slog.New(sloglogrus.Option{
+				Logger: logrusLogger,
+				Level:  level,
+			}.NewLogrusHandler())
 		},
 	)
 

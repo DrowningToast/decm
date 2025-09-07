@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	customerror "apps/backend/common/CustomError"
+	customerror "apps/backend/common/customerror"
 
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"

@@ -5,6 +5,8 @@ import (
 
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
+
+	"github.com/google/uuid"
 )
 
 type UpdateAuthenticationCredentialParameters struct {
@@ -20,9 +22,9 @@ type UpdateAuthenticationCredentialParameters struct {
 }
 
 type AuthenticationCredentialDataGateway interface {
-	GetAuthenticationCredentialById(ctx context.Context, id int32) (*entity.AuthenticationCredential, *customerror.Err)
+	GetAuthenticationCredentialById(ctx context.Context, id uuid.UUID) (*entity.AuthenticationCredential, *customerror.Err)
 	GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (*entity.AuthenticationCredential, *customerror.Err)
 	CreateAuthenticationCredential(ctx context.Context, credential entity.AuthenticationCredential) (*entity.AuthenticationCredential, *customerror.Err)
-	UpdateAuthenticationCredential(ctx context.Context, id int32, params UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, *customerror.Err)
-	DeleteAuthenticationCredential(ctx context.Context, id int32) error
+	UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, *customerror.Err)
+	DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error
 }

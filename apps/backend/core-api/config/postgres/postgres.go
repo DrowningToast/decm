@@ -2,9 +2,11 @@ package postgres
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/tracelog"
+	pgxslog "github.com/mcosta74/pgx-slog"
 )
 
 const (
@@ -31,13 +33,13 @@ func (c *Config) String() string {
 	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", c.User, c.Password, c.Host, c.Port, c.DBName, c.SSLMode)
 }
 
-func (c *Config) QueryTracer() pgx.QueryTracer {
+func (c *Config) QueryTracer(logger slog.Logger) pgx.QueryTracer {
 	loglevel := DefaultLogLevel
 	if c.Debug {
 		loglevel = tracelog.LogLevelTrace
 	}
 	return &tracelog.TraceLog{
-		// Logger:   pgxslog.NewLogger(Log.With("module", "postgres")),
+		Logger:   pgxslog.NewLogger(&logger),
 		LogLevel: loglevel,
 	}
 }
