@@ -1,0 +1,144 @@
+---
+globs: "*.go,*.ts,*.tsx"
+description: "Unified code standards for Go backend and TypeScript/React frontend"
+---
+
+# Code Standards - Go & TypeScript
+
+## Go Backend Standards
+
+### Package Structure
+```go
+package handlers
+
+import (
+    "decm-backend/internal/config"
+    "decm-backend/internal/models"
+    "github.com/gofiber/fiber/v2"
+)
+```
+
+### Swagger Documentation (Required)
+```go
+// createEvent godoc
+// @Summary Create a new event
+// @Description Create event with NFT tickets
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param event body models.Event true "Event data"
+// @Success 201 {object} models.Event
+// @Failure 400 {object} models.APIResponse
+// @Router /events [post]
+func createEvent(c *fiber.Ctx) error {
+    // Implementation
+}
+```
+
+### Error Handling & Patterns
+```go
+// Consistent error responses
+return c.Status(400).JSON(fiber.Map{"error": "Descriptive error message"})
+
+// Context with timeout (required for DB operations)
+ctx, cancel := context.WithTimeout(c.Context(), 30*time.Second)
+defer cancel()
+
+// Database operation
+result, err := h.DB.Queries.GetByID(ctx, id)
+```
+
+### API Structure
+- All routes under `/api/v1` group
+- Environment-based configuration from `../../.env`
+- CORS configured for frontend at `localhost:3000`
+- Error codes: 400 (validation), 404 (not found), 409 (conflict), 500 (server)
+
+## TypeScript & React Standards
+
+### Component Structure
+```tsx
+interface ComponentProps {
+  title: string;
+  optional?: boolean;
+}
+
+export function Component({ title, optional = false }: ComponentProps) {
+  return <div>{title}</div>;
+}
+```
+
+### Import Patterns
+```tsx
+import React from 'react';
+import { ComponentProps } from 'react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+```
+
+### Hooks Usage
+```tsx
+const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+  // handler logic
+}, [dependencies]);
+```
+
+### TypeScript Rules
+- Use **interfaces** over types for object shapes
+- Provide explicit return types for functions
+- Use proper generics for reusable components
+- Functional components with hooks (no class components)
+
+## DECM-Specific Patterns
+
+### Go Backend - Academic Integration
+```go
+// Academic authentication middleware
+app.Use(middleware.AcademicAuth())
+
+// Blockchain wallet verification
+app.Use(middleware.BlockchainAuth())
+```
+
+### TypeScript - API Client Usage
+```typescript
+import { ApiClass } from '@decm/api';
+
+const api = new ApiClass({
+  basePath: 'http://localhost:8080/api/v1'
+});
+
+// Type-safe API calls
+const events = await api.getEvents();
+```
+
+### Configuration Management
+- **Go**: Load from `../../.env` in backend
+- **TypeScript**: Environment variables through build system
+- **Database**: Connection via environment variables only
+
+## Documentation Requirements
+
+### Go Endpoints
+- All endpoints must have Swagger annotations
+- Generate docs: `bun backend:docs`
+- Interactive docs: http://localhost:8080/swagger/
+
+### TypeScript Components
+- Props interfaces for all components
+- JSDoc comments for complex functions
+- Type imports from `@types/react` when needed
+
+## Code Generation
+```bash
+bun db:generate    # SQL → Go structs
+bun gen-api       # OpenAPI → TypeScript client
+bun backend:docs  # Generate Swagger docs
+```
+
+## Validation & Testing
+```bash
+bun lint          # ESLint + TypeScript check
+bun check-types   # TypeScript compilation
+go build cmd/main.go  # Go compilation check
+```

@@ -6,6 +6,8 @@ package generated
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -16,11 +18,11 @@ type Querier interface {
 	CreateAuthenticationCredential(ctx context.Context, arg CreateAuthenticationCredentialParams) (CreateAuthenticationCredentialRow, error)
 	// Profiles CRUD queries with PII encryption
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (CreateProfileRow, error)
-	DeleteAuthenticationCredential(ctx context.Context, id int32) error
-	DeleteProfile(ctx context.Context, id int32) error
-	DeleteProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID int32) error
+	DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error
+	DeleteProfile(ctx context.Context, id uuid.UUID) error
+	DeleteProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) error
 	GetAuthenticationCredentialByID(ctx context.Context, arg GetAuthenticationCredentialByIDParams) (GetAuthenticationCredentialByIDRow, error)
-	GetAuthenticationCredentialByPublicKey(ctx context.Context, arg GetAuthenticationCredentialByPublicKeyParams) (GetAuthenticationCredentialByPublicKeyRow, error)
+	GetAuthenticationCredentialByWalletAddress(ctx context.Context, arg GetAuthenticationCredentialByWalletAddressParams) (GetAuthenticationCredentialByWalletAddressRow, error)
 	GetCredentialsBySolutionStatus(ctx context.Context, arg GetCredentialsBySolutionStatusParams) ([]GetCredentialsBySolutionStatusRow, error)
 	GetCredentialsByVerificationStatus(ctx context.Context, arg GetCredentialsByVerificationStatusParams) ([]GetCredentialsByVerificationStatusRow, error)
 	GetProfileByAuthCredentialID(ctx context.Context, arg GetProfileByAuthCredentialIDParams) (GetProfileByAuthCredentialIDRow, error)

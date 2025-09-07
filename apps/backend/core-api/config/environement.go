@@ -1,0 +1,51 @@
+package config
+
+import (
+	"strings"
+
+	"github.com/cockroachdb/errors"
+)
+
+type Environment string
+
+const (
+	DevelopmentEnvironment Environment = "development"
+	TestingEnvironment     Environment = "testing"
+	ProductionEnvironment  Environment = "production"
+)
+
+// Parse the environment
+func ParseEnvironment(s string) (Environment, error) {
+	switch s {
+	case "development":
+		return DevelopmentEnvironment, nil
+	case "production":
+		return ProductionEnvironment, nil
+	default:
+		return "", errors.New("invalid environment")
+	}
+}
+
+// Case insensitive parse
+func IParseEnvironment(s string) (Environment, error) {
+	return ParseEnvironment(strings.ToLower(s))
+}
+
+func IsDevelopment() bool {
+	cfg := LoadConfig()
+	return cfg.ENV == DevelopmentEnvironment.String()
+}
+
+func IsTesting() bool {
+	cfg := LoadConfig()
+	return cfg.ENV == TestingEnvironment.String()
+}
+
+func IsProduction() bool {
+	cfg := LoadConfig()
+	return cfg.ENV == ProductionEnvironment.String()
+}
+
+func (e Environment) String() string {
+	return string(e)
+}

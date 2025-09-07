@@ -7,15 +7,16 @@ package generated
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type AuthenticationCredential struct {
-	ID                  int32              `json:"id"`
+	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
 	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
-	PublicKey           string             `json:"public_key"`
+	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
 	IsVerifiedOrganizer int32              `json:"is_verified_organizer"`
@@ -25,10 +26,10 @@ type AuthenticationCredential struct {
 }
 
 type Event struct {
-	ID                                   int32              `json:"id"`
+	ID                                   uuid.UUID          `json:"id"`
 	ChainID                              int32              `json:"chain_id"`
 	ContactAddress                       string             `json:"contact_address"`
-	OwnerCredentialID                    int32              `json:"owner_credential_id"`
+	OwnerCredentialID                    uuid.UUID          `json:"owner_credential_id"`
 	Title                                string             `json:"title"`
 	ShortDescription                     string             `json:"short_description"`
 	LongDescription                      pgtype.Text        `json:"long_description"`
@@ -55,9 +56,9 @@ type Event struct {
 }
 
 type EventAttendee struct {
-	ID                          int32              `json:"id"`
-	EventID                     int32              `json:"event_id"`
-	AttendeeCredentialID        int32              `json:"attendee_credential_id"`
+	ID                          uuid.UUID          `json:"id"`
+	EventID                     uuid.UUID          `json:"event_id"`
+	AttendeeCredentialID        uuid.UUID          `json:"attendee_credential_id"`
 	ContactAddress              string             `json:"contact_address"`
 	IsAttendeeAccepted          int32              `json:"is_attendee_accepted"`
 	FirstNameProvided           int32              `json:"first_name_provided"`
@@ -73,17 +74,17 @@ type EventAttendee struct {
 }
 
 type EventCertificate struct {
-	ID           int32              `json:"id"`
-	EventID      int32              `json:"event_id"`
-	CredentialID int32              `json:"credential_id"`
+	ID           uuid.UUID          `json:"id"`
+	EventID      uuid.UUID          `json:"event_id"`
+	CredentialID uuid.UUID          `json:"credential_id"`
 	IsPublished  int32              `json:"is_published"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Profile struct {
-	ID                          int32              `json:"id"`
-	AuthenticationCredentialID  int32              `json:"authentication_credential_id"`
+	ID                          uuid.UUID          `json:"id"`
+	AuthenticationCredentialID  uuid.UUID          `json:"authentication_credential_id"`
 	IsProfilePicturePublic      int32              `json:"is_profile_picture_public"`
 	ProfilePictureUrl           pgtype.Text        `json:"profile_picture_url"`
 	IsFirstNamePublic           int32              `json:"is_first_name_public"`

@@ -20,7 +20,7 @@ DROP INDEX IF EXISTS idx_events_id;
 DROP INDEX IF EXISTS idx_events_owner_credential_id;
 DROP INDEX IF EXISTS idx_profiles_id;
 DROP INDEX IF EXISTS idx_profiles_authentication_credential_id;
-DROP INDEX IF EXISTS idx_authentication_credentials_public_key;
+DROP INDEX IF EXISTS idx_authentication_credentials_wallet_address;
 DROP INDEX IF EXISTS idx_authentication_credentials_id;
 
 -- Drop tables in reverse order of dependencies

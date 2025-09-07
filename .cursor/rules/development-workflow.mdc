@@ -1,51 +1,34 @@
 ---
-description: "Complete development workflow for DECM platform"
+description: "Streamlined development workflow for DECM platform"
 ---
 
 # DECM Development Workflow
 
-## Full Development Setup
+## Quick Start (3 Terminals)
 
-### Prerequisites Check
-1. **Bun installed**: `bun --version` (required: 1.2+)
-2. **Go installed**: `go version` (required: 1.21+)
-3. **Docker installed**: `docker --version`
-4. **Environment**: Copy `.env.example` to `.env`
-
-### Quick Start (3 Terminals)
-
-#### Terminal 1: Database
+### Terminal 1: Database
 ```bash
-# Start PostgreSQL database
-bun compose:up
-
-# Verify database is running
-docker-compose -f docker-compose.isolated.yml logs postgres
+bun compose:up          # Start PostgreSQL
 ```
 
-#### Terminal 2: Backend API
+### Terminal 2: Backend
 ```bash
-# Start Go Fiber BFF server
-bun backend:dev
-
-# API docs available at: http://localhost:8080/swagger/
+bun backend:dev         # Go Fiber API + auto-migrations
+# Available: http://localhost:8080/swagger/
 ```
 
-#### Terminal 3: Frontend
+### Terminal 3: Frontend
 ```bash
-# Start React development server  
-bun dev
-
-# Frontend available at: http://localhost:3000
+bun dev                 # React development server
+# Available: http://localhost:3000
 ```
 
-## API Development Workflow
+## API Development Cycle
 
-### 1. Add New Endpoint (Backend)
+### 1. Add Backend Endpoint
 ```go
-// Add to apps/backend/api/routes/
 // @Summary Description
-// @Tags category
+// @Tags category  
 // @Router /path [method]
 func handlerName(c *fiber.Ctx) error {
     // Implementation
@@ -54,97 +37,80 @@ func handlerName(c *fiber.Ctx) error {
 
 ### 2. Generate TypeScript Client
 ```bash
-# Full API generation pipeline
-bun gen-api
-
-# Or just update docs
-bun backend:docs
+bun gen-api             # Full pipeline: docs → client → build
 ```
 
 ### 3. Use in Frontend
 ```typescript
 import { ApiClass } from '@decm/api';
-
-const api = new ApiClass({
-  basePath: 'http://localhost:8080/api/v1'
-});
+const api = new ApiClass({ basePath: 'http://localhost:8080/api/v1' });
 ```
 
-## Common Development Tasks
+## Essential Commands
 
-### Database Management
+### Package Management (Bun Only)
 ```bash
-bun compose:up          # Start database
-bun compose:down        # Stop database
-# Connect: docker-compose -f docker-compose.isolated.yml exec postgres psql -U ${DB_USER} -d ${DB_NAME}
+bun install            # Dependencies
+bun dev                # Frontend dev
+bun build             # Production build
+bun lint              # Code linting
 ```
 
 ### Backend Development
 ```bash
-bun backend:dev         # Development server
-bun backend:build       # Build binary
-bun backend:docs        # Update OpenAPI docs
+bun backend:dev       # Development server
+bun backend:build     # Build binary
+bun backend:docs      # OpenAPI docs only
 ```
 
-### Frontend Development  
+### Database Operations
 ```bash
-bun dev                 # React dev server
-bun build              # Production build
-bun lint               # ESLint check
-bun check-types        # TypeScript check
+bun compose:up        # Start PostgreSQL
+bun db:generate       # SQL → Go code generation
+bun db:migrate:up     # Run migrations
+bun db:console        # PostgreSQL CLI
 ```
 
-### API Client Generation
+### API Generation
 ```bash
-bun gen-api            # Complete: docs → TypeScript → build
-bun backend:docs       # Just generate OpenAPI docs (faster)
+bun gen-api          # Complete: OpenAPI → TypeScript → build
+bun backend:docs     # Just update OpenAPI docs (faster)
 ```
-
-## Project Structure Context
-
-### Main Applications
-- **Frontend**: [apps/src/](mdc:apps/src/) - React + Tailwind + Radix UI
-- **Backend**: [apps/backend/](mdc:apps/backend/) - Go Fiber BFF API
-- **API Client**: [packages/api/](mdc:packages/api/) - Generated TypeScript client
-
-### Key Configuration Files
-- [package.json](mdc:package.json) - Root scripts and workspace config
-- [turbo.json](mdc:turbo.json) - Build orchestration
-- [docker-compose.isolated.yml](mdc:docker-compose.isolated.yml) - Database services
-- [.env.example](mdc:.env.example) - Environment template
-
-### Development Endpoints
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8080/api/v1
-- **API Docs**: http://localhost:8080/swagger/
-- **Database**: localhost:5432
 
 ## Troubleshooting
 
 ### Package Manager Error
-If you see `Unsupported package manager specification (bun@1.2.10)`:
-- **Fix**: Use `bun` instead of `npm`/`pnpm`/`yarn`
+Error: `Unsupported package manager specification (bun@1.2.10)`
+**Fix**: Use `bun` instead of npm/pnpm/yarn
 
-### Database Connection Issues
-- **Check**: `bun compose:up` and wait for health check
-- **Verify**: Database logs with `docker-compose -f docker-compose.isolated.yml logs postgres`
+### Database Issues
+```bash
+# Check database health
+bun compose:up
+docker-compose -f docker-compose.isolated.yml logs postgres
+```
 
 ### API Generation Fails
-- **Ensure**: Backend is buildable (`go build cmd/main.go`)
-- **Check**: OpenAPI annotations are valid
-- **Run**: `bun backend:docs` first, then `bun gen-api`
+```bash
+# Verify backend builds
+cd apps/backend && go build cmd/main.go
+# Then retry
+bun backend:docs && bun gen-api
+```
 
-### Type Errors in Frontend
-- **Update**: API client with `bun gen-api`
-- **Check**: TypeScript compilation with `bun check-types`
+## DECM-Specific Development
 
-## DECM-Specific Features
+### Security Considerations
+- Encrypt all PII with pgcrypto
+- Use sqlc for type-safe database operations
+- Follow academic identity verification patterns
 
-When developing DECM platform features:
-- **Events**: NFT-based ticketing system
-- **Identity**: Academic verification via LDAP
-- **Credentials**: Blockchain-based certificates
-- **Portfolio**: User achievement collections
-- **Evaluation**: Community feedback system
+### Blockchain Integration
+- NFT ticket generation for events
+- Digital credential issuance
+- Web3 wallet authentication
 
-Always consider Web 3.0 principles: user data ownership, decentralization, blockchain integration.
+### Academic Features
+- LDAP integration for institutional verification
+- "Verify Once, Use Everywhere" identity
+- Multi-institution support

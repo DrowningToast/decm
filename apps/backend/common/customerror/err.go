@@ -1,5 +1,7 @@
 package customerror
 
+import "github.com/cockroachdb/errors"
+
 type Err struct {
 	HttpStatus *int     `json:"http_status"`
 	Code       *ErrCode `json:"code"`
@@ -10,6 +12,24 @@ type Err struct {
 
 func (e Err) Error() string {
 	return e.Message + e.Inner.Error()
+}
+
+func (err Err) ExtendWithError(e error) *Err {
+	return &Err{
+		HttpStatus: err.HttpStatus,
+		Code:       err.Code,
+		Message:    errors.Wrap(err, e.Error()).Error(),
+		Inner:      e,
+	}
+}
+
+func (err Err) Extend(msg string) *Err {
+	return &Err{
+		HttpStatus: err.HttpStatus,
+		Code:       err.Code,
+		Message:    errors.Wrap(err, msg).Error(),
+		Inner:      err,
+	}
 }
 
 func TryParseAsCustomErr(preset *ErrSignature, err error) *Err {

@@ -34,7 +34,7 @@ func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id int
 		SolutionStatus:      query.SolutionStatus,
 		HashedPassword:      query.HashedPassword,
 		EncryptedPrivateKey: query.EncryptedPrivateKey,
-		PublicKey:           query.PublicKey,
+		WalletAddress:       query.WalletAddress,
 		GoogleConnectorRef:  query.GoogleConnectorRef,
 		GithubConnectorRef:  query.GithubConnectorRef,
 		IsVerifiedOrganizer: query.IsVerifiedOrganizer,
@@ -47,10 +47,10 @@ func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id int
 	return &entity, nil
 }
 
-func (r *Repository) GetAuthenticationCredentialByPublicKey(ctx context.Context, publicKey string) (*entity.AuthenticationCredential, *customerror.Err) {
-	query, err := r.queries.GetAuthenticationCredentialByPublicKey(ctx, generated.GetAuthenticationCredentialByPublicKeyParams{
+func (r *Repository) GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (*entity.AuthenticationCredential, *customerror.Err) {
+	query, err := r.queries.GetAuthenticationCredentialByWalletAddress(ctx, generated.GetAuthenticationCredentialByWalletAddressParams{
 		EncryptionKey: r.piiEncryptionKey,
-		PublicKey:     publicKey,
+		WalletAddress: walletAddress,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -64,7 +64,7 @@ func (r *Repository) GetAuthenticationCredentialByPublicKey(ctx context.Context,
 		SolutionStatus:      query.SolutionStatus,
 		HashedPassword:      query.HashedPassword,
 		EncryptedPrivateKey: query.EncryptedPrivateKey,
-		PublicKey:           query.PublicKey,
+		WalletAddress:       query.WalletAddress,
 		GoogleConnectorRef:  query.GoogleConnectorRef,
 		GithubConnectorRef:  query.GithubConnectorRef,
 		IsVerifiedOrganizer: query.IsVerifiedOrganizer,
@@ -80,7 +80,7 @@ func (r *Repository) GetAuthenticationCredentialByPublicKey(ctx context.Context,
 func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credential entity.AuthenticationCredential) (*entity.AuthenticationCredential, *customerror.Err) {
 	query, err := r.queries.CreateAuthenticationCredential(ctx, generated.CreateAuthenticationCredentialParams{
 		SolutionStatus:      int32(credential.SolutionStatus),
-		PublicKey:           credential.PublicKey,
+		WalletAddress:       credential.WalletAddress,
 		HashedPassword:      pgmapper.StringPtrToPgText(credential.HashedPassword),
 		EncryptedPrivateKey: pgmapper.StringPtrToPgText(credential.EncryptedPrivateKey),
 		GoogleConnectorRef:  pgmapper.StringPtrToPgText(credential.GoogleConnectorRef),
@@ -104,7 +104,7 @@ func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credent
 		SolutionStatus:      query.SolutionStatus,
 		HashedPassword:      query.HashedPassword,
 		EncryptedPrivateKey: query.EncryptedPrivateKey,
-		PublicKey:           query.PublicKey,
+		WalletAddress:       query.WalletAddress,
 		GoogleConnectorRef:  query.GoogleConnectorRef,
 		GithubConnectorRef:  query.GithubConnectorRef,
 		IsVerifiedOrganizer: query.IsVerifiedOrganizer,
@@ -143,7 +143,7 @@ func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id int3
 		SolutionStatus:      query.SolutionStatus,
 		HashedPassword:      query.HashedPassword,
 		EncryptedPrivateKey: query.EncryptedPrivateKey,
-		PublicKey:           query.PublicKey,
+		WalletAddress:       query.WalletAddress,
 		GoogleConnectorRef:  query.GoogleConnectorRef,
 		GithubConnectorRef:  query.GithubConnectorRef,
 		IsVerifiedOrganizer: query.IsVerifiedOrganizer,

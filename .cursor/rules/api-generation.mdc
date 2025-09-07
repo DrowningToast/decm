@@ -1,44 +1,29 @@
 ---
-description: "API generation system for TypeScript client from Go backend"
+description: "Streamlined API generation system for TypeScript client from Go backend"
 ---
 
-# API Generation System
+# API Generation - OpenAPI to TypeScript
 
-## Overview
-Automatic TypeScript API client generation from Go Fiber backend OpenAPI documentation.
+## Quick Commands
+```bash
+bun gen-api       # Full pipeline: docs → TypeScript client → build
+bun backend:docs  # Generate OpenAPI docs only (faster)
+```
 
 ## Workflow
-1. **Backend**: Go handlers with Swagger annotations
-2. **Generation**: OpenAPI spec → TypeScript client  
-3. **Integration**: Type-safe API calls in frontend
-
-## Key Commands
-```bash
-bun backend:docs   # Generate OpenAPI docs only (fast)
-bun gen-api       # Full pipeline: docs → TypeScript client → build (complete)
-```
-
-## Generated Package Structure
-```
-packages/api/
-├── src/              # Generated TypeScript source
-│   ├── apis/        # API endpoint classes
-│   ├── index.ts     # Main exports
-│   └── runtime.ts   # HTTP client runtime
-└── dist/            # Built JavaScript + type declarations
-```
+1. **Go Backend**: Swagger annotations on handlers
+2. **Generate**: OpenAPI spec → TypeScript client
+3. **Frontend**: Type-safe API calls
 
 ## Adding New Endpoints
 
 ### 1. Backend (Go)
 ```go
-// endpoint godoc
-// @Summary Short description
-// @Description Detailed description
+// @Summary Description
 // @Tags category
 // @Accept json
 // @Produce json
-// @Param data body ModelType true "Description"
+// @Param data body ModelType true "Description" 
 // @Success 200 {object} ResponseType
 // @Router /path [method]
 func handlerName(c *fiber.Ctx) error {
@@ -62,10 +47,30 @@ const api = new ApiClass({
 const result = await api.methodName(); // Fully typed!
 ```
 
-## Files to Reference
-- Backend API docs: [apps/backend/docs/swagger.json](mdc:apps/backend/docs/swagger.json)
-- Generated client: [packages/api/src/index.ts](mdc:packages/api/src/index.ts)
-- Complete guide: [API-GENERATION.md](mdc:API-GENERATION.md)
+## Generated Structure
+```
+packages/api/
+├── src/              # Generated TypeScript source
+│   ├── apis/        # API endpoint classes
+│   ├── index.ts     # Main exports
+│   └── runtime.ts   # HTTP client runtime
+└── dist/            # Built JavaScript + declarations
+```
 
-## Interactive Documentation
-View live API docs at `http://localhost:8080/swagger/` when backend is running.
+## Key Features
+- **Type Safety**: Full TypeScript support
+- **Fetch-based**: Modern HTTP client
+- **Tree Shakeable**: Selective imports
+- **Auto-sync**: Always matches backend API
+
+## Documentation
+- **Interactive**: http://localhost:8080/swagger/
+- **JSON Spec**: http://localhost:8080/docs/swagger.json
+
+## Troubleshooting
+```bash
+# If generation fails
+cd apps/backend && go build cmd/main.go  # Verify backend builds
+bun backend:docs                         # Generate docs first
+bun gen-api                              # Then full pipeline
+```

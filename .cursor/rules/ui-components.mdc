@@ -1,18 +1,16 @@
 ---
-globs: "apps/src/components/**/*.tsx"
+globs: "apps/web/src/components/**/*.tsx"
+description: "UI component patterns using Radix UI and Tailwind CSS"
 ---
 
-# UI Components Development Guidelines
+# UI Components - Radix UI + Tailwind
 
-## Component Architecture
-This project uses **Radix UI** primitives with **Tailwind CSS** and **class-variance-authority** for component variants.
+## Component Pattern
+Using **Radix UI** primitives with **Tailwind CSS** and **class-variance-authority**.
 
-## Base UI Components Location
-All reusable UI components are in [apps/src/components/ui/](mdc:apps/src/components/ui/)
+Base components in [apps/web/src/components/ui/](mdc:apps/web/src/components/ui/)
 
-## Component Pattern Example
-Reference the [Button component](mdc:apps/src/components/ui/button.tsx) for the standard pattern:
-
+## Standard Pattern
 ```tsx
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
@@ -21,19 +19,10 @@ const componentVariants = cva(
   "base-classes",
   {
     variants: {
-      variant: {
-        default: "default-styles",
-        // ... other variants
-      },
-      size: {
-        default: "default-size",
-        // ... other sizes
-      },
+      variant: { default: "default-styles" },
+      size: { default: "default-size" },
     },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
+    defaultVariants: { variant: "default", size: "default" },
   }
 )
 
@@ -55,14 +44,12 @@ function Component({ className, variant, size, ...props }:
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
-// Radix UI primitives as needed
 import { Slot } from "@radix-ui/react-slot"
 ```
 
-## Component Guidelines
-- Use `cn()` utility from [apps/src/lib/utils.ts](mdc:apps/src/lib/utils.ts) for className merging
-- Implement proper TypeScript interfaces extending `React.ComponentProps`
-- Use `cva` for variant-based styling
-- Support `asChild` pattern with Radix Slot when appropriate
-- Include `data-slot` attributes for component identification
-- Export both component and variants for external use
+## Guidelines
+- Use `cn()` utility for className merging
+- TypeScript interfaces extending `React.ComponentProps`
+- `cva` for variant-based styling  
+- Support `asChild` pattern with Radix Slot
+- Export component and variants

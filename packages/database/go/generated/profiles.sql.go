@@ -8,6 +8,7 @@ package generated
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -162,7 +163,7 @@ INSERT INTO profiles (
 `
 
 type CreateProfileParams struct {
-	AuthenticationCredentialID  int32       `json:"authentication_credential_id"`
+	AuthenticationCredentialID  uuid.UUID   `json:"authentication_credential_id"`
 	IsProfilePicturePublic      int32       `json:"is_profile_picture_public"`
 	ProfilePictureUrl           pgtype.Text `json:"profile_picture_url"`
 	EncryptionKey               pgtype.Text `json:"encryption_key"`
@@ -185,8 +186,8 @@ type CreateProfileParams struct {
 }
 
 type CreateProfileRow struct {
-	ID                          int32              `json:"id"`
-	AuthenticationCredentialID  int32              `json:"authentication_credential_id"`
+	ID                          uuid.UUID          `json:"id"`
+	AuthenticationCredentialID  uuid.UUID          `json:"authentication_credential_id"`
 	IsProfilePicturePublic      int32              `json:"is_profile_picture_public"`
 	ProfilePictureUrl           pgtype.Text        `json:"profile_picture_url"`
 	IsFirstNamePublic           int32              `json:"is_first_name_public"`
@@ -265,7 +266,7 @@ const DeleteProfile = `-- name: DeleteProfile :exec
 DELETE FROM profiles WHERE id = $1
 `
 
-func (q *Queries) DeleteProfile(ctx context.Context, id int32) error {
+func (q *Queries) DeleteProfile(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, DeleteProfile, id)
 	return err
 }
@@ -274,7 +275,7 @@ const DeleteProfileByAuthCredentialID = `-- name: DeleteProfileByAuthCredentialI
 DELETE FROM profiles WHERE authentication_credential_id = $1
 `
 
-func (q *Queries) DeleteProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID int32) error {
+func (q *Queries) DeleteProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, DeleteProfileByAuthCredentialID, authenticationCredentialID)
 	return err
 }
@@ -345,12 +346,12 @@ WHERE authentication_credential_id = $2
 
 type GetProfileByAuthCredentialIDParams struct {
 	EncryptionKey              pgtype.Text `json:"encryption_key"`
-	AuthenticationCredentialID int32       `json:"authentication_credential_id"`
+	AuthenticationCredentialID uuid.UUID   `json:"authentication_credential_id"`
 }
 
 type GetProfileByAuthCredentialIDRow struct {
-	ID                          int32              `json:"id"`
-	AuthenticationCredentialID  int32              `json:"authentication_credential_id"`
+	ID                          uuid.UUID          `json:"id"`
+	AuthenticationCredentialID  uuid.UUID          `json:"authentication_credential_id"`
 	IsProfilePicturePublic      int32              `json:"is_profile_picture_public"`
 	ProfilePictureUrl           pgtype.Text        `json:"profile_picture_url"`
 	IsFirstNamePublic           int32              `json:"is_first_name_public"`
@@ -474,8 +475,8 @@ type GetProfileByEmailParams struct {
 }
 
 type GetProfileByEmailRow struct {
-	ID                          int32              `json:"id"`
-	AuthenticationCredentialID  int32              `json:"authentication_credential_id"`
+	ID                          uuid.UUID          `json:"id"`
+	AuthenticationCredentialID  uuid.UUID          `json:"authentication_credential_id"`
 	IsProfilePicturePublic      int32              `json:"is_profile_picture_public"`
 	ProfilePictureUrl           pgtype.Text        `json:"profile_picture_url"`
 	IsFirstNamePublic           int32              `json:"is_first_name_public"`
@@ -596,12 +597,12 @@ WHERE id = $2
 
 type GetProfileByIDParams struct {
 	EncryptionKey pgtype.Text `json:"encryption_key"`
-	ID            int32       `json:"id"`
+	ID            uuid.UUID   `json:"id"`
 }
 
 type GetProfileByIDRow struct {
-	ID                          int32              `json:"id"`
-	AuthenticationCredentialID  int32              `json:"authentication_credential_id"`
+	ID                          uuid.UUID          `json:"id"`
+	AuthenticationCredentialID  uuid.UUID          `json:"authentication_credential_id"`
 	IsProfilePicturePublic      int32              `json:"is_profile_picture_public"`
 	ProfilePictureUrl           pgtype.Text        `json:"profile_picture_url"`
 	IsFirstNamePublic           int32              `json:"is_first_name_public"`
@@ -726,8 +727,8 @@ type ListProfilesParams struct {
 }
 
 type ListProfilesRow struct {
-	ID                          int32              `json:"id"`
-	AuthenticationCredentialID  int32              `json:"authentication_credential_id"`
+	ID                          uuid.UUID          `json:"id"`
+	AuthenticationCredentialID  uuid.UUID          `json:"authentication_credential_id"`
 	IsProfilePicturePublic      int32              `json:"is_profile_picture_public"`
 	ProfilePictureUrl           pgtype.Text        `json:"profile_picture_url"`
 	IsFirstNamePublic           int32              `json:"is_first_name_public"`
@@ -932,12 +933,12 @@ type UpdateProfileParams struct {
 	AcademicInstitution         pgtype.Text `json:"academic_institution"`
 	IsAcademicEmailPublic       pgtype.Int4 `json:"is_academic_email_public"`
 	AcademicEmail               pgtype.Text `json:"academic_email"`
-	ID                          int32       `json:"id"`
+	ID                          uuid.UUID   `json:"id"`
 }
 
 type UpdateProfileRow struct {
-	ID                          int32              `json:"id"`
-	AuthenticationCredentialID  int32              `json:"authentication_credential_id"`
+	ID                          uuid.UUID          `json:"id"`
+	AuthenticationCredentialID  uuid.UUID          `json:"authentication_credential_id"`
 	IsProfilePicturePublic      int32              `json:"is_profile_picture_public"`
 	ProfilePictureUrl           pgtype.Text        `json:"profile_picture_url"`
 	IsFirstNamePublic           int32              `json:"is_first_name_public"`

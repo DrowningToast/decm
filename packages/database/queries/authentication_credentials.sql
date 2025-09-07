@@ -5,7 +5,7 @@ INSERT INTO authentication_credentials (
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     google_connector_ref,
     github_connector_ref,
     is_verified_organizer,
@@ -14,7 +14,7 @@ INSERT INTO authentication_credentials (
     sqlc.arg(solution_status),
     sqlc.narg(hashed_password),
     sqlc.narg(encrypted_private_key),
-    sqlc.arg(public_key),
+    sqlc.arg(wallet_address),
     CASE 
         WHEN sqlc.narg(google_connector_ref) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(google_connector_ref), sqlc.arg(encryption_key)::varchar)::varchar
@@ -32,7 +32,7 @@ INSERT INTO authentication_credentials (
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
@@ -54,7 +54,7 @@ SELECT
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
@@ -72,13 +72,13 @@ SELECT
 FROM authentication_credentials 
 WHERE id = sqlc.arg(id);
 
--- name: GetAuthenticationCredentialByPublicKey :one
+-- name: GetAuthenticationCredentialByWalletAddress :one
 SELECT 
     id,
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
@@ -94,7 +94,7 @@ SELECT
     created_at,
     updated_at
 FROM authentication_credentials 
-WHERE public_key = sqlc.arg(public_key);
+WHERE wallet_address = sqlc.arg(wallet_address);
 
 -- name: ListAuthenticationCredentials :many
 SELECT 
@@ -102,7 +102,7 @@ SELECT
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
@@ -126,7 +126,7 @@ UPDATE authentication_credentials SET
     solution_status = COALESCE(sqlc.narg(solution_status), solution_status),
     hashed_password = COALESCE(sqlc.narg(hashed_password), hashed_password),
     encrypted_private_key = COALESCE(sqlc.narg(encrypted_private_key), encrypted_private_key),
-    public_key = COALESCE(sqlc.narg(public_key), public_key),
+    wallet_address = COALESCE(sqlc.narg(wallet_address), wallet_address),
     google_connector_ref = CASE 
         WHEN sqlc.narg(google_connector_ref) IS NOT NULL 
         THEN pgp_sym_encrypt(sqlc.narg(google_connector_ref), sqlc.arg(encryption_key)::varchar)
@@ -146,7 +146,7 @@ RETURNING
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
@@ -172,7 +172,7 @@ RETURNING
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
@@ -191,7 +191,7 @@ RETURNING
 -- name: UpdateAuthenticationCredentialKeys :one
 UPDATE authentication_credentials SET 
     encrypted_private_key = sqlc.narg(encrypted_private_key),
-    public_key = sqlc.narg(public_key),
+    wallet_address = sqlc.narg(wallet_address),
     updated_at = NOW()
 WHERE id = sqlc.arg(id) 
 RETURNING 
@@ -199,7 +199,7 @@ RETURNING
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
@@ -226,7 +226,7 @@ RETURNING
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
@@ -252,7 +252,7 @@ RETURNING
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
@@ -278,7 +278,7 @@ RETURNING
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
@@ -304,7 +304,7 @@ RETURNING
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
@@ -330,7 +330,7 @@ RETURNING
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
@@ -352,7 +352,7 @@ SELECT
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
@@ -379,7 +379,7 @@ SELECT
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
@@ -427,7 +427,7 @@ RETURNING
     solution_status,
     hashed_password,
     encrypted_private_key,
-    public_key,
+    wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
         THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)

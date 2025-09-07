@@ -1,0 +1,74 @@
+---
+alwaysApply: true
+---
+
+# DECM Platform - Core Context
+
+## Project Overview
+**DECM** (Decentralized Event Management) - Web 3.0 platform for NFT ticketing, digital credentials, and academic identity verification.
+
+## Tech Stack
+- **Package Manager**: Bun (REQUIRED - never npm/yarn/pnpm)
+- **Frontend**: React 19 + Tailwind CSS + Radix UI
+- **Backend**: Go Fiber + PostgreSQL + sqlc
+- **Database**: PostgreSQL with pgcrypto for PII encryption
+- **Monorepo**: Turbo + Bun workspaces
+
+## Project Structure
+```
+decm/
+├── apps/
+│   ├── web/                    # React 19 Frontend
+│   └── backend/                # Go Fiber API
+├── packages/
+│   ├── database/               # PostgreSQL + sqlc
+│   ├── api/                   # Generated TypeScript client
+│   └── typescript-config/      # Shared configs
+├── package.json               # Root scripts (use with bun)
+└── docker-compose.isolated.yml # PostgreSQL container
+```
+
+## Key Entry Points
+- **Frontend**: [apps/web/src/index.tsx](mdc:apps/web/src/index.tsx)
+- **Backend**: [apps/backend/cmd/main.go](mdc:apps/backend/cmd/main.go)
+- **Database**: [packages/database/migrations/](mdc:packages/database/migrations/)
+- **Config**: [package.json](mdc:package.json) scripts, [.env.example](mdc:.env.example)
+
+## Core Domains
+1. **Event Management** - Multi-type events with NFT tickets
+2. **Academic Identity** - LDAP verification ("Verify Once, Use Everywhere")
+3. **Digital Credentials** - Blockchain certificates with QR validation
+4. **e-Portfolio** - Personal achievement collections
+5. **Evaluation System** - Reputation and feedback
+
+## Development Endpoints
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8080/api/v1
+- API Docs: http://localhost:8080/swagger/
+- Database: localhost:5432
+
+## Essential Commands
+```bash
+# Setup
+bun install              # Install dependencies
+bun compose:up          # Start database
+bun backend:dev         # Start API (auto-migrations)
+bun dev                 # Start frontend
+
+# Development
+bun gen-api            # Generate TypeScript client
+bun db:generate        # Generate Go from SQL
+bun build              # Production build
+```
+
+## Security Principles
+- **PII Encryption**: All personal data encrypted with pgcrypto
+- **Type Safety**: sqlc generates type-safe Go code
+- **Web 3.0**: User data ownership, blockchain integration
+- **Academic Standards**: LDAP integration for institutional compliance
+
+## Target Users
+- **Students**: Event participation, credential collection
+- **Faculty/Staff**: Event creation, credential issuance
+- **Organizations**: Event hosting, participant verification
+- **External Users**: Public events, professional credentialing

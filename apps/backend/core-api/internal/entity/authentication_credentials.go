@@ -6,24 +6,25 @@ import (
 
 	"apps/backend/common/pgmapper"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type SolutionStatus int32
 
 const (
-	ManagedSolutionStatus SolutionStatus = 0
-	BYOSSolutionStatus    SolutionStatus = 1
+	SolutionStatusManaged SolutionStatus = 0
+	SolutionStatusBYOK    SolutionStatus = 1
 )
 
 type AuthenticationCredential struct {
-	Id             int32          `json:"id"`
+	Id             uuid.UUID      `json:"id"`
 	SolutionStatus SolutionStatus `json:"solution_status"`
 	// Hashed of a hashed password using Argon2id
 	HashedPassword *string `json:"password"`
 	// Encrypted by a hash of password using AES-256-GCM
 	EncryptedPrivateKey *string `json:"private_key"`
-	PublicKey           string  `json:"public_key"`
+	WalletAddress       string  `json:"wallet_address"`
 	// Encrypted by a PII Encryption Key using AES-256-GCM
 	GoogleConnectorRef *string `json:"google_connector_ref"`
 	// Encrypted by a PII Encryption Key using AES-256-GCM
@@ -55,7 +56,7 @@ func (entity *AuthenticationCredential) ToModel() *generated.AuthenticationCrede
 			String: *entity.EncryptedPrivateKey,
 			Valid:  entity.EncryptedPrivateKey != nil,
 		},
-		PublicKey: entity.PublicKey,
+		WalletAddress: entity.WalletAddress,
 		GoogleConnectorRef: pgtype.Text{
 			String: *entity.GoogleConnectorRef,
 			Valid:  entity.GoogleConnectorRef != nil,
@@ -83,7 +84,7 @@ func MapAuthenticationCredentialToEntity(model generated.AuthenticationCredentia
 		SolutionStatus:      SolutionStatus(model.SolutionStatus),
 		HashedPassword:      pgmapper.PgTextToStringPtr(model.HashedPassword),
 		EncryptedPrivateKey: pgmapper.PgTextToStringPtr(model.EncryptedPrivateKey),
-		PublicKey:           model.PublicKey,
+		WalletAddress:       model.WalletAddress,
 		GoogleConnectorRef:  pgmapper.PgTextToStringPtr(model.GoogleConnectorRef),
 		GithubConnectorRef:  pgmapper.PgTextToStringPtr(model.GithubConnectorRef),
 		IsVerifiedOrganizer: model.IsVerifiedOrganizer == 1,
@@ -101,7 +102,7 @@ func MapAuthenticationCredentialsToEntities(models []generated.AuthenticationCre
 			SolutionStatus:      SolutionStatus(model.SolutionStatus),
 			HashedPassword:      pgmapper.PgTextToStringPtr(model.HashedPassword),
 			EncryptedPrivateKey: pgmapper.PgTextToStringPtr(model.EncryptedPrivateKey),
-			PublicKey:           model.PublicKey,
+			WalletAddress:       model.WalletAddress,
 			GoogleConnectorRef:  pgmapper.PgTextToStringPtr(model.GoogleConnectorRef),
 			GithubConnectorRef:  pgmapper.PgTextToStringPtr(model.GithubConnectorRef),
 			IsVerifiedOrganizer: model.IsVerifiedOrganizer == 1,
