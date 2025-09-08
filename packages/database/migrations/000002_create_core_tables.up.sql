@@ -127,15 +127,23 @@ CREATE TABLE event_attendees (
     is_attendee_accepted INTEGER NOT NULL,
     
     -- 0: Not Provided, 1: Provided
-    first_name_provided INTEGER NOT NULL,
-    last_name_provided INTEGER NOT NULL,
-    email_provided INTEGER NOT NULL,
-    bio_provided INTEGER NOT NULL,
-    phone_number_provided INTEGER NOT NULL,
-    address_provided INTEGER NOT NULL,
-    academic_institution_provided INTEGER NOT NULL,
-    academic_email_provided INTEGER NOT NULL,
-
+    -- PII: First name
+    first_name VARCHAR(255),
+    -- PII: Last name
+    last_name VARCHAR(255),
+    -- PII: Email
+    email VARCHAR(255),
+    -- PII: Bio
+    bio VARCHAR(255),
+    -- PII: Phone number    
+    phone_number VARCHAR(255),
+    -- PII: Address
+    address VARCHAR(255),
+    -- PII: Academic institution
+    academic_institution VARCHAR(255),
+    -- PII: Academic email
+    academic_email VARCHAR(255),
+    
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
