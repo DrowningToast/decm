@@ -93,7 +93,7 @@ async function waitForDatabase() {
 	}
 
 	console.error("❌ Database failed to become ready within timeout");
-	console.error("💡 Try running: bun db:stop && bun db:start");
+	console.error("💡 Try running: pnpm db:stop && pnpm db:start");
 	process.exit(1);
 }
 

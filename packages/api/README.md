@@ -21,7 +21,7 @@ The TypeScript code is automatically generated from the backend's OpenAPI specif
 
 ```bash
 # Generate API client from backend OpenAPI spec
-bun gen-api
+pnpm gen-api
 ```
 
 This will:
@@ -34,16 +34,16 @@ This will:
 
 ```bash
 # Install dependencies
-bun install
+pnpm install
 
 # Generate API client
-bun generate
+pnpm generate
 
 # Build TypeScript
-bun build
+pnpm build
 
 # Watch mode for development
-bun dev
+pnpm dev
 ```
 
 ## Package Structure

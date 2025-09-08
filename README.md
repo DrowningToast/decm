@@ -2,7 +2,7 @@
 
 > A Web 3.0 and Blockchain-powered platform for event management, NFT ticketing, digital credentials, and academic identity verification.
 
-[![Built with Bun](https://img.shields.io/badge/Built%20with-Bun-ff69b4?logo=bun)](https://bun.sh/)
+[![Built with pnpm](https://img.shields.io/badge/Built%20with-pnpm-yellow?logo=pnpm)](https://pnpm.io/)
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue?logo=postgresql)](https://postgresql.org/)
 [![Go](https://img.shields.io/badge/Backend-Go%20Fiber-00ADD8?logo=go)](https://gofiber.io/)
 [![React](https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react)](https://react.dev/)
@@ -45,8 +45,8 @@
 - **Frontend**: React 19 + Tailwind CSS + Radix UI
 - **Backend**: Go Fiber BFF API with OpenAPI documentation
 - **Database**: PostgreSQL with sqlc type-safe queries
-- **Package Manager**: Bun for all operations
-- **Monorepo**: Turbo + Bun workspaces
+- **Package Manager**: pnpm for all operations
+- **Monorepo**: Turbo + pnpm workspaces
 
 ### 🗄️ Database Design
 - **Type-safe Operations**: sqlc generates Go code from SQL
@@ -64,7 +64,7 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Bun**: `curl -fsSL https://bun.sh/install | bash`
+- **pnpm**: `npm install -g pnpm` or `curl -fsSL https://get.pnpm.io/install.sh | sh -`
 - **Go**: 1.24.1 or higher
 - **Docker**: For PostgreSQL database
 - **sqlc**: `go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest`
@@ -77,7 +77,7 @@ git clone <repository-url>
 cd decm
 
 # Install dependencies  
-bun install
+pnpm install
 
 # Setup environment
 cp .env.example .env
@@ -87,7 +87,7 @@ cp .env.example .env
 ### 2. Start Database
 ```bash
 # Start PostgreSQL with Docker Compose
-bun compose:up
+pnpm compose:up
 
 # Database will be ready at localhost:5432
 ```
@@ -97,7 +97,7 @@ bun compose:up
 #### Backend (with auto-migrations)
 ```bash
 # Start Go API server - automatically runs migrations
-bun backend:dev
+pnpm backend:dev
 
 # Available at: http://localhost:8080
 # API docs at: http://localhost:8080/swagger/
@@ -106,7 +106,7 @@ bun backend:dev
 #### Frontend
 ```bash
 # Start React development server
-bun dev
+pnpm dev
 
 # Available at: http://localhost:3000
 ```
@@ -114,7 +114,7 @@ bun dev
 ### 4. Generate TypeScript API Client
 ```bash
 # Generate type-safe API client from OpenAPI spec
-bun gen-api
+pnpm gen-api
 
 # Creates packages/api/ with TypeScript types
 ```
@@ -153,40 +153,40 @@ decm/
 ### 🎯 Development
 ```bash
 # Frontend development
-bun dev              # Start React dev server
-bun build            # Build for production
-bun lint             # Run ESLint
-bun check-types      # TypeScript checking
+pnpm dev              # Start React dev server
+pnpm build            # Build for production
+pnpm lint             # Run ESLint
+pnpm check-types      # TypeScript checking
 
 # Backend development
-bun backend:dev      # Start API with auto-migrations
-bun backend:build    # Build Go binary
-bun backend:docs     # Generate OpenAPI documentation
+pnpm backend:dev      # Start API with auto-migrations
+pnpm backend:build    # Build Go binary
+pnpm backend:docs     # Generate OpenAPI documentation
 ```
 
 ### 🗄️ Database Operations
 ```bash
 # Code generation
-bun db:generate      # Generate Go code from SQL queries
+pnpm db:generate      # Generate Go code from SQL queries
 
 # Migration management
-bun db:migrate:up    # Run pending migrations
-bun db:migrate:down  # Rollback last migration
-bun db:migrate:create name  # Create new migration
+pnpm db:migrate:up    # Run pending migrations
+pnpm db:migrate:down  # Rollback last migration
+pnpm db:migrate:create name  # Create new migration
 
 # Docker database
-bun compose:up       # Start PostgreSQL container
-bun compose:down     # Stop database
+pnpm compose:up       # Start PostgreSQL container
+pnpm compose:down     # Stop database
 ```
 
 ### 🔄 API Generation
 ```bash
 # Full API client generation pipeline
-bun gen-api          # OpenAPI docs → TypeScript client
+pnpm gen-api          # OpenAPI docs → TypeScript client
 
 # Individual steps
-bun backend:docs     # Generate OpenAPI specification
-cd packages/api && bun generate  # Generate TypeScript client
+pnpm backend:docs     # Generate OpenAPI specification
+cd packages/api && pnpm generate  # Generate TypeScript client
 ```
 
 ## 🗄️ Database Schema
@@ -262,7 +262,7 @@ curl -X POST http://localhost:8080/api/v1/authentication-credentials \
   }'
 
 # Check database tables
-bun db:status
+pnpm db:status
 ```
 
 ## 🔧 Environment Configuration
@@ -372,24 +372,24 @@ LDAP_BASE_DN=dc=university,dc=edu
 
 1. **Fork** the repository
 2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
-3. **Follow** the coding standards and use Bun for all operations
-4. **Test** your changes: `bun test` (when tests are implemented)
+3. **Follow** the coding standards and use pnpm for all operations
+4. **Test** your changes: `pnpm test` (when tests are implemented)
 5. **Commit** your changes: `git commit -m 'Add amazing feature'`
 6. **Push** to the branch: `git push origin feature/amazing-feature`
 7. **Open** a Pull Request
 
 ### Development Setup
 ```bash
-# Install Bun (required)
-curl -fsSL https://bun.sh/install | bash
+# Install pnpm (required)
+npm install -g pnpm
 
 # Install dependencies
-bun install
+pnpm install
 
 # Start development environment
-bun compose:up      # Database
-bun backend:dev     # API server  
-bun dev             # Frontend
+pnpm compose:up      # Database
+pnpm backend:dev     # API server  
+pnpm dev             # Frontend
 ```
 
 ## 📄 License

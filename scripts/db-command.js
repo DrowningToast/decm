@@ -99,7 +99,7 @@ async function main() {
 		console.error("❌ Command failed:", error.message);
 		console.error("\n💡 Troubleshooting:");
 		console.error("   - Check your .env file configuration");
-		console.error("   - Ensure database is running: bun db:start");
+		console.error("   - Ensure database is running: pnpm db:start");
 		console.error("   - Verify database credentials are correct");
 		process.exit(1);
 	}

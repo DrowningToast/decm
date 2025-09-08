@@ -37,13 +37,13 @@ packages/database/
 ### Setup Database
 ```bash
 # Complete setup (recommended)
-bun db:setup
+pnpm db:setup
 
 # Or step by step:
-bun db:start            # Start PostgreSQL container
-bun db:wait             # Wait for database readiness
-bun db:migrate          # Run migrations
-bun db:generate         # Generate Go code
+pnpm db:start            # Start PostgreSQL container
+pnpm db:wait             # Wait for database readiness
+pnpm db:migrate          # Run migrations
+pnpm db:generate         # Generate Go code
 ```
 
 ### Environment Configuration
@@ -93,22 +93,22 @@ DB_SSL_MODE=disable
 
 ```bash
 # Database lifecycle
-bun db:setup              # Complete setup: start + wait + migrate
-bun db:start              # Start PostgreSQL container
-bun db:stop               # Stop database
-bun db:wait               # Wait for database readiness
+pnpm db:setup              # Complete setup: start + wait + migrate
+pnpm db:start              # Start PostgreSQL container
+pnpm db:stop               # Stop database
+pnpm db:wait               # Wait for database readiness
 
 # Migration management
-bun db:migrate            # Smart migration with error recovery
-bun db:migrate:down       # Rollback migrations
-bun db:migrate:version    # Check migration version
-bun db:reset              # Complete database reset
+pnpm db:migrate            # Smart migration with error recovery
+pnpm db:migrate:down       # Rollback migrations
+pnpm db:migrate:version    # Check migration version
+pnpm db:reset              # Complete database reset
 
 # Database tools
-bun db:config             # Show database configuration
-bun db:status             # List all tables
-bun db:console            # Open PostgreSQL console
-bun db:generate           # Generate Go code from SQL queries
+pnpm db:config             # Show database configuration
+pnpm db:status             # List all tables
+pnpm db:console            # Open PostgreSQL console
+pnpm db:generate           # Generate Go code from SQL queries
 ```
 
 ## Query Development
@@ -130,7 +130,7 @@ Currently implemented:
    -- name: ListSomething :many
    SELECT * FROM table_name LIMIT $1 OFFSET $2;
    ```
-3. Generate Go code: `bun db:generate`
+3. Generate Go code: `pnpm db:generate`
 
 ## Integration
 
@@ -150,9 +150,9 @@ result, err := queries.GetAuthenticationCredentialByID(ctx, id)
 
 ### Creating New Migrations
 ```bash
-bun db:migrate:create description_of_change
+pnpm db:migrate:create description_of_change
 # Edit the generated .up.sql and .down.sql files
-bun db:migrate
+pnpm db:migrate
 ```
 
 ## Security Features

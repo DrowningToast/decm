@@ -145,8 +145,8 @@ process.on("SIGINT", () => {
 runMigrations().catch((error) => {
 	console.error("❌ Migration failed:", error.message);
 	console.error("\n💡 Try these troubleshooting steps:");
-	console.error("   bun db:migrate:force 0  # Reset to clean state");
-	console.error("   bun db:migrate          # Try again");
-	console.error("   bun db:status           # Check database tables");
+	console.error("   pnpm db:migrate:force 0  # Reset to clean state");
+	console.error("   pnpm db:migrate          # Try again");
+	console.error("   pnpm db:status           # Check database tables");
 	process.exit(1);
 });
