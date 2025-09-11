@@ -6,12 +6,15 @@ import (
 	"github.com/cockroachdb/errors"
 )
 
+// @name Err
+// @description Custom error type
 type Err struct {
-	HttpStatus  *int     `json:"http_status"`
-	Code        *ErrCode `json:"code"`
-	LoggerLevel slog.Level
-	Message     string
-	Inner       error
+	HttpStatus  *int              `json:"http_status"`
+	Code        *ErrCode          `json:"code"`
+	LoggerLevel slog.Level        `json:"-"`
+	Message     string            `json:"message,omitempty"`
+	Reasons     map[string]string `json:"reasons,omitempty"`
+	Inner       error             `json:"-"`
 }
 
 func (e Err) Error() string {
@@ -38,7 +41,7 @@ func (err Err) Extend(msg string) *Err {
 	}
 }
 
-func TryParseAsCustomErr(preset *ErrSignature, err error) *Err {
+func Parse(preset *ErrSignature, err error) *Err {
 	var defaultErrSignature *ErrSignature = &ErrInternalServer
 	if preset != nil {
 		defaultErrSignature = &ErrSignature{
@@ -52,7 +55,7 @@ func TryParseAsCustomErr(preset *ErrSignature, err error) *Err {
 	return AsPresetError(*defaultErrSignature, err)
 }
 
-func TryParseAsCustomErrWithMsg(preset *ErrSignature, err error, message string) *Err {
+func ParseWithMessage(preset *ErrSignature, err error, message string) *Err {
 	var defaultErrSignature *ErrSignature = &ErrInternalServer
 	if preset != nil {
 		defaultErrSignature = &ErrSignature{
@@ -67,6 +70,30 @@ func TryParseAsCustomErrWithMsg(preset *ErrSignature, err error, message string)
 		HttpStatus:  &defaultErrSignature.HttpStatus,
 		Code:        &defaultErrSignature.Code,
 		Message:     message,
+		Inner:       err,
+		LoggerLevel: defaultErrSignature.LoggerLevel,
+	}
+}
+
+func ParseWithReasons(preset *ErrSignature, err error, reasons map[string]string) *Err {
+	if reasons == nil {
+		return Parse(&ErrInternalServer, err)
+	}
+	var defaultErrSignature *ErrSignature = &ErrInternalServer
+	if preset != nil {
+		defaultErrSignature = &ErrSignature{
+			Code:           preset.Code,
+			DefaultMessage: preset.DefaultMessage,
+			HttpStatus:     preset.HttpStatus,
+			LoggerLevel:    preset.LoggerLevel,
+		}
+	}
+
+	return &Err{
+		HttpStatus:  &defaultErrSignature.HttpStatus,
+		Code:        &defaultErrSignature.Code,
+		Message:     defaultErrSignature.DefaultMessage,
+		Reasons:     reasons,
 		Inner:       err,
 		LoggerLevel: defaultErrSignature.LoggerLevel,
 	}

@@ -23,7 +23,7 @@ func Sign(message string, privateKey *ecdsa.PrivateKey) (string, error) {
 
 	signature, err := crypto.Sign(hashedMessage, privateKey)
 	if err != nil {
-		return "", customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, err)
+		return "", customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 	signature[crypto.RecoveryIDOffset] += 27
 

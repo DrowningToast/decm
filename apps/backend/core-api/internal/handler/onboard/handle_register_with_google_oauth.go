@@ -23,6 +23,7 @@ type registerWithGoogleOAuthResponse struct {
 // @Summary Register a new user with Google OAuth
 // @Description Register a new user with Google OAuth
 // @ID register-with-google-oauth
+// @Tags Onboard
 // @Param access_token body string true "Access token"
 // @Param refresh_token body string true "Refresh token"
 // @Param password body string true "Password"
@@ -43,7 +44,7 @@ func (h Handler) RegisterWithGoogleOAuth(ctx *fiber.Ctx) error {
 	// Parse token
 	token, err := oauth.ParseToken(requestBody.AccessToken, requestBody.RefreshToken)
 	if err != nil {
-		return *customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, err)
+		return *customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
 	jwt, mnemonic, err := h.OnboardUc.RegisterWithGoogle(ctx.UserContext(), token, requestBody.Password)
@@ -65,7 +66,7 @@ func (h Handler) RegisterWithGoogleOAuth(ctx *fiber.Ctx) error {
 
 func (r *registerWithGoogleOAuthRequest) Parse(ctx *fiber.Ctx) *customerror.Err {
 	if err := ctx.BodyParser(r); err != nil {
-		return customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, err)
+		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
 	return nil
@@ -75,7 +76,7 @@ func (r *registerWithGoogleOAuthRequest) IsValid() *customerror.Err {
 	validate := validator.New()
 	err := validate.Struct(r)
 	if err != nil {
-		return customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, err)
+		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
 	return nil

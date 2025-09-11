@@ -11,6 +11,9 @@ type ErrSignature struct {
 	HttpStatus     int
 	LoggerLevel    slog.Level
 }
+
+// @name ErrCode
+// @description Error code type
 type ErrCode string
 
 var (
@@ -32,13 +35,13 @@ var (
 		HttpStatus:     http.StatusBadRequest,
 		LoggerLevel:    slog.LevelWarn,
 	}
-	ErrUnauthorized ErrSignature = ErrSignature{
+	ErrUnauthenticated ErrSignature = ErrSignature{
 		Code:           "UNAUTHORIZED",
 		DefaultMessage: "Unauthorized. Please login to continue.",
 		HttpStatus:     http.StatusUnauthorized,
 		LoggerLevel:    slog.LevelWarn,
 	}
-	ErrInsufficientPermission ErrSignature = ErrSignature{
+	ErrUnauthorized ErrSignature = ErrSignature{
 		Code:           "INSUFFICIENT_PERMISSION",
 		DefaultMessage: "Insufficient permission. Please contact the administrator.",
 		HttpStatus:     http.StatusForbidden,

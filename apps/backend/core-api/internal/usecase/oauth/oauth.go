@@ -1,4 +1,4 @@
-package auth
+package oauth
 
 import (
 	"context"
@@ -11,17 +11,17 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type AuthUsecase struct {
+type OAuthUsecase struct {
 	googleOAuthService *oauth_services.GoogleOAuthService
 }
 
-func NewAuthUsecase(googleOAuthService *oauth_services.GoogleOAuthService, authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway) *AuthUsecase {
-	return &AuthUsecase{
+func NewOAuthUsecase(googleOAuthService *oauth_services.GoogleOAuthService, authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway) *OAuthUsecase {
+	return &OAuthUsecase{
 		googleOAuthService: googleOAuthService,
 	}
 }
 
-func (u *AuthUsecase) VerifyGoogleOAuthCode(ctx context.Context, session *session.Session, code string, state string) (*oauth2.Token, *customerror.Err) {
+func (u *OAuthUsecase) VerifyGoogleOAuthCode(ctx context.Context, session *session.Session, code string, state string) (*oauth2.Token, *customerror.Err) {
 	token, err := u.googleOAuthService.Callback(ctx, session, code, state)
 	if err != nil {
 		return nil, err.Extend("failed to verify google oauth code")

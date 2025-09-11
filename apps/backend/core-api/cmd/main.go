@@ -15,11 +15,16 @@ import (
 	"apps/backend/common/log"
 	"apps/backend/common/pgclient"
 	"apps/backend/core-api/config"
-	"apps/backend/core-api/internal/handler/auth"
+	auth_handler "apps/backend/core-api/internal/handler/auth"
 	"apps/backend/core-api/internal/handler/onboard"
+	"apps/backend/core-api/internal/handler/profile"
+	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
+	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
 	"apps/backend/core-api/internal/repositories/postgres"
-	auth_usecase "apps/backend/core-api/internal/usecase/auth"
+	auth_usecase "apps/backend/core-api/internal/usecase/oauth"
 	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
+	profile_usecase "apps/backend/core-api/internal/usecase/profile"
+	"apps/backend/services/auth"
 	"apps/backend/services/oauth"
 
 	json "github.com/goccy/go-json"
@@ -64,12 +69,20 @@ func main() {
 	}()
 	logger.Info("Sucessfully connected to pg pool")
 
+	// services
+	authService := auth.NewAuthService(cfg.Jwt.Issuer, cfg.Jwt.SecretKey, cfg.Jwt.Expiration)
 	googleOAuthService := oauth.NewGoogleOAuthService()
 
+	// middlewares
+	verifyJwtMiddleware := verifyjwt.NewVerifyJwtMiddleware(authService)
+	authenticationGuardMiddleware := authenticationguard.NewMiddleware(authService)
+
+	// repo
 	pgRepo := postgres.NewRepository(pgConn, cfg.PIIEncryptionKey)
 
-	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo)
-	authUc := auth_usecase.NewAuthUsecase(googleOAuthService, pgRepo)
+	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo, authService)
+	authUc := auth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
+	profileUc := profile_usecase.NewProfileUsecase(pgRepo)
 
 	// Setup HTTP server
 	app := fiber.New(fiber.Config{
@@ -120,13 +133,17 @@ func main() {
 	}
 
 	// API v1
-	apiV1 := app.Group("/api/v1")
+	apiV1 := app.Group("/api/v1").Use(verifyJwtMiddleware.Middleware)
 
 	// Onboard handler
 	onboardHandler := onboard.NewHandler(onboardUc)
 	onboardHandler.Mount(apiV1)
-	authHandler := auth.NewHandler(authUc, googleOAuthService)
+
+	authHandler := auth_handler.NewHandler(authUc, googleOAuthService)
 	authHandler.Mount(apiV1)
+
+	profileHandler := profile.NewHandler(profileUc, authService, authenticationGuardMiddleware)
+	profileHandler.Mount(apiV1)
 
 	// Start HTTP Server
 	go func() {

@@ -7,6 +7,7 @@ import (
 )
 
 // @Summary Request Google OAuth
+// @Tags Auth
 // @Description Request Google OAuth
 // @ID request-google-oauth
 // @Accept json
@@ -17,12 +18,12 @@ import (
 func (h Handler) RequestGoogleOAuth(ctx *fiber.Ctx) error {
 	session, err := h.GoogleOAuthService.SessionStore.Get(ctx)
 	if err != nil {
-		return *customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return *customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	url, err := h.GoogleOAuthService.Login(session)
 	if err != nil {
-		return *customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return *customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	return ctx.Redirect(*url, fiber.StatusTemporaryRedirect)

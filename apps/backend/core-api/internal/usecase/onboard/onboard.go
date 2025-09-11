@@ -15,7 +15,7 @@ import (
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/cyptoutils"
-	"apps/backend/core-api/internal/usecase/jwtutils"
+	"apps/backend/services/auth"
 	oauth_services "apps/backend/services/oauth"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
@@ -23,6 +23,7 @@ import (
 )
 
 type OnboardUsecase struct {
+	authService         *auth.AuthService
 	googleOAuthService  oauth_services.GoogleOAuthService
 	registerSignMessage string
 
@@ -30,8 +31,9 @@ type OnboardUsecase struct {
 	ProfileDg                  datagateway.ProfileDataGateway
 }
 
-func NewOnboardUsecase(authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway, profileDg datagateway.ProfileDataGateway) *OnboardUsecase {
+func NewOnboardUsecase(authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway, profileDg datagateway.ProfileDataGateway, authService *auth.AuthService) *OnboardUsecase {
 	return &OnboardUsecase{
+		authService:                authService,
 		registerSignMessage:        "Please sign this message to prove your ownership of the wallet",
 		AuthenticationCredentialDg: authenticationCredentialDg,
 		ProfileDg:                  profileDg,
@@ -52,26 +54,26 @@ func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMs
 	isValid, errCode := common.ValidateEvmAddress(walletAddress)
 	if errCode != nil {
 		errCode := string(*errCode)
-		return nil, customerror.TryParseAsCustomErrWithMsg(&customerror.ErrInvalidArgument, errors.New("invalid wallet address"), errCode)
+		return nil, customerror.ParseWithMessage(&customerror.ErrInvalidArgument, errors.New("invalid wallet address"), errCode)
 	}
 	if !isValid {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, errors.New("invalid wallet address"))
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid wallet address"))
 	}
 
 	// Validate the signed message
 	address := ethcommon.HexToAddress(walletAddress)
 	result, err := cyptoutils.VerifySignedMessageByAddress(address, u.registerSignMessage, signedMsg)
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErrWithMsg(&customerror.ErrInternalServer, err, "an error has occured while verifying signed message")
+		return nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "an error has occured while verifying signed message")
 	}
 	if !result {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, errors.New("verification failed"))
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("verification failed"))
 	}
 
 	// Check for already existing wallet address
 	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialByWalletAddress(context.Background(), walletAddress)
 	if err == nil || credential != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrDuplicateEntry, errors.New("wallet address already exists"))
+		return nil, customerror.Parse(&customerror.ErrDuplicateEntry, errors.New("wallet address already exists"))
 	}
 
 	var cusErr customerror.Err
@@ -93,15 +95,15 @@ func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMs
 		if errors.As(err, &cusErr) {
 			return nil, cusErr.Extend("failed to create new credential")
 		}
-		return nil, customerror.TryParseAsCustomErrWithMsg(&customerror.ErrInternalServer, err, "failed to create new credential")
+		return nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "failed to create new credential")
 	}
 
-	sessionToken, err := jwtutils.CreateToken(jwtutils.JwtPayload{
+	sessionToken, err := u.authService.CreateToken(auth.JwtPayload{
 		UserId:        credential.Id,
 		WalletAddress: credential.WalletAddress,
 	})
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	return &sessionToken, nil
@@ -110,10 +112,10 @@ func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMs
 // Register with Google OAuth token, return JWT token
 func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.Token, password string) (*string, []string, *customerror.Err) {
 	if password == "" {
-		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, errors.New("password is required"))
+		return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("password is required"))
 	}
 	if len(password) < 6 {
-		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, errors.New("password must be at least 8 characters long"))
+		return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("password must be at least 8 characters long"))
 	}
 
 	userInfo, customerr := u.googleOAuthService.GetUserInfo(ctx, token)
@@ -132,7 +134,7 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 		return nil, nil, cusErr.Extend("failed to check for existing google connector ref")
 	}
 	if customerr == nil || credential != nil {
-		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrDuplicateEntry, errors.New("credential already exists"))
+		return nil, nil, customerror.Parse(&customerror.ErrDuplicateEntry, errors.New("credential already exists"))
 	}
 
 	// Look for duplicate profile
@@ -144,7 +146,7 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 		return nil, nil, cusErr.Extend("failed to check for existing profile")
 	}
 	if customerr == nil || profile != nil {
-		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrDuplicateEntry, errors.New("profile already exists"))
+		return nil, nil, customerror.Parse(&customerror.ErrDuplicateEntry, errors.New("profile already exists"))
 	}
 
 	// Generate mnemonic
@@ -168,16 +170,16 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 	// Encrypt private key
 	encryptedPrivateKey, err := encryptutils.EncryptAESGCM(privateKeyAsString, password)
 	if err != nil {
-		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, customerr).Extend("failed to encrypt private key")
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, customerr).Extend("failed to encrypt private key")
 	}
 	walletAddress, err := cyptoutils.GetAddressFromPrivateKey(privateKey)
 	if err != nil {
-		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, customerr).Extend("failed to get wallet address")
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, customerr).Extend("failed to get wallet address")
 	}
 
 	hashedPassword, err := hashutils.HashPassword(password)
 	if err != nil {
-		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, customerr).Extend("failed to hash password")
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, customerr).Extend("failed to hash password")
 	}
 
 	// Create new credential
@@ -193,12 +195,12 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 		return nil, nil, customerr.Extend("failed to create new credential")
 	}
 
-	sessionToken, err := jwtutils.CreateToken(jwtutils.JwtPayload{
+	sessionToken, err := u.authService.CreateToken(auth.JwtPayload{
 		UserId:        credential.Id,
 		WalletAddress: credential.WalletAddress,
 	})
 	if err != nil {
-		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	return &sessionToken, strings.Fields(*mnemonic), nil

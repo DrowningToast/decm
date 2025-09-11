@@ -1,16 +1,18 @@
 package auth
 
 import (
-	"apps/backend/core-api/internal/usecase/auth"
+	"apps/backend/core-api/internal/usecase/oauth"
+	"apps/backend/services/auth"
 	oauth_services "apps/backend/services/oauth"
 )
 
 type Handler struct {
-	AuthUc *auth.AuthUsecase
+	AuthUc *oauth.OAuthUsecase
 
 	GoogleOAuthService *oauth_services.GoogleOAuthService
+	AuthService        *auth.AuthService
 }
 
-func NewHandler(authUc *auth.AuthUsecase, googleOAuthService *oauth_services.GoogleOAuthService) *Handler {
+func NewHandler(authUc *oauth.OAuthUsecase, googleOAuthService *oauth_services.GoogleOAuthService) *Handler {
 	return &Handler{AuthUc: authUc, GoogleOAuthService: googleOAuthService}
 }

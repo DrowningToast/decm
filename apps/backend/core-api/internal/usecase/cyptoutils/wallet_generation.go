@@ -27,7 +27,7 @@ func GenerateMnemonic(wordsCount *int) (*string, *customerror.Err) {
 		}
 	}
 	if !valid {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, fmt.Errorf("invalid word count: %d (must be 12, 15, 18, 21, or 24)", wordCount))
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("invalid word count: %d (must be 12, 15, 18, 21, or 24)", wordCount))
 	}
 
 	// Generate entropy and mnemonic
@@ -74,40 +74,40 @@ func GeneratePrivateKeyFromSeed(seed []byte) (*ecdsa.PrivateKey, *customerror.Er
 	// Generate master key from seed
 	masterKey, err := bip32.NewMasterKey(seed)
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err).Extend("failed to create master key")
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to create master key")
 	}
 
 	// Parse derivation path (simplified - only supports m/44'/60'/0'/0/0 format)
 	// For Ethereum: m/44'/60'/0'/0/0
 	purposeKey, err := masterKey.NewChildKey(bip32.FirstHardenedChild + 44)
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err).Extend("failed to create purpose key")
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to create purpose key")
 	}
 
 	coinKey, err := purposeKey.NewChildKey(bip32.FirstHardenedChild + 60)
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err).Extend("failed to create coin key")
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to create coin key")
 	}
 
 	accountKey, err := coinKey.NewChildKey(bip32.FirstHardenedChild + 0)
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err).Extend("failed to create account key")
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to create account key")
 	}
 
 	changeKey, err := accountKey.NewChildKey(0)
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err).Extend("failed to create change key")
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to create change key")
 	}
 
 	addressKey, err := changeKey.NewChildKey(0)
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err).Extend("failed to create address key")
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to create address key")
 	}
 
 	// Convert to ECDSA private key
 	privateKey, err := crypto.ToECDSA(addressKey.Key)
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err).Extend("failed to create private key")
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to create private key")
 	}
 
 	return privateKey, nil

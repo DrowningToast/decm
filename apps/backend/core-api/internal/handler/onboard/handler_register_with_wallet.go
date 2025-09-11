@@ -3,7 +3,6 @@ package onboard
 import (
 	"errors"
 	"regexp"
-	"time"
 
 	customerror "apps/backend/common/customerror"
 
@@ -20,6 +19,7 @@ type registerWithWalletRequest struct {
 // @Summary Register a new user with wallet address
 // @Description Register a new user with wallet address
 // @ID register-with-wallet
+// @Tags Onboard
 // @Param signed_message body string true "Signed message"
 // @Param wallet_address body string true "Wallet address"
 // @Accept json
@@ -41,31 +41,27 @@ func (h Handler) RegisterWithWallet(ctx *fiber.Ctx) error {
 		return *err
 	}
 
-	cookie := new(fiber.Cookie)
-	cookie.Name = "session"
-	cookie.Value = *jwt
-	cookie.Expires = time.Now().Add(h.SessionExpiration)
-	ctx.Cookie(cookie)
+	h.AuthService.SetJwtCookie(ctx, *jwt)
 
 	return ctx.Status(fiber.StatusOK).Send([]byte(""))
 }
 
 func (r *registerWithWalletRequest) Parse(ctx *fiber.Ctx) *customerror.Err {
 	if err := ctx.BodyParser(r); err != nil {
-		return customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, err)
+		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 	return nil
 }
 
 func (r *registerWithWalletRequest) IsValid() *customerror.Err {
 	if len(r.SignedMessage) == 0 {
-		return customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, errors.New("signed message is required"))
+		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("signed message is required"))
 	}
 	if len(r.WalletAddress) == 0 {
-		return customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, errors.New("wallet address is required"))
+		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("wallet address is required"))
 	}
 	if !ethAddressRegex.MatchString(r.WalletAddress) {
-		return customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, errors.New("invalid wallet address"))
+		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid wallet address"))
 	}
 
 	return nil

@@ -29,6 +29,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Auth"
+                ],
                 "summary": "Request Google OAuth",
                 "operationId": "request-google-oauth",
                 "responses": {
@@ -52,6 +55,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Auth"
                 ],
                 "summary": "Verify Google OAuth code",
                 "operationId": "verify-google-oauth",
@@ -99,6 +105,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Onboard"
                 ],
                 "summary": "Register a new user with Google OAuth",
                 "operationId": "register-with-google-oauth",
@@ -156,6 +165,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Onboard"
+                ],
                 "summary": "Register a new user with wallet address",
                 "operationId": "register-with-wallet",
                 "parameters": [
@@ -208,6 +220,170 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/profile": {
+            "post": {
+                "description": "Create a profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Create a profile",
+                "parameters": [
+                    {
+                        "description": "Profile",
+                        "name": "profile",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.CreateProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/profile.CreateProfileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/profile/credential/{credential_id}": {
+            "patch": {
+                "description": "Update a profile by credential ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Update a profile by credential ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Credential ID",
+                        "name": "credential_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Profile",
+                        "name": "profile",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/profile/my": {
+            "get": {
+                "description": "Get my profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get my profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.Profile"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -225,11 +401,103 @@ const docTemplate = `{
                 }
             }
         },
+        "customerror.Err": {
+            "description": "Custom error type",
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "http_status": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "reasons": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "customerror.ErrResponse": {
             "description": "Response for the client to sign to register",
             "type": "object",
             "properties": {
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.Profile": {
+            "type": "object",
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "authentication_credential_id": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_academic_email_public": {
+                    "type": "boolean"
+                },
+                "is_academic_institution_public": {
+                    "type": "boolean"
+                },
+                "is_address_public": {
+                    "type": "boolean"
+                },
+                "is_bio_public": {
+                    "type": "boolean"
+                },
+                "is_email_public": {
+                    "type": "boolean"
+                },
+                "is_first_name_public": {
+                    "type": "boolean"
+                },
+                "is_last_name_public": {
+                    "type": "boolean"
+                },
+                "is_phone_number_public": {
+                    "type": "boolean"
+                },
+                "is_profile_picture_public": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }
@@ -251,6 +519,294 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "profile.CreateProfileRequest": {
+            "type": "object",
+            "required": [
+                "authentication_credential_id"
+            ],
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 3
+                },
+                "address": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 10
+                },
+                "authentication_credential_id": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 10
+                },
+                "email": {
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "first_name": {
+                    "type": "string",
+                    "maxLength": 32,
+                    "minLength": 3
+                },
+                "is_academic_email_public": {
+                    "type": "boolean"
+                },
+                "is_academic_institution_public": {
+                    "type": "boolean"
+                },
+                "is_address_public": {
+                    "type": "boolean"
+                },
+                "is_bio_public": {
+                    "type": "boolean"
+                },
+                "is_email_public": {
+                    "type": "boolean"
+                },
+                "is_first_name_public": {
+                    "type": "boolean"
+                },
+                "is_last_name_public": {
+                    "type": "boolean"
+                },
+                "is_phone_number_public": {
+                    "type": "boolean"
+                },
+                "is_profile_picture_public": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string",
+                    "maxLength": 32,
+                    "minLength": 3
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "profile_picture_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "profile.CreateProfileResponse": {
+            "type": "object",
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "authentication_credential_id": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_academic_email_public": {
+                    "type": "boolean"
+                },
+                "is_academic_institution_public": {
+                    "type": "boolean"
+                },
+                "is_address_public": {
+                    "type": "boolean"
+                },
+                "is_bio_public": {
+                    "type": "boolean"
+                },
+                "is_email_public": {
+                    "type": "boolean"
+                },
+                "is_first_name_public": {
+                    "type": "boolean"
+                },
+                "is_last_name_public": {
+                    "type": "boolean"
+                },
+                "is_phone_number_public": {
+                    "type": "boolean"
+                },
+                "is_profile_picture_public": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "profile.UpdateProfileRequest": {
+            "type": "object",
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 3
+                },
+                "address": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 10
+                },
+                "bio": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 10
+                },
+                "email": {
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "first_name": {
+                    "type": "string",
+                    "maxLength": 32,
+                    "minLength": 3
+                },
+                "is_academic_email_public": {
+                    "type": "boolean"
+                },
+                "is_academic_institution_public": {
+                    "type": "boolean"
+                },
+                "is_address_public": {
+                    "type": "boolean"
+                },
+                "is_bio_public": {
+                    "type": "boolean"
+                },
+                "is_email_public": {
+                    "type": "boolean"
+                },
+                "is_first_name_public": {
+                    "type": "boolean"
+                },
+                "is_last_name_public": {
+                    "type": "boolean"
+                },
+                "is_phone_number_public": {
+                    "type": "boolean"
+                },
+                "is_profile_picture_public": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string",
+                    "maxLength": 32,
+                    "minLength": 3
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "profile_picture_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "profile.UpdateProfileResponse": {
+            "type": "object",
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "authentication_credential_id": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_academic_email_public": {
+                    "type": "boolean"
+                },
+                "is_academic_institution_public": {
+                    "type": "boolean"
+                },
+                "is_address_public": {
+                    "type": "boolean"
+                },
+                "is_bio_public": {
+                    "type": "boolean"
+                },
+                "is_email_public": {
+                    "type": "boolean"
+                },
+                "is_first_name_public": {
+                    "type": "boolean"
+                },
+                "is_last_name_public": {
+                    "type": "boolean"
+                },
+                "is_phone_number_public": {
+                    "type": "boolean"
+                },
+                "is_profile_picture_public": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         }

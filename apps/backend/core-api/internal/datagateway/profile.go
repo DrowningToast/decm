@@ -10,23 +10,23 @@ import (
 )
 
 type UpdateProfileParameters struct {
-	IsProfilePicturePublic      bool
+	IsProfilePicturePublic      *bool
 	ProfilePictureUrl           *string
-	IsFirstNamePublic           bool
+	IsFirstNamePublic           *bool
 	FirstName                   *string
-	IsLastNamePublic            bool
+	IsLastNamePublic            *bool
 	LastName                    *string
-	IsEmailPublic               bool
+	IsEmailPublic               *bool
 	Email                       *string
-	IsBioPublic                 bool
+	IsBioPublic                 *bool
 	Bio                         *string
-	IsPhoneNumberPublic         bool
+	IsPhoneNumberPublic         *bool
 	PhoneNumber                 *string
-	IsAddressPublic             bool
+	IsAddressPublic             *bool
 	Address                     *string
-	IsAcademicInstitutionPublic bool
+	IsAcademicInstitutionPublic *bool
 	AcademicInstitution         *string
-	IsAcademicEmailPublic       bool
+	IsAcademicEmailPublic       *bool
 	AcademicEmail               *string
 }
 

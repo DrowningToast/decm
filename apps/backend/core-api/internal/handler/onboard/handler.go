@@ -5,12 +5,13 @@ import (
 
 	"apps/backend/core-api/config"
 	usecase "apps/backend/core-api/internal/usecase/onboard"
+	"apps/backend/services/auth"
 	oauth_services "apps/backend/services/oauth"
 )
 
 type Handler struct {
-	SessionExpiration time.Duration
-
+	SessionExpiration  time.Duration
+	AuthService        *auth.AuthService
 	GoogleOAuthService *oauth_services.GoogleOAuthService
 
 	OnboardUc *usecase.OnboardUsecase

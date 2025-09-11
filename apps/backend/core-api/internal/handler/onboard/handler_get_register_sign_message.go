@@ -11,6 +11,7 @@ type getRegisterSignMessageResponse struct {
 // @Summary Get preset message for the client to sign to register
 // @Description Retrieve preset message for the client to sign to register
 // @ID get-register-sign-message
+// @Tag Onboard
 // @Produce json
 // @Success 200 {object} getRegisterSignMessageResponse
 // @Router /api/v1/onboard/sign-message [get]

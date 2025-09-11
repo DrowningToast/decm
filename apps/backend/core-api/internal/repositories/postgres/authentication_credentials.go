@@ -3,17 +3,14 @@ package postgres
 import (
 	"context"
 	"decm-database/go/generated"
-	"errors"
 
 	customerror "apps/backend/common/customerror"
+	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 var _ datagateway.AuthenticationCredentialDataGateway = (*Repository)(nil)
@@ -24,10 +21,7 @@ func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id uui
 		ID:            id,
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, customerror.TryParseAsCustomErr(&customerror.ErrNotFound, err)
-		}
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, pgerrutils.ParsePgError(err)
 	}
 
 	model := generated.AuthenticationCredential{
@@ -54,10 +48,7 @@ func (r *Repository) GetAuthenticationCredentialByWalletAddress(ctx context.Cont
 		WalletAddress: walletAddress,
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, customerror.TryParseAsCustomErr(&customerror.ErrNotFound, err)
-		}
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, pgerrutils.ParsePgError(err)
 	}
 
 	model := generated.AuthenticationCredential{
@@ -84,10 +75,7 @@ func (r *Repository) GetAuthenticationCredentialByGoogleConnectorRef(ctx context
 		GoogleConnectorRef: googleConnectorRef,
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, customerror.TryParseAsCustomErr(&customerror.ErrNotFound, err)
-		}
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, pgerrutils.ParsePgError(err)
 	}
 
 	model := generated.AuthenticationCredential{
@@ -121,13 +109,7 @@ func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credent
 		EncryptionKey:       r.piiEncryptionKey,
 	})
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code == pgerrcode.UniqueViolation {
-				return nil, customerror.TryParseAsCustomErr(&customerror.ErrDuplicateEntry, err)
-			}
-		}
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, pgerrutils.ParsePgError(err)
 	}
 
 	model := generated.AuthenticationCredential{
@@ -160,13 +142,7 @@ func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id uuid
 		IsVerifiedStudent:   pgmapper.BoolToPgInt4(params.IsVerifiedStudent),
 	})
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			if pgErr.Code == pgerrcode.UniqueViolation {
-				return nil, customerror.TryParseAsCustomErr(&customerror.ErrDuplicateEntry, err)
-			}
-		}
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, pgerrutils.ParsePgError(err)
 	}
 
 	model := generated.AuthenticationCredential{
@@ -190,10 +166,7 @@ func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id uuid
 func (r *Repository) DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error {
 	err := r.queries.DeleteAuthenticationCredential(ctx, id)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return customerror.TryParseAsCustomErr(&customerror.ErrNotFound, err)
-		}
-		return customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return pgerrutils.ParsePgError(err)
 	}
 	return nil
 }

@@ -9,10 +9,71 @@ definitions:
       refresh_token:
         type: string
     type: object
+  customerror.Err:
+    description: Custom error type
+    properties:
+      code:
+        type: string
+      http_status:
+        type: integer
+      message:
+        type: string
+      reasons:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
   customerror.ErrResponse:
     description: Response for the client to sign to register
     properties:
       message:
+        type: string
+    type: object
+  entity.Profile:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        type: string
+      address:
+        type: string
+      authentication_credential_id:
+        type: string
+      bio:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      is_academic_email_public:
+        type: boolean
+      is_academic_institution_public:
+        type: boolean
+      is_address_public:
+        type: boolean
+      is_bio_public:
+        type: boolean
+      is_email_public:
+        type: boolean
+      is_first_name_public:
+        type: boolean
+      is_last_name_public:
+        type: boolean
+      is_phone_number_public:
+        type: boolean
+      is_profile_picture_public:
+        type: boolean
+      last_name:
+        type: string
+      phone_number:
+        type: string
+      profile_picture_url:
+        type: string
+      updated_at:
         type: string
     type: object
   onboard.getRegisterSignMessageResponse:
@@ -27,6 +88,204 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  profile.CreateProfileRequest:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        maxLength: 255
+        minLength: 3
+        type: string
+      address:
+        maxLength: 255
+        minLength: 10
+        type: string
+      authentication_credential_id:
+        type: string
+      bio:
+        maxLength: 255
+        minLength: 10
+        type: string
+      email:
+        maxLength: 64
+        type: string
+      first_name:
+        maxLength: 32
+        minLength: 3
+        type: string
+      is_academic_email_public:
+        type: boolean
+      is_academic_institution_public:
+        type: boolean
+      is_address_public:
+        type: boolean
+      is_bio_public:
+        type: boolean
+      is_email_public:
+        type: boolean
+      is_first_name_public:
+        type: boolean
+      is_last_name_public:
+        type: boolean
+      is_phone_number_public:
+        type: boolean
+      is_profile_picture_public:
+        type: boolean
+      last_name:
+        maxLength: 32
+        minLength: 3
+        type: string
+      phone_number:
+        type: string
+      profile_picture_url:
+        type: string
+    required:
+    - authentication_credential_id
+    type: object
+  profile.CreateProfileResponse:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        type: string
+      address:
+        type: string
+      authentication_credential_id:
+        type: string
+      bio:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      is_academic_email_public:
+        type: boolean
+      is_academic_institution_public:
+        type: boolean
+      is_address_public:
+        type: boolean
+      is_bio_public:
+        type: boolean
+      is_email_public:
+        type: boolean
+      is_first_name_public:
+        type: boolean
+      is_last_name_public:
+        type: boolean
+      is_phone_number_public:
+        type: boolean
+      is_profile_picture_public:
+        type: boolean
+      last_name:
+        type: string
+      phone_number:
+        type: string
+      profile_picture_url:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  profile.UpdateProfileRequest:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        maxLength: 255
+        minLength: 3
+        type: string
+      address:
+        maxLength: 255
+        minLength: 10
+        type: string
+      bio:
+        maxLength: 255
+        minLength: 10
+        type: string
+      email:
+        maxLength: 64
+        type: string
+      first_name:
+        maxLength: 32
+        minLength: 3
+        type: string
+      is_academic_email_public:
+        type: boolean
+      is_academic_institution_public:
+        type: boolean
+      is_address_public:
+        type: boolean
+      is_bio_public:
+        type: boolean
+      is_email_public:
+        type: boolean
+      is_first_name_public:
+        type: boolean
+      is_last_name_public:
+        type: boolean
+      is_phone_number_public:
+        type: boolean
+      is_profile_picture_public:
+        type: boolean
+      last_name:
+        maxLength: 32
+        minLength: 3
+        type: string
+      phone_number:
+        type: string
+      profile_picture_url:
+        type: string
+    type: object
+  profile.UpdateProfileResponse:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        type: string
+      address:
+        type: string
+      authentication_credential_id:
+        type: string
+      bio:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      is_academic_email_public:
+        type: boolean
+      is_academic_institution_public:
+        type: boolean
+      is_address_public:
+        type: boolean
+      is_bio_public:
+        type: boolean
+      is_email_public:
+        type: boolean
+      is_first_name_public:
+        type: boolean
+      is_last_name_public:
+        type: boolean
+      is_phone_number_public:
+        type: boolean
+      is_profile_picture_public:
+        type: boolean
+      last_name:
+        type: string
+      phone_number:
+        type: string
+      profile_picture_url:
+        type: string
+      updated_at:
+        type: string
     type: object
 host: localhost:8080
 info:
@@ -56,6 +315,8 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Request Google OAuth
+      tags:
+      - Auth
   /api/v1/auth/verify-google-oauth:
     post:
       consumes:
@@ -87,6 +348,8 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Verify Google OAuth code
+      tags:
+      - Auth
   /api/v1/onboard/register-with-google-oauth:
     post:
       consumes:
@@ -124,6 +387,8 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Register a new user with Google OAuth
+      tags:
+      - Onboard
   /api/v1/onboard/register-with-wallet:
     post:
       consumes:
@@ -153,6 +418,8 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Register a new user with wallet address
+      tags:
+      - Onboard
   /api/v1/onboard/sign-message:
     get:
       description: Retrieve preset message for the client to sign to register
@@ -165,4 +432,112 @@ paths:
           schema:
             $ref: '#/definitions/onboard.getRegisterSignMessageResponse'
       summary: Get preset message for the client to sign to register
+  /api/v1/profile:
+    post:
+      consumes:
+      - application/json
+      description: Create a profile
+      parameters:
+      - description: Profile
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/profile.CreateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/profile.CreateProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Err'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.Err'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.Err'
+      summary: Create a profile
+      tags:
+      - Profile
+  /api/v1/profile/credential/{credential_id}:
+    patch:
+      consumes:
+      - application/json
+      description: Update a profile by credential ID
+      parameters:
+      - description: Credential ID
+        in: path
+        name: credential_id
+        required: true
+        type: string
+      - description: Profile
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/profile.UpdateProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Err'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.Err'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.Err'
+      summary: Update a profile by credential ID
+      tags:
+      - Profile
+  /api/v1/profile/my:
+    get:
+      consumes:
+      - application/json
+      description: Get my profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Profile'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Err'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.Err'
+      summary: Get my profile
+      tags:
+      - Profile
 swagger: "2.0"

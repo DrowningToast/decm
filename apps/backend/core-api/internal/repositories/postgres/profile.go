@@ -3,16 +3,15 @@ package postgres
 import (
 	"context"
 	"decm-database/go/generated"
-	"errors"
 
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 
 	customerror "apps/backend/common/customerror"
+	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 )
 
 var _ datagateway.ProfileDataGateway = (*Repository)(nil)
@@ -23,10 +22,7 @@ func (r *Repository) GetProfileById(ctx context.Context, id uuid.UUID) (*entity.
 		ID:            id,
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, customerror.TryParseAsCustomErr(&customerror.ErrNotFound, err)
-		}
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, pgerrutils.ParsePgError(err)
 	}
 
 	model := generated.Profile{
@@ -64,10 +60,7 @@ func (r *Repository) GetProfileByAuthenticationCredentialId(ctx context.Context,
 		AuthenticationCredentialID: authenticationCredentialId,
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, customerror.TryParseAsCustomErr(&customerror.ErrNotFound, err)
-		}
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, pgerrutils.ParsePgError(err)
 	}
 
 	model := generated.Profile{
@@ -105,10 +98,7 @@ func (r *Repository) GetProfileByEmail(ctx context.Context, email string) (*enti
 		EmailSearch:   pgmapper.StringPtrToPgText(&email),
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, customerror.TryParseAsCustomErr(&customerror.ErrNotFound, err)
-		}
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, pgerrutils.ParsePgError(err)
 	}
 
 	model := generated.Profile{
@@ -149,7 +139,7 @@ func (r *Repository) CreateProfile(ctx context.Context, profile entity.Profile) 
 		AcademicEmail:               pgmapper.StringPtrToPgText(profile.AcademicEmail),
 	})
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, pgerrutils.ParsePgError(err)
 	}
 	model := generated.Profile{
 		ID:                          query.ID,
@@ -183,27 +173,27 @@ func (r *Repository) UpdateProfile(ctx context.Context, id uuid.UUID, profile da
 	query, err := r.queries.UpdateProfile(ctx, generated.UpdateProfileParams{
 		EncryptionKey:               r.piiEncryptionKey,
 		ID:                          id,
-		IsProfilePicturePublic:      pgmapper.BoolToPgInt4(profile.IsProfilePicturePublic),
+		IsProfilePicturePublic:      pgmapper.BoolPtrToPgInt4(profile.IsProfilePicturePublic),
 		ProfilePictureUrl:           pgmapper.StringPtrToPgText(profile.ProfilePictureUrl),
-		IsFirstNamePublic:           pgmapper.BoolToPgInt4(profile.IsFirstNamePublic),
+		IsFirstNamePublic:           pgmapper.BoolPtrToPgInt4(profile.IsFirstNamePublic),
 		FirstName:                   pgmapper.StringPtrToPgText(profile.FirstName),
-		IsLastNamePublic:            pgmapper.BoolToPgInt4(profile.IsLastNamePublic),
+		IsLastNamePublic:            pgmapper.BoolPtrToPgInt4(profile.IsLastNamePublic),
 		LastName:                    pgmapper.StringPtrToPgText(profile.LastName),
-		IsEmailPublic:               pgmapper.BoolToPgInt4(profile.IsEmailPublic),
+		IsEmailPublic:               pgmapper.BoolPtrToPgInt4(profile.IsEmailPublic),
 		Email:                       pgmapper.StringPtrToPgText(profile.Email),
-		IsBioPublic:                 pgmapper.BoolToPgInt4(profile.IsBioPublic),
+		IsBioPublic:                 pgmapper.BoolPtrToPgInt4(profile.IsBioPublic),
 		Bio:                         pgmapper.StringPtrToPgText(profile.Bio),
-		IsPhoneNumberPublic:         pgmapper.BoolToPgInt4(profile.IsPhoneNumberPublic),
+		IsPhoneNumberPublic:         pgmapper.BoolPtrToPgInt4(profile.IsPhoneNumberPublic),
 		PhoneNumber:                 pgmapper.StringPtrToPgText(profile.PhoneNumber),
-		IsAddressPublic:             pgmapper.BoolToPgInt4(profile.IsAddressPublic),
+		IsAddressPublic:             pgmapper.BoolPtrToPgInt4(profile.IsAddressPublic),
 		Address:                     pgmapper.StringPtrToPgText(profile.Address),
-		IsAcademicInstitutionPublic: pgmapper.BoolToPgInt4(profile.IsAcademicInstitutionPublic),
+		IsAcademicInstitutionPublic: pgmapper.BoolPtrToPgInt4(profile.IsAcademicInstitutionPublic),
 		AcademicInstitution:         pgmapper.StringPtrToPgText(profile.AcademicInstitution),
-		IsAcademicEmailPublic:       pgmapper.BoolToPgInt4(profile.IsAcademicEmailPublic),
+		IsAcademicEmailPublic:       pgmapper.BoolPtrToPgInt4(profile.IsAcademicEmailPublic),
 		AcademicEmail:               pgmapper.StringPtrToPgText(profile.AcademicEmail),
 	})
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, pgerrutils.ParsePgError(err)
 	}
 	model := generated.Profile{
 		ID:                         query.ID,
@@ -219,27 +209,27 @@ func (r *Repository) UpdateProfileByAuthenticationCredentialId(ctx context.Conte
 	query, err := r.queries.UpdateProfileByAuthenticationCredentialId(ctx, generated.UpdateProfileByAuthenticationCredentialIdParams{
 		EncryptionKey:               r.piiEncryptionKey,
 		AuthenticationCredentialID:  authenticationCredentialId,
-		IsProfilePicturePublic:      pgmapper.BoolToPgInt4(profile.IsProfilePicturePublic),
+		IsProfilePicturePublic:      pgmapper.BoolPtrToPgInt4(profile.IsProfilePicturePublic),
 		ProfilePictureUrl:           pgmapper.StringPtrToPgText(profile.ProfilePictureUrl),
-		IsFirstNamePublic:           pgmapper.BoolToPgInt4(profile.IsFirstNamePublic),
+		IsFirstNamePublic:           pgmapper.BoolPtrToPgInt4(profile.IsFirstNamePublic),
 		FirstName:                   pgmapper.StringPtrToPgText(profile.FirstName),
-		IsLastNamePublic:            pgmapper.BoolToPgInt4(profile.IsLastNamePublic),
+		IsLastNamePublic:            pgmapper.BoolPtrToPgInt4(profile.IsLastNamePublic),
 		LastName:                    pgmapper.StringPtrToPgText(profile.LastName),
-		IsEmailPublic:               pgmapper.BoolToPgInt4(profile.IsEmailPublic),
+		IsEmailPublic:               pgmapper.BoolPtrToPgInt4(profile.IsEmailPublic),
 		Email:                       pgmapper.StringPtrToPgText(profile.Email),
-		IsBioPublic:                 pgmapper.BoolToPgInt4(profile.IsBioPublic),
+		IsBioPublic:                 pgmapper.BoolPtrToPgInt4(profile.IsBioPublic),
 		Bio:                         pgmapper.StringPtrToPgText(profile.Bio),
-		IsPhoneNumberPublic:         pgmapper.BoolToPgInt4(profile.IsPhoneNumberPublic),
+		IsPhoneNumberPublic:         pgmapper.BoolPtrToPgInt4(profile.IsPhoneNumberPublic),
 		PhoneNumber:                 pgmapper.StringPtrToPgText(profile.PhoneNumber),
-		IsAddressPublic:             pgmapper.BoolToPgInt4(profile.IsAddressPublic),
+		IsAddressPublic:             pgmapper.BoolPtrToPgInt4(profile.IsAddressPublic),
 		Address:                     pgmapper.StringPtrToPgText(profile.Address),
-		IsAcademicInstitutionPublic: pgmapper.BoolToPgInt4(profile.IsAcademicInstitutionPublic),
+		IsAcademicInstitutionPublic: pgmapper.BoolPtrToPgInt4(profile.IsAcademicInstitutionPublic),
 		AcademicInstitution:         pgmapper.StringPtrToPgText(profile.AcademicInstitution),
-		IsAcademicEmailPublic:       pgmapper.BoolToPgInt4(profile.IsAcademicEmailPublic),
+		IsAcademicEmailPublic:       pgmapper.BoolPtrToPgInt4(profile.IsAcademicEmailPublic),
 		AcademicEmail:               pgmapper.StringPtrToPgText(profile.AcademicEmail),
 	})
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, pgerrutils.ParsePgError(err)
 	}
 	model := generated.Profile{
 		ID:                          query.ID,
@@ -270,7 +260,7 @@ func (r *Repository) UpdateProfileByAuthenticationCredentialId(ctx context.Conte
 func (r *Repository) DeleteProfile(ctx context.Context, id uuid.UUID) error {
 	err := r.queries.DeleteProfile(ctx, id)
 	if err != nil {
-		return customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 	return nil
 }

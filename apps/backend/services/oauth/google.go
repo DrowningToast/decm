@@ -105,7 +105,7 @@ func (s *GoogleOAuthService) getUserDataFromGoogle(ctx context.Context, code str
 	// Use code to get token and get user info from Google.
 	token, err := s.googleConfig.Exchange(ctx, code)
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, errors.New("code exchange wrong: %s"))
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("code exchange wrong: %s"))
 	}
 
 	return token, nil
@@ -114,7 +114,7 @@ func (s *GoogleOAuthService) getUserDataFromGoogle(ctx context.Context, code str
 func (s *GoogleOAuthService) Login(session *session.Session) (*string, *customerror.Err) {
 	state, err := generateState()
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	session.Set("state", state)
@@ -127,12 +127,12 @@ func (s *GoogleOAuthService) Login(session *session.Session) (*string, *customer
 func (s *GoogleOAuthService) Callback(ctx context.Context, session *session.Session, code string, state string) (*oauth2.Token, *customerror.Err) {
 	savedState := session.Get("state")
 	if savedState != state {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, errors.New("state mismatch"))
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("state mismatch"))
 	}
 
 	token, err := s.getUserDataFromGoogle(ctx, code)
 	if err != nil {
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	return token, nil
@@ -165,7 +165,7 @@ func (s *GoogleOAuthService) GetUserInfo(ctx context.Context, token *oauth2.Toke
 	// Validate token first
 	if err := s.validateToken(token); err != nil {
 		s.logger.Warn("Invalid token: %v", slog.String("error", err.Error()))
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, err)
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
 	// Create authenticated HTTP client using oauth2 library
@@ -175,7 +175,7 @@ func (s *GoogleOAuthService) GetUserInfo(ctx context.Context, token *oauth2.Toke
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 	if err != nil {
 		s.logger.Warn("Failed to get user info: %v", slog.String("error", err.Error()))
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, errors.New("failed to get user info"))
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("failed to get user info"))
 	}
 	defer resp.Body.Close()
 
@@ -183,7 +183,7 @@ func (s *GoogleOAuthService) GetUserInfo(ctx context.Context, token *oauth2.Toke
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		s.logger.Warn("Failed to read response body: %v", slog.String("error", err.Error()))
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, errors.New("failed to read response body"))
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("failed to read response body"))
 	}
 
 	// Handle different status codes
@@ -192,13 +192,13 @@ func (s *GoogleOAuthService) GetUserInfo(ctx context.Context, token *oauth2.Toke
 		var user OAuthUser
 		if err := json.Unmarshal(body, &user); err != nil {
 			s.logger.Warn("Failed to unmarshal user info: %v", slog.String("error", err.Error()))
-			return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, errors.New("failed to unmarshal user info"))
+			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("failed to unmarshal user info"))
 		}
 
 		// Validate required fields
 		if user.Email == "" {
 			s.logger.Warn("User email is empty", slog.String("email", user.Email))
-			return nil, customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, errors.New("user email is empty"))
+			return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("user email is empty"))
 		}
 
 		s.logger.Info("Successfully retrieved user info for: %s", slog.String("email", user.Email))
@@ -209,18 +209,18 @@ func (s *GoogleOAuthService) GetUserInfo(ctx context.Context, token *oauth2.Toke
 
 	case http.StatusUnauthorized:
 		s.logger.Warn("Unauthorized: token may be expired or invalid", slog.String("error", "unauthorized: token may be expired or invalid"))
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrUnauthorized, errors.New("unauthorized: token may be expired or invalid"))
+		return nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("unauthorized: token may be expired or invalid"))
 
 	case http.StatusForbidden:
 		s.logger.Warn("Forbidden: insufficient permissions for user info", slog.String("error", "forbidden: insufficient permissions for user info"))
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInsufficientPermission, errors.New("forbidden: insufficient permissions for user info"))
+		return nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("forbidden: insufficient permissions for user info"))
 
 	case http.StatusTooManyRequests:
 		s.logger.Error("Rate limited: too many requests to Google API", slog.String("error", "rate limited: too many requests to Google API"))
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, errors.New("rate limited: too many requests to Google API"))
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("rate limited: too many requests to Google API"))
 
 	default:
 		s.logger.Error("Google API error %d: %s", slog.Int("status_code", resp.StatusCode), slog.String("error", string(body)))
-		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, errors.New(fmt.Sprintf("Google API error %d: %s", resp.StatusCode, string(body))))
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New(fmt.Sprintf("Google API error %d: %s", resp.StatusCode, string(body))))
 	}
 }
