@@ -1,5 +1,14 @@
 basePath: /
 definitions:
+  auth.verifyGoogleOAuthResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      refresh_token:
+        type: string
+    type: object
   customerror.ErrResponse:
     description: Response for the client to sign to register
     properties:
@@ -11,6 +20,13 @@ definitions:
     properties:
       message:
         type: string
+    type: object
+  onboard.registerWithGoogleOAuthResponse:
+    properties:
+      mnemonic:
+        items:
+          type: string
+        type: array
     type: object
 host: localhost:8080
 info:
@@ -24,6 +40,90 @@ info:
   title: DECM Core
   version: "1.0"
 paths:
+  /api/v1/auth/request-google-oauth:
+    get:
+      consumes:
+      - application/json
+      description: Request Google OAuth
+      operationId: request-google-oauth
+      produces:
+      - application/json
+      responses:
+        "307":
+          description: Temporary Redirect
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Request Google OAuth
+  /api/v1/auth/verify-google-oauth:
+    post:
+      consumes:
+      - application/json
+      description: Verify Google OAuth code
+      operationId: verify-google-oauth
+      parameters:
+      - description: Code
+        in: body
+        name: code
+        required: true
+        schema:
+          type: string
+      - description: State
+        in: body
+        name: state
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.verifyGoogleOAuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Verify Google OAuth code
+  /api/v1/onboard/register-with-google-oauth:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with Google OAuth
+      operationId: register-with-google-oauth
+      parameters:
+      - description: Access token
+        in: body
+        name: access_token
+        required: true
+        schema:
+          type: string
+      - description: Refresh token
+        in: body
+        name: refresh_token
+        required: true
+        schema:
+          type: string
+      - description: Password
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/onboard.registerWithGoogleOAuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Register a new user with Google OAuth
   /api/v1/onboard/register-with-wallet:
     post:
       consumes:

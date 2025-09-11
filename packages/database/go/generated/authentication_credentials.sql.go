@@ -169,6 +169,72 @@ func (q *Queries) DeleteAuthenticationCredential(ctx context.Context, id uuid.UU
 	return err
 }
 
+const GetAuthenticationCredentialByGoogleConnectorRef = `-- name: GetAuthenticationCredentialByGoogleConnectorRef :one
+SELECT 
+    id,
+    solution_status,
+    hashed_password,
+    encrypted_private_key,
+    wallet_address,
+    CASE 
+        WHEN google_connector_ref IS NOT NULL 
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, $1::varchar)
+        ELSE NULL 
+    END::text as google_connector_ref,
+    CASE 
+        WHEN github_connector_ref IS NOT NULL 
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, $1::varchar)
+        ELSE NULL 
+    END::text as github_connector_ref,
+    github_connector_ref,
+    is_verified_organizer,
+    is_verified_student,
+    created_at,
+    updated_at
+FROM authentication_credentials 
+WHERE google_connector_ref = $2::varchar
+`
+
+type GetAuthenticationCredentialByGoogleConnectorRefParams struct {
+	EncryptionKey      string `json:"encryption_key"`
+	GoogleConnectorRef string `json:"google_connector_ref"`
+}
+
+type GetAuthenticationCredentialByGoogleConnectorRefRow struct {
+	ID                   uuid.UUID          `json:"id"`
+	SolutionStatus       int32              `json:"solution_status"`
+	HashedPassword       pgtype.Text        `json:"hashed_password"`
+	EncryptedPrivateKey  pgtype.Text        `json:"encrypted_private_key"`
+	WalletAddress        string             `json:"wallet_address"`
+	GoogleConnectorRef   pgtype.Text        `json:"google_connector_ref"`
+	GithubConnectorRef   pgtype.Text        `json:"github_connector_ref"`
+	GithubConnectorRef_2 pgtype.Text        `json:"github_connector_ref_2"`
+	IsVerifiedOrganizer  int32              `json:"is_verified_organizer"`
+	IsVerifiedStudent    int32              `json:"is_verified_student"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, arg GetAuthenticationCredentialByGoogleConnectorRefParams) (GetAuthenticationCredentialByGoogleConnectorRefRow, error) {
+	row := q.db.QueryRow(ctx, GetAuthenticationCredentialByGoogleConnectorRef, arg.EncryptionKey, arg.GoogleConnectorRef)
+	var i GetAuthenticationCredentialByGoogleConnectorRefRow
+	err := row.Scan(
+		&i.ID,
+		&i.SolutionStatus,
+		&i.HashedPassword,
+		&i.EncryptedPrivateKey,
+		&i.WalletAddress,
+		&i.GoogleConnectorRef,
+		&i.GithubConnectorRef,
+		&i.GithubConnectorRef_2,
+		&i.IsVerifiedOrganizer,
+		&i.IsVerifiedStudent,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const GetAuthenticationCredentialByID = `-- name: GetAuthenticationCredentialByID :one
 SELECT 
     id,

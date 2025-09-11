@@ -24,6 +24,7 @@ type UpdateAuthenticationCredentialParameters struct {
 type AuthenticationCredentialDataGateway interface {
 	GetAuthenticationCredentialById(ctx context.Context, id uuid.UUID) (*entity.AuthenticationCredential, *customerror.Err)
 	GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (*entity.AuthenticationCredential, *customerror.Err)
+	GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef string) (*entity.AuthenticationCredential, *customerror.Err)
 	CreateAuthenticationCredential(ctx context.Context, credential entity.AuthenticationCredential) (*entity.AuthenticationCredential, *customerror.Err)
 	UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, *customerror.Err)
 	DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error

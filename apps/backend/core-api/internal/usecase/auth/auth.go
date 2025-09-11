@@ -1,0 +1,31 @@
+package auth
+
+import (
+	"context"
+
+	customerror "apps/backend/common/customerror"
+	"apps/backend/core-api/internal/datagateway"
+	oauth_services "apps/backend/services/oauth"
+
+	"github.com/gofiber/fiber/v2/middleware/session"
+	"golang.org/x/oauth2"
+)
+
+type AuthUsecase struct {
+	googleOAuthService *oauth_services.GoogleOAuthService
+}
+
+func NewAuthUsecase(googleOAuthService *oauth_services.GoogleOAuthService, authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway) *AuthUsecase {
+	return &AuthUsecase{
+		googleOAuthService: googleOAuthService,
+	}
+}
+
+func (u *AuthUsecase) VerifyGoogleOAuthCode(ctx context.Context, session *session.Session, code string, state string) (*oauth2.Token, *customerror.Err) {
+	token, err := u.googleOAuthService.Callback(ctx, session, code, state)
+	if err != nil {
+		return nil, err.Extend("failed to verify google oauth code")
+	}
+
+	return token, nil
+}

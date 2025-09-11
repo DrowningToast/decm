@@ -21,6 +21,7 @@ type Querier interface {
 	DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error
 	DeleteProfile(ctx context.Context, id uuid.UUID) error
 	DeleteProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) error
+	GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, arg GetAuthenticationCredentialByGoogleConnectorRefParams) (GetAuthenticationCredentialByGoogleConnectorRefRow, error)
 	GetAuthenticationCredentialByID(ctx context.Context, arg GetAuthenticationCredentialByIDParams) (GetAuthenticationCredentialByIDRow, error)
 	GetAuthenticationCredentialByWalletAddress(ctx context.Context, arg GetAuthenticationCredentialByWalletAddressParams) (GetAuthenticationCredentialByWalletAddressRow, error)
 	GetCredentialsBySolutionStatus(ctx context.Context, arg GetCredentialsBySolutionStatusParams) ([]GetCredentialsBySolutionStatusRow, error)
@@ -43,6 +44,7 @@ type Querier interface {
 	UpdateAuthenticationCredentialKeys(ctx context.Context, arg UpdateAuthenticationCredentialKeysParams) (UpdateAuthenticationCredentialKeysRow, error)
 	UpdateAuthenticationCredentialPassword(ctx context.Context, arg UpdateAuthenticationCredentialPasswordParams) (UpdateAuthenticationCredentialPasswordRow, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (UpdateProfileRow, error)
+	UpdateProfileByAuthenticationCredentialId(ctx context.Context, arg UpdateProfileByAuthenticationCredentialIdParams) (UpdateProfileByAuthenticationCredentialIdRow, error)
 	UpdateVerificationStatus(ctx context.Context, arg UpdateVerificationStatusParams) (UpdateVerificationStatusRow, error)
 }
 

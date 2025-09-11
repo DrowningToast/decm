@@ -96,6 +96,31 @@ SELECT
 FROM authentication_credentials 
 WHERE wallet_address = sqlc.arg(wallet_address);
 
+-- name: GetAuthenticationCredentialByGoogleConnectorRef :one
+SELECT 
+    id,
+    solution_status,
+    hashed_password,
+    encrypted_private_key,
+    wallet_address,
+    CASE 
+        WHEN google_connector_ref IS NOT NULL 
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
+        ELSE NULL 
+    END::text as google_connector_ref,
+    CASE 
+        WHEN github_connector_ref IS NOT NULL 
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
+        ELSE NULL 
+    END::text as github_connector_ref,
+    github_connector_ref,
+    is_verified_organizer,
+    is_verified_student,
+    created_at,
+    updated_at
+FROM authentication_credentials 
+WHERE google_connector_ref = sqlc.arg(google_connector_ref)::varchar;
+
 -- name: ListAuthenticationCredentials :many
 SELECT 
     id,

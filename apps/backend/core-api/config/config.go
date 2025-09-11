@@ -6,6 +6,8 @@ import (
 
 	"apps/backend/core-api/config/postgres"
 
+	google "apps/backend/core-api/config/google"
+
 	"github.com/caarlos0/env/v10"
 	"github.com/cockroachdb/errors"
 	"github.com/joho/godotenv"
@@ -32,6 +34,8 @@ type Config struct {
 	PIIEncryptionKey string `env:"PII_ENCRYPTION_KEY,required"`
 	// Jwt Configuration
 	Jwt JwtConfig `envPrefix:"JWT_"`
+	// Google OAuth Configuration
+	GoogleOAuth google.GoogleOAuthConfig `envPrefix:"GOOGLE_OAUTH_"`
 }
 
 type ApiConfig struct {

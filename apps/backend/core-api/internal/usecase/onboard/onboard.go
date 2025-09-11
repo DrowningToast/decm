@@ -2,28 +2,39 @@ package usecase
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
+	"strings"
+
+	ethutils "github.com/ethereum/go-ethereum/crypto"
 
 	"apps/backend/common"
 	customerror "apps/backend/common/customerror"
+	"apps/backend/common/encryptutils"
+	"apps/backend/common/hashutils"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/cyptoutils"
 	"apps/backend/core-api/internal/usecase/jwtutils"
+	oauth_services "apps/backend/services/oauth"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	"golang.org/x/oauth2"
 )
 
 type OnboardUsecase struct {
+	googleOAuthService  oauth_services.GoogleOAuthService
 	registerSignMessage string
 
 	AuthenticationCredentialDg datagateway.AuthenticationCredentialDataGateway
+	ProfileDg                  datagateway.ProfileDataGateway
 }
 
-func NewOnboardUsecase(authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway) *OnboardUsecase {
+func NewOnboardUsecase(authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway, profileDg datagateway.ProfileDataGateway) *OnboardUsecase {
 	return &OnboardUsecase{
 		registerSignMessage:        "Please sign this message to prove your ownership of the wallet",
 		AuthenticationCredentialDg: authenticationCredentialDg,
+		ProfileDg:                  profileDg,
 	}
 }
 
@@ -94,4 +105,101 @@ func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMs
 	}
 
 	return &sessionToken, nil
+}
+
+// Register with Google OAuth token, return JWT token
+func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.Token, password string) (*string, []string, *customerror.Err) {
+	if password == "" {
+		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, errors.New("password is required"))
+	}
+	if len(password) < 6 {
+		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, errors.New("password must be at least 8 characters long"))
+	}
+
+	userInfo, customerr := u.googleOAuthService.GetUserInfo(ctx, token)
+	if customerr != nil {
+		return nil, nil, customerr.Extend("failed to get user info from google")
+	}
+
+	// Look for duplicate credentials
+	// Must returns not found error
+	credential, customerr := u.AuthenticationCredentialDg.GetAuthenticationCredentialByGoogleConnectorRef(ctx, userInfo.Id)
+	var cusErr customerror.Err
+	if !errors.As(customerr, &cusErr) {
+		return nil, nil, cusErr.Extend("failed to check for existing google connector ref")
+	}
+	if cusErr.Code != &customerror.ErrNotFound.Code {
+		return nil, nil, cusErr.Extend("failed to check for existing google connector ref")
+	}
+	if customerr == nil || credential != nil {
+		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrDuplicateEntry, errors.New("credential already exists"))
+	}
+
+	// Look for duplicate profile
+	profile, customerr := u.ProfileDg.GetProfileByEmail(ctx, userInfo.Email)
+	if !errors.As(customerr, &cusErr) {
+		return nil, nil, cusErr.Extend("failed to check for existing profile")
+	}
+	if cusErr.Code != &customerror.ErrNotFound.Code {
+		return nil, nil, cusErr.Extend("failed to check for existing profile")
+	}
+	if customerr == nil || profile != nil {
+		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrDuplicateEntry, errors.New("profile already exists"))
+	}
+
+	// Generate mnemonic
+	wordCount := 12
+	mnemonic, customerr := cyptoutils.GenerateMnemonic(&wordCount)
+	if customerr != nil {
+		return nil, nil, customerr.Extend("failed to generate mnemonic")
+	}
+	seed, customerr := cyptoutils.GenerateSeedFromMnemonic(mnemonic)
+	if customerr != nil {
+		return nil, nil, customerr.Extend("failed to generate seed")
+	}
+
+	// Generate wallet address
+	privateKey, customerr := cyptoutils.GeneratePrivateKeyFromSeed(seed)
+	if customerr != nil {
+		return nil, nil, customerr.Extend("failed to generate private key")
+	}
+	privateKeyAsString := hex.EncodeToString(ethutils.FromECDSA(privateKey))
+
+	// Encrypt private key
+	encryptedPrivateKey, err := encryptutils.EncryptAESGCM(privateKeyAsString, password)
+	if err != nil {
+		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, customerr).Extend("failed to encrypt private key")
+	}
+	walletAddress, err := cyptoutils.GetAddressFromPrivateKey(privateKey)
+	if err != nil {
+		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, customerr).Extend("failed to get wallet address")
+	}
+
+	hashedPassword, err := hashutils.HashPassword(password)
+	if err != nil {
+		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, customerr).Extend("failed to hash password")
+	}
+
+	// Create new credential
+	credential = &entity.AuthenticationCredential{
+		GoogleConnectorRef:  &userInfo.Id,
+		SolutionStatus:      entity.SolutionStatusManaged,
+		WalletAddress:       walletAddress.Hex(),
+		EncryptedPrivateKey: &encryptedPrivateKey,
+		HashedPassword:      &hashedPassword,
+	}
+	credential, customerr = u.AuthenticationCredentialDg.CreateAuthenticationCredential(ctx, *credential)
+	if customerr != nil {
+		return nil, nil, customerr.Extend("failed to create new credential")
+	}
+
+	sessionToken, err := jwtutils.CreateToken(jwtutils.JwtPayload{
+		UserId:        credential.Id,
+		WalletAddress: credential.WalletAddress,
+	})
+	if err != nil {
+		return nil, nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+	}
+
+	return &sessionToken, strings.Fields(*mnemonic), nil
 }

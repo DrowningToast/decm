@@ -15,6 +15,13 @@
 - **QR Code Check-in**: Seamless event entry with QR code scanning
 - **Smart Contracts**: Immutable ticket ownership and transfer
 
+### 🔐 Google OAuth Authentication
+- **OAuth 2.0 Integration**: Secure authentication flow with Google
+- **Session Management**: Secure session-based authentication with CSRF protection
+- **User Registration**: Seamless onboarding with Google accounts
+- **Token Management**: Automatic token validation and refresh handling
+- **Encrypted Storage**: Secure storage of OAuth connector references
+
 ### 🎓 Academic Identity Verification (DAI)
 - **LDAP Integration**: University authentication and verification
 - **"Verify Once, Use Everywhere"**: Cross-platform identity validation  
@@ -234,6 +241,11 @@ cd packages/api && pnpm generate  # Generate TypeScript client
 - `GET /api/v1/profiles` - Get user profiles
 - `POST /api/v1/profiles` - Create user profile
 
+### Google OAuth Authentication
+- `GET /api/v1/auth/request-google-oauth` - Initiate Google OAuth flow (redirects to Google)
+- `POST /api/v1/auth/verify-google-oauth` - Verify OAuth code and receive tokens
+- `POST /api/v1/onboard/register-with-google-oauth` - Register new user with Google OAuth
+
 ### Interactive Documentation
 When the backend is running, visit:
 - **Swagger UI**: http://localhost:8080/swagger/
@@ -261,8 +273,19 @@ curl -X POST http://localhost:8080/api/v1/authentication-credentials \
     "is_verified_student": 1
   }'
 
+# Test Google OAuth flow
+# 1. Visit http://localhost:8080/api/v1/auth/request-google-oauth to start OAuth
+# 2. Complete Google authentication
+# 3. Use returned code to verify:
+curl -X POST http://localhost:8080/api/v1/auth/verify-google-oauth \
+  -H "Content-Type: application/json" \
+  -d '{
+    "code": "your_oauth_code",
+    "state": "your_oauth_state"
+  }'
+
 # Check database tables
-pnpm db:status
+bun db:status
 ```
 
 ## 🔧 Environment Configuration
@@ -298,6 +321,11 @@ BLOCKCHAIN_CHAIN_ID=1337
 LDAP_HOST=ldap.university.edu
 LDAP_PORT=389
 LDAP_BASE_DN=dc=university,dc=edu
+
+# Google OAuth Configuration
+GOOGLE_OAUTH_CLIENT_ID=your-google-client-id
+GOOGLE_OAUTH_CLIENT_SECRET=your-google-client-secret
+GOOGLE_OAUTH_REDIRECT_URL=http://localhost:8000/api/v1/onboard/google/callback
 ```
 
 ## 📚 Documentation
@@ -339,6 +367,8 @@ LDAP_BASE_DN=dc=university,dc=edu
 ### Phase 1: Core Platform ✅
 - [x] Database schema and migrations with blockchain support
 - [x] Authentication credentials system with BYOK support
+- [x] Google OAuth 2.0 authentication integration
+- [x] PII encryption with pgcrypto for secure data storage
 - [x] Environment-based configuration system
 - [x] Smart migration system with error recovery
 - [x] Basic frontend structure

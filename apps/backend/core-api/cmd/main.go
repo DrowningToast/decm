@@ -15,9 +15,12 @@ import (
 	"apps/backend/common/log"
 	"apps/backend/common/pgclient"
 	"apps/backend/core-api/config"
+	"apps/backend/core-api/internal/handler/auth"
 	"apps/backend/core-api/internal/handler/onboard"
 	"apps/backend/core-api/internal/repositories/postgres"
-	usecase "apps/backend/core-api/internal/usecase/onboard"
+	auth_usecase "apps/backend/core-api/internal/usecase/auth"
+	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
+	"apps/backend/services/oauth"
 
 	json "github.com/goccy/go-json"
 
@@ -61,9 +64,12 @@ func main() {
 	}()
 	logger.Info("Sucessfully connected to pg pool")
 
+	googleOAuthService := oauth.NewGoogleOAuthService()
+
 	pgRepo := postgres.NewRepository(pgConn, cfg.PIIEncryptionKey)
 
-	onboardUc := usecase.NewOnboardUsecase(pgRepo)
+	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo)
+	authUc := auth_usecase.NewAuthUsecase(googleOAuthService, pgRepo)
 
 	// Setup HTTP server
 	app := fiber.New(fiber.Config{
@@ -119,6 +125,8 @@ func main() {
 	// Onboard handler
 	onboardHandler := onboard.NewHandler(onboardUc)
 	onboardHandler.Mount(apiV1)
+	authHandler := auth.NewHandler(authUc, googleOAuthService)
+	authHandler.Mount(apiV1)
 
 	// Start HTTP Server
 	go func() {

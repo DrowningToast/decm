@@ -78,6 +78,36 @@ func (r *Repository) GetAuthenticationCredentialByWalletAddress(ctx context.Cont
 	return &entity, nil
 }
 
+func (r *Repository) GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef string) (*entity.AuthenticationCredential, *customerror.Err) {
+	query, err := r.queries.GetAuthenticationCredentialByGoogleConnectorRef(ctx, generated.GetAuthenticationCredentialByGoogleConnectorRefParams{
+		EncryptionKey:      r.piiEncryptionKey,
+		GoogleConnectorRef: googleConnectorRef,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, customerror.TryParseAsCustomErr(&customerror.ErrNotFound, err)
+		}
+		return nil, customerror.TryParseAsCustomErr(&customerror.ErrInternalServer, err)
+	}
+
+	model := generated.AuthenticationCredential{
+		ID:                  query.ID,
+		SolutionStatus:      query.SolutionStatus,
+		HashedPassword:      query.HashedPassword,
+		EncryptedPrivateKey: query.EncryptedPrivateKey,
+		WalletAddress:       query.WalletAddress,
+		GoogleConnectorRef:  query.GoogleConnectorRef,
+		GithubConnectorRef:  query.GithubConnectorRef,
+		IsVerifiedOrganizer: query.IsVerifiedOrganizer,
+		IsVerifiedStudent:   query.IsVerifiedStudent,
+		CreatedAt:           query.CreatedAt,
+		UpdatedAt:           query.UpdatedAt,
+	}
+
+	entity := entity.MapAuthenticationCredentialToEntity(model)
+	return &entity, nil
+}
+
 func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credential entity.AuthenticationCredential) (*entity.AuthenticationCredential, *customerror.Err) {
 	query, err := r.queries.CreateAuthenticationCredential(ctx, generated.CreateAuthenticationCredentialParams{
 		SolutionStatus:      int32(credential.SolutionStatus),

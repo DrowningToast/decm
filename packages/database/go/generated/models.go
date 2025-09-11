@@ -56,21 +56,21 @@ type Event struct {
 }
 
 type EventAttendee struct {
-	ID                          uuid.UUID          `json:"id"`
-	EventID                     uuid.UUID          `json:"event_id"`
-	AttendeeCredentialID        uuid.UUID          `json:"attendee_credential_id"`
-	ContactAddress              string             `json:"contact_address"`
-	IsAttendeeAccepted          int32              `json:"is_attendee_accepted"`
-	FirstNameProvided           int32              `json:"first_name_provided"`
-	LastNameProvided            int32              `json:"last_name_provided"`
-	EmailProvided               int32              `json:"email_provided"`
-	BioProvided                 int32              `json:"bio_provided"`
-	PhoneNumberProvided         int32              `json:"phone_number_provided"`
-	AddressProvided             int32              `json:"address_provided"`
-	AcademicInstitutionProvided int32              `json:"academic_institution_provided"`
-	AcademicEmailProvided       int32              `json:"academic_email_provided"`
-	CreatedAt                   pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt                   pgtype.Timestamptz `json:"updated_at"`
+	ID                   uuid.UUID          `json:"id"`
+	EventID              uuid.UUID          `json:"event_id"`
+	AttendeeCredentialID uuid.UUID          `json:"attendee_credential_id"`
+	ContactAddress       string             `json:"contact_address"`
+	IsAttendeeAccepted   int32              `json:"is_attendee_accepted"`
+	FirstName            pgtype.Text        `json:"first_name"`
+	LastName             pgtype.Text        `json:"last_name"`
+	Email                pgtype.Text        `json:"email"`
+	Bio                  pgtype.Text        `json:"bio"`
+	PhoneNumber          pgtype.Text        `json:"phone_number"`
+	Address              pgtype.Text        `json:"address"`
+	AcademicInstitution  pgtype.Text        `json:"academic_institution"`
+	AcademicEmail        pgtype.Text        `json:"academic_email"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
 }
 
 type EventCertificate struct {

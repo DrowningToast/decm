@@ -6,9 +6,6 @@ import (
 	"sync"
 
 	"apps/backend/core-api/config"
-
-	sloglogrus "github.com/samber/slog-logrus/v2"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -24,42 +21,39 @@ func LoadLogger() *slog.Logger {
 func LoadLoggerInEnvironment(environment string) *slog.Logger {
 	configOnce.Do(
 		func() {
-			logrusLogger := logrus.New()
-			var level slog.Leveler
+			var handler slog.Handler
+			var level slog.Level
 
 			if config.IsDevelopment() {
 				level = slog.LevelDebug
-				logrusLogger.SetLevel(logrus.DebugLevel)
-				logrusLogger.SetFormatter(&logrus.TextFormatter{
-					FullTimestamp: true,
+				// Use text handler for development - easier to read
+				handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+					Level:     level,
+					AddSource: true,
 				})
-				logrusLogger.SetOutput(os.Stdout)
-
 			} else if config.IsTesting() {
 				level = slog.LevelDebug
-				logrusLogger.SetLevel(logrus.DebugLevel)
-				logrusLogger.SetFormatter(&logrus.TextFormatter{
-					FullTimestamp: true,
+				// Use text handler for testing - easier to debug
+				handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+					Level:     level,
+					AddSource: true,
 				})
-				logrusLogger.SetOutput(os.Stdout)
-
 			} else if config.IsProduction() {
 				level = slog.LevelInfo
-				logrusLogger.SetLevel(logrus.InfoLevel)
-				logrusLogger.SetFormatter(&logrus.TextFormatter{
-					FullTimestamp: true,
+				// Use JSON handler for production - structured logging
+				handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+					Level: level,
 				})
-				// TODO: Set output to file and stdout
-				logrusLogger.SetOutput(os.Stdout)
-
+				// TODO: Add file output and log rotation
 			} else {
 				panic("invalid environment when loading environment level")
 			}
 
-			Logger = slog.New(sloglogrus.Option{
-				Logger: logrusLogger,
-				Level:  level,
-			}.NewLogrusHandler())
+			// Wrap the base handler with the RequestID handler
+			requestIDHandler := NewRequestIDHandler(handler)
+
+			Logger = slog.New(requestIDHandler)
+			slog.SetDefault(Logger) // Set as default logger
 		},
 	)
 

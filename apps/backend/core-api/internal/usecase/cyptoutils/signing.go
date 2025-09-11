@@ -18,16 +18,6 @@ func HashEthereumMessage(message string) []byte {
 	return crypto.Keccak256([]byte(message))
 }
 
-func GetAddressFromPrivateKey(privateKey *ecdsa.PrivateKey) (*ethCommon.Address, error) {
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		return nil, errors.New("invalid public key")
-	}
-	address := crypto.PubkeyToAddress(*publicKeyECDSA)
-	return &address, nil
-}
-
 func Sign(message string, privateKey *ecdsa.PrivateKey) (string, error) {
 	hashedMessage := HashEthereumMessage(message)
 

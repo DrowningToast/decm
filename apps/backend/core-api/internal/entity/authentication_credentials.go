@@ -7,7 +7,6 @@ import (
 	"apps/backend/common/pgmapper"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type SolutionStatus int32
@@ -48,35 +47,17 @@ func (entity *AuthenticationCredential) ToModel() *generated.AuthenticationCrede
 	}
 
 	return &generated.AuthenticationCredential{
-		ID:             entity.Id,
-		SolutionStatus: int32(entity.SolutionStatus),
-		HashedPassword: pgtype.Text{
-			String: *entity.HashedPassword,
-			Valid:  entity.HashedPassword != nil,
-		},
-		EncryptedPrivateKey: pgtype.Text{
-			String: *entity.EncryptedPrivateKey,
-			Valid:  entity.EncryptedPrivateKey != nil,
-		},
-		WalletAddress: entity.WalletAddress,
-		GoogleConnectorRef: pgtype.Text{
-			String: *entity.GoogleConnectorRef,
-			Valid:  entity.GoogleConnectorRef != nil,
-		},
-		GithubConnectorRef: pgtype.Text{
-			String: *entity.GithubConnectorRef,
-			Valid:  entity.GithubConnectorRef != nil,
-		},
+		ID:                  entity.Id,
+		SolutionStatus:      int32(entity.SolutionStatus),
+		HashedPassword:      pgmapper.StringPtrToPgText(entity.HashedPassword),
+		EncryptedPrivateKey: pgmapper.StringPtrToPgText(entity.EncryptedPrivateKey),
+		WalletAddress:       entity.WalletAddress,
+		GoogleConnectorRef:  pgmapper.StringPtrToPgText(entity.GoogleConnectorRef),
+		GithubConnectorRef:  pgmapper.StringPtrToPgText(entity.GithubConnectorRef),
 		IsVerifiedOrganizer: isVerifiedOrganizer,
 		IsVerifiedStudent:   isVerifiedStudent,
-		CreatedAt: pgtype.Timestamptz{
-			Time:  entity.CreatedAt,
-			Valid: true,
-		},
-		UpdatedAt: pgtype.Timestamptz{
-			Time:  entity.UpdatedAt,
-			Valid: true,
-		},
+		CreatedAt:           pgmapper.TimePtrToPgTimestampz(&entity.CreatedAt),
+		UpdatedAt:           pgmapper.TimePtrToPgTimestampz(&entity.UpdatedAt),
 	}
 }
 
