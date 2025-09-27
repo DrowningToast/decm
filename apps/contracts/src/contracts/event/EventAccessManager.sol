@@ -23,7 +23,8 @@ contract EventAccessManager is AccessControl {
             revert EventAccessManager__AccessManagerCannotBeZeroAddress();
         }
         DECM_ACCESS_MANAGER = DecmAccessManager(decmAccessManagerAddr);
-        _grantRole(Constants.HOST_ROLE, msg.sender);
+        grantHostRole(msg.sender);
+        
     }
 
     function grantIssuerRole(address issuer) external onlyHostOrAdmin {
@@ -54,26 +55,34 @@ contract EventAccessManager is AccessControl {
         _revokeRole(Constants.PARTICIPANT_ROLE, participant);
     }
 
-    function checkIsHost(address addr) external view returns (bool) {
-        return DECM_ACCESS_MANAGER.checkIsHost(addr);
+    function grantHostRole(address host) public onlyHostOrAdmin {
+        if (host == address(0)) {
+            revert EventAccessManager__AccountCannotBeZeroAddress();
+        }
+        _grantRole(Constants.HOST_ROLE, host);
     }
 
-    function checkIsIssuer(address addr) external view returns (bool) {
-        return DECM_ACCESS_MANAGER.checkIsIssuer(addr);
+    function checkIsHost(address addr) public view returns (bool) {
+        return hasRole(Constants.HOST_ROLE, addr);
     }
 
-    function checkIsParticipant(address addr) external view returns (bool) {
-        return DECM_ACCESS_MANAGER.checkIsParticipant(addr);
+    function checkIsIssuer(address addr) public view returns (bool) {
+        return hasRole(Constants.ISSUER_ROLE, addr);
+    }
+    
+    function checkIsParticipant(address addr) public view returns (bool) {
+        return hasRole(Constants.PARTICIPANT_ROLE, addr);
     }
 
-    function checkIsHostOrAdmin(address addr) external view returns (bool) {
+
+    function checkIsHostOrAdmin(address addr) public view returns (bool) {
         return
-            DECM_ACCESS_MANAGER.checkIsHost(addr) || DECM_ACCESS_MANAGER.checkIsAdmin(addr);
+            checkIsHost(addr) || DECM_ACCESS_MANAGER.checkIsAdmin(addr);
     }
 
     // Modifier
     modifier onlyHostOrAdmin() {
-        bool hasHostRole = DECM_ACCESS_MANAGER.checkIsHost(msg.sender);
+        bool hasHostRole = checkIsHost(msg.sender);
         bool hasAdminRole = DECM_ACCESS_MANAGER.checkIsAdmin(msg.sender);
         if (!hasHostRole && !hasAdminRole) {
             revert EventAccessManager__NotHostOrAdmin();
@@ -82,15 +91,15 @@ contract EventAccessManager is AccessControl {
     }
 
     modifier onlyParticipant() {
-        if (!DECM_ACCESS_MANAGER.checkIsParticipant(msg.sender)) {
+        if (!checkIsParticipant(msg.sender)) {
             revert EventAccessManager__NotParticipant();
         }
         _;
     }
 
     modifier onlyHostOrAdminOrParticipant() {
-        bool hasHostRole = DECM_ACCESS_MANAGER.checkIsHost(msg.sender);
-        bool hasParticipantRole = DECM_ACCESS_MANAGER.checkIsParticipant(msg.sender);
+        bool hasHostRole = checkIsHost(msg.sender);
+        bool hasParticipantRole = checkIsParticipant(msg.sender);
          bool hasAdminRole = DECM_ACCESS_MANAGER.checkIsAdmin(msg.sender);
         if (!hasHostRole && !hasAdminRole && !hasParticipantRole) {
             revert EventAccessManager__NotHostOrAdminOrParticipant();

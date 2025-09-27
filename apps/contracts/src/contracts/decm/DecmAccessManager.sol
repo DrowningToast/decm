@@ -44,16 +44,4 @@ contract DecmAccessManager is AccessControl {
     function checkIsAdmin(address addr) external view returns (bool) {
         return hasRole(ADMIN_ROLE, addr);
     }
-
-    function checkIsHost(address addr) external view returns (bool) {
-        return hasRole(Constants.HOST_ROLE, addr);
-    }
-
-    function checkIsIssuer(address addr) external view returns (bool) {
-        return hasRole(Constants.ISSUER_ROLE, addr);
-    }
-    
-    function checkIsParticipant(address addr) external view returns (bool) {
-        return hasRole(Constants.PARTICIPANT_ROLE, addr);
-    }
 }
