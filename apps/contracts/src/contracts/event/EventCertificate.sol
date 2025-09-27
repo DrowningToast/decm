@@ -16,10 +16,6 @@ contract EventCertificate is ERC721 {
     enum CertificateStatus {
         VALID,
         REVOKED
-    } 
-
-    enum CertificateType {
-        DEFAULT
     }
 
     // State Variables
@@ -29,52 +25,103 @@ contract EventCertificate is ERC721 {
     error EventCertificate__NotHostOrAdmin();
     error EventCertificate__TokenIdOutOfBounds();
     error EventCertificate__NotHost();
+    error EventCertificate__CertificateNotValid();
+    error EventCertificate__NotParticipant();
+
+    // Events
+    event CertificateRevoked(uint256 indexed tokenId);
+    event ParticipantSignedCertificate(uint256 indexed tokenId, address indexed receiverAddress);
+    event CertificateMinted(
+        uint256 indexed tokenId,
+        address indexed receiverAddress,
+        string certificateId,
+        string userId,
+        string issuerId
+    );
 
     // Mappings
-    mapping(uint256 => CertificateVCStructs.CertificateVcData) private tokenIdToUri;
+    mapping(uint256 => CertificateVCStructs.CertificateVcData)
+        private tokenIdToData;
     mapping(uint256 => CertificateStatus) private tokenIdToStatus;
+    mapping(uint256 => address) private tokenIdToParticipantSignedAddress;
 
+    modifier onlyHostOrAdmin() {
+        if (!EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(msg.sender)) {
+            revert EventCertificate__NotHostOrAdmin();
+        }
+        _;
+    }
+    
     constructor(
         address eventAccessManagerAddr,
         address eventAddr
-    ) ERC721(Constants.EVENT_CERTIFICATE_NAME, Constants.EVENT_CERTIFICATE_SYMBOL) {
+    )
+        ERC721(
+            Constants.EVENT_CERTIFICATE_NAME,
+            Constants.EVENT_CERTIFICATE_SYMBOL
+        )
+    {
         EVENT_ACCESS_MANAGER = EventAccessManager(eventAccessManagerAddr);
         EVENT = Event(eventAddr);
         tokenCounter = 0;
     }
 
     function mintNft(
-        address to,
+        address receiverAddress,
         string memory userId,
         string memory certificateId,
         string memory issuerId,
         string memory encryptedUserData,
         string memory backendEncryptedUserData
-    ) public {
-        bool isAllow = EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(msg.sender);
-        if (!isAllow) revert EventCertificate__NotHostOrAdmin();
+    ) external onlyHostOrAdmin {
+        uint256 tokenId = tokenCounter;
+        CertificateVCStructs.CertificateVcData
+            memory newTokenData = _buildCertificateVcData(
+                tokenId,
+                receiverAddress,
+                userId,
+                certificateId,
+                issuerId,
+                encryptedUserData,
+                backendEncryptedUserData
+            );
 
-        _safeMint(to, tokenCounter);
+        _safeMint(receiverAddress, tokenId);
+        tokenIdToData[tokenId] = newTokenData;
+        tokenIdToStatus[tokenId] = CertificateStatus.VALID;
 
-        tokenIdToStatus[tokenCounter] = CertificateStatus.VALID;
-        tokenIdToUri[tokenCounter] = CertificateVCStructs.CertificateVcData({
-            eventName: EVENT.getEventName(),
-            eventDescription: EVENT.getEventDescription(),
-            certificateId: certificateId,
-            userId: userId,
-            issuerId: issuerId,
-            issuedAt: block.timestamp,
-            issuerAddress: msg.sender,
-            receiverAddress: to,
-            encryptedUserData: encryptedUserData,
-            backendEncryptedUserData: backendEncryptedUserData
-        });
+        emit CertificateMinted(
+            tokenId,
+            receiverAddress,
+            certificateId,
+            userId,
+            issuerId
+        );
 
         tokenCounter++;
     }
 
-    struct bulkMintParticipantCertificatesParams{
-        address participant;
+    function participantSignedCertificate(
+        uint256 tokenId
+    ) external {
+        if (tokenIdToStatus[tokenId] != CertificateStatus.VALID) {
+            revert EventCertificate__CertificateNotValid();
+        }
+
+        CertificateVCStructs.CertificateVcData memory vc = tokenIdToData[tokenId];
+
+        bool isAllowToSign = vc.receiverAddress == msg.sender;
+        if (!isAllowToSign) {
+            revert EventCertificate__NotParticipant();
+        }
+
+        tokenIdToParticipantSignedAddress[tokenId] = msg.sender;
+
+        emit ParticipantSignedCertificate(tokenId, msg.sender);
+    }
+
+    struct BulkMintParticipantCertificatesParams {
+        address receiverAddress;
         string userId;
         string certificateId;
         string issuerId;
@@ -82,86 +129,122 @@ contract EventCertificate is ERC721 {
         string backendEncryptedUserData;
     }
 
-    function bulkMintParticipantCertificates(bulkMintParticipantCertificatesParams[] memory data) public {
-        bool isAllow = EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(msg.sender);
-        if (!isAllow) revert EventCertificate__NotHostOrAdmin();
+    function bulkMintParticipantCertificates(
+        BulkMintParticipantCertificatesParams[] memory params
+    ) external onlyHostOrAdmin {
+        for (uint256 i = 0; i < params.length; i++) {
+            uint256 tokenId = tokenCounter;
+            CertificateVCStructs.CertificateVcData
+                memory newTokenData = _buildCertificateVcData(
+                    tokenId,
+                    params[i].receiverAddress,
+                    params[i].userId,
+                    params[i].certificateId,
+                    params[i].issuerId,
+                    params[i].encryptedUserData,
+                    params[i].backendEncryptedUserData
+                );
 
-        for (uint256 i = 0; i < data.length; i++) {
-            _safeMint(data[i].participant, tokenCounter);
-            tokenIdToStatus[tokenCounter] = CertificateStatus.VALID;
-            tokenIdToUri[tokenCounter] = CertificateVCStructs.CertificateVcData({
-                eventName: EVENT.getEventName(),
-                eventDescription: EVENT.getEventDescription(),
-                certificateId: data[i].certificateId,
-                userId: data[i].userId,
-                issuerId: data[i].issuerId,
-                issuedAt: block.timestamp,
-                issuerAddress: msg.sender,
-                receiverAddress: data[i].participant,
-                encryptedUserData: data[i].encryptedUserData,
-                backendEncryptedUserData: data[i].backendEncryptedUserData
-            });
+            _safeMint(params[i].receiverAddress, tokenId);
+            tokenIdToData[tokenId] = newTokenData;
+            tokenIdToStatus[tokenId] = CertificateStatus.VALID;
+
             tokenCounter++;
+
+            emit CertificateMinted(
+                tokenId,
+                params[i].receiverAddress,
+                params[i].certificateId,
+                params[i].userId,
+                params[i].issuerId
+            );
         }
     }
 
-    function tokenUri(uint256 tokenId) public view returns (string memory) {
-        if (tokenId >= tokenCounter) revert EventCertificate__TokenIdOutOfBounds();
-
-        CertificateVCStructs.CertificateVcData memory vc = tokenIdToUri[tokenId];
+    function getTokenData(
+        uint256 tokenId
+    ) public view returns (string memory) {
+        if (tokenId >= tokenCounter) {
+            revert EventCertificate__TokenIdOutOfBounds();
+        }
+            
+        CertificateVCStructs.CertificateVcData memory vc = tokenIdToData[
+            tokenId
+        ];
         CertificateStatus status = tokenIdToStatus[tokenId];
-        CertificateType certificateType = CertificateType.DEFAULT;
-        CertificateVCStructs.CertificateVcData memory certificateVcData = CertificateVCStructs
-            .CertificateVcData({
-                eventName: vc.eventName,
-                eventDescription: vc.eventDescription,
-                certificateId: vc.certificateId,
-                userId: vc.userId,
-                issuerId: vc.issuerId,
-                issuedAt: vc.issuedAt,
-                issuerAddress: vc.issuerAddress,
-                receiverAddress: vc.receiverAddress,
-                encryptedUserData: vc.encryptedUserData,
-                backendEncryptedUserData: vc.backendEncryptedUserData
-            });
+        string memory statusString = status == CertificateStatus.VALID
+            ? "VALID"
+            : "REVOKED";
 
         string memory json = string(
             abi.encodePacked(
                 "{",
                     '"@context": ["https://www.w3.org/2018/credentials/v1"],',
-                    '"id": "', certificateVcData.certificateId, '",',
+                    '"id": "', vc.certificateId, '",',
                     '"type": ["VerifiableCredential","EventCertificate"],',
-                    '"issuer": "', certificateVcData.issuerId, '",',
-                    '"issuanceDate": "', certificateVcData.issuedAt, '",',
+                    '"issuer": "', vc.issuerId, '",',
+                    '"issuanceDate": "', vc.issuedAt, '",',
                     '"credentialSubject": {',
-                        '"eventName": "', certificateVcData.eventName, '",',
-                        '"eventDescription": "', certificateVcData.eventDescription, '",',
-                        '"certificateId": "', certificateVcData.certificateId, '",',
-                        '"userId": "', certificateVcData.userId, '",',
-                        '"issuerId": "', certificateVcData.issuerId, '",',
-                        '"issuedAt": "', certificateVcData.issuedAt, '",',
-                        '"issuerAddress": "', certificateVcData.issuerAddress, '",',
-                        '"receiverAddress": "', certificateVcData.receiverAddress, '"',
+                        '"eventName": "', vc.eventName, '",',
+                        '"eventDescription": "', vc.eventDescription, '",',
+                        '"certificateTokenId": "', vc.certificateTokenId, '",',
+                        '"certificateId": "', vc.certificateId, '",',
+                        '"userId": "', vc.userId, '",',
+                        '"issuerId": "', vc.issuerId, '",',
+                        '"issuedAt": "', vc.issuedAt, '",',
+                        '"issuerAddress": "', vc.issuerAddress, '",',
+                        '"receiverAddress": "', vc.receiverAddress, '"',
                         '"status": "', status, '"',
-                        '"type": "', certificateType, '"',
-                        '"encryptedUserData": "', certificateVcData.encryptedUserData, '",',
-                        '"backendEncryptedUserData": "', certificateVcData.backendEncryptedUserData, '"',
+                        '"encryptedUserData": "', vc.encryptedUserData, '",',
+                        '"backendEncryptedUserData": "', vc.backendEncryptedUserData, '"',
+                        '"status": "', statusString, '"',
                     "}",
                 "}"
             )
         );
 
-        return string(
-            abi.encodePacked(
-                "data:application/json;utf8,",
-                json
-            )
-        );
+        return string(abi.encodePacked("data:application/json;utf8,", json));
     }
 
-    function revokeCertificate(uint256 tokenId) public {
-        bool isAllow = EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(msg.sender);
-        if (!isAllow) revert EventCertificate__NotHostOrAdmin();
+    function revokeCertificate(uint256 tokenId) external onlyHostOrAdmin {
         tokenIdToStatus[tokenId] = CertificateStatus.REVOKED;
+        emit CertificateRevoked(tokenId);
     }
+
+
+    function tokenURI(uint256 tokenId) public
+        view
+        override
+        returns (string memory) {
+        if (tokenId >= tokenCounter) {
+            revert EventCertificate__TokenIdOutOfBounds();
+        }
+        return getTokenData(tokenId);
+    }
+
+    function _buildCertificateVcData(
+        uint256 tokenId,
+        address receiverAddress,
+        string memory userId,
+        string memory certificateId,
+        string memory issuerId,
+        string memory encryptedUserData,
+        string memory backendEncryptedUserData
+    ) private view returns (CertificateVCStructs.CertificateVcData memory) {
+        return
+            CertificateVCStructs.CertificateVcData({
+                eventName: EVENT.getEventName(),
+                eventDescription: EVENT.getEventDescription(),
+                certificateTokenId: tokenId,
+                certificateId: certificateId,
+                userId: userId,
+                issuerId: issuerId,
+                issuedAt: block.timestamp,
+                issuerAddress: msg.sender,
+                receiverAddress: receiverAddress,
+                encryptedUserData: encryptedUserData,
+                backendEncryptedUserData: backendEncryptedUserData
+            });
+    }
+
 }

@@ -6,12 +6,8 @@ import {EventAccessManager} from "./EventAccessManager.sol";
 import {Event} from "./Event.sol";
 import {Constants} from "../constants/Constants.s.sol";
 import {TicketVCStructs} from "../../libraries/TicketVCStructs.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 contract EventTicket is ERC721 {
-    using Strings for uint256;
-    using Strings for address;
-
     // Contracts
     EventAccessManager public immutable EVENT_ACCESS_MANAGER;
     Event public immutable EVENT;
@@ -33,14 +29,13 @@ contract EventTicket is ERC721 {
     error EventTicket__EventAddressCannotBeZeroAddress();
     error EventTicket__InvalidReceiver();
 
-    // Events
+        // Events
     event TicketMinted(
         uint256 indexed tokenId,
         address indexed issuer,
         address indexed receiver,
         string ticketId
     );
-
     event TicketStatusUpdated(uint256 indexed tokenId, TicketStatus status);
 
     // Mappings
@@ -71,58 +66,86 @@ contract EventTicket is ERC721 {
     }
 
     function mintNft(
-        address to,
-        string memory userId, // Participant's userId (Offchain ID)
-        string memory ticketId, // Ticket's id (Offchain ID)
-        string memory issuerId // Issuer's id (Offchain ID)
-    ) public onlyHostOrAdmin {
-        if (to == address(0)) {
-            revert EventTicket__InvalidReceiver();
-        }
-
+        address receiverAddress,
+        string memory userId,
+        string memory ticketId,
+        string memory issuerId,
+        string memory encryptedUserData,
+        string memory backendEncryptedUserData
+    ) external onlyHostOrAdmin{
         uint256 tokenId = tokenCounter;
-        _safeMint(to, tokenId);
 
+        TicketVCStructs.TicketVcData memory newTicketVcData = _buildTicketVcData(
+            tokenId,
+            receiverAddress,
+            userId,
+            ticketId,
+            issuerId,
+            encryptedUserData,
+            backendEncryptedUserData
+        );
+
+        _safeMint(receiverAddress, tokenId);
+
+        ticketVcData[tokenId] = newTicketVcData;
         ticketStatus[tokenId] = TicketStatus.ACTIVE;
-        ticketVcData[tokenId] = TicketVCStructs.TicketVcData({
-            eventName: EVENT.getEventName(),
-            eventDescription: EVENT.getEventDescription(),
-            ticketId: ticketId,
-            userId: userId,
-            issuerId: issuerId,
-            issuedAt: block.timestamp,
-            issuerAddress: msg.sender,
-            receiverAddress: to
-        });
 
         tokenCounter++;
 
-        emit TicketMinted(tokenId, msg.sender, to, ticketId);
+        emit TicketMinted(tokenId, msg.sender, receiverAddress, ticketId);
     }
 
-    function setTicketStatus(
-        uint256 tokenId,
-        TicketStatus newStatus
+    struct BulkMintParticipantTicketsParams {
+        address receiverAddress;
+        string userId;
+        string ticketId;
+        string issuerId;
+        string encryptedUserData;
+        string backendEncryptedUserData;
+    }
+
+    function bulkMintParticipantTickets(
+        BulkMintParticipantTicketsParams[] memory params
     ) external onlyHostOrAdmin {
-        _requireExistingToken(tokenId);
-        ticketStatus[tokenId] = newStatus;
-        emit TicketStatusUpdated(tokenId, newStatus);
+        for (uint256 i = 0; i < params.length; i++) {
+            uint256 tokenId = tokenCounter;
+
+            TicketVCStructs.TicketVcData memory newTicketVcData = _buildTicketVcData(
+                tokenId,
+                params[i].receiverAddress,
+                params[i].userId,
+                params[i].ticketId,
+                params[i].issuerId,
+                params[i].encryptedUserData,
+                params[i].backendEncryptedUserData
+            );
+
+            _safeMint(params[i].receiverAddress, tokenId);
+
+            ticketVcData[tokenId] = newTicketVcData;
+            ticketStatus[tokenId] = TicketStatus.ACTIVE;
+
+            tokenCounter++;
+
+            emit TicketMinted(tokenId, msg.sender, params[i].receiverAddress, params[i].ticketId);
+        }
     }
 
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override
-        returns (string memory)
-    {
-        TicketVCStructs.TicketVcData memory vc = _requireExistingToken(tokenId);
+    function getTokenData(
+        uint256 tokenId
+    ) public view returns (string memory) {
+        if (tokenId >= tokenCounter) {
+             revert EventTicket__TokenIdOutOfBounds();
+        }
 
+        TicketVCStructs.TicketVcData memory vc = ticketVcData[tokenId];
         TicketStatus status = ticketStatus[tokenId];
+
         string memory statusString = status == TicketStatus.ACTIVE
             ? "ACTIVE"
             : "INACTIVE";
 
-            string memory json = string(
+        string memory json = string(
             abi.encodePacked(
                 "{",
                     '"@context": ["https://www.w3.org/2018/credentials/v1"],',
@@ -133,52 +156,53 @@ contract EventTicket is ERC721 {
                     '"credentialSubject": {',
                         '"eventName": "', vc.eventName, '",',
                         '"eventDescription": "',vc.eventDescription, '",',
+                        '"ticketTokenId": "', vc.ticketTokenId, '",',
                         '"ticketId": "', vc.ticketId, '",',
                         '"userId": "', vc.userId, '",',
                         '"issuerId": "', vc.issuerId, '",',
                         '"issuedAt": "', vc.issuedAt, '",',
                         '"issuerAddress": "', vc.issuerAddress, '",',
-                        '"receiverAddress": "', vc.receiverAddress, '"',
+                        '"receiverAddress": "', vc.receiverAddress, '",',
+                        '"encryptedUserData": "', vc.encryptedUserData, '",',
+                        '"backendEncryptedUserData": "', vc.backendEncryptedUserData, '"',
                         '"status": "', statusString, '"',
                     "}",
                 "}"
             )
         );
 
-        return string(
-            abi.encodePacked("data:application/json;utf8,", json)
-        );
+        return string(abi.encodePacked("data:application/json;utf8,", json));
     }
 
-    function getTicketStatus(uint256 tokenId)
-        external
-        view
-        returns (TicketStatus)
-    {
-        _requireExistingToken(tokenId);
-        return ticketStatus[tokenId];
-    }
-
-    function getTicketData(uint256 tokenId)
-        external
-        view
-        returns (TicketVCStructs.TicketVcData memory)
-    {
-        return _requireExistingToken(tokenId);
-    }
-
-    function totalMinted() external view returns (uint256) {
-        return tokenCounter;
-    }
-
-    function _requireExistingToken(uint256 tokenId)
-        internal
-        view
-        returns (TicketVCStructs.TicketVcData memory)
-    {
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
         if (tokenId >= tokenCounter) {
             revert EventTicket__TokenIdOutOfBounds();
         }
-        return ticketVcData[tokenId];
+
+        return getTokenData(tokenId);
+    }
+
+    function _buildTicketVcData(
+        uint256 tokenId,
+        address receiverAddress,
+        string memory userId,
+        string memory ticketId,
+        string memory issuerId,
+        string memory encryptedUserData,
+        string memory backendEncryptedUserData
+    ) private view returns (TicketVCStructs.TicketVcData memory) {
+        return TicketVCStructs.TicketVcData({
+            eventName: EVENT.getEventName(),
+            eventDescription: EVENT.getEventDescription(),
+            ticketTokenId: tokenId,
+            ticketId: ticketId,
+            userId: userId,
+            issuerId: issuerId,
+            issuedAt: block.timestamp,
+            issuerAddress: msg.sender,
+            receiverAddress: receiverAddress,
+            encryptedUserData: encryptedUserData,
+            backendEncryptedUserData: backendEncryptedUserData
+        });
     }
 }

@@ -2,13 +2,14 @@
 pragma solidity ^0.8.20;
 
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
-import {IDecmAccessManager} from "../../interfaces/IDecmAccessManager.sol";
+import {Constants} from "../constants/Constants.s.sol";
 
-contract DecmAccessManager is AccessControl, IDecmAccessManager {
+contract DecmAccessManager is AccessControl {
+    using Constants for *;
+
     // Errors
     error DecmAccessManager__AdminCannotBeZeroAddress();
 
-    // Roles
     bytes32 public constant ADMIN_ROLE = DEFAULT_ADMIN_ROLE;
 
     constructor(address[] memory initialAdmins) {
@@ -25,16 +26,34 @@ contract DecmAccessManager is AccessControl, IDecmAccessManager {
     function grantAdminRole(
         address admin
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (admin == address(0)) {
+            revert DecmAccessManager__AdminCannotBeZeroAddress();
+        }
         _grantRole(ADMIN_ROLE, admin);
     }
 
     function revokeAdminRole(
         address admin
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (admin == address(0)) {
+            revert DecmAccessManager__AdminCannotBeZeroAddress();
+        }
         _revokeRole(ADMIN_ROLE, admin);
     }
 
     function checkIsAdmin(address addr) external view returns (bool) {
         return hasRole(ADMIN_ROLE, addr);
+    }
+
+    function checkIsHost(address addr) external view returns (bool) {
+        return hasRole(Constants.HOST_ROLE, addr);
+    }
+
+    function checkIsIssuer(address addr) external view returns (bool) {
+        return hasRole(Constants.ISSUER_ROLE, addr);
+    }
+    
+    function checkIsParticipant(address addr) external view returns (bool) {
+        return hasRole(Constants.PARTICIPANT_ROLE, addr);
     }
 }

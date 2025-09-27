@@ -2,11 +2,10 @@
 pragma solidity ^0.8.20;
 
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
-import {IEventAccessManager} from "../../interfaces/IEventAccessManager.sol";
 import {DecmAccessManager} from "../decm/DecmAccessManager.sol";
 import {Constants} from "../constants/Constants.s.sol";
 
-contract EventAccessManager is AccessControl, IEventAccessManager {
+contract EventAccessManager is AccessControl {
     using Constants for *;
 
     // Contracts
@@ -17,68 +16,64 @@ contract EventAccessManager is AccessControl, IEventAccessManager {
     error EventAccessManager__AccountCannotBeZeroAddress();
     error EventAccessManager__NotHostOrAdmin();
     error EventAccessManager__NotParticipant();
-
-    // Roles
-    bytes32 public constant HOST_ROLE = Constants.HOST_ROLE;
-    bytes32 public constant ISSUER_ROLE = Constants.ISSUER_ROLE;
-    bytes32 public constant PARTICIPANT_ROLE = Constants.PARTICIPANT_ROLE;
+    error EventAccessManager__NotHostOrAdminOrParticipant();
 
     constructor(address decmAccessManagerAddr) {
         if (decmAccessManagerAddr == address(0)) {
             revert EventAccessManager__AccessManagerCannotBeZeroAddress();
         }
         DECM_ACCESS_MANAGER = DecmAccessManager(decmAccessManagerAddr);
-        _grantRole(HOST_ROLE, msg.sender);
+        _grantRole(Constants.HOST_ROLE, msg.sender);
     }
 
     function grantIssuerRole(address issuer) external onlyHostOrAdmin {
         if (issuer == address(0)) {
             revert EventAccessManager__AccountCannotBeZeroAddress();
         }
-        _grantRole(ISSUER_ROLE, issuer);
+        _grantRole(Constants.ISSUER_ROLE, issuer);
     }
 
     function revokeIssuerRole(address issuer) external onlyHostOrAdmin {
         if (issuer == address(0)) {
             revert EventAccessManager__AccountCannotBeZeroAddress();
         }
-        _revokeRole(ISSUER_ROLE, issuer);
+        _revokeRole(Constants.ISSUER_ROLE, issuer);
     }
 
     function grantParticipantRole(address participant) public onlyHostOrAdmin {
         if (participant == address(0)) {
             revert EventAccessManager__AccountCannotBeZeroAddress();
         }
-        _grantRole(PARTICIPANT_ROLE, participant);
+        _grantRole(Constants.PARTICIPANT_ROLE, participant);
     }
 
-    function revokeParticipantRole(address participant) public onlyHostOrAdmin {
+    function revokeParticipantRole(address participant) public onlyHostOrAdminOrParticipant {
         if (participant == address(0)) {
             revert EventAccessManager__AccountCannotBeZeroAddress();
         }
-        _revokeRole(PARTICIPANT_ROLE, participant);
+        _revokeRole(Constants.PARTICIPANT_ROLE, participant);
     }
 
     function checkIsHost(address addr) external view returns (bool) {
-        return hasRole(HOST_ROLE, addr);
+        return DECM_ACCESS_MANAGER.checkIsHost(addr);
     }
 
     function checkIsIssuer(address addr) external view returns (bool) {
-        return hasRole(ISSUER_ROLE, addr);
+        return DECM_ACCESS_MANAGER.checkIsIssuer(addr);
     }
 
     function checkIsParticipant(address addr) external view returns (bool) {
-        return hasRole(PARTICIPANT_ROLE, addr);
+        return DECM_ACCESS_MANAGER.checkIsParticipant(addr);
     }
 
     function checkIsHostOrAdmin(address addr) external view returns (bool) {
         return
-            hasRole(HOST_ROLE, addr) || DECM_ACCESS_MANAGER.checkIsAdmin(addr);
+            DECM_ACCESS_MANAGER.checkIsHost(addr) || DECM_ACCESS_MANAGER.checkIsAdmin(addr);
     }
 
     // Modifier
     modifier onlyHostOrAdmin() {
-        bool hasHostRole = hasRole(HOST_ROLE, msg.sender);
+        bool hasHostRole = DECM_ACCESS_MANAGER.checkIsHost(msg.sender);
         bool hasAdminRole = DECM_ACCESS_MANAGER.checkIsAdmin(msg.sender);
         if (!hasHostRole && !hasAdminRole) {
             revert EventAccessManager__NotHostOrAdmin();
@@ -87,8 +82,18 @@ contract EventAccessManager is AccessControl, IEventAccessManager {
     }
 
     modifier onlyParticipant() {
-        if (!hasRole(PARTICIPANT_ROLE, msg.sender)) {
+        if (!DECM_ACCESS_MANAGER.checkIsParticipant(msg.sender)) {
             revert EventAccessManager__NotParticipant();
+        }
+        _;
+    }
+
+    modifier onlyHostOrAdminOrParticipant() {
+        bool hasHostRole = DECM_ACCESS_MANAGER.checkIsHost(msg.sender);
+        bool hasParticipantRole = DECM_ACCESS_MANAGER.checkIsParticipant(msg.sender);
+         bool hasAdminRole = DECM_ACCESS_MANAGER.checkIsAdmin(msg.sender);
+        if (!hasHostRole && !hasAdminRole && !hasParticipantRole) {
+            revert EventAccessManager__NotHostOrAdminOrParticipant();
         }
         _;
     }
