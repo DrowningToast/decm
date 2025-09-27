@@ -19,21 +19,15 @@ contract Event is EventAccessManager {
     }
 
     // Errors
-    error Event__EventIsNotActive();
-    error Event__ParticipantIsAlreadyPending();
-    error Event__ParticipantIsAlreadyApproved();
-    error Event__ParticipantIsNotPending();
-    error Event__ParticipantIsNotApproved();
     error Event__EventIsInactive();
     error Event__EventIsClosed();
     error Event__SeatsCountReached();
     error Event__InvalidEventName();
     error Event__CannotReduceSeatsCount();
+    error Event__ParticipantIsNotApprovedOrJoined();
+    error Event__SeatCountInvariantViolated(uint256 currentSeatsCount, uint256 participantsLength);
 
     // Events
-    event ParticipantRequestedJoinEvent(address indexed participant);
-    event ParticipantApprovedJoinEvent(address indexed participant);
-    event ParticipantRejectedJoinEvent(address indexed participant);
     event ParticipantLeftEvent(address indexed participant);
     event EventConfirmed();
     event EventStatusUpdated(EventStatus indexed eventStatus);
@@ -53,6 +47,11 @@ contract Event is EventAccessManager {
 
     // Mappings
     mapping(address => ParticipantStatus) participantToStatus;
+    
+    // Arrays for enumeration
+    address[] private participants;
+    mapping(address => bool) private isParticipant;
+    mapping(address => uint256) private participantIndex;
 
     constructor(
         address decmAccessManagerAddr,
@@ -61,13 +60,11 @@ contract Event is EventAccessManager {
         string memory _eventDescription,
         uint256 _seatsCount
     ) EventAccessManager(decmAccessManagerAddr) {
-        if (bytes(_eventName).length == 0) {
-            revert Event__InvalidEventName();
-        }
+        _validateEventName(_eventName);
 
         for (uint256 i = 0; i < initialIssuers.length; i++) {
             if (initialIssuers[i] == address(0)) {
-                revert EventAccessManager__IssuerCannotBeZeroAddress();
+                revert EventAccessManager__AccountCannotBeZeroAddress();
             }
             _grantRole(ISSUER_ROLE, initialIssuers[i]);
         }
@@ -85,9 +82,7 @@ contract Event is EventAccessManager {
         uint256 _seatsCount,
         EventStatus _eventStatus
     ) external onlyHostOrAdmin {
-        if (bytes(_eventName).length == 0) {
-            revert Event__InvalidEventName();
-        }
+        _validateEventName(_eventName);
 
         if (_seatsCount < seatsCount) {
             revert Event__CannotReduceSeatsCount();
@@ -97,6 +92,7 @@ contract Event is EventAccessManager {
         eventDescription = _eventDescription;
         seatsCount = _seatsCount;
         eventStatus = _eventStatus;
+        
         emit EventUpdated(
             _eventName,
             _eventDescription,
@@ -105,84 +101,12 @@ contract Event is EventAccessManager {
         );
     }
 
-    function requestJoinEvent() external {
-        if (eventStatus != EventStatus.ACTIVE) {
-            revert Event__EventIsNotActive();
-        }
-
-        if (participantToStatus[msg.sender] == ParticipantStatus.PENDING) {
-            revert Event__ParticipantIsAlreadyPending();
-        }
-
-        if (participantToStatus[msg.sender] == ParticipantStatus.APPROVED) {
-            revert Event__ParticipantIsAlreadyApproved();
-        }
-
-        participantToStatus[msg.sender] = ParticipantStatus.PENDING;
-        emit ParticipantRequestedJoinEvent(msg.sender);
-    }
-
-    function approveJoinRequest(address participant) external onlyHostOrAdmin {
-        if (eventStatus != EventStatus.ACTIVE) {
-            revert Event__EventIsNotActive();
-        }
-
-        if (participantToStatus[participant] != ParticipantStatus.PENDING) {
-            revert Event__ParticipantIsNotPending();
-        }
-
-        if (currentSeatsCount >= seatsCount) {
-            revert Event__SeatsCountReached();
-        }
-
-        participantToStatus[participant] = ParticipantStatus.APPROVED;
-        currentSeatsCount++;
-        grantParticipantRole(participant);
-
-        emit ParticipantApprovedJoinEvent(participant);
-    }
-
-    function rejectJoinRequest(address participant) external onlyHostOrAdmin {
-        if (eventStatus != EventStatus.ACTIVE) {
-            revert Event__EventIsNotActive();
-        }
-
-        if (participantToStatus[participant] != ParticipantStatus.PENDING) {
-            revert Event__ParticipantIsNotPending();
-        }
-
-        participantToStatus[participant] = ParticipantStatus.REJECTED;
-        emit ParticipantRejectedJoinEvent(participant);
-    }
-
     function leaveEvent() external onlyParticipant {
-        if (participantToStatus[msg.sender] != ParticipantStatus.APPROVED) {
-            revert Event__ParticipantIsNotApproved();
-        }
-
-        participantToStatus[msg.sender] = ParticipantStatus.LEAVED;
-        revokeParticipantRole(msg.sender);
-
-        if (currentSeatsCount > 0) {
-            currentSeatsCount--;
-        }
-
-        emit ParticipantLeftEvent(msg.sender);
+        _removeApprovedParticipant(msg.sender);
     }
 
     function removeParticipant(address participant) external onlyHostOrAdmin {
-        if (participantToStatus[participant] != ParticipantStatus.APPROVED) {
-            revert Event__ParticipantIsNotApproved();
-        }
-
-        participantToStatus[participant] = ParticipantStatus.LEAVED;
-        revokeParticipantRole(participant);
-
-        if (currentSeatsCount > 0) {
-            currentSeatsCount--;
-        }
-
-        emit ParticipantLeftEvent(participant);
+        _removeApprovedParticipant(participant);
     }
 
     function confirmEvent() public onlyHostOrAdmin {
@@ -202,7 +126,7 @@ contract Event is EventAccessManager {
         eventStatus = _eventStatus;
         emit EventStatusUpdated(_eventStatus);
     }
-
+    
     function getEventName() external view returns (string memory) {
         return eventName;
     }
@@ -223,5 +147,76 @@ contract Event is EventAccessManager {
         address participant
     ) external view returns (ParticipantStatus) {
         return participantToStatus[participant];
+    }
+
+    function getParticipants() external view returns (address[] memory) {
+        return participants;
+    }
+    
+    function getParticipantsCount() external view returns (uint256) {
+        return participants.length;
+    }
+    
+    function getParticipantAtIndex(uint256 index) external view returns (address) {
+        require(index < participants.length, "Index out of bounds");
+        return participants[index];
+    }
+    
+    function _validateEventName(string memory _eventName) private pure {
+        if (bytes(_eventName).length == 0) {
+            revert Event__InvalidEventName();
+        }
+    }
+
+    function _addParticipant(address participant) private {
+        if (!isParticipant[participant]) {
+            participantIndex[participant] = participants.length;
+            participants.push(participant);
+            isParticipant[participant] = true;
+        }
+    }
+    
+    function _removeParticipant(address participant) private {
+        if (isParticipant[participant]) {
+            uint256 index = participantIndex[participant];
+            uint256 lastIndex = participants.length - 1;
+
+            if (index != lastIndex) {
+                address lastParticipant = participants[lastIndex];
+                participants[index] = lastParticipant;
+                participantIndex[lastParticipant] = index;
+            }
+
+            participants.pop();
+            delete isParticipant[participant];
+            delete participantIndex[participant];
+        }
+    }
+
+    function _removeApprovedParticipant(address participant) private {
+        if (participantToStatus[participant] != ParticipantStatus.APPROVED) {
+            revert Event__ParticipantIsNotApprovedOrJoined();
+        }
+
+        delete participantToStatus[participant];
+        _removeParticipant(participant);
+        revokeParticipantRole(participant);
+        _decrementSeatCount();
+
+        emit ParticipantLeftEvent(participant);
+    }
+
+    function _decrementSeatCount() private {
+        if (currentSeatsCount == 0) {
+            revert Event__SeatCountInvariantViolated(currentSeatsCount, participants.length);
+        }
+
+        unchecked {
+            currentSeatsCount--;
+        }
+
+        if (currentSeatsCount != participants.length) {
+            revert Event__SeatCountInvariantViolated(currentSeatsCount, participants.length);
+        }
     }
 }

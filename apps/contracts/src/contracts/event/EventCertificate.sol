@@ -47,7 +47,9 @@ contract EventCertificate is ERC721 {
         address to,
         string memory userId,
         string memory certificateId,
-        string memory issuerId
+        string memory issuerId,
+        string memory encryptedUserData,
+        string memory backendEncryptedUserData
     ) public {
         bool isAllow = EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(msg.sender);
         if (!isAllow) revert EventCertificate__NotHostOrAdmin();
@@ -63,10 +65,44 @@ contract EventCertificate is ERC721 {
             issuerId: issuerId,
             issuedAt: block.timestamp,
             issuerAddress: msg.sender,
-            receiverAddress: to
+            receiverAddress: to,
+            encryptedUserData: encryptedUserData,
+            backendEncryptedUserData: backendEncryptedUserData
         });
 
         tokenCounter++;
+    }
+
+    struct bulkMintParticipantCertificatesParams{
+        address participant;
+        string userId;
+        string certificateId;
+        string issuerId;
+        string encryptedUserData;
+        string backendEncryptedUserData;
+    }
+
+    function bulkMintParticipantCertificates(bulkMintParticipantCertificatesParams[] memory data) public {
+        bool isAllow = EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(msg.sender);
+        if (!isAllow) revert EventCertificate__NotHostOrAdmin();
+
+        for (uint256 i = 0; i < data.length; i++) {
+            _safeMint(data[i].participant, tokenCounter);
+            tokenIdToStatus[tokenCounter] = CertificateStatus.VALID;
+            tokenIdToUri[tokenCounter] = CertificateVCStructs.CertificateVcData({
+                eventName: EVENT.getEventName(),
+                eventDescription: EVENT.getEventDescription(),
+                certificateId: data[i].certificateId,
+                userId: data[i].userId,
+                issuerId: data[i].issuerId,
+                issuedAt: block.timestamp,
+                issuerAddress: msg.sender,
+                receiverAddress: data[i].participant,
+                encryptedUserData: data[i].encryptedUserData,
+                backendEncryptedUserData: data[i].backendEncryptedUserData
+            });
+            tokenCounter++;
+        }
     }
 
     function tokenUri(uint256 tokenId) public view returns (string memory) {
@@ -84,7 +120,9 @@ contract EventCertificate is ERC721 {
                 issuerId: vc.issuerId,
                 issuedAt: vc.issuedAt,
                 issuerAddress: vc.issuerAddress,
-                receiverAddress: vc.receiverAddress
+                receiverAddress: vc.receiverAddress,
+                encryptedUserData: vc.encryptedUserData,
+                backendEncryptedUserData: vc.backendEncryptedUserData
             });
 
         string memory json = string(
@@ -106,6 +144,8 @@ contract EventCertificate is ERC721 {
                         '"receiverAddress": "', certificateVcData.receiverAddress, '"',
                         '"status": "', status, '"',
                         '"type": "', certificateType, '"',
+                        '"encryptedUserData": "', certificateVcData.encryptedUserData, '",',
+                        '"backendEncryptedUserData": "', certificateVcData.backendEncryptedUserData, '"',
                     "}",
                 "}"
             )

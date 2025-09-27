@@ -13,7 +13,8 @@ contract EventAccessManager is AccessControl, IEventAccessManager {
     DecmAccessManager public immutable DECM_ACCESS_MANAGER;
 
     // Errors
-    error EventAccessManager__IssuerCannotBeZeroAddress();
+    error EventAccessManager__AccessManagerCannotBeZeroAddress();
+    error EventAccessManager__AccountCannotBeZeroAddress();
     error EventAccessManager__NotHostOrAdmin();
     error EventAccessManager__NotParticipant();
 
@@ -23,27 +24,38 @@ contract EventAccessManager is AccessControl, IEventAccessManager {
     bytes32 public constant PARTICIPANT_ROLE = Constants.PARTICIPANT_ROLE;
 
     constructor(address decmAccessManagerAddr) {
+        if (decmAccessManagerAddr == address(0)) {
+            revert EventAccessManager__AccessManagerCannotBeZeroAddress();
+        }
         DECM_ACCESS_MANAGER = DecmAccessManager(decmAccessManagerAddr);
         _grantRole(HOST_ROLE, msg.sender);
     }
 
-    function grantIssuerRole(address issuer) external onlyRole(HOST_ROLE) {
+    function grantIssuerRole(address issuer) external onlyHostOrAdmin {
+        if (issuer == address(0)) {
+            revert EventAccessManager__AccountCannotBeZeroAddress();
+        }
         _grantRole(ISSUER_ROLE, issuer);
     }
 
-    function revokeIssuerRole(address issuer) external onlyRole(HOST_ROLE) {
+    function revokeIssuerRole(address issuer) external onlyHostOrAdmin {
+        if (issuer == address(0)) {
+            revert EventAccessManager__AccountCannotBeZeroAddress();
+        }
         _revokeRole(ISSUER_ROLE, issuer);
     }
 
-    function grantParticipantRole(
-        address participant
-    ) public onlyRole(HOST_ROLE) {
+    function grantParticipantRole(address participant) public onlyHostOrAdmin {
+        if (participant == address(0)) {
+            revert EventAccessManager__AccountCannotBeZeroAddress();
+        }
         _grantRole(PARTICIPANT_ROLE, participant);
     }
 
-    function revokeParticipantRole(
-        address participant
-    ) public onlyRole(HOST_ROLE) {
+    function revokeParticipantRole(address participant) public onlyHostOrAdmin {
+        if (participant == address(0)) {
+            revert EventAccessManager__AccountCannotBeZeroAddress();
+        }
         _revokeRole(PARTICIPANT_ROLE, participant);
     }
 
