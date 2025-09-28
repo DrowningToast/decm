@@ -9,13 +9,6 @@ contract Event is EventAccessManager {
     using ECDSA for bytes32;
 
     // Enums
-    enum ParticipantStatus {
-        PENDING,
-        APPROVED,
-        REJECTED,
-        LEAVED
-    }
-
     enum EventStatus {
         ACTIVE,
         INACTIVE,
@@ -30,12 +23,12 @@ contract Event is EventAccessManager {
     error Event__ParticipantIsAlreadyJoined();
     error Event__AddressCannotBeZero();
     error Event__CantConfirmEvent(string message);
+    error Event__InvalidSignature();
 
     event RemovedParticipant(address indexed participant);
     event AddedParticipant(address indexed participant);
     event ParticipantSigned(address indexed participant, bytes32 signature);
     event EventConfirmed();
-    error Event__InvalidSignature();
     event EventUpdated(
         string eventName,
         string eventDescription,
@@ -51,7 +44,6 @@ contract Event is EventAccessManager {
     EventStatus public eventStatus;
 
     // Participants Mappings
-    mapping(address => ParticipantStatus) participantToStatus;
     mapping(address => bool) private isParticipant;
     mapping(address => uint256) private participantIndex;
     mapping(address => bytes32) private participantToSignature;
@@ -129,12 +121,32 @@ contract Event is EventAccessManager {
         emit AddedParticipant(participantAddress);
     }
 
-    function leaveEvent(address participantAddress) external onlyParticipant {
+    function leaveEvent() external onlyParticipant {
+        address participantAddress = msg.sender;
+
         // 1. Validate Participant
         if (!isParticipant[participantAddress]) {
             revert Event__ParticipantIsNotJoined();
         }
 
+        // 2. Remove Participant
+        _removeParticipant(participantAddress);
+
+        // 3. Emit Event
+        emit RemovedParticipant(participantAddress);
+    }
+
+    function removeParticipant(address participantAddress) external onlyHostOrAdmin {
+        // Pre Conditions
+        if (participantAddress == address(0)) {
+            revert Event__AddressCannotBeZero();
+        }
+
+        // 1. Validate Participant
+        if (!isParticipant[participantAddress]) {
+            revert Event__ParticipantIsNotJoined();
+        }
+        
         // 2. Remove Participant
         _removeParticipant(participantAddress);
 
@@ -201,7 +213,6 @@ contract Event is EventAccessManager {
         participantIndex[participantAddress] = participants.length;
         participants.push(participantAddress);
         isParticipant[participantAddress] = true;
-        participantToStatus[participantAddress] = ParticipantStatus.APPROVED;
 
         // 2. Current SeatsCount Increment
         currentSeatsCount++;
@@ -209,7 +220,6 @@ contract Event is EventAccessManager {
 
     function _removeParticipant(address participantAddress) private {
         // 1. Remove & Revoke Participant Role
-        delete participantToStatus[participantAddress];
         _removeParticipantFromList(participantAddress);
         revokeParticipantRole(participantAddress);
 
@@ -247,5 +257,9 @@ contract Event is EventAccessManager {
 
     function getEventDescription() external view returns (string memory) {
         return eventDescription;
+    }
+
+    function getParticipants() external view returns (address[] memory) {
+        return participants;
     }
 }

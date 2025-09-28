@@ -39,8 +39,8 @@ contract EventTicket is ERC721 {
     event TicketStatusUpdated(uint256 indexed tokenId, TicketStatus status);
 
     // Mappings
-    mapping(uint256 => TicketVCStructs.TicketVcData) private ticketVcData;
-    mapping(uint256 => TicketStatus) private ticketStatus;
+    mapping(uint256 => TicketVCStructs.TicketVcData) private tokenIdToVcData;
+    mapping(uint256 => TicketStatus) private tokenIdToStatus;
 
     modifier onlyHostOrAdmin() {
         if (!EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(msg.sender)) {
@@ -87,8 +87,8 @@ contract EventTicket is ERC721 {
 
         _safeMint(receiverAddress, tokenId);
 
-        ticketVcData[tokenId] = newTicketVcData;
-        ticketStatus[tokenId] = TicketStatus.ACTIVE;
+        tokenIdToVcData[tokenId] = newTicketVcData;
+        tokenIdToStatus[tokenId] = TicketStatus.ACTIVE;
 
         tokenCounter++;
 
@@ -122,8 +122,8 @@ contract EventTicket is ERC721 {
 
             _safeMint(params[i].receiverAddress, tokenId);
 
-            ticketVcData[tokenId] = newTicketVcData;
-            ticketStatus[tokenId] = TicketStatus.ACTIVE;
+            tokenIdToVcData[tokenId] = newTicketVcData;
+            tokenIdToStatus[tokenId] = TicketStatus.ACTIVE;
 
             tokenCounter++;
 
@@ -138,8 +138,8 @@ contract EventTicket is ERC721 {
              revert EventTicket__TokenIdOutOfBounds();
         }
 
-        TicketVCStructs.TicketVcData memory vc = ticketVcData[tokenId];
-        TicketStatus status = ticketStatus[tokenId];
+        TicketVCStructs.TicketVcData memory vc = tokenIdToVcData[tokenId];
+        TicketStatus status = tokenIdToStatus[tokenId];
 
         string memory statusString = status == TicketStatus.ACTIVE
             ? "ACTIVE"
