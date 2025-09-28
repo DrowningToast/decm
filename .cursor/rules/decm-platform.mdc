@@ -8,11 +8,11 @@ alwaysApply: true
 **DECM** (Decentralized Event Management) - Web 3.0 platform for NFT ticketing, digital credentials, and academic identity verification.
 
 ## Tech Stack
-- **Package Manager**: Bun (REQUIRED - never npm/yarn/pnpm)
+- **Package Manager**: pnpm (REQUIRED - never npm/yarn/bun)
 - **Frontend**: React 19 + Tailwind CSS + Radix UI
 - **Backend**: Go Fiber + PostgreSQL + sqlc
 - **Database**: PostgreSQL with pgcrypto for PII encryption
-- **Monorepo**: Turbo + Bun workspaces
+- **Monorepo**: Turbo + pnpm workspaces
 
 ## Project Structure
 ```
@@ -24,13 +24,13 @@ decm/
 │   ├── database/               # PostgreSQL + sqlc
 │   ├── api/                   # Generated TypeScript client
 │   └── typescript-config/      # Shared configs
-├── package.json               # Root scripts (use with bun)
+├── package.json               # Root scripts (use with pnpm)
 └── docker-compose.isolated.yml # PostgreSQL container
 ```
 
 ## Key Entry Points
 - **Frontend**: [apps/web/src/index.tsx](mdc:apps/web/src/index.tsx)
-- **Backend**: [apps/backend/cmd/main.go](mdc:apps/backend/cmd/main.go)
+- **Backend**: [apps/backend/core-api/cmd/main.go](mdc:apps/backend/core-api/cmd/main.go)
 - **Database**: [packages/database/migrations/](mdc:packages/database/migrations/)
 - **Config**: [package.json](mdc:package.json) scripts, [.env.example](mdc:.env.example)
 
@@ -50,15 +50,15 @@ decm/
 ## Essential Commands
 ```bash
 # Setup
-bun install              # Install dependencies
-bun compose:up          # Start database
-bun backend:dev         # Start API (auto-migrations)
-bun dev                 # Start frontend
+pnpm install            # Install dependencies
+pnpm compose:up         # Start database
+pnpm dev:core           # Start API (auto-migrations)
+pnpm dev                # Start frontend
 
 # Development
-bun gen-api            # Generate TypeScript client
-bun db:generate        # Generate Go from SQL
-bun build              # Production build
+pnpm gen-api:core       # Generate TypeScript client
+pnpm db:generate        # Generate Go from SQL
+pnpm build              # Production build
 ```
 
 ## Security Principles

@@ -2,80 +2,88 @@
 alwaysApply: true
 ---
 
-# Package Manager - Bun Required
+# Package Manager - pnpm Required
 
-## Critical: Use Bun Only
+## Critical: Use pnpm Only
 
-This project is configured to use **Bun** as the package manager. Do NOT use npm, pnpm, or yarn.
+This project is configured to use **pnpm** as the package manager. Do NOT use npm, yarn, or bun.
 
 ### Specified in package.json
 ```json
-"packageManager": "bun@1.2.10"
+"packageManager": "pnpm@9.15.0"
 ```
 
 ### Correct Usage
 ```bash
-# ✅ Correct - Use bun for all commands
-bun install
-bun dev
-bun build
-bun compose:up
-bun backend:dev
-bun gen-api
+# ✅ Correct - Use pnpm for all commands
+pnpm install
+pnpm dev
+pnpm build
+pnpm compose:up
+pnpm dev:core
+pnpm gen-api:core
 
 # ❌ Incorrect - DO NOT use these
 npm run dev
-pnpm compose:up
+bun compose:up
 yarn build
 ```
 
 ### Common Error
-If you see:
-```
-Unsupported package manager specification (bun@1.2.10)
-```
+If you see package manager conflicts, ensure pnpm is being used consistently across the monorepo.
 
-**Solution**: Use `bun` instead of `npm`/`pnpm`/`yarn`
+**Solution**: Use `pnpm` instead of `npm`/yarn/bun
 
-### Why Bun?
-- **Runtime**: Project uses Bun runtime for frontend development
-- **Performance**: Faster package installation and script execution
-- **Compatibility**: Entire monorepo configured for Bun ecosystem
-- **Consistency**: All scripts and workflows assume Bun
+### Why pnpm?
+- **Performance**: Efficient package installation with content-addressable storage
+- **Disk Space**: Shared packages across projects reduce disk usage
+- **Monorepo**: Excellent workspace support for our turbo monorepo
+- **Consistency**: All scripts and workflows assume pnpm
 
 ### Available Scripts
-All scripts in [package.json](mdc:package.json) must be run with `bun`:
+All scripts in [package.json](mdc:package.json) must be run with `pnpm`:
 
 ```bash
 # Frontend
-bun dev              # React development
-bun build           # Production build
-bun lint            # Code linting
-bun check-types     # TypeScript checking
+pnpm dev              # React development (Turbo)
+pnpm build           # Production build (Turbo)
+pnpm lint            # Code linting (Turbo)
+pnpm check-types     # TypeScript checking (Turbo)
 
-# Backend  
-bun backend:dev     # Go Fiber server
-bun backend:build   # Go binary build
-bun backend:docs    # Generate OpenAPI docs
+# Backend (Core API)
+pnpm dev:core        # Go Fiber server
+pnpm build:core      # Go binary build
+pnpm start:core      # Run built binary
+pnpm docs:core       # Generate OpenAPI docs
 
 # Database
-bun compose:up      # Start PostgreSQL
-bun compose:down    # Stop database
-bun db:generate     # Generate Go code from SQL
-bun db:migrate:up   # Run database migrations
+pnpm compose:up      # Start PostgreSQL container
+pnpm compose:down    # Stop database
+pnpm db:generate     # Generate Go code from SQL (sqlc)
+pnpm db:migrate      # Run database migrations
+pnpm db:setup        # Complete database setup
+pnpm db:console      # PostgreSQL CLI access
 
 # API Generation
-bun gen-api         # Full TypeScript client generation
+pnpm gen-api:core    # Full TypeScript client generation
+```
+
+### Workspace Configuration
+Monorepo workspaces are defined in [pnpm-workspace.yaml](mdc:pnpm-workspace.yaml):
+```yaml
+packages:
+  - 'apps/*'
+  - 'packages/*'
 ```
 
 ### Installation
-If Bun is not installed:
+If pnpm is not installed:
 ```bash
-# Install Bun
-curl -fsSL https://bun.sh/install | bash
+# Install pnpm globally
+npm install -g pnpm
 
 # Verify installation
-bun --version
+pnpm --version
 ```
 
-**Remember**: Always use `bun` for this project, never other package managers!
+**Remember**: Always use `pnpm` for this project, never other package managers!

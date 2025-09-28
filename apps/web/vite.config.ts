@@ -1,7 +1,19 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+// vite.config.ts
 
-// https://vite.dev/config/
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import generouted from "@generouted/react-router/plugin";
+import tailwindcss from "@tailwindcss/vite";
+import path from "path";
+
 export default defineConfig({
-  plugins: [react()],
-})
+	plugins: [react(), generouted(), tailwindcss()],
+	server: {
+		port: 3000,
+	},
+	resolve: {
+		alias: {
+			"@": path.resolve(__dirname, "./src"),
+		},
+	},
+});

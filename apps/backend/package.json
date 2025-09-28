@@ -3,7 +3,9 @@
     "version": "1.0.0",
     "description": "DECM Backend API - Go Fiber server with PostgreSQL",
     "main": "go",
-    "scripts": {},
+    "scripts": {
+        "dev": "go run core-api/cmd/main.go"
+    },
     "keywords": [
         "go",
         "fiber",

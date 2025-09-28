@@ -1,0 +1,160 @@
+---
+alwaysApply: true
+---
+
+# DECM Project Conventions
+
+## Naming Conventions
+
+### Scripts Naming
+- Backend scripts use 'core' naming pattern: `dev:core`, `build:core`, `start:core`, `docs:core`, `gen-api:core`
+- This reflects the backend API structure under `apps/backend/core-api/`
+- **Never revert to 'backend' naming** - always use 'core' nomenclature
+
+### File Structure
+```
+apps/backend/
+├── core-api/              # Main API application
+│   ├── cmd/main.go       # Entry point
+│   ├── docs/             # OpenAPI/Swagger docs
+│   └── internal/         # Private application code
+└── common/               # Shared utilities across backend
+```
+
+## SQL & Database Conventions
+
+### sqlc Parameter Casting
+**CRITICAL**: Always cast `sqlc.arg(encryption_key)` parameter to `::varchar` in SQL queries:
+
+```sql
+-- ✅ Correct
+SELECT pgp_sym_encrypt(sqlc.arg(data), sqlc.arg(encryption_key)::varchar)
+FROM profiles WHERE id = sqlc.arg(user_id);
+
+-- ❌ Incorrect
+SELECT pgp_sym_encrypt(sqlc.arg(data), sqlc.arg(encryption_key))
+FROM profiles WHERE id = sqlc.arg(user_id);
+```
+
+### PII Encryption Pattern
+All personal identifiable information must be encrypted using pgcrypto:
+
+```sql
+-- Encryption
+INSERT INTO profiles (encrypted_email, encrypted_name)
+VALUES (
+    pgp_sym_encrypt(sqlc.arg(email), sqlc.arg(encryption_key)::varchar),
+    pgp_sym_encrypt(sqlc.arg(name), sqlc.arg(encryption_key)::varchar)
+);
+
+-- Decryption
+SELECT 
+    pgp_sym_decrypt(encrypted_email, sqlc.arg(encryption_key)::varchar) as email,
+    pgp_sym_decrypt(encrypted_name, sqlc.arg(encryption_key)::varchar) as name
+FROM profiles 
+WHERE id = sqlc.arg(user_id);
+```
+
+## Go Backend Conventions
+
+### Project Structure
+- Use `internal/` for private application code (handlers, entities, repos, usecases)
+- Use `common/` for shared utilities across the backend
+- Separate concerns: handler → usecase → repository → database
+
+### Handler Pattern
+```go
+// Standard handler structure
+func (h Handler) HandlerName(ctx *fiber.Ctx) error {
+    // 1. Parse and validate request
+    requestBody := requestStruct{}
+    if err := requestBody.Parse(ctx); err != nil {
+        return *err
+    }
+    if err := requestBody.IsValid(); err != nil {
+        return *err
+    }
+    
+    // 2. Business logic via usecase
+    result, err := h.UseCase.Method(...)
+    if err != nil {
+        return err
+    }
+    
+    // 3. Return response
+    return ctx.Status(fiber.StatusOK).JSON(result)
+}
+```
+
+### OpenAPI Documentation
+All handlers must include complete OpenAPI annotations:
+
+```go
+// @Summary Brief description
+// @Description Detailed description
+// @ID unique-operation-id
+// @Accept json
+// @Produce json
+// @Param param_name body/query/path type true "Description"
+// @Success 200 {object} ResponseStruct
+// @Failure 400 {object} customerror.ErrResponse
+// @Router /api/path [method]
+```
+
+## Frontend Conventions
+
+### React 19 + TypeScript
+- Use React 19 features and patterns
+- Strict TypeScript configuration
+- Generated API client from OpenAPI specs
+
+### Generated API Usage
+```typescript
+import { DefaultApi } from '@decm/api';
+
+const api = new DefaultApi({ 
+  basePath: 'http://localhost:8080/api/v1' 
+});
+```
+
+## Development Workflow
+
+### API-First Development
+1. Define Go handler with OpenAPI annotations
+2. Generate TypeScript client: `pnpm gen-api:core`
+3. Use generated client in React frontend
+4. Type safety maintained end-to-end
+
+### Database-First Development  
+1. Write SQL queries in `packages/database/queries/`
+2. Generate Go code: `pnpm db:generate`
+3. Use generated types in repositories and handlers
+
+## Security Requirements
+
+### Authentication Flow
+- Wallet-based authentication with message signing
+- JWT session management via HTTP-only cookies
+- All endpoints protected with authentication middleware
+
+### Data Protection
+- All PII encrypted at database level using pgcrypto
+- Type-safe database operations via sqlc
+- Input validation on all request bodies
+
+## Environment Configuration
+
+### Development Endpoints
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:8080/api/v1`
+- API Documentation: `http://localhost:8080/swagger/`
+- Database: `localhost:5432`
+
+### Required Environment Variables
+Configure via `.env` files (see `.env.example`):
+- Database connection settings
+- JWT signing keys  
+- Google OAuth credentials
+- Encryption keys for PII
+
+**Remember**: These conventions ensure consistency, security, and maintainability across the DECM platform!

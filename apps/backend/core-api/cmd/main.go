@@ -97,7 +97,9 @@ func main() {
 	})
 
 	app.Use(favicon.New()).
-		Use(cors.New()).
+		Use(cors.New(cors.Config{
+			AllowOrigins: cfg.CorsAllowedOrigins,
+		})).
 		Use(requestid.New()).
 		Use(recover.New(recover.Config{
 			EnableStackTrace: true,
@@ -155,7 +157,7 @@ func main() {
 
 	logger.InfoContext(ctx, "Starting application...",
 		slog.String("name", cfg.Name),
-		slog.String("env", cfg.ENV),
+		slog.String("env", cfg.Env),
 		slog.Int("port", cfg.Port),
 		slog.Duration("timeout", cfg.Api.Timeout),
 	)

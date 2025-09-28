@@ -33,17 +33,17 @@ func IParseEnvironment(s string) (Environment, error) {
 
 func IsDevelopment() bool {
 	cfg := LoadConfig()
-	return cfg.ENV == DevelopmentEnvironment.String()
+	return cfg.Env == DevelopmentEnvironment.String()
 }
 
 func IsTesting() bool {
 	cfg := LoadConfig()
-	return cfg.ENV == TestingEnvironment.String()
+	return cfg.Env == TestingEnvironment.String()
 }
 
 func IsProduction() bool {
 	cfg := LoadConfig()
-	return cfg.ENV == ProductionEnvironment.String()
+	return cfg.Env == ProductionEnvironment.String()
 }
 
 func (e Environment) String() string {

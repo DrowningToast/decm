@@ -15,7 +15,7 @@ var (
 
 func LoadLogger() *slog.Logger {
 	cfg := config.LoadConfig()
-	return LoadLoggerInEnvironment(cfg.ENV)
+	return LoadLoggerInEnvironment(cfg.Env)
 }
 
 func LoadLoggerInEnvironment(environment string) *slog.Logger {

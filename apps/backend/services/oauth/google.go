@@ -67,7 +67,7 @@ func NewGoogleOAuthService() *GoogleOAuthService {
 	sessionStore := session.New(session.Config{
 		Expiration:     time.Hour * 2, // 2 hour expiration
 		CookieHTTPOnly: true,
-		CookieSecure:   cfg.ENV == "production", // Only secure in production
+		CookieSecure:   cfg.Env == "production", // Only secure in production
 		CookieSameSite: "Lax",
 		KeyGenerator: func() string {
 			return utils.GenerateSecureRandomString(32)

@@ -8,18 +8,18 @@ description: "Streamlined development workflow for DECM platform"
 
 ### Terminal 1: Database
 ```bash
-bun compose:up          # Start PostgreSQL
+pnpm compose:up         # Start PostgreSQL
 ```
 
 ### Terminal 2: Backend
 ```bash
-bun backend:dev         # Go Fiber API + auto-migrations
+pnpm dev:core           # Go Fiber API + auto-migrations
 # Available: http://localhost:8080/swagger/
 ```
 
 ### Terminal 3: Frontend
 ```bash
-bun dev                 # React development server
+pnpm dev                # React development server
 # Available: http://localhost:3000
 ```
 
@@ -70,7 +70,7 @@ func (h Handler) RegisterWithWallet(ctx *fiber.Ctx) error {
 
 ### 2. Generate TypeScript Client
 ```bash
-bun gen-api             # Full pipeline: docs → client → build
+pnpm gen-api:core       # Full pipeline: docs → client → build
 ```
 
 ### 3. Use in Frontend - Authentication Flow
@@ -110,54 +110,56 @@ async function registerUser(web3Provider: any) {
 
 ## Essential Commands
 
-### Package Management (Bun Only)
+### Package Management (pnpm Only)
 ```bash
-bun install            # Dependencies
-bun dev                # Frontend dev
-bun build             # Production build
-bun lint              # Code linting
+pnpm install          # Dependencies
+pnpm dev              # Frontend dev
+pnpm build           # Production build
+pnpm lint            # Code linting
 ```
 
 ### Backend Development
 ```bash
-bun backend:dev       # Development server
-bun backend:build     # Build binary
-bun backend:docs      # OpenAPI docs only
+pnpm dev:core        # Development server
+pnpm build:core      # Build binary
+pnpm docs:core       # OpenAPI docs only
+pnpm start:core      # Run built binary
 ```
 
 ### Database Operations
 ```bash
-bun compose:up        # Start PostgreSQL
-bun db:generate       # SQL → Go code generation
-bun db:migrate:up     # Run migrations
-bun db:console        # PostgreSQL CLI
+pnpm compose:up      # Start PostgreSQL
+pnpm db:generate     # SQL → Go code generation
+pnpm db:migrate      # Run migrations
+pnpm db:console      # PostgreSQL CLI
+pnpm db:setup        # Complete setup: start → wait → migrate
 ```
 
 ### API Generation
 ```bash
-bun gen-api          # Complete: OpenAPI → TypeScript → build
-bun backend:docs     # Just update OpenAPI docs (faster)
+pnpm gen-api:core    # Complete: OpenAPI → TypeScript → build
+pnpm docs:core       # Just update OpenAPI docs (faster)
 ```
 
 ## Troubleshooting
 
 ### Package Manager Error
-Error: `Unsupported package manager specification (bun@1.2.10)`
-**Fix**: Use `bun` instead of npm/pnpm/yarn
+Error: Package manager conflicts or incorrect commands
+**Fix**: Use `pnpm` instead of npm/yarn/bun
 
 ### Database Issues
 ```bash
 # Check database health
-bun compose:up
+pnpm compose:up
 docker-compose -f docker-compose.isolated.yml logs postgres
 ```
 
 ### API Generation Fails
 ```bash
 # Verify backend builds
-cd apps/backend && go build cmd/main.go
+cd apps/backend && go build core-api/cmd/main.go
 # Then retry
-bun backend:docs && bun gen-api
+pnpm docs:core && pnpm gen-api:core
 ```
 
 ## DECM-Specific Development
