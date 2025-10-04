@@ -12,7 +12,7 @@ sequenceDiagram
   Host ->> Backend: 1. Host edit event on Web UI
   Backend ->> Host: 2. Backend request user to sign a transaction
   Host ->> Backend: 3. Backend validation 
-  Backend ->> Database: 4. Save event data
+  Backend ->> Database: 4. Save event data & signature
   Backend ->> EventAccessManager: 5. checkIsAdmin() checking is user authorize
   alt Access Forbidden
       EventAccessManager ->> Backend: 5.1. Revert transaction

@@ -1,0 +1,39 @@
+---
+config:
+  theme: redux-color
+---
+sequenceDiagram
+  participant Host as Host
+  participant Backend as Backend
+  participant EventContract as EventContract
+  participant Database as Database
+  Host ->> Backend: 1. Host view event data on Web UI
+  Backend ->> Host: 2. Backend query event data and send back to host
+  Backend ->> Database: 3. Query event data
+  Database ->> Backend: 4. Return event data
+  Backend ->> Host: 5. Show event data
+  Host ->> Backend: 6. Host press 'Confirm Event'
+  Backend ->> Host: 7. Backend request host to sign a transaction
+  Host ->> Backend: 8. Host sign a transaction
+  Backend ->> Database: 9. Save user signed signature
+  Backend ->> EventAccessManager: 10. Check is user authorized to confirm event
+
+  alt Access Forbiden
+      EventAccessManager ->> Backend: Revert transaction with error
+  end
+
+  Backend ->> EventContract: 11. call confirmEvent() to process event confirmation
+
+  alt Event Already Confirmed
+      EventContract ->> Backend: Revert transaction with error
+  else Event Inactive
+      EventContract ->> Backend: Revert transaction with error
+  end
+
+  EventContract ->> Backend: 12. Return transaction result
+  Backend ->> EventTicket: 13. Deploy EventTicket Contract
+  EventTicket ->> Backend: 14. Return transaction result
+  Backend ->> EventTicket: 15. Call bulkMintParticipantTickets() for minting tickets
+  EventTicket ->> Backend: 16. Return transaction result
+  Backend ->> Database: 17. Save event ticket data
+  Backend ->> Host: 14. Host view updated data on Web UI
