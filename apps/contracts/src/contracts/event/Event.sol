@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 import {EventAccessManager} from "./EventAccessManager.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import {ThemisUtils} from "../../utils/ThemisUtils.sol";
 
 contract Event is EventAccessManager {
     using ECDSA for bytes32;
@@ -46,15 +47,17 @@ contract Event is EventAccessManager {
     // Participants Mappings
     mapping(address => bool) private isParticipant;
     mapping(address => uint256) private participantIndex;
-    mapping(address => bytes32) private participantToSignature;
     address[] private participants;
 
     constructor(
         address decmAccessManagerAddr,
         string memory _eventName,
         string memory _eventDescription,
-        uint256 _seatsCount
-    ) EventAccessManager(decmAccessManagerAddr) {
+        uint256 _seatsCount,
+        address hostAddress,
+        string memory signMessage,
+        bytes memory signature
+    ) EventAccessManager(decmAccessManagerAddr, hostAddress, signMessage, signature) {
         _validateEventName(_eventName);
 
         eventName = _eventName;
@@ -68,8 +71,13 @@ contract Event is EventAccessManager {
         string memory _eventName,
         string memory _eventDescription,
         uint256 _seatsCount,
-        EventStatus _eventStatus
-    ) external onlyHostOrAdmin {
+        EventStatus _eventStatus,
+        string memory signMessage,
+        bytes memory signature
+    ) external {
+        address signer = recoverSigner(signMessage, signature);
+        requireHostOrAdmin(signer);
+
         // 1. Validate Event Name
         _validateEventName(_eventName);
 
@@ -94,8 +102,13 @@ contract Event is EventAccessManager {
     }
 
     function addParticipant(
-        address participantAddress
-    ) external onlyHostOrAdmin {
+        address participantAddress,
+        string memory signMessage,
+        bytes memory signature
+    ) external {
+        address signer = recoverSigner(signMessage, signature);
+        requireHostOrAdmin(signer);
+
         // Pre Conditions
         if (participantAddress == address(0)) {
             revert Event__AddressCannotBeZero();
@@ -115,14 +128,20 @@ contract Event is EventAccessManager {
         }
 
         // 2. Add Participant
-        _addParticipant(participantAddress);
+        _addParticipant(participantAddress, signer);
 
         // 3. Emit Event
         emit AddedParticipant(participantAddress);
     }
 
-    function leaveEvent() external onlyParticipant {
-        address participantAddress = msg.sender;
+    function leaveEvent(
+        string memory signMessage,
+        bytes memory signature
+    ) external {
+        address signer = recoverSigner(signMessage, signature);
+        requireParticipant(signer);
+
+        address participantAddress = signer;
 
         // 1. Validate Participant
         if (!isParticipant[participantAddress]) {
@@ -130,13 +149,16 @@ contract Event is EventAccessManager {
         }
 
         // 2. Remove Participant
-        _removeParticipant(participantAddress);
+        _removeParticipant(participantAddress, signer);
 
         // 3. Emit Event
         emit RemovedParticipant(participantAddress);
     }
 
-    function removeParticipant(address participantAddress) external onlyHostOrAdmin {
+    function removeParticipant(address participantAddress, string memory signMessage, bytes memory signature) external {
+        address signer = recoverSigner(signMessage, signature);
+        requireHostOrAdmin(signer);
+
         // Pre Conditions
         if (participantAddress == address(0)) {
             revert Event__AddressCannotBeZero();
@@ -148,13 +170,19 @@ contract Event is EventAccessManager {
         }
         
         // 2. Remove Participant
-        _removeParticipant(participantAddress);
+        _removeParticipant(participantAddress, signer);
 
         // 3. Emit Event
         emit RemovedParticipant(participantAddress);
     }
 
-    function confirmEvent() external onlyHostOrAdmin {
+    function confirmEvent(
+        string memory signMessage,
+        bytes memory signature
+    ) external {
+        address signer = recoverSigner(signMessage, signature);
+        requireHostOrAdmin(signer);
+
         // Pre Conditions
         if (eventStatus == EventStatus.CLOSED) {
             revert Event__CantConfirmEvent("Event is closed");
@@ -171,59 +199,27 @@ contract Event is EventAccessManager {
         emit EventConfirmed();
     }
 
-    function setSigningMessage(
-        address participant,
-        bytes32 messageHash
-    ) external {
-        if (participant == address(0)) revert Event__AddressCannotBeZero();
-        participantToSignature[participant] = messageHash;
-        emit ParticipantSigned(participant, messageHash);
-    }
-
-    function getSigningMessage(
-        address participant
-    ) external view returns (bytes32) {
-        return participantToSignature[participant];
-    }
-
-    function verifySignature(
-        address participant,
-        bytes calldata signature
-    ) external view returns (address) {
-        bytes32 msgHash = participantToSignature[participant];
-        if (msgHash == bytes32(0)) revert Event__InvalidSignature();
-
-        address recovered = ECDSA.recover(
-            MessageHashUtils.toEthSignedMessageHash(msgHash),
-            signature
-        );
-
-        if (recovered != participant) revert Event__InvalidSignature();
-
-        return recovered;
-    }
-
-    function _addParticipant(address participantAddress) private {
-        // 1. Check Participant Signature
-        if (participantToSignature[participantAddress] == bytes32(0)) {
-            revert Event__InvalidSignature();
-        }
-
-        // 2. Add Participant
+    function _addParticipant(address participantAddress, address signer) private {
+        // 1. Add Participant
         participantIndex[participantAddress] = participants.length;
         participants.push(participantAddress);
         isParticipant[participantAddress] = true;
 
-        // 2. Current SeatsCount Increment
+        // 2. Grant Participant Role
+        grantParticipantRole(participantAddress, signer);
+
+        // 3. Current SeatsCount Increment
         currentSeatsCount++;
     }
 
-    function _removeParticipant(address participantAddress) private {
-        // 1. Remove & Revoke Participant Role
+    function _removeParticipant(address participantAddress, address signer) private {
+        // 1. Remove Participant 
         _removeParticipantFromList(participantAddress);
-        revokeParticipantRole(participantAddress);
 
-        // 2. Current SeatsCount Decrement
+        // 2. Revoke Participant Role
+        revokeParticipantRole(participantAddress, signer);
+
+        // 3. Current SeatsCount Decrement
         currentSeatsCount--;
     }
 

@@ -1,0 +1,23 @@
+---
+config:
+  theme: redux-color
+---
+sequenceDiagram
+  participant Host as Host
+  participant Backend as Backend
+  participant Database as Database
+  participant EventAccessManager as EventAccessManager
+  participant EventContract as EventContract
+
+  Host ->> Backend: 1. Host edit event on Web UI
+  Backend ->> Host: 2. Backend request user to sign a transaction
+  Host ->> Backend: 3. Backend validation 
+  Backend ->> Database: 4. Save event data
+  Backend ->> EventAccessManager: 5. checkIsAdmin() checking is user authorize
+  alt Access Forbidden
+      EventAccessManager ->> Backend: 5.1. Revert transaction
+  end
+  EventAccessManager ->> Backend: 6. Return user authorized to perform this action
+  Backend ->> EventContract: 7.Update event data
+  EventContract ->> Backend: 8.Backend waiting for transaction to be confirmed
+  Backend ->> Host: 9. Host view updated data on Web UI

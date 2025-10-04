@@ -1,0 +1,37 @@
+---
+config:
+  theme: redux-color
+---
+sequenceDiagram
+  participant Host as Host
+  participant Backend as Backend
+  participant EventContract as EventContract
+  participant Database as Database
+  Host ->> Backend: 1. Host view event data on Web UI
+  Backend ->> Host: 2. Backend query event data and send back to host
+  Backend ->> Database: 3. Query event data
+  Database ->> Backend: 4. Return event data
+  Backend ->> Host: 5. Show event data
+  Host ->> Backend: 6. Host press 'Confirm Event'
+  alt Case: 6.1. Platform Managed Wallet
+    Backend ->> EventContract: 1. call confirmEvent()
+    Backend ->> EventContract: 2. Backend sign & sponsor transaction fee
+    alt Event Already Confirmed
+      EventContract ->> Backend: Revert transaction with error
+    else Event Inactive
+      EventContract ->> Backend: Revert transaction with error
+    end
+    EventContract ->> Backend: Return transaction result
+  else Case: 6.2 User Managed Wallet (BROK)
+    Host ->> EventContract: 1. Sign & confirm transaction
+    Host ->> EventContract: 2. Backend sign & sponsor transaction fee
+    alt Event Already Confirmed
+      EventContract ->> Backend: Revert transaction with error
+    else Event Inactive
+      EventContract ->> Backend: Revert transaction with error
+    end
+    EventContract ->> Host: Return transaction result
+    Host ->> Backend: Request update event data & status
+  end
+  Backend ->> Database: 7. Update event data & status
+  Backend ->> Host: 8. Host view updated data on Web UI

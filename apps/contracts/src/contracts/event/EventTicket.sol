@@ -6,8 +6,10 @@ import {EventAccessManager} from "./EventAccessManager.sol";
 import {Event} from "./Event.sol";
 import {Constants} from "../constants/Constants.s.sol";
 import {TicketVCStructs} from "../../libraries/TicketVCStructs.sol";
+import {ThemisUtils} from "../../utils/ThemisUtils.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract EventTicket is ERC721 {
+contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
     // Contracts
     EventAccessManager public immutable EVENT_ACCESS_MANAGER;
     Event public immutable EVENT;
@@ -42,11 +44,10 @@ contract EventTicket is ERC721 {
     mapping(uint256 => TicketVCStructs.TicketVcData) private tokenIdToVcData;
     mapping(uint256 => TicketStatus) private tokenIdToStatus;
 
-    modifier onlyHostOrAdmin() {
-        if (!EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(msg.sender)) {
+    function requireHostOrAdmin(address signer) private view {
+        if (!EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(signer)) {
             revert EventTicket__NotHostOrAdmin();
         }
-        _;
     }
 
     constructor(
@@ -71,9 +72,15 @@ contract EventTicket is ERC721 {
         string memory ticketId,
         string memory issuerId,
         string memory encryptedUserData,
-        string memory backendEncryptedUserData
-    ) external onlyHostOrAdmin{
+        string memory backendEncryptedUserData,
+        string memory signMessage,
+        bytes memory signature
+    ) external nonReentrant {
+        address signer = recoverSigner(signMessage, signature);
+        requireHostOrAdmin(signer);
+
         uint256 tokenId = tokenCounter;
+        tokenIdToStatus[tokenId] = TicketStatus.ACTIVE;
 
         TicketVCStructs.TicketVcData memory newTicketVcData = _buildTicketVcData(
             tokenId,
@@ -85,14 +92,11 @@ contract EventTicket is ERC721 {
             backendEncryptedUserData
         );
 
-        _safeMint(receiverAddress, tokenId);
-
         tokenIdToVcData[tokenId] = newTicketVcData;
-        tokenIdToStatus[tokenId] = TicketStatus.ACTIVE;
-
-        tokenCounter++;
 
         emit TicketMinted(tokenId, msg.sender, receiverAddress, ticketId);
+
+        _safeMint(receiverAddress, tokenId);
     }
 
     struct BulkMintParticipantTicketsParams {
@@ -105,8 +109,13 @@ contract EventTicket is ERC721 {
     }
 
     function bulkMintParticipantTickets(
-        BulkMintParticipantTicketsParams[] memory params
-    ) external onlyHostOrAdmin {
+        BulkMintParticipantTicketsParams[] memory params,
+        string memory signMessage,
+        bytes memory signature
+    ) external nonReentrant {
+        address signer = recoverSigner(signMessage, signature);
+        requireHostOrAdmin(signer);
+
         for (uint256 i = 0; i < params.length; i++) {
             uint256 tokenId = tokenCounter;
 

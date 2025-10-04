@@ -10,6 +10,10 @@ contract DeployEvent is Script {
 
     function run() public returns (Event) {
         address decmAccessManagerAddress = vm.envAddress("DECM_ACCESS_MANAGER_ADDRESS");
+        address hostAddress = vm.envAddress("HOST_ADDRESS");
+        string memory signMessage = vm.envString("SIGN_MESSAGE");
+        bytes memory signature = vm.envBytes("SIGNATURE");
+
         string memory eventName = "TEST_EVENT";
         string memory eventDescription = "TEST_EVENT_DESCRIPTION";
         uint256 seatsCount = 100;
@@ -23,7 +27,10 @@ contract DeployEvent is Script {
             decmAccessManagerAddress,
             eventName,
             eventDescription,
-            seatsCount
+            seatsCount,
+            hostAddress,
+            signMessage,
+            signature
         );
         vm.stopBroadcast();
 

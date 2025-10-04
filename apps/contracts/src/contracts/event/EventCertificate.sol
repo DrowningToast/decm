@@ -6,8 +6,10 @@ import {EventAccessManager} from "./EventAccessManager.sol";
 import {Event} from "./Event.sol";
 import {CertificateVCStructs} from "../../libraries/CertificateVCStructs.sol";
 import {Constants} from "../constants/Constants.s.sol";
+import {ThemisUtils} from "../../utils/ThemisUtils.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract EventCertificate is ERC721 {
+contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
     // Contracts
     EventAccessManager public immutable EVENT_ACCESS_MANAGER;
     Event public immutable EVENT;
@@ -45,11 +47,10 @@ contract EventCertificate is ERC721 {
     mapping(uint256 => CertificateStatus) private tokenIdToStatus;
     mapping(uint256 => address) private tokenIdToParticipantSignedAddress;
 
-    modifier onlyHostOrAdmin() {
-        if (!EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(msg.sender)) {
+    function requireHostOrAdmin(address signer) private view {
+        if (!EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(signer)) {
             revert EventCertificate__NotHostOrAdmin();
         }
-        _;
     }
     
     constructor(
@@ -72,8 +73,13 @@ contract EventCertificate is ERC721 {
         string memory certificateId,
         string memory issuerId,
         string memory encryptedUserData,
-        string memory backendEncryptedUserData
-    ) external onlyHostOrAdmin {
+        string memory backendEncryptedUserData,
+        string memory signMessage,
+        bytes memory signature
+    ) external nonReentrant {
+        address signer = recoverSigner(signMessage, signature);
+        requireHostOrAdmin(signer);
+
         uint256 tokenId = tokenCounter;
         CertificateVCStructs.CertificateVcData
             memory newTokenData = _buildCertificateVcData(
@@ -103,7 +109,7 @@ contract EventCertificate is ERC721 {
 
     function participantSignedCertificate(
         uint256 tokenId
-    ) external {
+    ) external nonReentrant {
         if (tokenIdToStatus[tokenId] != CertificateStatus.VALID) {
             revert EventCertificate__CertificateNotValid();
         }
@@ -130,10 +136,17 @@ contract EventCertificate is ERC721 {
     }
 
     function bulkMintParticipantCertificates(
-        BulkMintParticipantCertificatesParams[] memory params
-    ) external onlyHostOrAdmin {
+        BulkMintParticipantCertificatesParams[] memory params,
+        string memory signMessage,
+        bytes memory signature
+    ) external nonReentrant {
+        address signer = recoverSigner(signMessage, signature);
+        requireHostOrAdmin(signer);
+
         for (uint256 i = 0; i < params.length; i++) {
-            uint256 tokenId = tokenCounter;
+            uint256 tokenId = tokenCounter++;
+            tokenIdToStatus[tokenId] = CertificateStatus.VALID;
+
             CertificateVCStructs.CertificateVcData
                 memory newTokenData = _buildCertificateVcData(
                     tokenId,
@@ -145,11 +158,7 @@ contract EventCertificate is ERC721 {
                     params[i].backendEncryptedUserData
                 );
 
-            _safeMint(params[i].receiverAddress, tokenId);
             tokenIdToData[tokenId] = newTokenData;
-            tokenIdToStatus[tokenId] = CertificateStatus.VALID;
-
-            tokenCounter++;
 
             emit CertificateMinted(
                 tokenId,
@@ -158,6 +167,8 @@ contract EventCertificate is ERC721 {
                 params[i].userId,
                 params[i].issuerId
             );
+
+            _safeMint(params[i].receiverAddress, tokenId);
         }
     }
 
@@ -206,7 +217,10 @@ contract EventCertificate is ERC721 {
         return string(abi.encodePacked("data:application/json;utf8,", json));
     }
 
-    function revokeCertificate(uint256 tokenId) external onlyHostOrAdmin {
+    function revokeCertificate(uint256 tokenId, string memory signMessage, bytes memory signature) external nonReentrant {
+        address signer = recoverSigner(signMessage, signature);
+        requireHostOrAdmin(signer);
+
         tokenIdToStatus[tokenId] = CertificateStatus.REVOKED;
         emit CertificateRevoked(tokenId);
     }

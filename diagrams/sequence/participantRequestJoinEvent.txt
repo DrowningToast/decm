@@ -1,0 +1,31 @@
+---
+config:
+  theme: redux-color
+---
+sequenceDiagram
+  participant Participant_ as Participant
+  participant Backend as Backend
+  participant EventAccessManager as EventAccessManager
+  participant EventContract as EventContract
+  participant Database as Database
+  Participant_ ->> Backend: 1. Participant view event data on Web UI
+  Backend ->> Participant_: 2. Backend query event data and send back to participant
+  Backend ->> Database: 3. Query event data
+  Database ->> Backend: 4. Return event data
+  Backend ->> Participant_: 5. Show event data
+  Participant_ ->> Backend: 6. User click “Join Event”
+  Backend ->> Participant_: 7. Backend request user to sign a transaction
+  Backend ->> EventContract: 8. call() to save a user address / sign message
+  Backend ->> EventContract: 9. Check is user already joined / signed
+  alt User Already Joined / Signed
+      EventContract ->> Backend: Revert transaction
+  end
+  alt Public Event
+      Backend ->> EventContract: call ...() to addParticipant to event
+      EventContract ->> Backend: Backend waiting for transaction to be confirmed
+      Backend ->> Database: Save user joined this event
+  end
+  alt Private Event
+      Backend ->> Database: Save user requested to join event
+  end
+  Backend ->> Participant_: 10. User view join event status on Web UI
