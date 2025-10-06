@@ -2,13 +2,8 @@
 pragma solidity ^0.8.20;
 
 import {EventAccessManager} from "./EventAccessManager.sol";
-import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-import {ThemisUtils} from "../../utils/ThemisUtils.sol";
 
 contract Event is EventAccessManager {
-    using ECDSA for bytes32;
-
     // Enums
     enum EventStatus {
         ACTIVE,
