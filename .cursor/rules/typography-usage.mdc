@@ -1,0 +1,300 @@
+---
+description: "Typography component usage guidelines for consistent text rendering"
+globs: apps/web/src/**/*.tsx,apps/web/src/**/*.ts
+---
+
+# Typography Component Usage
+
+## Overview
+DECM uses a centralized Typography component for all text rendering to ensure consistency, accessibility, and maintainability across the application.
+
+## Component Location
+[apps/web/src/components/typography/typography.tsx](mdc:apps/web/src/components/typography/typography.tsx)
+
+## Import Statement
+```tsx
+import { Typography } from '@/components/typography/typography';
+```
+
+## Basic Usage
+
+### Syntax
+```tsx
+<Typography variant="variant" tag="htmlTag" className="classes">
+    Content
+</Typography>
+```
+
+### Available Variants
+- `header` - For headings and titles
+- `text` - For body text and paragraphs
+- (Check the component file for complete list)
+
+### Available HTML Tags
+- `h1`, `h2`, `h3`, `h4`, `h5`, `h6` - Heading tags
+- `p` - Paragraph
+- `span` - Inline text
+- `div` - Block container
+- `label` - Form labels
+
+## Usage Examples
+
+### Headers and Titles
+```tsx
+// Page title
+<Typography variant="header" tag="h1" className="text-2xl font-bold">
+    {t('home.hero.title')}
+</Typography>
+
+// Section heading
+<Typography variant="header" tag="h2" className="text-xl">
+    {t('features.title')}
+</Typography>
+
+// Subsection heading
+<Typography variant="header" tag="h3" className="text-lg font-semibold">
+    {t('auth.signIn')}
+</Typography>
+```
+
+### Body Text
+```tsx
+// Paragraph text
+<Typography variant="text" tag="p" className="text-base text-muted-foreground">
+    {t('home.hero.subtitle')}
+</Typography>
+
+// Inline text
+<Typography variant="text" tag="span" className="text-sm">
+    {t('common.loading')}
+</Typography>
+```
+
+### Interactive Text
+```tsx
+// Button text
+<button className="btn-primary">
+    <Typography variant="text" tag="span" className="font-medium">
+        {t('auth.signUp')}
+    </Typography>
+</button>
+
+// Link text
+<Link to="/signup">
+    <Typography variant="text" tag="span" className="underline hover:text-foreground">
+        {t('auth.hasAccount')}
+    </Typography>
+</Link>
+```
+
+### Lists and Navigation
+```tsx
+// List item
+<li>
+    <Typography variant="text" tag="span" className="text-[#b8b8b8]">
+        {t('nav.home')}
+    </Typography>
+</li>
+
+// Navigation link
+<Typography variant="text" tag="span" className="cursor-pointer hover:text-foreground">
+    {t('nav.events')}
+</Typography>
+```
+
+## Integration with i18n
+
+Always combine Typography with i18n translations:
+
+```tsx
+import { Typography } from '@/components/typography/typography';
+import { useTranslation } from 'react-i18next';
+
+export const MyComponent = () => {
+    const { t } = useTranslation();
+    
+    return (
+        <div>
+            <Typography variant="header" tag="h1">
+                {t('page.title')}
+            </Typography>
+            <Typography variant="text" tag="p">
+                {t('page.description')}
+            </Typography>
+        </div>
+    );
+};
+```
+
+## Common Patterns
+
+### Landing Page Hero
+```tsx
+<Typography
+    variant="header"
+    tag="h1"
+    className="text-[36px] md:text-[64px] leading-[40px] md:leading-[56px] text-foreground text-center font-bold"
+>
+    {t('home.hero.title')}
+</Typography>
+```
+
+### Loading States
+```tsx
+<Typography
+    variant="text"
+    tag="p"
+    className="text-sm text-muted-foreground animate-pulse"
+>
+    {t('common.loading')}
+</Typography>
+```
+
+### Error Messages
+```tsx
+<Typography variant="text" tag="p" className="text-sm text-destructive">
+    {t('errors.generic')}
+</Typography>
+```
+
+### Form Labels
+```tsx
+<Typography variant="text" tag="label" className="text-sm font-medium">
+    {t('auth.email')}
+</Typography>
+```
+
+## Responsive Typography
+
+Use Tailwind's responsive prefixes for different screen sizes:
+
+```tsx
+<Typography
+    variant="header"
+    tag="h1"
+    className="text-2xl md:text-4xl lg:text-5xl"
+>
+    {t('home.hero.title')}
+</Typography>
+
+<Typography
+    variant="text"
+    tag="p"
+    className="text-sm md:text-base lg:text-lg"
+>
+    {t('home.hero.subtitle')}
+</Typography>
+```
+
+## Styling Guidelines
+
+### Text Colors
+Use Tailwind's semantic color classes:
+- `text-foreground` - Primary text color
+- `text-muted-foreground` - Secondary text color
+- `text-primary` - Brand color text
+- `text-destructive` - Error text
+- Custom colors: `text-[#e9dede]`, `text-[#b8b8b8]`
+
+### Font Weights
+- `font-normal` - Regular text
+- `font-medium` - Medium emphasis
+- `font-semibold` - Important text
+- `font-bold` - Headings
+
+### Text Alignment
+- `text-left` - Left aligned (default)
+- `text-center` - Centered
+- `text-right` - Right aligned
+- `text-justify` - Justified
+
+### Special Effects
+```tsx
+// Text shadow
+className="[text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
+
+// Truncate
+className="truncate"
+
+// Line clamp
+className="line-clamp-2"
+```
+
+## Best Practices
+
+### ✅ DO:
+- Always use Typography component for text
+- Combine with i18n translations
+- Use semantic HTML tags (`h1`, `h2`, `p`)
+- Add appropriate className for styling
+- Use responsive classes for mobile/desktop
+- Use semantic color variables
+
+### ❌ DON'T:
+- Use plain HTML tags (`<h1>`, `<p>`) directly
+- Hard-code text strings
+- Mix Typography with other text components
+- Skip the `tag` prop
+- Use inline styles instead of Tailwind classes
+- Use non-semantic tags unnecessarily
+
+## Accessibility Considerations
+
+```tsx
+// Good: Proper heading hierarchy
+<Typography variant="header" tag="h1">Main Title</Typography>
+<Typography variant="header" tag="h2">Section</Typography>
+<Typography variant="header" tag="h3">Subsection</Typography>
+
+// Good: Descriptive labels
+<Typography variant="text" tag="label" htmlFor="email">
+    {t('auth.email')}
+</Typography>
+
+// Good: Sufficient color contrast
+<Typography variant="text" tag="p" className="text-foreground">
+    {t('content')}
+</Typography>
+```
+
+## Real-World Examples
+
+See these files for reference:
+- Landing page: [apps/web/src/components/pages/LandingPage/LandingPage.tsx](mdc:apps/web/src/components/pages/LandingPage/LandingPage.tsx)
+- OAuth page: [apps/web/src/components/pages/GoogleOAuth/GoogleOAuth.tsx](mdc:apps/web/src/components/pages/GoogleOAuth/GoogleOAuth.tsx)
+- Sign up page: [apps/web/src/pages/signup/index.tsx](mdc:apps/web/src/pages/signup/index.tsx)
+
+## Common Mistakes to Avoid
+
+```tsx
+// ❌ Bad: Direct HTML
+<h1>My Title</h1>
+<p>My text</p>
+
+// ✅ Good: Typography component
+<Typography variant="header" tag="h1">{t('title')}</Typography>
+<Typography variant="text" tag="p">{t('text')}</Typography>
+
+// ❌ Bad: Hard-coded text
+<Typography variant="text" tag="p">Welcome to DECM</Typography>
+
+// ✅ Good: i18n translation
+<Typography variant="text" tag="p">{t('common.welcome')}</Typography>
+
+// ❌ Bad: Missing tag prop
+<Typography variant="text">Content</Typography>
+
+// ✅ Good: Explicit tag
+<Typography variant="text" tag="p">Content</Typography>
+```
+
+## Performance Tips
+
+- Typography is a lightweight component, no performance concerns
+- Combine with React.memo() for frequently re-rendered components
+- Use proper semantic tags for better SEO and accessibility
+
+## Related Documentation
+- i18n translations: See [i18n-translations.mdc](mdc:i18n-translations.mdc)
+- Page components: See [page-components-pattern.mdc](mdc:page-components-pattern.mdc)
+- UI components: See [ui-components.mdc](mdc:ui-components.mdc)

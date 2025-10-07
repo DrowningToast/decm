@@ -2,41 +2,39 @@ package auth
 
 import (
 	"errors"
+	"net/url"
+	"strconv"
 	"time"
 
 	customerror "apps/backend/common/customerror"
+	"apps/backend/core-api/config"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type verifyGoogleOAuthRequest struct {
-	Code  string `json:"code"`
-	State string `json:"state"`
-}
-
-type verifyGoogleOAuthResponse struct {
-	AccessToken  string `json:"access_token"`
-	ExpiresIn    int    `json:"expires_in"`
-	RefreshToken string `json:"refresh_token"`
+	Code  string `query:"code"`
+	State string `query:"state"`
 }
 
 // @Summary Verify Google OAuth code
 // @Description Verify Google OAuth code
 // @Tags Auth
 // @ID verify-google-oauth
-// @Param code body string true "Code"
-// @Param state body string true "State"
+// @Param code query auth.verifyGoogleOAuthRequest.Code true "Code"
+// @Param state query auth.verifyGoogleOAuthRequest.State true "State"
 // @Accept json
 // @Produce json
-// @Success 200 {object} verifyGoogleOAuthResponse
+// @Success 302
 // @Failure 400 {object} customerror.ErrResponse
-// @Router /api/v1/auth/verify-google-oauth [post]
+// @Router /api/v1/auth/verify-google-oauth [get]
 func (h Handler) VerifyGoogleOAuth(ctx *fiber.Ctx) error {
-	requestBody := verifyGoogleOAuthRequest{}
-	if err := requestBody.Parse(ctx); err != nil {
-		return err
+	requestQueries := verifyGoogleOAuthRequest{}
+	err := ctx.QueryParser(&requestQueries)
+	if err != nil {
+		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
-	if err := requestBody.IsValid(); err != nil {
+	if err := requestQueries.IsValid(); err != nil {
 		return err
 	}
 
@@ -46,17 +44,19 @@ func (h Handler) VerifyGoogleOAuth(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	token, err := h.AuthUc.VerifyGoogleOAuthCode(ctx.UserContext(), session, requestBody.Code, requestBody.State)
+	token, err := h.AuthUc.VerifyGoogleOAuthCode(ctx.UserContext(), session, requestQueries.Code, requestQueries.State)
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	response := verifyGoogleOAuthResponse{
-		AccessToken:  token.AccessToken,
-		ExpiresIn:    int(token.Expiry.Sub(time.Now()).Seconds()),
-		RefreshToken: token.RefreshToken,
-	}
-	return ctx.Status(fiber.StatusOK).JSON(response)
+	cfg := config.LoadConfig()
+
+	queries := make(url.Values)
+	queries.Set("access_token", token.AccessToken)
+	queries.Set("expires_in", strconv.Itoa(int(time.Until(token.Expiry).Seconds())))
+	queries.Set("refresh_token", token.RefreshToken)
+
+	return ctx.Redirect(cfg.GoogleOAuth.SuccessURL + "?" + queries.Encode())
 }
 
 func (r *verifyGoogleOAuthRequest) Parse(ctx *fiber.Ctx) error {

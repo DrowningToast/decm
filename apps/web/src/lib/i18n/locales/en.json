@@ -54,6 +54,33 @@
         "divider": "or",
         "terms": "By signing up, you agree to our Terms of Service and Privacy Policy"
     },
+    "oauth": {
+        "google": {
+            "title": "Authenticating with Google",
+            "subtitle": "Please wait while we verify your account",
+            "processing": "Processing...",
+            "redirect": "You will be redirected shortly",
+            "error": {
+                "title": "Authentication Failed",
+                "invalidParams": "Invalid authentication parameters",
+                "missingCode": "Authorization code is missing",
+                "missingState": "State parameter is missing",
+                "verificationFailed": "Failed to verify your Google account",
+                "description": "We couldn't complete the Google authentication. This might happen if:",
+                "verificationDescription": "The authentication process started but we couldn't verify your account. This might happen if:",
+                "reasons": {
+                    "expired": "The authorization link has expired",
+                    "cancelled": "The authentication was cancelled",
+                    "invalid": "The authorization parameters are invalid",
+                    "serverError": "Our server encountered an error",
+                    "networkError": "There was a network connection issue",
+                    "sessionExpired": "Your session has expired"
+                },
+                "tryAgain": "Try signing in again",
+                "backToSignUp": "Back to Sign Up"
+            }
+        }
+    },
     "home": {
         "hero": {
             "title": "Decentralized Event Management",
@@ -78,6 +105,72 @@
             "portfolio": {
                 "title": "e-Portfolio",
                 "description": "Showcase your achievements and credentials"
+            }
+        }
+    },
+    "landing": {
+        "hero": {
+            "title": "Revolutionize certificates",
+            "subtitle": "Use blockchain technology for certificate solution",
+            "ctaButton": "Start building your portfolio",
+            "hasAccount": "I already have an registered account",
+            "scrollIndicator": "Scroll to explore"
+        },
+        "about": {
+            "title": "Themis",
+            "description": "a decentralized platform for event management, digital certificate issuance, and academic identity verification using Web 3.0 and blockchain technologies."
+        },
+        "features": {
+            "wallet": {
+                "title": "Customizable wallet management",
+                "description": "Bring your own wallet or let us manage your account's private key"
+            },
+            "verification": {
+                "title": "Every data is verifiable",
+                "description": "Every piece of record, certificates, and events are public on blockchain. Giving full transparency while keep the privacy of the users safe."
+            },
+            "download": {
+                "title": "Download certificates as pictures",
+                "description": "Certificates can be exported as pictures, and every pictures exported are able to verify its authenticity."
+            }
+        },
+        "getStarted": {
+            "title": "Get started",
+            "mobile": {
+                "verificationPortal": "Certificate Verification Portal",
+                "myCertificate": "My certificate",
+                "viewServices": "View all services"
+            },
+            "public": {
+                "title": "Public",
+                "event": "Event",
+                "verifyCertificates": "Verify certificates"
+            },
+            "students": {
+                "title": "Students",
+                "signIn": "Sign in",
+                "signUp": "Sign up",
+                "certificateManagement": "Certificate management",
+                "myEvents": "My events",
+                "inbox": "Inbox",
+                "identities": "Identities"
+            },
+            "organizer": {
+                "title": "Organizer",
+                "register": "Register with us",
+                "signIn": "Sign in",
+                "eventManagement": "Event management"
+            },
+            "issuer": {
+                "title": "Issuer",
+                "signInIAM": "Sign in with IAM",
+                "register": "Register with us"
+            },
+            "developer": {
+                "title": "Developer",
+                "manageIntegration": "Manage automation & integration",
+                "apiDocuments": "API documents",
+                "readDocs": "Read docs"
             }
         }
     },

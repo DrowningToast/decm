@@ -2,24 +2,15 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/router";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { useGoogleOAuthUrl } from "./useGoogleOAuthUrl";
+import { env } from "@/config/env";
 
 const SignUpPage = () => {
     const { t } = useTranslation();
 
-    const { requestGoogleOAuthUrl, isPending } = useGoogleOAuthUrl();
     const handleRequestGoogleOAuthUrl = async () => {
-        if (isPending) {
-            return;
-        }
-
-        const url = await requestGoogleOAuthUrl();
-        if (!url) {
-            return;
-        }
-
         // open new tab with the url
-        window.open(url, "_blank");
+        setLocalStorageItem(LOCAL_STORAGE_KEYS.ON_GOOGLE_OAUTH_SUCCESS_REDIRECT, window.location.href);
+        window.location.href = `${env.VITE_CORE_BACKEND_API}/api/v1/auth/request-google-oauth`;
     }
 
     return (
@@ -55,7 +46,7 @@ const SignUpPage = () => {
                             </div>
                         </div>
 
-                        <Button variant="secondary-dark" className="w-full" size="lg" onClick={handleRequestGoogleOAuthUrl} disabled={isPending}>
+                        <Button variant="secondary-dark" className="w-full" size="lg" onClick={handleRequestGoogleOAuthUrl}>
                             {t('signup.googleButton')}
                         </Button>
                     </div>
