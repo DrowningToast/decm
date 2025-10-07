@@ -1,0 +1,10 @@
+---
+config:
+  theme: redux-color
+---
+sequenceDiagram
+  Host ->> Backend: 1. Create certificate type configuration for an event
+  Host ->> Backend: 2. Backend check event certificate condition & issuer requirement
+  Backend ->> Database: 3. Save event's certificate status to 'PENDING'
+  Backend ->> Host: 5. Host view result on Web UI
+  

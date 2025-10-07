@@ -1,0 +1,22 @@
+---
+config:
+  theme: redux-color
+  look: neo
+---
+sequenceDiagram
+  participant Host as Host
+  participant Backend as Backend
+  participant Database as Database
+  participant EventAccessManager as EventAccessManager
+  participant EventContract as EventContract
+
+  Host ->> Backend: 1. Host create event on Web UI
+  Backend ->> Host: 2. Backend request user to sign a transaction
+  Host ->> Backend: 3. Host sign a transaction for create an event
+  Host ->> Backend: 4. Backend validation
+  Backend ->> Database: 5. Save event data & signature
+  Backend ->> EventAccessManager: 6. Deploy event access manager contract for a event
+  EventAccessManager ->> EventContract: 7. Deploy event contract for a event
+  EventAccessManager ->> Backend: 8. Backend waiting for transaction to be confirmed
+  Backend ->> Host: 9. Host view created event on Web UI
+
