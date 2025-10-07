@@ -34,21 +34,21 @@ type verifyGoogleOAuthResponse struct {
 func (h Handler) VerifyGoogleOAuth(ctx *fiber.Ctx) error {
 	requestBody := verifyGoogleOAuthRequest{}
 	if err := requestBody.Parse(ctx); err != nil {
-		return *err
+		return err
 	}
 	if err := requestBody.IsValid(); err != nil {
-		return *err
+		return err
 	}
 
 	// Get fiber session
 	session, err := h.GoogleOAuthService.SessionStore.Get(ctx)
 	if err != nil {
-		return *customerror.Parse(&customerror.ErrInternalServer, err)
+		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	token, err := h.AuthUc.VerifyGoogleOAuthCode(ctx.UserContext(), session, requestBody.Code, requestBody.State)
 	if err != nil {
-		return *customerror.Parse(&customerror.ErrInternalServer, err)
+		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	response := verifyGoogleOAuthResponse{
@@ -59,14 +59,14 @@ func (h Handler) VerifyGoogleOAuth(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(response)
 }
 
-func (r *verifyGoogleOAuthRequest) Parse(ctx *fiber.Ctx) *customerror.Err {
+func (r *verifyGoogleOAuthRequest) Parse(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(r); err != nil {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 	return nil
 }
 
-func (r *verifyGoogleOAuthRequest) IsValid() *customerror.Err {
+func (r *verifyGoogleOAuthRequest) IsValid() error {
 	if r.Code == "" {
 		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("code is required"))
 	}

@@ -30,15 +30,15 @@ type registerWithWalletRequest struct {
 func (h Handler) RegisterWithWallet(ctx *fiber.Ctx) error {
 	requestBody := registerWithWalletRequest{}
 	if err := requestBody.Parse(ctx); err != nil {
-		return *err
+		return err
 	}
 	if err := requestBody.IsValid(); err != nil {
-		return *err
+		return err
 	}
 
 	jwt, err := h.OnboardUc.RegisterWithWalletAddress(ctx.UserContext(), requestBody.SignedMessage, requestBody.WalletAddress)
 	if err != nil {
-		return *err
+		return err
 	}
 
 	h.AuthService.SetJwtCookie(ctx, *jwt)
@@ -46,14 +46,14 @@ func (h Handler) RegisterWithWallet(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).Send([]byte(""))
 }
 
-func (r *registerWithWalletRequest) Parse(ctx *fiber.Ctx) *customerror.Err {
+func (r *registerWithWalletRequest) Parse(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(r); err != nil {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 	return nil
 }
 
-func (r *registerWithWalletRequest) IsValid() *customerror.Err {
+func (r *registerWithWalletRequest) IsValid() error {
 	if len(r.SignedMessage) == 0 {
 		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("signed message is required"))
 	}

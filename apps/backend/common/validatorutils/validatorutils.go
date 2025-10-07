@@ -8,7 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func ValidateStruct(s interface{}) *customerror.Err {
+func ValidateStruct(s interface{}) error {
 	if err := validator.New().Struct(s); err != nil {
 		var validationErr *validator.ValidationErrors
 		if errors.As(err, &validationErr) {
