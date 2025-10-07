@@ -18,7 +18,7 @@ sequenceDiagram
   Backend ->> Database: 9. Save user signed signature
   Backend ->> EventAccessManager: 10. Check is user authorized to confirm event
 
-  alt Access Forbiden
+  alt Access Forbidden
       EventAccessManager ->> Backend: Revert transaction with error
   end
 
