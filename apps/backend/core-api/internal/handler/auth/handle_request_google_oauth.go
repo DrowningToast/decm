@@ -1,14 +1,13 @@
 package auth
 
 import (
+	"log/slog"
+
 	customerror "apps/backend/common/customerror"
+	"apps/backend/common/log"
 
 	"github.com/gofiber/fiber/v2"
 )
-
-type requestGoogleOAuthResponse struct {
-	URL string `json:"url" example:"https://accounts.google.com/o/oauth2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code&scope=email profile"`
-}
 
 // @Summary Request Google OAuth
 // @Tags Auth
@@ -24,11 +23,13 @@ func (h Handler) RequestGoogleOAuth(ctx *fiber.Ctx) error {
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
+	logger := log.LoadLogger()
+	logger.Info("session", slog.String("session", session.ID()))
 
 	url, err := h.GoogleOAuthService.Login(session)
 	if err != nil {
 		return err
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(requestGoogleOAuthResponse{URL: *url})
+	return ctx.Redirect(*url)
 }

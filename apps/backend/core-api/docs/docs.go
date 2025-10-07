@@ -71,7 +71,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/auth.verifyGoogleOAuthRequest"
                         }
                     },
                     {
@@ -80,7 +80,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/auth.verifyGoogleOAuthRequest"
                         }
                     }
                 ],
@@ -396,6 +396,17 @@ const docTemplate = `{
                 "url": {
                     "type": "string",
                     "example": "https://accounts.google.com/o/oauth2/auth?client_id=YOUR_CLIENT_ID\u0026redirect_uri=YOUR_REDIRECT_URI\u0026response_type=code\u0026scope=email profile"
+                }
+            }
+        },
+        "auth.verifyGoogleOAuthRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
                 }
             }
         },

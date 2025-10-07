@@ -7,6 +7,13 @@ definitions:
           profile
         type: string
     type: object
+  auth.verifyGoogleOAuthRequest:
+    properties:
+      code:
+        type: string
+      state:
+        type: string
+    type: object
   auth.verifyGoogleOAuthResponse:
     properties:
       access_token:
@@ -338,13 +345,13 @@ paths:
         name: code
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/auth.verifyGoogleOAuthRequest'
       - description: State
         in: body
         name: state
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/auth.verifyGoogleOAuthRequest'
       produces:
       - application/json
       responses:

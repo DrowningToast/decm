@@ -29,7 +29,8 @@
     "db:status": "node scripts/db-command.js psql \"\\dt\"",
     "db:console": "node scripts/db-command.js psql",
     "db:config": "node scripts/db-env.js",
-    "contract:build": "cd apps/contracts && forge install && forge build"
+    "contract:build": "cd apps/contracts && forge install && forge build",
+    "gen-icons:web": "pnpm dlx @svgr/cli --typescript --icon --out-dir"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

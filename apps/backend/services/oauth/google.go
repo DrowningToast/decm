@@ -58,7 +58,6 @@ func NewGoogleOAuthService() *GoogleOAuthService {
 		ClientSecret: cfg.GoogleOAuth.ClientSecret,
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",
-			"https://www.googleapis.com/auth/photoslibrary.readonly",
 		},
 		Endpoint: google.Endpoint,
 	}
@@ -67,6 +66,8 @@ func NewGoogleOAuthService() *GoogleOAuthService {
 	sessionStore := session.New(session.Config{
 		Expiration:     time.Hour * 2, // 2 hour expiration
 		CookieHTTPOnly: true,
+		CookieName:     "google_oauth_session",  // Explicit cookie name
+		CookiePath:     "/",                     // Ensure cookie is sent on all paths
 		CookieSecure:   cfg.Env == "production", // Only secure in production
 		CookieSameSite: "Lax",
 		KeyGenerator: func() string {
@@ -127,7 +128,7 @@ func (s *GoogleOAuthService) Login(session *session.Session) (*string, error) {
 }
 
 func (s *GoogleOAuthService) Callback(ctx context.Context, session *session.Session, code string, state string) (*oauth2.Token, error) {
-	savedState := session.Get("state")
+	savedState := session.Get("state").(string)
 	if savedState != state {
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("state mismatch"))
 	}
