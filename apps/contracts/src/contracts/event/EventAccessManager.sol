@@ -19,15 +19,13 @@ contract EventAccessManager is AccessControl, ThemisUtils {
     error EventAccessManager__NotParticipant();
     error EventAccessManager__NotHostOrAdminOrParticipant();
 
-    constructor(address decmAccessManagerAddr, address hostAddress, string memory signMessage, bytes memory signature) {
-        address signer = recoverSigner(signMessage, signature);
-
+    constructor(address decmAccessManagerAddr, address hostAddress) {
         if (decmAccessManagerAddr == address(0)) {
             revert EventAccessManager__AccessManagerCannotBeZeroAddress();
         }
         DECM_ACCESS_MANAGER = DecmAccessManager(decmAccessManagerAddr);
 
-        grantHostRole(hostAddress, signer);
+        _grantRole(Constants.HOST_ROLE, hostAddress);
     }
 
     function grantIssuerRole(address issuer, address signer) internal {

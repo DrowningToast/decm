@@ -204,10 +204,10 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                         '"issuerId": "', vc.issuerId, '",',
                         '"issuedAt": "', vc.issuedAt, '",',
                         '"issuerAddress": "', vc.issuerAddress, '",',
-                        '"receiverAddress": "', vc.receiverAddress, '"',
-                        '"status": "', status, '"',
+                        '"receiverAddress": "', vc.receiverAddress, '",',
+                        '"status": "', status, '",',
                         '"encryptedUserData": "', vc.encryptedUserData, '",',
-                        '"backendEncryptedUserData": "', vc.backendEncryptedUserData, '"',
+                        '"backendEncryptedUserData": "', vc.backendEncryptedUserData, '",',
                         '"status": "', statusString, '"',
                     "}",
                 "}"

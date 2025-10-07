@@ -94,9 +94,10 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
 
         tokenIdToVcData[tokenId] = newTicketVcData;
 
-        emit TicketMinted(tokenId, msg.sender, receiverAddress, ticketId);
-
         _safeMint(receiverAddress, tokenId);
+        tokenCounter++;
+
+        emit TicketMinted(tokenId, msg.sender, receiverAddress, ticketId);
     }
 
     struct BulkMintParticipantTicketsParams {
@@ -173,7 +174,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
                         '"issuerAddress": "', vc.issuerAddress, '",',
                         '"receiverAddress": "', vc.receiverAddress, '",',
                         '"encryptedUserData": "', vc.encryptedUserData, '",',
-                        '"backendEncryptedUserData": "', vc.backendEncryptedUserData, '"',
+                        '"backendEncryptedUserData": "', vc.backendEncryptedUserData, '",',
                         '"status": "', statusString, '"',
                     "}",
                 "}"
