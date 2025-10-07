@@ -1,0 +1,11 @@
+---
+config:
+  theme: redux-color
+---
+sequenceDiagram
+  Host ->> Backend: 1. Host confirm certificate type & configuration
+  Host ->> Backend: 2. Backend validate data and condition
+  Backend ->> Host: 3. Backend request user to sign a transaction
+  Host ->> Backend: 4. Host sign a transaction for confirm certificate configuration
+  Backend ->> Database: 5. Save certificate configuration & signature
+  Backend ->> Host: 6. Host view result on Web UI

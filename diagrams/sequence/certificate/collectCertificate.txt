@@ -1,0 +1,13 @@
+---
+config:
+  theme: redux-color
+---
+sequenceDiagram
+  participant Participant_ as Participant
+  participant Backend as Backend
+
+  Participant_ ->> Backend: 1. Claim certificate on Web UI
+  Backend ->> Participant_: 2. Backend ask user to sign a transaction
+  Participant_ ->> Backend: 3. Participant sign a transaction for collect certificate
+  Backend ->> Database: 4. Save user signature & certificate status
+  Backend ->> Participant_: 5. Participant view certificate data on Web UI

@@ -1,0 +1,16 @@
+---
+config:
+  theme: redux-color
+---
+sequenceDiagram
+  Host ->> Backend: 1. Host confirm certificate publication
+  Backend ->> Database: 2. Update certification status as 'PENDING'
+  Backend ->> Host: 3. Backend request user to sign a transaction
+  Host ->> Backend: 4. Host sign a transaction for confirm certificate publication
+  Backend ->> Database: 4. Backend update certification status as 'READY'
+  Backend ->> EventCertificate: 5. Deploy EventCertificate contract
+  EventCertificate ->> Backend: 6. Return transaction result
+  Backend ->> EventCertificate: 7. Bulk mint event certificate for participants
+  EventCertificate ->> Backend: 8. Return transaction result
+  Backend ->> Database: 9. Save event publication status & data
+  Backend ->> Host: 10. Host view created event on Web UI
