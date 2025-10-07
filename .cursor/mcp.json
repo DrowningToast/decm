@@ -1,0 +1,9 @@
+{
+    "mcpServers": {
+      "core-api-openapi": {
+        "command": "pnpx",
+        "args": ["-y", "@reapi/mcp-openapi@latest", "--dir", "apps/backend/docs/swagger.yaml"],
+        "env": {}
+      }
+    }
+  }

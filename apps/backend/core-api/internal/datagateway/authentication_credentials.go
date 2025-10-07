@@ -3,7 +3,6 @@ package datagateway
 import (
 	"context"
 
-	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
 
 	"github.com/google/uuid"
@@ -22,10 +21,10 @@ type UpdateAuthenticationCredentialParameters struct {
 }
 
 type AuthenticationCredentialDataGateway interface {
-	GetAuthenticationCredentialById(ctx context.Context, id uuid.UUID) (*entity.AuthenticationCredential, *customerror.Err)
-	GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (*entity.AuthenticationCredential, *customerror.Err)
-	GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef string) (*entity.AuthenticationCredential, *customerror.Err)
-	CreateAuthenticationCredential(ctx context.Context, credential entity.AuthenticationCredential) (*entity.AuthenticationCredential, *customerror.Err)
-	UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, *customerror.Err)
+	GetAuthenticationCredentialById(ctx context.Context, id uuid.UUID) (*entity.AuthenticationCredential, error)
+	GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (*entity.AuthenticationCredential, error)
+	GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef string) (*entity.AuthenticationCredential, error)
+	CreateAuthenticationCredential(ctx context.Context, credential entity.AuthenticationCredential) (*entity.AuthenticationCredential, error)
+	UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, error)
 	DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error
 }

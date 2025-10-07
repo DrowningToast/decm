@@ -20,7 +20,7 @@ type UpdateProfileResponse struct {
 	entity.Profile
 }
 
-func (r *UpdateProfileRequest) Parse(c *fiber.Ctx) *customerror.Err {
+func (r *UpdateProfileRequest) Parse(c *fiber.Ctx) error {
 	if err := c.BodyParser(r); err != nil {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
@@ -58,7 +58,11 @@ func (h *Handler) UpdateProfileByCredentialId(c *fiber.Ctx) error {
 
 	profile, customerr := h.ProfileUc.UpdateProfileByCredentialId(c.Context(), credentialIdUUID, upsertProfileRequest.UpdateProfileParameters)
 	if customerr != nil {
-		return customerr.Extend("failed to update profile by credential ID")
+		var customErr *customerror.Err
+		if errors.As(customerr, &customErr) {
+			return customErr.Extend("failed to update profile by credential ID")
+		}
+		return customerror.Parse(&customerror.ErrInternalServer, customerr)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(UpdateProfileResponse{

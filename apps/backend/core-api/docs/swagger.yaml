@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  auth.requestGoogleOAuthResponse:
+    properties:
+      url:
+        example: https://accounts.google.com/o/oauth2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code&scope=email
+          profile
+        type: string
+    type: object
   auth.verifyGoogleOAuthResponse:
     properties:
       access_token:
@@ -308,8 +315,10 @@ paths:
       produces:
       - application/json
       responses:
-        "307":
-          description: Temporary Redirect
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.requestGoogleOAuthResponse'
         "400":
           description: Bad Request
           schema:

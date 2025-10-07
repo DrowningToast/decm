@@ -8,14 +8,14 @@ import (
 )
 
 type ErrApiResponse struct {
-	message string
+	Message string `json:"message"`
 }
 
 func GetErrFiberHandler(logger *slog.Logger) func(ctx *fiber.Ctx, err error) error {
 	return func(ctx *fiber.Ctx, err error) error {
 		// Is custom error
 		var customErr *Err
-		if errors.As(err, &customErr) {
+		if errors.As(err, &customErr) && customErr != nil {
 			// Log the error
 			switch customErr.LoggerLevel {
 			case slog.LevelError:
@@ -30,7 +30,7 @@ func GetErrFiberHandler(logger *slog.Logger) func(ctx *fiber.Ctx, err error) err
 			// Return the error
 			return ctx.Status(*customErr.HttpStatus).JSON(
 				ErrApiResponse{
-					message: customErr.Message,
+					Message: customErr.Message,
 				},
 			)
 		}
@@ -52,7 +52,7 @@ func GetErrFiberHandler(logger *slog.Logger) func(ctx *fiber.Ctx, err error) err
 			// Return the error
 			return ctx.Status(fiberErr.Code).JSON(
 				ErrApiResponse{
-					message: fiberErr.Message,
+					Message: fiberErr.Message,
 				},
 			)
 		}
@@ -60,7 +60,7 @@ func GetErrFiberHandler(logger *slog.Logger) func(ctx *fiber.Ctx, err error) err
 		logger.Error(errors.Wrap(err, "an unknown error has occurred").Error())
 		return ctx.Status(fiber.StatusInternalServerError).JSON(
 			ErrApiResponse{
-				message: "An unknown error has occurred. Please try again later.",
+				Message: "An unknown error has occurred. Please try again later.",
 			},
 		)
 	}

@@ -5,6 +5,9 @@ import { components, hooks, utils } from '@generouted/react-router/client'
 
 export type Path =
   | `/`
+  | `/signin`
+  | `/signup`
+  | `/signup/useGoogleOAuthUrl`
 
 export type Params = {
   

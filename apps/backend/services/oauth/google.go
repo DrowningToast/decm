@@ -111,20 +111,22 @@ func (s *GoogleOAuthService) getUserDataFromGoogle(ctx context.Context, code str
 	return token, nil
 }
 
-func (s *GoogleOAuthService) Login(session *session.Session) (*string, *customerror.Err) {
+func (s *GoogleOAuthService) Login(session *session.Session) (*string, error) {
 	state, err := generateState()
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	session.Set("state", state)
-	session.Save()
+	if err := session.Save(); err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+	}
 
 	url := s.googleConfig.AuthCodeURL(state, oauth2.AccessTypeOffline)
 	return &url, nil
 }
 
-func (s *GoogleOAuthService) Callback(ctx context.Context, session *session.Session, code string, state string) (*oauth2.Token, *customerror.Err) {
+func (s *GoogleOAuthService) Callback(ctx context.Context, session *session.Session, code string, state string) (*oauth2.Token, error) {
 	savedState := session.Get("state")
 	if savedState != state {
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("state mismatch"))
@@ -161,7 +163,7 @@ func (s *GoogleOAuthService) validateToken(token *oauth2.Token) error {
 }
 
 // getUserInfoFromGoogle fetches user information using OAuth2 client
-func (s *GoogleOAuthService) GetUserInfo(ctx context.Context, token *oauth2.Token) (*OAuthUser, *customerror.Err) {
+func (s *GoogleOAuthService) GetUserInfo(ctx context.Context, token *oauth2.Token) (*OAuthUser, error) {
 	// Validate token first
 	if err := s.validateToken(token); err != nil {
 		s.logger.Warn("Invalid token: %v", slog.String("error", err.Error()))
@@ -221,6 +223,6 @@ func (s *GoogleOAuthService) GetUserInfo(ctx context.Context, token *oauth2.Toke
 
 	default:
 		s.logger.Error("Google API error %d: %s", slog.Int("status_code", resp.StatusCode), slog.String("error", string(body)))
-		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New(fmt.Sprintf("Google API error %d: %s", resp.StatusCode, string(body))))
+		return nil, customerror.Parse(&customerror.ErrInternalServer, fmt.Errorf("Google API error %d: %s", resp.StatusCode, string(body)))
 	}
 }

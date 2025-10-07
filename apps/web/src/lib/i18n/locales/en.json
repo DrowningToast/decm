@@ -1,0 +1,148 @@
+{
+    "common": {
+        "appName": "DECM",
+        "welcome": "Welcome",
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "save": "Save",
+        "delete": "Delete",
+        "edit": "Edit",
+        "close": "Close",
+        "back": "Back",
+        "next": "Next",
+        "submit": "Submit",
+        "search": "Search",
+        "filter": "Filter",
+        "sort": "Sort",
+        "language": "Language"
+    },
+    "nav": {
+        "home": "Home",
+        "events": "Events",
+        "credentials": "Credentials",
+        "portfolio": "Portfolio",
+        "profile": "Profile",
+        "signIn": "Sign In",
+        "signUp": "Sign Up",
+        "signOut": "Sign Out"
+    },
+    "auth": {
+        "signIn": "Sign In",
+        "signUp": "Sign Up",
+        "signOut": "Sign Out",
+        "walletConnect": "Connect Wallet",
+        "emailLogin": "Login with Email",
+        "googleLogin": "Continue with Google",
+        "welcomeBack": "Welcome back!",
+        "createAccount": "Create your account",
+        "forgotPassword": "Forgot password?",
+        "noAccount": "Don't have an account?",
+        "hasAccount": "Already have an account?",
+        "email": "Email",
+        "password": "Password",
+        "confirmPassword": "Confirm Password",
+        "rememberMe": "Remember me"
+    },
+    "signup": {
+        "title": "Sign Up",
+        "subtitle": "Bring your own wallet or sign up with trusted OAuth provider",
+        "walletButton": "Connect with Wallet",
+        "googleButton": "Continue with Google",
+        "divider": "or",
+        "terms": "By signing up, you agree to our Terms of Service and Privacy Policy"
+    },
+    "home": {
+        "hero": {
+            "title": "Decentralized Event Management",
+            "subtitle": "NFT ticketing, digital credentials, and academic identity verification on the blockchain",
+            "cta": "Get Started",
+            "learnMore": "Learn More"
+        },
+        "features": {
+            "title": "Platform Features",
+            "events": {
+                "title": "Event Management",
+                "description": "Create and manage events with NFT-based ticketing"
+            },
+            "credentials": {
+                "title": "Digital Credentials",
+                "description": "Issue and verify blockchain-based certificates"
+            },
+            "identity": {
+                "title": "Academic Identity",
+                "description": "Verify once, use everywhere with LDAP integration"
+            },
+            "portfolio": {
+                "title": "e-Portfolio",
+                "description": "Showcase your achievements and credentials"
+            }
+        }
+    },
+    "profile": {
+        "title": "Profile",
+        "editProfile": "Edit Profile",
+        "personalInfo": "Personal Information",
+        "wallet": "Wallet Address",
+        "email": "Email",
+        "name": "Name",
+        "bio": "Bio",
+        "verifiedIdentity": "Verified Identity",
+        "academicVerification": "Academic Verification",
+        "verifyNow": "Verify Now"
+    },
+    "events": {
+        "title": "Events",
+        "createEvent": "Create Event",
+        "myEvents": "My Events",
+        "upcomingEvents": "Upcoming Events",
+        "pastEvents": "Past Events",
+        "eventDetails": "Event Details",
+        "tickets": "Tickets",
+        "participants": "Participants",
+        "date": "Date",
+        "location": "Location",
+        "category": "Category",
+        "register": "Register",
+        "registered": "Registered"
+    },
+    "credentials": {
+        "title": "Credentials",
+        "myCredentials": "My Credentials",
+        "issueCredential": "Issue Credential",
+        "verify": "Verify",
+        "share": "Share",
+        "download": "Download",
+        "issuer": "Issuer",
+        "issuedDate": "Issued Date",
+        "expiryDate": "Expiry Date",
+        "credentialType": "Credential Type",
+        "qrCode": "QR Code"
+    },
+    "portfolio": {
+        "title": "Portfolio",
+        "myPortfolio": "My Portfolio",
+        "achievements": "Achievements",
+        "skills": "Skills",
+        "projects": "Projects",
+        "addItem": "Add Item",
+        "viewPublic": "View Public Profile",
+        "sharePortfolio": "Share Portfolio"
+    },
+    "validation": {
+        "required": "This field is required",
+        "invalidEmail": "Invalid email address",
+        "passwordTooShort": "Password must be at least 8 characters",
+        "passwordMismatch": "Passwords do not match",
+        "invalidWallet": "Invalid wallet address"
+    },
+    "errors": {
+        "generic": "Something went wrong. Please try again.",
+        "network": "Network error. Please check your connection.",
+        "unauthorized": "You are not authorized to perform this action.",
+        "notFound": "The requested resource was not found.",
+        "serverError": "Server error. Please try again later."
+    }
+}

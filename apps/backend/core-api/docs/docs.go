@@ -35,8 +35,11 @@ const docTemplate = `{
                 "summary": "Request Google OAuth",
                 "operationId": "request-google-oauth",
                 "responses": {
-                    "307": {
-                        "description": "Temporary Redirect"
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/auth.requestGoogleOAuthResponse"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -387,6 +390,15 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "auth.requestGoogleOAuthResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "example": "https://accounts.google.com/o/oauth2/auth?client_id=YOUR_CLIENT_ID\u0026redirect_uri=YOUR_REDIRECT_URI\u0026response_type=code\u0026scope=email profile"
+                }
+            }
+        },
         "auth.verifyGoogleOAuthResponse": {
             "type": "object",
             "properties": {
