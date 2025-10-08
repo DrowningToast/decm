@@ -5,9 +5,13 @@ import { components, hooks, utils } from '@generouted/react-router/client'
 
 export type Path =
   | `/`
+  | `/oauth/google`
+  | `/onboard/:method`
+  | `/signin`
+  | `/signup`
 
 export type Params = {
-  
+  '/onboard/:method': { method: string }
 }
 
 export type ModalPath = never

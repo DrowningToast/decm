@@ -13,6 +13,7 @@ const ReactQueryDevtools = lazy(() =>
 );
 
 const Layout = () => {
+
     return (
         <main className="font-secondary bg-background text-foreground">
             <HelmetProvider>

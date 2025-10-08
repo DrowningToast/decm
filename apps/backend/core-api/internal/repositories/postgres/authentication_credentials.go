@@ -4,7 +4,6 @@ import (
 	"context"
 	"decm-database/go/generated"
 
-	customerror "apps/backend/common/customerror"
 	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
 	"apps/backend/core-api/internal/datagateway"
@@ -15,7 +14,7 @@ import (
 
 var _ datagateway.AuthenticationCredentialDataGateway = (*Repository)(nil)
 
-func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id uuid.UUID) (*entity.AuthenticationCredential, *customerror.Err) {
+func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id uuid.UUID) (*entity.AuthenticationCredential, error) {
 	query, err := r.queries.GetAuthenticationCredentialByID(ctx, generated.GetAuthenticationCredentialByIDParams{
 		EncryptionKey: r.piiEncryptionKey,
 		ID:            id,
@@ -42,7 +41,7 @@ func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id uui
 	return &entity, nil
 }
 
-func (r *Repository) GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (*entity.AuthenticationCredential, *customerror.Err) {
+func (r *Repository) GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (*entity.AuthenticationCredential, error) {
 	query, err := r.queries.GetAuthenticationCredentialByWalletAddress(ctx, generated.GetAuthenticationCredentialByWalletAddressParams{
 		EncryptionKey: r.piiEncryptionKey,
 		WalletAddress: walletAddress,
@@ -69,7 +68,7 @@ func (r *Repository) GetAuthenticationCredentialByWalletAddress(ctx context.Cont
 	return &entity, nil
 }
 
-func (r *Repository) GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef string) (*entity.AuthenticationCredential, *customerror.Err) {
+func (r *Repository) GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef string) (*entity.AuthenticationCredential, error) {
 	query, err := r.queries.GetAuthenticationCredentialByGoogleConnectorRef(ctx, generated.GetAuthenticationCredentialByGoogleConnectorRefParams{
 		EncryptionKey:      r.piiEncryptionKey,
 		GoogleConnectorRef: googleConnectorRef,
@@ -96,7 +95,7 @@ func (r *Repository) GetAuthenticationCredentialByGoogleConnectorRef(ctx context
 	return &entity, nil
 }
 
-func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credential entity.AuthenticationCredential) (*entity.AuthenticationCredential, *customerror.Err) {
+func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credential entity.AuthenticationCredential) (*entity.AuthenticationCredential, error) {
 	query, err := r.queries.CreateAuthenticationCredential(ctx, generated.CreateAuthenticationCredentialParams{
 		SolutionStatus:      int32(credential.SolutionStatus),
 		WalletAddress:       credential.WalletAddress,
@@ -130,7 +129,7 @@ func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credent
 	return &entity, nil
 }
 
-func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params datagateway.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, *customerror.Err) {
+func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params datagateway.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, error) {
 	query, err := r.queries.UpdateAuthenticationCredential(ctx, generated.UpdateAuthenticationCredentialParams{
 		ID:                  id,
 		SolutionStatus:      pgmapper.Int32ToPgInt4(int32(params.SolutionStatus)),

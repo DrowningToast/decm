@@ -1,0 +1,241 @@
+{
+    "common": {
+        "appName": "DECM",
+        "welcome": "Welcome",
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "save": "Save",
+        "delete": "Delete",
+        "edit": "Edit",
+        "close": "Close",
+        "back": "Back",
+        "next": "Next",
+        "submit": "Submit",
+        "search": "Search",
+        "filter": "Filter",
+        "sort": "Sort",
+        "language": "Language"
+    },
+    "nav": {
+        "home": "Home",
+        "events": "Events",
+        "credentials": "Credentials",
+        "portfolio": "Portfolio",
+        "profile": "Profile",
+        "signIn": "Sign In",
+        "signUp": "Sign Up",
+        "signOut": "Sign Out"
+    },
+    "auth": {
+        "signIn": "Sign In",
+        "signUp": "Sign Up",
+        "signOut": "Sign Out",
+        "walletConnect": "Connect Wallet",
+        "emailLogin": "Login with Email",
+        "googleLogin": "Continue with Google",
+        "welcomeBack": "Welcome back!",
+        "createAccount": "Create your account",
+        "forgotPassword": "Forgot password?",
+        "noAccount": "Don't have an account?",
+        "hasAccount": "Already have an account?",
+        "email": "Email",
+        "password": "Password",
+        "confirmPassword": "Confirm Password",
+        "rememberMe": "Remember me"
+    },
+    "signup": {
+        "title": "Sign Up",
+        "subtitle": "Bring your own wallet or sign up with trusted OAuth provider",
+        "walletButton": "Connect with Wallet",
+        "googleButton": "Continue with Google",
+        "divider": "or",
+        "terms": "By signing up, you agree to our Terms of Service and Privacy Policy"
+    },
+    "oauth": {
+        "google": {
+            "title": "Authenticating with Google",
+            "subtitle": "Please wait while we verify your account",
+            "processing": "Processing...",
+            "redirect": "You will be redirected shortly",
+            "error": {
+                "title": "Authentication Failed",
+                "invalidParams": "Invalid authentication parameters",
+                "missingCode": "Authorization code is missing",
+                "missingState": "State parameter is missing",
+                "verificationFailed": "Failed to verify your Google account",
+                "description": "We couldn't complete the Google authentication. This might happen if:",
+                "verificationDescription": "The authentication process started but we couldn't verify your account. This might happen if:",
+                "reasons": {
+                    "expired": "The authorization link has expired",
+                    "cancelled": "The authentication was cancelled",
+                    "invalid": "The authorization parameters are invalid",
+                    "serverError": "Our server encountered an error",
+                    "networkError": "There was a network connection issue",
+                    "sessionExpired": "Your session has expired"
+                },
+                "tryAgain": "Try signing in again",
+                "backToSignUp": "Back to Sign Up"
+            }
+        }
+    },
+    "home": {
+        "hero": {
+            "title": "Decentralized Event Management",
+            "subtitle": "NFT ticketing, digital credentials, and academic identity verification on the blockchain",
+            "cta": "Get Started",
+            "learnMore": "Learn More"
+        },
+        "features": {
+            "title": "Platform Features",
+            "events": {
+                "title": "Event Management",
+                "description": "Create and manage events with NFT-based ticketing"
+            },
+            "credentials": {
+                "title": "Digital Credentials",
+                "description": "Issue and verify blockchain-based certificates"
+            },
+            "identity": {
+                "title": "Academic Identity",
+                "description": "Verify once, use everywhere with LDAP integration"
+            },
+            "portfolio": {
+                "title": "e-Portfolio",
+                "description": "Showcase your achievements and credentials"
+            }
+        }
+    },
+    "landing": {
+        "hero": {
+            "title": "Revolutionize certificates",
+            "subtitle": "Use blockchain technology for certificate solution",
+            "ctaButton": "Start building your portfolio",
+            "hasAccount": "I already have an registered account",
+            "scrollIndicator": "Scroll to explore"
+        },
+        "about": {
+            "title": "Themis",
+            "description": "a decentralized platform for event management, digital certificate issuance, and academic identity verification using Web 3.0 and blockchain technologies."
+        },
+        "features": {
+            "wallet": {
+                "title": "Customizable wallet management",
+                "description": "Bring your own wallet or let us manage your account's private key"
+            },
+            "verification": {
+                "title": "Every data is verifiable",
+                "description": "Every piece of record, certificates, and events are public on blockchain. Giving full transparency while keep the privacy of the users safe."
+            },
+            "download": {
+                "title": "Download certificates as pictures",
+                "description": "Certificates can be exported as pictures, and every pictures exported are able to verify its authenticity."
+            }
+        },
+        "getStarted": {
+            "title": "Get started",
+            "mobile": {
+                "verificationPortal": "Certificate Verification Portal",
+                "myCertificate": "My certificate",
+                "viewServices": "View all services"
+            },
+            "public": {
+                "title": "Public",
+                "event": "Event",
+                "verifyCertificates": "Verify certificates"
+            },
+            "students": {
+                "title": "Students",
+                "signIn": "Sign in",
+                "signUp": "Sign up",
+                "certificateManagement": "Certificate management",
+                "myEvents": "My events",
+                "inbox": "Inbox",
+                "identities": "Identities"
+            },
+            "organizer": {
+                "title": "Organizer",
+                "register": "Register with us",
+                "signIn": "Sign in",
+                "eventManagement": "Event management"
+            },
+            "issuer": {
+                "title": "Issuer",
+                "signInIAM": "Sign in with IAM",
+                "register": "Register with us"
+            },
+            "developer": {
+                "title": "Developer",
+                "manageIntegration": "Manage automation & integration",
+                "apiDocuments": "API documents",
+                "readDocs": "Read docs"
+            }
+        }
+    },
+    "profile": {
+        "title": "Profile",
+        "editProfile": "Edit Profile",
+        "personalInfo": "Personal Information",
+        "wallet": "Wallet Address",
+        "email": "Email",
+        "name": "Name",
+        "bio": "Bio",
+        "verifiedIdentity": "Verified Identity",
+        "academicVerification": "Academic Verification",
+        "verifyNow": "Verify Now"
+    },
+    "events": {
+        "title": "Events",
+        "createEvent": "Create Event",
+        "myEvents": "My Events",
+        "upcomingEvents": "Upcoming Events",
+        "pastEvents": "Past Events",
+        "eventDetails": "Event Details",
+        "tickets": "Tickets",
+        "participants": "Participants",
+        "date": "Date",
+        "location": "Location",
+        "category": "Category",
+        "register": "Register",
+        "registered": "Registered"
+    },
+    "credentials": {
+        "title": "Credentials",
+        "myCredentials": "My Credentials",
+        "issueCredential": "Issue Credential",
+        "verify": "Verify",
+        "share": "Share",
+        "download": "Download",
+        "issuer": "Issuer",
+        "issuedDate": "Issued Date",
+        "expiryDate": "Expiry Date",
+        "credentialType": "Credential Type",
+        "qrCode": "QR Code"
+    },
+    "portfolio": {
+        "title": "Portfolio",
+        "myPortfolio": "My Portfolio",
+        "achievements": "Achievements",
+        "skills": "Skills",
+        "projects": "Projects",
+        "addItem": "Add Item",
+        "viewPublic": "View Public Profile",
+        "sharePortfolio": "Share Portfolio"
+    },
+    "validation": {
+        "required": "This field is required",
+        "invalidEmail": "Invalid email address",
+        "passwordTooShort": "Password must be at least 8 characters",
+        "passwordMismatch": "Passwords do not match",
+        "invalidWallet": "Invalid wallet address"
+    },
+    "errors": {
+        "generic": "Something went wrong. Please try again.",
+        "network": "Network error. Please check your connection.",
+        "unauthorized": "You are not authorized to perform this action.",
+        "notFound": "The requested resource was not found.",
+        "serverError": "Server error. Please try again later."
+    }
+}

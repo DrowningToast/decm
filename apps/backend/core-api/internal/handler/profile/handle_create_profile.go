@@ -19,7 +19,7 @@ type CreateProfileResponse struct {
 	entity.Profile
 }
 
-func (r *CreateProfileRequest) Parse(c *fiber.Ctx) *customerror.Err {
+func (r *CreateProfileRequest) Parse(c *fiber.Ctx) error {
 	if err := c.BodyParser(r); err != nil {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}

@@ -11,7 +11,7 @@ import (
 	"github.com/tyler-smith/go-bip39"
 )
 
-func GenerateMnemonic(wordsCount *int) (*string, *customerror.Err) {
+func GenerateMnemonic(wordsCount *int) (*string, error) {
 	wordCount := 12
 	if wordsCount != nil {
 		wordCount = *wordsCount
@@ -55,7 +55,7 @@ func GenerateMnemonic(wordsCount *int) (*string, *customerror.Err) {
 
 // GenerateSeedPhrase generates a seed phrase for a given word count
 // Default is 12 words
-func GenerateSeed(wordsCount *int) ([]byte, *customerror.Err) {
+func GenerateSeed(wordsCount *int) ([]byte, error) {
 	mnemonic, err := GenerateMnemonic(wordsCount)
 	if err != nil {
 		return nil, err
@@ -65,12 +65,12 @@ func GenerateSeed(wordsCount *int) ([]byte, *customerror.Err) {
 	return seed, nil
 }
 
-func GenerateSeedFromMnemonic(mnemonic *string) ([]byte, *customerror.Err) {
+func GenerateSeedFromMnemonic(mnemonic *string) ([]byte, error) {
 	seed := bip39.NewSeed(*mnemonic, "")
 	return seed, nil
 }
 
-func GeneratePrivateKeyFromSeed(seed []byte) (*ecdsa.PrivateKey, *customerror.Err) {
+func GeneratePrivateKeyFromSeed(seed []byte) (*ecdsa.PrivateKey, error) {
 	// Generate master key from seed
 	masterKey, err := bip32.NewMasterKey(seed)
 	if err != nil {

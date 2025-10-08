@@ -1,4 +1,4 @@
--- Authentication Credentials CRUD queries
+.-- Authentication Credentials CRUD queries
 
 -- name: CreateAuthenticationCredential :one
 INSERT INTO authentication_credentials (
