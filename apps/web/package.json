@@ -31,7 +31,7 @@
     "@tailwindcss/vite": "^4.1.13",
     "@tanstack/react-query": "^5.62.8",
     "@types/react-router-dom": "^5.3.3",
-    "api:workspace": "link:@decm/api:workspace",
+    "@decm/api": "workspace:*",
     "clsx": "^2.1.1",
     "dotenv-cli": "^10.0.0",
     "gsap": "^3.13.0",

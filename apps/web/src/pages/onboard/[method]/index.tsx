@@ -3,6 +3,7 @@ import { OAuthOnboardProvider } from "@/components/pages/Onboard/OAuth/OAuthOnbo
 import NotFoundPage from "@/pages/404";
 import { useParams } from "@/router";
 import { createContext, useState } from "react";
+import { OAuthOnboardLoadingPage } from "@/components/pages/Onboard/OAuth/Loading/OAuthOnboardLoadingPage";
 // import { NotFoundPage } from "@/components/pages/NotFoundPage";
 
 export const OnboardMethods = {
@@ -16,13 +17,13 @@ interface OnboardStep {
 
 type OnboardMethod = typeof OnboardMethods[keyof typeof OnboardMethods];
 
-type OnboardSteps = Record<OnboardMethod, Record<number, OnboardStep> & { Parent: React.FC }>
+type OnboardSteps = Record<OnboardMethod, Record<number, OnboardStep> & { Parent: React.FC<React.PropsWithChildren> }>
 
 const OnboardSteps: OnboardSteps = {
     [OnboardMethods.WALLET]: {
         0: {
             // Request the user to sign the message
-            // Action: Authenticate with wallet
+            // Action: Request to sign message, then check the onboard status
             render: () => <div>Sign Message</div>,
         },
         1: {
@@ -41,9 +42,9 @@ const OnboardSteps: OnboardSteps = {
     [OnboardMethods.GOOGLE]: {
         // Precondition: Lands here from oauth-success/google
         // UI: Loading page
-        // Action: Checks if the account is already created
+        // Action: Authenticate the access token, then check the onboard status
         0: {
-            render: () => <div>Loading...</div>,
+            render: () => <OAuthOnboardLoadingPage />,
         },
         // If the account isn't created, lands here
         // UI: Show password page
@@ -97,9 +98,11 @@ const OnboardingPage = () => {
 
     return (
         <OnboardPageContext.Provider value={{ step, setStep }}>
-            {
-                renderStep()
-            }
+            <steps.Parent>
+                {
+                    renderStep()
+                }
+            </steps.Parent>
         </OnboardPageContext.Provider>
     )
 };

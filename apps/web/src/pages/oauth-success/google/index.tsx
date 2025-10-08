@@ -15,6 +15,7 @@ const GoogleOAuthPage = () => {
     const [searchParams] = useSearchParams();
 
     const accessToken = searchParams.get("access_token");
+    const expiresIn = searchParams.get("expires_in");
 
 
     const { verifyGoogleOAuth, isPending } = useVerifyGoogleOAuth();
@@ -22,14 +23,7 @@ const GoogleOAuthPage = () => {
     useEffect(() => {
         const init = async () => {
 
-            console.log('hello world')
-            if (isPending || !accessToken || errorType) {
-                console.log(isPending || !accessToken || errorType)
-                console.log({
-                    isPending,
-                    accessToken,
-                    errorType,
-                });
+            if (isPending || !accessToken || errorType || !expiresIn) {
                 return;
             }
 
@@ -46,6 +40,7 @@ const GoogleOAuthPage = () => {
 
             const queryString = new URLSearchParams({
                 access_token: accessToken,
+                expires_in: expiresIn,
             }).toString();
 
             // Redirect to redirect url
@@ -53,7 +48,7 @@ const GoogleOAuthPage = () => {
         }
 
         init();
-    }, [isPending, verifyGoogleOAuth, errorType, accessToken]);
+    }, [isPending, verifyGoogleOAuth, errorType, accessToken, expiresIn]);
 
     // Determine which component to render
     const renderPage = () => {

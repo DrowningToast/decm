@@ -15,7 +15,7 @@ const buttonVariants = cva(
         "secondary-dark":
           "bg-secondary-foreground text-foreground rounded-[12px] text-base font-normal [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:bg-secondary-foreground/90 tracking-[0.06px]",
         "secondary-light":
-          "bg-secondary text-primary rounded-[12px] text-base font-medium [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:bg-secondary/90 tracking-[0.06px]",
+          "bg-secondary text-secondary-foreground rounded-[12px] text-base font-medium hover:bg-secondary/90 tracking-[0.06px]",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

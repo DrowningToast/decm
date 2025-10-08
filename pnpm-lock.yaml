@@ -101,6 +101,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@decm/api':
+        specifier: workspace:*
+        version: link:../../packages/api
       '@gsap/react':
         specifier: ^2.1.2
         version: 2.1.2(gsap@3.13.0)(react@19.1.1)
@@ -164,9 +167,6 @@ importers:
       '@types/react-router-dom':
         specifier: ^5.3.3
         version: 5.3.3
-      api:workspace:
-        specifier: link:@decm/api:workspace
-        version: link:@decm/api:workspace
       clsx:
         specifier: ^2.1.1
         version: 2.1.1

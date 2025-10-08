@@ -35,11 +35,8 @@ const docTemplate = `{
                 "summary": "Request Google OAuth",
                 "operationId": "request-google-oauth",
                 "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/auth.requestGoogleOAuthResponse"
-                        }
+                    "302": {
+                        "description": "Found"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -51,7 +48,7 @@ const docTemplate = `{
             }
         },
         "/api/v1/auth/verify-google-oauth": {
-            "post": {
+            "get": {
                 "description": "Verify Google OAuth code",
                 "consumes": [
                     "application/json"
@@ -66,21 +63,85 @@ const docTemplate = `{
                 "operationId": "verify-google-oauth",
                 "parameters": [
                     {
-                        "description": "Code",
+                        "type": "string",
                         "name": "code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "state",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "state",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Found"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/onboard/check-onboard-status": {
+            "post": {
+                "description": "Check onboard status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Onboard"
+                ],
+                "summary": "Check onboard status",
+                "operationId": "check-onboard-status",
+                "parameters": [
+                    {
+                        "description": "Method",
+                        "name": "method",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.verifyGoogleOAuthRequest"
+                            "$ref": "#/definitions/onboard.CheckOnboardStatusRequest"
                         }
                     },
                     {
-                        "description": "State",
-                        "name": "state",
+                        "description": "Access token",
+                        "name": "access_token",
                         "in": "body",
-                        "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.verifyGoogleOAuthRequest"
+                            "$ref": "#/definitions/onboard.CheckOnboardStatusRequest"
+                        }
+                    },
+                    {
+                        "description": "Expires in",
+                        "name": "expires_in",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/onboard.CheckOnboardStatusRequest"
+                        }
+                    },
+                    {
+                        "description": "Sign message",
+                        "name": "sign_message",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/onboard.CheckOnboardStatusRequest"
                         }
                     }
                 ],
@@ -88,7 +149,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.verifyGoogleOAuthResponse"
+                            "$ref": "#/definitions/onboard.CheckOnboardStatusResponse"
                         }
                     },
                     "400": {
@@ -390,40 +451,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "auth.requestGoogleOAuthResponse": {
-            "type": "object",
-            "properties": {
-                "url": {
-                    "type": "string",
-                    "example": "https://accounts.google.com/o/oauth2/auth?client_id=YOUR_CLIENT_ID\u0026redirect_uri=YOUR_REDIRECT_URI\u0026response_type=code\u0026scope=email profile"
-                }
-            }
-        },
-        "auth.verifyGoogleOAuthRequest": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "string"
-                }
-            }
-        },
-        "auth.verifyGoogleOAuthResponse": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "expires_in": {
-                    "type": "integer"
-                },
-                "refresh_token": {
-                    "type": "string"
-                }
-            }
-        },
         "customerror.Err": {
             "description": "Custom error type",
             "type": "object",
@@ -524,6 +551,45 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "onboard.CheckOnboardStatusRequest": {
+            "type": "object",
+            "required": [
+                "method"
+            ],
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expires_in": {
+                    "type": "integer"
+                },
+                "method": {
+                    "$ref": "#/definitions/onboard.RegistrationMethod"
+                },
+                "sign_message": {
+                    "type": "string"
+                }
+            }
+        },
+        "onboard.CheckOnboardStatusResponse": {
+            "type": "object",
+            "properties": {
+                "is_exists": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "onboard.RegistrationMethod": {
+            "type": "string",
+            "enum": [
+                "google",
+                "wallet"
+            ],
+            "x-enum-varnames": [
+                "RegistrationMethodGoogle",
+                "RegistrationMethodWallet"
+            ]
         },
         "onboard.getRegisterSignMessageResponse": {
             "description": "Response for the client to sign to register",

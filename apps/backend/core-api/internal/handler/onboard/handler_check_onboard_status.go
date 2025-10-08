@@ -1,10 +1,9 @@
 package onboard
 
 import (
-	"errors"
-
 	customerror "apps/backend/common/customerror"
 
+	"github.com/cockroachdb/errors"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -18,8 +17,10 @@ const (
 type CheckOnboardStatusRequest struct {
 	Method RegistrationMethod `json:"method" validate:"required"`
 
-	AccessToken string `json:"access_token"`
-	SignMessage string `json:"sign_message"`
+	AccessToken *string `json:"access_token"`
+	ExpiresIn   *int    `json:"expires_in"`
+
+	SignMessage *string `json:"sign_message"`
 }
 
 type CheckOnboardStatusResponse struct {
@@ -30,9 +31,10 @@ type CheckOnboardStatusResponse struct {
 // @Description Check onboard status
 // @ID check-onboard-status
 // @Tags Onboard
-// @Param method body Check true "Method"
-// @Param access_token body string false "Access token"
-// @Param sign_message body string false "Sign message"
+// @Param method body onboard.CheckOnboardStatusRequest.Method true "Method"
+// @Param access_token body onboard.CheckOnboardStatusRequest.AccessToken false "Access token"
+// @Param expires_in body onboard.CheckOnboardStatusRequest.ExpiresIn false "Expires in"
+// @Param sign_message body onboard.CheckOnboardStatusRequest.SignMessage false "Sign message"
 // @Accept json
 // @Produce json
 // @Success 200 {object} CheckOnboardStatusResponse
@@ -50,12 +52,16 @@ func (h Handler) CheckOnboardStatus(ctx *fiber.Ctx) error {
 	switch requestBody.Method {
 	case RegistrationMethodGoogle:
 		accessToken := requestBody.AccessToken
-		if accessToken == "" {
+		if accessToken == nil {
 			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("access token is required"))
 		}
-		isExists, err := h.OnboardUc.CheckOnboardStatusWithGoogleConnectorRef(ctx.UserContext(), accessToken)
+		expiresIn := requestBody.ExpiresIn
+		if expiresIn == nil {
+			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("expires in is required"))
+		}
+		isExists, err := h.OnboardUc.CheckOnboardStatusWithGoogleConnectorRef(ctx.UserContext(), *accessToken, *expiresIn)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to check onboard status with google connector ref")
 		}
 		response := CheckOnboardStatusResponse{
 			IsExists: isExists,
@@ -63,12 +69,12 @@ func (h Handler) CheckOnboardStatus(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusOK).JSON(response)
 	case RegistrationMethodWallet:
 		signMessage := requestBody.SignMessage
-		if signMessage == "" {
+		if signMessage == nil {
 			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("sign message is required"))
 		}
-		isExists, err := h.OnboardUc.CheckOnboardStatusWithWalletAddress(ctx.UserContext(), signMessage)
+		isExists, err := h.OnboardUc.CheckOnboardStatusWithWalletAddress(ctx.UserContext(), *signMessage)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to check onboard status with wallet address")
 		}
 		response := CheckOnboardStatusResponse{
 			IsExists: isExists,

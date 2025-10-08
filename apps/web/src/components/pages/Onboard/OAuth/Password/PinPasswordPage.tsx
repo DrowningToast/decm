@@ -34,20 +34,22 @@ export const PinPasswordPage: React.FC<PinPasswordPageProps> = ({
 
     return (
         <div className="min-h-screen bg-[#e9dede] flex flex-col items-center px-6 py-16 md:py-24">
-            <div className="w-full max-w-md space-y-16">
+            <div className="w-full max-w-[420px] space-y-16 text-background">
                 {/* Header Section */}
                 <div className="space-y-2">
                     <Typography
                         variant="header"
                         tag="h1"
-                        className="text-[36px] leading-[40px] text-primary [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
+                        color="primary"
+                        className="text-[36px] leading-[40px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                     >
                         {t("onboard.title")}
                     </Typography>
                     <Typography
                         variant="text"
                         tag="p"
-                        className="text-base text-[#362927] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                        color="background-alt"
+                        className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                     >
                         {t("onboard.subtitle")}
                     </Typography>
@@ -55,7 +57,7 @@ export const PinPasswordPage: React.FC<PinPasswordPageProps> = ({
 
                 {/* PIN Input Section */}
                 <div className="space-y-6">
-                    <div className="space-y-3">
+                    <div className="flex flex-col gap-y-3">
                         {/* PIN Input */}
                         <div className="flex justify-center">
                             <InputOTP
@@ -100,12 +102,13 @@ export const PinPasswordPage: React.FC<PinPasswordPageProps> = ({
                         <button
                             type="button"
                             onClick={onSwitchToPassword}
-                            className="w-full text-center"
+                            className="text-start h-[14.5px] inline-block"
                         >
                             <Typography
                                 variant="text"
                                 tag="span"
-                                className="text-xs italic underline text-[#362927] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
+                                color="background-alt"
+                                className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
                             >
                                 {t("onboard.preferPassword")}
                             </Typography>
@@ -115,12 +118,13 @@ export const PinPasswordPage: React.FC<PinPasswordPageProps> = ({
                         <button
                             type="button"
                             onClick={onLogout}
-                            className="w-full text-center"
+                            className="text-start h-[14.5px] inline-block"
                         >
                             <Typography
                                 variant="text"
                                 tag="span"
-                                className="text-xs italic underline text-[#362927] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
+                                color="background-alt"
+                                className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
                             >
                                 {t("onboard.logout")}
                             </Typography>

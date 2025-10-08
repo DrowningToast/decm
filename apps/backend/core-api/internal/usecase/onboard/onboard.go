@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"strings"
+	"time"
 
 	ethutils "github.com/ethereum/go-ethereum/crypto"
 
@@ -24,16 +25,17 @@ import (
 
 type OnboardUsecase struct {
 	authService         *auth.AuthService
-	googleOAuthService  oauth_services.GoogleOAuthService
+	googleOAuthService  *oauth_services.GoogleOAuthService
 	registerSignMessage string
 
 	AuthenticationCredentialDg datagateway.AuthenticationCredentialDataGateway
 	ProfileDg                  datagateway.ProfileDataGateway
 }
 
-func NewOnboardUsecase(authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway, profileDg datagateway.ProfileDataGateway, authService *auth.AuthService) *OnboardUsecase {
+func NewOnboardUsecase(authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway, profileDg datagateway.ProfileDataGateway, authService *auth.AuthService, googleOAuthService *oauth_services.GoogleOAuthService) *OnboardUsecase {
 	return &OnboardUsecase{
 		authService:                authService,
+		googleOAuthService:         googleOAuthService,
 		registerSignMessage:        "Please sign this message to prove your ownership of the wallet",
 		AuthenticationCredentialDg: authenticationCredentialDg,
 		ProfileDg:                  profileDg,
@@ -226,9 +228,10 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 	return &sessionToken, strings.Fields(*mnemonic), nil
 }
 
-func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Context, accessToken string) (bool, error) {
+func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Context, accessToken string, expiresIn int) (bool, error) {
 	token := &oauth2.Token{
 		AccessToken: accessToken,
+		Expiry:      time.Now().Add(time.Duration(expiresIn) * time.Second),
 	}
 	userInfo, err := u.googleOAuthService.GetUserInfo(ctx, token)
 	if err != nil {
@@ -237,17 +240,32 @@ func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Co
 
 	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialByGoogleConnectorRef(ctx, userInfo.Id)
 	if err != nil {
-		return false, customerror.Parse(&customerror.ErrInternalServer, err)
+		var notFoundErr *customerror.Err
+		if !errors.As(err, &notFoundErr) {
+			return false, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to check for existing google connector ref")
+		}
 	}
-	return credential != nil, nil
+	if credential != nil {
+		return true, nil
+	}
+	return false, nil
 }
 
 func (u *OnboardUsecase) CheckOnboardStatusWithWalletAddress(ctx context.Context, signMessage string) (bool, error) {
 	walletAddress, err := cyptoutils.GetAddressFromSignedMessage(u.registerSignMessage, signMessage)
-
-	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialByWalletAddress(ctx, walletAddress.Hex())
 	if err != nil {
 		return false, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
-	return credential != nil, nil
+
+	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialByWalletAddress(ctx, walletAddress.Hex())
+	if err != nil {
+		var notFoundErr *customerror.Err
+		if !errors.As(err, &notFoundErr) {
+			return false, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to check for existing wallet address")
+		}
+	}
+	if credential != nil {
+		return true, nil
+	}
+	return false, nil
 }

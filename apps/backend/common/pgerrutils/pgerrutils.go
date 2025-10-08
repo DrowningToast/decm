@@ -1,10 +1,9 @@
 package pgerrutils
 
 import (
-	"errors"
-
 	"apps/backend/common/customerror"
 
+	"github.com/cockroachdb/errors"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
