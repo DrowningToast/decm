@@ -15,7 +15,7 @@ import (
 // @ID request-google-oauth
 // @Accept json
 // @Produce json
-// @Success 200 {object} requestGoogleOAuthResponse
+// @Success 302
 // @Failure 400 {object} customerror.ErrResponse
 // @Router /api/v1/auth/request-google-oauth [get]
 func (h Handler) RequestGoogleOAuth(ctx *fiber.Ctx) error {
