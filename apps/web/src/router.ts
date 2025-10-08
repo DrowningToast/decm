@@ -5,7 +5,8 @@ import { components, hooks, utils } from '@generouted/react-router/client'
 
 export type Path =
   | `/`
-  | `/oauth/google`
+  | `/error`
+  | `/oauth-success/google`
   | `/onboard/:method`
   | `/signin`
   | `/signup`

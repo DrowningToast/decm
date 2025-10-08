@@ -225,3 +225,29 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 
 	return &sessionToken, strings.Fields(*mnemonic), nil
 }
+
+func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Context, accessToken string) (bool, error) {
+	token := &oauth2.Token{
+		AccessToken: accessToken,
+	}
+	userInfo, err := u.googleOAuthService.GetUserInfo(ctx, token)
+	if err != nil {
+		return false, customerror.Parse(&customerror.ErrInternalServer, err)
+	}
+
+	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialByGoogleConnectorRef(ctx, userInfo.Id)
+	if err != nil {
+		return false, customerror.Parse(&customerror.ErrInternalServer, err)
+	}
+	return credential != nil, nil
+}
+
+func (u *OnboardUsecase) CheckOnboardStatusWithWalletAddress(ctx context.Context, signMessage string) (bool, error) {
+	walletAddress, err := cyptoutils.GetAddressFromSignedMessage(u.registerSignMessage, signMessage)
+
+	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialByWalletAddress(ctx, walletAddress.Hex())
+	if err != nil {
+		return false, customerror.Parse(&customerror.ErrInternalServer, err)
+	}
+	return credential != nil, nil
+}

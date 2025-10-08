@@ -40,19 +40,6 @@ export function ButtonExamples() {
             </div>
 
             <div className="space-y-4">
-                <h2 className="text-2xl font-bold">Standard Button Variants</h2>
-
-                <div className="flex flex-wrap gap-4">
-                    <Button variant="default">Default</Button>
-                    <Button variant="destructive">Destructive</Button>
-                    <Button variant="outline">Outline</Button>
-                    <Button variant="secondary">Secondary</Button>
-                    <Button variant="ghost">Ghost</Button>
-                    <Button variant="link">Link</Button>
-                </div>
-            </div>
-
-            <div className="space-y-4">
                 <h2 className="text-2xl font-bold">Button Sizes</h2>
 
                 <div className="flex flex-wrap items-center gap-4">

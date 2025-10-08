@@ -43,13 +43,15 @@ const TAGS = [
     "h5",
     "h6",
     "span",
-    "p"
+    "p",
+    "div"
 ] as const
 
 type TypographyProps =
     React.ComponentProps<'span'> &
     React.ComponentProps<'p'> &
     React.ComponentProps<'h1'> &
+    React.ComponentProps<'div'> &
     VariantProps<typeof typographyVariants> &
     PropsWithChildren &
     {
@@ -120,6 +122,12 @@ export const Typography: React.FC<TypographyProps> = ({
                 <p className={_className} {...props}>
                     {children}
                 </p>
+            )
+        case "div":
+            return (
+                <div className={_className} {...props}>
+                    {children}
+                </div>
             )
         default:
             break;
