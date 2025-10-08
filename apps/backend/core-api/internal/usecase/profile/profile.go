@@ -22,15 +22,15 @@ func NewProfileUsecase(profileDg datagateway.ProfileDataGateway) *ProfileUsecase
 	}
 }
 
-func (u *ProfileUsecase) GetProfileById(ctx context.Context, id uuid.UUID) (*entity.Profile, *customerror.Err) {
+func (u *ProfileUsecase) GetProfileById(ctx context.Context, id uuid.UUID) (*entity.Profile, error) {
 	return u.ProfileDg.GetProfileById(ctx, id)
 }
 
-func (u *ProfileUsecase) GetProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID) (*entity.Profile, *customerror.Err) {
+func (u *ProfileUsecase) GetProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID) (*entity.Profile, error) {
 	return u.ProfileDg.GetProfileByAuthenticationCredentialId(ctx, authenticationCredentialId)
 }
 
-func (u *ProfileUsecase) GetProfileByEmail(ctx context.Context, email string) (*entity.Profile, *customerror.Err) {
+func (u *ProfileUsecase) GetProfileByEmail(ctx context.Context, email string) (*entity.Profile, error) {
 	return u.ProfileDg.GetProfileByEmail(ctx, email)
 }
 
@@ -56,7 +56,7 @@ type CreateProfileParameters struct {
 	AcademicEmail               *string   `json:"academic_email,omitempty" validate:"omitempty,email"`
 }
 
-func (p *CreateProfileParameters) IsValid() *customerror.Err {
+func (p *CreateProfileParameters) IsValid() error {
 	return validatorutils.ValidateStruct(p)
 }
 
@@ -81,11 +81,11 @@ type UpdateProfileParameters struct {
 	AcademicEmail               *string `json:"academic_email,omitempty" validate:"omitempty,email"`
 }
 
-func (p *UpdateProfileParameters) IsValid() *customerror.Err {
+func (p *UpdateProfileParameters) IsValid() error {
 	return validatorutils.ValidateStruct(p)
 }
 
-func (u *ProfileUsecase) UpdateProfile(ctx context.Context, credentialId uuid.UUID, profile UpdateProfileParameters) (*entity.Profile, *customerror.Err) {
+func (u *ProfileUsecase) UpdateProfile(ctx context.Context, credentialId uuid.UUID, profile UpdateProfileParameters) (*entity.Profile, error) {
 	if err := profile.IsValid(); err != nil {
 		return nil, err
 	}
@@ -126,7 +126,7 @@ func (u *ProfileUsecase) UpdateProfile(ctx context.Context, credentialId uuid.UU
 	})
 }
 
-func (u *ProfileUsecase) UpdateProfileByCredentialId(ctx context.Context, credentialId uuid.UUID, profile UpdateProfileParameters) (*entity.Profile, *customerror.Err) {
+func (u *ProfileUsecase) UpdateProfileByCredentialId(ctx context.Context, credentialId uuid.UUID, profile UpdateProfileParameters) (*entity.Profile, error) {
 	if err := profile.IsValid(); err != nil {
 		return nil, err
 	}
@@ -173,7 +173,7 @@ func (u *ProfileUsecase) UpdateProfileByCredentialId(ctx context.Context, creden
 	})
 }
 
-func (u *ProfileUsecase) CreateProfile(ctx context.Context, profile CreateProfileParameters) (*entity.Profile, *customerror.Err) {
+func (u *ProfileUsecase) CreateProfile(ctx context.Context, profile CreateProfileParameters) (*entity.Profile, error) {
 	return u.ProfileDg.CreateProfile(ctx, entity.Profile{
 		AuthenticationCredentialId:  profile.AuthenticationCredentialId,
 		IsProfilePicturePublic:      profile.IsProfilePicturePublic,

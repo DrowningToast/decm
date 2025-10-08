@@ -16,7 +16,7 @@ import (
 
 var _ datagateway.ProfileDataGateway = (*Repository)(nil)
 
-func (r *Repository) GetProfileById(ctx context.Context, id uuid.UUID) (*entity.Profile, *customerror.Err) {
+func (r *Repository) GetProfileById(ctx context.Context, id uuid.UUID) (*entity.Profile, error) {
 	query, err := r.queries.GetProfileByID(ctx, generated.GetProfileByIDParams{
 		EncryptionKey: r.piiEncryptionKey,
 		ID:            id,
@@ -54,7 +54,7 @@ func (r *Repository) GetProfileById(ctx context.Context, id uuid.UUID) (*entity.
 	return &entity, nil
 }
 
-func (r *Repository) GetProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID) (*entity.Profile, *customerror.Err) {
+func (r *Repository) GetProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID) (*entity.Profile, error) {
 	query, err := r.queries.GetProfileByAuthCredentialID(ctx, generated.GetProfileByAuthCredentialIDParams{
 		EncryptionKey:              r.piiEncryptionKey,
 		AuthenticationCredentialID: authenticationCredentialId,
@@ -92,7 +92,7 @@ func (r *Repository) GetProfileByAuthenticationCredentialId(ctx context.Context,
 	return &entity, nil
 }
 
-func (r *Repository) GetProfileByEmail(ctx context.Context, email string) (*entity.Profile, *customerror.Err) {
+func (r *Repository) GetProfileByEmail(ctx context.Context, email string) (*entity.Profile, error) {
 	query, err := r.queries.GetProfileByEmail(ctx, generated.GetProfileByEmailParams{
 		EncryptionKey: r.piiEncryptionKey,
 		EmailSearch:   pgmapper.StringPtrToPgText(&email),
@@ -116,7 +116,7 @@ func (r *Repository) GetProfileByEmail(ctx context.Context, email string) (*enti
 	return &entity, nil
 }
 
-func (r *Repository) CreateProfile(ctx context.Context, profile entity.Profile) (*entity.Profile, *customerror.Err) {
+func (r *Repository) CreateProfile(ctx context.Context, profile entity.Profile) (*entity.Profile, error) {
 	query, err := r.queries.CreateProfile(ctx, generated.CreateProfileParams{
 		EncryptionKey:               r.piiEncryptionKey,
 		IsProfilePicturePublic:      pgmapper.BoolToInt32(profile.IsProfilePicturePublic),
@@ -169,7 +169,7 @@ func (r *Repository) CreateProfile(ctx context.Context, profile entity.Profile) 
 	return &entity, nil
 }
 
-func (r *Repository) UpdateProfile(ctx context.Context, id uuid.UUID, profile datagateway.UpdateProfileParameters) (*entity.Profile, *customerror.Err) {
+func (r *Repository) UpdateProfile(ctx context.Context, id uuid.UUID, profile datagateway.UpdateProfileParameters) (*entity.Profile, error) {
 	query, err := r.queries.UpdateProfile(ctx, generated.UpdateProfileParams{
 		EncryptionKey:               r.piiEncryptionKey,
 		ID:                          id,
@@ -205,7 +205,7 @@ func (r *Repository) UpdateProfile(ctx context.Context, id uuid.UUID, profile da
 	return &entity, nil
 }
 
-func (r *Repository) UpdateProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID, profile datagateway.UpdateProfileParameters) (*entity.Profile, *customerror.Err) {
+func (r *Repository) UpdateProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID, profile datagateway.UpdateProfileParameters) (*entity.Profile, error) {
 	query, err := r.queries.UpdateProfileByAuthenticationCredentialId(ctx, generated.UpdateProfileByAuthenticationCredentialIdParams{
 		EncryptionKey:               r.piiEncryptionKey,
 		AuthenticationCredentialID:  authenticationCredentialId,

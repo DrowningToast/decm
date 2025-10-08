@@ -3,7 +3,6 @@ package datagateway
 import (
 	"context"
 
-	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
 
 	"github.com/google/uuid"
@@ -31,11 +30,11 @@ type UpdateProfileParameters struct {
 }
 
 type ProfileDataGateway interface {
-	GetProfileById(ctx context.Context, id uuid.UUID) (*entity.Profile, *customerror.Err)
-	GetProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID) (*entity.Profile, *customerror.Err)
-	GetProfileByEmail(ctx context.Context, email string) (*entity.Profile, *customerror.Err)
-	CreateProfile(ctx context.Context, profile entity.Profile) (*entity.Profile, *customerror.Err)
-	UpdateProfile(ctx context.Context, id uuid.UUID, profile UpdateProfileParameters) (*entity.Profile, *customerror.Err)
-	UpdateProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID, profile UpdateProfileParameters) (*entity.Profile, *customerror.Err)
+	GetProfileById(ctx context.Context, id uuid.UUID) (*entity.Profile, error)
+	GetProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID) (*entity.Profile, error)
+	GetProfileByEmail(ctx context.Context, email string) (*entity.Profile, error)
+	CreateProfile(ctx context.Context, profile entity.Profile) (*entity.Profile, error)
+	UpdateProfile(ctx context.Context, id uuid.UUID, profile UpdateProfileParameters) (*entity.Profile, error)
+	UpdateProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID, profile UpdateProfileParameters) (*entity.Profile, error)
 	DeleteProfile(ctx context.Context, id uuid.UUID) error
 }

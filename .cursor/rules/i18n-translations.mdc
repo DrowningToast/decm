@@ -1,0 +1,426 @@
+---
+description: "i18n internationalization and translation patterns using react-i18next"
+globs: apps/web/src/**/*.tsx,apps/web/src/**/*.ts,apps/web/src/lib/i18n/**
+---
+
+# Internationalization (i18n) Guide
+
+## Overview
+DECM uses [react-i18next](https://react.i18next.com/) for internationalization, supporting multiple languages with type-safe translations.
+
+## Supported Languages
+- **English (en)** - Default language 🇬🇧
+- **Thai (th)** - Thai language 🇹🇭
+
+## Configuration Files
+- Config: [apps/web/src/lib/i18n/config.ts](mdc:apps/web/src/lib/i18n/config.ts)
+- English translations: [apps/web/src/lib/i18n/locales/en.json](mdc:apps/web/src/lib/i18n/locales/en.json)
+- Thai translations: [apps/web/src/lib/i18n/locales/th.json](mdc:apps/web/src/lib/i18n/locales/th.json)
+- Type definitions: [apps/web/src/lib/i18n/types.ts](mdc:apps/web/src/lib/i18n/types.ts)
+
+## Basic Usage
+
+### Import and Use
+```tsx
+import { useTranslation } from 'react-i18next';
+
+export const MyComponent = () => {
+    const { t } = useTranslation();
+    
+    return (
+        <div>
+            <h1>{t('common.welcome')}</h1>
+            <p>{t('home.hero.subtitle')}</p>
+        </div>
+    );
+};
+```
+
+### With Typography Component
+```tsx
+import { Typography } from '@/components/typography/typography';
+import { useTranslation } from 'react-i18next';
+
+export const MyComponent = () => {
+    const { t } = useTranslation();
+    
+    return (
+        <Typography variant="header" tag="h1">
+            {t('page.title')}
+        </Typography>
+    );
+};
+```
+
+## Translation File Structure
+
+### Namespace Organization
+```json
+{
+    "common": {
+        "appName": "DECM",
+        "welcome": "Welcome",
+        "loading": "Loading..."
+    },
+    "auth": {
+        "signIn": "Sign In",
+        "signUp": "Sign Up"
+    },
+    "oauth": {
+        "google": {
+            "title": "Authenticating with Google",
+            "subtitle": "Please wait while we verify your account"
+        }
+    }
+}
+```
+
+### Key Naming Convention
+Use dot notation for nested keys:
+- `common.welcome` → "Welcome"
+- `auth.signIn` → "Sign In"
+- `oauth.google.title` → "Authenticating with Google"
+
+## Adding New Translations
+
+### Step 1: Add to Translation Files
+
+**English** (`apps/web/src/lib/i18n/locales/en.json`):
+```json
+{
+    "myFeature": {
+        "title": "My Feature",
+        "description": "This is a description",
+        "action": "Click here"
+    }
+}
+```
+
+**Thai** (`apps/web/src/lib/i18n/locales/th.json`):
+```json
+{
+    "myFeature": {
+        "title": "ฟีเจอร์ของฉัน",
+        "description": "นี่คือคำอธิบาย",
+        "action": "คลิกที่นี่"
+    }
+}
+```
+
+### Step 2: Use in Components
+```tsx
+import { useTranslation } from 'react-i18next';
+import { Typography } from '@/components/typography/typography';
+
+export const MyFeature = () => {
+    const { t } = useTranslation();
+    
+    return (
+        <div>
+            <Typography variant="header" tag="h2">
+                {t('myFeature.title')}
+            </Typography>
+            <Typography variant="text" tag="p">
+                {t('myFeature.description')}
+            </Typography>
+            <button>{t('myFeature.action')}</button>
+        </div>
+    );
+};
+```
+
+## Common Translation Namespaces
+
+### 1. Common
+Global, reusable translations:
+```tsx
+t('common.loading')      // "Loading..."
+t('common.error')        // "Error"
+t('common.success')      // "Success"
+t('common.save')         // "Save"
+t('common.cancel')       // "Cancel"
+t('common.appName')      // "DECM"
+```
+
+### 2. Navigation
+Navigation-related text:
+```tsx
+t('nav.home')           // "Home"
+t('nav.events')         // "Events"
+t('nav.profile')        // "Profile"
+t('nav.signIn')         // "Sign In"
+```
+
+### 3. Authentication
+Auth-related text:
+```tsx
+t('auth.signIn')                // "Sign In"
+t('auth.signUp')                // "Sign Up"
+t('auth.walletConnect')         // "Connect Wallet"
+t('auth.googleLogin')           // "Continue with Google"
+t('auth.email')                 // "Email"
+t('auth.password')              // "Password"
+```
+
+### 4. OAuth
+OAuth process text:
+```tsx
+t('oauth.google.title')         // "Authenticating with Google"
+t('oauth.google.subtitle')      // "Please wait while we verify..."
+t('oauth.google.processing')    // "Processing..."
+```
+
+### 5. Errors
+Error messages:
+```tsx
+t('errors.generic')             // "Something went wrong..."
+t('errors.network')             // "Network error..."
+t('errors.unauthorized')        // "You are not authorized..."
+```
+
+### 6. Validation
+Form validation messages:
+```tsx
+t('validation.required')        // "This field is required"
+t('validation.invalidEmail')    // "Invalid email address"
+t('validation.passwordTooShort') // "Password must be..."
+```
+
+## Advanced Features
+
+### 1. Interpolation
+Use variables in translations:
+
+**Translation file:**
+```json
+{
+    "greeting": "Welcome, {{name}}!",
+    "itemCount": "You have {{count}} items"
+}
+```
+
+**Component:**
+```tsx
+const { t } = useTranslation();
+
+t('greeting', { name: 'John' })           // "Welcome, John!"
+t('itemCount', { count: 5 })              // "You have 5 items"
+```
+
+### 2. Pluralization
+Handle singular/plural forms:
+
+**Translation file:**
+```json
+{
+    "items": "{{count}} item",
+    "items_plural": "{{count}} items"
+}
+```
+
+**Component:**
+```tsx
+t('items', { count: 1 })    // "1 item"
+t('items', { count: 5 })    // "5 items"
+```
+
+### 3. Accessing i18n Instance
+For more control:
+
+```tsx
+import { useTranslation } from 'react-i18next';
+
+export const LanguageInfo = () => {
+    const { t, i18n } = useTranslation();
+    
+    const changeLanguage = (lng: string) => {
+        i18n.changeLanguage(lng);
+    };
+    
+    return (
+        <div>
+            <p>Current: {i18n.language}</p>
+            <button onClick={() => changeLanguage('th')}>
+                Switch to Thai
+            </button>
+        </div>
+    );
+};
+```
+
+### 4. In Helmet/Metadata
+Use translations in page metadata:
+
+```tsx
+import { FaviconHelmet } from '@/components/providers/helmets/FaviconHelmet';
+import { useTranslation } from 'react-i18next';
+
+const MyPage = () => {
+    const { t } = useTranslation();
+    
+    return (
+        <>
+            <FaviconHelmet
+                title={`${t('page.title')} | ${t('common.appName')}`}
+                description={t('page.description')}
+            />
+            <MyPageContent />
+        </>
+    );
+};
+```
+
+## Real-World Examples
+
+### Landing Page
+```tsx
+<Typography variant="header" tag="h1">
+    {t('home.hero.title')}
+</Typography>
+<Typography variant="text" tag="p">
+    {t('home.hero.subtitle')}
+</Typography>
+```
+
+### OAuth Waiting Page
+```tsx
+const { t } = useTranslation();
+
+return (
+    <>
+        <FaviconHelmet
+            title={`${t('oauth.google.title')} | ${t('common.appName')}`}
+            description={t('oauth.google.subtitle')}
+        />
+        <Typography variant="header" tag="h1">
+            {t('oauth.google.title')}
+        </Typography>
+        <Typography variant="text" tag="p">
+            {t('oauth.google.processing')}
+        </Typography>
+    </>
+);
+```
+
+### Sign Up Form
+```tsx
+<Typography variant="header" tag="h1">
+    {t('signup.title')}
+</Typography>
+<button>
+    <Typography variant="text" tag="span">
+        {t('signup.googleButton')}
+    </Typography>
+</button>
+```
+
+## Best Practices
+
+### ✅ DO:
+- Always use translations, never hard-code text
+- Keep translation keys organized by feature/namespace
+- Maintain identical structure across all language files
+- Use descriptive key names
+- Add translations for both English and Thai
+- Use interpolation for dynamic content
+- Test with different languages
+
+### ❌ DON'T:
+- Hard-code user-facing text strings
+- Create deeply nested translation structures
+- Use different keys across language files
+- Mix languages in the same namespace
+- Skip adding translations for new features
+- Use translations for developer-only content
+- Create duplicate translation keys
+
+## Language Detection Order
+
+The application detects language in this order:
+1. **localStorage** - `decm-language` key
+2. **Browser navigator** - Browser settings
+3. **HTML tag** - Document language
+4. **Fallback** - English (en)
+
+## Type Safety
+
+TypeScript provides autocomplete and validation:
+
+```tsx
+// ✅ Valid - TypeScript autocompletes
+t('common.welcome')
+t('auth.signIn')
+t('oauth.google.title')
+
+// ❌ Invalid - TypeScript error
+t('nonexistent.key')
+t('typo.in.key')
+```
+
+## Common Patterns
+
+### Button Text
+```tsx
+<button>
+    <Typography variant="text" tag="span" className="font-medium">
+        {t('auth.signUp')}
+    </Typography>
+</button>
+```
+
+### Loading States
+```tsx
+<Typography variant="text" tag="p" className="animate-pulse">
+    {t('common.loading')}
+</Typography>
+```
+
+### Error Messages
+```tsx
+{error && (
+    <Typography variant="text" tag="p" className="text-destructive">
+        {t('errors.generic')}
+    </Typography>
+)}
+```
+
+### Form Labels
+```tsx
+<Typography variant="text" tag="label" htmlFor="email">
+    {t('auth.email')}
+</Typography>
+```
+
+## Testing Translations
+
+### Manual Testing
+1. Change language using language switcher
+2. Verify all text updates correctly
+3. Check for missing translations (shows key instead)
+4. Test with long text strings (Thai often longer)
+
+### Common Issues
+- **Key not found**: Shows `key.path` instead of translation
+  - Solution: Add missing key to translation file
+- **Wrong translation**: Incorrect text displayed
+  - Solution: Update translation in JSON file
+- **Mixed languages**: Some text not translating
+  - Solution: Replace hard-coded text with `t()` calls
+
+## Migration Checklist
+
+When adding i18n to existing components:
+
+- [ ] Import `useTranslation` hook
+- [ ] Extract `t` function: `const { t } = useTranslation()`
+- [ ] Add translation keys to both `en.json` and `th.json`
+- [ ] Replace all hard-coded text with `t('key')`
+- [ ] Update helmet/metadata with translations
+- [ ] Test with both languages
+- [ ] Verify no hard-coded strings remain
+
+## Related Documentation
+- Typography usage: See [typography-usage.mdc](mdc:typography-usage.mdc)
+- Page components: See [page-components-pattern.mdc](mdc:page-components-pattern.mdc)
+- i18n README: [apps/web/src/lib/i18n/README.md](mdc:apps/web/src/lib/i18n/README.md)
+- Language switcher: [apps/web/src/components/LanguageSwitcher.tsx](mdc:apps/web/src/components/LanguageSwitcher.tsx)

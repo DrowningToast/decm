@@ -1,0 +1,184 @@
+---
+description: "Page component structure pattern for separating routes from UI components"
+globs: apps/web/src/pages/**,apps/web/src/components/pages/**
+---
+
+# Page Component Structure Pattern
+
+## Overview
+DECM follows a clean separation between route pages and UI components using a two-layer architecture.
+
+## Directory Structure
+
+```
+apps/web/src/
+├── pages/                      # Route pages (Next.js/React Router pages)
+│   ├── index.tsx              # Route: /
+│   ├── signup/
+│   │   └── index.tsx          # Route: /signup
+│   └── oauth/
+│       └── google/
+│           └── index.tsx      # Route: /oauth/google
+└── components/
+    └── pages/                  # Page UI components
+        ├── LandingPage/
+        │   └── LandingPage.tsx
+        ├── SignUp/
+        │   └── SignUp.tsx
+        └── GoogleOAuth/
+            ├── GoogleOAuth.tsx
+            └── useVerifyGoogleOAuth.tsx
+```
+
+## Pattern: Separation of Concerns
+
+### 1. **Pages Directory** (`/pages/`)
+Route files should be minimal and only handle:
+- SEO metadata (using `FaviconHelmet` or `CustomHelmet`)
+- Route-level data fetching setup
+- Importing and rendering the corresponding page component
+
+**Example:**
+```tsx
+import { FaviconHelmet } from '@/components/providers/helmets/FaviconHelmet';
+import { LandingPage } from '@/components/pages/LandingPage/LandingPage';
+
+const IndexPage = () => {
+    return (
+        <>
+            <FaviconHelmet
+                title="Home | DECM - Decentralized Event Management"
+                description="Welcome to DECM - Web 3.0 platform"
+            />
+            <LandingPage />
+        </>
+    );
+};
+
+export default IndexPage;
+```
+
+### 2. **Components/Pages Directory** (`/components/pages/`)
+Page components contain all UI logic and should:
+- Handle all visual rendering
+- Implement business logic and state management
+- Use hooks for data fetching
+- Include all interactions and animations
+- Use Typography components for text
+- Implement i18n translations
+
+**Example:**
+```tsx
+import { Typography } from '@/components/typography/typography';
+import { useTranslation } from 'react-i18next';
+
+export const LandingPage = () => {
+    const { t } = useTranslation();
+    
+    return (
+        <div className="min-h-screen">
+            <Typography variant="header" tag="h1">
+                {t('home.hero.title')}
+            </Typography>
+            {/* All UI components here */}
+        </div>
+    );
+};
+```
+
+## Folder Organization
+
+### Page Component Folder Structure
+Each page component should have its own folder:
+
+```
+components/pages/PageName/
+├── PageName.tsx              # Main component
+├── usePageHook.tsx          # Custom hooks (if needed)
+├── PageSubComponent.tsx     # Sub-components (if needed)
+└── index.ts                 # Optional barrel export
+```
+
+## Best Practices
+
+### ✅ DO:
+- Keep route files minimal (10-20 lines max)
+- Place all UI in `components/pages/`
+- Use consistent naming: `LandingPage.tsx`, `SignUp.tsx`
+- Export page components as named exports
+- Co-locate page-specific hooks with the component
+- Use helmet components for SEO in route files
+
+### ❌ DON'T:
+- Put complex UI logic in `/pages/` route files
+- Mix routing concerns with UI rendering
+- Create deeply nested component structures
+- Export page components as default from `/components/pages/`
+- Hard-code text strings (use i18n instead)
+
+## Migration Pattern
+
+When migrating existing pages:
+
+1. **Identify** the route file in `/pages/`
+2. **Extract** all UI and business logic
+3. **Create** a new component in `/components/pages/PageName/`
+4. **Keep** only the helmet and component import in `/pages/`
+5. **Move** all functionality to the page component
+
+## Example: Complete Page Setup
+
+**Route File:** `apps/web/src/pages/oauth/google/index.tsx`
+```tsx
+import { FaviconHelmet } from '@/components/providers/helmets/FaviconHelmet';
+import { GoogleOAuth } from '@/components/pages/GoogleOAuth/GoogleOAuth';
+import { useTranslation } from 'react-i18next';
+
+const GoogleOAuthPage = () => {
+    const { t } = useTranslation();
+    
+    return (
+        <>
+            <FaviconHelmet
+                title={`${t('oauth.google.title')} | ${t('common.appName')}`}
+                description={t('oauth.google.subtitle')}
+            />
+            <GoogleOAuth />
+        </>
+    );
+};
+
+export default GoogleOAuthPage;
+```
+
+**Page Component:** `apps/web/src/components/pages/GoogleOAuth/GoogleOAuth.tsx`
+```tsx
+import { Typography } from '@/components/typography/typography';
+import { useTranslation } from 'react-i18next';
+
+export const GoogleOAuth = () => {
+    const { t } = useTranslation();
+
+    return (
+        <div className="min-h-screen flex items-center justify-center">
+            <Typography variant="header" tag="h1">
+                {t('oauth.google.title')}
+            </Typography>
+            {/* All UI implementation */}
+        </div>
+    );
+};
+```
+
+## Benefits
+
+1. **Maintainability** - Clear separation makes code easier to understand
+2. **Reusability** - Page components can be reused in different routes
+3. **Testability** - UI components can be tested independently of routing
+4. **SEO** - Route files handle metadata separately from UI
+5. **Performance** - Easier to implement code splitting and lazy loading
+
+## References
+- Typography usage: See [typography-usage.mdc](mdc:typography-usage.mdc)
+- i18n integration: See [i18n-translations.mdc](mdc:i18n-translations.mdc)
+- Helmet providers: [apps/web/src/components/providers/helmets/](mdc:apps/web/src/components/providers/helmets/)

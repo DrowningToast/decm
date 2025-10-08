@@ -10,6 +10,16 @@
  * ---------------------------------------------------------------
  */
 
+export interface AuthRequestGoogleOAuthResponse {
+	/** @example "https://accounts.google.com/o/oauth2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code&scope=email profile" */
+	url?: string;
+}
+
+export interface AuthVerifyGoogleOAuthRequest {
+	code?: string;
+	state?: string;
+}
+
 export interface AuthVerifyGoogleOAuthResponse {
 	access_token?: string;
 	expires_in?: number;
@@ -215,6 +225,8 @@ export type RegisterWithWalletError = CustomerrorErrResponse;
 /** Signed message */
 export type RegisterWithWalletPayload = string;
 
+export type RequestGoogleOauthData = AuthRequestGoogleOAuthResponse;
+
 export type RequestGoogleOauthError = CustomerrorErrResponse;
 
 export type V1ProfileCreateData = ProfileCreateProfileResponse;
@@ -237,9 +249,6 @@ export type V1ProfileMyListError = CustomerrorErr;
 export type VerifyGoogleOauthData = AuthVerifyGoogleOAuthResponse;
 
 export type VerifyGoogleOauthError = CustomerrorErrResponse;
-
-/** Code */
-export type VerifyGoogleOauthPayload = string;
 
 import type {
 	AxiosInstance,
@@ -444,10 +453,11 @@ export class Api<SecurityDataType extends unknown> {
 		 * @request GET:/api/v1/auth/request-google-oauth
 		 */
 		requestGoogleOauth: (params: RequestParams = {}) =>
-			this.http.request<any, RequestGoogleOauthError>({
+			this.http.request<RequestGoogleOauthData, RequestGoogleOauthError>({
 				path: `/api/v1/auth/request-google-oauth`,
 				method: "GET",
 				type: ContentType.Json,
+				format: "json",
 				...params,
 			}),
 
@@ -460,7 +470,7 @@ export class Api<SecurityDataType extends unknown> {
 		 * @request POST:/api/v1/auth/verify-google-oauth
 		 */
 		verifyGoogleOauth: (
-			state: VerifyGoogleOauthPayload,
+			state: AuthVerifyGoogleOAuthRequest,
 			params: RequestParams = {}
 		) =>
 			this.http.request<VerifyGoogleOauthData, VerifyGoogleOauthError>({

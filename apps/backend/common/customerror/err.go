@@ -17,11 +17,20 @@ type Err struct {
 	Inner       error             `json:"-"`
 }
 
-func (e Err) Error() string {
-	return e.Message + e.Inner.Error()
+func (e *Err) Error() string {
+	if e == nil {
+		return "nil custom error"
+	}
+	if e.Inner != nil {
+		return e.Message + ": " + e.Inner.Error()
+	}
+	return e.Message
 }
 
-func (err Err) ExtendWithError(e error) *Err {
+func (err *Err) ExtendWithError(e error) *Err {
+	if err == nil {
+		return nil
+	}
 	return &Err{
 		HttpStatus:  err.HttpStatus,
 		Code:        err.Code,
@@ -31,7 +40,10 @@ func (err Err) ExtendWithError(e error) *Err {
 	}
 }
 
-func (err Err) Extend(msg string) *Err {
+func (err *Err) Extend(msg string) *Err {
+	if err == nil {
+		return nil
+	}
 	return &Err{
 		HttpStatus:  err.HttpStatus,
 		Code:        err.Code,

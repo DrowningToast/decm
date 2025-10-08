@@ -3,6 +3,8 @@ package oauth
 import (
 	"context"
 
+	"github.com/cockroachdb/errors"
+
 	customerror "apps/backend/common/customerror"
 	"apps/backend/core-api/internal/datagateway"
 	oauth_services "apps/backend/services/oauth"
@@ -21,10 +23,14 @@ func NewOAuthUsecase(googleOAuthService *oauth_services.GoogleOAuthService, auth
 	}
 }
 
-func (u *OAuthUsecase) VerifyGoogleOAuthCode(ctx context.Context, session *session.Session, code string, state string) (*oauth2.Token, *customerror.Err) {
+func (u *OAuthUsecase) VerifyGoogleOAuthCode(ctx context.Context, session *session.Session, code string, state string) (*oauth2.Token, error) {
 	token, err := u.googleOAuthService.Callback(ctx, session, code, state)
 	if err != nil {
-		return nil, err.Extend("failed to verify google oauth code")
+		var customErr *customerror.Err
+		if errors.As(err, &customErr) {
+			return nil, customErr.Extend("failed to verify google oauth code")
+		}
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	return token, nil

@@ -35,21 +35,21 @@ type registerWithGoogleOAuthResponse struct {
 func (h Handler) RegisterWithGoogleOAuth(ctx *fiber.Ctx) error {
 	requestBody := registerWithGoogleOAuthRequest{}
 	if err := requestBody.Parse(ctx); err != nil {
-		return *err
+		return err
 	}
 	if err := requestBody.IsValid(); err != nil {
-		return *err
+		return err
 	}
 
 	// Parse token
 	token, err := oauth.ParseToken(requestBody.AccessToken, requestBody.RefreshToken)
 	if err != nil {
-		return *customerror.Parse(&customerror.ErrInvalidArgument, err)
+		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
 	jwt, mnemonic, err := h.OnboardUc.RegisterWithGoogle(ctx.UserContext(), token, requestBody.Password)
 	if err != nil {
-		return *err
+		return err
 	}
 
 	cookie := new(fiber.Cookie)
@@ -64,7 +64,7 @@ func (h Handler) RegisterWithGoogleOAuth(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(response)
 }
 
-func (r *registerWithGoogleOAuthRequest) Parse(ctx *fiber.Ctx) *customerror.Err {
+func (r *registerWithGoogleOAuthRequest) Parse(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(r); err != nil {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
@@ -72,7 +72,7 @@ func (r *registerWithGoogleOAuthRequest) Parse(ctx *fiber.Ctx) *customerror.Err 
 	return nil
 }
 
-func (r *registerWithGoogleOAuthRequest) IsValid() *customerror.Err {
+func (r *registerWithGoogleOAuthRequest) IsValid() error {
 	validate := validator.New()
 	err := validate.Struct(r)
 	if err != nil {
