@@ -6,6 +6,8 @@ import { components, hooks, utils } from '@generouted/react-router/client'
 export type Path =
   | `/`
   | `/host/events`
+  | `/host/events/:eventId`
+  | `/host/events/:eventId/edit`
   | `/host/events/create`
   | `/host/home`
   | `/oauth/google`
@@ -14,6 +16,8 @@ export type Path =
   | `/signup`
 
 export type Params = {
+  '/host/events/:eventId': { eventId: string }
+  '/host/events/:eventId/edit': { eventId: string }
   '/onboard/:method': { method: string }
 }
 
