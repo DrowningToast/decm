@@ -80,7 +80,7 @@ func main() {
 	// repo
 	pgRepo := postgres.NewRepository(pgConn, cfg.PIIEncryptionKey)
 
-	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo, authService)
+	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo, authService, googleOAuthService)
 	authUc := auth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo)
 

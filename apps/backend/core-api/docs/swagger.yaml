@@ -1,28 +1,5 @@
 basePath: /
 definitions:
-  auth.requestGoogleOAuthResponse:
-    properties:
-      url:
-        example: https://accounts.google.com/o/oauth2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code&scope=email
-          profile
-        type: string
-    type: object
-  auth.verifyGoogleOAuthRequest:
-    properties:
-      code:
-        type: string
-      state:
-        type: string
-    type: object
-  auth.verifyGoogleOAuthResponse:
-    properties:
-      access_token:
-        type: string
-      expires_in:
-        type: integer
-      refresh_token:
-        type: string
-    type: object
   customerror.Err:
     description: Custom error type
     properties:
@@ -90,6 +67,32 @@ definitions:
       updated_at:
         type: string
     type: object
+  onboard.CheckOnboardStatusRequest:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      method:
+        $ref: '#/definitions/onboard.RegistrationMethod'
+      sign_message:
+        type: string
+    required:
+    - method
+    type: object
+  onboard.CheckOnboardStatusResponse:
+    properties:
+      is_exists:
+        type: boolean
+    type: object
+  onboard.RegistrationMethod:
+    enum:
+    - google
+    - wallet
+    type: string
+    x-enum-varnames:
+    - RegistrationMethodGoogle
+    - RegistrationMethodWallet
   onboard.getRegisterSignMessageResponse:
     description: Response for the client to sign to register
     properties:
@@ -322,10 +325,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/auth.requestGoogleOAuthResponse'
+        "302":
+          description: Found
         "400":
           description: Bad Request
           schema:
@@ -334,31 +335,29 @@ paths:
       tags:
       - Auth
   /api/v1/auth/verify-google-oauth:
-    post:
+    get:
       consumes:
       - application/json
       description: Verify Google OAuth code
       operationId: verify-google-oauth
       parameters:
-      - description: Code
-        in: body
+      - in: query
         name: code
-        required: true
-        schema:
-          $ref: '#/definitions/auth.verifyGoogleOAuthRequest'
-      - description: State
-        in: body
+        type: string
+      - in: query
         name: state
-        required: true
-        schema:
-          $ref: '#/definitions/auth.verifyGoogleOAuthRequest'
+        type: string
+      - in: query
+        name: code
+        type: string
+      - in: query
+        name: state
+        type: string
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/auth.verifyGoogleOAuthResponse'
+        "302":
+          description: Found
         "400":
           description: Bad Request
           schema:
@@ -366,6 +365,48 @@ paths:
       summary: Verify Google OAuth code
       tags:
       - Auth
+  /api/v1/onboard/check-onboard-status:
+    post:
+      consumes:
+      - application/json
+      description: Check onboard status
+      operationId: check-onboard-status
+      parameters:
+      - description: Method
+        in: body
+        name: method
+        required: true
+        schema:
+          $ref: '#/definitions/onboard.CheckOnboardStatusRequest'
+      - description: Access token
+        in: body
+        name: access_token
+        schema:
+          $ref: '#/definitions/onboard.CheckOnboardStatusRequest'
+      - description: Expires in
+        in: body
+        name: expires_in
+        schema:
+          $ref: '#/definitions/onboard.CheckOnboardStatusRequest'
+      - description: Sign message
+        in: body
+        name: sign_message
+        schema:
+          $ref: '#/definitions/onboard.CheckOnboardStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/onboard.CheckOnboardStatusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Check onboard status
+      tags:
+      - Onboard
   /api/v1/onboard/register-with-google-oauth:
     post:
       consumes:
