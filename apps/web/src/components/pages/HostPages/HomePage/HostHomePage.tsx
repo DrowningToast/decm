@@ -6,11 +6,11 @@ import { Link, type Path } from "@/router";
 
 export default function HostHomePage() {
   return (
-    <PageContainer title="Host Dashboard" className="space-y-8 lg:space-y-16 relative">
+    <PageContainer title="Host Dashboard">
       <img
         src="/justice.png"
         alt="Host Dashboard Background"
-        className="absolute bottom-0 lg:right-0 w-[500px] h-[500px] opacity-50"
+        className="absolute bottom-0 lg:right-0 w-[400px] h-[400px] opacity-50 m-0"
       />
 
       <SectionContainer>
@@ -23,7 +23,7 @@ export default function HostHomePage() {
         </Typography>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 lg:gap-6 lg:mt-6">
-          <MenuItem title="Event" to="/host/home" />
+          <MenuItem title="Event" to="/host/events" />
           <MenuItem title="Inbox" to="/host/home" />
           <MenuItem title="Profile" to="/host/home" />
         </div>

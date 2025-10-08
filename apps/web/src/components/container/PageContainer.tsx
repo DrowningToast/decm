@@ -33,6 +33,7 @@ export default function PageContainer({
     pageContainerVariants({
       bgColor,
     }),
+    "space-y-8 relative",
     className
   );
 
