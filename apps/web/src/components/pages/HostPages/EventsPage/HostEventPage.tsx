@@ -2,6 +2,7 @@ import PageContainer from "@/components/container/PageContainer";
 import SectionContainer from "@/components/container/SectionContainer";
 import TitleSubtitle from "@/components/TitleSubtitle";
 import WrappedButton from "@/components/wrapper/WrappedButton";
+import { Link } from "@/router";
 
 export default function HostEventPage() {
   return (
@@ -9,7 +10,7 @@ export default function HostEventPage() {
       <SectionContainer className="flex items-center justify-between">
         <TitleSubtitle title="Events" subtitle="Create or manage your events" />
         <div className="flex justify-end">
-          <WrappedButton>Create Event</WrappedButton>
+          <WrappedButton href="/host/events/create">Create Event</WrappedButton>
         </div>
       </SectionContainer>
 
@@ -24,7 +25,14 @@ export default function HostEventPage() {
           <tbody>
             <tr>
               <td>
-                <p className="underline mt-4 cursor-pointer">ToBeIT 67</p>
+                <Link
+                  to={"/host/events/:eventId"}
+                  params={{
+                    eventId: "1",
+                  }}
+                >
+                  <p className="underline mt-4 cursor-pointer">ToBeIT 67</p>
+                </Link>
                 <p className="text-muted text-sm mt-0.5">24 Sep 2025 - 25 Sep 2025</p>
                 <p className="text-muted text-sm">Invite Only</p>
               </td>

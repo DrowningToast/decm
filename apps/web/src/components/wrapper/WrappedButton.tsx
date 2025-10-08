@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Link, type Path } from "@/router";
 
 const wrappedButtonVariants = cva("h-12 rounded-[12px]", {
   variants: {
@@ -20,14 +21,22 @@ const wrappedButtonVariants = cva("h-12 rounded-[12px]", {
 type WrappedButtonProps = {
   children: ReactNode;
   className?: string;
+  href?: string;
 } & VariantProps<typeof wrappedButtonVariants>;
 
-export default function WrappedButton({ children, className, variant }: WrappedButtonProps) {
+export default function WrappedButton({ children, className, variant, href }: WrappedButtonProps) {
   const _className = cn(
     wrappedButtonVariants({
       variant,
     }),
     className
   );
-  return <Button className={cn(_className, className)}>{children}</Button>;
+
+  const _Button = <Button className={cn(_className, className)}>{children}</Button>;
+
+  if (href) {
+    return <Link to={href as any}>{_Button}</Link>;
+  }
+
+  return _Button;
 }
