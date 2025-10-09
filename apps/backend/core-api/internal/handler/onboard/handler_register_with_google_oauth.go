@@ -11,9 +11,8 @@ import (
 )
 
 type registerWithGoogleOAuthRequest struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	Password     string `json:"password" validate:"required,min=6"`
+	AccessToken string `json:"access_token"`
+	Password    string `json:"password" validate:"required,min=6"`
 }
 
 type registerWithGoogleOAuthResponse struct {
@@ -24,9 +23,8 @@ type registerWithGoogleOAuthResponse struct {
 // @Description Register a new user with Google OAuth
 // @ID register-with-google-oauth
 // @Tags Onboard
-// @Param access_token body string true "Access token"
-// @Param refresh_token body string true "Refresh token"
-// @Param password body string true "Password"
+// @Param access_token body onboard.registerWithGoogleOAuthRequest.AccessToken true "Access token"
+// @Param password body onboard.registerWithGoogleOAuthRequest.Password true "Password"
 // @Accept json
 // @Produce json
 // @Success 200 {object} registerWithGoogleOAuthResponse
@@ -42,7 +40,7 @@ func (h Handler) RegisterWithGoogleOAuth(ctx *fiber.Ctx) error {
 	}
 
 	// Parse token
-	token, err := oauth.ParseToken(requestBody.AccessToken, requestBody.RefreshToken)
+	token, err := oauth.ParseToken(requestBody.AccessToken)
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}

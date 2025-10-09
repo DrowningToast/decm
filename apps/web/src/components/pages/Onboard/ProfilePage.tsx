@@ -4,6 +4,7 @@ import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
 import { OAuthOnboardContext } from "./OAuth/OAuthOnboardContext";
 import { OnboardPageContext } from "@/pages/onboard/[method]";
@@ -55,98 +56,177 @@ export const ProfilePage: React.FC = () => {
                 </div>
 
                 {/* Form Fields Section */}
-                <div className="space-y-2.5">
+                <div className="flex gap-y-2.5 flex-col">
                     {/* First Name */}
-                    <FormField
-                        control={form.control}
-                        name="firstName"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormControl>
-                                    <div className="space-y-1">
-                                        <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
-                                            {t("onboard.profile.firstName")}
-                                        </Label>
-                                        <Input
-                                            {...field}
-                                            type="text"
-                                            className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-muted"
+                    <div className="space-y-1.5">
+                        <FormField
+                            control={form.control}
+                            name="firstName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <div className="space-y-1">
+                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                {t("onboard.profile.firstName")}
+                                            </Label>
+                                            <Input
+                                                {...field}
+                                                type="text"
+                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background"
+                                            />
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="isFirstNamePublic"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row gap-x-1 items-center">
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                            className="mt-0.5"
                                         />
-                                    </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
+                                    </FormControl>
+                                    <Label className="text-xs        font-medium leading-normal text-background-alt cursor-pointer opacity-50">
+                                        {t("onboard.profile.makePublic")}
+                                    </Label>
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                     {/* Last Name */}
-                    <FormField
-                        control={form.control}
-                        name="lastName"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormControl>
-                                    <div className="space-y-1">
-                                        <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
-                                            {t("onboard.profile.lastName")}
-                                        </Label>
-                                        <Input
-                                            {...field}
-                                            type="text"
-                                            className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-muted"
+                    <div className="space-y-1.5">
+                        <FormField
+                            control={form.control}
+                            name="lastName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <div className="space-y-1">
+                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                {t("onboard.profile.lastName")}
+                                            </Label>
+                                            <Input
+                                                {...field}
+                                                type="text"
+                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background"
+                                            />
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="isLastNamePublic"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-start gap-x-1 items-center">
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                            className="mt-0.5"
                                         />
-                                    </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                                    </FormControl>
+                                    <Label className="text-xs font-medium leading-normal text-background-alt cursor-pointer opacity-50">
+                                        {t("onboard.profile.makePublic")}
+                                    </Label>
+                                </FormItem>
+                            )}
+                        />
+                    </div>
 
                     {/* Contact Email */}
-                    <FormField
-                        control={form.control}
-                        name="contactEmail"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormControl>
-                                    <div className="space-y-1">
-                                        <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
-                                            {t("onboard.profile.contactEmail")}
-                                        </Label>
-                                        <Input
-                                            {...field}
-                                            type="email"
-                                            className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-foreground"
+                    <div className="space-y-1.5">
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <div className="space-y-1">
+                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                {t("onboard.profile.email")}
+                                            </Label>
+                                            <Input
+                                                {...field}
+                                                type="email"
+                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-foreground placeholder:text-background"
+                                            />
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="isEmailPublic"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-start gap-x-1 items-center">
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                            className="mt-0.5"
                                         />
-                                    </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                                    </FormControl>
+                                    <Label className="text-xs font-medium leading-normal text-background-alt cursor-pointer opacity-50">
+                                        {t("onboard.profile.makePublic")}
+                                    </Label>
+                                </FormItem>
+                            )}
+                        />
+                    </div>
 
                     {/* Phone Number */}
-                    <FormField
-                        control={form.control}
-                        name="phoneNumber"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormControl>
-                                    <div className="space-y-1">
-                                        <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
-                                            {t("onboard.profile.phoneNumber")}
-                                        </Label>
-                                        <Input
-                                            {...field}
-                                            type="tel"
-                                            className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-muted"
+                    <div className="space-y-1.5">
+                        <FormField
+                            control={form.control}
+                            name="phoneNumber"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <div className="space-y-1">
+                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                {t("onboard.profile.phoneNumber")}
+                                            </Label>
+                                            <Input
+                                                {...field}
+                                                type="tel"
+                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background"
+                                            />
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="isPhoneNumberPublic"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-start gap-x-1 items-center">
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                            className="mt-0.5"
                                         />
-                                    </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                                    </FormControl>
+                                    <Label className="text-xs font-medium leading-normal text-background-alt cursor-pointer opacity-50">
+                                        {t("onboard.profile.makePublic")}
+                                    </Label>
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                 </div>
 
                 {/* Action Buttons Section */}

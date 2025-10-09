@@ -235,7 +235,8 @@
         "passwordMin6": "Password must be at least 6 characters long",
         "passwordMax32": "Password must be at most 32 characters long",
         "passwordMismatch": "Passwords do not match",
-        "invalidWallet": "Invalid wallet address"
+        "invalidWallet": "Invalid wallet address",
+        "accessTokenAndSignedTokenRequired": "Access token or signed token is required"
     },
     "errors": {
         "generic": "Something went wrong. Please try again.",
@@ -273,7 +274,7 @@
     },
     "onboard": {
         "title": "Account onboarding",
-        "subtitle": "Please setup your passcode/password. This will be used to encrypt your info.",
+        "subtitle": "Please setup your passcode/password. This will be used to encrypt your info. This cannot be recover, please be careful.",
         "pinTitle": "Setup PIN",
         "passwordTitle": "Setup Password",
         "preferPassword": "I prefer password",
@@ -290,8 +291,22 @@
             "subtitle": "We use your personal data to prefill some of the details required by the events/certificates. Your data is always encrypted and can be changed and deleted by you at any moment.",
             "firstName": "First name",
             "lastName": "Last name",
-            "contactEmail": "Contact email",
-            "phoneNumber": "Phone number"
+            "email": "Contact email",
+            "phoneNumber": "Phone number",
+            "makePublic": "Make this information public"
+        },
+        "confirm": {
+            "title": "Heads up",
+            "oauth": {
+                "description": {
+                    "part1": "Certificates rely on blockchain technology as a source of truth. Since you’re using OAuth account instead of web3 wallet as a account. We’re managing the your account/wallet private key behind the scene.",
+                    "part2": "Your private key is encrypted with your passcode/password you provided.  <strong>If you do not set up a back-up authentication method. We do not either.</strong>"
+                },
+                "checkboxes": {
+                    "acceptRisk": "I'm ok with that.",
+                    "acknowledgePasswordLoss": "I acknowledged that losing my passcode/password will result in total account lost"
+                }
+            }
         }
     }
 }

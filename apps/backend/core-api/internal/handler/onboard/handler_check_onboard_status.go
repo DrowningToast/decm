@@ -25,7 +25,8 @@ type CheckOnboardStatusRequest struct {
 }
 
 type CheckOnboardStatusResponse struct {
-	IsExists bool `json:"is_exists"`
+	AuthenticationCredentialId *string `json:"authentication_credential_id"`
+	ProfileId                  *string `json:"profile_id"`
 }
 
 // @Summary Check onboard status
@@ -61,27 +62,43 @@ func (h Handler) CheckOnboardStatus(ctx *fiber.Ctx) error {
 		if expiresIn == nil {
 			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("expires in is required"))
 		}
-		isExists, err := h.OnboardUc.CheckOnboardStatusWithGoogleConnectorRef(ctx.UserContext(), *accessToken, *expiresIn)
+		authenticationCredentialId, profileId, err := h.OnboardUc.CheckOnboardStatusWithGoogleConnectorRef(ctx.UserContext(), *accessToken, *expiresIn)
 		if err != nil {
 			return errors.Wrap(err, "failed to check onboard status with google connector ref")
 		}
-		response := CheckOnboardStatusResponse{
-			IsExists: isExists,
+		if authenticationCredentialId == nil {
+			return ctx.Status(fiber.StatusOK).JSON(CheckOnboardStatusResponse{
+				AuthenticationCredentialId: nil,
+				ProfileId:                  nil,
+			})
 		}
-		return ctx.Status(fiber.StatusOK).JSON(response)
+		authenticationCredentialIdStr := authenticationCredentialId.String()
+		profileIdStr := profileId.String()
+		return ctx.Status(fiber.StatusOK).JSON(CheckOnboardStatusResponse{
+			AuthenticationCredentialId: &authenticationCredentialIdStr,
+			ProfileId:                  &profileIdStr,
+		})
 	case RegistrationMethodWallet:
 		signMessage := requestBody.SignMessage
 		if signMessage == nil {
 			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("sign message is required"))
 		}
-		isExists, err := h.OnboardUc.CheckOnboardStatusWithWalletAddress(ctx.UserContext(), *signMessage)
+		authenticationCredentialId, profileId, err := h.OnboardUc.CheckOnboardStatusWithWalletAddress(ctx.UserContext(), *signMessage)
 		if err != nil {
 			return errors.Wrap(err, "failed to check onboard status with wallet address")
 		}
-		response := CheckOnboardStatusResponse{
-			IsExists: isExists,
+		if authenticationCredentialId == nil {
+			return ctx.Status(fiber.StatusOK).JSON(CheckOnboardStatusResponse{
+				AuthenticationCredentialId: nil,
+				ProfileId:                  nil,
+			})
 		}
-		return ctx.Status(fiber.StatusOK).JSON(response)
+		authenticationCredentialIdStr := authenticationCredentialId.String()
+		profileIdStr := profileId.String()
+		return ctx.Status(fiber.StatusOK).JSON(CheckOnboardStatusResponse{
+			AuthenticationCredentialId: &authenticationCredentialIdStr,
+			ProfileId:                  &profileIdStr,
+		})
 	default:
 		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("method is invalid"))
 	}

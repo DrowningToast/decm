@@ -71,13 +71,13 @@ INSERT INTO authentication_credentials (
     $3,
     $4,
     CASE 
-        WHEN $5 IS NOT NULL 
-        THEN pgp_sym_encrypt($5, $6::varchar)::varchar
+        WHEN $5::text IS NOT NULL 
+        THEN pgp_sym_encrypt($5::text, $6::varchar)::varchar
         ELSE NULL 
     END::text,
     CASE 
-        WHEN $7 IS NOT NULL 
-        THEN pgp_sym_encrypt($7, $6::varchar)::varchar
+        WHEN $7::text IS NOT NULL 
+        THEN pgp_sym_encrypt($7::text, $6::varchar)::varchar
         ELSE NULL 
     END::text,
     $8,
@@ -949,13 +949,13 @@ UPDATE authentication_credentials SET
     encrypted_private_key = COALESCE($3, encrypted_private_key),
     wallet_address = COALESCE($4, wallet_address),
     google_connector_ref = CASE 
-        WHEN $5 IS NOT NULL 
-        THEN pgp_sym_encrypt($5, $6::varchar)
+        WHEN $5::text IS NOT NULL 
+        THEN pgp_sym_encrypt($5::text, $6::varchar)
         ELSE google_connector_ref
     END::text,
     github_connector_ref = CASE 
-        WHEN $7 IS NOT NULL 
-        THEN pgp_sym_encrypt($7, $6::varchar)
+        WHEN $7::text IS NOT NULL 
+        THEN pgp_sym_encrypt($7::text, $6::varchar)
         ELSE github_connector_ref
     END::text,
     is_verified_organizer = COALESCE($8, is_verified_organizer),

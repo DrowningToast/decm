@@ -108,6 +108,7 @@ func (s *GoogleOAuthService) getUserDataFromGoogle(ctx context.Context, code str
 	// Use code to get token and get user info from Google.
 	token, err := s.googleConfig.Exchange(ctx, code)
 	if err != nil {
+		s.logger.Error("Code exchange wrong: %s", slog.String("error", err.Error()))
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("code exchange wrong: %s"))
 	}
 

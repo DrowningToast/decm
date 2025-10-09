@@ -157,6 +157,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
                     }
                 }
             }
@@ -182,16 +188,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Refresh token",
-                        "name": "refresh_token",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/onboard.registerWithGoogleOAuthRequest"
                         }
                     },
                     {
@@ -200,7 +197,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/onboard.registerWithGoogleOAuthRequest"
                         }
                     }
                 ],
@@ -241,16 +238,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Wallet address",
-                        "name": "wallet_address",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/onboard.registerWithWalletRequest"
                         }
                     }
                 ],
@@ -298,6 +286,7 @@ const docTemplate = `{
                     "Profile"
                 ],
                 "summary": "Create a profile",
+                "operationId": "create-profile",
                 "parameters": [
                     {
                         "description": "Profile",
@@ -356,6 +345,7 @@ const docTemplate = `{
                     "Profile"
                 ],
                 "summary": "Update a profile by credential ID",
+                "operationId": "update-profile-by-credential-id",
                 "parameters": [
                     {
                         "type": "string",
@@ -365,8 +355,143 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Profile",
-                        "name": "profile",
+                        "description": "Is Profile Picture Public",
+                        "name": "IsProfilePicturePublic",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "Profile Picture URL",
+                        "name": "ProfilePictureUrl",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "Is First Name Public",
+                        "name": "IsFirstNamePublic",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "First Name",
+                        "name": "FirstName",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "Is Last Name Public",
+                        "name": "IsLastNamePublic",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "Last Name",
+                        "name": "LastName",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "Is Email Public",
+                        "name": "IsEmailPublic",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "Email",
+                        "name": "Email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "Is Phone Number Public",
+                        "name": "IsPhoneNumberPublic",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "Phone Number",
+                        "name": "PhoneNumber",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "Is Address Public",
+                        "name": "IsAddressPublic",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "Address",
+                        "name": "Address",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "Is Academic Institution Public",
+                        "name": "IsAcademicInstitutionPublic",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "Academic Institution",
+                        "name": "AcademicInstitution",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "Is Academic Email Public",
+                        "name": "IsAcademicEmailPublic",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.UpdateProfileRequest"
+                        }
+                    },
+                    {
+                        "description": "Academic Email",
+                        "name": "AcademicEmail",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -421,6 +546,7 @@ const docTemplate = `{
                     "Profile"
                 ],
                 "summary": "Get my profile",
+                "operationId": "get-my-profile",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -565,7 +691,15 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "method": {
-                    "$ref": "#/definitions/onboard.RegistrationMethod"
+                    "enum": [
+                        "google",
+                        "wallet"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/onboard.RegistrationMethod"
+                        }
+                    ]
                 },
                 "sign_message": {
                     "type": "string"
@@ -575,8 +709,11 @@ const docTemplate = `{
         "onboard.CheckOnboardStatusResponse": {
             "type": "object",
             "properties": {
-                "is_exists": {
-                    "type": "boolean"
+                "authentication_credential_id": {
+                    "type": "string"
+                },
+                "profile_id": {
+                    "type": "string"
                 }
             }
         },
@@ -600,6 +737,21 @@ const docTemplate = `{
                 }
             }
         },
+        "onboard.registerWithGoogleOAuthRequest": {
+            "type": "object",
+            "required": [
+                "password"
+            ],
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
         "onboard.registerWithGoogleOAuthResponse": {
             "type": "object",
             "properties": {
@@ -608,6 +760,14 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "onboard.registerWithWalletRequest": {
+            "type": "object",
+            "properties": {
+                "signed_message": {
+                    "type": "string"
                 }
             }
         },
