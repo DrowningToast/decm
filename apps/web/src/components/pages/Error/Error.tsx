@@ -3,7 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Link } from '@/router';
 import { useTranslation } from 'react-i18next';
 
-export const Error = () => {
+interface ErrorProps {
+    title?: string
+    description?: string
+}
+
+export const Error: React.FC<ErrorProps> = ({ title, description }) => {
     const { t } = useTranslation();
 
     const handleRefresh = () => {
@@ -32,7 +37,7 @@ export const Error = () => {
                         tag="h1"
                         className="text-3xl md:text-5xl font-bold text-foreground"
                     >
-                        {t('error.heading')}
+                        {title || t('error.heading')}
                     </Typography>
 
                     <Typography
@@ -40,7 +45,7 @@ export const Error = () => {
                         tag="p"
                         className="text-lg text-muted-foreground max-w-md mx-auto"
                     >
-                        {t('error.description')}
+                        {description || t('error.description')}
                     </Typography>
                 </div>
 

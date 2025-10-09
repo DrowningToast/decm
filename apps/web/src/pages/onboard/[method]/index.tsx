@@ -1,9 +1,10 @@
 import { OAuthOnboardPasswordPage } from "@/components/pages/Onboard/OAuth/Password/OAuthOnboardPasswordPage";
-import { OAuthOnboardProvider } from "@/components/pages/Onboard/OAuth/OAuthOnboardProvider";
+import { OAuthOnboardProvider } from "@/components/pages/Onboard/OAuth/OAuthOnboardContext";
 import NotFoundPage from "@/pages/404";
 import { useParams } from "@/router";
 import { createContext, useState } from "react";
 import { OAuthOnboardLoadingPage } from "@/components/pages/Onboard/OAuth/Loading/OAuthOnboardLoadingPage";
+import { ProfilePage } from "@/components/pages/Onboard/ProfilePage";
 // import { NotFoundPage } from "@/components/pages/NotFoundPage";
 
 export const OnboardMethods = {
@@ -30,7 +31,7 @@ const OnboardSteps: OnboardSteps = {
             // Find if the account is already created
             // If not, lands here
             // UI: Show profile form
-            render: () => <div>Profile Info</div>,
+            render: () => <ProfilePage />,
         },
         2: {
             // UI: Show confirmation
@@ -56,7 +57,7 @@ const OnboardSteps: OnboardSteps = {
         // UI: Show profile form
         // Action: Set local profile value
         2: {
-            render: () => <div>Profile Info</div>,
+            render: () => <ProfilePage />,
         },
         // UI: Show confirmation
         // Action: Create profile + create account + redirect to home

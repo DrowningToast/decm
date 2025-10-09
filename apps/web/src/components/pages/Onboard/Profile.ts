@@ -1,13 +1,23 @@
 import { z } from "zod";
 
-export const ProfileSchema = z.object({
-	firstName: z.string().min(1),
-	lastName: z.string().min(1),
-	email: z.email(),
-	phone: z.string().min(1).max(10),
-	address: z.string().min(1),
-	academicInstitution: z.string().min(1),
-	academicEmail: z.email(),
-});
+export const ProfileSchema = (t: (key: string) => string) =>
+	z.object({
+		firstName: z
+			.string()
+			.max(64, { message: t("validation.firstNameMax64") })
+			.optional(),
+		lastName: z
+			.string()
+			.max(64, { message: t("validation.lastNameMax64") })
+			.optional(),
+		contactEmail: z
+			.email({ message: t("validation.invalidEmail") })
+			.max(64, { message: t("validation.emailMax64") })
+			.optional(),
+		phoneNumber: z
+			.string()
+			.max(10, { message: t("validation.phoneNumberMax10") })
+			.optional(),
+	});
 
 export type Profile = z.infer<typeof ProfileSchema>;

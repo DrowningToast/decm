@@ -2,6 +2,7 @@ package onboard
 
 import (
 	customerror "apps/backend/common/customerror"
+	validatorutils "apps/backend/common/validatorutils"
 
 	"github.com/cockroachdb/errors"
 	"github.com/gofiber/fiber/v2"
@@ -15,7 +16,7 @@ const (
 )
 
 type CheckOnboardStatusRequest struct {
-	Method RegistrationMethod `json:"method" validate:"required"`
+	Method RegistrationMethod `json:"method" validate:"required,oneof=google wallet"`
 
 	AccessToken *string `json:"access_token"`
 	ExpiresIn   *int    `json:"expires_in"`
@@ -39,6 +40,7 @@ type CheckOnboardStatusResponse struct {
 // @Produce json
 // @Success 200 {object} CheckOnboardStatusResponse
 // @Failure 400 {object} customerror.ErrResponse
+// @Failure 401 {object} customerror.ErrResponse
 // @Router /api/v1/onboard/check-onboard-status [post]
 func (h Handler) CheckOnboardStatus(ctx *fiber.Ctx) error {
 	requestBody := CheckOnboardStatusRequest{}
@@ -93,8 +95,8 @@ func (r *CheckOnboardStatusRequest) Parse(ctx *fiber.Ctx) error {
 }
 
 func (r *CheckOnboardStatusRequest) IsValid() error {
-	if r.Method == "" {
-		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("method is required"))
+	if err := validatorutils.ValidateStruct(r); err != nil {
+		return err
 	}
 	return nil
 }

@@ -13,6 +13,7 @@ import (
 	customerror "apps/backend/common/customerror"
 	"apps/backend/common/encryptutils"
 	"apps/backend/common/hashutils"
+	"apps/backend/common/log"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/cyptoutils"
@@ -234,7 +235,16 @@ func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Co
 		Expiry:      time.Now().Add(time.Duration(expiresIn) * time.Second),
 	}
 	userInfo, err := u.googleOAuthService.GetUserInfo(ctx, token)
+	logger := log.LoadLogger()
+	logger.Info("Checking onboard status with google connector ref", "access_token", accessToken, "expires_in", expiresIn)
 	if err != nil {
+		var customErr *customerror.Err
+		if errors.As(err, &customErr) {
+			if customErr.Code != &customerror.ErrUnauthenticated.Code {
+				return false, customErr.Extend("failed to get user info from google")
+			}
+			return false, customErr.Extend("failed to get user info from google")
+		}
 		return false, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
