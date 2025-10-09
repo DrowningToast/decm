@@ -156,7 +156,7 @@ func (s *GoogleOAuthService) validateToken(token *oauth2.Token) error {
 	// Only validate expiry if it's actually set (not zero time)
 	if !token.Expiry.IsZero() {
 		if !token.Valid() {
-			return errors.New("token has expired or is invalid")
+			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("token has expired or is invalid"))
 		}
 
 		// Warn if token expires soon (within 5 minutes)

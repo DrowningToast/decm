@@ -1,45 +1,52 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+import { Eye, EyeOff } from "lucide-react";
+import { FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { OAuthOnboardContext } from "../OAuthOnboardContext";
+import { OnboardPageContext } from "@/pages/onboard/[method]";
 interface PasswordInputPageProps {
-    onPasswordSet: (password: string) => void;
     onSwitchToPin: () => void;
     onLogout: () => void;
 }
 
 export const PasswordInputPage: React.FC<PasswordInputPageProps> = ({
-    onPasswordSet,
     onSwitchToPin,
     onLogout,
 }) => {
+    const { form } = useContext(OAuthOnboardContext);
+    const { setStep } = useContext(OnboardPageContext);
     const { t } = useTranslation();
-    const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+
+    const isValid = !form.formState.isValidating && !form.getFieldState('password').invalid
 
     const handleConfirm = () => {
-        if (password.length >= 6) {
-            onPasswordSet(password);
+        if (isValid) {
+            setStep(2)
         }
     };
 
     return (
         <div className="min-h-screen bg-[#e9dede] flex flex-col items-center px-6 py-16 md:py-24">
-            <div className="w-full max-w-md space-y-16">
+            <div className="w-full max-w-[420px] space-y-16 text-background">
                 {/* Header Section */}
                 <div className="space-y-2">
                     <Typography
                         variant="header"
                         tag="h1"
-                        className="text-[36px] leading-[40px] text-primary [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
+                        color="primary"
+                        className="text-[36px] leading-[40px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                     >
                         {t("onboard.title")}
                     </Typography>
                     <Typography
                         variant="text"
                         tag="p"
-                        className="text-base text-[#362927] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                        color="background-alt"
+                        className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                     >
                         {t("onboard.subtitle")}
                     </Typography>
@@ -47,26 +54,53 @@ export const PasswordInputPage: React.FC<PasswordInputPageProps> = ({
 
                 {/* Password Input Section */}
                 <div className="space-y-6">
-                    <div className="space-y-4">
+                    <div className="flex flex-col gap-y-3">
                         {/* Password Input */}
-                        <Input
-                            type="password"
-                            placeholder={t("onboard.enterPassword")}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full h-12 bg-white border-2 border-[#362927]/20 rounded-xl text-[#362927] placeholder:text-[#362927]/50"
-                        />
+                        <div className="relative">
+                            <FormField
+                                control={form.control}
+                                name="password"
+                                render={({ field }) => (
+                                    <>
+                                        <FormItem>
+                                            <FormControl>
+                                                <Input
+                                                    type={showPassword ? "text" : "password"}
+                                                    placeholder={t("onboard.enterPassword")}
+                                                    {...field}
+                                                    className="w-full h-12 border-2 border-[#362927]/20 rounded-xl text-foreground placeholder:text-foreground-alt pr-12 bg-primary"
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    </>
+
+                                )}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#362927]/50 hover:text-[#362927] transition-colors"
+                            >
+                                {showPassword ? (
+                                    <Eye className="w-5 h-5" />
+                                ) : (
+                                    <EyeOff className="w-5 h-5" />
+                                )}
+                            </button>
+                        </div>
 
                         {/* Switch to PIN Link */}
                         <button
                             type="button"
                             onClick={onSwitchToPin}
-                            className="w-full text-center"
+                            className="text-start h-[14.5px] inline-block"
                         >
                             <Typography
                                 variant="text"
                                 tag="span"
-                                className="text-xs italic underline text-[#362927] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
+                                color="background-alt"
+                                className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
                             >
                                 {t("onboard.preferPin")}
                             </Typography>
@@ -76,12 +110,13 @@ export const PasswordInputPage: React.FC<PasswordInputPageProps> = ({
                         <button
                             type="button"
                             onClick={onLogout}
-                            className="w-full text-center"
+                            className="text-start h-[14.5px] inline-block"
                         >
                             <Typography
                                 variant="text"
                                 tag="span"
-                                className="text-xs italic underline text-[#362927] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
+                                color="background-alt"
+                                className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
                             >
                                 {t("onboard.logout")}
                             </Typography>
@@ -91,7 +126,7 @@ export const PasswordInputPage: React.FC<PasswordInputPageProps> = ({
                     {/* Confirm Button */}
                     <Button
                         onClick={handleConfirm}
-                        disabled={password.length < 6}
+                        disabled={!isValid}
                         className="w-full h-12 bg-primary hover:bg-primary/90 text-[#e9dede] rounded-xl text-base font-normal [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                     >
                         {t("common.confirm")}

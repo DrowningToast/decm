@@ -18,14 +18,6 @@ export const PinPasswordPage: React.FC<PinPasswordPageProps> = ({
     const { t } = useTranslation();
     const [pin, setPin] = useState("");
 
-    const handlePinComplete = (value: string) => {
-        console.log("PIN completed:", value);
-        if (value.length === 6) {
-            // Auto-submit when all 6 digits are entered
-            onPasswordSet(value);
-        }
-    };
-
     const handleConfirm = () => {
         if (pin.length === 6) {
             onPasswordSet(pin);
@@ -65,7 +57,6 @@ export const PinPasswordPage: React.FC<PinPasswordPageProps> = ({
                                 value={pin}
                                 onChange={(value) => {
                                     setPin(value);
-                                    handlePinComplete(value);
                                 }}
                                 containerClassName="gap-4"
                             >

@@ -70,15 +70,15 @@
                 "description": "We couldn't complete the Google authentication. This might happen if:",
                 "verificationDescription": "The authentication process started but we couldn't verify your account. This might happen if:",
                 "missingRedirectDescription": "We couldn't determine where to redirect you after authentication. This might happen if:",
+                "missingAccess": "Missing access token",
+                "unauthenticated": "Unauthenticated response",
+                "expired": "Expired token",
+                "internal": "Internal error response",
                 "reasons": {
-                    "expired": "The authorization link has expired",
-                    "cancelled": "The authentication was cancelled",
-                    "invalid": "The authorization parameters are invalid",
-                    "serverError": "Our server encountered an error",
-                    "networkError": "There was a network connection issue",
-                    "sessionExpired": "Your session has expired",
-                    "directAccess": "You accessed this page directly instead of through the sign-up flow",
-                    "browserIssue": "Your browser cleared the session data"
+                    "missingAccess": "Redirect URL is incorrect, please login through your chosen OAuth provider again.",
+                    "unauthenticated": "Invalid authentication data, please login through your chosen OAuth provider again.",
+                    "expired": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
+                    "internal": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
                 },
                 "tryAgain": "Try signing in again",
                 "backToSignUp": "Back to Sign Up"
@@ -232,6 +232,8 @@
         "required": "This field is required",
         "invalidEmail": "Invalid email address",
         "passwordTooShort": "Password must be at least 8 characters",
+        "passwordMin6": "Password must be at least 6 characters long",
+        "passwordMax32": "Password must be at most 32 characters long",
         "passwordMismatch": "Passwords do not match",
         "invalidWallet": "Invalid wallet address"
     },
@@ -282,6 +284,14 @@
         "enterPassword": "Enter your password",
         "confirmPassword": "Confirm your password",
         "pinMismatch": "PINs do not match",
-        "pinTooShort": "PIN must be 6 digits"
+        "pinTooShort": "PIN must be 6 digits",
+        "profile": {
+            "title": "Profile (optional)",
+            "subtitle": "We use your personal data to prefill some of the details required by the events/certificates. Your data is always encrypted and can be changed and deleted by you at any moment.",
+            "firstName": "First name",
+            "lastName": "Last name",
+            "contactEmail": "Contact email",
+            "phoneNumber": "Phone number"
+        }
     }
 }

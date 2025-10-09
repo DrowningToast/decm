@@ -1,22 +1,24 @@
 import { useContext, useState } from "react";
-import { OAuthOnboardContext } from "../OAuthOnboardProvider";
+import { OAuthOnboardContext } from "../OAuthOnboardContext";
 import { PinPasswordPage } from "./PinPasswordPage";
 import { PasswordInputPage } from "./PasswordInputPage";
 import type { OAuthOnboardPasswordType } from "../constants";
+import { OnboardPageContext } from "@/pages/onboard/[method]";
+import { useNavigate } from "react-router-dom";
 
 export const OAuthOnboardPasswordPage = () => {
+    const { setStep } = useContext(OnboardPageContext)
     const { form } = useContext(OAuthOnboardContext);
     const [passwordType, setPasswordType] = useState<OAuthOnboardPasswordType>("PINS");
+    const navigate = useNavigate();
 
     const handlePasswordSet = (password: string) => {
         form.setValue("password", password);
-
-        // TODO: Proceed to next step
+        setStep(2);
     };
 
     const handleLogout = () => {
-        // TODO: Implement logout logic
-        console.log("Logout clicked");
+        navigate("/");
     };
 
     if (passwordType === "PINS") {
@@ -32,7 +34,6 @@ export const OAuthOnboardPasswordPage = () => {
     if (passwordType === "PASSWORD") {
         return (
             <PasswordInputPage
-                onPasswordSet={handlePasswordSet}
                 onSwitchToPin={() => setPasswordType("PINS")}
                 onLogout={handleLogout}
             />
