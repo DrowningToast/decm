@@ -13,5 +13,6 @@ func (h *Handler) Mount(r fiber.Router) {
 	onboardGroup := r.Group("/onboard")
 	onboardGroup.Get("/sign-message", h.GetRegisterSignMessage)
 	onboardGroup.Post("/register-with-wallet", h.RegisterWithWallet)
+	onboardGroup.Post("/register-with-google-oauth", h.RegisterWithGoogleOAuth)
 	onboardGroup.Post("/check-onboard-status", h.CheckOnboardStatus)
 }

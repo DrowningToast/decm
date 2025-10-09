@@ -66,7 +66,7 @@ export const OAuthOnboardLoadingPage = () => {
                     expiresIn: expiresIn ? parseInt(expiresIn) : undefined,
                 });
 
-                if (response.is_exists) {
+                if (response.authentication_credential_id && response.profile_id) {
                     return navigate("/app");
                 }
 

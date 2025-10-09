@@ -1,10 +1,7 @@
 package auth
 
 import (
-	"log/slog"
-
 	customerror "apps/backend/common/customerror"
-	"apps/backend/common/log"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -23,8 +20,6 @@ func (h Handler) RequestGoogleOAuth(ctx *fiber.Ctx) error {
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
-	logger := log.LoadLogger()
-	logger.Info("session", slog.String("session", session.ID()))
 
 	url, err := h.GoogleOAuthService.Login(session)
 	if err != nil {

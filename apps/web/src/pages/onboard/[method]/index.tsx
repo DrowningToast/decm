@@ -5,7 +5,7 @@ import { useParams } from "@/router";
 import { createContext, useState } from "react";
 import { OAuthOnboardLoadingPage } from "@/components/pages/Onboard/OAuth/Loading/OAuthOnboardLoadingPage";
 import { ProfilePage } from "@/components/pages/Onboard/ProfilePage";
-// import { NotFoundPage } from "@/components/pages/NotFoundPage";
+import { OAuthOnboardConfirmPage } from "@/components/pages/Onboard/OAuth/Confirm/OAuthOnboardConfirmPage";
 
 export const OnboardMethods = {
     WALLET: "wallet",
@@ -62,7 +62,7 @@ const OnboardSteps: OnboardSteps = {
         // UI: Show confirmation
         // Action: Create profile + create account + redirect to home
         3: {
-            render: () => <div>Confirmation</div>,
+            render: () => <OAuthOnboardConfirmPage />,
         },
         Parent: OAuthOnboardProvider
     },
