@@ -30,6 +30,16 @@ func Sign(message string, privateKey *ecdsa.PrivateKey) (string, error) {
 	return hex.EncodeToString(signature), nil
 }
 
+func GetAddressFromSignedMessage(message string, signature string) (ethCommon.Address, error) {
+	hashedMessage := HashEthereumMessage(message)
+	sig := hexutil.MustDecode(signature)
+	usedPublicKey, err := crypto.SigToPub(hashedMessage, sig)
+	if err != nil {
+		return ethCommon.Address{}, errors.Wrap(err, "failed to recover public key")
+	}
+	return crypto.PubkeyToAddress(*usedPublicKey), nil
+}
+
 func VerifySignedMessageByAddress(walletAddress ethCommon.Address, message string, signature string) (bool, error) {
 	hashedMessage := HashEthereumMessage(message)
 

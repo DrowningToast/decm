@@ -13,15 +13,13 @@ var ethAddressRegex = regexp.MustCompile(`^0x[a-fA-F0-9]{40}$`)
 
 type registerWithWalletRequest struct {
 	SignedMessage string `json:"signed_message"`
-	WalletAddress string `json:"wallet_address"`
 }
 
 // @Summary Register a new user with wallet address
 // @Description Register a new user with wallet address
 // @ID register-with-wallet
 // @Tags Onboard
-// @Param signed_message body string true "Signed message"
-// @Param wallet_address body string true "Wallet address"
+// @Param signed_message body onboard.registerWithWalletRequest.SignedMessage true "Signed message"
 // @Accept json
 // @Produce json
 // @Success 200
@@ -36,7 +34,7 @@ func (h Handler) RegisterWithWallet(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	jwt, err := h.OnboardUc.RegisterWithWalletAddress(ctx.UserContext(), requestBody.SignedMessage, requestBody.WalletAddress)
+	jwt, err := h.OnboardUc.RegisterWithWalletAddress(ctx.UserContext(), requestBody.SignedMessage)
 	if err != nil {
 		return err
 	}
@@ -56,12 +54,6 @@ func (r *registerWithWalletRequest) Parse(ctx *fiber.Ctx) error {
 func (r *registerWithWalletRequest) IsValid() error {
 	if len(r.SignedMessage) == 0 {
 		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("signed message is required"))
-	}
-	if len(r.WalletAddress) == 0 {
-		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("wallet address is required"))
-	}
-	if !ethAddressRegex.MatchString(r.WalletAddress) {
-		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid wallet address"))
 	}
 
 	return nil

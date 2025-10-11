@@ -6,6 +6,7 @@ import (
 
 // @Summary Get my profile
 // @Description Get my profile
+// @ID get-my-profile
 // @Tags Profile
 // @Accept json
 // @Produce json
