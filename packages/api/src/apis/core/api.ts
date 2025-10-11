@@ -10,6 +10,14 @@
  * ---------------------------------------------------------------
  */
 
+export type CheckOnboardStatusData = OnboardCheckOnboardStatusResponse;
+
+export type CheckOnboardStatusError = CustomerrorErrResponse;
+
+export type CreateProfileData = ProfileCreateProfileResponse;
+
+export type CreateProfileError = CustomerrorErr;
+
 /** Custom error type */
 export interface CustomerrorErr {
   code?: string;
@@ -48,15 +56,46 @@ export interface EntityProfile {
   updated_at?: string;
 }
 
+export type GetMyProfileData = EntityProfile;
+
+export type GetMyProfileError = CustomerrorErr;
+
 export type GetRegisterSignMessageData = OnboardGetRegisterSignMessageResponse;
+
+export interface OnboardCheckOnboardStatusRequest {
+  access_token?: string;
+  expires_in?: number;
+  method: "google" | "wallet";
+  sign_message?: string;
+}
+
+export interface OnboardCheckOnboardStatusResponse {
+  authentication_credential_id?: string;
+  profile_id?: string;
+}
 
 /** Response for the client to sign to register */
 export interface OnboardGetRegisterSignMessageResponse {
   message?: string;
 }
 
+export interface OnboardRegisterWithGoogleOAuthRequest {
+  access_token?: string;
+  /** @minLength 6 */
+  password: string;
+}
+
 export interface OnboardRegisterWithGoogleOAuthResponse {
   mnemonic?: string[];
+}
+
+export interface OnboardRegisterWithWalletRequest {
+  signed_message?: string;
+}
+
+export enum OnboardRegistrationMethod {
+  RegistrationMethodGoogle = "google",
+  RegistrationMethodWallet = "wallet",
 }
 
 export interface ProfileCreateProfileRequest {
@@ -199,9 +238,6 @@ export type RegisterWithGoogleOauthData =
 
 export type RegisterWithGoogleOauthError = CustomerrorErrResponse;
 
-/** Access token */
-export type RegisterWithGoogleOauthPayload = string;
-
 export type RegisterWithWalletData = any;
 
 export type RegisterWithWalletError = CustomerrorErrResponse;
@@ -211,17 +247,23 @@ export type RegisterWithWalletPayload = string;
 
 export type RequestGoogleOauthError = CustomerrorErrResponse;
 
-export type V1ProfileCreateData = ProfileCreateProfileResponse;
+export type UpdateProfileByCredentialIdData = ProfileUpdateProfileResponse;
 
-export type V1ProfileCreateError = CustomerrorErr;
+export type UpdateProfileByCredentialIdError = CustomerrorErr;
 
-export type V1ProfileCredentialPartialUpdateData = ProfileUpdateProfileResponse;
+export interface UpdateProfileByCredentialIdParams {
+  /** Credential ID */
+  credentialId: string;
+}
 
-export type V1ProfileCredentialPartialUpdateError = CustomerrorErr;
+export type VerifyGoogleOauthError = CustomerrorErrResponse;
 
 export interface V1ProfileCredentialPartialUpdateParams {
   /** Credential ID */
   credentialId: string;
+export interface VerifyGoogleOauthParams {
+  code?: string;
+  state?: string;
 }
 
 export type V1ProfileMyListData = EntityProfile;
@@ -466,6 +508,27 @@ export class Api<SecurityDataType extends unknown> {
       }),
 
     /**
+     * @description Check onboard status
+     *
+     * @tags Onboard
+     * @name CheckOnboardStatus
+     * @summary Check onboard status
+     * @request POST:/api/v1/onboard/check-onboard-status
+     */
+    checkOnboardStatus: (
+      sign_message: OnboardCheckOnboardStatusRequest,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<CheckOnboardStatusData, CheckOnboardStatusError>({
+        path: `/api/v1/onboard/check-onboard-status`,
+        method: "POST",
+        body: sign_message,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Register a new user with Google OAuth
      *
      * @tags Onboard
@@ -474,7 +537,7 @@ export class Api<SecurityDataType extends unknown> {
      * @request POST:/api/v1/onboard/register-with-google-oauth
      */
     registerWithGoogleOauth: (
-      password: RegisterWithGoogleOauthPayload,
+      password: OnboardRegisterWithGoogleOAuthRequest,
       params: RequestParams = {},
     ) =>
       this.http.request<
@@ -498,13 +561,13 @@ export class Api<SecurityDataType extends unknown> {
      * @request POST:/api/v1/onboard/register-with-wallet
      */
     registerWithWallet: (
-      wallet_address: RegisterWithWalletPayload,
+      signed_message: OnboardRegisterWithWalletRequest,
       params: RequestParams = {},
     ) =>
       this.http.request<RegisterWithWalletData, RegisterWithWalletError>({
         path: `/api/v1/onboard/register-with-wallet`,
         method: "POST",
-        body: wallet_address,
+        body: signed_message,
         type: ContentType.Json,
         ...params,
       }),
@@ -528,15 +591,15 @@ export class Api<SecurityDataType extends unknown> {
      * @description Create a profile
      *
      * @tags Profile
-     * @name V1ProfileCreate
+     * @name CreateProfile
      * @summary Create a profile
      * @request POST:/api/v1/profile
      */
-    v1ProfileCreate: (
+    createProfile: (
       profile: ProfileCreateProfileRequest,
       params: RequestParams = {},
     ) =>
-      this.http.request<V1ProfileCreateData, V1ProfileCreateError>({
+      this.http.request<CreateProfileData, CreateProfileError>({
         path: `/api/v1/profile`,
         method: "POST",
         body: profile,
@@ -549,22 +612,22 @@ export class Api<SecurityDataType extends unknown> {
      * @description Update a profile by credential ID
      *
      * @tags Profile
-     * @name V1ProfileCredentialPartialUpdate
+     * @name UpdateProfileByCredentialId
      * @summary Update a profile by credential ID
      * @request PATCH:/api/v1/profile/credential/{credential_id}
      */
-    v1ProfileCredentialPartialUpdate: (
-      { credentialId, ...query }: V1ProfileCredentialPartialUpdateParams,
-      profile: ProfileUpdateProfileRequest,
+    updateProfileByCredentialId: (
+      { credentialId, ...query }: UpdateProfileByCredentialIdParams,
+      AcademicEmail: ProfileUpdateProfileRequest,
       params: RequestParams = {},
     ) =>
       this.http.request<
-        V1ProfileCredentialPartialUpdateData,
-        V1ProfileCredentialPartialUpdateError
+        UpdateProfileByCredentialIdData,
+        UpdateProfileByCredentialIdError
       >({
         path: `/api/v1/profile/credential/${credentialId}`,
         method: "PATCH",
-        body: profile,
+        body: AcademicEmail,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -574,12 +637,12 @@ export class Api<SecurityDataType extends unknown> {
      * @description Get my profile
      *
      * @tags Profile
-     * @name V1ProfileMyList
+     * @name GetMyProfile
      * @summary Get my profile
      * @request GET:/api/v1/profile/my
      */
-    v1ProfileMyList: (params: RequestParams = {}) =>
-      this.http.request<V1ProfileMyListData, V1ProfileMyListError>({
+    getMyProfile: (params: RequestParams = {}) =>
+      this.http.request<GetMyProfileData, GetMyProfileError>({
         path: `/api/v1/profile/my`,
         method: "GET",
         type: ContentType.Json,

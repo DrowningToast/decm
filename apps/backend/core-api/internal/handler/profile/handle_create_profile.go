@@ -28,6 +28,7 @@ func (r *CreateProfileRequest) Parse(c *fiber.Ctx) error {
 
 // @Summary Create a profile
 // @Description Create a profile
+// @ID create-profile
 // @Tags Profile
 // @Accept json
 // @Produce json

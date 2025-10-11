@@ -1,4 +1,4 @@
-.-- Authentication Credentials CRUD queries
+-- Authentication Credentials CRUD queries
 
 -- name: CreateAuthenticationCredential :one
 INSERT INTO authentication_credentials (
@@ -16,13 +16,13 @@ INSERT INTO authentication_credentials (
     sqlc.narg(encrypted_private_key),
     sqlc.arg(wallet_address),
     CASE 
-        WHEN sqlc.narg(google_connector_ref) IS NOT NULL 
-        THEN pgp_sym_encrypt(sqlc.narg(google_connector_ref), sqlc.arg(encryption_key)::varchar)::varchar
+        WHEN sqlc.narg(google_connector_ref)::text IS NOT NULL 
+        THEN pgp_sym_encrypt(sqlc.narg(google_connector_ref)::text, sqlc.arg(encryption_key)::varchar)::varchar
         ELSE NULL 
     END::text,
     CASE 
-        WHEN sqlc.narg(github_connector_ref) IS NOT NULL 
-        THEN pgp_sym_encrypt(sqlc.narg(github_connector_ref), sqlc.arg(encryption_key)::varchar)::varchar
+        WHEN sqlc.narg(github_connector_ref)::text IS NOT NULL 
+        THEN pgp_sym_encrypt(sqlc.narg(github_connector_ref)::text, sqlc.arg(encryption_key)::varchar)::varchar
         ELSE NULL 
     END::text,
     sqlc.arg(is_verified_organizer),
@@ -153,13 +153,13 @@ UPDATE authentication_credentials SET
     encrypted_private_key = COALESCE(sqlc.narg(encrypted_private_key), encrypted_private_key),
     wallet_address = COALESCE(sqlc.narg(wallet_address), wallet_address),
     google_connector_ref = CASE 
-        WHEN sqlc.narg(google_connector_ref) IS NOT NULL 
-        THEN pgp_sym_encrypt(sqlc.narg(google_connector_ref), sqlc.arg(encryption_key)::varchar)
+        WHEN sqlc.narg(google_connector_ref)::text IS NOT NULL 
+        THEN pgp_sym_encrypt(sqlc.narg(google_connector_ref)::text, sqlc.arg(encryption_key)::varchar)
         ELSE google_connector_ref
     END::text,
     github_connector_ref = CASE 
-        WHEN sqlc.narg(github_connector_ref) IS NOT NULL 
-        THEN pgp_sym_encrypt(sqlc.narg(github_connector_ref), sqlc.arg(encryption_key)::varchar)
+        WHEN sqlc.narg(github_connector_ref)::text IS NOT NULL 
+        THEN pgp_sym_encrypt(sqlc.narg(github_connector_ref)::text, sqlc.arg(encryption_key)::varchar)
         ELSE github_connector_ref
     END::text,
     is_verified_organizer = COALESCE(sqlc.narg(is_verified_organizer), is_verified_organizer),

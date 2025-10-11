@@ -65,16 +65,20 @@
                 "invalidParams": "Invalid authentication parameters",
                 "missingCode": "Authorization code is missing",
                 "missingState": "State parameter is missing",
+                "missingRedirect": "Redirect destination not found",
                 "verificationFailed": "Failed to verify your Google account",
                 "description": "We couldn't complete the Google authentication. This might happen if:",
                 "verificationDescription": "The authentication process started but we couldn't verify your account. This might happen if:",
+                "missingRedirectDescription": "We couldn't determine where to redirect you after authentication. This might happen if:",
+                "missingAccess": "Missing access token",
+                "unauthenticated": "Unauthenticated response",
+                "expired": "Expired token",
+                "internal": "Internal error response",
                 "reasons": {
-                    "expired": "The authorization link has expired",
-                    "cancelled": "The authentication was cancelled",
-                    "invalid": "The authorization parameters are invalid",
-                    "serverError": "Our server encountered an error",
-                    "networkError": "There was a network connection issue",
-                    "sessionExpired": "Your session has expired"
+                    "missingAccess": "Redirect URL is incorrect, please login through your chosen OAuth provider again.",
+                    "unauthenticated": "Invalid authentication data, please login through your chosen OAuth provider again.",
+                    "expired": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
+                    "internal": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
                 },
                 "tryAgain": "Try signing in again",
                 "backToSignUp": "Back to Sign Up"
@@ -266,8 +270,11 @@
         "required": "This field is required",
         "invalidEmail": "Invalid email address",
         "passwordTooShort": "Password must be at least 8 characters",
+        "passwordMin6": "Password must be at least 6 characters long",
+        "passwordMax32": "Password must be at most 32 characters long",
         "passwordMismatch": "Passwords do not match",
-        "invalidWallet": "Invalid wallet address"
+        "invalidWallet": "Invalid wallet address",
+        "accessTokenAndSignedTokenRequired": "Access token or signed token is required"
     },
     "errors": {
         "generic": "Something went wrong. Please try again.",
@@ -275,5 +282,69 @@
         "unauthorized": "You are not authorized to perform this action.",
         "notFound": "The requested resource was not found.",
         "serverError": "Server error. Please try again later."
+    },
+    "notFound": {
+        "title": "404 - Page Not Found",
+        "heading": "Oops! Page not found",
+        "description": "The page you're looking for doesn't exist or has been moved.",
+        "backHome": "Back to Home",
+        "suggestions": {
+            "title": "Try these instead:",
+            "home": "Go to Home",
+            "events": "Browse Events",
+            "credentials": "View Credentials",
+            "signup": "Sign Up"
+        }
+    },
+    "error": {
+        "title": "Error - Something Went Wrong",
+        "heading": "Oops! Something went wrong",
+        "description": "We encountered an unexpected error. Please try again or contact support if the problem persists.",
+        "backHome": "Back to Home",
+        "tryAgain": "Try Again",
+        "suggestions": {
+            "title": "What you can do:",
+            "home": "Go to Home",
+            "refresh": "Refresh Page",
+            "support": "Contact Support",
+            "signup": "Sign Up"
+        }
+    },
+    "onboard": {
+        "title": "Account onboarding",
+        "subtitle": "Please setup your passcode/password. This will be used to encrypt your info. This cannot be recover, please be careful.",
+        "pinTitle": "Setup PIN",
+        "passwordTitle": "Setup Password",
+        "preferPassword": "I prefer password",
+        "preferPin": "I prefer PIN",
+        "logout": "Logout",
+        "enterPin": "Enter your 6-digit PIN",
+        "confirmPin": "Confirm your PIN",
+        "enterPassword": "Enter your password",
+        "confirmPassword": "Confirm your password",
+        "pinMismatch": "PINs do not match",
+        "pinTooShort": "PIN must be 6 digits",
+        "profile": {
+            "title": "Profile (optional)",
+            "subtitle": "We use your personal data to prefill some of the details required by the events/certificates. Your data is always encrypted and can be changed and deleted by you at any moment.",
+            "firstName": "First name",
+            "lastName": "Last name",
+            "email": "Contact email",
+            "phoneNumber": "Phone number",
+            "makePublic": "Make this information public"
+        },
+        "confirm": {
+            "title": "Heads up",
+            "oauth": {
+                "description": {
+                    "part1": "Certificates rely on blockchain technology as a source of truth. Since you’re using OAuth account instead of web3 wallet as a account. We’re managing the your account/wallet private key behind the scene.",
+                    "part2": "Your private key is encrypted with your passcode/password you provided.  <strong>If you do not set up a back-up authentication method. We do not either.</strong>"
+                },
+                "checkboxes": {
+                    "acceptRisk": "I'm ok with that.",
+                    "acknowledgePasswordLoss": "I acknowledged that losing my passcode/password will result in total account lost"
+                }
+            }
+        }
     }
 }

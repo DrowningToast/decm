@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"apps/backend/common/customerror"
+	"apps/backend/common/log"
 	"apps/backend/common/utils"
 	"apps/backend/core-api/config"
 
@@ -90,6 +91,7 @@ func NewGoogleOAuthService() *GoogleOAuthService {
 		googleConfig: googleConfig,
 		SessionStore: sessionStore,
 		httpClient:   httpClient,
+		logger:       log.LoadLogger(),
 	}
 }
 
@@ -106,6 +108,7 @@ func (s *GoogleOAuthService) getUserDataFromGoogle(ctx context.Context, code str
 	// Use code to get token and get user info from Google.
 	token, err := s.googleConfig.Exchange(ctx, code)
 	if err != nil {
+		s.logger.Error("Code exchange wrong: %s", slog.String("error", err.Error()))
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("code exchange wrong: %s"))
 	}
 
@@ -151,13 +154,16 @@ func (s *GoogleOAuthService) validateToken(token *oauth2.Token) error {
 		return errors.New("access token is empty")
 	}
 
-	if !token.Valid() {
-		return errors.New("token has expired or is invalid")
-	}
+	// Only validate expiry if it's actually set (not zero time)
+	if !token.Expiry.IsZero() {
+		if !token.Valid() {
+			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("token has expired or is invalid"))
+		}
 
-	// Warn if token expires soon (within 5 minutes)
-	if time.Until(token.Expiry) < 5*time.Minute {
-		s.logger.Warn("Warning: Token expires soon at %v", slog.String("expiry", token.Expiry.String()))
+		// Warn if token expires soon (within 5 minutes)
+		if time.Until(token.Expiry) < 5*time.Minute {
+			s.logger.Warn("Warning: Token expires soon", slog.String("expiry", token.Expiry.String()))
+		}
 	}
 
 	return nil

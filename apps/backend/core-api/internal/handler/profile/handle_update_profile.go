@@ -29,11 +29,27 @@ func (r *UpdateProfileRequest) Parse(c *fiber.Ctx) error {
 
 // @Summary Update a profile by credential ID
 // @Description Update a profile by credential ID
+// @ID update-profile-by-credential-id
 // @Tags Profile
 // @Accept json
 // @Produce json
 // @Param credential_id path string true "Credential ID"
-// @Param profile body UpdateProfileRequest true "Profile"
+// @Param IsProfilePicturePublic body profile.UpdateProfileRequest.IsProfilePicturePublic true "Is Profile Picture Public"
+// @Param ProfilePictureUrl body profile.UpdateProfileRequest.ProfilePictureUrl true "Profile Picture URL"
+// @Param IsFirstNamePublic body profile.UpdateProfileRequest.IsFirstNamePublic true "Is First Name Public"
+// @Param FirstName body profile.UpdateProfileRequest.FirstName true "First Name"
+// @Param IsLastNamePublic body profile.UpdateProfileRequest.IsLastNamePublic true "Is Last Name Public"
+// @Param LastName body profile.UpdateProfileRequest.LastName true "Last Name"
+// @Param IsEmailPublic body profile.UpdateProfileRequest.IsEmailPublic true "Is Email Public"
+// @Param Email body profile.UpdateProfileRequest.Email true "Email"
+// @Param IsPhoneNumberPublic body profile.UpdateProfileRequest.IsPhoneNumberPublic true "Is Phone Number Public"
+// @Param PhoneNumber body profile.UpdateProfileRequest.PhoneNumber true "Phone Number"
+// @Param IsAddressPublic body profile.UpdateProfileRequest.IsAddressPublic true "Is Address Public"
+// @Param Address body profile.UpdateProfileRequest.Address true "Address"
+// @Param IsAcademicInstitutionPublic body profile.UpdateProfileRequest.IsAcademicInstitutionPublic true "Is Academic Institution Public"
+// @Param AcademicInstitution body profile.UpdateProfileRequest.AcademicInstitution true "Academic Institution"
+// @Param IsAcademicEmailPublic body profile.UpdateProfileRequest.IsAcademicEmailPublic true "Is Academic Email Public"
+// @Param AcademicEmail body profile.UpdateProfileRequest.AcademicEmail true "Academic Email"
 // @Success 200 {object} UpdateProfileResponse
 // @Failure 400 {object} customerror.Err
 // @Failure 403 {object} customerror.Err

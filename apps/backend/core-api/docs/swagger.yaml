@@ -67,11 +67,53 @@ definitions:
       updated_at:
         type: string
     type: object
+  onboard.CheckOnboardStatusRequest:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      method:
+        allOf:
+        - $ref: '#/definitions/onboard.RegistrationMethod'
+        enum:
+        - google
+        - wallet
+      sign_message:
+        type: string
+    required:
+    - method
+    type: object
+  onboard.CheckOnboardStatusResponse:
+    properties:
+      authentication_credential_id:
+        type: string
+      profile_id:
+        type: string
+    type: object
+  onboard.RegistrationMethod:
+    enum:
+    - google
+    - wallet
+    type: string
+    x-enum-varnames:
+    - RegistrationMethodGoogle
+    - RegistrationMethodWallet
   onboard.getRegisterSignMessageResponse:
     description: Response for the client to sign to register
     properties:
       message:
         type: string
+    type: object
+  onboard.registerWithGoogleOAuthRequest:
+    properties:
+      access_token:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - password
     type: object
   onboard.registerWithGoogleOAuthResponse:
     properties:
@@ -79,6 +121,11 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  onboard.registerWithWalletRequest:
+    properties:
+      signed_message:
+        type: string
     type: object
   profile.CreateProfileRequest:
     properties:
@@ -339,6 +386,52 @@ paths:
       summary: Verify Google OAuth code
       tags:
       - Auth
+  /api/v1/onboard/check-onboard-status:
+    post:
+      consumes:
+      - application/json
+      description: Check onboard status
+      operationId: check-onboard-status
+      parameters:
+      - description: Method
+        in: body
+        name: method
+        required: true
+        schema:
+          $ref: '#/definitions/onboard.CheckOnboardStatusRequest'
+      - description: Access token
+        in: body
+        name: access_token
+        schema:
+          $ref: '#/definitions/onboard.CheckOnboardStatusRequest'
+      - description: Expires in
+        in: body
+        name: expires_in
+        schema:
+          $ref: '#/definitions/onboard.CheckOnboardStatusRequest'
+      - description: Sign message
+        in: body
+        name: sign_message
+        schema:
+          $ref: '#/definitions/onboard.CheckOnboardStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/onboard.CheckOnboardStatusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Check onboard status
+      tags:
+      - Onboard
   /api/v1/onboard/register-with-google-oauth:
     post:
       consumes:
@@ -351,19 +444,13 @@ paths:
         name: access_token
         required: true
         schema:
-          type: string
-      - description: Refresh token
-        in: body
-        name: refresh_token
-        required: true
-        schema:
-          type: string
+          $ref: '#/definitions/onboard.registerWithGoogleOAuthRequest'
       - description: Password
         in: body
         name: password
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/onboard.registerWithGoogleOAuthRequest'
       produces:
       - application/json
       responses:
@@ -390,13 +477,7 @@ paths:
         name: signed_message
         required: true
         schema:
-          type: string
-      - description: Wallet address
-        in: body
-        name: wallet_address
-        required: true
-        schema:
-          type: string
+          $ref: '#/definitions/onboard.registerWithWalletRequest'
       produces:
       - application/json
       responses:
@@ -426,6 +507,7 @@ paths:
       consumes:
       - application/json
       description: Create a profile
+      operationId: create-profile
       parameters:
       - description: Profile
         in: body
@@ -464,15 +546,106 @@ paths:
       consumes:
       - application/json
       description: Update a profile by credential ID
+      operationId: update-profile-by-credential-id
       parameters:
       - description: Credential ID
         in: path
         name: credential_id
         required: true
         type: string
-      - description: Profile
+      - description: Is Profile Picture Public
         in: body
-        name: profile
+        name: IsProfilePicturePublic
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: Profile Picture URL
+        in: body
+        name: ProfilePictureUrl
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: Is First Name Public
+        in: body
+        name: IsFirstNamePublic
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: First Name
+        in: body
+        name: FirstName
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: Is Last Name Public
+        in: body
+        name: IsLastNamePublic
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: Last Name
+        in: body
+        name: LastName
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: Is Email Public
+        in: body
+        name: IsEmailPublic
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: Email
+        in: body
+        name: Email
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: Is Phone Number Public
+        in: body
+        name: IsPhoneNumberPublic
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: Phone Number
+        in: body
+        name: PhoneNumber
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: Is Address Public
+        in: body
+        name: IsAddressPublic
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: Address
+        in: body
+        name: Address
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: Is Academic Institution Public
+        in: body
+        name: IsAcademicInstitutionPublic
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: Academic Institution
+        in: body
+        name: AcademicInstitution
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: Is Academic Email Public
+        in: body
+        name: IsAcademicEmailPublic
+        required: true
+        schema:
+          $ref: '#/definitions/profile.UpdateProfileRequest'
+      - description: Academic Email
+        in: body
+        name: AcademicEmail
         required: true
         schema:
           $ref: '#/definitions/profile.UpdateProfileRequest'
@@ -507,6 +680,7 @@ paths:
       consumes:
       - application/json
       description: Get my profile
+      operationId: get-my-profile
       produces:
       - application/json
       responses:

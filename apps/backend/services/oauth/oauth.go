@@ -18,9 +18,8 @@ type OAuthService interface {
 	GetUserInfo(ctx context.Context, token *oauth2.Token) (*OAuthUser, error)
 }
 
-func ParseToken(accessToken string, refreshToken string) (*oauth2.Token, error) {
+func ParseToken(accessToken string) (*oauth2.Token, error) {
 	return &oauth2.Token{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		AccessToken: accessToken,
 	}, nil
 }
