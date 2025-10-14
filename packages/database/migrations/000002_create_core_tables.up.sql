@@ -77,6 +77,7 @@ CREATE TABLE events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
     chain_id INTEGER NOT NULL,
+    contact_number VARCHAR(255) NOT NULL,
     contact_address VARCHAR(255) NOT NULL,
     owner_credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
 
@@ -91,10 +92,10 @@ CREATE TABLE events (
     google_map_query VARCHAR(255) NOT NULL,
     max_attendees INTEGER NOT NULL,
 
-    is_public INTEGER NOT NULL,
-    is_booking_request_required INTEGER NOT NULL,
-    is_verified INTEGER NOT NULL,
-    is_ticket_transferable INTEGER NOT NULL,
+    is_public INTEGER DEFAULT 0,
+    is_booking_request_required INTEGER DEFAULT 0,
+    is_verified INTEGER DEFAULT 0,
+    is_ticket_transferable INTEGER DEFAULT 0,
 
     -- 0: Not Required, 1: Required, 2: Optional
     first_name_requirement_status INTEGER NOT NULL,

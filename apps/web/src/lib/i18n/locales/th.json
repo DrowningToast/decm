@@ -22,7 +22,12 @@
         "clickToUpload": "คลิกเพื่ออัพโหลด",
         "change": "เปลี่ยน",
         "remove": "ลบ",
-        "characters": "ตัวอักษร"
+        "characters": "ตัวอักษร",
+        "yes": "ใช่",
+        "no": "ไม่ใช่",
+        "required": "จำเป็น",
+        "optional": "ไม่บังคับ",
+        "notRequired": "ไม่ต้องการ"
     },
     "nav": {
         "home": "หน้าหลัก",
@@ -263,6 +268,26 @@
             "locationMinLength": "สถานที่จัดงานต้องมีอย่างน้อย 3 ตัวอักษร",
             "googleMapQueryRequired": "กรุณากรอกสถานที่สำหรับ Google Maps",
             "googleMapQueryMinLength": "สถานที่สำหรับ Google Maps ต้องมีอย่างน้อย 3 ตัวอักษร"
+        },
+        "settings": {
+            "eventType": "ประเภทกิจกรรม",
+            "bookingRequired": "ต้องขอเข้าร่วม",
+            "tokenTransferable": "โอน Token ได้",
+            "participantSettings": "ตั้งค่าผู้เข้าร่วม"
+        },
+        "participants": {
+            "requirementsTitle": "ข้อมูลที่ต้องการจากผู้เข้าร่วม",
+            "required": "จำเป็น",
+            "fields": {
+                "firstName": "ชื่อจริง",
+                "lastName": "นามสกุล",
+                "email": "อีเมล",
+                "bio": "ประวัติ",
+                "phoneNumber": "เบอร์โทรศัพท์",
+                "address": "ที่อยู่",
+                "academicInstitution": "สถาบันการศึกษา",
+                "academicEmail": "อีเมลสถาบัน"
+            }
         }
     },
     "credentials": {
