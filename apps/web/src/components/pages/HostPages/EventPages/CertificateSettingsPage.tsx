@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
+import DOMPurify from "dompurify";
 import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,12 +63,20 @@ export const CertificateSettingsPage = () => {
 
     // Available keywords for certificate templates
     const availableKeywords = [
-        "{{ eventName }}",
-        "{{ name }}",
-        "{{ academicInstitutionName }}",
-        "{{ startDate }}",
-        "{{ endDate }}",
+        { keyword: "{{ eventName }}", mandatory: true },
+        { keyword: "{{ name }}", mandatory: true },
+        { keyword: "{{ academicInstitutionName }}", mandatory: false },
+        { keyword: "{{ startDate }}", mandatory: false },
+        { keyword: "{{ endDate }}", mandatory: false },
     ];
+
+    // Check if mandatory keywords are detected
+    const mandatoryKeywords = availableKeywords.filter((kw) => kw.mandatory);
+    const detectedKeywordStrings = detectedKeywords.map((k) => k.keyword);
+    const missingMandatoryKeywords = mandatoryKeywords.filter(
+        (kw) => !detectedKeywordStrings.includes(kw.keyword),
+    );
+    const hasMissingMandatory = missingMandatoryKeywords.length > 0;
 
     // Mock issuer search function
     const handleSearchIssuers = async () => {
@@ -459,17 +468,28 @@ export const CertificateSettingsPage = () => {
                                 </AlertTitle>
                                 <AlertDescription>
                                     <div className="mt-2">
-                                        <Typography variant="text" tag="p" className="text-xs mb-2">
+                                        <Typography
+                                            variant="text"
+                                            tag="p"
+                                            className="text-xs mb-2 text-blue-700"
+                                        >
                                             {t("certificateSettings.step2.keywords.description")}
                                         </Typography>
                                         <div className="flex flex-wrap gap-2">
-                                            {availableKeywords.map((keyword) => (
-                                                <code
-                                                    key={keyword}
-                                                    className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs font-mono"
+                                            {availableKeywords.map((kw) => (
+                                                <div
+                                                    key={kw.keyword}
+                                                    className="inline-flex items-center gap-1"
                                                 >
-                                                    {keyword}
-                                                </code>
+                                                    <code className="px-2 py-1 bg-blue-100 text-blue-700 dark:text-blue-400 rounded text-xs font-mono">
+                                                        {kw.keyword}
+                                                    </code>
+                                                    {kw.mandatory && (
+                                                        <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-semibold">
+                                                            Required
+                                                        </span>
+                                                    )}
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
@@ -500,13 +520,13 @@ export const CertificateSettingsPage = () => {
                                         type="button"
                                         variant="secondary-light"
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="w-full"
+                                        className="w-full h-30"
                                     >
                                         <Upload className="h-4 w-4 mr-2" />
                                         <Typography
                                             variant="text"
                                             tag="span"
-                                            className="font-medium"
+                                            className="font-medium text-black"
                                         >
                                             {svgFile
                                                 ? svgFile.name
@@ -533,71 +553,15 @@ export const CertificateSettingsPage = () => {
                                     >
                                         {t("certificateSettings.step2.preview.title")}
                                     </Typography>
-                                    <div className="rounded-md border bg-muted/30 p-4 max-h-[400px] overflow-auto">
-                                        <div
-                                            className="mx-auto max-w-2xl"
-                                            dangerouslySetInnerHTML={{ __html: svgPreview }}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Detected Keywords Table */}
-                            {detectedKeywords.length > 0 && (
-                                <div className="space-y-2">
-                                    <Typography
-                                        variant="text"
-                                        tag="p"
-                                        className="text-sm font-medium"
-                                    >
-                                        {t("certificateSettings.step2.detectedKeywords.title")} (
-                                        {detectedKeywords.length})
-                                    </Typography>
-                                    <div className="rounded-md border">
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>
-                                                        {t(
-                                                            "certificateSettings.step2.detectedKeywords.table.keyword",
-                                                        )}
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        {t(
-                                                            "certificateSettings.step2.detectedKeywords.table.xPosition",
-                                                        )}
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        {t(
-                                                            "certificateSettings.step2.detectedKeywords.table.yPosition",
-                                                        )}
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        {t(
-                                                            "certificateSettings.step2.detectedKeywords.table.count",
-                                                        )}
-                                                    </TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {detectedKeywords.map((keyword, index) => (
-                                                    <TableRow key={index}>
-                                                        <TableCell>
-                                                            <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
-                                                                {keyword.keyword}
-                                                            </code>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {keyword.x.toFixed(2)}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {keyword.y.toFixed(2)}
-                                                        </TableCell>
-                                                        <TableCell>{keyword.count}</TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
+                                    <div className="rounded-md border bg-muted/30 p-4">
+                                        <div className="w-full flex items-center justify-center">
+                                            <div
+                                                className="w-full max-w-4xl [&>svg]:w-full [&>svg]:h-auto [&>svg]:max-h-[500px] [&>svg]:object-contain"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: DOMPurify.sanitize(svgPreview),
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -627,7 +591,8 @@ export const CertificateSettingsPage = () => {
                                 isLoading ||
                                 selectedIssuers.length === 0 ||
                                 !svgFile ||
-                                detectedKeywords.length === 0
+                                detectedKeywords.length === 0 ||
+                                hasMissingMandatory
                             }
                             className="min-w-[150px]"
                         >
