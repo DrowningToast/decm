@@ -105,6 +105,16 @@ definitions:
       message:
         type: string
     type: object
+  onboard.registerResponse:
+    properties:
+      credential_id:
+        type: string
+      jwt:
+        type: string
+    required:
+    - credential_id
+    - jwt
+    type: object
   onboard.registerWithGoogleOAuthRequest:
     properties:
       access_token:
@@ -114,13 +124,6 @@ definitions:
         type: string
     required:
     - password
-    type: object
-  onboard.registerWithGoogleOAuthResponse:
-    properties:
-      mnemonic:
-        items:
-          type: string
-        type: array
     type: object
   onboard.registerWithWalletRequest:
     properties:
@@ -337,6 +340,28 @@ info:
   title: DECM Core
   version: "1.0"
 paths:
+  /api/v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout user by clearing session and OAuth cookies
+      operationId: logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully logged out
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Logout
+      tags:
+      - Auth
   /api/v1/auth/request-google-oauth:
     get:
       consumes:
@@ -457,7 +482,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/onboard.registerWithGoogleOAuthResponse'
+            $ref: '#/definitions/onboard.registerResponse'
         "400":
           description: Bad Request
           schema:
@@ -483,6 +508,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/onboard.registerResponse'
         "400":
           description: Bad Request
           schema:
@@ -502,6 +529,8 @@ paths:
           schema:
             $ref: '#/definitions/onboard.getRegisterSignMessageResponse'
       summary: Get preset message for the client to sign to register
+      tags:
+      - Onboard
   /api/v1/profile:
     post:
       consumes:

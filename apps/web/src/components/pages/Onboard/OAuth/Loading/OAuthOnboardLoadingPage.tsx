@@ -1,24 +1,16 @@
 import { Typography } from "@/components/typography/typography";
-import { useCheckOnboardStatus } from "@/components/pages/Onboard/useCheckOnboardStatus";
-import { OnboardRegistrationMethod } from "@decm/api";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { Error } from "@/components/pages/Error";
 import { useNavigate } from "@/router";
 import { OnboardPageContext } from "@/pages/onboard/[method]";
-import { AxiosError } from "axios";
 import { useTranslation } from "react-i18next";
 
 type CheckStatusError = "unauthenticated_response" | "internal_error_response" | 'missing_access_token' | 'expired_token'
 
 export const OAuthOnboardLoadingPage = () => {
     const { t } = useTranslation();
-    const { setStep } = useContext(OnboardPageContext)
-    const [searchParams] = useSearchParams()
-    const accessToken = searchParams.get("access_token")
-    const expiresIn = searchParams.get("expires_in")
+    const { accessToken, expiresIn, setStep, onboardStatus, isStatusLoading } = useContext(OnboardPageContext)
 
-    const { checkOnboardStatus } = useCheckOnboardStatus()
     const navigate = useNavigate()
 
     const [error, setError] = useState<CheckStatusError | null>(null);
@@ -59,37 +51,25 @@ export const OAuthOnboardLoadingPage = () => {
                 return;
             }
 
-            try {
-                const response = await checkOnboardStatus({
-                    method: OnboardRegistrationMethod.RegistrationMethodGoogle,
-                    accessToken: accessToken,
-                    expiresIn: expiresIn ? parseInt(expiresIn) : undefined,
-                });
+            if (isStatusLoading) {
+                return;
+            }
 
-                if (response.authentication_credential_id && response.profile_id) {
-                    return navigate("/app");
-                }
+            if (onboardStatus?.authentication_credential_id && onboardStatus?.profile_id) {
+                return navigate("/app");
+            }
 
-                setStep(1);
-            } catch (error) {
-                if (error instanceof AxiosError) {
-                    switch (error.response?.status) {
-                        case 401:
-                            setError("unauthenticated_response");
-                            return
-                        case 400:
-                            setError("expired_token");
-                            return
-                        default:
-                            setError("internal_error_response");
-                            return
-                    }
-                }
-            };
+            if (onboardStatus?.authentication_credential_id) {
+                setStep(2)
+                return
+            }
+
+            setStep(1);
+            return
         }
 
         init();
-    }, [accessToken, checkOnboardStatus, expiresIn, navigate, setStep, error]);
+    }, [accessToken, onboardStatus, expiresIn, navigate, setStep, error, isStatusLoading, onboardStatus?.authentication_credential_id, onboardStatus?.profile_id]);
 
     if (error) {
         return <Error title={errorTitle} description={errorMessage} />;

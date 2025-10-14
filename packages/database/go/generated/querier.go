@@ -22,13 +22,12 @@ type Querier interface {
 	DeleteProfile(ctx context.Context, id uuid.UUID) error
 	DeleteProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) error
 	GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, arg GetAuthenticationCredentialByGoogleConnectorRefParams) (GetAuthenticationCredentialByGoogleConnectorRefRow, error)
-	GetAuthenticationCredentialByID(ctx context.Context, arg GetAuthenticationCredentialByIDParams) (GetAuthenticationCredentialByIDRow, error)
+	GetAuthenticationCredentialById(ctx context.Context, arg GetAuthenticationCredentialByIdParams) (GetAuthenticationCredentialByIdRow, error)
 	GetAuthenticationCredentialByWalletAddress(ctx context.Context, arg GetAuthenticationCredentialByWalletAddressParams) (GetAuthenticationCredentialByWalletAddressRow, error)
 	GetCredentialsBySolutionStatus(ctx context.Context, arg GetCredentialsBySolutionStatusParams) ([]GetCredentialsBySolutionStatusRow, error)
 	GetCredentialsByVerificationStatus(ctx context.Context, arg GetCredentialsByVerificationStatusParams) ([]GetCredentialsByVerificationStatusRow, error)
 	GetProfileByAuthCredentialID(ctx context.Context, arg GetProfileByAuthCredentialIDParams) (GetProfileByAuthCredentialIDRow, error)
-	// Note: This query searches encrypted email, so it's not efficient for large datasets
-	// Consider adding a hashed version of email for efficient searching if needed
+	// Note: Now uses email_hash for efficient searching instead of decrypting every row
 	GetProfileByEmail(ctx context.Context, arg GetProfileByEmailParams) (GetProfileByEmailRow, error)
 	GetProfileByID(ctx context.Context, arg GetProfileByIDParams) (GetProfileByIDRow, error)
 	ListAuthenticationCredentials(ctx context.Context, arg ListAuthenticationCredentialsParams) ([]ListAuthenticationCredentialsRow, error)

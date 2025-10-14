@@ -62,7 +62,9 @@ INSERT INTO authentication_credentials (
     encrypted_private_key,
     wallet_address,
     google_connector_ref,
+    google_connector_ref_hash,
     github_connector_ref,
+    github_connector_ref_hash,
     is_verified_organizer,
     is_verified_student
 ) VALUES (
@@ -72,14 +74,24 @@ INSERT INTO authentication_credentials (
     $4,
     CASE 
         WHEN $5::text IS NOT NULL 
-        THEN pgp_sym_encrypt($5::text, $6::varchar)::varchar
+        THEN pgp_sym_encrypt($5::text, $6::text)
         ELSE NULL 
-    END::text,
+    END,
+    CASE 
+        WHEN $5::text IS NOT NULL 
+        THEN encode(digest($5::text, 'sha256'), 'hex')
+        ELSE NULL 
+    END,
     CASE 
         WHEN $7::text IS NOT NULL 
-        THEN pgp_sym_encrypt($7::text, $6::varchar)::varchar
+        THEN pgp_sym_encrypt($7::text, $6::text)
         ELSE NULL 
-    END::text,
+    END,
+    CASE 
+        WHEN $7::text IS NOT NULL 
+        THEN encode(digest($7::text, 'sha256'), 'hex')
+        ELSE NULL 
+    END,
     $8,
     $9
 ) RETURNING 
@@ -90,14 +102,14 @@ INSERT INTO authentication_credentials (
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $6::varchar)
+        THEN pgp_sym_decrypt(google_connector_ref, $6::text)
         ELSE NULL 
-    END::text as google_connector_ref,
+    END::text as google_connector_ref,  -- REMOVED ::bytea cast from decrypt input
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $6::varchar)
+        THEN pgp_sym_decrypt(github_connector_ref, $6::text)
         ELSE NULL 
-    END::text as github_connector_ref,
+    END::text as github_connector_ref,  -- REMOVED ::bytea cast from decrypt input
     is_verified_organizer,
     is_verified_student,
     created_at,
@@ -107,10 +119,10 @@ INSERT INTO authentication_credentials (
 type CreateAuthenticationCredentialParams struct {
 	SolutionStatus      int32       `json:"solution_status"`
 	HashedPassword      pgtype.Text `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte      `json:"encrypted_private_key"`
 	WalletAddress       string      `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text `json:"google_connector_ref"`
-	EncryptionKey       string      `json:"encryption_key"`
+	EncryptionKey       pgtype.Text `json:"encryption_key"`
 	GithubConnectorRef  pgtype.Text `json:"github_connector_ref"`
 	IsVerifiedOrganizer int32       `json:"is_verified_organizer"`
 	IsVerifiedStudent   int32       `json:"is_verified_student"`
@@ -120,7 +132,7 @@ type CreateAuthenticationCredentialRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
@@ -178,45 +190,43 @@ SELECT
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $1::varchar)
+        THEN pgp_sym_decrypt(google_connector_ref, $1::text)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $1::varchar)
+        THEN pgp_sym_decrypt(github_connector_ref, $1::text)
         ELSE NULL 
     END::text as github_connector_ref,
-    github_connector_ref,
     is_verified_organizer,
     is_verified_student,
     created_at,
     updated_at
 FROM authentication_credentials 
-WHERE google_connector_ref = $2::varchar
+WHERE google_connector_ref_hash = encode(digest($2::text, 'sha256'), 'hex')
 `
 
 type GetAuthenticationCredentialByGoogleConnectorRefParams struct {
-	EncryptionKey      string `json:"encryption_key"`
-	GoogleConnectorRef string `json:"google_connector_ref"`
+	EncryptionKey pgtype.Text `json:"encryption_key"`
+	GoogleEmail   pgtype.Text `json:"google_email"`
 }
 
 type GetAuthenticationCredentialByGoogleConnectorRefRow struct {
-	ID                   uuid.UUID          `json:"id"`
-	SolutionStatus       int32              `json:"solution_status"`
-	HashedPassword       pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey  pgtype.Text        `json:"encrypted_private_key"`
-	WalletAddress        string             `json:"wallet_address"`
-	GoogleConnectorRef   pgtype.Text        `json:"google_connector_ref"`
-	GithubConnectorRef   pgtype.Text        `json:"github_connector_ref"`
-	GithubConnectorRef_2 pgtype.Text        `json:"github_connector_ref_2"`
-	IsVerifiedOrganizer  int32              `json:"is_verified_organizer"`
-	IsVerifiedStudent    int32              `json:"is_verified_student"`
-	CreatedAt            pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
+	ID                  uuid.UUID          `json:"id"`
+	SolutionStatus      int32              `json:"solution_status"`
+	HashedPassword      pgtype.Text        `json:"hashed_password"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
+	WalletAddress       string             `json:"wallet_address"`
+	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
+	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
+	IsVerifiedOrganizer int32              `json:"is_verified_organizer"`
+	IsVerifiedStudent   int32              `json:"is_verified_student"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, arg GetAuthenticationCredentialByGoogleConnectorRefParams) (GetAuthenticationCredentialByGoogleConnectorRefRow, error) {
-	row := q.db.QueryRow(ctx, GetAuthenticationCredentialByGoogleConnectorRef, arg.EncryptionKey, arg.GoogleConnectorRef)
+	row := q.db.QueryRow(ctx, GetAuthenticationCredentialByGoogleConnectorRef, arg.EncryptionKey, arg.GoogleEmail)
 	var i GetAuthenticationCredentialByGoogleConnectorRefRow
 	err := row.Scan(
 		&i.ID,
@@ -226,7 +236,6 @@ func (q *Queries) GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Co
 		&i.WalletAddress,
 		&i.GoogleConnectorRef,
 		&i.GithubConnectorRef,
-		&i.GithubConnectorRef_2,
 		&i.IsVerifiedOrganizer,
 		&i.IsVerifiedStudent,
 		&i.CreatedAt,
@@ -235,7 +244,7 @@ func (q *Queries) GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Co
 	return i, err
 }
 
-const GetAuthenticationCredentialByID = `-- name: GetAuthenticationCredentialByID :one
+const GetAuthenticationCredentialById = `-- name: GetAuthenticationCredentialById :one
 SELECT 
     id,
     solution_status,
@@ -260,16 +269,16 @@ FROM authentication_credentials
 WHERE id = $2
 `
 
-type GetAuthenticationCredentialByIDParams struct {
+type GetAuthenticationCredentialByIdParams struct {
 	EncryptionKey string    `json:"encryption_key"`
 	ID            uuid.UUID `json:"id"`
 }
 
-type GetAuthenticationCredentialByIDRow struct {
+type GetAuthenticationCredentialByIdRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
@@ -279,9 +288,9 @@ type GetAuthenticationCredentialByIDRow struct {
 	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
 }
 
-func (q *Queries) GetAuthenticationCredentialByID(ctx context.Context, arg GetAuthenticationCredentialByIDParams) (GetAuthenticationCredentialByIDRow, error) {
-	row := q.db.QueryRow(ctx, GetAuthenticationCredentialByID, arg.EncryptionKey, arg.ID)
-	var i GetAuthenticationCredentialByIDRow
+func (q *Queries) GetAuthenticationCredentialById(ctx context.Context, arg GetAuthenticationCredentialByIdParams) (GetAuthenticationCredentialByIdRow, error) {
+	row := q.db.QueryRow(ctx, GetAuthenticationCredentialById, arg.EncryptionKey, arg.ID)
+	var i GetAuthenticationCredentialByIdRow
 	err := row.Scan(
 		&i.ID,
 		&i.SolutionStatus,
@@ -332,7 +341,7 @@ type GetAuthenticationCredentialByWalletAddressRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
@@ -399,7 +408,7 @@ type GetCredentialsBySolutionStatusRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
@@ -455,12 +464,12 @@ SELECT
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $1::varchar)
+        THEN pgp_sym_decrypt(google_connector_ref, $1::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $1::varchar)
+        THEN pgp_sym_decrypt(github_connector_ref, $1::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -486,7 +495,7 @@ type GetCredentialsByVerificationStatusRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
@@ -570,7 +579,7 @@ type ListAuthenticationCredentialsRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
@@ -615,6 +624,7 @@ func (q *Queries) ListAuthenticationCredentials(ctx context.Context, arg ListAut
 const RemoveGithubConnector = `-- name: RemoveGithubConnector :one
 UPDATE authentication_credentials SET 
     github_connector_ref = NULL,
+    github_connector_ref_hash = NULL,
     updated_at = NOW()
 WHERE id = $1 
 RETURNING 
@@ -625,12 +635,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $2::varchar)
+        THEN pgp_sym_decrypt(google_connector_ref, $2::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $2::varchar)
+        THEN pgp_sym_decrypt(github_connector_ref, $2::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -648,7 +658,7 @@ type RemoveGithubConnectorRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
@@ -680,6 +690,7 @@ func (q *Queries) RemoveGithubConnector(ctx context.Context, arg RemoveGithubCon
 const RemoveGoogleConnector = `-- name: RemoveGoogleConnector :one
 UPDATE authentication_credentials SET 
     google_connector_ref = NULL,
+    google_connector_ref_hash = NULL,
     updated_at = NOW()
 WHERE id = $1 
 RETURNING 
@@ -690,12 +701,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $2::varchar)
+        THEN pgp_sym_decrypt(google_connector_ref, $2::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $2::varchar)
+        THEN pgp_sym_decrypt(github_connector_ref, $2::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -713,7 +724,7 @@ type RemoveGoogleConnectorRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
@@ -744,7 +755,8 @@ func (q *Queries) RemoveGoogleConnector(ctx context.Context, arg RemoveGoogleCon
 
 const SetGithubConnector = `-- name: SetGithubConnector :one
 UPDATE authentication_credentials SET 
-    github_connector_ref = pgp_sym_encrypt($1, $2::varchar)::varchar,
+    github_connector_ref = pgp_sym_encrypt($1, $2::varchar),
+    github_connector_ref_hash = encode(digest($1, 'sha256'), 'hex'),
     updated_at = NOW()
 WHERE id = $3 
 RETURNING 
@@ -755,12 +767,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $2::varchar)
+        THEN pgp_sym_decrypt(google_connector_ref, $2::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $2::varchar)
+        THEN pgp_sym_decrypt(github_connector_ref, $2::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -779,7 +791,7 @@ type SetGithubConnectorRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
@@ -810,7 +822,8 @@ func (q *Queries) SetGithubConnector(ctx context.Context, arg SetGithubConnector
 
 const SetGoogleConnector = `-- name: SetGoogleConnector :one
 UPDATE authentication_credentials SET 
-    google_connector_ref = pgp_sym_encrypt($1, $2::varchar)::varchar,
+    google_connector_ref = pgp_sym_encrypt($1, $2::varchar),
+    google_connector_ref_hash = encode(digest($1, 'sha256'), 'hex'),
     updated_at = NOW()
 WHERE id = $3 
 RETURNING 
@@ -821,12 +834,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $2::varchar)
+        THEN pgp_sym_decrypt(google_connector_ref, $2::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $2::varchar)
+        THEN pgp_sym_decrypt(github_connector_ref, $2::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -845,7 +858,7 @@ type SetGoogleConnectorRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
@@ -911,7 +924,7 @@ type SoftDeleteAuthenticationCredentialRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
@@ -952,12 +965,22 @@ UPDATE authentication_credentials SET
         WHEN $5::text IS NOT NULL 
         THEN pgp_sym_encrypt($5::text, $6::varchar)
         ELSE google_connector_ref
-    END::text,
+    END,
+    google_connector_ref_hash = CASE 
+        WHEN $5::text IS NOT NULL 
+        THEN encode(digest($5::text, 'sha256'), 'hex')
+        ELSE google_connector_ref_hash
+    END,
     github_connector_ref = CASE 
         WHEN $7::text IS NOT NULL 
         THEN pgp_sym_encrypt($7::text, $6::varchar)
         ELSE github_connector_ref
-    END::text,
+    END,
+    github_connector_ref_hash = CASE 
+        WHEN $7::text IS NOT NULL 
+        THEN encode(digest($7::text, 'sha256'), 'hex')
+        ELSE github_connector_ref_hash
+    END,
     is_verified_organizer = COALESCE($8, is_verified_organizer),
     is_verified_student = COALESCE($9, is_verified_student),
     updated_at = NOW()
@@ -970,12 +993,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $6::varchar)
+        THEN pgp_sym_decrypt(google_connector_ref, $6::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $6::varchar)
+        THEN pgp_sym_decrypt(github_connector_ref, $6::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -987,7 +1010,7 @@ RETURNING
 type UpdateAuthenticationCredentialParams struct {
 	SolutionStatus      pgtype.Int4 `json:"solution_status"`
 	HashedPassword      pgtype.Text `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte      `json:"encrypted_private_key"`
 	WalletAddress       pgtype.Text `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text `json:"google_connector_ref"`
 	EncryptionKey       string      `json:"encryption_key"`
@@ -1001,7 +1024,7 @@ type UpdateAuthenticationCredentialRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
@@ -1055,12 +1078,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $4::varchar)
+        THEN pgp_sym_decrypt(google_connector_ref, $4::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $4::varchar)
+        THEN pgp_sym_decrypt(github_connector_ref, $4::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -1070,7 +1093,7 @@ RETURNING
 `
 
 type UpdateAuthenticationCredentialKeysParams struct {
-	EncryptedPrivateKey pgtype.Text `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte      `json:"encrypted_private_key"`
 	WalletAddress       pgtype.Text `json:"wallet_address"`
 	ID                  uuid.UUID   `json:"id"`
 	EncryptionKey       string      `json:"encryption_key"`
@@ -1080,7 +1103,7 @@ type UpdateAuthenticationCredentialKeysRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
@@ -1127,12 +1150,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $3::varchar)
+        THEN pgp_sym_decrypt(google_connector_ref, $3::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $3::varchar)
+        THEN pgp_sym_decrypt(github_connector_ref, $3::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -1151,7 +1174,7 @@ type UpdateAuthenticationCredentialPasswordRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
@@ -1194,12 +1217,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $4::varchar)
+        THEN pgp_sym_decrypt(google_connector_ref, $4::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $4::varchar)
+        THEN pgp_sym_decrypt(github_connector_ref, $4::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -1219,7 +1242,7 @@ type UpdateVerificationStatusRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	SolutionStatus      int32              `json:"solution_status"`
 	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
+	EncryptedPrivateKey []byte             `json:"encrypted_private_key"`
 	WalletAddress       string             `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`

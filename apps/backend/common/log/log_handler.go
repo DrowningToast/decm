@@ -20,4 +20,3 @@ func (h *RequestIDHandler) Handle(ctx context.Context, r slog.Record) error {
 func NewRequestIDHandler(h slog.Handler) *RequestIDHandler {
 	return &RequestIDHandler{h}
 }
-

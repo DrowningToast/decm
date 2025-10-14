@@ -1,0 +1,457 @@
+---
+description: "Go backend architecture patterns - handler, usecase, repository layers"
+---
+
+# Go Backend Architecture
+
+## Overview
+DECM backend follows a clean architecture pattern with clear separation of concerns across three main layers.
+
+## Architecture Layers
+
+### 1. Handler Layer (`internal/handler/`)
+**Responsibility**: HTTP request/response handling, input validation, error mapping
+
+**Structure**:
+```
+internal/handler/
+├── onboard/
+│   ├── handler_register_with_google_oauth.go
+│   ├── routes.go
+│   └── handler.go
+└── [feature]/
+    ├── handler_[action].go
+    ├── routes.go
+    └── handler.go
+```
+
+**Pattern**:
+```go
+type Handler struct {
+    UseCase UseCase
+}
+
+func NewHandler(useCase UseCase) *Handler {
+    return &Handler{UseCase: useCase}
+}
+
+// @Summary Brief description
+// @Description Detailed description
+// @ID unique-operation-id
+// @Tags tag-name
+// @Accept json
+// @Produce json
+// @Param param_name body RequestStruct true "Description"
+// @Success 200 {object} ResponseStruct
+// @Failure 400 {object} customerror.ErrResponse
+// @Failure 500 {object} customerror.ErrResponse
+// @Router /api/v1/endpoint [post]
+func (h *Handler) HandleAction(ctx *fiber.Ctx) error {
+    // 1. Parse request
+    req := RequestStruct{}
+    if err := ctx.BodyParser(&req); err != nil {
+        return customerror.New(
+            customerror.StatusBadRequest,
+            "Invalid request body",
+            err,
+        )
+    }
+
+    // 2. Validate request
+    if err := validatorutils.Validate(&req); err != nil {
+        return customerror.NewValidationErr(err)
+    }
+
+    // 3. Call usecase
+    result, err := h.UseCase.DoAction(ctx.Context(), req)
+    if err != nil {
+        return err // customerror already wrapped
+    }
+
+    // 4. Return response
+    return ctx.Status(fiber.StatusOK).JSON(result)
+}
+```
+
+**Routes Pattern** (`routes.go`):
+```go
+func (h *Handler) RegisterRoutes(router fiber.Router) {
+    router.Post("/action", h.HandleAction)
+    router.Get("/resource/:id", h.HandleGetResource)
+    router.Put("/resource/:id", h.HandleUpdateResource)
+}
+```
+
+### 2. UseCase Layer (`internal/usecase/`)
+**Responsibility**: Business logic, orchestration, transaction management
+
+**Structure**:
+```
+internal/usecase/
+└── [feature]/
+    ├── usecase_[action].go
+    └── usecase.go
+```
+
+**Pattern**:
+```go
+type UseCase struct {
+    Repo       Repository
+    OtherRepo  OtherRepository
+    Config     *config.Config
+}
+
+func NewUseCase(repo Repository, otherRepo OtherRepository, cfg *config.Config) *UseCase {
+    return &UseCase{
+        Repo:      repo,
+        OtherRepo: otherRepo,
+        Config:    cfg,
+    }
+}
+
+func (uc *UseCase) DoAction(ctx context.Context, input InputDTO) (*OutputDTO, error) {
+    // 1. Validate business rules
+    if err := uc.validateBusinessRules(input); err != nil {
+        return nil, customerror.New(
+            customerror.StatusBadRequest,
+            "Business rule violation",
+            err,
+        )
+    }
+
+    // 2. Call repository layer
+    entity, err := uc.Repo.GetEntity(ctx, input.ID)
+    if err != nil {
+        return nil, err
+    }
+
+    // 3. Apply business logic
+    entity.ApplyLogic(input)
+
+    // 4. Persist changes
+    if err := uc.Repo.UpdateEntity(ctx, entity); err != nil {
+        return nil, err
+    }
+
+    // 5. Return result
+    return &OutputDTO{
+        ID:   entity.ID,
+        Data: entity.Data,
+    }, nil
+}
+
+func (uc *UseCase) validateBusinessRules(input InputDTO) error {
+    // Business validation logic
+    return nil
+}
+```
+
+### 3. Repository Layer (`internal/repository/`)
+**Responsibility**: Database operations, data access, query execution
+
+**Structure**:
+```
+internal/repository/
+└── [feature]/
+    ├── repository_[action].go
+    └── repository.go
+```
+
+**Pattern**:
+```go
+type Repository struct {
+    Queries *database.Queries
+    Config  *config.Config
+}
+
+func NewRepository(queries *database.Queries, cfg *config.Config) *Repository {
+    return &Repository{
+        Queries: queries,
+        Config:  cfg,
+    }
+}
+
+func (r *Repository) GetEntity(ctx context.Context, id uuid.UUID) (*Entity, error) {
+    // Use sqlc generated queries
+    dbEntity, err := r.Queries.GetEntityByID(ctx, id)
+    if err != nil {
+        if errors.Is(err, pgx.ErrNoRows) {
+            return nil, customerror.New(
+                customerror.StatusNotFound,
+                "Entity not found",
+                err,
+            )
+        }
+        return nil, customerror.New(
+            customerror.StatusInternalServerError,
+            "Database error",
+            err,
+        )
+    }
+
+    // Map database model to domain entity
+    return r.mapToEntity(dbEntity), nil
+}
+
+func (r *Repository) CreateEntity(ctx context.Context, entity *Entity) error {
+    // Decrypt PII if needed
+    err := r.Queries.CreateEntity(ctx, database.CreateEntityParams{
+        ID:            entity.ID,
+        EncryptedData: pgcrypto.Encrypt(entity.Data, r.Config.EncryptionKey),
+    })
+    if err != nil {
+        return pgerrutils.HandlePostgresError(err)
+    }
+    return nil
+}
+
+func (r *Repository) mapToEntity(db database.Entity) *Entity {
+    return &Entity{
+        ID:        db.ID,
+        Data:      pgcrypto.Decrypt(db.EncryptedData, r.Config.EncryptionKey),
+        CreatedAt: db.CreatedAt,
+    }
+}
+```
+
+## Dependency Injection Pattern
+
+### Main Setup (`cmd/main.go`):
+```go
+func main() {
+    // 1. Load config
+    cfg := config.LoadConfig()
+
+    // 2. Setup database
+    pool := pgclient.NewPool(cfg.Postgres)
+    queries := database.New(pool)
+
+    // 3. Create repositories
+    userRepo := userrepository.NewRepository(queries, cfg)
+    authRepo := authrepository.NewRepository(queries, cfg)
+
+    // 4. Create usecases
+    onboardUseCase := onboardusecase.NewUseCase(userRepo, authRepo, cfg)
+
+    // 5. Create handlers
+    onboardHandler := onboardhandler.NewHandler(onboardUseCase)
+
+    // 6. Setup routes
+    api := app.Group("/api/v1")
+    onboardHandler.RegisterRoutes(api.Group("/onboard"))
+}
+```
+
+## Entity/DTO Pattern
+
+### Domain Entity (internal/entity/):
+```go
+type User struct {
+    ID        uuid.UUID
+    Email     string
+    FirstName string
+    LastName  string
+    CreatedAt time.Time
+    UpdatedAt time.Time
+}
+
+func (u *User) FullName() string {
+    return fmt.Sprintf("%s %s", u.FirstName, u.LastName)
+}
+```
+
+### Request DTO (handler):
+```go
+type RegisterRequest struct {
+    GoogleCode string `json:"google_code" validate:"required"`
+    Role       string `json:"role" validate:"required,oneof=student faculty staff"`
+}
+```
+
+### Response DTO (handler):
+```go
+type RegisterResponse struct {
+    UserID    uuid.UUID `json:"user_id"`
+    Email     string    `json:"email"`
+    FirstName string    `json:"first_name"`
+    LastName  string    `json:"last_name"`
+}
+```
+
+## PII Encryption Pattern
+
+### Repository Level:
+```go
+// Writing encrypted data
+func (r *Repository) CreateUser(ctx context.Context, user *User) error {
+    return r.Queries.CreateUser(ctx, database.CreateUserParams{
+        ID: user.ID,
+        EncryptedEmail:     pgcrypto.Encrypt(user.Email, r.Config.EncryptionKey),
+        EncryptedFirstName: pgcrypto.Encrypt(user.FirstName, r.Config.EncryptionKey),
+        EncryptedLastName:  pgcrypto.Encrypt(user.LastName, r.Config.EncryptionKey),
+    })
+}
+
+// Reading encrypted data
+func (r *Repository) GetUser(ctx context.Context, id uuid.UUID) (*User, error) {
+    dbUser, err := r.Queries.GetUserByID(ctx, id)
+    if err != nil {
+        return nil, err
+    }
+
+    return &User{
+        ID:        dbUser.ID,
+        Email:     pgcrypto.Decrypt(dbUser.EncryptedEmail, r.Config.EncryptionKey),
+        FirstName: pgcrypto.Decrypt(dbUser.EncryptedFirstName, r.Config.EncryptionKey),
+        LastName:  pgcrypto.Decrypt(dbUser.EncryptedLastName, r.Config.EncryptionKey),
+    }, nil
+}
+```
+
+## Error Handling
+
+### At Handler Level:
+```go
+// Return customerror instances
+return customerror.New(
+    customerror.StatusBadRequest,
+    "User-friendly message",
+    underlyingError,
+)
+```
+
+### At UseCase Level:
+```go
+// Wrap domain-specific errors
+if !user.IsActive() {
+    return nil, customerror.New(
+        customerror.StatusForbidden,
+        "Account is not active",
+        nil,
+    )
+}
+```
+
+### At Repository Level:
+```go
+// Handle database errors
+if errors.Is(err, pgx.ErrNoRows) {
+    return nil, customerror.New(
+        customerror.StatusNotFound,
+        "Resource not found",
+        err,
+    )
+}
+
+// Use pgerrutils for Postgres-specific errors
+return pgerrutils.HandlePostgresError(err)
+```
+
+## Transaction Management
+
+```go
+func (uc *UseCase) ComplexOperation(ctx context.Context, input InputDTO) error {
+    // Begin transaction
+    tx, err := uc.Repo.BeginTx(ctx)
+    if err != nil {
+        return customerror.New(
+            customerror.StatusInternalServerError,
+            "Failed to start transaction",
+            err,
+        )
+    }
+    defer tx.Rollback(ctx)
+
+    // Perform operations
+    if err := uc.Repo.CreateEntity(ctx, tx, entity1); err != nil {
+        return err
+    }
+
+    if err := uc.OtherRepo.CreateRelated(ctx, tx, entity2); err != nil {
+        return err
+    }
+
+    // Commit transaction
+    if err := tx.Commit(ctx); err != nil {
+        return customerror.New(
+            customerror.StatusInternalServerError,
+            "Failed to commit transaction",
+            err,
+        )
+    }
+
+    return nil
+}
+```
+
+## Best Practices
+
+### ✅ DO:
+- Separate concerns: handler → usecase → repository
+- Use dependency injection
+- Return customerror instances from all layers
+- Encrypt PII at repository level
+- Use sqlc generated queries
+- Add OpenAPI documentation to all handlers
+- Validate input at handler level
+- Implement business logic in usecase layer
+- Keep handlers thin (< 30 lines)
+- Use context.Context for cancellation
+
+### ❌ DON'T:
+- Put business logic in handlers
+- Access database directly from handlers
+- Skip input validation
+- Return raw errors to clients
+- Store PII unencrypted
+- Write raw SQL queries (use sqlc)
+- Skip OpenAPI annotations
+- Mix layers (handler calling repository)
+- Use global variables
+- Ignore error returns
+
+## Common Utilities
+
+### Customer Error:
+```go
+import "decm-backend/common/customerror"
+
+customerror.New(status, message, err)
+customerror.NewValidationErr(err)
+```
+
+### Validation:
+```go
+import "decm-backend/common/validatorutils"
+
+validatorutils.Validate(&struct)
+```
+
+### PG Error Handling:
+```go
+import "decm-backend/common/pgerrutils"
+
+pgerrutils.HandlePostgresError(err)
+```
+
+### Encryption:
+```go
+import "decm-backend/common/encryptutils"
+
+encryptutils.Encrypt(data, key)
+encryptutils.Decrypt(encrypted, key)
+```
+
+## File Naming Conventions
+
+- Handlers: `handler_[action].go` (e.g., `handler_register_with_google_oauth.go`)
+- UseCases: `usecase_[action].go` (e.g., `usecase_register_user.go`)
+- Repositories: `repository_[action].go` (e.g., `repository_create_user.go`)
+- Routes: `routes.go` (one per feature)
+- Main struct: `handler.go`, `usecase.go`, `repository.go`
+
+## Related Documentation
+- Error handling: See [error-handling.mdc](mdc:error-handling.mdc)
+- Database security: See workspace rule `database-security`
+- Authentication: See workspace rule `authentication-security`
+- Development workflow: See workspace rule `development-workflow`

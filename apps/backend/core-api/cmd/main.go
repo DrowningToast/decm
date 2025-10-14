@@ -19,9 +19,8 @@ import (
 	"apps/backend/core-api/internal/handler/onboard"
 	"apps/backend/core-api/internal/handler/profile"
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
-	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
 	"apps/backend/core-api/internal/repositories/postgres"
-	auth_usecase "apps/backend/core-api/internal/usecase/oauth"
+	oauth_usecase "apps/backend/core-api/internal/usecase/oauth"
 	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
 	profile_usecase "apps/backend/core-api/internal/usecase/profile"
 	"apps/backend/services/auth"
@@ -74,14 +73,13 @@ func main() {
 	googleOAuthService := oauth.NewGoogleOAuthService()
 
 	// middlewares
-	verifyJwtMiddleware := verifyjwt.NewVerifyJwtMiddleware(authService)
 	authenticationGuardMiddleware := authenticationguard.NewMiddleware(authService)
 
 	// repo
 	pgRepo := postgres.NewRepository(pgConn, cfg.PIIEncryptionKey)
 
 	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo, authService, googleOAuthService)
-	authUc := auth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
+	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo)
 
 	// Setup HTTP server
@@ -98,7 +96,8 @@ func main() {
 
 	app.Use(favicon.New()).
 		Use(cors.New(cors.Config{
-			AllowOrigins: cfg.CorsAllowedOrigins,
+			AllowOrigins:     cfg.CorsAllowedOrigins,
+			AllowCredentials: true,
 		})).
 		Use(requestid.New()).
 		Use(recover.New(recover.Config{
@@ -135,13 +134,13 @@ func main() {
 	}
 
 	// API v1
-	apiV1 := app.Group("/api/v1").Use(verifyJwtMiddleware.Middleware)
+	apiV1 := app.Group("/api/v1")
 
 	// Onboard handler
-	onboardHandler := onboard.NewHandler(onboardUc)
+	onboardHandler := onboard.NewHandler(onboardUc, authService)
 	onboardHandler.Mount(apiV1)
 
-	authHandler := auth_handler.NewHandler(authUc, googleOAuthService)
+	authHandler := auth_handler.NewHandler(oauthUc, googleOAuthService, authService)
 	authHandler.Mount(apiV1)
 
 	profileHandler := profile.NewHandler(profileUc, authService, authenticationGuardMiddleware)

@@ -1,21 +1,39 @@
-import { coreApi } from "@/lib/api/api";
-import { useMutation } from "@tanstack/react-query"
-import type { OnboardRegistrationMethod } from "@decm/api";
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { onboardService, type CheckOnboardParams } from "../../../services/OnboardService";
+import { OnboardRegistrationMethod } from "@decm/api";
 
-export const useCheckOnboardStatus = () => {
+const getQueryKey = (param?: CheckOnboardParams) => {
+    switch (param?.method) {
+        case OnboardRegistrationMethod.RegistrationMethodGoogle:
+            return ["onboardStatus", param.accessToken, param.expiresIn]
+        case OnboardRegistrationMethod.RegistrationMethodWallet:
+            return ["onboardStatus", param.signMessage]
+    }
 
+    return ["onboardStatus"]
+}
+
+export const useCheckOnboardStatus = (param?: CheckOnboardParams) => {
     const { mutateAsync: checkOnboardStatus, isPending } = useMutation({
-        mutationFn: async ({ method, accessToken, expiresIn, signMessage }: { method: OnboardRegistrationMethod, accessToken?: string, expiresIn?: number, signMessage?: string }) => {
-            const response = await coreApi.v1.checkOnboardStatus({
-                method,
-                access_token: accessToken,
-                expires_in: expiresIn,
-                sign_message: signMessage,
-            });
-
+        mutationFn: async (param: CheckOnboardParams) => {
+            const response = await onboardService.checkOnboardStatus(param);
             return response;
         },
     });
 
-    return { checkOnboardStatus, isPending };
+    const { data: onboardStatus, isLoading, error } = useQuery({
+        queryKey: getQueryKey(param),
+        queryFn: async () => {
+            if (!param) {
+                return
+            }
+
+            const response = await checkOnboardStatus(param);
+
+            return response;
+        },
+        enabled: !!param,
+    });
+
+    return { checkOnboardStatus, isPending, isLoading, onboardStatus, error };
 };
