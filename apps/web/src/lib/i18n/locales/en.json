@@ -360,7 +360,7 @@
             },
             "alert": {
                 "title": "Important Notice",
-                "description": "Issuer settings can only be configured once. You can change the issuer after confirming the settings, but this action should be done carefully."
+                "description": "Issuer settings can only be configured once. You can't change the issuer after confirming the settings."
             },
             "modal": {
                 "title": "Select Certificate Issuers",
@@ -408,6 +408,25 @@
                     "yPosition": "Y Position",
                     "count": "Count"
                 }
+            },
+            "keywordStatus": {
+                "title": "Keyword Detection Status",
+                "table": {
+                    "status": "Status",
+                    "keyword": "Keyword",
+                    "type": "Type",
+                    "count": "Detected Count"
+                },
+                "required": "Required",
+                "optional": "Optional",
+                "detected": "occurrence",
+                "detectedPlural": "occurrences",
+                "notDetected": "Not detected"
+            },
+            "missingRequired": {
+                "title": "Missing Required Keywords",
+                "description": "The following required keywords were not detected in your SVG template:",
+                "instruction": "Please update your SVG template to include these required keywords before proceeding."
             }
         },
         "confirmButton": "Confirm Settings",

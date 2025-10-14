@@ -19,10 +19,74 @@ import { TextLabelValue } from "@/components/ui/text-label-value";
 import WrappedButton from "@/components/wrapper/WrappedButton";
 import { CheckCircle2Icon, ExternalLinkIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { DataTable } from "@/components/ui/data-table";
+import { useDataTable } from "@/hooks/use-data-table";
+import { participantColumns, type Participant } from "./columns/participant-columns";
 
 interface HostEventDetailsPageProps {
     eventId: string;
 }
+
+// Mock API function - replace with actual API call
+const mockFetchParticipants = async ({
+    page,
+    pageSize,
+    search,
+    sortBy,
+    sortOrder,
+}: {
+    page: number;
+    pageSize: number;
+    search: string;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+}): Promise<{ data: Participant[]; total: number }> => {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Mock data - replace with actual API call
+    const allParticipants: Participant[] = Array.from({ length: 45 }, (_, i) => ({
+        id: `participant-${i + 1}`,
+        name: `${["John", "Jane", "Bob", "Alice", "Charlie", "David", "Emma", "Frank"][i % 8]} ${
+            ["Doe", "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller"][i % 8]
+        }`,
+        email: `user${i + 1}@email.com`,
+        phoneNumber: `+1 ${Math.floor(100 + Math.random() * 900)} ${Math.floor(100 + Math.random() * 900)} ${Math.floor(1000 + Math.random() * 9000)}`,
+        walletAddress: `0x${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
+        status: ["confirmed", "pending", "rejected"][i % 3] as "confirmed" | "pending" | "rejected",
+    }));
+
+    // Filter by search
+    let filteredData = allParticipants;
+    if (search) {
+        filteredData = allParticipants.filter(
+            (p) =>
+                p.name.toLowerCase().includes(search.toLowerCase()) ||
+                p.email.toLowerCase().includes(search.toLowerCase()),
+        );
+    }
+
+    // Sort
+    if (sortBy) {
+        filteredData.sort((a, b) => {
+            const aValue = a[sortBy as keyof Participant];
+            const bValue = b[sortBy as keyof Participant];
+
+            if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+            if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+            return 0;
+        });
+    }
+
+    // Paginate
+    const startIndex = (page - 1) * pageSize;
+    const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
+
+    return {
+        data: paginatedData,
+        total: filteredData.length,
+    };
+};
 
 export default function HostEventDetailsPage({ eventId }: HostEventDetailsPageProps) {
     const { t } = useTranslation();
@@ -45,57 +109,16 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
         tokenTransferable: false,
     };
 
-    const MockTable = (
-        <div className="overflow-x-auto">
-            <table className="min-w-full rounded bg-white text-black">
-                <thead className=" h-12 text-black">
-                    <tr>
-                        <th className="px-4 py-2 text-left font-medium">Name</th>
-                        <th className="px-4 py-2 text-left font-medium">Email</th>
-                        <th className="px-4 py-2 text-left font-medium">Phone Number</th>
-                        <th className="px-4 py-2 text-left font-medium">Wallet Address</th>
-                        <th className="px-4 py-2 text-left font-medium">Status</th>
-                        <th className="px-4 py-2 text-left font-medium">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {/* Example row, replace with dynamic data as needed */}
-                    <tr className="border-b">
-                        <td className="px-4 py-2">John Doe</td>
-                        <td className="px-4 py-2">john.doe@email.com</td>
-                        <td className="px-4 py-2">+1 234 567 8901</td>
-                        <td className="px-4 py-2">0x0000...0000</td>
-                        <td className="px-4 py-2">
-                            <span className="inline-block px-2 py-1 rounded bg-green-100 text-green-800 text-xs">
-                                Confirmed
-                            </span>
-                        </td>
-                        <td className="px-4 py-2">
-                            <button className="text-primary underline hover:opacity-80 transition">
-                                View
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td className="px-4 py-2">Jane Smith</td>
-                        <td className="px-4 py-2">jane.smith@email.com</td>
-                        <td className="px-4 py-2">+1 987 654 3210</td>
-                        <td className="px-4 py-2">0x0000...0000</td>
-                        <td className="px-4 py-2">
-                            <span className="inline-block px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">
-                                Pending
-                            </span>
-                        </td>
-                        <td className="px-4 py-2">
-                            <button className="text-primary underline hover:opacity-80 transition">
-                                View
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    );
+    // Use the data table hook
+    const participantsTable = useDataTable<Participant>({
+        fetchData: mockFetchParticipants,
+        initialPageSize: 10,
+    });
+
+    const certificatesTable = useDataTable<Participant>({
+        fetchData: mockFetchParticipants,
+        initialPageSize: 10,
+    });
 
     return (
         <PageContainer title="Events Details">
@@ -274,7 +297,21 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
                                 </AccordionItem>
                             </Accordion>
 
-                            {MockTable}
+                            <DataTable
+                                columns={participantColumns}
+                                data={participantsTable.data}
+                                totalItems={participantsTable.totalItems}
+                                currentPage={participantsTable.currentPage}
+                                pageSize={participantsTable.pageSize}
+                                onPageChange={participantsTable.setCurrentPage}
+                                onPageSizeChange={participantsTable.setPageSize}
+                                searchValue={participantsTable.searchValue}
+                                onSearchChange={participantsTable.setSearchValue}
+                                searchPlaceholder="Search participants..."
+                                sorting={participantsTable.sorting}
+                                onSortingChange={participantsTable.setSorting}
+                                isLoading={participantsTable.isLoading}
+                            />
                         </div>
                     </StyledTabsContent>
                     <StyledTabsContent value="certificates">
@@ -294,7 +331,21 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
                             </WrappedButton>
                         </div>
 
-                        {MockTable}
+                        <DataTable
+                            columns={participantColumns}
+                            data={certificatesTable.data}
+                            totalItems={certificatesTable.totalItems}
+                            currentPage={certificatesTable.currentPage}
+                            pageSize={certificatesTable.pageSize}
+                            onPageChange={certificatesTable.setCurrentPage}
+                            onPageSizeChange={certificatesTable.setPageSize}
+                            searchValue={certificatesTable.searchValue}
+                            onSearchChange={certificatesTable.setSearchValue}
+                            searchPlaceholder="Search certificates..."
+                            sorting={certificatesTable.sorting}
+                            onSortingChange={certificatesTable.setSorting}
+                            isLoading={certificatesTable.isLoading}
+                        />
                     </StyledTabsContent>
                 </StyledTabs>
             </SectionContainer>
