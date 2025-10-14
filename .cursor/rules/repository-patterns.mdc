@@ -1,0 +1,266 @@
+---
+description: "Repository layer patterns for data access with PII encryption"
+globs: apps/backend/core-api/internal/repositories/**/*.go
+---
+
+# Repository Layer Patterns
+
+## Architecture
+
+```
+Handler → UseCase → Repository → Database
+                       ↑
+                   Encryption/Decryption happens here
+```
+
+## Repository Structure
+
+```go
+type Repository struct {
+    db               pgclient.Client
+    queries          *generated.Queries
+    piiEncryptionKey string  // From environment
+}
+
+func NewRepository(db pgclient.Client, piiEncryptionKey string) *Repository {
+    return &Repository{
+        db:               db,
+        queries:          generated.New(db),
+        piiEncryptionKey: piiEncryptionKey,
+    }
+}
+```
+
+Reference: [postgres.go](mdc:apps/backend/core-api/internal/repositories/postgres/postgres.go)
+
+## PII Encryption Helpers
+
+All encryption/decryption helpers are centralized in [pgmapper](mdc:apps/backend/common/pgmapper/pgmapper.go):
+
+```go
+import "apps/backend/common/pgmapper"
+
+// Available functions in pgmapper:
+
+// 1. Encrypt/Decrypt string
+pgmapper.EncryptPII(plaintext, encryptionKey) (string, error)
+pgmapper.DecryptPII(ciphertext, encryptionKey) (string, error)
+
+// 2. Encrypt/Decrypt string pointer to pgtype.Text
+pgmapper.EncryptStringPtrToPgText(field, encryptionKey) (pgtype.Text, error)
+pgmapper.DecryptPgTextToStringPtr(field, encryptionKey) (*string, error)
+
+```
+
+**No need to create local encryption helper methods in repositories** - use the pgmapper package functions directly.
+
+## CRUD Patterns
+
+### CREATE Pattern
+
+```go
+func (r *Repository) CreateEntity(ctx context.Context, entity Entity) (*Entity, error) {
+    // 1. Encrypt PII fields using pgmapper
+    encryptedField, err := pgmapper.EncryptStringPtrToPgText(entity.PIIField, r.piiEncryptionKey)
+    if err != nil {
+        return nil, err
+    }
+
+    // 2. Insert encrypted data
+    query, err := r.queries.CreateEntity(ctx, generated.CreateEntityParams{
+        PIIField: encryptedField,
+        // ... other fields
+    })
+    if err != nil {
+        return nil, pgerrutils.ParsePgError(err)
+    }
+
+    // 3. Decrypt for return using pgmapper
+    decryptedField, err := pgmapper.DecryptPgTextToStringPtr(query.PIIField, r.piiEncryptionKey)
+    if err != nil {
+        return nil, err
+    }
+
+    return &Entity{
+        ID:       query.ID,
+        PIIField: decryptedField,
+        // ... other fields
+    }, nil
+}
+```
+
+### READ Pattern
+
+```go
+func (r *Repository) GetEntityById(ctx context.Context, id uuid.UUID) (*Entity, error) {
+    // 1. Query database
+    query, err := r.queries.GetEntityByID(ctx, id)
+    if err != nil {
+        return nil, pgerrutils.ParsePgError(err)
+    }
+
+    // 2. Decrypt all PII fields using pgmapper
+    field1, err := pgmapper.DecryptPgTextToStringPtr(query.Field1, r.piiEncryptionKey)
+    if err != nil {
+        return nil, err
+    }
+    field2, err := pgmapper.DecryptPgTextToStringPtr(query.Field2, r.piiEncryptionKey)
+    if err != nil {
+        return nil, err
+    }
+
+    // 3. Return decrypted entity
+    return &Entity{
+        ID:     query.ID,
+        Field1: field1,
+        Field2: field2,
+    }, nil
+}
+```
+
+### SEARCH BY ENCRYPTED FIELD Pattern
+
+```go
+func (r *Repository) GetEntityBySearchableField(ctx context.Context, searchTerm string) (*Entity, error) {
+    // 1. Encrypt the search term (database stores encrypted values)
+    encryptedTerm, err := pgmapper.EncryptPII(searchTerm, r.piiEncryptionKey)
+    if err != nil {
+        return nil, err
+    }
+
+    // 2. Query by encrypted value (linear scan - less efficient but more secure)
+    query, err := r.queries.GetEntityByField(ctx, pgtype.Text{
+        String: encryptedTerm,
+        Valid:  true,
+    })
+    if err != nil {
+        return nil, pgerrutils.ParsePgError(err)
+    }
+
+    // 3. Decrypt PII fields using pgmapper
+    decrypted, err := pgmapper.DecryptPgTextToStringPtr(query.EncryptedField, r.piiEncryptionKey)
+    if err != nil {
+        return nil, err
+    }
+
+    return &Entity{
+        ID:             query.ID,
+        EncryptedField: decrypted,
+    }, nil
+}
+```
+
+**Note**: Without hash columns, searching requires encrypting the search term and direct comparison (linear scan). This is less efficient but eliminates hash columns and provides better security.
+
+### UPDATE Pattern
+
+```go
+func (r *Repository) UpdateEntity(ctx context.Context, id uuid.UUID, params UpdateParams) (*Entity, error) {
+    // 1. Encrypt PII fields using pgmapper
+    encryptedField, err := pgmapper.EncryptStringPtrToPgText(params.PIIField, r.piiEncryptionKey)
+    if err != nil {
+        return nil, err
+    }
+
+    // 2. Update with encrypted data
+    query, err := r.queries.UpdateEntity(ctx, generated.UpdateEntityParams{
+        ID:       id,
+        PIIField: encryptedField,
+    })
+    if err != nil {
+        return nil, pgerrutils.ParsePgError(err)
+    }
+
+    // 3. Decrypt for return using pgmapper
+    decrypted, err := pgmapper.DecryptPgTextToStringPtr(query.PIIField, r.piiEncryptionKey)
+    if err != nil {
+        return nil, err
+    }
+
+    return &Entity{
+        ID:       query.ID,
+        PIIField: decrypted,
+    }, nil
+}
+```
+
+### DELETE Pattern
+
+```go
+func (r *Repository) DeleteEntity(ctx context.Context, id uuid.UUID) error {
+    err := r.queries.DeleteEntity(ctx, id)
+    if err != nil {
+        return pgerrutils.ParsePgError(err)
+    }
+    return nil
+}
+```
+
+## Error Handling
+
+```go
+import "apps/backend/common/pgerrutils"
+
+// Always parse PostgreSQL errors
+query, err := r.queries.SomeQuery(ctx, params)
+if err != nil {
+    return nil, pgerrutils.ParsePgError(err)
+}
+
+// Handle encryption errors
+encrypted, err := pgmapper.EncryptStringPtrToPgText(field, r.piiEncryptionKey)
+if err != nil {
+    return nil, fmt.Errorf("failed to encrypt field: %w", err)
+}
+
+// Handle decryption errors
+decrypted, err := pgmapper.DecryptPgTextToStringPtr(field, r.piiEncryptionKey)
+if err != nil {
+    return nil, fmt.Errorf("failed to decrypt field: %w", err)
+}
+```
+
+## Testing Repositories
+
+```go
+func TestCreateEntity(t *testing.T) {
+    // Setup
+    db := setupTestDB(t)
+    repo := NewRepository(db, "test-encryption-key")
+
+    // Create
+    entity := Entity{
+        PIIField: stringPtr("sensitive-data"),
+    }
+    result, err := repo.CreateEntity(context.Background(), entity)
+    require.NoError(t, err)
+    require.Equal(t, "sensitive-data", *result.PIIField)
+
+    // Verify encryption in database
+    var encrypted string
+    err = db.QueryRow("SELECT pii_field FROM entities WHERE id = $1", result.ID).Scan(&encrypted)
+    require.NoError(t, err)
+    require.NotEqual(t, "sensitive-data", encrypted) // Should be encrypted
+
+    // Verify retrieval
+    retrieved, err := repo.GetEntityById(context.Background(), result.ID)
+    require.NoError(t, err)
+    require.Equal(t, "sensitive-data", *retrieved.PIIField) // Should be decrypted
+}
+```
+
+## Best Practices
+
+1. **Always encrypt before database write** using `pgmapper.EncryptStringPtrToPgText`
+2. **Always decrypt after database read** using `pgmapper.DecryptPgTextToStringPtr`
+3. **Search encrypted fields by encrypting the search term** using `pgmapper.EncryptPII`
+4. **Never log decrypted PII**
+5. **Handle encryption errors gracefully**
+6. **Use pgmapper functions** - never create local encryption helpers
+7. **Keep encryption logic in repository layer only**
+8. **Test encryption/decryption in integration tests**
+
+## Reference Implementations
+
+- [authentication_credentials.go](mdc:apps/backend/core-api/internal/repositories/postgres/authentication_credentials.go)
+- [profile.go](mdc:apps/backend/core-api/internal/repositories/postgres/profile.go)

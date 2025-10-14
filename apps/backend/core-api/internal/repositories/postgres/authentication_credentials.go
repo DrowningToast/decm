@@ -17,12 +17,20 @@ import (
 var _ datagateway.AuthenticationCredentialDataGateway = (*Repository)(nil)
 
 func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id uuid.UUID) (*entity.AuthenticationCredential, error) {
-	query, err := r.queries.GetAuthenticationCredentialById(ctx, generated.GetAuthenticationCredentialByIdParams{
-		EncryptionKey: r.piiEncryptionKey,
-		ID:            id,
-	})
+	query, err := r.queries.GetAuthenticationCredentialById(ctx, id)
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	// Decrypt PII fields
+	googleConnectorRef, err := pgmapper.DecryptPgTextToStringPtr(query.GoogleConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	githubConnectorRef, err := pgmapper.DecryptPgTextToStringPtr(query.GithubConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
 	}
 
 	return &entity.AuthenticationCredential{
@@ -31,8 +39,8 @@ func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id uui
 		HashedPassword:      pgmapper.PgTextToStringPtr(query.HashedPassword),
 		EncryptedPrivateKey: nil, // EncryptedPrivateKey is []byte, not decrypted - kept as nil for security
 		WalletAddress:       query.WalletAddress,
-		GoogleConnectorRef:  pgmapper.PgTextToStringPtr(query.GoogleConnectorRef),
-		GithubConnectorRef:  pgmapper.PgTextToStringPtr(query.GithubConnectorRef),
+		GoogleConnectorRef:  googleConnectorRef,
+		GithubConnectorRef:  githubConnectorRef,
 		IsVerifiedOrganizer: query.IsVerifiedOrganizer == 1,
 		IsVerifiedStudent:   query.IsVerifiedStudent == 1,
 		CreatedAt:           query.CreatedAt.Time,
@@ -41,12 +49,20 @@ func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id uui
 }
 
 func (r *Repository) GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (*entity.AuthenticationCredential, error) {
-	query, err := r.queries.GetAuthenticationCredentialByWalletAddress(ctx, generated.GetAuthenticationCredentialByWalletAddressParams{
-		EncryptionKey: r.piiEncryptionKey,
-		WalletAddress: walletAddress,
-	})
+	query, err := r.queries.GetAuthenticationCredentialByWalletAddress(ctx, walletAddress)
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	// Decrypt PII fields
+	googleConnectorRef, err := pgmapper.DecryptPgTextToStringPtr(query.GoogleConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	githubConnectorRef, err := pgmapper.DecryptPgTextToStringPtr(query.GithubConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
 	}
 
 	return &entity.AuthenticationCredential{
@@ -55,8 +71,8 @@ func (r *Repository) GetAuthenticationCredentialByWalletAddress(ctx context.Cont
 		HashedPassword:      pgmapper.PgTextToStringPtr(query.HashedPassword),
 		EncryptedPrivateKey: nil, // EncryptedPrivateKey is []byte, not decrypted - kept as nil for security
 		WalletAddress:       query.WalletAddress,
-		GoogleConnectorRef:  pgmapper.PgTextToStringPtr(query.GoogleConnectorRef),
-		GithubConnectorRef:  pgmapper.PgTextToStringPtr(query.GithubConnectorRef),
+		GoogleConnectorRef:  googleConnectorRef,
+		GithubConnectorRef:  githubConnectorRef,
 		IsVerifiedOrganizer: query.IsVerifiedOrganizer == 1,
 		IsVerifiedStudent:   query.IsVerifiedStudent == 1,
 		CreatedAt:           query.CreatedAt.Time,
@@ -65,12 +81,29 @@ func (r *Repository) GetAuthenticationCredentialByWalletAddress(ctx context.Cont
 }
 
 func (r *Repository) GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef string) (*entity.AuthenticationCredential, error) {
-	query, err := r.queries.GetAuthenticationCredentialByGoogleConnectorRef(ctx, generated.GetAuthenticationCredentialByGoogleConnectorRefParams{
-		EncryptionKey: pgmapper.StringPtrToPgText(&r.piiEncryptionKey),
-		GoogleEmail:   pgmapper.StringPtrToPgText(&googleConnectorRef),
+	// Encrypt the connector ref for searching (database stores encrypted values)
+	encryptedRef, err := pgmapper.EncryptPII(googleConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	query, err := r.queries.GetAuthenticationCredentialByGoogleConnectorRef(ctx, pgtype.Text{
+		String: encryptedRef,
+		Valid:  true,
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	// Decrypt PII fields
+	decryptedGoogleRef, err := pgmapper.DecryptPgTextToStringPtr(query.GoogleConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	githubConnectorRefDecrypted, err := pgmapper.DecryptPgTextToStringPtr(query.GithubConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
 	}
 
 	return &entity.AuthenticationCredential{
@@ -79,8 +112,8 @@ func (r *Repository) GetAuthenticationCredentialByGoogleConnectorRef(ctx context
 		HashedPassword:      pgmapper.PgTextToStringPtr(query.HashedPassword),
 		EncryptedPrivateKey: nil, // EncryptedPrivateKey is []byte, not decrypted - kept as nil for security
 		WalletAddress:       query.WalletAddress,
-		GoogleConnectorRef:  pgmapper.PgTextToStringPtr(query.GoogleConnectorRef),
-		GithubConnectorRef:  pgmapper.PgTextToStringPtr(query.GithubConnectorRef),
+		GoogleConnectorRef:  decryptedGoogleRef,
+		GithubConnectorRef:  githubConnectorRefDecrypted,
 		IsVerifiedOrganizer: query.IsVerifiedOrganizer == 1,
 		IsVerifiedStudent:   query.IsVerifiedStudent == 1,
 		CreatedAt:           query.CreatedAt.Time,
@@ -97,21 +130,41 @@ func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credent
 
 	logger := log.LoadLogger()
 	logger.Info("Creating authentication credential", "credential", credential)
-	logger.Info("Google Connector Ref", "google_connector_ref", *credential.GoogleConnectorRef)
+
+	// Encrypt PII fields
+	googleConnectorRefEncrypted, err := pgmapper.EncryptStringPtrToPgText(credential.GoogleConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	githubConnectorRefEncrypted, err := pgmapper.EncryptStringPtrToPgText(credential.GithubConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
 
 	query, err := r.queries.CreateAuthenticationCredential(ctx, generated.CreateAuthenticationCredentialParams{
 		SolutionStatus:      int32(credential.SolutionStatus),
 		WalletAddress:       credential.WalletAddress,
 		HashedPassword:      pgmapper.StringPtrToPgText(credential.HashedPassword),
 		EncryptedPrivateKey: encryptedPrivateKey,
-		GoogleConnectorRef:  pgmapper.StringPtrToPgText(credential.GoogleConnectorRef),
-		GithubConnectorRef:  pgmapper.StringPtrToPgText(credential.GithubConnectorRef),
+		GoogleConnectorRef:  googleConnectorRefEncrypted,
+		GithubConnectorRef:  githubConnectorRefEncrypted,
 		IsVerifiedOrganizer: pgmapper.BoolToInt32(credential.IsVerifiedOrganizer),
 		IsVerifiedStudent:   pgmapper.BoolToInt32(credential.IsVerifiedStudent),
-		EncryptionKey:       pgmapper.StringPtrToPgText(&r.piiEncryptionKey),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	// Decrypt PII fields for return
+	googleConnectorRefDecrypted, err := pgmapper.DecryptPgTextToStringPtr(query.GoogleConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	githubConnectorRefDecrypted, err := pgmapper.DecryptPgTextToStringPtr(query.GithubConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
 	}
 
 	return &entity.AuthenticationCredential{
@@ -120,8 +173,8 @@ func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credent
 		HashedPassword:      pgmapper.PgTextToStringPtr(query.HashedPassword),
 		EncryptedPrivateKey: nil, // Don't return encrypted private key for security
 		WalletAddress:       query.WalletAddress,
-		GoogleConnectorRef:  pgmapper.PgTextToStringPtr(query.GoogleConnectorRef),
-		GithubConnectorRef:  pgmapper.PgTextToStringPtr(query.GithubConnectorRef),
+		GoogleConnectorRef:  googleConnectorRefDecrypted,
+		GithubConnectorRef:  githubConnectorRefDecrypted,
 		IsVerifiedOrganizer: query.IsVerifiedOrganizer == 1,
 		IsVerifiedStudent:   query.IsVerifiedStudent == 1,
 		CreatedAt:           query.CreatedAt.Time,
@@ -136,20 +189,41 @@ func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id uuid
 		encryptedPrivateKey = []byte(*params.EncryptedPrivateKey)
 	}
 
+	// Encrypt PII fields
+	googleConnectorRefEncrypted, err := pgmapper.EncryptStringPtrToPgText(params.GoogleConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	githubConnectorRefEncrypted, err := pgmapper.EncryptStringPtrToPgText(params.GithubConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
 	query, err := r.queries.UpdateAuthenticationCredential(ctx, generated.UpdateAuthenticationCredentialParams{
 		ID:                  id,
 		SolutionStatus:      pgmapper.Int32ToPgInt4(int32(params.SolutionStatus)),
 		HashedPassword:      pgmapper.StringPtrToPgText(params.HashedPassword),
 		EncryptedPrivateKey: encryptedPrivateKey,
 		WalletAddress:       pgtype.Text{}, // WalletAddress is not updateable
-		GoogleConnectorRef:  pgmapper.StringPtrToPgText(params.GoogleConnectorRef),
-		EncryptionKey:       r.piiEncryptionKey,
-		GithubConnectorRef:  pgmapper.StringPtrToPgText(params.GithubConnectorRef),
+		GoogleConnectorRef:  googleConnectorRefEncrypted,
+		GithubConnectorRef:  githubConnectorRefEncrypted,
 		IsVerifiedOrganizer: pgmapper.BoolToPgInt4(params.IsVerifiedOrganizer),
 		IsVerifiedStudent:   pgmapper.BoolToPgInt4(params.IsVerifiedStudent),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	// Decrypt PII fields for return
+	googleConnectorRefDecrypted, err := pgmapper.DecryptPgTextToStringPtr(query.GoogleConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	githubConnectorRefDecrypted, err := pgmapper.DecryptPgTextToStringPtr(query.GithubConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
 	}
 
 	return &entity.AuthenticationCredential{
@@ -158,8 +232,8 @@ func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id uuid
 		HashedPassword:      pgmapper.PgTextToStringPtr(query.HashedPassword),
 		EncryptedPrivateKey: nil, // Don't return encrypted private key for security
 		WalletAddress:       query.WalletAddress,
-		GoogleConnectorRef:  pgmapper.PgTextToStringPtr(query.GoogleConnectorRef),
-		GithubConnectorRef:  pgmapper.PgTextToStringPtr(query.GithubConnectorRef),
+		GoogleConnectorRef:  googleConnectorRefDecrypted,
+		GithubConnectorRef:  githubConnectorRefDecrypted,
 		IsVerifiedOrganizer: query.IsVerifiedOrganizer == 1,
 		IsVerifiedStudent:   query.IsVerifiedStudent == 1,
 		CreatedAt:           query.CreatedAt.Time,
