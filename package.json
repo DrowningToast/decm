@@ -18,7 +18,7 @@
     "db:setup": "pnpm run db:start && pnpm run db:wait && pnpm run db:migrate",
     "db:start": "docker-compose -f docker-compose.isolated.yml up -d",
     "db:stop": "docker-compose -f docker-compose.isolated.yml down",
-    "db:wait": "pnpm run scripts/wait-for-db.js",
+    "db:wait": "node scripts/wait-for-db.js",
     "db:migrate": "node scripts/db-migrate.js",
     "db:migrate:down": "node scripts/db-command.js migrate down",
     "db:migrate:force": "node scripts/db-command.js migrate force",
