@@ -470,8 +470,19 @@
         "generic": "Something went wrong. Please try again.",
         "network": "Network error. Please check your connection.",
         "unauthorized": "You are not authorized to perform this action.",
+        "forbidden": "You are not authorized to perform this action.",
         "notFound": "The requested resource was not found.",
-        "serverError": "Server error. Please try again later."
+        "conflict": "The input already exists.",
+        "serverError": "Something went wrong. Please try again later.",
+        "invalidInput": "Invalid input",
+        "invalidInputDescription": "Please check your input and try again.",
+        "networkDescription": "Network error. Please check your connection.",
+        "unauthorizedDescription": "You are not authorized to perform this action.",
+        "notFoundDescription": "The requested resource was not found.",
+        "duplicateEntryDescription": "The input already exists.",
+        "internalServerErrorDescription": "Something went wrong. Please try again later.",
+        "internalClientErrorDescription": "Client error. Please try again later.",
+        "forbiddenDescription": "You are not authorized to perform this action."
     },
     "notFound": {
         "title": "404 - Page Not Found",
@@ -534,6 +545,31 @@
                     "acceptRisk": "I'm ok with that.",
                     "acknowledgePasswordLoss": "I acknowledged that losing my passcode/password will result in total account lost"
                 }
+            }
+        },
+        "flow": {
+            "check_onboard_status": {
+                "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
+                "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
+                "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
+            },
+            "oauth_google": {
+                "create_account_pending": "Authenticating with Google...",
+                "create_account_success": "Authenticated with Google successfully",
+                "create_account_error": "Failed to authenticate with Google",
+                "create_account_error_duplicate": "The account with this email already exists.",
+                "create_profile_pending": "Updating profile...",
+                "create_profile_success": "Profile updated successfully",
+                "create_profile_error_duplicate": "The profile with this email already exists.",
+                "create_profile_error": "Failed to update profile. Please try again later.",
+                "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
+                "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
+                "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
+            }
+        },
+        "api": {
+            "error": {
+                "authentication_credential_id_already_exists": "Authentication credential ID already exists"
             }
         }
     }

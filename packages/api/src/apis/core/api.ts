@@ -79,14 +79,15 @@ export interface OnboardGetRegisterSignMessageResponse {
   message?: string;
 }
 
+export interface OnboardRegisterResponse {
+  credential_id: string;
+  jwt: string;
+}
+
 export interface OnboardRegisterWithGoogleOAuthRequest {
   access_token?: string;
   /** @minLength 6 */
   password: string;
-}
-
-export interface OnboardRegisterWithGoogleOAuthResponse {
-  mnemonic?: string[];
 }
 
 export interface OnboardRegisterWithWalletRequest {
@@ -233,12 +234,11 @@ export interface ProfileUpdateProfileResponse {
   updated_at?: string;
 }
 
-export type RegisterWithGoogleOauthData =
-  OnboardRegisterWithGoogleOAuthResponse;
+export type RegisterWithGoogleOauthData = OnboardRegisterResponse;
 
 export type RegisterWithGoogleOauthError = CustomerrorErrResponse;
 
-export type RegisterWithWalletData = any;
+export type RegisterWithWalletData = OnboardRegisterResponse;
 
 export type RegisterWithWalletError = CustomerrorErrResponse;
 
@@ -569,12 +569,14 @@ export class Api<SecurityDataType extends unknown> {
         method: "POST",
         body: signed_message,
         type: ContentType.Json,
+        format: "json",
         ...params,
       }),
 
     /**
      * @description Retrieve preset message for the client to sign to register
      *
+     * @tags Onboard
      * @name GetRegisterSignMessage
      * @summary Get preset message for the client to sign to register
      * @request GET:/api/v1/onboard/sign-message

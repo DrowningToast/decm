@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -16,6 +17,8 @@ const buttonVariants = cva(
           "bg-secondary-foreground text-foreground rounded-[12px] text-base font-normal [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:bg-secondary-foreground/90 tracking-[0.06px]",
         "secondary-light":
           "bg-secondary text-secondary-foreground rounded-[12px] text-base font-medium hover:bg-secondary/90 tracking-[0.06px]",
+        "ghost":
+          "bg-transparent text-foreground rounded-[12px] text-base font-medium hover:bg-transparent/90 tracking-[0.06px]",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
@@ -37,19 +40,33 @@ function Button({
   variant,
   size,
   asChild = false,
+  loading = false,
+  disabled,
+  children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    loading?: boolean
   }) {
   const Comp = asChild ? Slot : "button"
+
+  // Disabled state takes priority over loading state
+  const isDisabled = disabled || (!disabled && loading)
+  const showLoadingSpinner = loading && !disabled
 
   return (
     <Comp
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      disabled={isDisabled}
       {...props}
-    />
+    >
+      {showLoadingSpinner && (
+        <Loader2 className="animate-spin" />
+      )}
+      {children}
+    </Comp>
   )
 }
 

@@ -1,0 +1,555 @@
+---
+description: "Comprehensive error handling patterns for Go backend and TypeScript frontend"
+---
+
+# Error Handling Patterns
+
+## Overview
+DECM uses a unified error handling approach across backend and frontend with custom error types, consistent error responses, and user-friendly error messages.
+
+## Backend Error Handling (Go)
+
+### Custom Error Package
+Location: [apps/backend/common/customerror/](mdc:apps/backend/common/customerror/)
+
+### Core Error Type
+
+```go
+import "decm-backend/common/customerror"
+
+type Err struct {
+    Status  int         `json:"status"`
+    Message string      `json:"message"`
+    Details interface{} `json:"details,omitempty"`
+    Err     error       `json:"-"`
+}
+```
+
+### Creating Errors
+
+#### Standard Error:
+```go
+err := customerror.New(
+    customerror.StatusBadRequest,      // HTTP status code
+    "User-friendly error message",      // Client message
+    underlyingError,                    // Original error (internal)
+)
+```
+
+#### Validation Error:
+```go
+// Automatically formats validation errors
+err := customerror.NewValidationErr(validationErr)
+
+// Returns structured validation details:
+// {
+//   "status": 400,
+//   "message": "Validation failed",
+//   "details": {
+//     "field": "email",
+//     "error": "required field missing"
+//   }
+// }
+```
+
+### Status Codes Constants
+
+```go
+customerror.StatusOK                  // 200
+customerror.StatusBadRequest          // 400
+customerror.StatusUnauthorized        // 401
+customerror.StatusForbidden           // 403
+customerror.StatusNotFound            // 404
+customerror.StatusConflict            // 409
+customerror.StatusInternalServerError // 500
+```
+
+### Handler Layer Error Patterns
+
+```go
+func (h *Handler) HandleAction(ctx *fiber.Ctx) error {
+    // 1. Parse request body
+    req := RequestStruct{}
+    if err := ctx.BodyParser(&req); err != nil {
+        return customerror.New(
+            customerror.StatusBadRequest,
+            "Invalid request format",
+            err,
+        )
+    }
+
+    // 2. Validate request
+    if err := validatorutils.Validate(&req); err != nil {
+        return customerror.NewValidationErr(err)
+    }
+
+    // 3. Call usecase (errors already wrapped)
+    result, err := h.UseCase.DoAction(ctx.Context(), req)
+    if err != nil {
+        return err // Already a customerror
+    }
+
+    // 4. Success response
+    return ctx.Status(fiber.StatusOK).JSON(result)
+}
+```
+
+### UseCase Layer Error Patterns
+
+```go
+func (uc *UseCase) DoAction(ctx context.Context, input InputDTO) (*OutputDTO, error) {
+    // Business rule validation
+    if !input.IsValid() {
+        return nil, customerror.New(
+            customerror.StatusBadRequest,
+            "Invalid input data",
+            fmt.Errorf("validation failed: %v", input),
+        )
+    }
+
+    // Resource not found
+    entity, err := uc.Repo.GetEntity(ctx, input.ID)
+    if err != nil {
+        return nil, err // Repository already wrapped it
+    }
+
+    // Business logic error
+    if !entity.CanPerformAction() {
+        return nil, customerror.New(
+            customerror.StatusForbidden,
+            "You don't have permission to perform this action",
+            nil,
+        )
+    }
+
+    // Conflict error
+    if entity.IsLocked() {
+        return nil, customerror.New(
+            customerror.StatusConflict,
+            "Resource is currently locked",
+            nil,
+        )
+    }
+
+    return &OutputDTO{}, nil
+}
+```
+
+### Repository Layer Error Patterns
+
+```go
+import (
+    "decm-backend/common/customerror"
+    "decm-backend/common/pgerrutils"
+    "github.com/jackc/pgx/v5"
+)
+
+func (r *Repository) GetEntity(ctx context.Context, id uuid.UUID) (*Entity, error) {
+    dbEntity, err := r.Queries.GetEntityByID(ctx, id)
+    if err != nil {
+        // Handle specific Postgres error
+        if errors.Is(err, pgx.ErrNoRows) {
+            return nil, customerror.New(
+                customerror.StatusNotFound,
+                "Entity not found",
+                err,
+            )
+        }
+        
+        // Use pgerrutils for other Postgres errors
+        return nil, pgerrutils.HandlePostgresError(err)
+    }
+
+    return r.mapToEntity(dbEntity), nil
+}
+
+func (r *Repository) CreateEntity(ctx context.Context, entity *Entity) error {
+    err := r.Queries.CreateEntity(ctx, /* params */)
+    if err != nil {
+        // Automatically handles:
+        // - Unique violations → 409 Conflict
+        // - Foreign key violations → 400 Bad Request
+        // - Check violations → 400 Bad Request
+        // - Other errors → 500 Internal Server Error
+        return pgerrutils.HandlePostgresError(err)
+    }
+    return nil
+}
+```
+
+### Postgres Error Utilities
+
+```go
+import "decm-backend/common/pgerrutils"
+
+// Automatically maps Postgres errors to HTTP status codes
+err := pgerrutils.HandlePostgresError(pgErr)
+
+// Handles:
+// - 23505 (unique_violation)      → 409 Conflict
+// - 23503 (foreign_key_violation) → 400 Bad Request
+// - 23514 (check_violation)       → 400 Bad Request
+// - Others                        → 500 Internal Server Error
+```
+
+### Error Response Format
+
+All errors are automatically formatted by Fiber error handler:
+
+```json
+{
+  "status": 400,
+  "message": "Validation failed",
+  "details": {
+    "field": "email",
+    "error": "must be a valid email"
+  }
+}
+```
+
+### Fiber Error Handler Setup
+
+```go
+// In cmd/main.go
+app := fiber.New(fiber.Config{
+    ErrorHandler: customerror.FiberErrorHandler,
+})
+```
+
+The error handler automatically:
+- Converts customerror.Err to JSON
+- Logs internal errors
+- Hides sensitive error details from clients
+- Returns appropriate HTTP status codes
+
+## Frontend Error Handling (TypeScript/React)
+
+### API Error Handling
+
+```typescript
+import { DefaultApi } from '@decm/api';
+import { AxiosError } from 'axios';
+
+interface ErrorResponse {
+  status: number;
+  message: string;
+  details?: any;
+}
+
+async function callAPI() {
+  const api = new DefaultApi({
+    basePath: 'http://localhost:8080/api/v1',
+    withCredentials: true,
+  });
+
+  try {
+    const response = await api.someEndpoint();
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      const errData = error.response.data as ErrorResponse;
+      
+      // Handle specific status codes
+      switch (errData.status) {
+        case 400:
+          console.error('Validation error:', errData.message);
+          // Show validation errors to user
+          break;
+        case 401:
+          console.error('Unauthorized - redirect to login');
+          // Redirect to login page
+          break;
+        case 403:
+          console.error('Forbidden:', errData.message);
+          // Show access denied message
+          break;
+        case 404:
+          console.error('Not found:', errData.message);
+          // Show not found message
+          break;
+        case 409:
+          console.error('Conflict:', errData.message);
+          // Show conflict message (e.g., "Email already exists")
+          break;
+        case 500:
+          console.error('Server error:', errData.message);
+          // Show generic error message
+          break;
+        default:
+          console.error('Unknown error:', errData.message);
+      }
+      
+      // Return error details for component to handle
+      return {
+        error: true,
+        status: errData.status,
+        message: errData.message,
+        details: errData.details,
+      };
+    }
+    
+    // Network or unknown error
+    console.error('Network error:', error);
+    return {
+      error: true,
+      status: 0,
+      message: 'Network error. Please try again.',
+    };
+  }
+}
+```
+
+### React Hook Error Pattern
+
+```typescript
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+export const useApiCall = () => {
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const executeCall = async <T,>(
+    apiCall: () => Promise<T>
+  ): Promise<T | null> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await apiCall();
+      return result;
+    } catch (err) {
+      if (err instanceof AxiosError && err.response) {
+        const errData = err.response.data as ErrorResponse;
+        
+        // Use i18n for error messages
+        const errorMessage = 
+          errData.status === 400 ? t('errors.validation') :
+          errData.status === 401 ? t('errors.unauthorized') :
+          errData.status === 403 ? t('errors.forbidden') :
+          errData.status === 404 ? t('errors.notFound') :
+          errData.status === 409 ? t('errors.conflict') :
+          t('errors.serverError');
+        
+        setError(errorMessage);
+      } else {
+        setError(t('errors.network'));
+      }
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { executeCall, loading, error };
+};
+```
+
+### Component Error Display
+
+```typescript
+import { Typography } from '@/components/typography/typography';
+import { useTranslation } from 'react-i18next';
+
+export const MyComponent = () => {
+  const { t } = useTranslation();
+  const { executeCall, loading, error } = useApiCall();
+
+  const handleSubmit = async () => {
+    const result = await executeCall(() => api.submitData(data));
+    if (result) {
+      // Success
+    }
+  };
+
+  return (
+    <div>
+      {error && (
+        <div className="bg-destructive/10 border border-destructive rounded p-4">
+          <Typography variant="text" tag="p" className="text-destructive">
+            {error}
+          </Typography>
+        </div>
+      )}
+      
+      <button onClick={handleSubmit} disabled={loading}>
+        {loading ? t('common.loading') : t('common.submit')}
+      </button>
+    </div>
+  );
+};
+```
+
+### Toast Notifications for Errors
+
+```typescript
+import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
+
+export const useErrorToast = () => {
+  const { t } = useTranslation();
+
+  const showError = (error: AxiosError) => {
+    if (error.response) {
+      const errData = error.response.data as ErrorResponse;
+      toast.error(errData.message || t('errors.generic'));
+    } else {
+      toast.error(t('errors.network'));
+    }
+  };
+
+  const showSuccess = (message: string) => {
+    toast.success(message);
+  };
+
+  return { showError, showSuccess };
+};
+```
+
+## Error Translation (i18n)
+
+### Error Messages in Translation Files
+
+**English** (`apps/web/src/lib/i18n/locales/en.json`):
+```json
+{
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "You are not authorized. Please sign in.",
+    "forbidden": "You don't have permission to perform this action.",
+    "notFound": "The requested resource was not found.",
+    "conflict": "This action conflicts with existing data.",
+    "validation": "Please check your input and try again.",
+    "serverError": "Server error. Please try again later."
+  }
+}
+```
+
+**Thai** (`apps/web/src/lib/i18n/locales/th.json`):
+```json
+{
+  "errors": {
+    "generic": "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+    "network": "ข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อ",
+    "unauthorized": "คุณไม่ได้รับอนุญาต กรุณาเข้าสู่ระบบ",
+    "forbidden": "คุณไม่มีสิทธิ์ดำเนินการนี้",
+    "notFound": "ไม่พบข้อมูลที่ร้องขอ",
+    "conflict": "การดำเนินการนี้ขัดแย้งกับข้อมูลที่มีอยู่",
+    "validation": "กรุณาตรวจสอบข้อมูลและลองใหม่อีกครั้ง",
+    "serverError": "ข้อผิดพลาดเซิร์ฟเวอร์ กรุณาลองใหม่ภายหลัง"
+  }
+}
+```
+
+## Best Practices
+
+### ✅ DO (Backend):
+- Always use `customerror.New()` for creating errors
+- Use `customerror.NewValidationErr()` for validation errors
+- Use `pgerrutils.HandlePostgresError()` for database errors
+- Return user-friendly messages in error responses
+- Log internal errors with full context
+- Use appropriate HTTP status codes
+- Keep sensitive information in `Err` field (not sent to client)
+
+### ✅ DO (Frontend):
+- Always handle axios errors with try/catch
+- Check for `AxiosError` type and response existence
+- Display user-friendly error messages
+- Use i18n for all error messages
+- Show loading states during async operations
+- Disable buttons while loading
+- Clear previous errors before new requests
+
+### ❌ DON'T:
+- Return raw errors to clients
+- Expose internal error details (stack traces, database errors)
+- Use generic "error" messages without context
+- Ignore errors or fail silently
+- Hard-code error messages
+- Mix error handling patterns
+- Skip error logging
+- Return 500 for client errors
+- Show technical errors to end users
+
+## Common Error Scenarios
+
+### 1. Validation Errors
+**Backend**:
+```go
+if err := validatorutils.Validate(&req); err != nil {
+    return customerror.NewValidationErr(err)
+}
+```
+
+**Frontend**:
+```typescript
+if (error.status === 400) {
+  // Show field-specific validation errors
+  setFieldError(error.details.field, error.details.error);
+}
+```
+
+### 2. Authentication Errors
+**Backend**:
+```go
+if !authenticated {
+    return customerror.New(
+        customerror.StatusUnauthorized,
+        "Please sign in to continue",
+        nil,
+    )
+}
+```
+
+**Frontend**:
+```typescript
+if (error.status === 401) {
+  // Redirect to login
+  navigate('/signin');
+}
+```
+
+### 3. Not Found Errors
+**Backend**:
+```go
+if errors.Is(err, pgx.ErrNoRows) {
+    return customerror.New(
+        customerror.StatusNotFound,
+        "User not found",
+        err,
+    )
+}
+```
+
+**Frontend**:
+```typescript
+if (error.status === 404) {
+  // Show not found message
+  toast.error(t('errors.notFound'));
+}
+```
+
+### 4. Conflict Errors
+**Backend**:
+```go
+// pgerrutils automatically handles unique violations
+return pgerrutils.HandlePostgresError(err)
+// Returns 409 with message "Resource already exists"
+```
+
+**Frontend**:
+```typescript
+if (error.status === 409) {
+  // Show conflict message
+  toast.error('Email already registered');
+}
+```
+
+## Related Documentation
+- Go backend architecture: See [go-backend-architecture.mdc](mdc:go-backend-architecture.mdc)
+- i18n translations: See workspace rule `i18n-translations`
+- Database security: See workspace rule `database-security`
+- Customer error package: [apps/backend/common/customerror/](mdc:apps/backend/common/customerror/)

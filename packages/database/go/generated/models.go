@@ -12,17 +12,19 @@ import (
 )
 
 type AuthenticationCredential struct {
-	ID                  uuid.UUID          `json:"id"`
-	SolutionStatus      int32              `json:"solution_status"`
-	HashedPassword      pgtype.Text        `json:"hashed_password"`
-	EncryptedPrivateKey pgtype.Text        `json:"encrypted_private_key"`
-	WalletAddress       string             `json:"wallet_address"`
-	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
-	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
-	IsVerifiedOrganizer int32              `json:"is_verified_organizer"`
-	IsVerifiedStudent   int32              `json:"is_verified_student"`
-	CreatedAt           pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	ID                     uuid.UUID          `json:"id"`
+	SolutionStatus         int32              `json:"solution_status"`
+	HashedPassword         pgtype.Text        `json:"hashed_password"`
+	EncryptedPrivateKey    []byte             `json:"encrypted_private_key"`
+	WalletAddress          string             `json:"wallet_address"`
+	GoogleConnectorRef     []byte             `json:"google_connector_ref"`
+	GoogleConnectorRefHash pgtype.Text        `json:"google_connector_ref_hash"`
+	GithubConnectorRef     []byte             `json:"github_connector_ref"`
+	GithubConnectorRefHash pgtype.Text        `json:"github_connector_ref_hash"`
+	IsVerifiedOrganizer    int32              `json:"is_verified_organizer"`
+	IsVerifiedStudent      int32              `json:"is_verified_student"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Event struct {
@@ -61,14 +63,14 @@ type EventAttendee struct {
 	AttendeeCredentialID uuid.UUID          `json:"attendee_credential_id"`
 	ContactAddress       string             `json:"contact_address"`
 	IsAttendeeAccepted   int32              `json:"is_attendee_accepted"`
-	FirstName            pgtype.Text        `json:"first_name"`
-	LastName             pgtype.Text        `json:"last_name"`
-	Email                pgtype.Text        `json:"email"`
-	Bio                  pgtype.Text        `json:"bio"`
-	PhoneNumber          pgtype.Text        `json:"phone_number"`
-	Address              pgtype.Text        `json:"address"`
-	AcademicInstitution  pgtype.Text        `json:"academic_institution"`
-	AcademicEmail        pgtype.Text        `json:"academic_email"`
+	FirstName            []byte             `json:"first_name"`
+	LastName             []byte             `json:"last_name"`
+	Email                []byte             `json:"email"`
+	Bio                  []byte             `json:"bio"`
+	PhoneNumber          []byte             `json:"phone_number"`
+	Address              []byte             `json:"address"`
+	AcademicInstitution  []byte             `json:"academic_institution"`
+	AcademicEmail        []byte             `json:"academic_email"`
 	CreatedAt            pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
 }
@@ -86,23 +88,24 @@ type Profile struct {
 	ID                          uuid.UUID          `json:"id"`
 	AuthenticationCredentialID  uuid.UUID          `json:"authentication_credential_id"`
 	IsProfilePicturePublic      int32              `json:"is_profile_picture_public"`
-	ProfilePictureUrl           pgtype.Text        `json:"profile_picture_url"`
+	ProfilePictureUrl           []byte             `json:"profile_picture_url"`
 	IsFirstNamePublic           int32              `json:"is_first_name_public"`
-	FirstName                   pgtype.Text        `json:"first_name"`
+	FirstName                   []byte             `json:"first_name"`
 	IsLastNamePublic            int32              `json:"is_last_name_public"`
-	LastName                    pgtype.Text        `json:"last_name"`
+	LastName                    []byte             `json:"last_name"`
 	IsEmailPublic               int32              `json:"is_email_public"`
-	Email                       pgtype.Text        `json:"email"`
+	Email                       []byte             `json:"email"`
+	EmailHash                   pgtype.Text        `json:"email_hash"`
 	IsBioPublic                 int32              `json:"is_bio_public"`
-	Bio                         pgtype.Text        `json:"bio"`
+	Bio                         []byte             `json:"bio"`
 	IsPhoneNumberPublic         int32              `json:"is_phone_number_public"`
-	PhoneNumber                 pgtype.Text        `json:"phone_number"`
+	PhoneNumber                 []byte             `json:"phone_number"`
 	IsAddressPublic             int32              `json:"is_address_public"`
-	Address                     pgtype.Text        `json:"address"`
+	Address                     []byte             `json:"address"`
 	IsAcademicInstitutionPublic int32              `json:"is_academic_institution_public"`
-	AcademicInstitution         pgtype.Text        `json:"academic_institution"`
+	AcademicInstitution         []byte             `json:"academic_institution"`
 	IsAcademicEmailPublic       int32              `json:"is_academic_email_public"`
-	AcademicEmail               pgtype.Text        `json:"academic_email"`
+	AcademicEmail               []byte             `json:"academic_email"`
 	CreatedAt                   pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                   pgtype.Timestamptz `json:"updated_at"`
 }

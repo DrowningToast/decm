@@ -1,0 +1,512 @@
+---
+description: "Environment configuration patterns and .env file management"
+---
+
+# Environment Configuration
+
+## Overview
+DECM uses environment variables for configuration across backend (Go), frontend (React), and database scripts (Node.js). Configuration is stored in `.env` files with `.env.example` templates.
+
+## Configuration Files
+
+### Root Level
+- `.env.example` - Template for environment variables
+- `.env` - Actual environment variables (gitignored)
+- `.env.local` - Local overrides (gitignored)
+
+### Workspace Specific
+Each app can have its own `.env`:
+- `apps/backend/.env` - Backend-specific config
+- `apps/web/.env` - Frontend-specific config
+- `packages/database/.env` - Database-specific config
+
+## Environment Variable Naming
+
+### Conventions:
+- **All caps with underscores**: `DATABASE_URL`
+- **Prefix by context**: 
+  - Backend: `API_`, `JWT_`, `GOOGLE_OAUTH_`
+  - Frontend: `VITE_` (required for Vite)
+  - Database: `DATABASE_`, `POSTGRES_`
+- **Descriptive names**: `JWT_SECRET_KEY` not `JWT_KEY`
+
+## Backend Configuration (Go)
+
+### Configuration Structure
+Location: [apps/backend/core-api/config/](mdc:apps/backend/core-api/config/)
+
+**Main Config** (`config.go`):
+```go
+package config
+
+import (
+    "os"
+    "github.com/joho/godotenv"
+)
+
+type Config struct {
+    Environment      string
+    Port             string
+    Postgres         PostgresConfig
+    Google           GoogleOAuthConfig
+    JWT              JWTConfig
+    EncryptionKey    string
+    FrontendURL      string
+}
+
+func LoadConfig() *Config {
+    // Load .env file
+    godotenv.Load()
+
+    return &Config{
+        Environment:   getEnv("ENVIRONMENT", "development"),
+        Port:          getEnv("PORT", "8080"),
+        Postgres:      LoadPostgresConfig(),
+        Google:        LoadGoogleOAuthConfig(),
+        JWT:           LoadJWTConfig(),
+        EncryptionKey: getEnv("ENCRYPTION_KEY", ""),
+        FrontendURL:   getEnv("FRONTEND_URL", "http://localhost:3000"),
+    }
+}
+
+func getEnv(key, defaultValue string) string {
+    if value := os.Getenv(key); value != "" {
+        return value
+    }
+    return defaultValue
+}
+```
+
+**Postgres Config** (`postgres/config.go`):
+```go
+package config
+
+type PostgresConfig struct {
+    Host     string
+    Port     string
+    User     string
+    Password string
+    Database string
+    SSLMode  string
+}
+
+func LoadPostgresConfig() PostgresConfig {
+    return PostgresConfig{
+        Host:     getEnv("POSTGRES_HOST", "localhost"),
+        Port:     getEnv("POSTGRES_PORT", "5432"),
+        User:     getEnv("POSTGRES_USER", "postgres"),
+        Password: getEnv("POSTGRES_PASSWORD", ""),
+        Database: getEnv("POSTGRES_DATABASE", "decm"),
+        SSLMode:  getEnv("POSTGRES_SSLMODE", "disable"),
+    }
+}
+
+func (c PostgresConfig) ConnectionString() string {
+    return fmt.Sprintf(
+        "host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+        c.Host, c.Port, c.User, c.Password, c.Database, c.SSLMode,
+    )
+}
+```
+
+**Google OAuth Config** (`google/config.go`):
+```go
+package config
+
+type GoogleOAuthConfig struct {
+    ClientID     string
+    ClientSecret string
+    RedirectURL  string
+}
+
+func LoadGoogleOAuthConfig() GoogleOAuthConfig {
+    return GoogleOAuthConfig{
+        ClientID:     getEnv("GOOGLE_OAUTH_CLIENT_ID", ""),
+        ClientSecret: getEnv("GOOGLE_OAUTH_CLIENT_SECRET", ""),
+        RedirectURL:  getEnv("GOOGLE_OAUTH_REDIRECT_URL", ""),
+    }
+}
+```
+
+### Usage in Backend:
+```go
+// In cmd/main.go
+func main() {
+    cfg := config.LoadConfig()
+    
+    // Use config
+    pool := pgclient.NewPool(cfg.Postgres)
+    
+    app := fiber.New()
+    app.Listen(":" + cfg.Port)
+}
+```
+
+## Frontend Configuration (React + Vite)
+
+### Vite Environment Variables
+
+**IMPORTANT**: All frontend env vars MUST be prefixed with `VITE_`
+
+**Config** (`apps/web/src/config/config.ts`):
+```typescript
+export const config = {
+  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1',
+  frontendUrl: import.meta.env.VITE_FRONTEND_URL || 'http://localhost:3000',
+  googleOAuthClientId: import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID || '',
+  environment: import.meta.env.VITE_ENVIRONMENT || 'development',
+  
+  // Smart contract addresses
+  contracts: {
+    accessManager: import.meta.env.VITE_ACCESS_MANAGER_ADDRESS || '',
+    eventTicket: import.meta.env.VITE_EVENT_TICKET_ADDRESS || '',
+    eventCertificate: import.meta.env.VITE_EVENT_CERTIFICATE_ADDRESS || '',
+  },
+  
+  // Blockchain config
+  blockchain: {
+    rpcUrl: import.meta.env.VITE_RPC_URL || 'http://localhost:8545',
+    chainId: parseInt(import.meta.env.VITE_CHAIN_ID || '31337'),
+  },
+} as const;
+
+// Type-safe environment check
+export const isDevelopment = config.environment === 'development';
+export const isProduction = config.environment === 'production';
+```
+
+### TypeScript Type Definitions
+
+**vite-env.d.ts**:
+```typescript
+/// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+  readonly VITE_API_URL: string;
+  readonly VITE_FRONTEND_URL: string;
+  readonly VITE_GOOGLE_OAUTH_CLIENT_ID: string;
+  readonly VITE_ENVIRONMENT: string;
+  readonly VITE_ACCESS_MANAGER_ADDRESS: string;
+  readonly VITE_EVENT_TICKET_ADDRESS: string;
+  readonly VITE_EVENT_CERTIFICATE_ADDRESS: string;
+  readonly VITE_RPC_URL: string;
+  readonly VITE_CHAIN_ID: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+```
+
+### Usage in Frontend:
+```typescript
+import { config } from '@/config/config';
+
+// API client setup
+const api = new DefaultApi({
+  basePath: config.apiUrl,
+  withCredentials: true,
+});
+
+// Contract interaction
+const contractConfig = {
+  address: config.contracts.eventTicket,
+  abi: EventTicketABI,
+};
+```
+
+## Database Scripts Configuration (Node.js)
+
+### Environment Loading
+Location: [scripts/db-env.js](mdc:scripts/db-env.js)
+
+```javascript
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load .env from root
+dotenv.config({ path: join(__dirname, '..', '.env') });
+
+export const dbConfig = {
+  host: process.env.POSTGRES_HOST || 'localhost',
+  port: parseInt(process.env.POSTGRES_PORT || '5432'),
+  user: process.env.POSTGRES_USER || 'postgres',
+  password: process.env.POSTGRES_PASSWORD || '',
+  database: process.env.POSTGRES_DATABASE || 'decm',
+};
+
+export const getConnectionString = () => {
+  return `postgresql://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`;
+};
+```
+
+### Usage in Scripts:
+```javascript
+import { dbConfig, getConnectionString } from './db-env.js';
+
+// Use in migration scripts
+const client = new Client({
+  connectionString: getConnectionString(),
+});
+
+await client.connect();
+```
+
+## .env.example Template
+
+**Root `.env.example`**:
+```bash
+# Environment
+ENVIRONMENT=development
+
+# Backend API
+PORT=8080
+FRONTEND_URL=http://localhost:3000
+
+# Database
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_password_here
+POSTGRES_DATABASE=decm
+POSTGRES_SSLMODE=disable
+
+# JWT Authentication
+JWT_SECRET_KEY=your_jwt_secret_key_here
+JWT_EXPIRATION_HOURS=24
+
+# Encryption
+ENCRYPTION_KEY=your_encryption_key_here
+
+# Google OAuth
+GOOGLE_OAUTH_CLIENT_ID=your_google_client_id_here
+GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret_here
+GOOGLE_OAUTH_REDIRECT_URL=http://localhost:8080/api/v1/auth/google/callback
+
+# Frontend (Vite - must be prefixed with VITE_)
+VITE_API_URL=http://localhost:8080/api/v1
+VITE_FRONTEND_URL=http://localhost:3000
+VITE_GOOGLE_OAUTH_CLIENT_ID=your_google_client_id_here
+VITE_ENVIRONMENT=development
+
+# Smart Contracts
+VITE_ACCESS_MANAGER_ADDRESS=0x...
+VITE_EVENT_TICKET_ADDRESS=0x...
+VITE_EVENT_CERTIFICATE_ADDRESS=0x...
+
+# Blockchain
+VITE_RPC_URL=http://localhost:8545
+VITE_CHAIN_ID=31337
+
+# Production Database (for reference)
+# DATABASE_URL=postgresql://user:password@host:5432/decm
+```
+
+## Environment-Specific Configs
+
+### Development:
+```bash
+ENVIRONMENT=development
+POSTGRES_HOST=localhost
+VITE_API_URL=http://localhost:8080/api/v1
+```
+
+### Staging:
+```bash
+ENVIRONMENT=staging
+POSTGRES_HOST=staging-db.example.com
+VITE_API_URL=https://staging-api.decm.com/api/v1
+```
+
+### Production:
+```bash
+ENVIRONMENT=production
+POSTGRES_HOST=prod-db.example.com
+POSTGRES_SSLMODE=require
+VITE_API_URL=https://api.decm.com/api/v1
+```
+
+## Docker Compose Configuration
+
+**docker-compose.isolated.yml**:
+```yaml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DATABASE:-decm}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+```
+
+**Usage**:
+```bash
+# Uses .env automatically
+pnpm compose:up
+```
+
+## Validation
+
+### Backend Validation:
+```go
+func (c *Config) Validate() error {
+    if c.JWT.SecretKey == "" {
+        return fmt.Errorf("JWT_SECRET_KEY is required")
+    }
+    if c.EncryptionKey == "" {
+        return fmt.Errorf("ENCRYPTION_KEY is required")
+    }
+    if c.Postgres.Password == "" {
+        return fmt.Errorf("POSTGRES_PASSWORD is required")
+    }
+    return nil
+}
+
+func main() {
+    cfg := config.LoadConfig()
+    if err := cfg.Validate(); err != nil {
+        log.Fatalf("Configuration error: %v", err)
+    }
+}
+```
+
+### Frontend Validation:
+```typescript
+export function validateConfig() {
+  const required = [
+    'VITE_API_URL',
+    'VITE_GOOGLE_OAUTH_CLIENT_ID',
+  ];
+
+  const missing = required.filter(
+    (key) => !import.meta.env[key]
+  );
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required environment variables: ${missing.join(', ')}`
+    );
+  }
+}
+
+// Call at app startup
+validateConfig();
+```
+
+## Security Best Practices
+
+### ✅ DO:
+- Use `.env.example` as a template (committed to git)
+- Keep `.env` in `.gitignore`
+- Use strong random values for secrets
+- Validate required variables at startup
+- Use different values for dev/staging/prod
+- Rotate secrets regularly
+- Use environment-specific configs
+- Document all variables in `.env.example`
+
+### ❌ DON'T:
+- Commit `.env` files to git
+- Hard-code secrets in source code
+- Share secrets via email/chat
+- Use production secrets in development
+- Store secrets in frontend code
+- Use weak/default passwords
+- Skip validation
+- Leave placeholder values in production
+
+## Secret Generation
+
+```bash
+# Generate JWT secret (32 bytes)
+openssl rand -hex 32
+
+# Generate encryption key (32 bytes)
+openssl rand -hex 32
+
+# Generate random password
+openssl rand -base64 24
+```
+
+## Environment Loading Order
+
+### Backend (Go):
+1. OS environment variables
+2. `.env` file (via godotenv)
+3. Default values in code
+
+### Frontend (Vite):
+1. `.env.production` or `.env.development` (mode-specific)
+2. `.env.local` (local overrides)
+3. `.env` (general)
+4. Default values in code
+
+### Priority: OS env > .env files > defaults
+
+## CI/CD Configuration
+
+### GitHub Actions:
+```yaml
+env:
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: 5432
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+  JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+  ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+```
+
+### Store secrets in:
+- GitHub Secrets
+- AWS Secrets Manager
+- HashiCorp Vault
+- Environment-specific secret stores
+
+## Troubleshooting
+
+### Backend can't read .env:
+```bash
+# Ensure .env is in project root
+ls -la .env
+
+# Check godotenv import
+import "github.com/joho/godotenv"
+```
+
+### Frontend env vars not working:
+```bash
+# Ensure VITE_ prefix
+VITE_API_URL=...  # ✅ Works
+API_URL=...       # ❌ Won't work
+
+# Rebuild after changing .env
+pnpm dev
+```
+
+### Database connection fails:
+```bash
+# Verify .env values
+cat .env | grep POSTGRES
+
+# Test connection
+psql -h localhost -U postgres -d decm
+```
+
+## Related Documentation
+- Go backend architecture: See [go-backend-architecture.mdc](mdc:go-backend-architecture.mdc)
+- Database security: See workspace rule `database-security`
+- Development workflow: See workspace rule `development-workflow`
+- Vite env docs: https://vitejs.dev/guide/env-and-mode.html

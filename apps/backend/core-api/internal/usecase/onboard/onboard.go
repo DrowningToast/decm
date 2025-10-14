@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
-	"strings"
 	"time"
 
 	ethutils "github.com/ethereum/go-ethereum/crypto"
@@ -14,6 +13,7 @@ import (
 	customerror "apps/backend/common/customerror"
 	"apps/backend/common/encryptutils"
 	"apps/backend/common/hashutils"
+	"apps/backend/common/log"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/cyptoutils"
@@ -48,45 +48,45 @@ func (u *OnboardUsecase) GetRegisterSignMessage() string {
 }
 
 // Register authentication credential with wallet address, and generate JWT token
-func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMsg string) (*string, error) {
+func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMsg string) (*uuid.UUID, *string, error) {
 	walletAddress, err := cyptoutils.GetAddressFromSignedMessage(u.registerSignMessage, signedMsg)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, err)
+		return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
 	if walletAddress == (ethcommon.Address{}) {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid signed message"))
+		return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid signed message"))
 	}
 
 	isValid, errCode := common.ValidateEvmAddress(walletAddress.Hex())
 	if errCode != nil {
 		errCode := string(*errCode)
-		return nil, customerror.ParseWithMessage(&customerror.ErrInvalidArgument, errors.New("invalid wallet address"), errCode)
+		return nil, nil, customerror.ParseWithMessage(&customerror.ErrInvalidArgument, errors.New("invalid wallet address"), errCode)
 	}
 	if !isValid {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid wallet address"))
+		return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid wallet address"))
 	}
 
 	// Validate the signed message
 	address := ethcommon.HexToAddress(walletAddress.Hex())
 	result, err := cyptoutils.VerifySignedMessageByAddress(address, u.registerSignMessage, signedMsg)
 	if err != nil {
-		return nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "an error has occured while verifying signed message")
+		return nil, nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "an error has occured while verifying signed message")
 	}
 	if !result {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("verification failed"))
+		return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("verification failed"))
 	}
 
 	// Check for already existing wallet address
 	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialByWalletAddress(context.Background(), walletAddress.Hex())
 	if err == nil || credential != nil {
-		return nil, customerror.Parse(&customerror.ErrDuplicateEntry, errors.New("wallet address already exists"))
+		return nil, nil, customerror.Parse(&customerror.ErrDuplicateEntry, errors.New("wallet address already exists"))
 	}
 
 	var cusErr *customerror.Err
 	if errors.As(err, &cusErr) {
 		if cusErr.Code != &customerror.ErrNotFound.Code {
-			return nil, cusErr.Extend("failed to check for existing wallet address")
+			return nil, nil, cusErr.Extend("failed to check for existing wallet address")
 		}
 	}
 
@@ -100,9 +100,9 @@ func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMs
 	if err != nil {
 		var cusErr *customerror.Err
 		if errors.As(err, &cusErr) {
-			return nil, cusErr.Extend("failed to create new credential")
+			return nil, nil, cusErr.Extend("failed to create new credential")
 		}
-		return nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "failed to create new credential")
+		return nil, nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "failed to create new credential")
 	}
 
 	sessionToken, err := u.authService.CreateToken(auth.JwtPayload{
@@ -110,14 +110,14 @@ func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMs
 		WalletAddress: credential.WalletAddress,
 	})
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	return &sessionToken, nil
+	return &credential.Id, &sessionToken, nil
 }
 
-// Register with Google OAuth token, return JWT token
-func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.Token, password string) (*string, []string, error) {
+// Register with credential id, return JWT token
+func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.Token, password string) (*uuid.UUID, *string, error) {
 	if password == "" {
 		return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("password is required"))
 	}
@@ -131,12 +131,15 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 		if errors.As(customerr, &customErr) {
 			return nil, nil, customErr.Extend("failed to get user info from google")
 		}
-		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, customerr)
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, customerr).Extend("failed to get user info from google")
 	}
 
 	// Look for duplicate credentials
 	// Must returns not found error
-	credential, customerr := u.AuthenticationCredentialDg.GetAuthenticationCredentialByGoogleConnectorRef(ctx, userInfo.Id)
+	credential, customerr := u.AuthenticationCredentialDg.GetAuthenticationCredentialByGoogleConnectorRef(ctx, userInfo.Email)
+	logger := log.LoadLogger()
+	logger.Info("Credential", "credential", credential)
+	logger.Info("Custom Error", "customerr", customerr)
 	var cusErr *customerror.Err
 	if !errors.As(customerr, &cusErr) {
 		return nil, nil, cusErr.Extend("failed to check for existing google connector ref")
@@ -207,7 +210,7 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 
 	// Create new credential
 	credential = &entity.AuthenticationCredential{
-		GoogleConnectorRef:  &userInfo.Id,
+		GoogleConnectorRef:  &userInfo.Email,
 		SolutionStatus:      entity.SolutionStatusManaged,
 		WalletAddress:       walletAddress.Hex(),
 		EncryptedPrivateKey: &encryptedPrivateKey,
@@ -230,7 +233,7 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	return &sessionToken, strings.Fields(*mnemonic), nil
+	return &credential.Id, &sessionToken, nil
 }
 
 func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Context, accessToken string, expiresIn int) (*uuid.UUID, *uuid.UUID, error) {
@@ -250,7 +253,7 @@ func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Co
 		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialByGoogleConnectorRef(ctx, userInfo.Id)
+	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialByGoogleConnectorRef(ctx, userInfo.Email)
 	if err != nil {
 		var notFoundErr *customerror.Err
 		if !errors.As(err, &notFoundErr) {

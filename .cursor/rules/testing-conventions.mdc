@@ -1,0 +1,684 @@
+---
+description: "Testing patterns and conventions for Go backend and TypeScript/React frontend"
+---
+
+# Testing Conventions
+
+## Overview
+DECM follows comprehensive testing practices across backend (Go) and frontend (TypeScript/React) to ensure code quality, reliability, and maintainability.
+
+## Backend Testing (Go)
+
+### Test File Structure
+
+**Naming Convention**:
+- Test files: `*_test.go`
+- Place in same directory as source file
+- One test file per source file
+
+**Example Structure**:
+```
+internal/usecase/auth/
+├── usecase.go
+├── usecase_test.go
+├── usecase_register.go
+└── usecase_register_test.go
+```
+
+### Test Package Naming
+
+```go
+// Option 1: Same package (white-box testing)
+package auth
+
+func TestRegisterUser(t *testing.T) {
+    // Can access private functions/variables
+}
+
+// Option 2: Separate test package (black-box testing)
+package auth_test
+
+import "decm-backend/internal/usecase/auth"
+
+func TestRegisterUser(t *testing.T) {
+    // Only access exported functions
+}
+```
+
+### Test Function Naming
+
+```go
+// Pattern: Test + FunctionName + Scenario
+func TestRegisterUser_Success(t *testing.T) {}
+func TestRegisterUser_InvalidEmail(t *testing.T) {}
+func TestRegisterUser_DuplicateEmail(t *testing.T) {}
+func TestVerifySignature_ValidSignature(t *testing.T) {}
+func TestVerifySignature_InvalidSignature(t *testing.T) {}
+```
+
+### Table-Driven Tests
+
+```go
+func TestValidateEmail(t *testing.T) {
+    tests := []struct {
+        name    string
+        email   string
+        wantErr bool
+    }{
+        {
+            name:    "valid email",
+            email:   "user@example.com",
+            wantErr: false,
+        },
+        {
+            name:    "invalid email - no @",
+            email:   "userexample.com",
+            wantErr: true,
+        },
+        {
+            name:    "invalid email - no domain",
+            email:   "user@",
+            wantErr: true,
+        },
+        {
+            name:    "empty email",
+            email:   "",
+            wantErr: true,
+        },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            err := ValidateEmail(tt.email)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("ValidateEmail() error = %v, wantErr %v", err, tt.wantErr)
+            }
+        })
+    }
+}
+```
+
+### Mocking Dependencies
+
+**Using Interfaces**:
+
+```go
+// Define interface
+type UserRepository interface {
+    GetByID(ctx context.Context, id uuid.UUID) (*User, error)
+    Create(ctx context.Context, user *User) error
+}
+
+// Mock implementation
+type MockUserRepository struct {
+    GetByIDFunc func(ctx context.Context, id uuid.UUID) (*User, error)
+    CreateFunc  func(ctx context.Context, user *User) error
+}
+
+func (m *MockUserRepository) GetByID(ctx context.Context, id uuid.UUID) (*User, error) {
+    if m.GetByIDFunc != nil {
+        return m.GetByIDFunc(ctx, id)
+    }
+    return nil, nil
+}
+
+func (m *MockUserRepository) Create(ctx context.Context, user *User) error {
+    if m.CreateFunc != nil {
+        return m.CreateFunc(ctx, user)
+    }
+    return nil
+}
+
+// Use in tests
+func TestUseCase_GetUser(t *testing.T) {
+    mockRepo := &MockUserRepository{
+        GetByIDFunc: func(ctx context.Context, id uuid.UUID) (*User, error) {
+            return &User{
+                ID:    id,
+                Email: "test@example.com",
+            }, nil
+        },
+    }
+
+    useCase := NewUseCase(mockRepo)
+    user, err := useCase.GetUser(context.Background(), uuid.New())
+
+    if err != nil {
+        t.Fatalf("expected no error, got %v", err)
+    }
+    if user.Email != "test@example.com" {
+        t.Errorf("expected email test@example.com, got %s", user.Email)
+    }
+}
+```
+
+### Testing HTTP Handlers
+
+```go
+import (
+    "bytes"
+    "encoding/json"
+    "net/http/httptest"
+    "testing"
+    
+    "github.com/gofiber/fiber/v2"
+    "github.com/stretchr/testify/assert"
+)
+
+func TestHandler_HandleRegister(t *testing.T) {
+    // Setup
+    app := fiber.New()
+    mockUseCase := &MockAuthUseCase{
+        RegisterFunc: func(ctx context.Context, req RegisterRequest) (*User, error) {
+            return &User{
+                ID:    uuid.New(),
+                Email: req.Email,
+            }, nil
+        },
+    }
+    handler := NewHandler(mockUseCase)
+    app.Post("/register", handler.HandleRegister)
+
+    // Prepare request
+    reqBody := RegisterRequest{
+        Email:    "test@example.com",
+        Password: "SecurePass123!",
+    }
+    body, _ := json.Marshal(reqBody)
+
+    // Create test request
+    req := httptest.NewRequest("POST", "/register", bytes.NewReader(body))
+    req.Header.Set("Content-Type", "application/json")
+
+    // Execute
+    resp, err := app.Test(req)
+
+    // Assert
+    assert.NoError(t, err)
+    assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+
+    // Parse response
+    var response RegisterResponse
+    json.NewDecoder(resp.Body).Decode(&response)
+    assert.Equal(t, "test@example.com", response.Email)
+}
+```
+
+### Testing Database Operations
+
+```go
+import (
+    "context"
+    "testing"
+    
+    "github.com/jackc/pgx/v5/pgxpool"
+    "github.com/testcontainers/testcontainers-go"
+    "github.com/testcontainers/testcontainers-go/wait"
+)
+
+func setupTestDB(t *testing.T) *pgxpool.Pool {
+    ctx := context.Background()
+
+    // Start PostgreSQL container
+    req := testcontainers.ContainerRequest{
+        Image:        "postgres:16-alpine",
+        ExposedPorts: []string{"5432/tcp"},
+        Env: map[string]string{
+            "POSTGRES_PASSWORD": "test",
+            "POSTGRES_DB":       "testdb",
+        },
+        WaitingFor: wait.ForLog("database system is ready to accept connections"),
+    }
+
+    container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+        ContainerRequest: req,
+        Started:          true,
+    })
+    if err != nil {
+        t.Fatal(err)
+    }
+
+    // Cleanup
+    t.Cleanup(func() {
+        container.Terminate(ctx)
+    })
+
+    // Get connection string
+    host, _ := container.Host(ctx)
+    port, _ := container.MappedPort(ctx, "5432")
+    connStr := fmt.Sprintf("postgres://postgres:test@%s:%s/testdb", host, port.Port())
+
+    // Connect
+    pool, err := pgxpool.New(ctx, connStr)
+    if err != nil {
+        t.Fatal(err)
+    }
+
+    // Run migrations
+    runMigrations(t, pool)
+
+    return pool
+}
+
+func TestRepository_CreateUser(t *testing.T) {
+    pool := setupTestDB(t)
+    defer pool.Close()
+
+    repo := NewRepository(database.New(pool))
+    user := &User{
+        ID:    uuid.New(),
+        Email: "test@example.com",
+    }
+
+    err := repo.CreateUser(context.Background(), user)
+    assert.NoError(t, err)
+
+    // Verify user was created
+    found, err := repo.GetByID(context.Background(), user.ID)
+    assert.NoError(t, err)
+    assert.Equal(t, user.Email, found.Email)
+}
+```
+
+### Test Assertions
+
+```go
+import (
+    "testing"
+    "github.com/stretchr/testify/assert"
+    "github.com/stretchr/testify/require"
+)
+
+func TestExample(t *testing.T) {
+    // Basic assertions
+    assert.Equal(t, expected, actual, "values should be equal")
+    assert.NotEqual(t, unexpected, actual, "values should not be equal")
+    assert.Nil(t, err, "error should be nil")
+    assert.NotNil(t, result, "result should not be nil")
+    assert.True(t, condition, "condition should be true")
+    assert.False(t, condition, "condition should be false")
+
+    // Require (stops test on failure)
+    require.NoError(t, err, "must not error")
+    require.NotNil(t, result, "result is required")
+
+    // Collections
+    assert.Contains(t, slice, element, "slice should contain element")
+    assert.Len(t, slice, 5, "slice should have length 5")
+    assert.Empty(t, slice, "slice should be empty")
+
+    // Errors
+    assert.Error(t, err, "should return an error")
+    assert.ErrorIs(t, err, ErrNotFound, "should be ErrNotFound")
+    assert.ErrorContains(t, err, "not found", "error should contain text")
+}
+```
+
+### Running Go Tests
+
+```bash
+# Run all tests
+go test ./...
+
+# Run tests with coverage
+go test -cover ./...
+
+# Run tests with verbose output
+go test -v ./...
+
+# Run specific test
+go test -run TestRegisterUser ./internal/usecase/auth
+
+# Run tests with race detector
+go test -race ./...
+
+# Generate coverage report
+go test -coverprofile=coverage.out ./...
+go tool cover -html=coverage.out
+```
+
+## Frontend Testing (TypeScript/React)
+
+### Test File Structure
+
+**Naming Convention**:
+- Unit tests: `*.test.ts` or `*.test.tsx`
+- Integration tests: `*.integration.test.tsx`
+- E2E tests: `*.e2e.test.ts`
+- Place next to source file
+
+**Example Structure**:
+```
+components/
+├── Button/
+│   ├── Button.tsx
+│   ├── Button.test.tsx
+│   └── Button.stories.tsx
+└── pages/
+    ├── LandingPage/
+    │   ├── LandingPage.tsx
+    │   └── LandingPage.test.tsx
+```
+
+### Unit Testing Components (Vitest + React Testing Library)
+
+**Setup** (`vite.config.ts`):
+```typescript
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts',
+  },
+});
+```
+
+**Test Setup** (`src/test/setup.ts`):
+```typescript
+import '@testing-library/jest-dom';
+import { afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
+
+// Cleanup after each test
+afterEach(() => {
+  cleanup();
+});
+```
+
+**Component Test Example**:
+```typescript
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Button } from './Button';
+
+describe('Button', () => {
+  it('renders button text', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeInTheDocument();
+  });
+
+  it('calls onClick when clicked', () => {
+    const handleClick = vi.fn();
+    render(<Button onClick={handleClick}>Click me</Button>);
+    
+    fireEvent.click(screen.getByText('Click me'));
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables button when disabled prop is true', () => {
+    render(<Button disabled>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeDisabled();
+  });
+
+  it('applies custom className', () => {
+    render(<Button className="custom-class">Click me</Button>);
+    expect(screen.getByText('Click me')).toHaveClass('custom-class');
+  });
+});
+```
+
+### Testing Hooks
+
+```typescript
+import { renderHook, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { useWalletAuth } from './useWalletAuth';
+
+// Mock wagmi hooks
+vi.mock('wagmi', () => ({
+  useAccount: () => ({ address: '0x123', isConnected: true }),
+  useSignMessage: () => ({
+    signMessageAsync: vi.fn().mockResolvedValue('0xsignature'),
+  }),
+}));
+
+describe('useWalletAuth', () => {
+  it('authenticates user successfully', async () => {
+    const { result } = renderHook(() => useWalletAuth());
+
+    await waitFor(() => {
+      expect(result.current.isAuthenticated).toBe(true);
+    });
+  });
+
+  it('handles authentication error', async () => {
+    // Mock error
+    vi.mocked(useSignMessage).mockReturnValue({
+      signMessageAsync: vi.fn().mockRejectedValue(new Error('User rejected')),
+    });
+
+    const { result } = renderHook(() => useWalletAuth());
+
+    await result.current.authenticate();
+
+    expect(result.current.error).toBeDefined();
+  });
+});
+```
+
+### Testing with API Mocks
+
+```typescript
+import { rest } from 'msw';
+import { setupServer } from 'msw/node';
+import { beforeAll, afterAll, afterEach } from 'vitest';
+
+// Setup mock API server
+const server = setupServer(
+  rest.post('/api/v1/auth/nonce', (req, res, ctx) => {
+    return res(ctx.json({ nonce: 'mock-nonce-123' }));
+  }),
+  rest.post('/api/v1/auth/verify', (req, res, ctx) => {
+    return res(ctx.json({
+      user_id: '123',
+      wallet_address: '0x123',
+    }));
+  })
+);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+describe('API Integration', () => {
+  it('fetches nonce successfully', async () => {
+    const response = await api.requestAuthNonce({
+      wallet_address: '0x123',
+    });
+
+    expect(response.data.nonce).toBe('mock-nonce-123');
+  });
+
+  it('handles API error', async () => {
+    server.use(
+      rest.post('/api/v1/auth/nonce', (req, res, ctx) => {
+        return res(ctx.status(400), ctx.json({
+          status: 400,
+          message: 'Invalid wallet address',
+        }));
+      })
+    );
+
+    await expect(
+      api.requestAuthNonce({ wallet_address: 'invalid' })
+    ).rejects.toThrow();
+  });
+});
+```
+
+### Testing Context Providers
+
+```typescript
+import { render, screen } from '@testing-library/react';
+import { AuthProvider, useAuth } from './AuthContext';
+
+const TestComponent = () => {
+  const { isAuthenticated, user } = useAuth();
+  return (
+    <div>
+      <p>{isAuthenticated ? 'Authenticated' : 'Not authenticated'}</p>
+      {user && <p>User: {user.email}</p>}
+    </div>
+  );
+};
+
+describe('AuthProvider', () => {
+  it('provides authentication state', () => {
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    expect(screen.getByText('Not authenticated')).toBeInTheDocument();
+  });
+});
+```
+
+### Running Frontend Tests
+
+```bash
+# Run all tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test:watch
+
+# Run tests with coverage
+pnpm test:coverage
+
+# Run specific test file
+pnpm test Button.test.tsx
+
+# Run tests with UI
+pnpm test:ui
+```
+
+## E2E Testing (Playwright)
+
+**Setup**:
+```bash
+pnpm add -D @playwright/test
+```
+
+**E2E Test Example**:
+```typescript
+import { test, expect } from '@playwright/test';
+
+test.describe('Authentication Flow', () => {
+  test('user can sign in with wallet', async ({ page }) => {
+    // Navigate to app
+    await page.goto('http://localhost:3000');
+
+    // Click connect wallet
+    await page.click('text=Connect Wallet');
+
+    // Select MetaMask
+    await page.click('text=MetaMask');
+
+    // Wait for wallet connection
+    await page.waitForSelector('text=0x', { timeout: 10000 });
+
+    // Verify connected
+    expect(await page.textContent('button')).toContain('0x');
+  });
+
+  test('displays error on failed authentication', async ({ page }) => {
+    await page.goto('http://localhost:3000/signin');
+
+    // Trigger auth without connecting wallet
+    await page.click('text=Sign In');
+
+    // Verify error message
+    await expect(page.locator('text=Please connect your wallet')).toBeVisible();
+  });
+});
+```
+
+## Best Practices
+
+### ✅ DO (Backend):
+- Write table-driven tests for multiple scenarios
+- Use testify/assert for cleaner assertions
+- Mock external dependencies (database, APIs)
+- Test error cases, not just happy paths
+- Use testcontainers for integration tests
+- Run tests with race detector
+- Aim for >80% code coverage
+- Test edge cases and boundary conditions
+
+### ✅ DO (Frontend):
+- Test user interactions, not implementation
+- Use React Testing Library queries (getByRole, getByText)
+- Mock API calls with MSW
+- Test accessibility (screen readers)
+- Test loading and error states
+- Use Playwright for critical user flows
+- Test with different viewport sizes
+- Verify i18n translations
+
+### ❌ DON'T:
+- Test implementation details
+- Skip error case tests
+- Write flaky tests
+- Use sleep/timeouts instead of waitFor
+- Test third-party libraries
+- Skip cleanup in tests
+- Ignore warnings in test output
+- Write tests that depend on execution order
+- Use snapshot testing for everything
+
+## Test Coverage Goals
+
+- **Backend**: Minimum 80% coverage
+- **Frontend**: Minimum 70% coverage
+- **Critical paths**: 100% coverage (auth, payments)
+- **Utilities**: 90%+ coverage
+
+## CI/CD Integration
+
+**GitHub Actions**:
+```yaml
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      - name: Run tests
+        run: |
+          cd apps/backend
+          go test -race -coverprofile=coverage.out ./...
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v3
+      - name: Install dependencies
+        run: pnpm install
+      - name: Run tests
+        run: pnpm test:coverage
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+```
+
+## Related Documentation
+- Go testing: https://pkg.go.dev/testing
+- React Testing Library: https://testing-library.com/react
+- Vitest: https://vitest.dev/
+- Playwright: https://playwright.dev/
+- MSW: https://mswjs.io/

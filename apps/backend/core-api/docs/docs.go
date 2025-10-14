@@ -20,6 +20,39 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/auth/logout": {
+            "post": {
+                "description": "Logout user by clearing session and OAuth cookies",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout",
+                "operationId": "logout",
+                "responses": {
+                    "200": {
+                        "description": "Successfully logged out",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/request-google-oauth": {
             "get": {
                 "description": "Request Google OAuth",
@@ -205,7 +238,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/onboard.registerWithGoogleOAuthResponse"
+                            "$ref": "#/definitions/onboard.registerResponse"
                         }
                     },
                     "400": {
@@ -244,7 +277,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/onboard.registerResponse"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -260,6 +296,9 @@ const docTemplate = `{
                 "description": "Retrieve preset message for the client to sign to register",
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Onboard"
                 ],
                 "summary": "Get preset message for the client to sign to register",
                 "operationId": "get-register-sign-message",
@@ -737,6 +776,21 @@ const docTemplate = `{
                 }
             }
         },
+        "onboard.registerResponse": {
+            "type": "object",
+            "required": [
+                "credential_id",
+                "jwt"
+            ],
+            "properties": {
+                "credential_id": {
+                    "type": "string"
+                },
+                "jwt": {
+                    "type": "string"
+                }
+            }
+        },
         "onboard.registerWithGoogleOAuthRequest": {
             "type": "object",
             "required": [
@@ -749,17 +803,6 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 6
-                }
-            }
-        },
-        "onboard.registerWithGoogleOAuthResponse": {
-            "type": "object",
-            "properties": {
-                "mnemonic": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 }
             }
         },

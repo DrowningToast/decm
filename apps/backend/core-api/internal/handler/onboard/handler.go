@@ -17,11 +17,17 @@ type Handler struct {
 	OnboardUc *usecase.OnboardUsecase
 }
 
-func NewHandler(onboardUc *usecase.OnboardUsecase) Handler {
+func NewHandler(onboardUc *usecase.OnboardUsecase, authService *auth.AuthService) Handler {
 	cfg := config.LoadConfig()
 
 	return Handler{
 		SessionExpiration: cfg.Jwt.Expiration,
+		AuthService:       authService,
 		OnboardUc:         onboardUc,
 	}
+}
+
+type registerResponse struct {
+	CredentialId string `json:"credential_id" validate:"required"`
+	Jwt          string `json:"jwt" validate:"required"`
 }
