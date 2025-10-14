@@ -17,6 +17,8 @@ interface WrappedInputProps<T extends FieldValues> {
     min?: number;
     max?: number;
     step?: number;
+    maxLength?: number;
+    showCharCount?: boolean;
 }
 
 export const WrappedInput = <T extends FieldValues>({
@@ -31,6 +33,8 @@ export const WrappedInput = <T extends FieldValues>({
     min,
     max,
     step,
+    maxLength,
+    showCharCount = false,
 }: WrappedInputProps<T>) => {
     const { t } = useTranslation();
 
@@ -38,48 +42,70 @@ export const WrappedInput = <T extends FieldValues>({
         <Controller
             name={name}
             control={control}
-            render={({ field, fieldState: { error } }) => (
-                <div className="space-y-2">
-                    <Label htmlFor={name}>
-                        <Typography variant="text" tag="span" className="text-sm font-medium">
-                            {label}
-                        </Typography>
-                        {required && <span className="text-destructive ml-1">*</span>}
-                    </Label>
-                    <Input
-                        {...field}
-                        id={name}
-                        type={type}
-                        placeholder={placeholder}
-                        disabled={disabled}
-                        aria-invalid={!!error}
-                        className={`!border !border-[#D9D9D91A] ${className}`}
-                        min={min}
-                        max={max}
-                        step={step}
-                        value={field.value ?? ""}
-                        onChange={(e) => {
-                            if (type === "number") {
-                                field.onChange(
-                                    e.target.value === "" ? undefined : Number(e.target.value),
-                                );
-                            } else {
-                                field.onChange(e.target.value);
-                            }
-                        }}
-                    />
-                    {error && (
-                        <Typography
-                            variant="text"
-                            tag="p"
-                            className="text-sm text-destructive"
-                            role="alert"
-                        >
-                            {t(error.message as string)}
-                        </Typography>
-                    )}
-                </div>
-            )}
+            render={({ field, fieldState: { error } }) => {
+                const currentLength = String(field.value ?? "").length;
+                const isNearLimit = maxLength && currentLength > maxLength * 0.8;
+                const isOverLimit = maxLength && currentLength > maxLength;
+
+                return (
+                    <div className="space-y-2">
+                        <Label htmlFor={name}>
+                            <Typography variant="text" tag="span" className="text-sm font-medium">
+                                {label}
+                            </Typography>
+                            {required && <span className="text-destructive ml-1">*</span>}
+                        </Label>
+                        <Input
+                            {...field}
+                            id={name}
+                            type={type}
+                            placeholder={placeholder}
+                            disabled={disabled}
+                            aria-invalid={!!error}
+                            className={`!border !border-[#D9D9D91A] ${className}`}
+                            min={min}
+                            max={max}
+                            step={step}
+                            maxLength={maxLength}
+                            value={field.value ?? ""}
+                            onChange={(e) => {
+                                if (type === "number") {
+                                    field.onChange(
+                                        e.target.value === "" ? undefined : Number(e.target.value),
+                                    );
+                                } else {
+                                    field.onChange(e.target.value);
+                                }
+                            }}
+                        />
+                        {error && (
+                            <Typography
+                                variant="text"
+                                tag="p"
+                                className="text-sm text-destructive"
+                                role="alert"
+                            >
+                                {t(error.message as string)}
+                            </Typography>
+                        )}
+                        {showCharCount && maxLength && (
+                            <Typography
+                                variant="text"
+                                tag="p"
+                                className={`text-xs text-right ${
+                                    isOverLimit
+                                        ? "text-destructive font-medium"
+                                        : isNearLimit
+                                          ? "text-yellow-600 dark:text-yellow-500"
+                                          : "text-muted-foreground"
+                                }`}
+                            >
+                                {currentLength} / {maxLength} {t("common.characters")}
+                            </Typography>
+                        )}
+                    </div>
+                );
+            }}
         />
     );
 };

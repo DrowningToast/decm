@@ -48,6 +48,7 @@ export const EventForm = ({
         resolver: zodResolver(eventFormSchema),
         defaultValues: {
             name: defaultValues?.name || "",
+            shortDescription: defaultValues?.shortDescription || "",
             description: defaultValues?.description || "",
             eventBanner: defaultValues?.eventBanner || undefined,
             eventIcon: defaultValues?.eventIcon || undefined,
@@ -73,6 +74,7 @@ export const EventForm = ({
         if (currentStep === 1) {
             fieldsToValidate.push(
                 "name",
+                "shortDescription",
                 "description",
                 "eventBanner",
                 "eventIcon",
@@ -185,6 +187,18 @@ export const EventForm = ({
                         disabled={isLoading}
                     />
 
+                    {/* Short Description */}
+                    <WrappedInput
+                        name="shortDescription"
+                        control={control}
+                        label={t("events.form.shortDescription")}
+                        placeholder={t("events.form.shortDescriptionPlaceholder")}
+                        required
+                        disabled={isLoading}
+                        maxLength={255}
+                        showCharCount
+                    />
+
                     {/* Description */}
                     <WrappedTextarea
                         name="description"
@@ -210,6 +224,7 @@ export const EventForm = ({
                             control={control}
                             label={t("events.form.endDate")}
                             placeholder={t("events.form.endDatePlaceholder")}
+                            required
                             disabled={isLoading}
                             disablePastDates
                         />
