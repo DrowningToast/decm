@@ -3,6 +3,7 @@
         "appName": "DECM",
         "welcome": "Welcome",
         "loading": "Loading...",
+        "searching": "Searching...",
         "error": "Error",
         "success": "Success",
         "cancel": "Cancel",
@@ -340,6 +341,78 @@
             "register": "Register for Event",
             "note": "This is a preview only. The form is disabled."
         }
+    },
+    "certificateSettings": {
+        "pageTitle": "Certificate Settings",
+        "pageDescription": "Configure certificate issuers and design your certificate template",
+        "step1": {
+            "title": "Step 1: Issuer Settings",
+            "description": "Search and select certificate issuers for this event",
+            "searchLabel": "Search Issuers",
+            "searchPlaceholder": "Enter name, email, or organization...",
+            "searchButton": "Search",
+            "selectedIssuers": "Selected Issuers",
+            "table": {
+                "name": "Name",
+                "email": "Email",
+                "organization": "Organization",
+                "actions": "Actions"
+            },
+            "alert": {
+                "title": "Important Notice",
+                "description": "Issuer settings can only be configured once. You can change the issuer after confirming the settings, but this action should be done carefully."
+            },
+            "modal": {
+                "title": "Select Certificate Issuers",
+                "description": "Select one or more issuers from the search results",
+                "selected": "selected",
+                "noResults": "No issuers found",
+                "chooseButton": "Choose"
+            }
+        },
+        "step2": {
+            "title": "Step 2: Certificate Template Settings",
+            "description": "Upload your SVG certificate template with dynamic keywords",
+            "instructions": {
+                "title": "How to Create Certificate Template in Figma",
+                "step1": {
+                    "title": "1. Design Your Certificate",
+                    "description": "Create your certificate design in Figma with all the visual elements, borders, and branding you want."
+                },
+                "step2": {
+                    "title": "2. Add Dynamic Text Placeholders",
+                    "description": "Use text layers with special keywords (e.g., {{ eventName }}, {{ name }}) that will be replaced with actual data."
+                },
+                "step3": {
+                    "title": "3. Export as SVG",
+                    "description": "Export your design as SVG file. Make sure to include all text elements and preserve text as editable."
+                }
+            },
+            "keywords": {
+                "title": "Available Keywords",
+                "description": "Use these special keywords in your SVG template. They will be automatically replaced with actual data:"
+            },
+            "upload": {
+                "label": "Certificate Template (SVG)",
+                "button": "Select SVG File",
+                "hint": "Only SVG files are supported. Maximum file size: 5MB"
+            },
+            "preview": {
+                "title": "Template Preview"
+            },
+            "detectedKeywords": {
+                "title": "Detected Keywords in Template",
+                "table": {
+                    "keyword": "Keyword",
+                    "xPosition": "X Position",
+                    "yPosition": "Y Position",
+                    "count": "Count"
+                }
+            }
+        },
+        "confirmButton": "Confirm Settings",
+        "saveSuccess": "Certificate settings saved successfully",
+        "saveError": "Failed to save certificate settings. Please try again."
     },
     "credentials": {
         "title": "Credentials",

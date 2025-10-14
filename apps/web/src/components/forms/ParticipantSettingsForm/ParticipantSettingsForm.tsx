@@ -71,11 +71,11 @@ export const ParticipantSettingsForm = ({
     ];
 
     return (
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8 ">
             {/* Registration Settings Section */}
-            <div className="space-y-6">
+            <div className="space-y-6 ">
                 <div>
-                    <Typography variant="header" tag="h2" className="text-xl font-bold mb-2">
+                    <Typography variant="header" tag="h2" className="text-xl font-bold mb-2 ">
                         {t("participantSettings.registrationSettings")}
                     </Typography>
                     <Typography variant="text" tag="p" className="text-sm text-muted-foreground">
@@ -194,7 +194,7 @@ export const ParticipantSettingsForm = ({
             </div>
 
             {/* Participant Requirements Section */}
-            <div className="space-y-6">
+            <div className="space-y-6 ">
                 <div>
                     <Typography variant="header" tag="h2" className="text-xl font-bold mb-2">
                         {t("participantSettings.participantRequirements")}
@@ -204,7 +204,7 @@ export const ParticipantSettingsForm = ({
                     </Typography>
                 </div>
 
-                <div className="space-y-4 rounded-lg border p-6">
+                <div className="space-y-4 rounded-lg border p-6 ">
                     {/* Basic Information */}
                     <div className="space-y-4">
                         <Typography variant="header" tag="h3" className="text-sm font-semibold">

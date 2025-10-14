@@ -1,9 +1,5 @@
-import PageContainer from "@/components/container/PageContainer";
+import { CertificateSettingsPage } from "@/components/pages/HostPages/EventPages/CertificateSettingsPage";
 
 export default function Page() {
-    return (
-        <PageContainer title="Certificate Settings" description="Event Name">
-            Page
-        </PageContainer>
-    );
+    return <CertificateSettingsPage />;
 }
