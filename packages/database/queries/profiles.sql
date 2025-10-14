@@ -11,6 +11,7 @@ INSERT INTO profiles (
     last_name,
     is_email_public,
     email,
+    email_hash,
     is_bio_public,
     bio,
     is_phone_number_public,
@@ -47,6 +48,11 @@ INSERT INTO profiles (
         THEN pgp_sym_encrypt(sqlc.narg(email), sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text,
+    CASE 
+        WHEN sqlc.narg(email) IS NOT NULL 
+        THEN encode(digest(sqlc.narg(email), 'sha256'), 'hex')
+        ELSE NULL 
+    END,
     sqlc.arg(is_bio_public),
     CASE 
         WHEN sqlc.narg(bio) IS NOT NULL 
@@ -264,8 +270,7 @@ FROM profiles
 WHERE authentication_credential_id = sqlc.arg(authentication_credential_id);
 
 -- name: GetProfileByEmail :one
--- Note: This query searches encrypted email, so it's not efficient for large datasets
--- Consider adding a hashed version of email for efficient searching if needed
+-- Note: Now uses email_hash for efficient searching instead of decrypting every row
 SELECT 
     id,
     authentication_credential_id,
@@ -326,8 +331,7 @@ SELECT
     created_at,
     updated_at
 FROM profiles 
-WHERE email IS NOT NULL 
-AND pgp_sym_decrypt(email::bytea, sqlc.arg(encryption_key)::varchar) = sqlc.arg(email_search);
+WHERE email_hash = encode(digest(sqlc.arg(email_search), 'sha256'), 'hex');
 
 -- name: ListProfiles :many
 SELECT 
@@ -419,6 +423,11 @@ UPDATE profiles SET
         THEN pgp_sym_encrypt(sqlc.narg(email), sqlc.arg(encryption_key)::varchar)
         ELSE email
     END::text,
+    email_hash = CASE 
+        WHEN sqlc.narg(email) IS NOT NULL 
+        THEN encode(digest(sqlc.narg(email), 'sha256'), 'hex')
+        ELSE email_hash
+    END,
     is_bio_public = COALESCE(sqlc.narg(is_bio_public), is_bio_public),
     bio = CASE 
         WHEN sqlc.narg(bio) IS NOT NULL 
@@ -537,6 +546,11 @@ UPDATE profiles SET
         THEN pgp_sym_encrypt(sqlc.narg(email), sqlc.arg(encryption_key)::varchar)
         ELSE email
     END::text,
+    email_hash = CASE 
+        WHEN sqlc.narg(email) IS NOT NULL 
+        THEN encode(digest(sqlc.narg(email), 'sha256'), 'hex')
+        ELSE email_hash
+    END,
     is_bio_public = COALESCE(sqlc.narg(is_bio_public), is_bio_public),
     bio = CASE 
         WHEN sqlc.narg(bio) IS NOT NULL 

@@ -26,7 +26,7 @@ type Config struct {
 	Name               string `env:"NAME" envDefault:"decm-core-api"`
 	Env                string `env:"ENVIRONMENT,required"`
 	Port               int    `env:"PORT,required" envDefault:"8080"`
-	CorsAllowedOrigins string `env:"CORS_ALLOWED_ORIGINS" envDefault:"http://localhost:3000,http://127.0.0.1:3000"`
+	CorsAllowedOrigins string `env:"CORS_ALLOWED_ORIGINS" envDefault:"http://localhost:3000, http://127.0.0.1:3000"`
 
 	Api      ApiConfig       `envPrefix:"API_"`
 	Postgres postgres.Config `envPrefix:"DB_"`

@@ -72,6 +72,10 @@ func (s *AuthService) SetJwtCookie(ctx *fiber.Ctx, token string) {
 	cookie.Name = "session"
 	cookie.Value = token
 	cookie.Expires = time.Now().Add(s.Expiration)
+	cookie.Path = "/"
+	cookie.HTTPOnly = true
+	cookie.SameSite = "Lax" // Allows cookies to work across different ports on localhost
+	// Note: In production with HTTPS, use SameSite="None" and Secure=true
 	ctx.Cookie(cookie)
 }
 

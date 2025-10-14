@@ -2,10 +2,16 @@ import { OAuthOnboardPasswordPage } from "@/components/pages/Onboard/OAuth/Passw
 import { OAuthOnboardProvider } from "@/components/pages/Onboard/OAuth/OAuthOnboardContext";
 import NotFoundPage from "@/pages/404";
 import { useParams } from "@/router";
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { OAuthOnboardLoadingPage } from "@/components/pages/Onboard/OAuth/Loading/OAuthOnboardLoadingPage";
 import { ProfilePage } from "@/components/pages/Onboard/ProfilePage";
 import { OAuthOnboardConfirmPage } from "@/components/pages/Onboard/OAuth/Confirm/OAuthOnboardConfirmPage";
+import { OnboardRegistrationMethod, type OnboardCheckOnboardStatusResponse } from "@decm/api";
+import { useCheckOnboardStatus } from "@/components/pages/Onboard/useCheckOnboardStatus";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { handleUniversalError } from "@/common/Err";
+import { useTranslation } from "react-i18next";
+import { USECASE_IDS } from "@/constants/usecase";
 
 export const OnboardMethods = {
     WALLET: "wallet",
@@ -71,6 +77,12 @@ const OnboardSteps: OnboardSteps = {
 type OnboardPageContextType = {
     step: number;
     setStep: (step: number) => void;
+
+    accessToken?: string;
+    expiresIn?: number;
+
+    onboardStatus?: OnboardCheckOnboardStatusResponse;
+    isStatusLoading: boolean
 }
 
 const OnboardPageContext = createContext<OnboardPageContextType>({} as OnboardPageContextType);
@@ -81,6 +93,32 @@ export { OnboardPageContext }
 const OnboardingPage = () => {
     const { method } = useParams<"/onboard/:method">("/onboard/:method");
     const [step, setStep] = useState<number>(0);
+    const navigate = useNavigate();
+
+    const { t } = useTranslation();
+    const [searchParams] = useSearchParams();
+    const accessToken = searchParams.get("access_token");
+    const expiresIn = searchParams.get("expires_in");
+
+    const { onboardStatus, isLoading, error } = useCheckOnboardStatus({
+        method: OnboardRegistrationMethod.RegistrationMethodGoogle,
+        accessToken: accessToken ?? "",
+        expiresIn: expiresIn ? parseInt(expiresIn) : 0,
+    });
+    // handle error
+    useEffect(() => {
+        if (!error) {
+            return
+        }
+
+        handleUniversalError(t, error, {
+            onUnauthorized: () => {
+                navigate("/");
+            },
+        }, USECASE_IDS.CHECK_ONBOARD_STATUS);
+
+
+    }, [error, navigate, t])
 
     if (!method || !Object.values(OnboardMethods).includes(method as OnboardMethod)) {
         return <NotFoundPage />
@@ -98,7 +136,13 @@ const OnboardingPage = () => {
     }
 
     return (
-        <OnboardPageContext.Provider value={{ step, setStep }}>
+        <OnboardPageContext.Provider value={{
+            step, setStep,
+            accessToken: accessToken ?? undefined,
+            expiresIn: expiresIn ? parseInt(expiresIn) : undefined,
+            onboardStatus,
+            isStatusLoading: isLoading,
+        }}>
             <steps.Parent>
                 {
                     renderStep()

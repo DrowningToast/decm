@@ -35,6 +35,7 @@ INSERT INTO profiles (
     last_name,
     is_email_public,
     email,
+    email_hash,
     is_bio_public,
     bio,
     is_phone_number_public,
@@ -71,6 +72,11 @@ INSERT INTO profiles (
         THEN pgp_sym_encrypt($10, $4::varchar)
         ELSE NULL 
     END::text,
+    CASE 
+        WHEN $10 IS NOT NULL 
+        THEN encode(digest($10, 'sha256'), 'hex')
+        ELSE NULL 
+    END,
     $11,
     CASE 
         WHEN $12 IS NOT NULL 
@@ -465,8 +471,7 @@ SELECT
     created_at,
     updated_at
 FROM profiles 
-WHERE email IS NOT NULL 
-AND pgp_sym_decrypt(email::bytea, $1::varchar) = $2
+WHERE email_hash = encode(digest($2, 'sha256'), 'hex')
 `
 
 type GetProfileByEmailParams struct {
@@ -499,8 +504,7 @@ type GetProfileByEmailRow struct {
 	UpdatedAt                   pgtype.Timestamptz `json:"updated_at"`
 }
 
-// Note: This query searches encrypted email, so it's not efficient for large datasets
-// Consider adding a hashed version of email for efficient searching if needed
+// Note: Now uses email_hash for efficient searching instead of decrypting every row
 func (q *Queries) GetProfileByEmail(ctx context.Context, arg GetProfileByEmailParams) (GetProfileByEmailRow, error) {
 	row := q.db.QueryRow(ctx, GetProfileByEmail, arg.EncryptionKey, arg.EmailSearch)
 	var i GetProfileByEmailRow
@@ -820,6 +824,11 @@ UPDATE profiles SET
         THEN pgp_sym_encrypt($9, $3::varchar)
         ELSE email
     END::text,
+    email_hash = CASE 
+        WHEN $9 IS NOT NULL 
+        THEN encode(digest($9, 'sha256'), 'hex')
+        ELSE email_hash
+    END,
     is_bio_public = COALESCE($10, is_bio_public),
     bio = CASE 
         WHEN $11 IS NOT NULL 
@@ -1038,6 +1047,11 @@ UPDATE profiles SET
         THEN pgp_sym_encrypt($9, $3::varchar)
         ELSE email
     END::text,
+    email_hash = CASE 
+        WHEN $9 IS NOT NULL 
+        THEN encode(digest($9, 'sha256'), 'hex')
+        ELSE email_hash
+    END,
     is_bio_public = COALESCE($10, is_bio_public),
     bio = CASE 
         WHEN $11 IS NOT NULL 

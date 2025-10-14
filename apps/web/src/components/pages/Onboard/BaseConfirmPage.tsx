@@ -37,7 +37,7 @@ export const BaseConfirmPage: React.FC<BaseConfirmPageProps> = ({
     children,
 }) => {
 
-    const { isPending } = useSignup()
+    const { isLoading } = useSignup()
 
     const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(
         requiredConfirmations.reduce((acc, item) => ({ ...acc, [item.id]: false }), {})
@@ -107,7 +107,7 @@ export const BaseConfirmPage: React.FC<BaseConfirmPageProps> = ({
                     <Button
                         type="button"
                         onClick={onConfirm}
-                        disabled={isConfirmDisabled || isPending}
+                        disabled={isConfirmDisabled || isLoading}
                         variant="primary"
                         size="xl"
                         className="w-full"

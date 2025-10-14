@@ -13,4 +13,5 @@ func (h Handler) Mount(r fiber.Router) {
 	authGroup := r.Group("/auth")
 	authGroup.Get("/request-google-oauth", h.RequestGoogleOAuth)
 	authGroup.Get("/verify-google-oauth", h.VerifyGoogleOAuth)
+	authGroup.Post("/logout", h.Logout)
 }

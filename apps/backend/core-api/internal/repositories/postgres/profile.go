@@ -25,33 +25,30 @@ func (r *Repository) GetProfileById(ctx context.Context, id uuid.UUID) (*entity.
 		return nil, pgerrutils.ParsePgError(err)
 	}
 
-	model := generated.Profile{
-		ID:                          query.ID,
-		AuthenticationCredentialID:  query.AuthenticationCredentialID,
-		IsProfilePicturePublic:      query.IsProfilePicturePublic,
-		ProfilePictureUrl:           query.ProfilePictureUrl,
-		IsFirstNamePublic:           query.IsFirstNamePublic,
-		FirstName:                   query.FirstName,
-		IsLastNamePublic:            query.IsLastNamePublic,
-		LastName:                    query.LastName,
-		IsEmailPublic:               query.IsEmailPublic,
-		Email:                       query.Email,
-		IsBioPublic:                 query.IsBioPublic,
-		Bio:                         query.Bio,
-		IsPhoneNumberPublic:         query.IsPhoneNumberPublic,
-		PhoneNumber:                 query.PhoneNumber,
-		IsAddressPublic:             query.IsAddressPublic,
-		Address:                     query.Address,
-		IsAcademicInstitutionPublic: query.IsAcademicInstitutionPublic,
-		AcademicInstitution:         query.AcademicInstitution,
-		IsAcademicEmailPublic:       query.IsAcademicEmailPublic,
-		AcademicEmail:               query.AcademicEmail,
-		CreatedAt:                   query.CreatedAt,
-		UpdatedAt:                   query.UpdatedAt,
-	}
-
-	entity := entity.MapProfilePgModelsToEntities([]generated.Profile{model})[0]
-	return &entity, nil
+	return &entity.Profile{
+		Id:                          query.ID,
+		AuthenticationCredentialId:  query.AuthenticationCredentialID,
+		IsProfilePicturePublic:      query.IsProfilePicturePublic == 1,
+		ProfilePictureUrl:           pgmapper.PgTextToStringPtr(query.ProfilePictureUrl),
+		IsFirstNamePublic:           query.IsFirstNamePublic == 1,
+		FirstName:                   pgmapper.PgTextToStringPtr(query.FirstName),
+		IsLastNamePublic:            query.IsLastNamePublic == 1,
+		LastName:                    pgmapper.PgTextToStringPtr(query.LastName),
+		IsEmailPublic:               query.IsEmailPublic == 1,
+		Email:                       pgmapper.PgTextToStringPtr(query.Email),
+		IsBioPublic:                 query.IsBioPublic == 1,
+		Bio:                         pgmapper.PgTextToStringPtr(query.Bio),
+		IsPhoneNumberPublic:         query.IsPhoneNumberPublic == 1,
+		PhoneNumber:                 pgmapper.PgTextToStringPtr(query.PhoneNumber),
+		IsAddressPublic:             query.IsAddressPublic == 1,
+		Address:                     pgmapper.PgTextToStringPtr(query.Address),
+		IsAcademicInstitutionPublic: query.IsAcademicInstitutionPublic == 1,
+		AcademicInstitution:         pgmapper.PgTextToStringPtr(query.AcademicInstitution),
+		IsAcademicEmailPublic:       query.IsAcademicEmailPublic == 1,
+		AcademicEmail:               pgmapper.PgTextToStringPtr(query.AcademicEmail),
+		CreatedAt:                   query.CreatedAt.Time,
+		UpdatedAt:                   query.UpdatedAt.Time,
+	}, nil
 }
 
 func (r *Repository) GetProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID) (*entity.Profile, error) {
@@ -63,57 +60,54 @@ func (r *Repository) GetProfileByAuthenticationCredentialId(ctx context.Context,
 		return nil, pgerrutils.ParsePgError(err)
 	}
 
-	model := generated.Profile{
-		ID:                          query.ID,
-		AuthenticationCredentialID:  query.AuthenticationCredentialID,
-		IsProfilePicturePublic:      query.IsProfilePicturePublic,
-		ProfilePictureUrl:           query.ProfilePictureUrl,
-		IsFirstNamePublic:           query.IsFirstNamePublic,
-		FirstName:                   query.FirstName,
-		IsLastNamePublic:            query.IsLastNamePublic,
-		LastName:                    query.LastName,
-		IsEmailPublic:               query.IsEmailPublic,
-		Email:                       query.Email,
-		IsBioPublic:                 query.IsBioPublic,
-		Bio:                         query.Bio,
-		IsPhoneNumberPublic:         query.IsPhoneNumberPublic,
-		PhoneNumber:                 query.PhoneNumber,
-		IsAddressPublic:             query.IsAddressPublic,
-		Address:                     query.Address,
-		IsAcademicInstitutionPublic: query.IsAcademicInstitutionPublic,
-		AcademicInstitution:         query.AcademicInstitution,
-		IsAcademicEmailPublic:       query.IsAcademicEmailPublic,
-		AcademicEmail:               query.AcademicEmail,
-		CreatedAt:                   query.CreatedAt,
-		UpdatedAt:                   query.UpdatedAt,
-	}
-
-	entity := entity.MapProfilePgModelsToEntities([]generated.Profile{model})[0]
-	return &entity, nil
+	return &entity.Profile{
+		Id:                          query.ID,
+		AuthenticationCredentialId:  query.AuthenticationCredentialID,
+		IsProfilePicturePublic:      query.IsProfilePicturePublic == 1,
+		ProfilePictureUrl:           pgmapper.PgTextToStringPtr(query.ProfilePictureUrl),
+		IsFirstNamePublic:           query.IsFirstNamePublic == 1,
+		FirstName:                   pgmapper.PgTextToStringPtr(query.FirstName),
+		IsLastNamePublic:            query.IsLastNamePublic == 1,
+		LastName:                    pgmapper.PgTextToStringPtr(query.LastName),
+		IsEmailPublic:               query.IsEmailPublic == 1,
+		Email:                       pgmapper.PgTextToStringPtr(query.Email),
+		IsBioPublic:                 query.IsBioPublic == 1,
+		Bio:                         pgmapper.PgTextToStringPtr(query.Bio),
+		IsPhoneNumberPublic:         query.IsPhoneNumberPublic == 1,
+		PhoneNumber:                 pgmapper.PgTextToStringPtr(query.PhoneNumber),
+		IsAddressPublic:             query.IsAddressPublic == 1,
+		Address:                     pgmapper.PgTextToStringPtr(query.Address),
+		IsAcademicInstitutionPublic: query.IsAcademicInstitutionPublic == 1,
+		AcademicInstitution:         pgmapper.PgTextToStringPtr(query.AcademicInstitution),
+		IsAcademicEmailPublic:       query.IsAcademicEmailPublic == 1,
+		AcademicEmail:               pgmapper.PgTextToStringPtr(query.AcademicEmail),
+		CreatedAt:                   query.CreatedAt.Time,
+		UpdatedAt:                   query.UpdatedAt.Time,
+	}, nil
 }
 
 func (r *Repository) GetProfileByEmail(ctx context.Context, email string) (*entity.Profile, error) {
 	query, err := r.queries.GetProfileByEmail(ctx, generated.GetProfileByEmailParams{
 		EncryptionKey: r.piiEncryptionKey,
-		EmailSearch:   pgmapper.StringPtrToPgText(&email),
+		EmailSearch:   []byte(email),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
 	}
 
-	model := generated.Profile{
-		ID:                         query.ID,
-		AuthenticationCredentialID: query.AuthenticationCredentialID,
-		IsProfilePicturePublic:     query.IsProfilePicturePublic,
-		ProfilePictureUrl:          query.ProfilePictureUrl,
-		IsFirstNamePublic:          query.IsFirstNamePublic,
-		FirstName:                  query.FirstName,
-		IsLastNamePublic:           query.IsLastNamePublic,
-		LastName:                   query.LastName,
-	}
-
-	entity := entity.MapProfilePgModelsToEntities([]generated.Profile{model})[0]
-	return &entity, nil
+	return &entity.Profile{
+		Id:                         query.ID,
+		AuthenticationCredentialId: query.AuthenticationCredentialID,
+		IsProfilePicturePublic:     query.IsProfilePicturePublic == 1,
+		ProfilePictureUrl:          pgmapper.PgTextToStringPtr(query.ProfilePictureUrl),
+		IsFirstNamePublic:          query.IsFirstNamePublic == 1,
+		FirstName:                  pgmapper.PgTextToStringPtr(query.FirstName),
+		IsLastNamePublic:           query.IsLastNamePublic == 1,
+		LastName:                   pgmapper.PgTextToStringPtr(query.LastName),
+		// Note: Email and other fields are not returned by this query
+		CreatedAt: query.CreatedAt.Time,
+		UpdatedAt: query.UpdatedAt.Time,
+	}, nil
 }
 
 func (r *Repository) CreateProfile(ctx context.Context, profile entity.Profile) (*entity.Profile, error) {
@@ -141,32 +135,31 @@ func (r *Repository) CreateProfile(ctx context.Context, profile entity.Profile) 
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
 	}
-	model := generated.Profile{
-		ID:                          query.ID,
-		AuthenticationCredentialID:  query.AuthenticationCredentialID,
-		IsProfilePicturePublic:      query.IsProfilePicturePublic,
-		ProfilePictureUrl:           query.ProfilePictureUrl,
-		IsFirstNamePublic:           query.IsFirstNamePublic,
-		FirstName:                   query.FirstName,
-		IsLastNamePublic:            query.IsLastNamePublic,
-		LastName:                    query.LastName,
-		IsEmailPublic:               query.IsEmailPublic,
-		Email:                       query.Email,
-		IsBioPublic:                 query.IsBioPublic,
-		Bio:                         query.Bio,
-		IsPhoneNumberPublic:         query.IsPhoneNumberPublic,
-		PhoneNumber:                 query.PhoneNumber,
-		IsAddressPublic:             query.IsAddressPublic,
-		Address:                     query.Address,
-		IsAcademicInstitutionPublic: query.IsAcademicInstitutionPublic,
-		AcademicInstitution:         query.AcademicInstitution,
-		IsAcademicEmailPublic:       query.IsAcademicEmailPublic,
-		AcademicEmail:               query.AcademicEmail,
-		CreatedAt:                   query.CreatedAt,
-		UpdatedAt:                   query.UpdatedAt,
-	}
-	entity := entity.MapProfilePgModelsToEntities([]generated.Profile{model})[0]
-	return &entity, nil
+
+	return &entity.Profile{
+		Id:                          query.ID,
+		AuthenticationCredentialId:  query.AuthenticationCredentialID,
+		IsProfilePicturePublic:      query.IsProfilePicturePublic == 1,
+		ProfilePictureUrl:           pgmapper.PgTextToStringPtr(query.ProfilePictureUrl),
+		IsFirstNamePublic:           query.IsFirstNamePublic == 1,
+		FirstName:                   pgmapper.PgTextToStringPtr(query.FirstName),
+		IsLastNamePublic:            query.IsLastNamePublic == 1,
+		LastName:                    pgmapper.PgTextToStringPtr(query.LastName),
+		IsEmailPublic:               query.IsEmailPublic == 1,
+		Email:                       pgmapper.PgTextToStringPtr(query.Email),
+		IsBioPublic:                 query.IsBioPublic == 1,
+		Bio:                         pgmapper.PgTextToStringPtr(query.Bio),
+		IsPhoneNumberPublic:         query.IsPhoneNumberPublic == 1,
+		PhoneNumber:                 pgmapper.PgTextToStringPtr(query.PhoneNumber),
+		IsAddressPublic:             query.IsAddressPublic == 1,
+		Address:                     pgmapper.PgTextToStringPtr(query.Address),
+		IsAcademicInstitutionPublic: query.IsAcademicInstitutionPublic == 1,
+		AcademicInstitution:         pgmapper.PgTextToStringPtr(query.AcademicInstitution),
+		IsAcademicEmailPublic:       query.IsAcademicEmailPublic == 1,
+		AcademicEmail:               pgmapper.PgTextToStringPtr(query.AcademicEmail),
+		CreatedAt:                   query.CreatedAt.Time,
+		UpdatedAt:                   query.UpdatedAt.Time,
+	}, nil
 }
 
 func (r *Repository) UpdateProfile(ctx context.Context, id uuid.UUID, profile datagateway.UpdateProfileParameters) (*entity.Profile, error) {
@@ -195,14 +188,16 @@ func (r *Repository) UpdateProfile(ctx context.Context, id uuid.UUID, profile da
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
 	}
-	model := generated.Profile{
-		ID:                         query.ID,
-		AuthenticationCredentialID: query.AuthenticationCredentialID,
-		IsProfilePicturePublic:     query.IsProfilePicturePublic,
-		ProfilePictureUrl:          query.ProfilePictureUrl,
-	}
-	entity := entity.MapProfilePgModelsToEntities([]generated.Profile{model})[0]
-	return &entity, nil
+
+	return &entity.Profile{
+		Id:                         query.ID,
+		AuthenticationCredentialId: query.AuthenticationCredentialID,
+		IsProfilePicturePublic:     query.IsProfilePicturePublic == 1,
+		ProfilePictureUrl:          pgmapper.PgTextToStringPtr(query.ProfilePictureUrl),
+		// Note: Only limited fields are returned by UpdateProfile query
+		CreatedAt: query.CreatedAt.Time,
+		UpdatedAt: query.UpdatedAt.Time,
+	}, nil
 }
 
 func (r *Repository) UpdateProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID, profile datagateway.UpdateProfileParameters) (*entity.Profile, error) {
@@ -231,30 +226,31 @@ func (r *Repository) UpdateProfileByAuthenticationCredentialId(ctx context.Conte
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
 	}
-	model := generated.Profile{
-		ID:                          query.ID,
-		AuthenticationCredentialID:  query.AuthenticationCredentialID,
-		IsProfilePicturePublic:      query.IsProfilePicturePublic,
-		ProfilePictureUrl:           query.ProfilePictureUrl,
-		IsFirstNamePublic:           query.IsFirstNamePublic,
-		FirstName:                   query.FirstName,
-		IsLastNamePublic:            query.IsLastNamePublic,
-		LastName:                    query.LastName,
-		IsEmailPublic:               query.IsEmailPublic,
-		Email:                       query.Email,
-		IsBioPublic:                 query.IsBioPublic,
-		Bio:                         query.Bio,
-		IsPhoneNumberPublic:         query.IsPhoneNumberPublic,
-		PhoneNumber:                 query.PhoneNumber,
-		IsAddressPublic:             query.IsAddressPublic,
-		Address:                     query.Address,
-		IsAcademicInstitutionPublic: query.IsAcademicInstitutionPublic,
-		AcademicInstitution:         query.AcademicInstitution,
-		IsAcademicEmailPublic:       query.IsAcademicEmailPublic,
-		AcademicEmail:               query.AcademicEmail,
-	}
-	entity := entity.MapProfilePgModelsToEntities([]generated.Profile{model})[0]
-	return &entity, nil
+
+	return &entity.Profile{
+		Id:                          query.ID,
+		AuthenticationCredentialId:  query.AuthenticationCredentialID,
+		IsProfilePicturePublic:      query.IsProfilePicturePublic == 1,
+		ProfilePictureUrl:           pgmapper.PgTextToStringPtr(query.ProfilePictureUrl),
+		IsFirstNamePublic:           query.IsFirstNamePublic == 1,
+		FirstName:                   pgmapper.PgTextToStringPtr(query.FirstName),
+		IsLastNamePublic:            query.IsLastNamePublic == 1,
+		LastName:                    pgmapper.PgTextToStringPtr(query.LastName),
+		IsEmailPublic:               query.IsEmailPublic == 1,
+		Email:                       pgmapper.PgTextToStringPtr(query.Email),
+		IsBioPublic:                 query.IsBioPublic == 1,
+		Bio:                         pgmapper.PgTextToStringPtr(query.Bio),
+		IsPhoneNumberPublic:         query.IsPhoneNumberPublic == 1,
+		PhoneNumber:                 pgmapper.PgTextToStringPtr(query.PhoneNumber),
+		IsAddressPublic:             query.IsAddressPublic == 1,
+		Address:                     pgmapper.PgTextToStringPtr(query.Address),
+		IsAcademicInstitutionPublic: query.IsAcademicInstitutionPublic == 1,
+		AcademicInstitution:         pgmapper.PgTextToStringPtr(query.AcademicInstitution),
+		IsAcademicEmailPublic:       query.IsAcademicEmailPublic == 1,
+		AcademicEmail:               pgmapper.PgTextToStringPtr(query.AcademicEmail),
+		CreatedAt:                   query.CreatedAt.Time,
+		UpdatedAt:                   query.UpdatedAt.Time,
+	}, nil
 }
 
 func (r *Repository) DeleteProfile(ctx context.Context, id uuid.UUID) error {

@@ -1,0 +1,497 @@
+---
+description: "Smart contract development and integration patterns for NFT ticketing and certificates"
+---
+
+# Smart Contract Development & Integration
+
+## Overview
+DECM uses Foundry for Solidity smart contract development, focusing on NFT-based event tickets and digital certificates with role-based access control.
+
+## Project Structure
+
+```
+apps/contracts/
+├── src/
+│   ├── contracts/          # Main contracts
+│   │   ├── DecmAccessManager.sol
+│   │   ├── Event.sol
+│   │   ├── EventTicket.sol
+│   │   ├── EventCertificate.sol
+│   │   ├── EventExternal.sol
+│   │   └── EventInternal.sol
+│   ├── libraries/          # Shared libraries
+│   │   ├── Errors.sol
+│   │   └── Types.sol
+│   └── utils/              # Utility contracts
+│       └── DeploymentManager.sol
+├── script/                 # Deployment scripts
+│   ├── DeployDecmAccessManager.s.sol
+│   ├── DeployEvent.s.sol
+│   ├── DeployEventCertificate.s.sol
+│   └── DeployEventTicket.s.sol
+├── lib/                    # Dependencies
+│   ├── forge-std/
+│   ├── openzeppelin-contracts/
+│   └── foundry-devops/
+├── foundry.toml           # Foundry config
+└── Makefile              # Build commands
+```
+
+## Core Contracts
+
+### 1. DecmAccessManager.sol
+**Purpose**: Role-based access control for all DECM contracts
+
+**Key Features**:
+- Admin role management
+- Event organizer permissions
+- Participant verification
+- Academic institution verification
+
+**Usage**:
+```solidity
+contract MyContract {
+    DecmAccessManager public accessManager;
+    
+    modifier onlyAdmin() {
+        require(accessManager.hasRole(ADMIN_ROLE, msg.sender), "Not admin");
+        _;
+    }
+    
+    modifier onlyOrganizer(uint256 eventId) {
+        require(accessManager.isEventOrganizer(eventId, msg.sender), "Not organizer");
+        _;
+    }
+}
+```
+
+### 2. Event.sol
+**Purpose**: Base contract for event management
+
+**Key Features**:
+- Event creation and metadata
+- Participant registration
+- Event status management
+- Event types (internal/external)
+
+**Event Lifecycle**:
+1. Created → Organizer creates event
+2. Open → Participants can register
+3. Ongoing → Event in progress
+4. Completed → Event finished
+5. Cancelled → Event cancelled
+
+### 3. EventTicket.sol (ERC-721)
+**Purpose**: NFT-based event tickets
+
+**Key Features**:
+- Mint tickets for registered participants
+- Transfer restrictions (non-transferable by default)
+- Ticket metadata (event ID, seat, tier)
+- Attendance verification
+
+**Integration Pattern**:
+```typescript
+import { EventTicket } from '@/abi/EventTicket';
+import { useContractWrite } from 'wagmi';
+
+const { write: mintTicket } = useContractWrite({
+  address: CONTRACT_ADDRESS,
+  abi: EventTicket,
+  functionName: 'mintTicket',
+});
+
+await mintTicket({
+  args: [eventId, participantAddress, ticketMetadata]
+});
+```
+
+### 4. EventCertificate.sol (ERC-721)
+**Purpose**: NFT-based digital certificates
+
+**Key Features**:
+- Issue certificates for event completion
+- Certificate metadata (event ID, achievement level)
+- Immutable after issuance
+- QR code validation support
+
+**Integration Pattern**:
+```typescript
+import { EventCertificate } from '@/abi/EventCertificate';
+
+const { write: issueCertificate } = useContractWrite({
+  address: CONTRACT_ADDRESS,
+  abi: EventCertificate,
+  functionName: 'issueCertificate',
+});
+
+await issueCertificate({
+  args: [eventId, recipientAddress, certificateURI]
+});
+```
+
+## Libraries
+
+### Types.sol
+**Purpose**: Shared type definitions
+
+```solidity
+library Types {
+    enum EventStatus {
+        Created,
+        Open,
+        Ongoing,
+        Completed,
+        Cancelled
+    }
+    
+    enum EventType {
+        Internal,  // Academic institution events
+        External   // Public events
+    }
+    
+    enum ParticipantRole {
+        Attendee,
+        Speaker,
+        Organizer,
+        Sponsor
+    }
+    
+    struct EventMetadata {
+        uint256 id;
+        string name;
+        string description;
+        uint256 startTime;
+        uint256 endTime;
+        EventType eventType;
+        EventStatus status;
+    }
+    
+    struct TicketMetadata {
+        uint256 eventId;
+        uint256 ticketId;
+        string seat;
+        string tier;
+        uint256 issuedAt;
+    }
+    
+    struct CertificateMetadata {
+        uint256 eventId;
+        uint256 certificateId;
+        string achievement;
+        uint256 issuedAt;
+    }
+}
+```
+
+### Errors.sol
+**Purpose**: Custom error definitions
+
+```solidity
+library Errors {
+    error Unauthorized();
+    error InvalidEventId();
+    error EventNotOpen();
+    error EventAlreadyStarted();
+    error TicketAlreadyMinted();
+    error CertificateAlreadyIssued();
+    error InvalidParticipant();
+    error TransferNotAllowed();
+}
+```
+
+## Foundry Development
+
+### Testing
+```bash
+# Run all tests
+forge test
+
+# Run specific test
+forge test --match-test testMintTicket
+
+# Run with gas report
+forge test --gas-report
+
+# Run with coverage
+forge coverage
+```
+
+### Deployment
+
+#### Local Development:
+```bash
+# Start local node
+make anvil
+
+# Deploy contracts
+make deploy-local
+```
+
+#### Testnet Deployment:
+```bash
+# Deploy to Sepolia
+make deploy-sepolia
+
+# Verify contract
+make verify-sepolia CONTRACT=EventTicket
+```
+
+### Makefile Commands
+```makefile
+# Test
+test:
+	forge test -vvv
+
+# Deploy
+deploy-local:
+	forge script script/DeployEvent.s.sol --rpc-url http://localhost:8545 --broadcast
+
+deploy-sepolia:
+	forge script script/DeployEvent.s.sol --rpc-url $(SEPOLIA_RPC_URL) --broadcast --verify
+
+# Interact
+mint-ticket:
+	cast send $(TICKET_CONTRACT) "mintTicket(uint256,address,string)" $(EVENT_ID) $(RECIPIENT) $(METADATA) --rpc-url $(RPC_URL)
+```
+
+## Frontend Integration
+
+### Setup wagmi
+```typescript
+import { createConfig, http } from 'wagmi';
+import { sepolia, localhost } from 'wagmi/chains';
+
+export const config = createConfig({
+  chains: [localhost, sepolia],
+  transports: {
+    [localhost.id]: http(),
+    [sepolia.id]: http(process.env.VITE_SEPOLIA_RPC_URL),
+  },
+});
+```
+
+### Contract Interaction Hooks
+
+#### Read Contract Data:
+```typescript
+import { useContractRead } from 'wagmi';
+import { EventTicket } from '@/abi/EventTicket';
+
+export const useTicketData = (ticketId: bigint) => {
+  const { data, isLoading, error } = useContractRead({
+    address: CONTRACT_ADDRESS,
+    abi: EventTicket,
+    functionName: 'getTicketMetadata',
+    args: [ticketId],
+  });
+
+  return { ticketData: data, isLoading, error };
+};
+```
+
+#### Write to Contract:
+```typescript
+import { useContractWrite, useWaitForTransaction } from 'wagmi';
+import { EventTicket } from '@/abi/EventTicket';
+
+export const useMintTicket = () => {
+  const { write, data } = useContractWrite({
+    address: CONTRACT_ADDRESS,
+    abi: EventTicket,
+    functionName: 'mintTicket',
+  });
+
+  const { isLoading, isSuccess } = useWaitForTransaction({
+    hash: data?.hash,
+  });
+
+  const mintTicket = async (eventId: bigint, recipient: string, metadata: string) => {
+    await write({
+      args: [eventId, recipient, metadata],
+    });
+  };
+
+  return { mintTicket, isLoading, isSuccess };
+};
+```
+
+#### Listen to Events:
+```typescript
+import { useContractEvent } from 'wagmi';
+import { EventTicket } from '@/abi/EventTicket';
+
+export const useTicketMinted = (onTicketMinted: (data: any) => void) => {
+  useContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: EventTicket,
+    eventName: 'TicketMinted',
+    listener: (logs) => {
+      const log = logs[0];
+      onTicketMinted({
+        eventId: log.args.eventId,
+        recipient: log.args.recipient,
+        ticketId: log.args.ticketId,
+      });
+    },
+  });
+};
+```
+
+### ABI Generation
+
+ABIs are auto-generated during contract compilation:
+
+```bash
+# Compile contracts (generates ABIs)
+forge build
+
+# ABIs output to: out/ContractName.sol/ContractName.json
+```
+
+**Copy ABIs to frontend**:
+```bash
+# Copy EventTicket ABI
+cp apps/contracts/out/EventTicket.sol/EventTicket.json apps/web/src/abi/
+
+# Copy EventCertificate ABI
+cp apps/contracts/out/EventCertificate.sol/EventCertificate.json apps/web/src/abi/
+```
+
+### TypeScript ABI Types
+
+Generate TypeScript types from ABIs:
+
+```typescript
+// apps/web/src/abi/EventTicket.ts
+import EventTicketABI from './EventTicket.json';
+
+export const EventTicket = EventTicketABI.abi as const;
+export type EventTicketABI = typeof EventTicket;
+```
+
+## Contract Interaction Flow
+
+### Minting Event Ticket:
+1. **Backend**: Verify user registration
+2. **Backend**: Generate ticket metadata
+3. **Backend**: Sign transaction or approve minting
+4. **Frontend**: Connect wallet
+5. **Frontend**: Call `mintTicket` with user's wallet
+6. **Contract**: Mint NFT ticket to user
+7. **Frontend**: Wait for confirmation
+8. **Backend**: Store ticket ID and transaction hash
+
+### Issuing Certificate:
+1. **Backend**: Verify event completion
+2. **Backend**: Verify participant attendance
+3. **Backend**: Generate certificate metadata and URI
+4. **Frontend**: Request certificate issuance
+5. **Contract**: Mint NFT certificate
+6. **Backend**: Store certificate ID
+7. **Frontend**: Display certificate with QR code
+
+## Best Practices
+
+### ✅ DO:
+- Use OpenZeppelin contracts for standards (ERC-721, AccessControl)
+- Write comprehensive tests for all functions
+- Use custom errors instead of require strings (gas efficient)
+- Emit events for all state changes
+- Use natspec comments for documentation
+- Validate all inputs
+- Use modifiers for access control
+- Version contracts properly
+- Test on testnet before mainnet
+
+### ❌ DON'T:
+- Deploy without thorough testing
+- Use floating pragma versions
+- Skip input validation
+- Ignore gas optimization
+- Hard-code addresses in contracts
+- Allow unauthorized access
+- Skip event emission
+- Use tx.origin for authentication
+- Store large data on-chain
+
+## Gas Optimization
+
+```solidity
+// ✅ Good: Use custom errors
+error Unauthorized();
+if (!hasAccess) revert Unauthorized();
+
+// ❌ Bad: Use require strings
+require(hasAccess, "User is not authorized");
+
+// ✅ Good: Pack storage variables
+struct Ticket {
+    uint128 eventId;  // 16 bytes
+    uint128 ticketId; // 16 bytes (same slot)
+    address owner;     // 20 bytes (new slot)
+}
+
+// ✅ Good: Use immutable for constants
+address public immutable accessManager;
+
+// ✅ Good: Cache array length
+uint256 length = tickets.length;
+for (uint256 i = 0; i < length; i++) {
+    // ...
+}
+```
+
+## Security Considerations
+
+### Access Control:
+```solidity
+modifier onlyOrganizer(uint256 eventId) {
+    if (!accessManager.isEventOrganizer(eventId, msg.sender)) {
+        revert Unauthorized();
+    }
+    _;
+}
+
+function cancelEvent(uint256 eventId) external onlyOrganizer(eventId) {
+    // Only organizer can cancel
+}
+```
+
+### Reentrancy Protection:
+```solidity
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+contract EventTicket is ReentrancyGuard {
+    function mintTicket(...) external nonReentrant {
+        // Safe from reentrancy
+    }
+}
+```
+
+### Integer Overflow:
+```solidity
+// Solidity 0.8+ has built-in overflow checks
+// No need for SafeMath
+```
+
+## Contract Addresses
+
+Store contract addresses in environment variables:
+
+```typescript
+// apps/web/src/config/contracts.ts
+export const CONTRACTS = {
+  accessManager: import.meta.env.VITE_ACCESS_MANAGER_ADDRESS,
+  eventTicket: import.meta.env.VITE_EVENT_TICKET_ADDRESS,
+  eventCertificate: import.meta.env.VITE_EVENT_CERTIFICATE_ADDRESS,
+  event: import.meta.env.VITE_EVENT_ADDRESS,
+} as const;
+```
+
+## Related Documentation
+- OpenZeppelin docs: https://docs.openzeppelin.com/
+- Foundry book: https://book.getfoundry.sh/
+- wagmi docs: https://wagmi.sh/
+- Wallet integration: See [wallet-integration.mdc](mdc:wallet-integration.mdc)
+- Development workflow: See workspace rule `development-workflow`

@@ -1,0 +1,660 @@
+---
+description: "Web3 wallet integration patterns for authentication and blockchain interactions"
+---
+
+# Wallet Integration & Web3 Authentication
+
+## Overview
+DECM uses Web3 wallet integration for user authentication and blockchain interactions. Users sign messages with their wallet to prove ownership, which is verified on the backend for secure, decentralized authentication.
+
+## Tech Stack
+
+- **Frontend**: wagmi + viem (Ethereum interactions)
+- **Wallet Connection**: RainbowKit or ConnectKit
+- **Backend**: Signature verification with Go
+- **Authentication**: Wallet-based message signing → JWT session
+
+## Wallet Connection Setup
+
+### Install Dependencies
+```bash
+# Frontend packages
+pnpm add wagmi viem @rainbow-me/rainbowkit
+# or
+pnpm add wagmi viem connectkit
+```
+
+### wagmi Configuration
+
+**Config** (`apps/web/src/config/wagmi.ts`):
+```typescript
+import { createConfig, http } from 'wagmi';
+import { mainnet, sepolia, localhost } from 'wagmi/chains';
+import { injected, walletConnect } from 'wagmi/connectors';
+
+export const config = createConfig({
+  chains: [localhost, sepolia, mainnet],
+  connectors: [
+    injected(),
+    walletConnect({ 
+      projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID 
+    }),
+  ],
+  transports: {
+    [mainnet.id]: http(),
+    [sepolia.id]: http(),
+    [localhost.id]: http(),
+  },
+});
+```
+
+### Provider Setup
+
+**App Provider** (`apps/web/src/index.tsx`):
+```typescript
+import { WagmiProvider } from 'wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { config } from './config/wagmi';
+import '@rainbow-me/rainbowkit/styles.css';
+
+const queryClient = new QueryClient();
+
+function App() {
+  return (
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider>
+          <RouterProvider router={router} />
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
+  );
+}
+```
+
+## Wallet-Based Authentication Flow
+
+### 1. Frontend: Connect Wallet
+
+```typescript
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+
+export const WalletConnect = () => {
+  const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
+
+  return (
+    <div>
+      {!isConnected ? (
+        <ConnectButton />
+      ) : (
+        <div>
+          <p>Connected: {address}</p>
+          <button onClick={() => disconnect()}>Disconnect</button>
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+### 2. Frontend: Sign Authentication Message
+
+```typescript
+import { useAccount, useSignMessage } from 'wagmi';
+import { DefaultApi } from '@decm/api';
+
+export const useWalletAuth = () => {
+  const { address } = useAccount();
+  const { signMessageAsync } = useSignMessage();
+  const api = new DefaultApi({ 
+    basePath: config.apiUrl,
+    withCredentials: true 
+  });
+
+  const authenticate = async () => {
+    if (!address) {
+      throw new Error('Wallet not connected');
+    }
+
+    try {
+      // 1. Request nonce from backend
+      const { data: { nonce } } = await api.requestAuthNonce({
+        wallet_address: address,
+      });
+
+      // 2. Create message to sign
+      const message = `Sign this message to authenticate with DECM.\n\nNonce: ${nonce}\nWallet: ${address}`;
+
+      // 3. Sign message with wallet
+      const signature = await signMessageAsync({ message });
+
+      // 4. Verify signature on backend
+      const { data: authResponse } = await api.verifyWalletSignature({
+        wallet_address: address,
+        signature: signature,
+        message: message,
+      });
+
+      // 5. Backend sets JWT cookie
+      return authResponse;
+    } catch (error) {
+      console.error('Authentication failed:', error);
+      throw error;
+    }
+  };
+
+  return { authenticate };
+};
+```
+
+### 3. Backend: Generate Nonce
+
+**Handler** (`handler_request_auth_nonce.go`):
+```go
+type RequestAuthNonceRequest struct {
+    WalletAddress string `json:"wallet_address" validate:"required,eth_addr"`
+}
+
+type RequestAuthNonceResponse struct {
+    Nonce string `json:"nonce"`
+}
+
+// @Summary Request authentication nonce
+// @Description Generate a unique nonce for wallet authentication
+// @Tags authentication
+// @Accept json
+// @Produce json
+// @Param request body RequestAuthNonceRequest true "Wallet address"
+// @Success 200 {object} RequestAuthNonceResponse
+// @Failure 400 {object} customerror.ErrResponse
+// @Router /api/v1/auth/nonce [post]
+func (h *Handler) HandleRequestAuthNonce(ctx *fiber.Ctx) error {
+    req := RequestAuthNonceRequest{}
+    if err := ctx.BodyParser(&req); err != nil {
+        return customerror.New(
+            customerror.StatusBadRequest,
+            "Invalid request body",
+            err,
+        )
+    }
+
+    if err := validatorutils.Validate(&req); err != nil {
+        return customerror.NewValidationErr(err)
+    }
+
+    // Generate nonce (random string)
+    nonce, err := h.UseCase.GenerateAuthNonce(
+        ctx.Context(),
+        req.WalletAddress,
+    )
+    if err != nil {
+        return err
+    }
+
+    return ctx.JSON(RequestAuthNonceResponse{
+        Nonce: nonce,
+    })
+}
+```
+
+**UseCase**:
+```go
+func (uc *UseCase) GenerateAuthNonce(
+    ctx context.Context,
+    walletAddress string,
+) (string, error) {
+    // Generate random nonce
+    nonce := uuid.New().String()
+
+    // Store nonce temporarily (Redis or database)
+    // Expires in 5 minutes
+    err := uc.NonceRepo.StoreNonce(ctx, walletAddress, nonce, 5*time.Minute)
+    if err != nil {
+        return "", customerror.New(
+            customerror.StatusInternalServerError,
+            "Failed to generate nonce",
+            err,
+        )
+    }
+
+    return nonce, nil
+}
+```
+
+### 4. Backend: Verify Signature
+
+**Handler** (`handler_verify_wallet_signature.go`):
+```go
+type VerifyWalletSignatureRequest struct {
+    WalletAddress string `json:"wallet_address" validate:"required,eth_addr"`
+    Signature     string `json:"signature" validate:"required"`
+    Message       string `json:"message" validate:"required"`
+}
+
+type VerifyWalletSignatureResponse struct {
+    UserID      uuid.UUID `json:"user_id"`
+    WalletAddress string  `json:"wallet_address"`
+}
+
+// @Summary Verify wallet signature
+// @Description Verify signed message and authenticate user
+// @Tags authentication
+// @Accept json
+// @Produce json
+// @Param request body VerifyWalletSignatureRequest true "Signature verification"
+// @Success 200 {object} VerifyWalletSignatureResponse
+// @Failure 400 {object} customerror.ErrResponse
+// @Failure 401 {object} customerror.ErrResponse
+// @Router /api/v1/auth/verify [post]
+func (h *Handler) HandleVerifyWalletSignature(ctx *fiber.Ctx) error {
+    req := VerifyWalletSignatureRequest{}
+    if err := ctx.BodyParser(&req); err != nil {
+        return customerror.New(
+            customerror.StatusBadRequest,
+            "Invalid request body",
+            err,
+        )
+    }
+
+    if err := validatorutils.Validate(&req); err != nil {
+        return customerror.NewValidationErr(err)
+    }
+
+    // Verify signature
+    user, err := h.UseCase.VerifyWalletSignature(
+        ctx.Context(),
+        req.WalletAddress,
+        req.Signature,
+        req.Message,
+    )
+    if err != nil {
+        return err
+    }
+
+    // Generate JWT token
+    token, err := auth.GenerateJWT(user.ID, h.Config.JWT)
+    if err != nil {
+        return customerror.New(
+            customerror.StatusInternalServerError,
+            "Failed to generate token",
+            err,
+        )
+    }
+
+    // Set JWT cookie
+    ctx.Cookie(&fiber.Cookie{
+        Name:     "auth_token",
+        Value:    token,
+        HTTPOnly: true,
+        Secure:   h.Config.Environment == "production",
+        SameSite: "Lax",
+        MaxAge:   h.Config.JWT.ExpirationHours * 3600,
+    })
+
+    return ctx.JSON(VerifyWalletSignatureResponse{
+        UserID:        user.ID,
+        WalletAddress: user.WalletAddress,
+    })
+}
+```
+
+**UseCase with Signature Verification**:
+```go
+import (
+    "github.com/ethereum/go-ethereum/common"
+    "github.com/ethereum/go-ethereum/crypto"
+)
+
+func (uc *UseCase) VerifyWalletSignature(
+    ctx context.Context,
+    walletAddress string,
+    signature string,
+    message string,
+) (*User, error) {
+    // 1. Verify nonce is valid
+    valid, err := uc.NonceRepo.VerifyNonce(ctx, walletAddress, extractNonce(message))
+    if err != nil || !valid {
+        return nil, customerror.New(
+            customerror.StatusUnauthorized,
+            "Invalid or expired nonce",
+            err,
+        )
+    }
+
+    // 2. Recover signer address from signature
+    sigBytes := common.FromHex(signature)
+    messageHash := crypto.Keccak256Hash(
+        []byte(fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(message), message)),
+    )
+
+    if len(sigBytes) != 65 {
+        return nil, customerror.New(
+            customerror.StatusBadRequest,
+            "Invalid signature format",
+            nil,
+        )
+    }
+
+    // Adjust V value (27/28 → 0/1)
+    if sigBytes[64] == 27 || sigBytes[64] == 28 {
+        sigBytes[64] -= 27
+    }
+
+    pubKey, err := crypto.SigToPub(messageHash.Bytes(), sigBytes)
+    if err != nil {
+        return nil, customerror.New(
+            customerror.StatusUnauthorized,
+            "Invalid signature",
+            err,
+        )
+    }
+
+    recoveredAddress := crypto.PubkeyToAddress(*pubKey).Hex()
+
+    // 3. Verify recovered address matches claimed address
+    if !strings.EqualFold(recoveredAddress, walletAddress) {
+        return nil, customerror.New(
+            customerror.StatusUnauthorized,
+            "Signature verification failed",
+            nil,
+        )
+    }
+
+    // 4. Invalidate nonce
+    uc.NonceRepo.InvalidateNonce(ctx, walletAddress)
+
+    // 5. Get or create user
+    user, err := uc.UserRepo.GetByWalletAddress(ctx, walletAddress)
+    if err != nil {
+        // Create new user if doesn't exist
+        user, err = uc.UserRepo.CreateFromWallet(ctx, walletAddress)
+        if err != nil {
+            return nil, err
+        }
+    }
+
+    return user, nil
+}
+```
+
+## Smart Contract Interaction
+
+### Reading Contract Data
+
+```typescript
+import { useContractRead } from 'wagmi';
+import { EventTicket } from '@/abi/EventTicket';
+import { CONTRACTS } from '@/config/contracts';
+
+export const useTicketOwner = (tokenId: bigint) => {
+  const { data, isLoading, error } = useContractRead({
+    address: CONTRACTS.eventTicket,
+    abi: EventTicket,
+    functionName: 'ownerOf',
+    args: [tokenId],
+  });
+
+  return { owner: data, isLoading, error };
+};
+```
+
+### Writing to Contract
+
+```typescript
+import { useContractWrite, useWaitForTransaction } from 'wagmi';
+import { EventTicket } from '@/abi/EventTicket';
+
+export const useMintTicket = () => {
+  const { write, data, error } = useContractWrite({
+    address: CONTRACTS.eventTicket,
+    abi: EventTicket,
+    functionName: 'mintTicket',
+  });
+
+  const { isLoading: isMining, isSuccess } = useWaitForTransaction({
+    hash: data?.hash,
+  });
+
+  const mintTicket = (
+    eventId: bigint,
+    recipient: string,
+    metadata: string
+  ) => {
+    write({
+      args: [eventId, recipient, metadata],
+    });
+  };
+
+  return { mintTicket, isMining, isSuccess, error };
+};
+```
+
+### Listening to Events
+
+```typescript
+import { useContractEvent } from 'wagmi';
+import { EventTicket } from '@/abi/EventTicket';
+
+export const useTicketEvents = () => {
+  useContractEvent({
+    address: CONTRACTS.eventTicket,
+    abi: EventTicket,
+    eventName: 'TicketMinted',
+    listener(logs) {
+      logs.forEach((log) => {
+        console.log('Ticket minted:', {
+          eventId: log.args.eventId,
+          recipient: log.args.recipient,
+          tokenId: log.args.tokenId,
+        });
+      });
+    },
+  });
+};
+```
+
+## Advanced Patterns
+
+### Transaction Status Tracking
+
+```typescript
+import { useWaitForTransaction } from 'wagmi';
+import { toast } from 'sonner';
+
+export const useTransactionStatus = (hash?: `0x${string}`) => {
+  const { isLoading, isSuccess, isError } = useWaitForTransaction({
+    hash,
+    onSuccess(data) {
+      toast.success('Transaction confirmed!');
+      console.log('Transaction receipt:', data);
+    },
+    onError(error) {
+      toast.error('Transaction failed');
+      console.error('Transaction error:', error);
+    },
+  });
+
+  return { isLoading, isSuccess, isError };
+};
+```
+
+### Gas Estimation
+
+```typescript
+import { useEstimateGas } from 'wagmi';
+
+export const useEstimateMintGas = (
+  eventId: bigint,
+  recipient: string,
+  metadata: string
+) => {
+  const { data: gasEstimate } = useEstimateGas({
+    address: CONTRACTS.eventTicket,
+    abi: EventTicket,
+    functionName: 'mintTicket',
+    args: [eventId, recipient, metadata],
+  });
+
+  return { gasEstimate };
+};
+```
+
+### Multiple Wallet Support
+
+```typescript
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { injected, walletConnect, coinbaseWallet } from 'wagmi/connectors';
+
+export const WalletOptions = () => {
+  const { connect } = useConnect();
+  const { address } = useAccount();
+  const { disconnect } = useDisconnect();
+
+  if (address) {
+    return (
+      <button onClick={() => disconnect()}>
+        Disconnect {address.slice(0, 6)}...{address.slice(-4)}
+      </button>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <button onClick={() => connect({ connector: injected() })}>
+        MetaMask
+      </button>
+      <button onClick={() => connect({ connector: walletConnect({ projectId: '...' }) })}>
+        WalletConnect
+      </button>
+      <button onClick={() => connect({ connector: coinbaseWallet({ appName: 'DECM' }) })}>
+        Coinbase Wallet
+      </button>
+    </div>
+  );
+};
+```
+
+## Security Best Practices
+
+### Frontend:
+
+```typescript
+// ✅ Verify wallet is connected before signing
+const { address, isConnected } = useAccount();
+if (!isConnected || !address) {
+  throw new Error('Please connect your wallet');
+}
+
+// ✅ Display message to user before signing
+const message = `Sign this message to authenticate...\n\nNonce: ${nonce}`;
+console.log('Signing message:', message);
+const signature = await signMessageAsync({ message });
+
+// ✅ Handle signature rejection
+try {
+  await signMessageAsync({ message });
+} catch (error) {
+  if (error.code === 4001) {
+    // User rejected signature
+    toast.error('Signature rejected');
+  }
+}
+```
+
+### Backend:
+
+```go
+// ✅ Always verify signature server-side
+recoveredAddress := RecoverSignerAddress(signature, message)
+if !strings.EqualFold(recoveredAddress, claimedAddress) {
+    return customerror.New(
+        customerror.StatusUnauthorized,
+        "Signature verification failed",
+        nil,
+    )
+}
+
+// ✅ Use nonces to prevent replay attacks
+if !uc.NonceRepo.IsValidNonce(ctx, address, nonce) {
+    return customerror.New(
+        customerror.StatusUnauthorized,
+        "Invalid or expired nonce",
+        nil,
+    )
+}
+
+// ✅ Invalidate nonce after use
+uc.NonceRepo.InvalidateNonce(ctx, address)
+
+// ✅ Set secure cookies
+ctx.Cookie(&fiber.Cookie{
+    Name:     "auth_token",
+    HTTPOnly: true,          // Prevent XSS
+    Secure:   isProduction,  // HTTPS only
+    SameSite: "Lax",        // CSRF protection
+})
+```
+
+## Error Handling
+
+```typescript
+import { useSignMessage } from 'wagmi';
+import { toast } from 'sonner';
+
+export const useWalletSign = () => {
+  const { signMessageAsync } = useSignMessage();
+
+  const signMessage = async (message: string) => {
+    try {
+      const signature = await signMessageAsync({ message });
+      return signature;
+    } catch (error: any) {
+      // Handle specific errors
+      if (error.code === 4001) {
+        toast.error('You rejected the signature request');
+      } else if (error.code === -32002) {
+        toast.error('Please check your wallet for pending requests');
+      } else {
+        toast.error('Failed to sign message');
+      }
+      throw error;
+    }
+  };
+
+  return { signMessage };
+};
+```
+
+## Best Practices
+
+### ✅ DO:
+- Use wagmi for all Web3 interactions
+- Verify signatures on backend
+- Use nonces to prevent replay attacks
+- Show clear messages before signing
+- Handle wallet disconnection gracefully
+- Set secure HTTP-only cookies for JWT
+- Use testnet for development
+- Test with multiple wallet types
+- Display transaction status to users
+
+### ❌ DON'T:
+- Trust frontend signature verification only
+- Reuse nonces
+- Skip error handling
+- Auto-sign without user confirmation
+- Store private keys or mnemonics
+- Use wallet address as sole authentication
+- Skip gas estimation
+- Ignore transaction failures
+- Use eval() or dangerouslySetInnerHTML with wallet data
+
+## Related Documentation
+- Smart contracts: See [smart-contracts.mdc](mdc:smart-contracts.mdc)
+- Authentication security: See workspace rule `authentication-security`
+- Error handling: See [error-handling.mdc](mdc:error-handling.mdc)
+- wagmi docs: https://wagmi.sh/
+- viem docs: https://viem.sh/

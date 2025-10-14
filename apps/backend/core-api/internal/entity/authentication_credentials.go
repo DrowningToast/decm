@@ -1,10 +1,7 @@
 package entity
 
 import (
-	"decm-database/go/generated"
 	"time"
-
-	"apps/backend/common/pgmapper"
 
 	"github.com/google/uuid"
 )
@@ -35,64 +32,3 @@ type AuthenticationCredential struct {
 	CreatedAt           time.Time `json:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at"`
 } // @name AuthenticationCredential
-
-func (entity *AuthenticationCredential) ToModel() *generated.AuthenticationCredential {
-	var isVerifiedStudent int32 = 0
-	if entity.IsVerifiedStudent {
-		isVerifiedStudent = 1
-	}
-	var isVerifiedOrganizer int32 = 0
-	if entity.IsVerifiedOrganizer {
-		isVerifiedOrganizer = 1
-	}
-
-	return &generated.AuthenticationCredential{
-		ID:                  entity.Id,
-		SolutionStatus:      int32(entity.SolutionStatus),
-		HashedPassword:      pgmapper.StringPtrToPgText(entity.HashedPassword),
-		EncryptedPrivateKey: pgmapper.StringPtrToPgText(entity.EncryptedPrivateKey),
-		WalletAddress:       entity.WalletAddress,
-		GoogleConnectorRef:  pgmapper.StringPtrToPgText(entity.GoogleConnectorRef),
-		GithubConnectorRef:  pgmapper.StringPtrToPgText(entity.GithubConnectorRef),
-		IsVerifiedOrganizer: isVerifiedOrganizer,
-		IsVerifiedStudent:   isVerifiedStudent,
-		CreatedAt:           pgmapper.TimePtrToPgTimestampz(&entity.CreatedAt),
-		UpdatedAt:           pgmapper.TimePtrToPgTimestampz(&entity.UpdatedAt),
-	}
-}
-
-func MapAuthenticationCredentialToEntity(model generated.AuthenticationCredential) AuthenticationCredential {
-	return AuthenticationCredential{
-		Id:                  model.ID,
-		SolutionStatus:      SolutionStatus(model.SolutionStatus),
-		HashedPassword:      pgmapper.PgTextToStringPtr(model.HashedPassword),
-		EncryptedPrivateKey: pgmapper.PgTextToStringPtr(model.EncryptedPrivateKey),
-		WalletAddress:       model.WalletAddress,
-		GoogleConnectorRef:  pgmapper.PgTextToStringPtr(model.GoogleConnectorRef),
-		GithubConnectorRef:  pgmapper.PgTextToStringPtr(model.GithubConnectorRef),
-		IsVerifiedOrganizer: model.IsVerifiedOrganizer == 1,
-		IsVerifiedStudent:   model.IsVerifiedStudent == 1,
-		CreatedAt:           model.CreatedAt.Time,
-		UpdatedAt:           model.UpdatedAt.Time,
-	}
-}
-
-func MapAuthenticationCredentialsToEntities(models []generated.AuthenticationCredential) []AuthenticationCredential {
-	entities := make([]AuthenticationCredential, len(models))
-	for i, model := range models {
-		entities[i] = AuthenticationCredential{
-			Id:                  model.ID,
-			SolutionStatus:      SolutionStatus(model.SolutionStatus),
-			HashedPassword:      pgmapper.PgTextToStringPtr(model.HashedPassword),
-			EncryptedPrivateKey: pgmapper.PgTextToStringPtr(model.EncryptedPrivateKey),
-			WalletAddress:       model.WalletAddress,
-			GoogleConnectorRef:  pgmapper.PgTextToStringPtr(model.GoogleConnectorRef),
-			GithubConnectorRef:  pgmapper.PgTextToStringPtr(model.GithubConnectorRef),
-			IsVerifiedOrganizer: model.IsVerifiedOrganizer == 1,
-			IsVerifiedStudent:   model.IsVerifiedStudent == 1,
-			CreatedAt:           model.CreatedAt.Time,
-			UpdatedAt:           model.UpdatedAt.Time,
-		}
-	}
-	return entities
-}
