@@ -3,8 +3,12 @@ package pgmapper
 import (
 	"time"
 
+	"apps/backend/common/encryptutils"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+// ========== Type Conversion Functions ==========
 
 func PgTextToStringPtr(text pgtype.Text) *string {
 	if text.Valid {
@@ -96,4 +100,42 @@ func Int32ToPgInt4(value int32) pgtype.Int4 {
 		Int32: value,
 		Valid: true,
 	}
+}
+
+// ========== PII Encryption Functions ==========
+
+// EncryptPII encrypts plaintext PII data using AES-GCM
+func EncryptPII(plaintext string, encryptionKey string) (string, error) {
+	return encryptutils.EncryptAESGCM(plaintext, encryptionKey)
+}
+
+// DecryptPII decrypts ciphertext PII data using AES-GCM
+func DecryptPII(ciphertext string, encryptionKey string) (string, error) {
+	return encryptutils.DecryptAESGCM(ciphertext, encryptionKey)
+}
+
+// EncryptStringPtrToPgText encrypts a nullable string pointer and returns pgtype.Text
+// Returns invalid pgtype.Text if the input is nil or empty
+func EncryptStringPtrToPgText(field *string, encryptionKey string) (pgtype.Text, error) {
+	if field == nil || *field == "" {
+		return pgtype.Text{Valid: false}, nil
+	}
+	encrypted, err := EncryptPII(*field, encryptionKey)
+	if err != nil {
+		return pgtype.Text{}, err
+	}
+	return pgtype.Text{String: encrypted, Valid: true}, nil
+}
+
+// DecryptPgTextToStringPtr decrypts a pgtype.Text field and returns a nullable string pointer
+// Returns nil if the pgtype.Text is invalid
+func DecryptPgTextToStringPtr(field pgtype.Text, encryptionKey string) (*string, error) {
+	if !field.Valid {
+		return nil, nil
+	}
+	decrypted, err := DecryptPII(field.String, encryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	return &decrypted, nil
 }

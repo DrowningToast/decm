@@ -3,7 +3,7 @@ package encryptutils
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/rand"
+	"crypto/rand" //nolint:gosec
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"

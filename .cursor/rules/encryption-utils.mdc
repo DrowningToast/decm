@@ -1,0 +1,143 @@
+---
+description: "AES-GCM encryption utilities for PII data encryption"
+globs: apps/backend/**/*.go
+---
+
+# Encryption Utils - AES-GCM
+
+## Overview
+
+The [encryptutils](mdc:apps/backend/common/encryptutils/encryption.go) package provides AES-GCM encryption functions for PII data protection.
+
+## Available Functions
+
+### Recommended: Simple AES-GCM with Password
+
+```go
+import "apps/backend/common/encryptutils"
+
+// Encrypt
+ciphertext, err := encryptutils.EncryptAESGCM(plaintext, password)
+
+// Decrypt
+plaintext, err := encryptutils.DecryptAESGCM(ciphertext, password)
+```
+
+**Key Derivation**: Uses SHA256 to convert password to 32-byte key  
+**Output Format**: Base64-encoded string (safe for TEXT columns)  
+**Nonce**: Randomly generated for each encryption  
+**Authentication**: GCM provides authenticated encryption
+
+### Advanced: AES with Custom Key
+
+```go
+// Use when you have a pre-generated key
+key := []byte{...} // Must be 16, 24, or 32 bytes
+
+ciphertext, err := encryptutils.EncryptAESWithKey(plaintext, key)
+plaintext, err := encryptutils.DecryptAESWithKey(ciphertext, key)
+```
+
+### Utility Functions
+
+```go
+// Generate random 256-bit AES key
+key := encryptutils.GenerateAESKey()
+
+// Derive key from password with salt
+key := encryptutils.KeyFromPassword(password, salt)
+```
+
+## Usage in Repository Layer
+
+### Standard Pattern
+
+```go
+func (r *Repository) encryptPII(plaintext string) (string, error) {
+    // Use PII encryption key from environment
+    return encryptutils.EncryptAESGCM(plaintext, r.piiEncryptionKey)
+}
+
+func (r *Repository) decryptPII(ciphertext string) (string, error) {
+    return encryptutils.DecryptAESGCM(ciphertext, r.piiEncryptionKey)
+}
+```
+
+### With Error Handling
+
+```go
+func (r *Repository) encryptFieldPtr(field *string) (pgtype.Text, error) {
+    if field == nil || *field == "" {
+        return pgtype.Text{Valid: false}, nil
+    }
+    encrypted, err := encryptutils.EncryptAESGCM(*field, r.piiEncryptionKey)
+    if err != nil {
+        return pgtype.Text{}, fmt.Errorf("encryption failed: %w", err)
+    }
+    return pgtype.Text{String: encrypted, Valid: true}, nil
+}
+```
+
+## Security Notes
+
+- ✅ **Always** use `EncryptAESGCM` for PII encryption
+- ✅ **Always** get encryption key from environment variables
+- ✅ Output is safe for database TEXT columns
+- ✅ GCM mode provides authenticated encryption (detects tampering)
+- ❌ **Never** hardcode encryption keys
+- ❌ **Never** reuse keys for different purposes
+- ⚠️ The simple `KeyFromPassword` is basic - use PBKDF2/scrypt for production password derivation
+
+## Environment Configuration
+
+```env
+# Required for PII encryption
+PII_ENCRYPTION_KEY=your-secure-256-bit-key-here
+```
+
+## Error Handling
+
+```go
+encrypted, err := encryptutils.EncryptAESGCM(data, key)
+if err != nil {
+    // Possible errors:
+    // - Invalid key size
+    // - Failed to generate nonce
+    return err
+}
+
+decrypted, err := encryptutils.DecryptAESGCM(encrypted, key)
+if err != nil {
+    // Possible errors:
+    // - Invalid base64 encoding
+    // - Ciphertext too short
+    // - Authentication failed (data tampered)
+    // - Invalid key
+    return err
+}
+```
+
+## Testing
+
+```go
+func TestEncryptDecrypt(t *testing.T) {
+    key := "test-encryption-key-32-bytes!!"
+    plaintext := "sensitive@email.com"
+
+    encrypted, err := encryptutils.EncryptAESGCM(plaintext, key)
+    require.NoError(t, err)
+    require.NotEqual(t, plaintext, encrypted)
+
+    decrypted, err := encryptutils.DecryptAESGCM(encrypted, key)
+    require.NoError(t, err)
+    require.Equal(t, plaintext, decrypted)
+}
+```
+
+## Implementation Details
+
+- **Algorithm**: AES-GCM (Galois/Counter Mode)
+- **Key Size**: 256-bit (derived via SHA256 from password)
+- **Nonce Size**: 12 bytes (GCM standard)
+- **Format**: `nonce || ciphertext` → Base64
+- **Security Level**: Industry standard for authenticated encryption
