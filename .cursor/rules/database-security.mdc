@@ -1,5 +1,4 @@
 ---
-globs: packages/database/queries/*.sql,packages/database/sqlc.yaml,packages/database/migrations/*.sql
 description: "Database security patterns and PII encryption for DECM platform"
 ---
 
@@ -8,76 +7,165 @@ description: "Database security patterns and PII encryption for DECM platform"
 ## 🔐 Core Security Rules
 
 ### PII Fields MUST Be Encrypted
+
 All Personally Identifiable Information encrypted with pgcrypto:
+
 - **Auth**: `google_connector_ref`, `github_connector_ref`, `hashed_password`, `encrypted_private_key`
 - **Profiles**: `first_name`, `last_name`, `email`, `phone_number`, `address`, `bio`, `profile_picture_url`, `academic_institution`, `academic_email`
 
 ### Encryption Key Management
-- ✅ Use `sqlc.arg(encryption_key)` parameter pattern
+
+- ✅ Use `sqlc.arg(encryption_key)::bytea` parameter pattern
 - ✅ Keys from environment variables only
 - ❌ NEVER hardcode encryption keys
 
-## ⚡ Critical Type Safety
+## ⚡ Deterministic Encryption (Critical)
+
+### Why Deterministic Encryption?
+
+**We use deterministic encryption (AES) instead of salted encryption** to enable predictable WHERE clause searches. With salted encryption (`pgp_sym_encrypt`), the same plaintext produces different ciphertext each time, making direct comparisons impossible.
+
+### Encryption Functions
+
+- **Encrypt**: `encrypt(data::bytea, key::bytea, 'aes')`
+- **Decrypt**: `decrypt(encrypted_data, key::bytea, 'aes')`
+- **Convert to text**: `convert_from(decrypted_bytea, 'UTF8')`
+
+### Hash-Based Searching
+
+For fields that need to be searchable (email, OAuth refs), we maintain **both**:
+
+1. Encrypted value (for retrieval)
+2. SHA-256 hash (for WHERE clause matching)
+
+## 🔄 Encryption Patterns
+
+### INSERT/UPDATE (Encrypt)
+
+```sql
+-- Nullable field with encryption
+CASE
+    WHEN sqlc.narg(field_name) IS NOT NULL
+    THEN encrypt(sqlc.narg(field_name)::bytea, sqlc.arg(encryption_key)::bytea, 'aes')
+    ELSE NULL
+END
+
+-- With hash for searchability
+field_name_hash = CASE
+    WHEN sqlc.narg(field_name) IS NOT NULL
+    THEN encode(digest(sqlc.narg(field_name), 'sha256'), 'hex')
+    ELSE NULL
+END
+```
+
+### SELECT (Decrypt)
+
+```sql
+-- Decrypt and convert to text
+CASE
+    WHEN field_name IS NOT NULL
+    THEN convert_from(decrypt(field_name, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+    ELSE NULL
+END::text as field_name
+```
+
+### WHERE Clause (Hash-Based Search)
+
+```sql
+-- Never decrypt in WHERE clause - use hash instead
+WHERE field_name_hash = encode(digest(sqlc.arg(search_value), 'sha256'), 'hex')
+```
+
+## ⚠️ Critical Type Safety
 
 ### ALWAYS Cast CASE Expressions
+
 sqlc loses type information with CASE expressions - explicit casting required:
 
 - **Nullable columns** → `::text`
 - **Non-nullable columns** → `::varchar`
+- **Encryption key** → `::bytea`
 
 ❌ **Never**:
+
 ```sql
 CASE WHEN condition THEN value ELSE NULL END  -- Generates interface{}
 ```
 
 ✅ **Always**:
+
 ```sql
 CASE WHEN condition THEN value ELSE NULL END::text     -- Generates string
 CASE WHEN condition THEN value ELSE NULL END::varchar  -- Generates string
 ```
 
-## 🔄 Encryption Patterns
-
-### INSERT/UPDATE (Encrypt)
-```sql
-first_name = CASE 
-    WHEN sqlc.narg(first_name) IS NOT NULL 
-    THEN pgp_sym_encrypt(sqlc.narg(first_name), sqlc.arg(encryption_key))
-    ELSE first_name
-END::text
-```
-
-### SELECT (Decrypt)
-```sql
-CASE 
-    WHEN first_name IS NOT NULL 
-    THEN pgp_sym_decrypt(first_name::bytea, sqlc.arg(encryption_key))
-    ELSE NULL 
-END::text as first_name
-```
-
 ## 📝 Complete Example
+
+### Authentication Credentials
+
+```sql
+-- name: CreateAuthenticationCredential :one
+INSERT INTO authentication_credentials (
+    google_connector_ref,
+    google_connector_ref_hash
+) VALUES (
+    CASE
+        WHEN sqlc.narg(google_connector_ref)::text IS NOT NULL
+        THEN encrypt(sqlc.narg(google_connector_ref)::bytea, sqlc.arg(encryption_key)::bytea, 'aes')
+        ELSE NULL
+    END,
+    CASE
+        WHEN sqlc.narg(google_connector_ref)::text IS NOT NULL
+        THEN encode(digest(sqlc.narg(google_connector_ref)::text, 'sha256'), 'hex')
+        ELSE NULL
+    END
+) RETURNING
+    id,
+    CASE
+        WHEN google_connector_ref IS NOT NULL
+        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        ELSE NULL
+    END::text as google_connector_ref;
+```
+
+### Search by Encrypted Field
+
+```sql
+-- name: GetAuthenticationCredentialByGoogleConnectorRef :one
+SELECT
+    id,
+    CASE
+        WHEN google_connector_ref IS NOT NULL
+        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        ELSE NULL
+    END::text as google_connector_ref
+FROM authentication_credentials
+WHERE google_connector_ref_hash = encode(digest(sqlc.arg(google_email)::text, 'sha256'), 'hex');
+```
+
+### Update Encrypted Field
+
 ```sql
 -- name: UpdateProfile :one
-UPDATE profiles SET 
-    first_name = CASE 
-        WHEN sqlc.narg(first_name) IS NOT NULL 
-        THEN pgp_sym_encrypt(sqlc.narg(first_name), sqlc.arg(encryption_key))
-        ELSE first_name
-    END::text,
-    email = CASE 
-        WHEN sqlc.narg(email) IS NOT NULL 
-        THEN pgp_sym_encrypt(sqlc.narg(email), sqlc.arg(encryption_key))
+UPDATE profiles SET
+    email = CASE
+        WHEN sqlc.narg(email) IS NOT NULL
+        THEN encrypt(sqlc.narg(email)::bytea, sqlc.arg(encryption_key)::bytea, 'aes')
         ELSE email
-    END::text
+    END::text,
+    email_hash = CASE
+        WHEN sqlc.narg(email) IS NOT NULL
+        THEN encode(digest(sqlc.narg(email), 'sha256'), 'hex')
+        ELSE email_hash
+    END
 WHERE id = sqlc.arg(id)
-RETURNING 
+RETURNING
     id,
-    CASE 
-        WHEN first_name IS NOT NULL 
-        THEN pgp_sym_decrypt(first_name::bytea, sqlc.arg(encryption_key))
-        ELSE NULL 
-    END::text as first_name;
+    CASE
+        WHEN email IS NOT NULL
+        THEN convert_from(decrypt(email, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        ELSE NULL
+    END::text as email;
 ```
 
 ## 🎯 Generated Go Types
@@ -85,45 +173,66 @@ RETURNING
 With correct patterns, sqlc generates optimal types:
 
 **Input Parameters:**
+
 ```go
-FirstName pgtype.Text `json:"first_name"`  // Nullable
-PublicKey string      `json:"public_key"`  // Required
+Email         pgtype.Text `json:"email"`           // Nullable
+EncryptionKey string      `json:"encryption_key"`  // Required (bytea)
 ```
 
 **Return Values:**
+
 ```go
-FirstName string `json:"first_name"`      // Decrypted PII
+Email string `json:"email"`  // Decrypted PII as string
 ```
 
 ## ✅ Development Checklist
 
 Before committing database changes:
-- [ ] PII fields identified and encrypted
-- [ ] Encryption key parameter: `sqlc.arg(encryption_key)`
-- [ ] Type casting applied: `::text` or `::varchar`
-- [ ] Test generation: `bun db:generate`
+
+- [ ] PII fields identified and encrypted with `encrypt()` (not `pgp_sym_encrypt`)
+- [ ] Searchable fields have corresponding hash columns
+- [ ] Encryption key parameter: `sqlc.arg(encryption_key)::bytea`
+- [ ] Type casting applied: `::text`, `::varchar`, or `::bytea`
+- [ ] WHERE clauses use hash comparison, not decryption
+- [ ] Test generation: `pnpm db:generate`
 - [ ] Verify no `interface{}` types in generated Go code
 
 ## 🚨 Security Red Flags
+
 - PII stored unencrypted
+- Using salted encryption (`pgp_sym_encrypt`) - prevents WHERE clause matching
 - Hardcoded encryption keys
 - Missing type casting (generates `interface{}`)
+- Decrypting in WHERE clause (performance issue)
 - SQL injection vulnerabilities
 
 ## 🛠️ Development Commands
+
 ```bash
-bun db:generate     # SQL → Go code generation
-bun db:migrate:up   # Run migrations
-bun compose:up      # Start PostgreSQL
+pnpm db:generate     # SQL → Go code generation
+pnpm db:migrate      # Run migrations
+pnpm compose:up      # Start PostgreSQL
 ```
 
 ## Database Structure
+
 **Core Tables**: `authentication_credentials`, `profiles`, `events`, `event_attendees`, `event_certificates`
 **Extensions**: uuid-ossp, pg_trgm, citext, pgcrypto
 
 **Environment Variables**:
+
 ```env
 DB_HOST=localhost
 DB_PORT=5432
-PII_ENCRYPTION_KEY=your-key-from-env
+PII_ENCRYPTION_KEY=your-32-byte-key-from-env
 ```
+
+## 🔑 Key Differences: Deterministic vs Salted
+
+| Aspect       | Deterministic (`encrypt`)   | Salted (`pgp_sym_encrypt`)   |
+| ------------ | --------------------------- | ---------------------------- |
+| Same input   | Same ciphertext             | Different ciphertext         |
+| WHERE clause | ✅ Possible via hash        | ❌ Not possible              |
+| Security     | Requires hash column        | Slightly more secure         |
+| Use case     | Searchable PII              | Non-searchable secrets       |
+| Function     | `encrypt(data, key, 'aes')` | `pgp_sym_encrypt(data, key)` |

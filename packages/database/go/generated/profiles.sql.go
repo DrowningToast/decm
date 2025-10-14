@@ -51,25 +51,25 @@ INSERT INTO profiles (
     $2,
     CASE 
         WHEN $3 IS NOT NULL 
-        THEN pgp_sym_encrypt($3, $4::varchar)
+        THEN encrypt($3::bytea, $4::bytea, 'aes')
         ELSE NULL 
     END::text,
     $5,
     CASE 
         WHEN $6 IS NOT NULL 
-        THEN pgp_sym_encrypt($6, $4::varchar)
+        THEN encrypt($6::bytea, $4::bytea, 'aes')
         ELSE NULL 
     END::text,
     $7,
     CASE 
         WHEN $8 IS NOT NULL 
-        THEN pgp_sym_encrypt($8, $4::varchar)
+        THEN encrypt($8::bytea, $4::bytea, 'aes')
         ELSE NULL 
     END::text,
     $9,
     CASE 
         WHEN $10 IS NOT NULL 
-        THEN pgp_sym_encrypt($10, $4::varchar)
+        THEN encrypt($10::bytea, $4::bytea, 'aes')
         ELSE NULL 
     END::text,
     CASE 
@@ -80,31 +80,31 @@ INSERT INTO profiles (
     $11,
     CASE 
         WHEN $12 IS NOT NULL 
-        THEN pgp_sym_encrypt($12, $4::varchar)
+        THEN encrypt($12::bytea, $4::bytea, 'aes')
         ELSE NULL 
     END::text,
     $13,
     CASE 
         WHEN $14 IS NOT NULL 
-        THEN pgp_sym_encrypt($14, $4::varchar)
+        THEN encrypt($14::bytea, $4::bytea, 'aes')
         ELSE NULL 
     END::text,
     $15,
     CASE 
         WHEN $16 IS NOT NULL 
-        THEN pgp_sym_encrypt($16, $4::varchar)
+        THEN encrypt($16::bytea, $4::bytea, 'aes')
         ELSE NULL 
     END::text,
     $17,
     CASE 
         WHEN $18 IS NOT NULL 
-        THEN pgp_sym_encrypt($18, $4::varchar)
+        THEN encrypt($18::bytea, $4::bytea, 'aes')
         ELSE NULL 
     END::text,
     $19,
     CASE 
         WHEN $20 IS NOT NULL 
-        THEN pgp_sym_encrypt($20, $4::varchar)
+        THEN encrypt($20::bytea, $4::bytea, 'aes')
         ELSE NULL 
     END::text
 ) RETURNING 
@@ -113,55 +113,55 @@ INSERT INTO profiles (
     is_profile_picture_public,
     CASE 
         WHEN profile_picture_url IS NOT NULL 
-        THEN pgp_sym_decrypt(profile_picture_url::bytea, $4::varchar)
+        THEN convert_from(decrypt(profile_picture_url, $4::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as profile_picture_url,
     is_first_name_public,
     CASE 
         WHEN first_name IS NOT NULL 
-        THEN pgp_sym_decrypt(first_name::bytea, $4::varchar)
+        THEN convert_from(decrypt(first_name, $4::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as first_name,
     is_last_name_public,
     CASE 
         WHEN last_name IS NOT NULL 
-        THEN pgp_sym_decrypt(last_name::bytea, $4::varchar)
+        THEN convert_from(decrypt(last_name, $4::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as last_name,
     is_email_public,
     CASE 
         WHEN email IS NOT NULL 
-        THEN pgp_sym_decrypt(email::bytea, $4::varchar)
+        THEN convert_from(decrypt(email, $4::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as email,
     is_bio_public,
     CASE 
         WHEN bio IS NOT NULL 
-        THEN pgp_sym_decrypt(bio::bytea, $4::varchar)
+        THEN convert_from(decrypt(bio, $4::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as bio,
     is_phone_number_public,
     CASE 
         WHEN phone_number IS NOT NULL 
-        THEN pgp_sym_decrypt(phone_number::bytea, $4::varchar)
+        THEN convert_from(decrypt(phone_number, $4::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as phone_number,
     is_address_public,
     CASE 
         WHEN address IS NOT NULL 
-        THEN pgp_sym_decrypt(address::bytea, $4::varchar)
+        THEN convert_from(decrypt(address, $4::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as address,
     is_academic_institution_public,
     CASE 
         WHEN academic_institution IS NOT NULL 
-        THEN pgp_sym_decrypt(academic_institution::bytea, $4::varchar)
+        THEN convert_from(decrypt(academic_institution, $4::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as academic_institution,
     is_academic_email_public,
     CASE 
         WHEN academic_email IS NOT NULL 
-        THEN pgp_sym_decrypt(academic_email::bytea, $4::varchar)
+        THEN convert_from(decrypt(academic_email, $4::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as academic_email,
     created_at,
@@ -172,7 +172,7 @@ type CreateProfileParams struct {
 	AuthenticationCredentialID  uuid.UUID   `json:"authentication_credential_id"`
 	IsProfilePicturePublic      int32       `json:"is_profile_picture_public"`
 	ProfilePictureUrl           pgtype.Text `json:"profile_picture_url"`
-	EncryptionKey               string      `json:"encryption_key"`
+	EncryptionKey               []byte      `json:"encryption_key"`
 	IsFirstNamePublic           int32       `json:"is_first_name_public"`
 	FirstName                   pgtype.Text `json:"first_name"`
 	IsLastNamePublic            int32       `json:"is_last_name_public"`
@@ -293,55 +293,55 @@ SELECT
     is_profile_picture_public,
     CASE 
         WHEN profile_picture_url IS NOT NULL 
-        THEN pgp_sym_decrypt(profile_picture_url::bytea, $1::varchar)
+        THEN convert_from(decrypt(profile_picture_url, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as profile_picture_url,
     is_first_name_public,
     CASE 
         WHEN first_name IS NOT NULL 
-        THEN pgp_sym_decrypt(first_name::bytea, $1::varchar)
+        THEN convert_from(decrypt(first_name, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as first_name,
     is_last_name_public,
     CASE 
         WHEN last_name IS NOT NULL 
-        THEN pgp_sym_decrypt(last_name::bytea, $1::varchar)
+        THEN convert_from(decrypt(last_name, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as last_name,
     is_email_public,
     CASE 
         WHEN email IS NOT NULL 
-        THEN pgp_sym_decrypt(email::bytea, $1::varchar)
+        THEN convert_from(decrypt(email, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as email,
     is_bio_public,
     CASE 
         WHEN bio IS NOT NULL 
-        THEN pgp_sym_decrypt(bio::bytea, $1::varchar)
+        THEN convert_from(decrypt(bio, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as bio,
     is_phone_number_public,
     CASE 
         WHEN phone_number IS NOT NULL 
-        THEN pgp_sym_decrypt(phone_number::bytea, $1::varchar)
+        THEN convert_from(decrypt(phone_number, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as phone_number,
     is_address_public,
     CASE 
         WHEN address IS NOT NULL 
-        THEN pgp_sym_decrypt(address::bytea, $1::varchar)
+        THEN convert_from(decrypt(address, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as address,
     is_academic_institution_public,
     CASE 
         WHEN academic_institution IS NOT NULL 
-        THEN pgp_sym_decrypt(academic_institution::bytea, $1::varchar)
+        THEN convert_from(decrypt(academic_institution, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as academic_institution,
     is_academic_email_public,
     CASE 
         WHEN academic_email IS NOT NULL 
-        THEN pgp_sym_decrypt(academic_email::bytea, $1::varchar)
+        THEN convert_from(decrypt(academic_email, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as academic_email,
     created_at,
@@ -351,7 +351,7 @@ WHERE authentication_credential_id = $2
 `
 
 type GetProfileByAuthCredentialIDParams struct {
-	EncryptionKey              string    `json:"encryption_key"`
+	EncryptionKey              []byte    `json:"encryption_key"`
 	AuthenticationCredentialID uuid.UUID `json:"authentication_credential_id"`
 }
 
@@ -417,55 +417,55 @@ SELECT
     is_profile_picture_public,
     CASE 
         WHEN profile_picture_url IS NOT NULL 
-        THEN pgp_sym_decrypt(profile_picture_url::bytea, $1::varchar)
+        THEN convert_from(decrypt(profile_picture_url, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as profile_picture_url,
     is_first_name_public,
     CASE 
         WHEN first_name IS NOT NULL 
-        THEN pgp_sym_decrypt(first_name::bytea, $1::varchar)
+        THEN convert_from(decrypt(first_name, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as first_name,
     is_last_name_public,
     CASE 
         WHEN last_name IS NOT NULL 
-        THEN pgp_sym_decrypt(last_name::bytea, $1::varchar)
+        THEN convert_from(decrypt(last_name, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as last_name,
     is_email_public,
     CASE 
         WHEN email IS NOT NULL 
-        THEN pgp_sym_decrypt(email::bytea, $1::varchar)
+        THEN convert_from(decrypt(email, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as email,
     is_bio_public,
     CASE 
         WHEN bio IS NOT NULL 
-        THEN pgp_sym_decrypt(bio::bytea, $1::varchar)
+        THEN convert_from(decrypt(bio, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as bio,
     is_phone_number_public,
     CASE 
         WHEN phone_number IS NOT NULL 
-        THEN pgp_sym_decrypt(phone_number::bytea, $1::varchar)
+        THEN convert_from(decrypt(phone_number, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as phone_number,
     is_address_public,
     CASE 
         WHEN address IS NOT NULL 
-        THEN pgp_sym_decrypt(address::bytea, $1::varchar)
+        THEN convert_from(decrypt(address, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as address,
     is_academic_institution_public,
     CASE 
         WHEN academic_institution IS NOT NULL 
-        THEN pgp_sym_decrypt(academic_institution::bytea, $1::varchar)
+        THEN convert_from(decrypt(academic_institution, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as academic_institution,
     is_academic_email_public,
     CASE 
         WHEN academic_email IS NOT NULL 
-        THEN pgp_sym_decrypt(academic_email::bytea, $1::varchar)
+        THEN convert_from(decrypt(academic_email, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as academic_email,
     created_at,
@@ -475,7 +475,7 @@ WHERE email_hash = encode(digest($2, 'sha256'), 'hex')
 `
 
 type GetProfileByEmailParams struct {
-	EncryptionKey string      `json:"encryption_key"`
+	EncryptionKey []byte      `json:"encryption_key"`
 	EmailSearch   pgtype.Text `json:"email_search"`
 }
 
@@ -542,55 +542,55 @@ SELECT
     is_profile_picture_public,
     CASE 
         WHEN profile_picture_url IS NOT NULL 
-        THEN pgp_sym_decrypt(profile_picture_url::bytea, $1::varchar)
+        THEN convert_from(decrypt(profile_picture_url, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as profile_picture_url,
     is_first_name_public,
     CASE 
         WHEN first_name IS NOT NULL 
-        THEN pgp_sym_decrypt(first_name::bytea, $1::varchar)
+        THEN convert_from(decrypt(first_name, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as first_name,
     is_last_name_public,
     CASE 
         WHEN last_name IS NOT NULL 
-        THEN pgp_sym_decrypt(last_name::bytea, $1::varchar)
+        THEN convert_from(decrypt(last_name, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as last_name,
     is_email_public,
     CASE 
         WHEN email IS NOT NULL 
-        THEN pgp_sym_decrypt(email::bytea, $1::varchar)
+        THEN convert_from(decrypt(email, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as email,
     is_bio_public,
     CASE 
         WHEN bio IS NOT NULL 
-        THEN pgp_sym_decrypt(bio::bytea, $1::varchar)
+        THEN convert_from(decrypt(bio, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as bio,
     is_phone_number_public,
     CASE 
         WHEN phone_number IS NOT NULL 
-        THEN pgp_sym_decrypt(phone_number::bytea, $1::varchar)
+        THEN convert_from(decrypt(phone_number, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as phone_number,
     is_address_public,
     CASE 
         WHEN address IS NOT NULL 
-        THEN pgp_sym_decrypt(address::bytea, $1::varchar)
+        THEN convert_from(decrypt(address, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as address,
     is_academic_institution_public,
     CASE 
         WHEN academic_institution IS NOT NULL 
-        THEN pgp_sym_decrypt(academic_institution::bytea, $1::varchar)
+        THEN convert_from(decrypt(academic_institution, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as academic_institution,
     is_academic_email_public,
     CASE 
         WHEN academic_email IS NOT NULL 
-        THEN pgp_sym_decrypt(academic_email::bytea, $1::varchar)
+        THEN convert_from(decrypt(academic_email, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as academic_email,
     created_at,
@@ -600,7 +600,7 @@ WHERE id = $2
 `
 
 type GetProfileByIDParams struct {
-	EncryptionKey string    `json:"encryption_key"`
+	EncryptionKey []byte    `json:"encryption_key"`
 	ID            uuid.UUID `json:"id"`
 }
 
@@ -666,55 +666,55 @@ SELECT
     is_profile_picture_public,
     CASE 
         WHEN profile_picture_url IS NOT NULL 
-        THEN pgp_sym_decrypt(profile_picture_url::bytea, $1::varchar)
+        THEN convert_from(decrypt(profile_picture_url, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as profile_picture_url,
     is_first_name_public,
     CASE 
         WHEN first_name IS NOT NULL 
-        THEN pgp_sym_decrypt(first_name::bytea, $1::varchar)
+        THEN convert_from(decrypt(first_name, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as first_name,
     is_last_name_public,
     CASE 
         WHEN last_name IS NOT NULL 
-        THEN pgp_sym_decrypt(last_name::bytea, $1::varchar)
+        THEN convert_from(decrypt(last_name, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as last_name,
     is_email_public,
     CASE 
         WHEN email IS NOT NULL 
-        THEN pgp_sym_decrypt(email::bytea, $1::varchar)
+        THEN convert_from(decrypt(email, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as email,
     is_bio_public,
     CASE 
         WHEN bio IS NOT NULL 
-        THEN pgp_sym_decrypt(bio::bytea, $1::varchar)
+        THEN convert_from(decrypt(bio, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as bio,
     is_phone_number_public,
     CASE 
         WHEN phone_number IS NOT NULL 
-        THEN pgp_sym_decrypt(phone_number::bytea, $1::varchar)
+        THEN convert_from(decrypt(phone_number, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as phone_number,
     is_address_public,
     CASE 
         WHEN address IS NOT NULL 
-        THEN pgp_sym_decrypt(address::bytea, $1::varchar)
+        THEN convert_from(decrypt(address, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as address,
     is_academic_institution_public,
     CASE 
         WHEN academic_institution IS NOT NULL 
-        THEN pgp_sym_decrypt(academic_institution::bytea, $1::varchar)
+        THEN convert_from(decrypt(academic_institution, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as academic_institution,
     is_academic_email_public,
     CASE 
         WHEN academic_email IS NOT NULL 
-        THEN pgp_sym_decrypt(academic_email::bytea, $1::varchar)
+        THEN convert_from(decrypt(academic_email, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as academic_email,
     created_at,
@@ -725,7 +725,7 @@ LIMIT $3 OFFSET $2
 `
 
 type ListProfilesParams struct {
-	EncryptionKey string `json:"encryption_key"`
+	EncryptionKey []byte `json:"encryption_key"`
 	OffsetCount   int32  `json:"offset_count"`
 	LimitCount    int32  `json:"limit_count"`
 }
@@ -803,25 +803,25 @@ UPDATE profiles SET
     is_profile_picture_public = COALESCE($1, is_profile_picture_public),
     profile_picture_url = CASE 
         WHEN $2 IS NOT NULL 
-        THEN pgp_sym_encrypt($2, $3::varchar)
+        THEN encrypt($2::bytea, $3::bytea, 'aes')
         ELSE profile_picture_url
     END::text,
     is_first_name_public = COALESCE($4, is_first_name_public),
     first_name = CASE 
         WHEN $5 IS NOT NULL 
-        THEN pgp_sym_encrypt($5, $3::varchar)
+        THEN encrypt($5::bytea, $3::bytea, 'aes')
         ELSE first_name
     END::text,
     is_last_name_public = COALESCE($6, is_last_name_public),
     last_name = CASE 
         WHEN $7 IS NOT NULL 
-        THEN pgp_sym_encrypt($7, $3::varchar)
+        THEN encrypt($7::bytea, $3::bytea, 'aes')
         ELSE last_name
     END::text,
     is_email_public = COALESCE($8, is_email_public),
     email = CASE 
         WHEN $9 IS NOT NULL 
-        THEN pgp_sym_encrypt($9, $3::varchar)
+        THEN encrypt($9::bytea, $3::bytea, 'aes')
         ELSE email
     END::text,
     email_hash = CASE 
@@ -832,31 +832,31 @@ UPDATE profiles SET
     is_bio_public = COALESCE($10, is_bio_public),
     bio = CASE 
         WHEN $11 IS NOT NULL 
-        THEN pgp_sym_encrypt($11, $3::varchar)
+        THEN encrypt($11::bytea, $3::bytea, 'aes')
         ELSE bio
     END::text,
     is_phone_number_public = COALESCE($12, is_phone_number_public),
     phone_number = CASE 
         WHEN $13 IS NOT NULL 
-        THEN pgp_sym_encrypt($13, $3::varchar)
+        THEN encrypt($13::bytea, $3::bytea, 'aes')
         ELSE phone_number
     END::text,
     is_address_public = COALESCE($14, is_address_public),
     address = CASE 
         WHEN $15 IS NOT NULL 
-        THEN pgp_sym_encrypt($15, $3::varchar)
+        THEN encrypt($15::bytea, $3::bytea, 'aes')
         ELSE address
     END::text,
     is_academic_institution_public = COALESCE($16, is_academic_institution_public),
     academic_institution = CASE 
         WHEN $17 IS NOT NULL 
-        THEN pgp_sym_encrypt($17, $3::varchar)
+        THEN encrypt($17::bytea, $3::bytea, 'aes')
         ELSE academic_institution
     END::text,
     is_academic_email_public = COALESCE($18, is_academic_email_public),
     academic_email = CASE 
         WHEN $19 IS NOT NULL 
-        THEN pgp_sym_encrypt($19, $3::varchar)
+        THEN encrypt($19::bytea, $3::bytea, 'aes')
         ELSE academic_email
     END::text,
     updated_at = NOW()
@@ -867,55 +867,55 @@ RETURNING
     is_profile_picture_public,
     CASE 
         WHEN profile_picture_url IS NOT NULL 
-        THEN pgp_sym_decrypt(profile_picture_url::bytea, $3::varchar)
+        THEN convert_from(decrypt(profile_picture_url, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as profile_picture_url,
     is_first_name_public,
     CASE 
         WHEN first_name IS NOT NULL 
-        THEN pgp_sym_decrypt(first_name::bytea, $3::varchar)
+        THEN convert_from(decrypt(first_name, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as first_name,
     is_last_name_public,
     CASE 
         WHEN last_name IS NOT NULL 
-        THEN pgp_sym_decrypt(last_name::bytea, $3::varchar)
+        THEN convert_from(decrypt(last_name, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as last_name,
     is_email_public,
     CASE 
         WHEN email IS NOT NULL 
-        THEN pgp_sym_decrypt(email::bytea, $3::varchar)
+        THEN convert_from(decrypt(email, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as email,
     is_bio_public,
     CASE 
         WHEN bio IS NOT NULL 
-        THEN pgp_sym_decrypt(bio::bytea, $3::varchar)
+        THEN convert_from(decrypt(bio, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as bio,
     is_phone_number_public,
     CASE 
         WHEN phone_number IS NOT NULL 
-        THEN pgp_sym_decrypt(phone_number::bytea, $3::varchar)
+        THEN convert_from(decrypt(phone_number, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as phone_number,
     is_address_public,
     CASE 
         WHEN address IS NOT NULL 
-        THEN pgp_sym_decrypt(address::bytea, $3::varchar)
+        THEN convert_from(decrypt(address, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as address,
     is_academic_institution_public,
     CASE 
         WHEN academic_institution IS NOT NULL 
-        THEN pgp_sym_decrypt(academic_institution::bytea, $3::varchar)
+        THEN convert_from(decrypt(academic_institution, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as academic_institution,
     is_academic_email_public,
     CASE 
         WHEN academic_email IS NOT NULL 
-        THEN pgp_sym_decrypt(academic_email::bytea, $3::varchar)
+        THEN convert_from(decrypt(academic_email, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as academic_email,
     created_at,
@@ -925,7 +925,7 @@ RETURNING
 type UpdateProfileParams struct {
 	IsProfilePicturePublic      pgtype.Int4 `json:"is_profile_picture_public"`
 	ProfilePictureUrl           pgtype.Text `json:"profile_picture_url"`
-	EncryptionKey               string      `json:"encryption_key"`
+	EncryptionKey               []byte      `json:"encryption_key"`
 	IsFirstNamePublic           pgtype.Int4 `json:"is_first_name_public"`
 	FirstName                   pgtype.Text `json:"first_name"`
 	IsLastNamePublic            pgtype.Int4 `json:"is_last_name_public"`
@@ -1026,25 +1026,25 @@ UPDATE profiles SET
     is_profile_picture_public = COALESCE($1, is_profile_picture_public),
     profile_picture_url = CASE 
         WHEN $2 IS NOT NULL 
-        THEN pgp_sym_encrypt($2, $3::varchar)
+        THEN encrypt($2::bytea, $3::bytea, 'aes')
         ELSE profile_picture_url
     END::text,
     is_first_name_public = COALESCE($4, is_first_name_public),
     first_name = CASE 
         WHEN $5 IS NOT NULL 
-        THEN pgp_sym_encrypt($5, $3::varchar)
+        THEN encrypt($5::bytea, $3::bytea, 'aes')
         ELSE first_name
     END::text,
     is_last_name_public = COALESCE($6, is_last_name_public),
     last_name = CASE 
         WHEN $7 IS NOT NULL 
-        THEN pgp_sym_encrypt($7, $3::varchar)
+        THEN encrypt($7::bytea, $3::bytea, 'aes')
         ELSE last_name
     END::text,
     is_email_public = COALESCE($8, is_email_public),
     email = CASE 
         WHEN $9 IS NOT NULL 
-        THEN pgp_sym_encrypt($9, $3::varchar)
+        THEN encrypt($9::bytea, $3::bytea, 'aes')
         ELSE email
     END::text,
     email_hash = CASE 
@@ -1055,31 +1055,31 @@ UPDATE profiles SET
     is_bio_public = COALESCE($10, is_bio_public),
     bio = CASE 
         WHEN $11 IS NOT NULL 
-        THEN pgp_sym_encrypt($11, $3::varchar)
+        THEN encrypt($11::bytea, $3::bytea, 'aes')
         ELSE bio
     END::text,
     is_phone_number_public = COALESCE($12, is_phone_number_public),
     phone_number = CASE 
         WHEN $13 IS NOT NULL 
-        THEN pgp_sym_encrypt($13, $3::varchar)
+        THEN encrypt($13::bytea, $3::bytea, 'aes')
         ELSE phone_number
     END::text,
     is_address_public = COALESCE($14, is_address_public),
     address = CASE 
         WHEN $15 IS NOT NULL 
-        THEN pgp_sym_encrypt($15, $3::varchar)
+        THEN encrypt($15::bytea, $3::bytea, 'aes')
         ELSE address
     END::text,
     is_academic_institution_public = COALESCE($16, is_academic_institution_public),
     academic_institution = CASE 
         WHEN $17 IS NOT NULL 
-        THEN pgp_sym_encrypt($17, $3::varchar)
+        THEN encrypt($17::bytea, $3::bytea, 'aes')
         ELSE academic_institution
     END::text,
     is_academic_email_public = COALESCE($18, is_academic_email_public),
     academic_email = CASE 
         WHEN $19 IS NOT NULL 
-        THEN pgp_sym_encrypt($19, $3::varchar)
+        THEN encrypt($19::bytea, $3::bytea, 'aes')
         ELSE academic_email
     END::text,
     updated_at = NOW()
@@ -1090,55 +1090,55 @@ RETURNING
     is_profile_picture_public,
     CASE 
         WHEN profile_picture_url IS NOT NULL 
-        THEN pgp_sym_decrypt(profile_picture_url::bytea, $3::varchar)
+        THEN convert_from(decrypt(profile_picture_url, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as profile_picture_url,
     is_first_name_public,
     CASE 
         WHEN first_name IS NOT NULL 
-        THEN pgp_sym_decrypt(first_name::bytea, $3::varchar)
+        THEN convert_from(decrypt(first_name, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as first_name,
     is_last_name_public,
     CASE 
         WHEN last_name IS NOT NULL 
-        THEN pgp_sym_decrypt(last_name::bytea, $3::varchar)
+        THEN convert_from(decrypt(last_name, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as last_name,
     is_email_public,
     CASE 
         WHEN email IS NOT NULL 
-        THEN pgp_sym_decrypt(email::bytea, $3::varchar)
+        THEN convert_from(decrypt(email, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as email,
     is_bio_public,
     CASE 
         WHEN bio IS NOT NULL 
-        THEN pgp_sym_decrypt(bio::bytea, $3::varchar)
+        THEN convert_from(decrypt(bio, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as bio,
     is_phone_number_public,
     CASE 
         WHEN phone_number IS NOT NULL 
-        THEN pgp_sym_decrypt(phone_number::bytea, $3::varchar)
+        THEN convert_from(decrypt(phone_number, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as phone_number,
     is_address_public,
     CASE 
         WHEN address IS NOT NULL 
-        THEN pgp_sym_decrypt(address::bytea, $3::varchar)
+        THEN convert_from(decrypt(address, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as address,
     is_academic_institution_public,
     CASE 
         WHEN academic_institution IS NOT NULL 
-        THEN pgp_sym_decrypt(academic_institution::bytea, $3::varchar)
+        THEN convert_from(decrypt(academic_institution, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as academic_institution,
     is_academic_email_public,
     CASE 
         WHEN academic_email IS NOT NULL 
-        THEN pgp_sym_decrypt(academic_email::bytea, $3::varchar)
+        THEN convert_from(decrypt(academic_email, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as academic_email,
     created_at,
@@ -1148,7 +1148,7 @@ RETURNING
 type UpdateProfileByAuthenticationCredentialIdParams struct {
 	IsProfilePicturePublic      pgtype.Int4 `json:"is_profile_picture_public"`
 	ProfilePictureUrl           pgtype.Text `json:"profile_picture_url"`
-	EncryptionKey               string      `json:"encryption_key"`
+	EncryptionKey               []byte      `json:"encryption_key"`
 	IsFirstNamePublic           pgtype.Int4 `json:"is_first_name_public"`
 	FirstName                   pgtype.Text `json:"first_name"`
 	IsLastNamePublic            pgtype.Int4 `json:"is_last_name_public"`
