@@ -290,6 +290,57 @@
             }
         }
     },
+    "participantSettings": {
+        "pageTitle": "Participant Settings",
+        "pageDescription": "Configure registration requirements and participant information fields for your event",
+        "registrationSettings": "Registration Settings",
+        "registrationSettingsDescription": "Configure how participants can register for your event",
+        "participantRequirements": "Participant Requirements",
+        "participantRequirementsDescription": "Specify which information fields participants must provide during registration",
+        "basicInformation": "Basic Information",
+        "additionalInformation": "Additional Information",
+        "academicInformation": "Academic Information",
+        "eventType": "Event Type",
+        "eventTypePublic": "Public",
+        "eventTypePrivate": "Private",
+        "eventTypeDescription": "Public events are visible to everyone. Private events require approval or invitation.",
+        "bookingRequired": "Booking Approval Required",
+        "bookingRequiredDescription": "Participants must wait for approval before their registration is confirmed",
+        "ticketTransferable": "Allow Ticket Transfer",
+        "ticketTransferableDescription": "Allow participants to transfer their tickets to others",
+        "fieldRequirement": {
+            "notRequired": "Not Required",
+            "optional": "Optional",
+            "required": "Required"
+        },
+        "fields": {
+            "firstName": "First Name",
+            "lastName": "Last Name",
+            "email": "Email Address",
+            "bio": "Biography",
+            "phoneNumber": "Phone Number",
+            "address": "Address",
+            "academicInstitution": "Academic Institution",
+            "academicEmail": "Academic Email"
+        },
+        "saveSettings": "Save Settings",
+        "saveSuccess": "Participant settings saved successfully",
+        "saveError": "Failed to save participant settings. Please try again.",
+        "tabs": {
+            "settings": "Settings",
+            "preview": "Preview"
+        },
+        "preview": {
+            "title": "Registration Form Preview",
+            "description": "This is how the registration form will appear to participants",
+            "enter": "Enter",
+            "optional": "Optional",
+            "bookingRequired": "Approval Required",
+            "transferable": "Transferable",
+            "register": "Register for Event",
+            "note": "This is a preview only. The form is disabled."
+        }
+    },
     "credentials": {
         "title": "Credentials",
         "myCredentials": "My Credentials",
