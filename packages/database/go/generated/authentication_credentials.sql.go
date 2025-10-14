@@ -74,7 +74,7 @@ INSERT INTO authentication_credentials (
     $4,
     CASE 
         WHEN $5::text IS NOT NULL 
-        THEN pgp_sym_encrypt($5::text, $6::text)
+        THEN encrypt($5::bytea, $6::bytea, 'aes')
         ELSE NULL 
     END,
     CASE 
@@ -84,7 +84,7 @@ INSERT INTO authentication_credentials (
     END,
     CASE 
         WHEN $7::text IS NOT NULL 
-        THEN pgp_sym_encrypt($7::text, $6::text)
+        THEN encrypt($7::bytea, $6::bytea, 'aes')
         ELSE NULL 
     END,
     CASE 
@@ -102,14 +102,14 @@ INSERT INTO authentication_credentials (
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref, $6::text)
+        THEN convert_from(decrypt(google_connector_ref, $6::bytea, 'aes'), 'UTF8')
         ELSE NULL 
-    END::text as google_connector_ref,  -- REMOVED ::bytea cast from decrypt input
+    END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref, $6::text)
+        THEN convert_from(decrypt(github_connector_ref, $6::bytea, 'aes'), 'UTF8')
         ELSE NULL 
-    END::text as github_connector_ref,  -- REMOVED ::bytea cast from decrypt input
+    END::text as github_connector_ref,
     is_verified_organizer,
     is_verified_student,
     created_at,
@@ -122,7 +122,7 @@ type CreateAuthenticationCredentialParams struct {
 	EncryptedPrivateKey []byte      `json:"encrypted_private_key"`
 	WalletAddress       string      `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text `json:"google_connector_ref"`
-	EncryptionKey       pgtype.Text `json:"encryption_key"`
+	EncryptionKey       []byte      `json:"encryption_key"`
 	GithubConnectorRef  pgtype.Text `json:"github_connector_ref"`
 	IsVerifiedOrganizer int32       `json:"is_verified_organizer"`
 	IsVerifiedStudent   int32       `json:"is_verified_student"`
@@ -190,12 +190,12 @@ SELECT
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref, $1::text)
+        THEN convert_from(decrypt(google_connector_ref, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref, $1::text)
+        THEN convert_from(decrypt(github_connector_ref, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -207,7 +207,7 @@ WHERE google_connector_ref_hash = encode(digest($2::text, 'sha256'), 'hex')
 `
 
 type GetAuthenticationCredentialByGoogleConnectorRefParams struct {
-	EncryptionKey pgtype.Text `json:"encryption_key"`
+	EncryptionKey []byte      `json:"encryption_key"`
 	GoogleEmail   pgtype.Text `json:"google_email"`
 }
 
@@ -253,12 +253,12 @@ SELECT
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $1::varchar)
+        THEN convert_from(decrypt(google_connector_ref, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $1::varchar)
+        THEN convert_from(decrypt(github_connector_ref, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -270,7 +270,7 @@ WHERE id = $2
 `
 
 type GetAuthenticationCredentialByIdParams struct {
-	EncryptionKey string    `json:"encryption_key"`
+	EncryptionKey []byte    `json:"encryption_key"`
 	ID            uuid.UUID `json:"id"`
 }
 
@@ -316,12 +316,12 @@ SELECT
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $1::varchar)
+        THEN convert_from(decrypt(google_connector_ref, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $1::varchar)
+        THEN convert_from(decrypt(github_connector_ref, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -333,7 +333,7 @@ WHERE wallet_address = $2
 `
 
 type GetAuthenticationCredentialByWalletAddressParams struct {
-	EncryptionKey string `json:"encryption_key"`
+	EncryptionKey []byte `json:"encryption_key"`
 	WalletAddress string `json:"wallet_address"`
 }
 
@@ -379,12 +379,12 @@ SELECT
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $1::varchar)
+        THEN convert_from(decrypt(google_connector_ref, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $1::varchar)
+        THEN convert_from(decrypt(github_connector_ref, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -398,7 +398,7 @@ LIMIT $4 OFFSET $3
 `
 
 type GetCredentialsBySolutionStatusParams struct {
-	EncryptionKey  string `json:"encryption_key"`
+	EncryptionKey  []byte `json:"encryption_key"`
 	SolutionStatus int32  `json:"solution_status"`
 	OffsetCount    int32  `json:"offset_count"`
 	LimitCount     int32  `json:"limit_count"`
@@ -464,12 +464,12 @@ SELECT
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref, $1::varchar)
+        THEN convert_from(decrypt(google_connector_ref, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref, $1::varchar)
+        THEN convert_from(decrypt(github_connector_ref, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -484,7 +484,7 @@ LIMIT $5 OFFSET $4
 `
 
 type GetCredentialsByVerificationStatusParams struct {
-	EncryptionKey       string      `json:"encryption_key"`
+	EncryptionKey       []byte      `json:"encryption_key"`
 	IsVerifiedOrganizer interface{} `json:"is_verified_organizer"`
 	IsVerifiedStudent   interface{} `json:"is_verified_student"`
 	OffsetCount         int32       `json:"offset_count"`
@@ -552,12 +552,12 @@ SELECT
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $1::varchar)
+        THEN convert_from(decrypt(google_connector_ref, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $1::varchar)
+        THEN convert_from(decrypt(github_connector_ref, $1::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -570,7 +570,7 @@ LIMIT $3 OFFSET $2
 `
 
 type ListAuthenticationCredentialsParams struct {
-	EncryptionKey string `json:"encryption_key"`
+	EncryptionKey []byte `json:"encryption_key"`
 	OffsetCount   int32  `json:"offset_count"`
 	LimitCount    int32  `json:"limit_count"`
 }
@@ -635,12 +635,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref, $2::varchar)
+        THEN convert_from(decrypt(google_connector_ref, $2::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref, $2::varchar)
+        THEN convert_from(decrypt(github_connector_ref, $2::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -651,7 +651,7 @@ RETURNING
 
 type RemoveGithubConnectorParams struct {
 	ID            uuid.UUID `json:"id"`
-	EncryptionKey string    `json:"encryption_key"`
+	EncryptionKey []byte    `json:"encryption_key"`
 }
 
 type RemoveGithubConnectorRow struct {
@@ -701,12 +701,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref, $2::varchar)
+        THEN convert_from(decrypt(google_connector_ref, $2::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref, $2::varchar)
+        THEN convert_from(decrypt(github_connector_ref, $2::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -717,7 +717,7 @@ RETURNING
 
 type RemoveGoogleConnectorParams struct {
 	ID            uuid.UUID `json:"id"`
-	EncryptionKey string    `json:"encryption_key"`
+	EncryptionKey []byte    `json:"encryption_key"`
 }
 
 type RemoveGoogleConnectorRow struct {
@@ -755,7 +755,7 @@ func (q *Queries) RemoveGoogleConnector(ctx context.Context, arg RemoveGoogleCon
 
 const SetGithubConnector = `-- name: SetGithubConnector :one
 UPDATE authentication_credentials SET 
-    github_connector_ref = pgp_sym_encrypt($1, $2::varchar),
+    github_connector_ref = encrypt($1::bytea, $2::bytea, 'aes'),
     github_connector_ref_hash = encode(digest($1, 'sha256'), 'hex'),
     updated_at = NOW()
 WHERE id = $3 
@@ -767,12 +767,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref, $2::varchar)
+        THEN convert_from(decrypt(google_connector_ref, $2::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref, $2::varchar)
+        THEN convert_from(decrypt(github_connector_ref, $2::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -782,9 +782,9 @@ RETURNING
 `
 
 type SetGithubConnectorParams struct {
-	GithubConnectorRef pgtype.Text `json:"github_connector_ref"`
-	EncryptionKey      string      `json:"encryption_key"`
-	ID                 uuid.UUID   `json:"id"`
+	GithubConnectorRef []byte    `json:"github_connector_ref"`
+	EncryptionKey      []byte    `json:"encryption_key"`
+	ID                 uuid.UUID `json:"id"`
 }
 
 type SetGithubConnectorRow struct {
@@ -822,7 +822,7 @@ func (q *Queries) SetGithubConnector(ctx context.Context, arg SetGithubConnector
 
 const SetGoogleConnector = `-- name: SetGoogleConnector :one
 UPDATE authentication_credentials SET 
-    google_connector_ref = pgp_sym_encrypt($1, $2::varchar),
+    google_connector_ref = encrypt($1::bytea, $2::bytea, 'aes'),
     google_connector_ref_hash = encode(digest($1, 'sha256'), 'hex'),
     updated_at = NOW()
 WHERE id = $3 
@@ -834,12 +834,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref, $2::varchar)
+        THEN convert_from(decrypt(google_connector_ref, $2::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref, $2::varchar)
+        THEN convert_from(decrypt(github_connector_ref, $2::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -849,9 +849,9 @@ RETURNING
 `
 
 type SetGoogleConnectorParams struct {
-	GoogleConnectorRef pgtype.Text `json:"google_connector_ref"`
-	EncryptionKey      string      `json:"encryption_key"`
-	ID                 uuid.UUID   `json:"id"`
+	GoogleConnectorRef []byte    `json:"google_connector_ref"`
+	EncryptionKey      []byte    `json:"encryption_key"`
+	ID                 uuid.UUID `json:"id"`
 }
 
 type SetGoogleConnectorRow struct {
@@ -901,12 +901,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref::bytea, $2::varchar)
+        THEN convert_from(decrypt(google_connector_ref, $2::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref::bytea, $2::varchar)
+        THEN convert_from(decrypt(github_connector_ref, $2::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -917,7 +917,7 @@ RETURNING
 
 type SoftDeleteAuthenticationCredentialParams struct {
 	ID            uuid.UUID `json:"id"`
-	EncryptionKey string    `json:"encryption_key"`
+	EncryptionKey []byte    `json:"encryption_key"`
 }
 
 type SoftDeleteAuthenticationCredentialRow struct {
@@ -963,7 +963,7 @@ UPDATE authentication_credentials SET
     wallet_address = COALESCE($4, wallet_address),
     google_connector_ref = CASE 
         WHEN $5::text IS NOT NULL 
-        THEN pgp_sym_encrypt($5::text, $6::varchar)
+        THEN encrypt($5::bytea, $6::bytea, 'aes')
         ELSE google_connector_ref
     END,
     google_connector_ref_hash = CASE 
@@ -973,7 +973,7 @@ UPDATE authentication_credentials SET
     END,
     github_connector_ref = CASE 
         WHEN $7::text IS NOT NULL 
-        THEN pgp_sym_encrypt($7::text, $6::varchar)
+        THEN encrypt($7::bytea, $6::bytea, 'aes')
         ELSE github_connector_ref
     END,
     github_connector_ref_hash = CASE 
@@ -993,12 +993,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref, $6::varchar)
+        THEN convert_from(decrypt(google_connector_ref, $6::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref, $6::varchar)
+        THEN convert_from(decrypt(github_connector_ref, $6::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -1013,7 +1013,7 @@ type UpdateAuthenticationCredentialParams struct {
 	EncryptedPrivateKey []byte      `json:"encrypted_private_key"`
 	WalletAddress       pgtype.Text `json:"wallet_address"`
 	GoogleConnectorRef  pgtype.Text `json:"google_connector_ref"`
-	EncryptionKey       string      `json:"encryption_key"`
+	EncryptionKey       []byte      `json:"encryption_key"`
 	GithubConnectorRef  pgtype.Text `json:"github_connector_ref"`
 	IsVerifiedOrganizer pgtype.Int4 `json:"is_verified_organizer"`
 	IsVerifiedStudent   pgtype.Int4 `json:"is_verified_student"`
@@ -1078,12 +1078,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref, $4::varchar)
+        THEN convert_from(decrypt(google_connector_ref, $4::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref, $4::varchar)
+        THEN convert_from(decrypt(github_connector_ref, $4::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -1096,7 +1096,7 @@ type UpdateAuthenticationCredentialKeysParams struct {
 	EncryptedPrivateKey []byte      `json:"encrypted_private_key"`
 	WalletAddress       pgtype.Text `json:"wallet_address"`
 	ID                  uuid.UUID   `json:"id"`
-	EncryptionKey       string      `json:"encryption_key"`
+	EncryptionKey       []byte      `json:"encryption_key"`
 }
 
 type UpdateAuthenticationCredentialKeysRow struct {
@@ -1150,12 +1150,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref, $3::varchar)
+        THEN convert_from(decrypt(google_connector_ref, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref, $3::varchar)
+        THEN convert_from(decrypt(github_connector_ref, $3::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -1167,7 +1167,7 @@ RETURNING
 type UpdateAuthenticationCredentialPasswordParams struct {
 	HashedPassword pgtype.Text `json:"hashed_password"`
 	ID             uuid.UUID   `json:"id"`
-	EncryptionKey  string      `json:"encryption_key"`
+	EncryptionKey  []byte      `json:"encryption_key"`
 }
 
 type UpdateAuthenticationCredentialPasswordRow struct {
@@ -1217,12 +1217,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(google_connector_ref, $4::varchar)
+        THEN convert_from(decrypt(google_connector_ref, $4::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN pgp_sym_decrypt(github_connector_ref, $4::varchar)
+        THEN convert_from(decrypt(github_connector_ref, $4::bytea, 'aes'), 'UTF8')
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -1235,7 +1235,7 @@ type UpdateVerificationStatusParams struct {
 	IsVerifiedOrganizer int32     `json:"is_verified_organizer"`
 	IsVerifiedStudent   int32     `json:"is_verified_student"`
 	ID                  uuid.UUID `json:"id"`
-	EncryptionKey       string    `json:"encryption_key"`
+	EncryptionKey       []byte    `json:"encryption_key"`
 }
 
 type UpdateVerificationStatusRow struct {
