@@ -290,6 +290,57 @@
             }
         }
     },
+    "participantSettings": {
+        "pageTitle": "ตั้งค่าผู้เข้าร่วม",
+        "pageDescription": "กำหนดค่าข้อกำหนดการลงทะเบียนและฟิลด์ข้อมูลผู้เข้าร่วมสำหรับกิจกรรมของคุณ",
+        "registrationSettings": "การตั้งค่าการลงทะเบียน",
+        "registrationSettingsDescription": "กำหนดค่าวิธีการที่ผู้เข้าร่วมสามารถลงทะเบียนสำหรับกิจกรรมของคุณ",
+        "participantRequirements": "ข้อกำหนดผู้เข้าร่วม",
+        "participantRequirementsDescription": "ระบุฟิลด์ข้อมูลที่ผู้เข้าร่วมต้องให้ในระหว่างการลงทะเบียน",
+        "basicInformation": "ข้อมูลพื้นฐาน",
+        "additionalInformation": "ข้อมูลเพิ่มเติม",
+        "academicInformation": "ข้อมูลทางวิชาการ",
+        "eventType": "ประเภทกิจกรรม",
+        "eventTypePublic": "สาธารณะ",
+        "eventTypePrivate": "ส่วนตัว",
+        "eventTypeDescription": "กิจกรรมสาธารณะจะมองเห็นได้สำหรับทุกคน กิจกรรมส่วนตัวต้องได้รับการอนุมัติหรือคำเชิญ",
+        "bookingRequired": "ต้องการการอนุมัติการจอง",
+        "bookingRequiredDescription": "ผู้เข้าร่วมต้องรอการอนุมัติก่อนที่การลงทะเบียนจะได้รับการยืนยัน",
+        "ticketTransferable": "อนุญาตให้โอนตั๋ว",
+        "ticketTransferableDescription": "อนุญาตให้ผู้เข้าร่วมโอนตั๋วของพวกเขาให้ผู้อื่น",
+        "fieldRequirement": {
+            "notRequired": "ไม่ต้องการ",
+            "optional": "ไม่บังคับ",
+            "required": "จำเป็น"
+        },
+        "fields": {
+            "firstName": "ชื่อจริง",
+            "lastName": "นามสกุล",
+            "email": "อีเมล",
+            "bio": "ประวัติย่อ",
+            "phoneNumber": "หมายเลขโทรศัพท์",
+            "address": "ที่อยู่",
+            "academicInstitution": "สถาบันการศึกษา",
+            "academicEmail": "อีเมลสถาบัน"
+        },
+        "saveSettings": "บันทึกการตั้งค่า",
+        "saveSuccess": "บันทึกการตั้งค่าผู้เข้าร่วมเรียบร้อยแล้ว",
+        "saveError": "ไม่สามารถบันทึกการตั้งค่าผู้เข้าร่วม กรุณาลองอีกครั้ง",
+        "tabs": {
+            "settings": "ตั้งค่า",
+            "preview": "ตัวอย่าง"
+        },
+        "preview": {
+            "title": "ตัวอย่างฟอร์มลงทะเบียน",
+            "description": "นี่คือวิธีที่ฟอร์มลงทะเบียนจะปรากฏต่อผู้เข้าร่วม",
+            "enter": "กรอก",
+            "optional": "ไม่บังคับ",
+            "bookingRequired": "ต้องการการอนุมัติ",
+            "transferable": "โอนได้",
+            "register": "ลงทะเบียนกิจกรรม",
+            "note": "นี่เป็นเพียงตัวอย่าง ฟอร์มถูกปิดใช้งาน"
+        }
+    },
     "credentials": {
         "title": "ประกาศนียบัตร",
         "myCredentials": "ประกาศนียบัตรของฉัน",

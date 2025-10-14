@@ -2,7 +2,12 @@ import PageContainer from "@/components/container/PageContainer";
 import SectionContainer from "@/components/container/SectionContainer";
 import { Typography } from "@/components/typography/typography";
 import { GoogleMapsEmbed } from "@/components/ui/google-maps-embed";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+    StyledTabs,
+    StyledTabsList,
+    StyledTabsTrigger,
+    StyledTabsContent,
+} from "@/components/ui/styled-tabs";
 import {
     Accordion,
     AccordionContent,
@@ -12,7 +17,7 @@ import {
 import { RequirementItem, type RequirementStatus } from "@/components/ui/requirement-item";
 import { TextLabelValue } from "@/components/ui/text-label-value";
 import WrappedButton from "@/components/wrapper/WrappedButton";
-import { CheckCircle2Icon, CogIcon, ExternalLinkIcon } from "lucide-react";
+import { CheckCircle2Icon, ExternalLinkIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface HostEventDetailsPageProps {
@@ -145,41 +150,14 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
             </SectionContainer>
 
             <SectionContainer>
-                <Tabs defaultValue="event-info">
-                    <TabsList className="w-full h-10 bg-[#E9DEDE]">
-                        <TabsTrigger
-                            value="event-info"
-                            className="data-[state=active]:bg-primary text-gray-900 data-[state=active]:text-white"
-                            style={{
-                                fontFamily: "Cormorant Garamond",
-                                fontSize: "16px",
-                            }}
-                        >
-                            Event Info
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="participants"
-                            className="data-[state=active]:bg-primary text-gray-900 data-[state=active]:text-white"
-                            style={{
-                                fontFamily: "Cormorant Garamond",
-                                fontSize: "16px",
-                            }}
-                        >
-                            Participants
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="certificates"
-                            className="data-[state=active]:bg-primary text-gray-900 data-[state=active]:text-white"
-                            style={{
-                                fontFamily: "Cormorant Garamond",
-                                fontSize: "16px",
-                            }}
-                        >
-                            Certificates
-                        </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="event-info">
-                        <div className="mt-6 flex flex-col gap-4 lg:flex-row">
+                <StyledTabs defaultValue="event-info">
+                    <StyledTabsList>
+                        <StyledTabsTrigger value="event-info">Event Info</StyledTabsTrigger>
+                        <StyledTabsTrigger value="participants">Participants</StyledTabsTrigger>
+                        <StyledTabsTrigger value="certificates">Certificates</StyledTabsTrigger>
+                    </StyledTabsList>
+                    <StyledTabsContent value="event-info">
+                        <div className="flex flex-col gap-4 lg:flex-row">
                             <div className="flex flex-col gap-4 flex-1">
                                 <TextLabelValue
                                     label="Venue Location"
@@ -200,9 +178,9 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
                                 <GoogleMapsEmbed query="School of Information Technology, KMITL" />
                             </div>
                         </div>
-                    </TabsContent>
-                    <TabsContent value="participants">
-                        <div className="mt-6 space-y-4">
+                    </StyledTabsContent>
+                    <StyledTabsContent value="participants">
+                        <div className="space-y-4">
                             {/* Event Settings Summary */}
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 my-6">
                                 <TextLabelValue
@@ -226,10 +204,13 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
                                     }
                                 />
 
-                                <WrappedButton>
-                                    <CogIcon />
-                                    {t("events.settings.participantSettings")}
-                                </WrappedButton>
+                                <div className="flex items-center justify-end">
+                                    <WrappedButton
+                                        href={`/host/events/${eventId}/settings/participant`}
+                                    >
+                                        {t("events.settings.participantSettings")}
+                                    </WrappedButton>
+                                </div>
                             </div>
 
                             {/* Participant Requirements Accordion */}
@@ -295,9 +276,9 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
 
                             {MockTable}
                         </div>
-                    </TabsContent>
-                    <TabsContent value="certificates">
-                        <div className="mt-6 w-full bg-primary/10 border border-primary/20 rounded-lg p-6 flex flex-col items-center justify-center mb-6">
+                    </StyledTabsContent>
+                    <StyledTabsContent value="certificates">
+                        <div className="w-full bg-primary/10 border border-primary/20 rounded-lg p-6 flex flex-col items-center justify-center mb-6">
                             <p className="font-semibold text-lg text-primary">
                                 Add event&apos;s certificate configuration
                             </p>
@@ -305,17 +286,17 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
                                 Set up the certificate template and rules for this event.
                                 Participants will receive certificates based on your configuration.
                             </p>
-                            <button
+                            <WrappedButton
                                 className="mt-4 px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
-                                type="button"
+                                href={`/host/events/${eventId}/settings/certificate`}
                             >
-                                Configure Certificates
-                            </button>
+                                Certificates Settings
+                            </WrappedButton>
                         </div>
 
                         {MockTable}
-                    </TabsContent>
-                </Tabs>
+                    </StyledTabsContent>
+                </StyledTabs>
             </SectionContainer>
         </PageContainer>
     );

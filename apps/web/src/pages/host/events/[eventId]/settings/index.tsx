@@ -1,0 +1,1 @@
+export { ParticipantSettingsPage } from "./participants";
