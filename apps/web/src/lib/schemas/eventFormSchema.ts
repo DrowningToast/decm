@@ -8,47 +8,61 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/web
  * Validates event creation/update form data
  */
 export const eventFormSchema = z
-  .object({
-    name: z
-      .string()
-      .min(1, "events.validation.nameRequired")
-      .min(3, "events.validation.nameMinLength"),
-    description: z.string().optional(),
-    eventBanner: z
-      .instanceof(File, { message: "events.validation.eventBannerRequired" })
-      .refine((file) => file.size <= MAX_FILE_SIZE, "events.validation.eventBannerSize")
-      .refine(
-        (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
-        "events.validation.eventBannerType"
-      )
-      .optional(),
-    eventIcon: z
-      .instanceof(File, { message: "events.validation.eventIconRequired" })
-      .refine((file) => file.size <= MAX_FILE_SIZE, "events.validation.eventIconSize")
-      .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), "events.validation.eventIconType")
-      .optional(),
-    startDate: z.date({
-      message: "events.validation.startDateRequired",
-    }),
-    endDate: z.date({
-      message: "events.validation.endDateRequired",
-    }),
-    seatsCount: z
-      .number({
-        message: "events.validation.seatsCountRequired",
-      })
-      .int("events.validation.seatsCountInteger")
-      .min(1, "events.validation.seatsCountMin"),
-  })
-  .refine(
-    (data) => {
-      return data.endDate > data.startDate;
-    },
-    {
-      message: "events.validation.endDateAfterStart",
-      path: ["endDate"],
-    }
-  );
+    .object({
+        name: z
+            .string()
+            .min(1, "events.validation.nameRequired")
+            .min(3, "events.validation.nameMinLength"),
+        description: z.string().optional(),
+        eventBanner: z
+            .instanceof(File, { message: "events.validation.eventBannerRequired" })
+            .refine((file) => file.size <= MAX_FILE_SIZE, "events.validation.eventBannerSize")
+            .refine(
+                (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
+                "events.validation.eventBannerType",
+            )
+            .optional(),
+        eventIcon: z
+            .instanceof(File, { message: "events.validation.eventIconRequired" })
+            .refine((file) => file.size <= MAX_FILE_SIZE, "events.validation.eventIconSize")
+            .refine(
+                (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
+                "events.validation.eventIconType",
+            )
+            .optional(),
+        startDate: z.date({
+            message: "events.validation.startDateRequired",
+        }),
+        endDate: z.date().optional(),
+        seatsCount: z
+            .number({
+                message: "events.validation.seatsCountRequired",
+            })
+            .int("events.validation.seatsCountInteger")
+            .min(1, "events.validation.seatsCountMin"),
+        // Venue Information
+        location: z
+            .string()
+            .min(1, "events.validation.locationRequired")
+            .min(3, "events.validation.locationMinLength"),
+        googleMapQuery: z
+            .string()
+            .min(1, "events.validation.googleMapQueryRequired")
+            .min(3, "events.validation.googleMapQueryMinLength"),
+    })
+    .refine(
+        (data) => {
+            // If endDate is provided, it must be on or after startDate
+            if (data.endDate) {
+                return data.endDate >= data.startDate;
+            }
+            return true;
+        },
+        {
+            message: "events.validation.endDateAfterStart",
+            path: ["endDate"],
+        },
+    );
 
 /**
  * TypeScript type inferred from the schema
