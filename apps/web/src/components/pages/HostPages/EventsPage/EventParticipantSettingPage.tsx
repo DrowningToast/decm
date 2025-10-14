@@ -136,7 +136,7 @@ export const EventParticipantSettingPage = () => {
                                 <Typography
                                     variant="text"
                                     tag="p"
-                                    className="text-xs text-muted-foreground"
+                                    className="text-xs text-white/70"
                                 >
                                     {t("participantSettings.eventTypeDescription")}
                                 </Typography>
@@ -149,7 +149,7 @@ export const EventParticipantSettingPage = () => {
                                         <Typography
                                             variant="text"
                                             tag="span"
-                                            className="text-sm font-medium"
+                                            className="text-sm font-medium text-white"
                                         >
                                             {t("participantSettings.bookingRequired")}
                                         </Typography>
@@ -157,7 +157,7 @@ export const EventParticipantSettingPage = () => {
                                     <Typography
                                         variant="text"
                                         tag="p"
-                                        className="text-xs text-muted-foreground"
+                                        className="text-xs text-white/70"
                                     >
                                         {t("participantSettings.bookingRequiredDescription")}
                                     </Typography>
@@ -183,7 +183,7 @@ export const EventParticipantSettingPage = () => {
                                         <Typography
                                             variant="text"
                                             tag="span"
-                                            className="text-sm font-medium"
+                                            className="text-sm font-medium text-white"
                                         >
                                             {t("participantSettings.ticketTransferable")}
                                         </Typography>
@@ -191,7 +191,7 @@ export const EventParticipantSettingPage = () => {
                                     <Typography
                                         variant="text"
                                         tag="p"
-                                        className="text-xs text-muted-foreground"
+                                        className="text-xs text-white/70"
                                     >
                                         {t("participantSettings.ticketTransferableDescription")}
                                     </Typography>
