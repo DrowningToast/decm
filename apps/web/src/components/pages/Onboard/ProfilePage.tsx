@@ -9,8 +9,11 @@ import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/f
 import { OAuthOnboardContext } from "./OAuth/OAuthOnboardContext";
 import { OnboardPageContext } from "@/pages/onboard/[method]";
 
-
 export const ProfilePage: React.FC = () => {
+
+    // if already has account, disable back button
+    // const { } = useContext
+
     const { setStep } = useContext(OnboardPageContext);
     const { form } = useContext(OAuthOnboardContext);
     const { t } = useTranslation();
@@ -84,7 +87,7 @@ export const ProfilePage: React.FC = () => {
                             control={form.control}
                             name="isFirstNamePublic"
                             render={({ field }) => (
-                                <FormItem className="flex flex-row gap-x-1 items-center">
+                                <FormItem className="flex flex-row gap-x-1 ">
                                     <FormControl>
                                         <Checkbox
                                             checked={field.value}
@@ -126,7 +129,7 @@ export const ProfilePage: React.FC = () => {
                             control={form.control}
                             name="isLastNamePublic"
                             render={({ field }) => (
-                                <FormItem className="flex flex-row items-start gap-x-1 items-center">
+                                <FormItem className="flex flex-row items-start gap-x-1 ">
                                     <FormControl>
                                         <Checkbox
                                             checked={field.value}
@@ -157,7 +160,7 @@ export const ProfilePage: React.FC = () => {
                                             <Input
                                                 {...field}
                                                 type="email"
-                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-foreground placeholder:text-background"
+                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background"
                                             />
                                         </div>
                                     </FormControl>
@@ -169,7 +172,7 @@ export const ProfilePage: React.FC = () => {
                             control={form.control}
                             name="isEmailPublic"
                             render={({ field }) => (
-                                <FormItem className="flex flex-row items-start gap-x-1 items-center">
+                                <FormItem className="flex flex-row items-start gap-x-1 ">
                                     <FormControl>
                                         <Checkbox
                                             checked={field.value}
@@ -212,7 +215,7 @@ export const ProfilePage: React.FC = () => {
                             control={form.control}
                             name="isPhoneNumberPublic"
                             render={({ field }) => (
-                                <FormItem className="flex flex-row items-start gap-x-1 items-center">
+                                <FormItem className="flex flex-row items-start gap-x-1 ">
                                     <FormControl>
                                         <Checkbox
                                             checked={field.value}
@@ -248,7 +251,7 @@ export const ProfilePage: React.FC = () => {
                         onClick={onBack}
                         variant="secondary-light"
                         size="xl"
-                        className="w-full hidden md:flex"
+                        className="w-full"
                     >
                         {t("common.back")}
                     </Button>

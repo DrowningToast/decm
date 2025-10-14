@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { redirect, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useVerifyGoogleOAuth } from "@/components/pages/GoogleOAuth/useVerifyGoogleOAuth";
 import { FaviconHelmet } from '@/components/providers/helmets/FaviconHelmet';
 import { GoogleOAuth } from '@/components/pages/GoogleOAuth/GoogleOAuth';
@@ -16,7 +16,6 @@ const GoogleOAuthPage = () => {
 
     const accessToken = searchParams.get("access_token");
     const expiresIn = searchParams.get("expires_in");
-
 
     const { verifyGoogleOAuth, isPending } = useVerifyGoogleOAuth();
 

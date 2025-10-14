@@ -5,6 +5,7 @@ This guide explains how to use the i18n system in the DECM web application.
 ## Overview
 
 The application uses [react-i18next](https://react.i18next.com/) for internationalization, providing:
+
 - Multiple language support (English, Thai)
 - Automatic language detection
 - Type-safe translations
@@ -20,34 +21,32 @@ The application uses [react-i18next](https://react.i18next.com/) for internation
 ### Using Translations in Components
 
 ```tsx
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 function MyComponent() {
-  const { t } = useTranslation();
-  
-  return (
-    <div>
-      <h1>{t('common.welcome')}</h1>
-      <p>{t('home.hero.subtitle')}</p>
-    </div>
-  );
+	const { t } = useTranslation();
+
+	return (
+		<div>
+			<h1>{t("common.welcome")}</h1>
+			<p>{t("home.hero.subtitle")}</p>
+		</div>
+	);
 }
 ```
 
 ### Adding Language Switcher
 
 ```tsx
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 function Header() {
-  return (
-    <header>
-      <nav>
-        {/* Your navigation items */}
-      </nav>
-      <LanguageSwitcher />
-    </header>
-  );
+	return (
+		<header>
+			<nav>{/* Your navigation items */}</nav>
+			<LanguageSwitcher />
+		</header>
+	);
 }
 ```
 
@@ -67,20 +66,20 @@ All translation files follow the same structure:
 
 ```json
 {
-  "common": {
-    "welcome": "Welcome",
-    "loading": "Loading..."
-  },
-  "auth": {
-    "signIn": "Sign In",
-    "signUp": "Sign Up"
-  },
-  "home": {
-    "hero": {
-      "title": "Your Title",
-      "subtitle": "Your Subtitle"
-    }
-  }
+	"common": {
+		"welcome": "Welcome",
+		"loading": "Loading..."
+	},
+	"auth": {
+		"signIn": "Sign In",
+		"signUp": "Sign Up"
+	},
+	"home": {
+		"hero": {
+			"title": "Your Title",
+			"subtitle": "Your Subtitle"
+		}
+	}
 }
 ```
 
@@ -91,22 +90,24 @@ All translation files follow the same structure:
 Add the same key to both `en.json` and `th.json`:
 
 **en.json:**
+
 ```json
 {
-  "myFeature": {
-    "title": "My Feature",
-    "description": "This is a description"
-  }
+	"myFeature": {
+		"title": "My Feature",
+		"description": "This is a description"
+	}
 }
 ```
 
 **th.json:**
+
 ```json
 {
-  "myFeature": {
-    "title": "ฟีเจอร์ของฉัน",
-    "description": "นี่คือคำอธิบาย"
-  }
+	"myFeature": {
+		"title": "ฟีเจอร์ของฉัน",
+		"description": "นี่คือคำอธิบาย"
+	}
 }
 ```
 
@@ -114,14 +115,14 @@ Add the same key to both `en.json` and `th.json`:
 
 ```tsx
 function MyFeature() {
-  const { t } = useTranslation();
-  
-  return (
-    <div>
-      <h2>{t('myFeature.title')}</h2>
-      <p>{t('myFeature.description')}</p>
-    </div>
-  );
+	const { t } = useTranslation();
+
+	return (
+		<div>
+			<h2>{t("myFeature.title")}</h2>
+			<p>{t("myFeature.description")}</p>
+		</div>
+	);
 }
 ```
 
@@ -132,16 +133,18 @@ function MyFeature() {
 Use variables in translations:
 
 **Translation file:**
+
 ```json
 {
-  "welcome": "Welcome, {{name}}!"
+	"welcome": "Welcome, {{name}}!"
 }
 ```
 
 **Component:**
+
 ```tsx
 const { t } = useTranslation();
-t('welcome', { name: 'John' }); // "Welcome, John!"
+t("welcome", { name: "John" }); // "Welcome, John!"
 ```
 
 ### Pluralization
@@ -149,18 +152,20 @@ t('welcome', { name: 'John' }); // "Welcome, John!"
 Handle singular/plural forms:
 
 **Translation file:**
+
 ```json
 {
-  "itemCount": "{{count}} item",
-  "itemCount_plural": "{{count}} items"
+	"itemCount": "{{count}} item",
+	"itemCount_plural": "{{count}} items"
 }
 ```
 
 **Component:**
+
 ```tsx
 const { t } = useTranslation();
-t('itemCount', { count: 1 }); // "1 item"
-t('itemCount', { count: 5 }); // "5 items"
+t("itemCount", { count: 1 }); // "1 item"
+t("itemCount", { count: 5 }); // "5 items"
 ```
 
 ### Accessing i18n Instance
@@ -168,23 +173,21 @@ t('itemCount', { count: 5 }); // "5 items"
 For more control, access the i18n instance directly:
 
 ```tsx
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 function LanguageInfo() {
-  const { i18n } = useTranslation();
-  
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
-  };
-  
-  return (
-    <div>
-      <p>Current language: {i18n.language}</p>
-      <button onClick={() => changeLanguage('th')}>
-        Switch to Thai
-      </button>
-    </div>
-  );
+	const { i18n } = useTranslation();
+
+	const changeLanguage = (lng: string) => {
+		i18n.changeLanguage(lng);
+	};
+
+	return (
+		<div>
+			<p>Current language: {i18n.language}</p>
+			<button onClick={() => changeLanguage("th")}>Switch to Thai</button>
+		</div>
+	);
 }
 ```
 
@@ -203,11 +206,11 @@ The i18n system is configured with TypeScript for type-safe translation keys:
 
 ```tsx
 // ✅ Valid - TypeScript will autocomplete
-t('common.welcome')
-t('home.hero.title')
+t("common.welcome");
+t("home.hero.title");
 
 // ❌ Invalid - TypeScript will show error
-t('nonexistent.key')
+t("nonexistent.key");
 ```
 
 ## Configuration
@@ -216,22 +219,24 @@ The i18n configuration is in `apps/web/src/lib/i18n/config.ts`:
 
 ```typescript
 i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources: { /* translations */ },
-    fallbackLng: 'en',
-    supportedLngs: ['en', 'th'],
-    debug: process.env.NODE_ENV === 'development',
-    interpolation: {
-      escapeValue: false, // React already escapes
-    },
-    detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
-      caches: ['localStorage'],
-      lookupLocalStorage: 'decm-language',
-    },
-  });
+	.use(LanguageDetector)
+	.use(initReactI18next)
+	.init({
+		resources: {
+			/* translations */
+		},
+		fallbackLng: "en",
+		supportedLngs: ["en", "th"],
+		debug: process.env.NODE_ENV === "development",
+		interpolation: {
+			escapeValue: false, // React already escapes
+		},
+		detection: {
+			order: ["localStorage", "navigator", "htmlTag"],
+			caches: ["localStorage"],
+			lookupLocalStorage: "decm-language",
+		},
+	});
 ```
 
 ## Adding a New Language
@@ -242,32 +247,33 @@ Create a new file in `locales/` (e.g., `ja.json` for Japanese):
 
 ```json
 {
-  "common": {
-    "welcome": "ようこそ"
-  }
+	"common": {
+		"welcome": "ようこそ"
+	}
 }
 ```
 
 ### 2. Update Configuration
 
 **config.ts:**
+
 ```typescript
-import jaTranslations from './locales/ja.json';
+import jaTranslations from "./locales/ja.json";
 
 export const languages = {
-  en: { label: 'English', flag: '🇬🇧' },
-  th: { label: 'ไทย', flag: '🇹🇭' },
-  ja: { label: '日本語', flag: '🇯🇵' }, // Add new language
+	en: { label: "English", flag: "🇬🇧" },
+	th: { label: "ไทย", flag: "🇹🇭" },
+	ja: { label: "日本語", flag: "🇯🇵" }, // Add new language
 } as const;
 
 i18n.init({
-  resources: {
-    en: { translation: enTranslations },
-    th: { translation: thTranslations },
-    ja: { translation: jaTranslations }, // Add new resource
-  },
-  supportedLngs: ['en', 'th', 'ja'], // Add to supported languages
-  // ... rest of config
+	resources: {
+		en: { translation: enTranslations },
+		th: { translation: thTranslations },
+		ja: { translation: jaTranslations }, // Add new resource
+	},
+	supportedLngs: ["en", "th", "ja"], // Add to supported languages
+	// ... rest of config
 });
 ```
 
@@ -283,9 +289,15 @@ Group related translations together:
 
 ```json
 {
-  "auth": { /* authentication related */ },
-  "profile": { /* profile related */ },
-  "events": { /* events related */ }
+	"auth": {
+		/* authentication related */
+	},
+	"profile": {
+		/* profile related */
+	},
+	"events": {
+		/* events related */
+	}
 }
 ```
 
@@ -325,13 +337,13 @@ Use descriptive keys that provide context:
 
 ```json
 {
-  "button": {
-    "save": "Save",
-    "cancel": "Cancel"
-  },
-  "validation": {
-    "required": "This field is required"
-  }
+	"button": {
+		"save": "Save",
+		"cancel": "Cancel"
+	},
+	"validation": {
+		"required": "This field is required"
+	}
 }
 ```
 
@@ -341,11 +353,11 @@ For UI elements, keep translations concise:
 
 ```json
 {
-  "nav": {
-    "home": "Home",
-    "events": "Events",
-    "profile": "Profile"
-  }
+	"nav": {
+		"home": "Home",
+		"events": "Events",
+		"profile": "Profile"
+	}
 }
 ```
 
@@ -393,8 +405,8 @@ The application includes pre-configured translation keys for:
 ## Support
 
 For questions or issues with translations:
+
 1. Check this documentation
 2. Review the translation files
 3. Check the i18n configuration
 4. Consult the react-i18next documentation
-

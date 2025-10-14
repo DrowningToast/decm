@@ -13,6 +13,6 @@ type Handler struct {
 	AuthService        *auth.AuthService
 }
 
-func NewHandler(authUc *oauth.OAuthUsecase, googleOAuthService *oauth_services.GoogleOAuthService) *Handler {
-	return &Handler{AuthUc: authUc, GoogleOAuthService: googleOAuthService}
+func NewHandler(authUc *oauth.OAuthUsecase, googleOAuthService *oauth_services.GoogleOAuthService, authService *auth.AuthService) *Handler {
+	return &Handler{AuthUc: authUc, GoogleOAuthService: googleOAuthService, AuthService: authService}
 }

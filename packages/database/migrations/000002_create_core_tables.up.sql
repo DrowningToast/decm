@@ -12,13 +12,17 @@ CREATE TABLE authentication_credentials (
     -- hashed of hashed password using Argon2id
     hashed_password VARCHAR(255),
     -- encrypted by a hash of password using AES-256-GCM
-    encrypted_private_key VARCHAR(255),
+    encrypted_private_key BYTEA,
     wallet_address VARCHAR(255) NOT NULL UNIQUE,
 
-    -- PII: OAuth connector references
-    google_connector_ref VARCHAR(255),
-    -- PII: OAuth connector references
-    github_connector_ref VARCHAR(255),
+    -- PII: OAuth connector references (encrypted)
+    google_connector_ref BYTEA,
+    -- Hash for efficient searching of google_connector_ref
+    google_connector_ref_hash VARCHAR(64),
+    -- PII: OAuth connector references (encrypted)
+    github_connector_ref BYTEA,
+    -- Hash for efficient searching of github_connector_ref
+    github_connector_ref_hash VARCHAR(64),
 
     is_verified_organizer INTEGER NOT NULL,
     is_verified_student INTEGER NOT NULL,
@@ -29,6 +33,8 @@ CREATE TABLE authentication_credentials (
 
 CREATE INDEX idx_authentication_credentials_id ON authentication_credentials(id);
 CREATE INDEX idx_authentication_credentials_wallet_address ON authentication_credentials(wallet_address);
+CREATE INDEX idx_authentication_credentials_google_hash ON authentication_credentials(google_connector_ref_hash);
+CREATE INDEX idx_authentication_credentials_github_hash ON authentication_credentials(github_connector_ref_hash);
 
 -- Student profile table, index by id and email
 CREATE TABLE profiles (
@@ -37,33 +43,35 @@ CREATE TABLE profiles (
 
     is_profile_picture_public INTEGER NOT NULL,
     -- PII: Profile picture URL
-    profile_picture_url VARCHAR(255),
+    profile_picture_url BYTEA,
 
     is_first_name_public INTEGER NOT NULL,
     -- PII: First name
-    first_name VARCHAR(128),
+    first_name BYTEA,
     is_last_name_public INTEGER NOT NULL,
     -- PII: Last name
-    last_name VARCHAR(128),
+    last_name BYTEA,
     is_email_public INTEGER NOT NULL,
-    -- PII: Email
-    email VARCHAR(255) UNIQUE,
+    -- PII: Email (encrypted, cannot have UNIQUE constraint due to salt)
+    email BYTEA,
+    -- Hash for efficient searching and uniqueness constraint on email
+    email_hash VARCHAR(64) UNIQUE,
 
     is_bio_public INTEGER NOT NULL,
     -- PII: Bio
-    bio VARCHAR(255),
+    bio BYTEA,
     is_phone_number_public INTEGER NOT NULL,
     -- PII: Phone number
-    phone_number VARCHAR(255),
+    phone_number BYTEA,
     is_address_public INTEGER NOT NULL,
     -- PII: Address
-    address VARCHAR(255),
+    address BYTEA,
     is_academic_institution_public INTEGER NOT NULL,
     -- PII: Academic institution
-    academic_institution VARCHAR(255),
+    academic_institution BYTEA,
     is_academic_email_public INTEGER NOT NULL,
     -- PII: Academic email
-    academic_email VARCHAR(255),
+    academic_email BYTEA,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -71,6 +79,7 @@ CREATE TABLE profiles (
 
 CREATE INDEX idx_profiles_authentication_credential_id ON profiles(authentication_credential_id);
 CREATE INDEX idx_profiles_id ON profiles(id);
+CREATE INDEX idx_profiles_email_hash ON profiles(email_hash);
 
 -- events table, index by id and owner_credential_id
 CREATE TABLE events (
@@ -129,21 +138,21 @@ CREATE TABLE event_attendees (
     
     -- 0: Not Provided, 1: Provided
     -- PII: First name
-    first_name VARCHAR(255),
+    first_name BYTEA,
     -- PII: Last name
-    last_name VARCHAR(255),
+    last_name BYTEA,
     -- PII: Email
-    email VARCHAR(255),
+    email BYTEA,
     -- PII: Bio
-    bio VARCHAR(255),
+    bio BYTEA,
     -- PII: Phone number    
-    phone_number VARCHAR(255),
+    phone_number BYTEA,
     -- PII: Address
-    address VARCHAR(255),
+    address BYTEA,
     -- PII: Academic institution
-    academic_institution VARCHAR(255),
+    academic_institution BYTEA,
     -- PII: Academic email
-    academic_email VARCHAR(255),
+    academic_email BYTEA,
     
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()

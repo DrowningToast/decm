@@ -2,14 +2,11 @@ package onboard
 
 import (
 	"errors"
-	"regexp"
 
 	customerror "apps/backend/common/customerror"
 
 	"github.com/gofiber/fiber/v2"
 )
-
-var ethAddressRegex = regexp.MustCompile(`^0x[a-fA-F0-9]{40}$`)
 
 type registerWithWalletRequest struct {
 	SignedMessage string `json:"signed_message"`
@@ -22,7 +19,7 @@ type registerWithWalletRequest struct {
 // @Param signed_message body onboard.registerWithWalletRequest.SignedMessage true "Signed message"
 // @Accept json
 // @Produce json
-// @Success 200
+// @Success 200 {object} registerResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Router /api/v1/onboard/register-with-wallet [post]
 func (h Handler) RegisterWithWallet(ctx *fiber.Ctx) error {
@@ -34,14 +31,18 @@ func (h Handler) RegisterWithWallet(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	jwt, err := h.OnboardUc.RegisterWithWalletAddress(ctx.UserContext(), requestBody.SignedMessage)
+	credentialId, jwt, err := h.OnboardUc.RegisterWithWalletAddress(ctx.UserContext(), requestBody.SignedMessage)
 	if err != nil {
 		return err
 	}
 
 	h.AuthService.SetJwtCookie(ctx, *jwt)
 
-	return ctx.Status(fiber.StatusOK).Send([]byte(""))
+	response := registerResponse{
+		CredentialId: credentialId.String(),
+		Jwt:          *jwt,
+	}
+	return ctx.Status(fiber.StatusOK).JSON(response)
 }
 
 func (r *registerWithWalletRequest) Parse(ctx *fiber.Ctx) error {

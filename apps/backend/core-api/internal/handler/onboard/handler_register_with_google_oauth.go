@@ -1,8 +1,6 @@
 package onboard
 
 import (
-	"time"
-
 	customerror "apps/backend/common/customerror"
 	"apps/backend/services/oauth"
 
@@ -15,10 +13,6 @@ type registerWithGoogleOAuthRequest struct {
 	Password    string `json:"password" validate:"required,min=6"`
 }
 
-type registerWithGoogleOAuthResponse struct {
-	Mnemonic []string `json:"mnemonic"`
-}
-
 // @Summary Register a new user with Google OAuth
 // @Description Register a new user with Google OAuth
 // @ID register-with-google-oauth
@@ -27,7 +21,7 @@ type registerWithGoogleOAuthResponse struct {
 // @Param password body onboard.registerWithGoogleOAuthRequest.Password true "Password"
 // @Accept json
 // @Produce json
-// @Success 200 {object} registerWithGoogleOAuthResponse
+// @Success 200 {object} registerResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Router /api/v1/onboard/register-with-google-oauth [post]
 func (h Handler) RegisterWithGoogleOAuth(ctx *fiber.Ctx) error {
@@ -45,19 +39,16 @@ func (h Handler) RegisterWithGoogleOAuth(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
-	jwt, mnemonic, err := h.OnboardUc.RegisterWithGoogle(ctx.UserContext(), token, requestBody.Password)
+	credentialId, jwt, err := h.OnboardUc.RegisterWithGoogle(ctx.UserContext(), token, requestBody.Password)
 	if err != nil {
 		return err
 	}
 
-	cookie := new(fiber.Cookie)
-	cookie.Name = "session"
-	cookie.Value = *jwt
-	cookie.Expires = time.Now().Add(h.SessionExpiration)
-	ctx.Cookie(cookie)
+	h.AuthService.SetJwtCookie(ctx, *jwt)
 
-	response := registerWithGoogleOAuthResponse{
-		Mnemonic: mnemonic,
+	response := registerResponse{
+		CredentialId: credentialId.String(),
+		Jwt:          *jwt,
 	}
 	return ctx.Status(fiber.StatusOK).JSON(response)
 }

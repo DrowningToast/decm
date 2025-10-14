@@ -84,6 +84,7 @@ import { PublicNavbar } from '@/components/layouts/navigations/PublicNavbar';
 #### Navigation Links
 
 The navbar includes these default links:
+
 - Features (`#features`)
 - About (`#about`)
 - Sign In (`/signin`)
@@ -111,4 +112,3 @@ See `src/components/examples/ComponentExamples.tsx` for complete usage examples.
 - Button variants include text shadow effects as per Figma design
 - Navbar is fixed to the top by default (use `className="relative"` to override)
 - Components are fully typed with TypeScript
-
