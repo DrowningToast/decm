@@ -227,6 +227,15 @@
             "endDatePlaceholder": "Select end date",
             "seatsCount": "Number of Seats",
             "seatsCountPlaceholder": "Enter number of available seats",
+            "location": "Venue Location",
+            "locationPlaceholder": "Enter venue name or address",
+            "googleMapQuery": "Google Maps Search",
+            "googleMapQueryPlaceholder": "Enter location for Google Maps (e.g., Central World Bangkok)",
+            "googleMapPlaceholder": "Map will appear when you enter a location",
+            "stepEventInfo": "Event Information",
+            "stepVenueInfo": "Venue Information",
+            "next": "Next",
+            "previous": "Previous",
             "submitCreate": "Create Event",
             "submitUpdate": "Update Event"
         },
@@ -240,11 +249,14 @@
             "eventIconSize": "Event icon must be less than 5MB",
             "eventIconType": "Event icon must be JPEG, PNG, or WebP",
             "startDateRequired": "Start date is required",
-            "endDateRequired": "End date is required",
-            "endDateAfterStart": "End date must be after start date",
+            "endDateAfterStart": "End date must be on or after start date",
             "seatsCountRequired": "Number of seats is required",
             "seatsCountMin": "Number of seats must be at least 1",
-            "seatsCountInteger": "Number of seats must be a whole number"
+            "seatsCountInteger": "Number of seats must be a whole number",
+            "locationRequired": "Venue location is required",
+            "locationMinLength": "Venue location must be at least 3 characters",
+            "googleMapQueryRequired": "Google Maps location is required",
+            "googleMapQueryMinLength": "Google Maps location must be at least 3 characters"
         }
     },
     "credentials": {

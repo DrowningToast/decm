@@ -227,6 +227,15 @@
             "endDatePlaceholder": "เลือกวันที่สิ้นสุด",
             "seatsCount": "จำนวนที่นั่ง",
             "seatsCountPlaceholder": "กรอกจำนวนที่นั่งที่มี",
+            "location": "สถานที่จัดงาน",
+            "locationPlaceholder": "กรอกชื่อสถานที่หรือที่อยู่",
+            "googleMapQuery": "ค้นหา Google Maps",
+            "googleMapQueryPlaceholder": "กรอกสถานที่สำหรับ Google Maps (เช่น Central World Bangkok)",
+            "googleMapPlaceholder": "แผนที่จะแสดงเมื่อคุณกรอกสถานที่",
+            "stepEventInfo": "ข้อมูลกิจกรรม",
+            "stepVenueInfo": "ข้อมูลสถานที่",
+            "next": "ถัดไป",
+            "previous": "ก่อนหน้า",
             "submitCreate": "สร้างกิจกรรม",
             "submitUpdate": "อัพเดทกิจกรรม"
         },
@@ -240,11 +249,14 @@
             "eventIconSize": "ขนาดรูปภาพต้องไม่เกิน 5MB",
             "eventIconType": "รูปภาพต้องเป็นไฟล์ JPEG, PNG หรือ WebP",
             "startDateRequired": "กรุณาเลือกวันที่เริ่มต้น",
-            "endDateRequired": "กรุณาเลือกวันที่สิ้นสุด",
-            "endDateAfterStart": "วันที่สิ้นสุดต้องอยู่หลังวันที่เริ่มต้น",
+            "endDateAfterStart": "วันที่สิ้นสุดต้องเป็นวันเดียวกันหรือหลังจากวันที่เริ่มต้น",
             "seatsCountRequired": "กรุณากรอกจำนวนที่นั่ง",
             "seatsCountMin": "จำนวนที่นั่งต้องมีอย่างน้อย 1 ที่",
-            "seatsCountInteger": "จำนวนที่นั่งต้องเป็นจำนวนเต็ม"
+            "seatsCountInteger": "จำนวนที่นั่งต้องเป็นจำนวนเต็ม",
+            "locationRequired": "กรุณากรอกสถานที่จัดงาน",
+            "locationMinLength": "สถานที่จัดงานต้องมีอย่างน้อย 3 ตัวอักษร",
+            "googleMapQueryRequired": "กรุณากรอกสถานที่สำหรับ Google Maps",
+            "googleMapQueryMinLength": "สถานที่สำหรับ Google Maps ต้องมีอย่างน้อย 3 ตัวอักษร"
         }
     },
     "credentials": {
