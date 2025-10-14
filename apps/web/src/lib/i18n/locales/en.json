@@ -22,7 +22,12 @@
         "clickToUpload": "Click to upload",
         "change": "Change",
         "remove": "Remove",
-        "characters": "characters"
+        "characters": "characters",
+        "yes": "Yes",
+        "no": "No",
+        "required": "Required",
+        "optional": "Optional",
+        "notRequired": "Not Required"
     },
     "nav": {
         "home": "Home",
@@ -263,6 +268,26 @@
             "locationMinLength": "Venue location must be at least 3 characters",
             "googleMapQueryRequired": "Google Maps location is required",
             "googleMapQueryMinLength": "Google Maps location must be at least 3 characters"
+        },
+        "settings": {
+            "eventType": "Event Type",
+            "bookingRequired": "Booking Request Required",
+            "tokenTransferable": "Token Transferable",
+            "participantSettings": "Participant Settings"
+        },
+        "participants": {
+            "requirementsTitle": "Participant Requirements",
+            "required": "required",
+            "fields": {
+                "firstName": "First Name",
+                "lastName": "Last Name",
+                "email": "Email",
+                "bio": "Bio",
+                "phoneNumber": "Phone Number",
+                "address": "Address",
+                "academicInstitution": "Academic Institution",
+                "academicEmail": "Academic Email"
+            }
         }
     },
     "credentials": {
