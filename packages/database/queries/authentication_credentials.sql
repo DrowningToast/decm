@@ -19,7 +19,7 @@ INSERT INTO authentication_credentials (
     sqlc.arg(wallet_address),
     CASE 
         WHEN sqlc.narg(google_connector_ref)::text IS NOT NULL 
-        THEN encrypt(sqlc.narg(google_connector_ref)::bytea, sqlc.arg(encryption_key)::bytea, 'aes')
+        THEN pgp_sym_encrypt(sqlc.narg(google_connector_ref)::text, sqlc.arg(encryption_key)::text)
         ELSE NULL 
     END,
     CASE 
@@ -29,7 +29,7 @@ INSERT INTO authentication_credentials (
     END,
     CASE 
         WHEN sqlc.narg(github_connector_ref)::text IS NOT NULL 
-        THEN encrypt(sqlc.narg(github_connector_ref)::bytea, sqlc.arg(encryption_key)::bytea, 'aes')
+        THEN pgp_sym_encrypt(sqlc.narg(github_connector_ref)::text, sqlc.arg(encryption_key)::text)
         ELSE NULL 
     END,
     CASE 
@@ -47,14 +47,14 @@ INSERT INTO authentication_credentials (
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref, sqlc.arg(encryption_key)::text)
         ELSE NULL 
-    END::text as google_connector_ref,
+    END::text as google_connector_ref,  -- REMOVED ::bytea cast from decrypt input
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref, sqlc.arg(encryption_key)::text)
         ELSE NULL 
-    END::text as github_connector_ref,
+    END::text as github_connector_ref,  -- REMOVED ::bytea cast from decrypt input
     is_verified_organizer,
     is_verified_student,
     created_at,
@@ -69,12 +69,12 @@ SELECT
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -93,12 +93,12 @@ SELECT
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -117,12 +117,12 @@ SELECT
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref, sqlc.arg(encryption_key)::text)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref, sqlc.arg(encryption_key)::text)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -141,12 +141,12 @@ SELECT
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -165,7 +165,7 @@ UPDATE authentication_credentials SET
     wallet_address = COALESCE(sqlc.narg(wallet_address), wallet_address),
     google_connector_ref = CASE 
         WHEN sqlc.narg(google_connector_ref)::text IS NOT NULL 
-        THEN encrypt(sqlc.narg(google_connector_ref)::bytea, sqlc.arg(encryption_key)::bytea, 'aes')
+        THEN pgp_sym_encrypt(sqlc.narg(google_connector_ref)::text, sqlc.arg(encryption_key)::varchar)
         ELSE google_connector_ref
     END,
     google_connector_ref_hash = CASE 
@@ -175,7 +175,7 @@ UPDATE authentication_credentials SET
     END,
     github_connector_ref = CASE 
         WHEN sqlc.narg(github_connector_ref)::text IS NOT NULL 
-        THEN encrypt(sqlc.narg(github_connector_ref)::bytea, sqlc.arg(encryption_key)::bytea, 'aes')
+        THEN pgp_sym_encrypt(sqlc.narg(github_connector_ref)::text, sqlc.arg(encryption_key)::varchar)
         ELSE github_connector_ref
     END,
     github_connector_ref_hash = CASE 
@@ -195,12 +195,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -221,12 +221,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -248,12 +248,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -275,12 +275,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -290,7 +290,7 @@ RETURNING
 
 -- name: SetGoogleConnector :one
 UPDATE authentication_credentials SET 
-    google_connector_ref = encrypt(sqlc.arg(google_connector_ref)::bytea, sqlc.arg(encryption_key)::bytea, 'aes'),
+    google_connector_ref = pgp_sym_encrypt(sqlc.arg(google_connector_ref), sqlc.arg(encryption_key)::varchar),
     google_connector_ref_hash = encode(digest(sqlc.arg(google_connector_ref), 'sha256'), 'hex'),
     updated_at = NOW()
 WHERE id = sqlc.arg(id) 
@@ -302,12 +302,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -317,7 +317,7 @@ RETURNING
 
 -- name: SetGithubConnector :one
 UPDATE authentication_credentials SET 
-    github_connector_ref = encrypt(sqlc.arg(github_connector_ref)::bytea, sqlc.arg(encryption_key)::bytea, 'aes'),
+    github_connector_ref = pgp_sym_encrypt(sqlc.arg(github_connector_ref), sqlc.arg(encryption_key)::varchar),
     github_connector_ref_hash = encode(digest(sqlc.arg(github_connector_ref), 'sha256'), 'hex'),
     updated_at = NOW()
 WHERE id = sqlc.arg(id) 
@@ -329,12 +329,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -356,12 +356,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -383,12 +383,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -405,12 +405,12 @@ SELECT
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -432,12 +432,12 @@ SELECT
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
@@ -480,12 +480,12 @@ RETURNING
     wallet_address,
     CASE 
         WHEN google_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(google_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(google_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as google_connector_ref,
     CASE 
         WHEN github_connector_ref IS NOT NULL 
-        THEN convert_from(decrypt(github_connector_ref, sqlc.arg(encryption_key)::bytea, 'aes'), 'UTF8')
+        THEN pgp_sym_decrypt(github_connector_ref::bytea, sqlc.arg(encryption_key)::varchar)
         ELSE NULL 
     END::text as github_connector_ref,
     is_verified_organizer,
