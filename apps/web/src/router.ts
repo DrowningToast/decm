@@ -7,13 +7,12 @@ export type Path =
   | `/`
   | `/app`
   | `/error`
-  | `/oauth-success/google`
   | `/host/events`
   | `/host/events/:eventId`
   | `/host/events/:eventId/edit`
   | `/host/events/create`
   | `/host/home`
-  | `/oauth/google`
+  | `/oauth-success/google`
   | `/onboard/:method`
   | `/signin`
   | `/signup`
