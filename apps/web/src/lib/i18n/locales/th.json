@@ -17,7 +17,11 @@
         "search": "ค้นหา",
         "filter": "กรอง",
         "sort": "เรียง",
-        "language": "ภาษา"
+        "language": "ภาษา",
+        "selectDate": "เลือกวันที่",
+        "clickToUpload": "คลิกเพื่ออัพโหลด",
+        "change": "เปลี่ยน",
+        "remove": "ลบ"
     },
     "nav": {
         "home": "หน้าหลัก",

@@ -17,7 +17,11 @@
         "search": "Search",
         "filter": "Filter",
         "sort": "Sort",
-        "language": "Language"
+        "language": "Language",
+        "selectDate": "Select date",
+        "clickToUpload": "Click to upload",
+        "change": "Change",
+        "remove": "Remove"
     },
     "nav": {
         "home": "Home",
