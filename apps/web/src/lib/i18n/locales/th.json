@@ -21,7 +21,8 @@
         "selectDate": "เลือกวันที่",
         "clickToUpload": "คลิกเพื่ออัพโหลด",
         "change": "เปลี่ยน",
-        "remove": "ลบ"
+        "remove": "ลบ",
+        "characters": "ตัวอักษร"
     },
     "nav": {
         "home": "หน้าหลัก",
@@ -211,6 +212,8 @@
         "form": {
             "name": "ชื่อกิจกรรม",
             "namePlaceholder": "กรอกชื่อกิจกรรม",
+            "shortDescription": "คำอธิบายสั้น",
+            "shortDescriptionPlaceholder": "กรอกคำอธิบายสั้นๆ (สูงสุด 255 ตัวอักษร)",
             "description": "รายละเอียด",
             "descriptionPlaceholder": "กรอกรายละเอียดกิจกรรม (ไม่บังคับ)",
             "eventBanner": "แบนเนอร์กิจกรรม",
@@ -242,6 +245,8 @@
         "validation": {
             "nameRequired": "กรุณากรอกชื่อกิจกรรม",
             "nameMinLength": "ชื่อกิจกรรมต้องมีอย่างน้อย 3 ตัวอักษร",
+            "shortDescriptionRequired": "กรุณากรอกคำอธิบายสั้น",
+            "shortDescriptionMaxLength": "คำอธิบายสั้นต้องไม่เกิน 255 ตัวอักษร",
             "eventBannerRequired": "กรุณาเลือกรูปภาพแบนเนอร์",
             "eventBannerSize": "ขนาดรูปภาพต้องไม่เกิน 5MB",
             "eventBannerType": "รูปภาพต้องเป็นไฟล์ JPEG, PNG หรือ WebP",
@@ -249,6 +254,7 @@
             "eventIconSize": "ขนาดรูปภาพต้องไม่เกิน 5MB",
             "eventIconType": "รูปภาพต้องเป็นไฟล์ JPEG, PNG หรือ WebP",
             "startDateRequired": "กรุณาเลือกวันที่เริ่มต้น",
+            "endDateRequired": "กรุณาเลือกวันที่สิ้นสุด",
             "endDateAfterStart": "วันที่สิ้นสุดต้องเป็นวันเดียวกันหรือหลังจากวันที่เริ่มต้น",
             "seatsCountRequired": "กรุณากรอกจำนวนที่นั่ง",
             "seatsCountMin": "จำนวนที่นั่งต้องมีอย่างน้อย 1 ที่",

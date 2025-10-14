@@ -21,7 +21,8 @@
         "selectDate": "Select date",
         "clickToUpload": "Click to upload",
         "change": "Change",
-        "remove": "Remove"
+        "remove": "Remove",
+        "characters": "characters"
     },
     "nav": {
         "home": "Home",
@@ -211,6 +212,8 @@
         "form": {
             "name": "Event Name",
             "namePlaceholder": "Enter event name",
+            "shortDescription": "Short Description",
+            "shortDescriptionPlaceholder": "Enter a brief description (max 255 characters)",
             "description": "Description",
             "descriptionPlaceholder": "Enter event description (optional)",
             "eventBanner": "Event Banner",
@@ -242,6 +245,8 @@
         "validation": {
             "nameRequired": "Event name is required",
             "nameMinLength": "Event name must be at least 3 characters",
+            "shortDescriptionRequired": "Short description is required",
+            "shortDescriptionMaxLength": "Short description must not exceed 255 characters",
             "eventBannerRequired": "Event banner is required",
             "eventBannerSize": "Event banner must be less than 5MB",
             "eventBannerType": "Event banner must be JPEG, PNG, or WebP",
@@ -249,6 +254,7 @@
             "eventIconSize": "Event icon must be less than 5MB",
             "eventIconType": "Event icon must be JPEG, PNG, or WebP",
             "startDateRequired": "Start date is required",
+            "endDateRequired": "End date is required",
             "endDateAfterStart": "End date must be on or after start date",
             "seatsCountRequired": "Number of seats is required",
             "seatsCountMin": "Number of seats must be at least 1",

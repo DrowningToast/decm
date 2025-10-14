@@ -13,6 +13,10 @@ export const eventFormSchema = z
             .string()
             .min(1, "events.validation.nameRequired")
             .min(3, "events.validation.nameMinLength"),
+        shortDescription: z
+            .string()
+            .min(1, "events.validation.shortDescriptionRequired")
+            .max(255, "events.validation.shortDescriptionMaxLength"),
         description: z.string().optional(),
         eventBanner: z
             .instanceof(File, { message: "events.validation.eventBannerRequired" })
@@ -33,7 +37,9 @@ export const eventFormSchema = z
         startDate: z.date({
             message: "events.validation.startDateRequired",
         }),
-        endDate: z.date().optional(),
+        endDate: z.date({
+            message: "events.validation.endDateRequired",
+        }),
         seatsCount: z
             .number({
                 message: "events.validation.seatsCountRequired",
@@ -52,11 +58,8 @@ export const eventFormSchema = z
     })
     .refine(
         (data) => {
-            // If endDate is provided, it must be on or after startDate
-            if (data.endDate) {
-                return data.endDate >= data.startDate;
-            }
-            return true;
+            // endDate must be on or after startDate
+            return data.endDate >= data.startDate;
         },
         {
             message: "events.validation.endDateAfterStart",
