@@ -1,576 +1,583 @@
 {
-    "common": {
-        "appName": "DECM",
-        "welcome": "Welcome",
-        "loading": "Loading...",
-        "searching": "Searching...",
-        "error": "Error",
-        "success": "Success",
-        "cancel": "Cancel",
-        "confirm": "Confirm",
-        "save": "Save",
-        "delete": "Delete",
-        "edit": "Edit",
-        "close": "Close",
-        "back": "Back",
-        "next": "Next",
-        "submit": "Submit",
-        "search": "Search",
-        "filter": "Filter",
-        "sort": "Sort",
-        "language": "Language",
-        "selectDate": "Select date",
-        "clickToUpload": "Click to upload",
-        "change": "Change",
-        "remove": "Remove",
-        "characters": "characters",
-        "yes": "Yes",
-        "no": "No",
-        "required": "Required",
-        "optional": "Optional",
-        "notRequired": "Not Required"
+  "common": {
+    "appName": "DECM",
+    "welcome": "Welcome",
+    "loading": "Loading...",
+    "searching": "Searching...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "language": "Language",
+    "selectDate": "Select date",
+    "clickToUpload": "Click to upload",
+    "change": "Change",
+    "remove": "Remove",
+    "characters": "characters",
+    "yes": "Yes",
+    "no": "No",
+    "required": "Required",
+    "optional": "Optional",
+    "notRequired": "Not Required"
+  },
+  "nav": {
+    "home": "Home",
+    "events": "Events",
+    "credentials": "Credentials",
+    "portfolio": "Portfolio",
+    "profile": "Profile",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "walletConnect": "Connect Wallet",
+    "emailLogin": "Login with Email",
+    "googleLogin": "Continue with Google",
+    "welcomeBack": "Welcome back!",
+    "createAccount": "Create your account",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "rememberMe": "Remember me"
+  },
+  "signup": {
+    "title": "Sign Up",
+    "subtitle": "Bring your own wallet or sign up with trusted OAuth provider",
+    "walletButton": "Connect with Wallet",
+    "googleButton": "Continue with Google",
+    "divider": "or",
+    "terms": "By signing up, you agree to our Terms of Service and Privacy Policy"
+  },
+  "oauth": {
+    "google": {
+      "title": "Authenticating with Google",
+      "subtitle": "Please wait while we verify your account",
+      "processing": "Processing...",
+      "redirect": "You will be redirected shortly",
+      "error": {
+        "title": "Authentication Failed",
+        "invalidParams": "Invalid authentication parameters",
+        "missingCode": "Authorization code is missing",
+        "missingState": "State parameter is missing",
+        "missingRedirect": "Redirect destination not found",
+        "verificationFailed": "Failed to verify your Google account",
+        "description": "We couldn't complete the Google authentication. This might happen if:",
+        "verificationDescription": "The authentication process started but we couldn't verify your account. This might happen if:",
+        "missingRedirectDescription": "We couldn't determine where to redirect you after authentication. This might happen if:",
+        "missingAccess": "Missing access token",
+        "unauthenticated": "Unauthenticated response",
+        "expired": "Expired token",
+        "internal": "Internal error response",
+        "reasons": {
+          "missingAccess": "Redirect URL is incorrect, please login through your chosen OAuth provider again.",
+          "unauthenticated": "Invalid authentication data, please login through your chosen OAuth provider again.",
+          "expired": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
+          "internal": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
+        },
+        "tryAgain": "Try signing in again",
+        "backToSignUp": "Back to Sign Up"
+      }
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "Decentralized Event Management",
+      "subtitle": "NFT ticketing, digital credentials, and academic identity verification on the blockchain",
+      "cta": "Get Started",
+      "learnMore": "Learn More"
     },
-    "nav": {
-        "home": "Home",
-        "events": "Events",
-        "credentials": "Credentials",
-        "portfolio": "Portfolio",
-        "profile": "Profile",
-        "signIn": "Sign In",
-        "signUp": "Sign Up",
-        "signOut": "Sign Out"
+    "features": {
+      "title": "Platform Features",
+      "events": {
+        "title": "Event Management",
+        "description": "Create and manage events with NFT-based ticketing"
+      },
+      "credentials": {
+        "title": "Digital Credentials",
+        "description": "Issue and verify blockchain-based certificates"
+      },
+      "identity": {
+        "title": "Academic Identity",
+        "description": "Verify once, use everywhere with LDAP integration"
+      },
+      "portfolio": {
+        "title": "e-Portfolio",
+        "description": "Showcase your achievements and credentials"
+      }
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Revolutionize certificates",
+      "subtitle": "Use blockchain technology for certificate solution",
+      "ctaButton": "Start building your portfolio",
+      "hasAccount": "I already have an registered account",
+      "scrollIndicator": "Scroll to explore"
     },
-    "auth": {
-        "signIn": "Sign In",
-        "signUp": "Sign Up",
-        "signOut": "Sign Out",
-        "walletConnect": "Connect Wallet",
-        "emailLogin": "Login with Email",
-        "googleLogin": "Continue with Google",
-        "welcomeBack": "Welcome back!",
-        "createAccount": "Create your account",
-        "forgotPassword": "Forgot password?",
-        "noAccount": "Don't have an account?",
-        "hasAccount": "Already have an account?",
+    "about": {
+      "title": "Themis",
+      "description": "a decentralized platform for event management, digital certificate issuance, and academic identity verification using Web 3.0 and blockchain technologies."
+    },
+    "features": {
+      "wallet": {
+        "title": "Customizable wallet management",
+        "description": "Bring your own wallet or let us manage your account's private key"
+      },
+      "verification": {
+        "title": "Every data is verifiable",
+        "description": "Every piece of record, certificates, and events are public on blockchain. Giving full transparency while keep the privacy of the users safe."
+      },
+      "download": {
+        "title": "Download certificates as pictures",
+        "description": "Certificates can be exported as pictures, and every pictures exported are able to verify its authenticity."
+      }
+    },
+    "getStarted": {
+      "title": "Get started",
+      "mobile": {
+        "verificationPortal": "Certificate Verification Portal",
+        "myCertificate": "My certificate",
+        "viewServices": "View all services"
+      },
+      "public": {
+        "title": "Public",
+        "event": "Event",
+        "verifyCertificates": "Verify certificates"
+      },
+      "students": {
+        "title": "Students",
+        "signIn": "Sign in",
+        "signUp": "Sign up",
+        "certificateManagement": "Certificate management",
+        "myEvents": "My events",
+        "inbox": "Inbox",
+        "identities": "Identities"
+      },
+      "organizer": {
+        "title": "Organizer",
+        "register": "Register with us",
+        "signIn": "Sign in",
+        "eventManagement": "Event management"
+      },
+      "issuer": {
+        "title": "Issuer",
+        "signInIAM": "Sign in with IAM",
+        "register": "Register with us"
+      },
+      "developer": {
+        "title": "Developer",
+        "manageIntegration": "Manage automation & integration",
+        "apiDocuments": "API documents",
+        "readDocs": "Read docs"
+      }
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "personalInfo": "Personal Information",
+    "wallet": "Wallet Address",
+    "email": "Email",
+    "name": "Name",
+    "bio": "Bio",
+    "verifiedIdentity": "Verified Identity",
+    "academicVerification": "Academic Verification",
+    "verifyNow": "Verify Now"
+  },
+  "events": {
+    "title": "Events",
+    "createEvent": "Create Event",
+    "myEvents": "My Events",
+    "upcomingEvents": "Upcoming Events",
+    "pastEvents": "Past Events",
+    "eventDetails": "Event Details",
+    "tickets": "Tickets",
+    "participants": {
+      "requirementsTitle": "Participant Requirements",
+      "required": "required",
+      "fields": {
+        "firstName": "First Name",
+        "lastName": "Last Name",
         "email": "Email",
-        "password": "Password",
-        "confirmPassword": "Confirm Password",
-        "rememberMe": "Remember me"
-    },
-    "signup": {
-        "title": "Sign Up",
-        "subtitle": "Bring your own wallet or sign up with trusted OAuth provider",
-        "walletButton": "Connect with Wallet",
-        "googleButton": "Continue with Google",
-        "divider": "or",
-        "terms": "By signing up, you agree to our Terms of Service and Privacy Policy"
-    },
-    "oauth": {
-        "google": {
-            "title": "Authenticating with Google",
-            "subtitle": "Please wait while we verify your account",
-            "processing": "Processing...",
-            "redirect": "You will be redirected shortly",
-            "error": {
-                "title": "Authentication Failed",
-                "invalidParams": "Invalid authentication parameters",
-                "missingCode": "Authorization code is missing",
-                "missingState": "State parameter is missing",
-                "missingRedirect": "Redirect destination not found",
-                "verificationFailed": "Failed to verify your Google account",
-                "description": "We couldn't complete the Google authentication. This might happen if:",
-                "verificationDescription": "The authentication process started but we couldn't verify your account. This might happen if:",
-                "missingRedirectDescription": "We couldn't determine where to redirect you after authentication. This might happen if:",
-                "missingAccess": "Missing access token",
-                "unauthenticated": "Unauthenticated response",
-                "expired": "Expired token",
-                "internal": "Internal error response",
-                "reasons": {
-                    "missingAccess": "Redirect URL is incorrect, please login through your chosen OAuth provider again.",
-                    "unauthenticated": "Invalid authentication data, please login through your chosen OAuth provider again.",
-                    "expired": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
-                    "internal": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
-                },
-                "tryAgain": "Try signing in again",
-                "backToSignUp": "Back to Sign Up"
-            }
-        }
-    },
-    "home": {
-        "hero": {
-            "title": "Decentralized Event Management",
-            "subtitle": "NFT ticketing, digital credentials, and academic identity verification on the blockchain",
-            "cta": "Get Started",
-            "learnMore": "Learn More"
-        },
-        "features": {
-            "title": "Platform Features",
-            "events": {
-                "title": "Event Management",
-                "description": "Create and manage events with NFT-based ticketing"
-            },
-            "credentials": {
-                "title": "Digital Credentials",
-                "description": "Issue and verify blockchain-based certificates"
-            },
-            "identity": {
-                "title": "Academic Identity",
-                "description": "Verify once, use everywhere with LDAP integration"
-            },
-            "portfolio": {
-                "title": "e-Portfolio",
-                "description": "Showcase your achievements and credentials"
-            }
-        }
-    },
-    "landing": {
-        "hero": {
-            "title": "Revolutionize certificates",
-            "subtitle": "Use blockchain technology for certificate solution",
-            "ctaButton": "Start building your portfolio",
-            "hasAccount": "I already have an registered account",
-            "scrollIndicator": "Scroll to explore"
-        },
-        "about": {
-            "title": "Themis",
-            "description": "a decentralized platform for event management, digital certificate issuance, and academic identity verification using Web 3.0 and blockchain technologies."
-        },
-        "features": {
-            "wallet": {
-                "title": "Customizable wallet management",
-                "description": "Bring your own wallet or let us manage your account's private key"
-            },
-            "verification": {
-                "title": "Every data is verifiable",
-                "description": "Every piece of record, certificates, and events are public on blockchain. Giving full transparency while keep the privacy of the users safe."
-            },
-            "download": {
-                "title": "Download certificates as pictures",
-                "description": "Certificates can be exported as pictures, and every pictures exported are able to verify its authenticity."
-            }
-        },
-        "getStarted": {
-            "title": "Get started",
-            "mobile": {
-                "verificationPortal": "Certificate Verification Portal",
-                "myCertificate": "My certificate",
-                "viewServices": "View all services"
-            },
-            "public": {
-                "title": "Public",
-                "event": "Event",
-                "verifyCertificates": "Verify certificates"
-            },
-            "students": {
-                "title": "Students",
-                "signIn": "Sign in",
-                "signUp": "Sign up",
-                "certificateManagement": "Certificate management",
-                "myEvents": "My events",
-                "inbox": "Inbox",
-                "identities": "Identities"
-            },
-            "organizer": {
-                "title": "Organizer",
-                "register": "Register with us",
-                "signIn": "Sign in",
-                "eventManagement": "Event management"
-            },
-            "issuer": {
-                "title": "Issuer",
-                "signInIAM": "Sign in with IAM",
-                "register": "Register with us"
-            },
-            "developer": {
-                "title": "Developer",
-                "manageIntegration": "Manage automation & integration",
-                "apiDocuments": "API documents",
-                "readDocs": "Read docs"
-            }
-        }
-    },
-    "profile": {
-        "title": "Profile",
-        "editProfile": "Edit Profile",
-        "personalInfo": "Personal Information",
-        "wallet": "Wallet Address",
-        "email": "Email",
-        "name": "Name",
         "bio": "Bio",
-        "verifiedIdentity": "Verified Identity",
-        "academicVerification": "Academic Verification",
-        "verifyNow": "Verify Now"
+        "phoneNumber": "Phone Number",
+        "address": "Address",
+        "academicInstitution": "Academic Institution",
+        "academicEmail": "Academic Email"
+      }
     },
-    "events": {
-        "title": "Events",
-        "createEvent": "Create Event",
-        "myEvents": "My Events",
-        "upcomingEvents": "Upcoming Events",
-        "pastEvents": "Past Events",
-        "eventDetails": "Event Details",
-        "tickets": "Tickets",
-        "participants": "Participants",
-        "date": "Date",
-        "location": "Location",
-        "category": "Category",
-        "register": "Register",
-        "registered": "Registered",
-        "form": {
-            "name": "Event Name",
-            "namePlaceholder": "Enter event name",
-            "shortDescription": "Short Description",
-            "shortDescriptionPlaceholder": "Enter a brief description (max 255 characters)",
-            "description": "Description",
-            "descriptionPlaceholder": "Enter event description (optional)",
-            "eventBanner": "Event Banner",
-            "eventBannerPlaceholder": "Click to upload banner image",
-            "eventBannerChange": "Change Image",
-            "eventBannerRemove": "Remove Image",
-            "eventIcon": "Event Icon",
-            "eventIconPlaceholder": "Click to upload icon image",
-            "eventIconChange": "Change",
-            "eventIconRemove": "Remove",
-            "startDate": "Start Date",
-            "startDatePlaceholder": "Select start date",
-            "endDate": "End Date",
-            "endDatePlaceholder": "Select end date",
-            "seatsCount": "Number of Seats",
-            "seatsCountPlaceholder": "Enter number of available seats",
-            "location": "Venue Location",
-            "locationPlaceholder": "Enter venue name or address",
-            "googleMapQuery": "Google Maps Search",
-            "googleMapQueryPlaceholder": "Enter location for Google Maps (e.g., Central World Bangkok)",
-            "googleMapPlaceholder": "Map will appear when you enter a location",
-            "stepEventInfo": "Event Information",
-            "stepVenueInfo": "Venue Information",
-            "next": "Next",
-            "previous": "Previous",
-            "submitCreate": "Create Event",
-            "submitUpdate": "Update Event"
-        },
-        "validation": {
-            "nameRequired": "Event name is required",
-            "nameMinLength": "Event name must be at least 3 characters",
-            "shortDescriptionRequired": "Short description is required",
-            "shortDescriptionMaxLength": "Short description must not exceed 255 characters",
-            "eventBannerRequired": "Event banner is required",
-            "eventBannerSize": "Event banner must be less than 5MB",
-            "eventBannerType": "Event banner must be JPEG, PNG, or WebP",
-            "eventIconRequired": "Event icon is required",
-            "eventIconSize": "Event icon must be less than 5MB",
-            "eventIconType": "Event icon must be JPEG, PNG, or WebP",
-            "startDateRequired": "Start date is required",
-            "endDateRequired": "End date is required",
-            "endDateAfterStart": "End date must be on or after start date",
-            "seatsCountRequired": "Number of seats is required",
-            "seatsCountMin": "Number of seats must be at least 1",
-            "seatsCountInteger": "Number of seats must be a whole number",
-            "locationRequired": "Venue location is required",
-            "locationMinLength": "Venue location must be at least 3 characters",
-            "googleMapQueryRequired": "Google Maps location is required",
-            "googleMapQueryMinLength": "Google Maps location must be at least 3 characters"
-        },
-        "settings": {
-            "eventType": "Event Type",
-            "bookingRequired": "Booking Request Required",
-            "tokenTransferable": "Token Transferable",
-            "participantSettings": "Participant Settings"
-        },
-        "participants": {
-            "requirementsTitle": "Participant Requirements",
-            "required": "required",
-            "fields": {
-                "firstName": "First Name",
-                "lastName": "Last Name",
-                "email": "Email",
-                "bio": "Bio",
-                "phoneNumber": "Phone Number",
-                "address": "Address",
-                "academicInstitution": "Academic Institution",
-                "academicEmail": "Academic Email"
-            }
-        }
-    },
-    "participantSettings": {
-        "pageTitle": "Participant Settings",
-        "pageDescription": "Configure registration requirements and participant information fields for your event",
-        "registrationSettings": "Registration Settings",
-        "registrationSettingsDescription": "Configure how participants can register for your event",
-        "participantRequirements": "Participant Requirements",
-        "participantRequirementsDescription": "Specify which information fields participants must provide during registration",
-        "basicInformation": "Basic Information",
-        "additionalInformation": "Additional Information",
-        "academicInformation": "Academic Information",
-        "eventType": "Event Type",
-        "eventTypePublic": "Public",
-        "eventTypePrivate": "Private",
-        "eventTypeDescription": "Public events are visible to everyone. Private events require approval or invitation.",
-        "bookingRequired": "Booking Approval Required",
-        "bookingRequiredDescription": "Participants must wait for approval before their registration is confirmed",
-        "ticketTransferable": "Allow Ticket Transfer",
-        "ticketTransferableDescription": "Allow participants to transfer their tickets to others",
-        "fieldRequirement": {
-            "notRequired": "Not Required",
-            "optional": "Optional",
-            "required": "Required"
-        },
-        "fields": {
-            "firstName": "First Name",
-            "lastName": "Last Name",
-            "email": "Email Address",
-            "bio": "Biography",
-            "phoneNumber": "Phone Number",
-            "address": "Address",
-            "academicInstitution": "Academic Institution",
-            "academicEmail": "Academic Email"
-        },
-        "saveSettings": "Save Settings",
-        "saveSuccess": "Participant settings saved successfully",
-        "saveError": "Failed to save participant settings. Please try again.",
-        "tabs": {
-            "settings": "Settings",
-            "preview": "Preview"
-        },
-        "preview": {
-            "title": "Registration Form Preview",
-            "description": "This is how the registration form will appear to participants",
-            "enter": "Enter",
-            "optional": "Optional",
-            "bookingRequired": "Approval Required",
-            "transferable": "Transferable",
-            "register": "Register for Event",
-            "note": "This is a preview only. The form is disabled."
-        }
-    },
-    "certificateSettings": {
-        "pageTitle": "Certificate Settings",
-        "pageDescription": "Configure certificate issuers and design your certificate template",
-        "step1": {
-            "title": "Step 1: Issuer Settings",
-            "description": "Search and select certificate issuers for this event",
-            "searchLabel": "Search Issuers",
-            "searchPlaceholder": "Enter name, email, or organization...",
-            "searchButton": "Search",
-            "selectedIssuers": "Selected Issuers",
-            "table": {
-                "name": "Name",
-                "email": "Email",
-                "organization": "Organization",
-                "actions": "Actions"
-            },
-            "alert": {
-                "title": "Important Notice",
-                "description": "Issuer settings can only be configured once. You can't change the issuer after confirming the settings."
-            },
-            "modal": {
-                "title": "Select Certificate Issuers",
-                "description": "Select one or more issuers from the search results",
-                "selected": "selected",
-                "noResults": "No issuers found",
-                "chooseButton": "Choose"
-            }
-        },
-        "step2": {
-            "title": "Step 2: Certificate Template Settings",
-            "description": "Upload your SVG certificate template with dynamic keywords",
-            "instructions": {
-                "title": "How to Create Certificate Template in Figma",
-                "step1": {
-                    "title": "1. Design Your Certificate",
-                    "description": "Create your certificate design in Figma with all the visual elements, borders, and branding you want."
-                },
-                "step2": {
-                    "title": "2. Add Dynamic Text Placeholders",
-                    "description": "Use text layers with special keywords (e.g., {{ eventName }}, {{ name }}) that will be replaced with actual data."
-                },
-                "step3": {
-                    "title": "3. Export as SVG",
-                    "description": "Export your design as SVG file. Make sure to include all text elements and preserve text as editable."
-                }
-            },
-            "keywords": {
-                "title": "Available Keywords",
-                "description": "Use these special keywords in your SVG template. They will be automatically replaced with actual data:"
-            },
-            "upload": {
-                "label": "Certificate Template (SVG)",
-                "button": "Select SVG File",
-                "hint": "Only SVG files are supported. Maximum file size: 5MB"
-            },
-            "preview": {
-                "title": "Template Preview"
-            },
-            "detectedKeywords": {
-                "title": "Detected Keywords in Template",
-                "table": {
-                    "keyword": "Keyword",
-                    "xPosition": "X Position",
-                    "yPosition": "Y Position",
-                    "count": "Count"
-                }
-            },
-            "keywordStatus": {
-                "title": "Keyword Detection Status",
-                "table": {
-                    "status": "Status",
-                    "keyword": "Keyword",
-                    "type": "Type",
-                    "count": "Detected Count"
-                },
-                "required": "Required",
-                "optional": "Optional",
-                "detected": "occurrence",
-                "detectedPlural": "occurrences",
-                "notDetected": "Not detected"
-            },
-            "missingRequired": {
-                "title": "Missing Required Keywords",
-                "description": "The following required keywords were not detected in your SVG template:",
-                "instruction": "Please update your SVG template to include these required keywords before proceeding."
-            }
-        },
-        "confirmButton": "Confirm Settings",
-        "saveSuccess": "Certificate settings saved successfully",
-        "saveError": "Failed to save certificate settings. Please try again."
-    },
-    "credentials": {
-        "title": "Credentials",
-        "myCredentials": "My Credentials",
-        "issueCredential": "Issue Credential",
-        "verify": "Verify",
-        "share": "Share",
-        "download": "Download",
-        "issuer": "Issuer",
-        "issuedDate": "Issued Date",
-        "expiryDate": "Expiry Date",
-        "credentialType": "Credential Type",
-        "qrCode": "QR Code"
-    },
-    "portfolio": {
-        "title": "Portfolio",
-        "myPortfolio": "My Portfolio",
-        "achievements": "Achievements",
-        "skills": "Skills",
-        "projects": "Projects",
-        "addItem": "Add Item",
-        "viewPublic": "View Public Profile",
-        "sharePortfolio": "Share Portfolio"
+    "date": "Date",
+    "location": "Location",
+    "category": "Category",
+    "register": "Register",
+    "registered": "Registered",
+    "form": {
+      "name": "Event Name",
+      "namePlaceholder": "Enter event name",
+      "shortDescription": "Short Description",
+      "shortDescriptionPlaceholder": "Enter a brief description (max 255 characters)",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter event description (optional)",
+      "eventBanner": "Event Banner",
+      "eventBannerPlaceholder": "Click to upload banner image",
+      "eventBannerChange": "Change Image",
+      "eventBannerRemove": "Remove Image",
+      "eventIcon": "Event Icon",
+      "eventIconPlaceholder": "Click to upload icon image",
+      "eventIconChange": "Change",
+      "eventIconRemove": "Remove",
+      "startDate": "Start Date",
+      "startDatePlaceholder": "Select start date",
+      "endDate": "End Date",
+      "endDatePlaceholder": "Select end date",
+      "seatsCount": "Number of Seats",
+      "seatsCountPlaceholder": "Enter number of available seats",
+      "contactNumber": "Contact Number",
+      "contactNumberPlaceholder": "Enter contact phone number",
+      "contactAddress": "Contact Address",
+      "contactAddressPlaceholder": "Enter contact address",
+      "location": "Venue Location",
+      "locationPlaceholder": "Enter venue name or address",
+      "googleMapQuery": "Google Maps Search",
+      "googleMapQueryPlaceholder": "Enter location for Google Maps (e.g., Central World Bangkok)",
+      "googleMapPlaceholder": "Map will appear when you enter a location",
+      "stepEventInfo": "Event Information",
+      "stepVenueInfo": "Venue & Contact Information",
+      "next": "Next",
+      "previous": "Previous",
+      "submitCreate": "Create Event",
+      "submitUpdate": "Update Event"
     },
     "validation": {
-        "required": "This field is required",
-        "invalidEmail": "Invalid email address",
-        "passwordTooShort": "Password must be at least 8 characters",
-        "passwordMin6": "Password must be at least 6 characters long",
-        "passwordMax32": "Password must be at most 32 characters long",
-        "passwordMismatch": "Passwords do not match",
-        "invalidWallet": "Invalid wallet address",
-        "accessTokenAndSignedTokenRequired": "Access token or signed token is required"
+      "nameRequired": "Event name is required",
+      "nameMinLength": "Event name must be at least 3 characters",
+      "shortDescriptionRequired": "Short description is required",
+      "shortDescriptionMaxLength": "Short description must not exceed 255 characters",
+      "eventBannerRequired": "Event banner is required",
+      "eventBannerSize": "Event banner must be less than 5MB",
+      "eventBannerType": "Event banner must be JPEG, PNG, or WebP",
+      "eventIconRequired": "Event icon is required",
+      "eventIconSize": "Event icon must be less than 5MB",
+      "eventIconType": "Event icon must be JPEG, PNG, or WebP",
+      "startDateRequired": "Start date is required",
+      "endDateRequired": "End date is required",
+      "endDateAfterStart": "End date must be on or after start date",
+      "seatsCountRequired": "Number of seats is required",
+      "seatsCountMin": "Number of seats must be at least 1",
+      "seatsCountInteger": "Number of seats must be a whole number",
+      "contactNumberRequired": "Contact number is required",
+      "contactNumberMinLength": "Contact number must be at least 10 characters",
+      "contactAddressRequired": "Contact address is required",
+      "contactAddressMinLength": "Contact address must be at least 10 characters",
+      "locationRequired": "Venue location is required",
+      "locationMinLength": "Venue location must be at least 3 characters",
+      "googleMapQueryRequired": "Google Maps location is required",
+      "googleMapQueryMinLength": "Google Maps location must be at least 3 characters"
     },
-    "errors": {
-        "generic": "Something went wrong. Please try again.",
-        "network": "Network error. Please check your connection.",
-        "unauthorized": "You are not authorized to perform this action.",
-        "forbidden": "You are not authorized to perform this action.",
-        "notFound": "The requested resource was not found.",
-        "conflict": "The input already exists.",
-        "serverError": "Something went wrong. Please try again later.",
-        "invalidInput": "Invalid input",
-        "invalidInputDescription": "Please check your input and try again.",
-        "networkDescription": "Network error. Please check your connection.",
-        "unauthorizedDescription": "You are not authorized to perform this action.",
-        "notFoundDescription": "The requested resource was not found.",
-        "duplicateEntryDescription": "The input already exists.",
-        "internalServerErrorDescription": "Something went wrong. Please try again later.",
-        "internalClientErrorDescription": "Client error. Please try again later.",
-        "forbiddenDescription": "You are not authorized to perform this action."
-    },
-    "notFound": {
-        "title": "404 - Page Not Found",
-        "heading": "Oops! Page not found",
-        "description": "The page you're looking for doesn't exist or has been moved.",
-        "backHome": "Back to Home",
-        "suggestions": {
-            "title": "Try these instead:",
-            "home": "Go to Home",
-            "events": "Browse Events",
-            "credentials": "View Credentials",
-            "signup": "Sign Up"
-        }
-    },
-    "error": {
-        "title": "Error - Something Went Wrong",
-        "heading": "Oops! Something went wrong",
-        "description": "We encountered an unexpected error. Please try again or contact support if the problem persists.",
-        "backHome": "Back to Home",
-        "tryAgain": "Try Again",
-        "suggestions": {
-            "title": "What you can do:",
-            "home": "Go to Home",
-            "refresh": "Refresh Page",
-            "support": "Contact Support",
-            "signup": "Sign Up"
-        }
-    },
-    "onboard": {
-        "title": "Account onboarding",
-        "subtitle": "Please setup your passcode/password. This will be used to encrypt your info. This cannot be recover, please be careful.",
-        "pinTitle": "Setup PIN",
-        "passwordTitle": "Setup Password",
-        "preferPassword": "I prefer password",
-        "preferPin": "I prefer PIN",
-        "logout": "Logout",
-        "enterPin": "Enter your 6-digit PIN",
-        "confirmPin": "Confirm your PIN",
-        "enterPassword": "Enter your password",
-        "confirmPassword": "Confirm your password",
-        "pinMismatch": "PINs do not match",
-        "pinTooShort": "PIN must be 6 digits",
-        "profile": {
-            "title": "Profile (optional)",
-            "subtitle": "We use your personal data to prefill some of the details required by the events/certificates. Your data is always encrypted and can be changed and deleted by you at any moment.",
-            "firstName": "First name",
-            "lastName": "Last name",
-            "email": "Contact email",
-            "phoneNumber": "Phone number",
-            "makePublic": "Make this information public"
-        },
-        "confirm": {
-            "title": "Heads up",
-            "oauth": {
-                "description": {
-                    "part1": "Certificates rely on blockchain technology as a source of truth. Since you’re using OAuth account instead of web3 wallet as a account. We’re managing the your account/wallet private key behind the scene.",
-                    "part2": "Your private key is encrypted with your passcode/password you provided.  <strong>If you do not set up a back-up authentication method. We do not either.</strong>"
-                },
-                "checkboxes": {
-                    "acceptRisk": "I'm ok with that.",
-                    "acknowledgePasswordLoss": "I acknowledged that losing my passcode/password will result in total account lost"
-                }
-            }
-        },
-        "flow": {
-            "check_onboard_status": {
-                "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
-                "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
-                "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
-            },
-            "oauth_google": {
-                "create_account_pending": "Authenticating with Google...",
-                "create_account_success": "Authenticated with Google successfully",
-                "create_account_error": "Failed to authenticate with Google",
-                "create_account_error_duplicate": "The account with this email already exists.",
-                "create_profile_pending": "Updating profile...",
-                "create_profile_success": "Profile updated successfully",
-                "create_profile_error_duplicate": "The profile with this email already exists.",
-                "create_profile_error": "Failed to update profile. Please try again later.",
-                "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
-                "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
-                "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
-            }
-        },
-        "api": {
-            "error": {
-                "authentication_credential_id_already_exists": "Authentication credential ID already exists"
-            }
-        }
+    "settings": {
+      "eventType": "Event Type",
+      "bookingRequired": "Booking Request Required",
+      "tokenTransferable": "Token Transferable",
+      "participantSettings": "Participant Settings"
     }
+  },
+  "participantSettings": {
+    "pageTitle": "Participant Settings",
+    "pageDescription": "Configure registration requirements and participant information fields for your event",
+    "registrationSettings": "Registration Settings",
+    "registrationSettingsDescription": "Configure how participants can register for your event",
+    "participantRequirements": "Participant Requirements",
+    "participantRequirementsDescription": "Specify which information fields participants must provide during registration",
+    "basicInformation": "Basic Information",
+    "additionalInformation": "Additional Information",
+    "academicInformation": "Academic Information",
+    "eventType": "Event Type",
+    "eventTypePublic": "Public",
+    "eventTypePrivate": "Private",
+    "eventTypeDescription": "Public events are visible to everyone. Private events require approval or invitation.",
+    "bookingRequired": "Booking Approval Required",
+    "bookingRequiredDescription": "Participants must wait for approval before their registration is confirmed",
+    "ticketTransferable": "Allow Ticket Transfer",
+    "ticketTransferableDescription": "Allow participants to transfer their tickets to others",
+    "fieldRequirement": {
+      "notRequired": "Not Required",
+      "optional": "Optional",
+      "required": "Required"
+    },
+    "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email Address",
+      "bio": "Biography",
+      "phoneNumber": "Phone Number",
+      "address": "Address",
+      "academicInstitution": "Academic Institution",
+      "academicEmail": "Academic Email"
+    },
+    "saveSettings": "Save Settings",
+    "saveSuccess": "Participant settings saved successfully",
+    "saveError": "Failed to save participant settings. Please try again.",
+    "tabs": {
+      "settings": "Settings",
+      "preview": "Preview"
+    },
+    "preview": {
+      "title": "Registration Form Preview",
+      "description": "This is how the registration form will appear to participants",
+      "enter": "Enter",
+      "optional": "Optional",
+      "bookingRequired": "Approval Required",
+      "transferable": "Transferable",
+      "register": "Register for Event",
+      "note": "This is a preview only. The form is disabled."
+    }
+  },
+  "certificateSettings": {
+    "pageTitle": "Certificate Settings",
+    "pageDescription": "Configure certificate issuers and design your certificate template",
+    "step1": {
+      "title": "Step 1: Issuer Settings",
+      "description": "Search and select certificate issuers for this event",
+      "searchLabel": "Search Issuers",
+      "searchPlaceholder": "Enter name, email, or organization...",
+      "searchButton": "Search",
+      "selectedIssuers": "Selected Issuers",
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "organization": "Organization",
+        "actions": "Actions"
+      },
+      "alert": {
+        "title": "Important Notice",
+        "description": "Issuer settings can only be configured once. You can't change the issuer after confirming the settings."
+      },
+      "modal": {
+        "title": "Select Certificate Issuers",
+        "description": "Select one or more issuers from the search results",
+        "selected": "selected",
+        "noResults": "No issuers found",
+        "chooseButton": "Choose"
+      }
+    },
+    "step2": {
+      "title": "Step 2: Certificate Template Settings",
+      "description": "Upload your SVG certificate template with dynamic keywords",
+      "instructions": {
+        "title": "How to Create Certificate Template in Figma",
+        "step1": {
+          "title": "1. Design Your Certificate",
+          "description": "Create your certificate design in Figma with all the visual elements, borders, and branding you want."
+        },
+        "step2": {
+          "title": "2. Add Dynamic Text Placeholders",
+          "description": "Use text layers with special keywords (e.g., {{ eventName }}, {{ name }}) that will be replaced with actual data."
+        },
+        "step3": {
+          "title": "3. Export as SVG",
+          "description": "Export your design as SVG file. Make sure to include all text elements and preserve text as editable."
+        }
+      },
+      "keywords": {
+        "title": "Available Keywords",
+        "description": "Use these special keywords in your SVG template. They will be automatically replaced with actual data:"
+      },
+      "upload": {
+        "label": "Certificate Template (SVG)",
+        "button": "Select SVG File",
+        "hint": "Only SVG files are supported. Maximum file size: 5MB"
+      },
+      "preview": {
+        "title": "Template Preview"
+      },
+      "detectedKeywords": {
+        "title": "Detected Keywords in Template",
+        "table": {
+          "keyword": "Keyword",
+          "xPosition": "X Position",
+          "yPosition": "Y Position",
+          "count": "Count"
+        }
+      },
+      "keywordStatus": {
+        "title": "Keyword Detection Status",
+        "table": {
+          "status": "Status",
+          "keyword": "Keyword",
+          "type": "Type",
+          "count": "Detected Count"
+        },
+        "required": "Required",
+        "optional": "Optional",
+        "detected": "occurrence",
+        "detectedPlural": "occurrences",
+        "notDetected": "Not detected"
+      },
+      "missingRequired": {
+        "title": "Missing Required Keywords",
+        "description": "The following required keywords were not detected in your SVG template:",
+        "instruction": "Please update your SVG template to include these required keywords before proceeding."
+      }
+    },
+    "confirmButton": "Confirm Settings",
+    "saveSuccess": "Certificate settings saved successfully",
+    "saveError": "Failed to save certificate settings. Please try again."
+  },
+  "credentials": {
+    "title": "Credentials",
+    "myCredentials": "My Credentials",
+    "issueCredential": "Issue Credential",
+    "verify": "Verify",
+    "share": "Share",
+    "download": "Download",
+    "issuer": "Issuer",
+    "issuedDate": "Issued Date",
+    "expiryDate": "Expiry Date",
+    "credentialType": "Credential Type",
+    "qrCode": "QR Code"
+  },
+  "portfolio": {
+    "title": "Portfolio",
+    "myPortfolio": "My Portfolio",
+    "achievements": "Achievements",
+    "skills": "Skills",
+    "projects": "Projects",
+    "addItem": "Add Item",
+    "viewPublic": "View Public Profile",
+    "sharePortfolio": "Share Portfolio"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordMin6": "Password must be at least 6 characters long",
+    "passwordMax32": "Password must be at most 32 characters long",
+    "passwordMismatch": "Passwords do not match",
+    "invalidWallet": "Invalid wallet address",
+    "accessTokenAndSignedTokenRequired": "Access token or signed token is required"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "forbidden": "You are not authorized to perform this action.",
+    "notFound": "The requested resource was not found.",
+    "conflict": "The input already exists.",
+    "serverError": "Something went wrong. Please try again later.",
+    "invalidInput": "Invalid input",
+    "invalidInputDescription": "Please check your input and try again.",
+    "networkDescription": "Network error. Please check your connection.",
+    "unauthorizedDescription": "You are not authorized to perform this action.",
+    "notFoundDescription": "The requested resource was not found.",
+    "duplicateEntryDescription": "The input already exists.",
+    "internalServerErrorDescription": "Something went wrong. Please try again later.",
+    "internalClientErrorDescription": "Client error. Please try again later.",
+    "forbiddenDescription": "You are not authorized to perform this action."
+  },
+  "notFound": {
+    "title": "404 - Page Not Found",
+    "heading": "Oops! Page not found",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "backHome": "Back to Home",
+    "suggestions": {
+      "title": "Try these instead:",
+      "home": "Go to Home",
+      "events": "Browse Events",
+      "credentials": "View Credentials",
+      "signup": "Sign Up"
+    }
+  },
+  "error": {
+    "title": "Error - Something Went Wrong",
+    "heading": "Oops! Something went wrong",
+    "description": "We encountered an unexpected error. Please try again or contact support if the problem persists.",
+    "backHome": "Back to Home",
+    "tryAgain": "Try Again",
+    "suggestions": {
+      "title": "What you can do:",
+      "home": "Go to Home",
+      "refresh": "Refresh Page",
+      "support": "Contact Support",
+      "signup": "Sign Up"
+    }
+  },
+  "onboard": {
+    "title": "Account onboarding",
+    "subtitle": "Please setup your passcode/password. This will be used to encrypt your info. This cannot be recover, please be careful.",
+    "pinTitle": "Setup PIN",
+    "passwordTitle": "Setup Password",
+    "preferPassword": "I prefer password",
+    "preferPin": "I prefer PIN",
+    "logout": "Logout",
+    "enterPin": "Enter your 6-digit PIN",
+    "confirmPin": "Confirm your PIN",
+    "enterPassword": "Enter your password",
+    "confirmPassword": "Confirm your password",
+    "pinMismatch": "PINs do not match",
+    "pinTooShort": "PIN must be 6 digits",
+    "profile": {
+      "title": "Profile (optional)",
+      "subtitle": "We use your personal data to prefill some of the details required by the events/certificates. Your data is always encrypted and can be changed and deleted by you at any moment.",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Contact email",
+      "phoneNumber": "Phone number",
+      "makePublic": "Make this information public"
+    },
+    "confirm": {
+      "title": "Heads up",
+      "oauth": {
+        "description": {
+          "part1": "Certificates rely on blockchain technology as a source of truth. Since you’re using OAuth account instead of web3 wallet as a account. We’re managing the your account/wallet private key behind the scene.",
+          "part2": "Your private key is encrypted with your passcode/password you provided.  <strong>If you do not set up a back-up authentication method. We do not either.</strong>"
+        },
+        "checkboxes": {
+          "acceptRisk": "I'm ok with that.",
+          "acknowledgePasswordLoss": "I acknowledged that losing my passcode/password will result in total account lost"
+        }
+      }
+    },
+    "flow": {
+      "check_onboard_status": {
+        "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
+        "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
+        "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
+      },
+      "oauth_google": {
+        "create_account_pending": "Authenticating with Google...",
+        "create_account_success": "Authenticated with Google successfully",
+        "create_account_error": "Failed to authenticate with Google",
+        "create_account_error_duplicate": "The account with this email already exists.",
+        "create_profile_pending": "Updating profile...",
+        "create_profile_success": "Profile updated successfully",
+        "create_profile_error_duplicate": "The profile with this email already exists.",
+        "create_profile_error": "Failed to update profile. Please try again later.",
+        "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
+        "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
+        "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
+      }
+    },
+    "api": {
+      "error": {
+        "authentication_credential_id_already_exists": "Authentication credential ID already exists"
+      }
+    }
+  }
 }

@@ -46,6 +46,15 @@ export const eventFormSchema = z
             })
             .int("events.validation.seatsCountInteger")
             .min(1, "events.validation.seatsCountMin"),
+        // Contact Information
+        contactNumber: z
+            .string()
+            .min(1, "events.validation.contactNumberRequired")
+            .min(10, "events.validation.contactNumberMinLength"),
+        contactAddress: z
+            .string()
+            .min(1, "events.validation.contactAddressRequired")
+            .min(10, "events.validation.contactAddressMinLength"),
         // Venue Information
         location: z
             .string()
