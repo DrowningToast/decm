@@ -105,6 +105,7 @@ const OnboardingPage = () => {
         accessToken: accessToken ?? "",
         expiresIn: expiresIn ? parseInt(expiresIn) : 0,
     });
+
     // handle error
     useEffect(() => {
         if (!error) {

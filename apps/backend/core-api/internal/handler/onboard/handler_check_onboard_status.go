@@ -44,6 +44,11 @@ type CheckOnboardStatusResponse struct {
 // @Failure 401 {object} customerror.ErrResponse
 // @Router /api/v1/onboard/check-onboard-status [post]
 func (h Handler) CheckOnboardStatus(ctx *fiber.Ctx) error {
+	currentUser, err := h.AuthService.GetUserContext(ctx)
+	if err != nil {
+		return err
+	}
+
 	requestBody := CheckOnboardStatusRequest{}
 	if err := requestBody.Parse(ctx); err != nil {
 		return err
@@ -54,25 +59,28 @@ func (h Handler) CheckOnboardStatus(ctx *fiber.Ctx) error {
 
 	switch requestBody.Method {
 	case RegistrationMethodGoogle:
-		accessToken := requestBody.AccessToken
-		if accessToken == nil {
-			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("access token is required"))
-		}
-		expiresIn := requestBody.ExpiresIn
-		if expiresIn == nil {
-			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("expires in is required"))
-		}
-		authenticationCredentialId, profileId, err := h.OnboardUc.CheckOnboardStatusWithGoogleConnectorRef(ctx.UserContext(), *accessToken, *expiresIn)
+		jwt, profileId, err := h.OnboardUc.CheckOnboardStatusWithGoogleConnectorRef(ctx.UserContext(), currentUser, requestBody.AccessToken, requestBody.ExpiresIn)
 		if err != nil {
-			return errors.Wrap(err, "failed to check onboard status with google connector ref")
+			return err
 		}
-		if authenticationCredentialId == nil {
+		if jwt == nil {
 			return ctx.Status(fiber.StatusOK).JSON(CheckOnboardStatusResponse{
 				AuthenticationCredentialId: nil,
 				ProfileId:                  nil,
 			})
 		}
-		authenticationCredentialIdStr := authenticationCredentialId.String()
+		jwtToken, err := h.AuthService.CreateToken(*jwt)
+		if err != nil {
+			return errors.Wrap(err, "failed to create jwt token")
+		}
+		h.AuthService.SetJwtCookie(ctx, jwtToken)
+		authenticationCredentialIdStr := jwt.UserId.String()
+		if profileId == nil {
+			return ctx.Status(fiber.StatusOK).JSON(CheckOnboardStatusResponse{
+				AuthenticationCredentialId: &authenticationCredentialIdStr,
+				ProfileId:                  nil,
+			})
+		}
 		profileIdStr := profileId.String()
 		return ctx.Status(fiber.StatusOK).JSON(CheckOnboardStatusResponse{
 			AuthenticationCredentialId: &authenticationCredentialIdStr,
@@ -83,17 +91,28 @@ func (h Handler) CheckOnboardStatus(ctx *fiber.Ctx) error {
 		if signMessage == nil {
 			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("sign message is required"))
 		}
-		authenticationCredentialId, profileId, err := h.OnboardUc.CheckOnboardStatusWithWalletAddress(ctx.UserContext(), *signMessage)
+		jwt, profileId, err := h.OnboardUc.CheckOnboardStatusWithWalletAddress(ctx.UserContext(), *signMessage)
 		if err != nil {
 			return errors.Wrap(err, "failed to check onboard status with wallet address")
 		}
-		if authenticationCredentialId == nil {
+		if jwt == nil {
 			return ctx.Status(fiber.StatusOK).JSON(CheckOnboardStatusResponse{
 				AuthenticationCredentialId: nil,
 				ProfileId:                  nil,
 			})
 		}
-		authenticationCredentialIdStr := authenticationCredentialId.String()
+		jwtToken, err := h.AuthService.CreateToken(*jwt)
+		if err != nil {
+			return errors.Wrap(err, "failed to create jwt token")
+		}
+		h.AuthService.SetJwtCookie(ctx, jwtToken)
+		authenticationCredentialIdStr := jwt.UserId.String()
+		if profileId == nil {
+			return ctx.Status(fiber.StatusOK).JSON(CheckOnboardStatusResponse{
+				AuthenticationCredentialId: &authenticationCredentialIdStr,
+				ProfileId:                  nil,
+			})
+		}
 		profileIdStr := profileId.String()
 		return ctx.Status(fiber.StatusOK).JSON(CheckOnboardStatusResponse{
 			AuthenticationCredentialId: &authenticationCredentialIdStr,

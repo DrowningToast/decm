@@ -1,4 +1,4 @@
-import { createContext, useEffect, useMemo, } from "react"
+import { createContext, useContext, useEffect, useMemo, } from "react"
 import { useForm, type UseFormReturn } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ProfileSchema } from "../Profile"
@@ -7,12 +7,12 @@ import { useTranslation } from "react-i18next"
 import { Form } from "@/components/ui/form"
 import { useSignup } from "../useSignup"
 import { OnboardRegistrationMethod, type OnboardCheckOnboardStatusResponse } from "@decm/api"
-import { Error } from "../../Error"
-import { useSearchParams } from "react-router-dom"
+import { ErrorPage } from "../../Error"
 import { coreApiClient } from "@/lib/api/api"
-import { LOCAL_STORAGE_KEYS, setLocalStorageItem } from "@/lib/constants/localStorage"
 import { toast } from "sonner"
-import { AxiosError } from "axios"
+import { handleUniversalError } from "@/common/Err"
+import { USECASE_IDS } from "@/constants/usecase"
+import { OnboardPageContext } from "../../../../pages/onboard/[method]"
 
 type OAuthOnboardContextType = {
     form: UseFormReturn<OAuthOnboardForm>
@@ -35,10 +35,8 @@ type OAuthOnboardErrorType = "missingAccessToken" | "missingExpiresIn"
 
 const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const { t } = useTranslation()
+    const { accessToken, expiresIn, onboardStatus } = useContext(OnboardPageContext)
     const { createAccount, upsertProfile, isLoading } = useSignup()
-    const [searchParams] = useSearchParams()
-    const accessToken = searchParams.get("access_token")
-    const expiresIn = searchParams.get("expires_in")
 
     const OAuthOnboardFormSchema = createOAuthOnboardFormSchema(t)
 
@@ -48,6 +46,7 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
     })
 
     const onSubmit = async (data: OAuthOnboardForm) => {
+        console.log(isLoading);
         if (isLoading) {
             toast.error(t("errors.generic"))
             return;
@@ -61,48 +60,44 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
                 expires_in: data.expiresIn,
             })
         } catch (error) {
-            if (error instanceof AxiosError) {
-                switch (error.response?.status) {
-                    case 401:
-                        toast.error(t("flow.check_onboard_status.unauthenticated_response"))
-                        return
-                }
+            if (error instanceof Error) {
+                handleUniversalError(t, error)
             }
         }
 
         let credential_id: string | undefined = undefined
         if (!status?.authentication_credential_id) {
             try {
-                const { credential_id: _credential_id, jwt } = await createAccount({
+                const { credential_id: _credential_id, } = await createAccount({
                     method: OnboardRegistrationMethod.RegistrationMethodGoogle,
                     accessToken: data.accessToken ?? "",
                     expiresIn: data.expiresIn ?? undefined,
                     password: data.password,
                 })
-                setLocalStorageItem(LOCAL_STORAGE_KEYS.JWT, jwt)
                 credential_id = _credential_id
             } catch (error) {
-                if (error instanceof AxiosError) {
-                    switch (error.response?.status) {
-                        case 409:
+                if (error instanceof Error) {
+                    handleUniversalError(t, error, {
+                        onDuplicateEntry: () => {
                             toast.error(t("flow.oauth_google.create_account_error_duplicate"))
                             return
-                        case 401:
+                        },
+                        onUnauthorized: () => {
                             toast.error(t("flow.oauth_google.create_account_error_expired_token"))
                             return
-                        case 500:
+                        },
+                        onInternalServerError: () => {
                             toast.error(t("flow.oauth_google.create_account_error_generic"))
                             return
-                        default:
-                            toast.error(t("flow.oauth_google.create_account_error_generic"))
-                            return
-                    }
+                        }
+                    }, USECASE_IDS.OAUTH_GOOGLE_CREATE_ACCOUNT);
+                    return
                 }
-                toast.error(t("flow.oauth_google.create_account_error_generic"))
-                return
             }
         }
+
         try {
+            console.log(credential_id);
             await upsertProfile({
                 method: OnboardRegistrationMethod.RegistrationMethodGoogle,
                 accessToken: data.accessToken ?? "",
@@ -122,34 +117,35 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
                 }
             })
         } catch (error) {
-            if (error instanceof AxiosError) {
-                switch (error.response?.status) {
-                    case 409:
+            if (error instanceof Error) {
+                handleUniversalError(t, error, {
+                    onInternalServerError: () => {
+                        toast.error(t("flow.oauth_google.create_account_error_generic"))
+                        return
+                    },
+                    onDuplicateEntry: () => {
                         toast.error(t("flow.oauth_google.create_account_error_duplicate"))
                         return
-                    case 401:
-                        toast.error(t("flow.oauth_google.create_account_error_expired_token"))
-                        return
-                    case 500:
-                        toast.error(t("flow.oauth_google.create_account_error_generic"))
-                        return
-                    default:
-                        toast.error(t("flow.oauth_google.create_account_error_generic"))
-                        return
-                }
+                    },
+                }, USECASE_IDS.OAUTH_GOOGLE_CREATE_PROFILE);
             }
-            toast.error(t("flow.oauth_google.create_account_error_generic"))
-            return
         }
 
     }
 
+    // TODOL Determine is valid
     const handleSubmit = async () => {
         const data = form.getValues()
-        const isValid = await form.trigger()
-        if (!isValid) {
+        if (!data.accessToken || !data.expiresIn) {
             return
         }
+        if (!onboardStatus?.authentication_credential_id) {
+            if (!data.password) {
+                toast.error(t("flow.oauth_google.create_account_error_password"))
+                return
+            }
+        }
+
         await onSubmit(data)
     }
 
@@ -162,6 +158,7 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
         }
         return undefined
     }, [form.formState.errors])
+    console.log(form.formState.errors)
 
     useEffect(() => {
         const init = async () => {
@@ -169,13 +166,13 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
                 return
             }
             form.setValue("accessToken", accessToken)
-            form.setValue("expiresIn", parseInt(expiresIn ?? "0"))
+            form.setValue("expiresIn", expiresIn)
         }
         init()
     }, [accessToken, form, expiresIn])
 
     if (errorType) {
-        return <Error />
+        return <ErrorPage />
     }
 
     return (

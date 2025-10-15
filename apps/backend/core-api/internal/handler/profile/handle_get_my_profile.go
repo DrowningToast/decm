@@ -1,6 +1,8 @@
 package profile
 
 import (
+	"apps/backend/common/customerror"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -16,7 +18,10 @@ import (
 // @Failure 500 {object} customerror.Err
 // @Router /api/v1/profile/my [get]
 func (h *Handler) GetMyProfile(c *fiber.Ctx) error {
-	user := h.AuthenticationService.GetUserContext(c)
+	user, err := h.AuthenticationService.RequireUserContext(c)
+	if err != nil {
+		return customerror.Parse(&customerror.ErrInternalServer, err)
+	}
 	profile, err := h.ProfileUc.GetProfileByAuthenticationCredentialId(c.Context(), user.UserId)
 	if err != nil {
 		return err

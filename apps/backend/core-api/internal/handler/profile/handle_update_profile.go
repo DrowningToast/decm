@@ -6,7 +6,6 @@ import (
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/profile"
-	"apps/backend/services/auth"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -68,7 +67,11 @@ func (h *Handler) UpdateProfileByCredentialId(c *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 	// Auth check
-	if !auth.IsCurrentUser(c, credentialIdUUID) {
+	isCurrentUser, err := h.AuthenticationService.IsCurrentUser(c, credentialIdUUID)
+	if err != nil {
+		return customerror.Parse(&customerror.ErrInternalServer, err)
+	}
+	if !isCurrentUser {
 		return customerror.Parse(&customerror.ErrUnauthorized, errors.New("unauthorized"))
 	}
 

@@ -10,6 +10,7 @@ export type Path =
   | `/oauth-success/google`
   | `/onboard/:method`
   | `/signin`
+  | `/signout`
   | `/signup`
 
 export type Params = {
