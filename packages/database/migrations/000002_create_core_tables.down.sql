@@ -18,11 +18,8 @@ DROP INDEX IF EXISTS idx_event_attendees_attendee_credential_id;
 DROP INDEX IF EXISTS idx_event_attendees_event_id;
 DROP INDEX IF EXISTS idx_events_id;
 DROP INDEX IF EXISTS idx_events_owner_credential_id;
-DROP INDEX IF EXISTS idx_profiles_email_hash;
 DROP INDEX IF EXISTS idx_profiles_id;
 DROP INDEX IF EXISTS idx_profiles_authentication_credential_id;
-DROP INDEX IF EXISTS idx_authentication_credentials_github_hash;
-DROP INDEX IF EXISTS idx_authentication_credentials_google_hash;
 DROP INDEX IF EXISTS idx_authentication_credentials_wallet_address;
 DROP INDEX IF EXISTS idx_authentication_credentials_id;
 
