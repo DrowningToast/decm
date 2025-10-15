@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
@@ -15,36 +16,38 @@ type Querier interface {
 	CountCredentialsByVerificationStatus(ctx context.Context) (CountCredentialsByVerificationStatusRow, error)
 	CountProfiles(ctx context.Context) (int64, error)
 	// Authentication Credentials CRUD queries
-	CreateAuthenticationCredential(ctx context.Context, arg CreateAuthenticationCredentialParams) (CreateAuthenticationCredentialRow, error)
-	// Profiles CRUD queries with PII encryption
-	CreateProfile(ctx context.Context, arg CreateProfileParams) (CreateProfileRow, error)
+	// Note: Encryption is handled at the repository layer using AES-GCM
+	CreateAuthenticationCredential(ctx context.Context, arg CreateAuthenticationCredentialParams) (AuthenticationCredential, error)
+	// Profiles CRUD queries
+	// Note: PII encryption is handled at the repository layer using AES-GCM
+	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error
 	DeleteProfile(ctx context.Context, id uuid.UUID) error
 	DeleteProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) error
-	GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, arg GetAuthenticationCredentialByGoogleConnectorRefParams) (GetAuthenticationCredentialByGoogleConnectorRefRow, error)
-	GetAuthenticationCredentialById(ctx context.Context, arg GetAuthenticationCredentialByIdParams) (GetAuthenticationCredentialByIdRow, error)
-	GetAuthenticationCredentialByWalletAddress(ctx context.Context, arg GetAuthenticationCredentialByWalletAddressParams) (GetAuthenticationCredentialByWalletAddressRow, error)
-	GetCredentialsBySolutionStatus(ctx context.Context, arg GetCredentialsBySolutionStatusParams) ([]GetCredentialsBySolutionStatusRow, error)
-	GetCredentialsByVerificationStatus(ctx context.Context, arg GetCredentialsByVerificationStatusParams) ([]GetCredentialsByVerificationStatusRow, error)
-	GetProfileByAuthCredentialID(ctx context.Context, arg GetProfileByAuthCredentialIDParams) (GetProfileByAuthCredentialIDRow, error)
-	// Note: Now uses email_hash for efficient searching instead of decrypting every row
-	GetProfileByEmail(ctx context.Context, arg GetProfileByEmailParams) (GetProfileByEmailRow, error)
-	GetProfileByID(ctx context.Context, arg GetProfileByIDParams) (GetProfileByIDRow, error)
-	ListAuthenticationCredentials(ctx context.Context, arg ListAuthenticationCredentialsParams) ([]ListAuthenticationCredentialsRow, error)
-	ListProfiles(ctx context.Context, arg ListProfilesParams) ([]ListProfilesRow, error)
-	RemoveGithubConnector(ctx context.Context, arg RemoveGithubConnectorParams) (RemoveGithubConnectorRow, error)
-	RemoveGoogleConnector(ctx context.Context, arg RemoveGoogleConnectorParams) (RemoveGoogleConnectorRow, error)
-	SetGithubConnector(ctx context.Context, arg SetGithubConnectorParams) (SetGithubConnectorRow, error)
-	SetGoogleConnector(ctx context.Context, arg SetGoogleConnectorParams) (SetGoogleConnectorRow, error)
+	GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef pgtype.Text) (AuthenticationCredential, error)
+	GetAuthenticationCredentialById(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
+	GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (AuthenticationCredential, error)
+	GetCredentialsBySolutionStatus(ctx context.Context, arg GetCredentialsBySolutionStatusParams) ([]AuthenticationCredential, error)
+	GetCredentialsByVerificationStatus(ctx context.Context, arg GetCredentialsByVerificationStatusParams) ([]AuthenticationCredential, error)
+	GetProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) (Profile, error)
+	// Note: Searches encrypted email field directly (linear scan)
+	GetProfileByEmail(ctx context.Context, email pgtype.Text) (Profile, error)
+	GetProfileByID(ctx context.Context, id uuid.UUID) (Profile, error)
+	ListAuthenticationCredentials(ctx context.Context, arg ListAuthenticationCredentialsParams) ([]AuthenticationCredential, error)
+	ListProfiles(ctx context.Context, arg ListProfilesParams) ([]Profile, error)
+	RemoveGithubConnector(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
+	RemoveGoogleConnector(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
+	SetGithubConnector(ctx context.Context, arg SetGithubConnectorParams) (AuthenticationCredential, error)
+	SetGoogleConnector(ctx context.Context, arg SetGoogleConnectorParams) (AuthenticationCredential, error)
 	// Note: This would require adding a deleted_at column in future migration
 	// For now, we can use a status update approach
-	SoftDeleteAuthenticationCredential(ctx context.Context, arg SoftDeleteAuthenticationCredentialParams) (SoftDeleteAuthenticationCredentialRow, error)
-	UpdateAuthenticationCredential(ctx context.Context, arg UpdateAuthenticationCredentialParams) (UpdateAuthenticationCredentialRow, error)
-	UpdateAuthenticationCredentialKeys(ctx context.Context, arg UpdateAuthenticationCredentialKeysParams) (UpdateAuthenticationCredentialKeysRow, error)
-	UpdateAuthenticationCredentialPassword(ctx context.Context, arg UpdateAuthenticationCredentialPasswordParams) (UpdateAuthenticationCredentialPasswordRow, error)
-	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (UpdateProfileRow, error)
-	UpdateProfileByAuthenticationCredentialId(ctx context.Context, arg UpdateProfileByAuthenticationCredentialIdParams) (UpdateProfileByAuthenticationCredentialIdRow, error)
-	UpdateVerificationStatus(ctx context.Context, arg UpdateVerificationStatusParams) (UpdateVerificationStatusRow, error)
+	SoftDeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
+	UpdateAuthenticationCredential(ctx context.Context, arg UpdateAuthenticationCredentialParams) (AuthenticationCredential, error)
+	UpdateAuthenticationCredentialKeys(ctx context.Context, arg UpdateAuthenticationCredentialKeysParams) (AuthenticationCredential, error)
+	UpdateAuthenticationCredentialPassword(ctx context.Context, arg UpdateAuthenticationCredentialPasswordParams) (AuthenticationCredential, error)
+	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
+	UpdateProfileByAuthenticationCredentialId(ctx context.Context, arg UpdateProfileByAuthenticationCredentialIdParams) (Profile, error)
+	UpdateVerificationStatus(ctx context.Context, arg UpdateVerificationStatusParams) (AuthenticationCredential, error)
 }
 
 var _ Querier = (*Queries)(nil)
