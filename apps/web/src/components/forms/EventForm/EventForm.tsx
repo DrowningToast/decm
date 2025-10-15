@@ -55,10 +55,11 @@ export const EventForm = ({
             startDate: defaultValues?.startDate || undefined,
             endDate: defaultValues?.endDate || undefined,
             seatsCount: defaultValues?.seatsCount || undefined,
+            contactNumber: defaultValues?.contactNumber || "",
+            contactAddress: defaultValues?.contactAddress || "",
             location: defaultValues?.location || "",
             googleMapQuery: defaultValues?.googleMapQuery || "",
         },
-        mode: "onChange",
     });
 
     const googleMapQuery = watch("googleMapQuery");
@@ -247,44 +248,73 @@ export const EventForm = ({
 
             {/* Step 2: Venue Information */}
             {currentStep === 2 && (
-                <div className="space-y-6">
-                    {/* Location Name */}
-                    <WrappedInput
-                        name="location"
-                        control={control}
-                        label={t("events.form.location")}
-                        placeholder={t("events.form.locationPlaceholder")}
-                        required
-                        disabled={isLoading}
-                    />
+                <>
+                    <div className="space-y-6">
+                        {/* Contact Number */}
+                        <WrappedInput
+                            name="contactNumber"
+                            control={control}
+                            label={t("events.form.contactNumber")}
+                            placeholder={t("events.form.contactNumberPlaceholder")}
+                            type="tel"
+                            required
+                            disabled={isLoading}
+                        />
 
-                    {/* Google Maps Query */}
-                    <WrappedInput
-                        name="googleMapQuery"
-                        control={control}
-                        label={t("events.form.googleMapQuery")}
-                        placeholder={t("events.form.googleMapQueryPlaceholder")}
-                        required
-                        disabled={isLoading}
-                    />
-
-                    {/* Google Maps Embed */}
-                    <div className="space-y-2">
-                        <Label>
-                            <Typography variant="text" tag="span" className="text-sm font-medium">
-                                {t("events.location")}
-                            </Typography>
-                        </Label>
-                        <GoogleMapsEmbed query={googleMapQuery || ""} height="400px" />
-                        <Typography
-                            variant="text"
-                            tag="p"
-                            className="text-xs text-muted-foreground"
-                        >
-                            {t("events.form.googleMapPlaceholder")}
-                        </Typography>
+                        {/* Contact Address */}
+                        <WrappedTextarea
+                            name="contactAddress"
+                            control={control}
+                            label={t("events.form.contactAddress")}
+                            placeholder={t("events.form.contactAddressPlaceholder")}
+                            required
+                            disabled={isLoading}
+                        />
                     </div>
-                </div>
+
+                    <div className="space-y-6">
+                        {/* Location Name */}
+                        <WrappedInput
+                            name="location"
+                            control={control}
+                            label={t("events.form.location")}
+                            placeholder={t("events.form.locationPlaceholder")}
+                            required
+                            disabled={isLoading}
+                        />
+
+                        {/* Google Maps Query */}
+                        <WrappedInput
+                            name="googleMapQuery"
+                            control={control}
+                            label={t("events.form.googleMapQuery")}
+                            placeholder={t("events.form.googleMapQueryPlaceholder")}
+                            required
+                            disabled={isLoading}
+                        />
+
+                        {/* Google Maps Embed */}
+                        <div className="space-y-2">
+                            <Label>
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    className="text-sm font-medium"
+                                >
+                                    {t("events.location")}
+                                </Typography>
+                            </Label>
+                            <GoogleMapsEmbed query={googleMapQuery || ""} height="400px" />
+                            <Typography
+                                variant="text"
+                                tag="p"
+                                className="text-xs text-muted-foreground"
+                            >
+                                {t("events.form.googleMapPlaceholder")}
+                            </Typography>
+                        </div>
+                    </div>
+                </>
             )}
 
             {/* Navigation Buttons */}
