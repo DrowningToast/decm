@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Controller } from "react-hook-form";
 import type { Control, FieldValues, Path } from "react-hook-form";
@@ -92,14 +92,6 @@ export const WrappedInputFile = <T extends FieldValues>({
             name={name}
             control={control}
             render={({ field: { value, onChange }, fieldState: { error } }) => {
-                // Update preview when value changes externally
-                useEffect(() => {
-                    if (!value) {
-                        setPreview(null);
-                        setFileInfo(null);
-                    }
-                }, [value]);
-
                 return (
                     <div className="space-y-2">
                         <Label htmlFor={name}>
@@ -212,18 +204,16 @@ export const WrappedInputFile = <T extends FieldValues>({
                                             size="default"
                                             disabled={disabled}
                                             className="w-full cursor-pointer"
-                                            asChild
+                                            onClick={() => document.getElementById(`${name}-change`)?.click()}
                                         >
-                                            <span>
-                                                <Upload className="h-4 w-4 mr-2" />
-                                                <Typography
-                                                    variant="text"
-                                                    tag="span"
-                                                    className="font-medium"
-                                                >
-                                                    {t("common.change")}
-                                                </Typography>
-                                            </span>
+                                            <Upload className="h-4 w-4 mr-2" />
+                                            <Typography
+                                                variant="text"
+                                                tag="span"
+                                                className="font-medium"
+                                            >
+                                                {t("common.change")}
+                                            </Typography>
                                         </Button>
                                     </label>
                                     <Button

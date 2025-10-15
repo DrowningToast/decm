@@ -1,1 +1,0 @@
-export { ParticipantSettingsPage } from "./participants";

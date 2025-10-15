@@ -25,7 +25,8 @@ export const eventFormSchema = z
                 (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
                 "events.validation.eventBannerType",
             )
-            .optional(),
+            .nullable()
+            .refine((file) => file !== null, "events.validation.eventBannerRequired"),
         eventIcon: z
             .instanceof(File, { message: "events.validation.eventIconRequired" })
             .refine((file) => file.size <= MAX_FILE_SIZE, "events.validation.eventIconSize")
@@ -33,7 +34,8 @@ export const eventFormSchema = z
                 (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
                 "events.validation.eventIconType",
             )
-            .optional(),
+            .nullable()
+            .refine((file) => file !== null, "events.validation.eventIconRequired"),
         startDate: z.date({
             message: "events.validation.startDateRequired",
         }),

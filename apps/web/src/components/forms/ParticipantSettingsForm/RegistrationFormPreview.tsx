@@ -190,7 +190,7 @@ export const RegistrationFormPreview = ({ settings }: RegistrationFormPreviewPro
             {/* Academic Information Fields */}
             {(settings.academicInstitution !== "not_required" ||
                 settings.academicEmail !== "not_required") && (
-                <div className="space-y-4 pt-4 border-t">
+                <div className="space-y-4 pt-4">
                     <Typography variant="header" tag="h3" className="text-sm font-semibold">
                         {t("participantSettings.academicInformation")}
                     </Typography>

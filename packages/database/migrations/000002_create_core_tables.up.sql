@@ -97,19 +97,6 @@ CREATE TABLE events (
     is_verified INTEGER DEFAULT 0,
     is_ticket_transferable INTEGER DEFAULT 0,
 
-    -- 0: Not Required, 1: Required, 2: Optional
-    first_name_requirement_status INTEGER NOT NULL,
-    last_name_requirement_status INTEGER NOT NULL,
-    email_requirement_status INTEGER NOT NULL,
-    bio_requirement_status INTEGER NOT NULL,
-    phone_number_requirement_status INTEGER NOT NULL,
-    address_requirement_status INTEGER NOT NULL,
-    academic_institution_requirement_status INTEGER NOT NULL,
-    academic_email_requirement_status INTEGER NOT NULL,
-
-    -- base event certificate image references
-    base_event_certificate_url VARCHAR(255) NOT NULL,
-
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
