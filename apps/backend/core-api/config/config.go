@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"apps/backend/core-api/config/postgres"
+	"apps/backend/core-api/config/s3"
 
 	google "apps/backend/core-api/config/google"
 
@@ -37,6 +38,8 @@ type Config struct {
 	Jwt JwtConfig `envPrefix:"JWT_"`
 	// Google OAuth Configuration
 	GoogleOAuth google.GoogleOAuthConfig `envPrefix:"GOOGLE_OAUTH_"`
+	// S3 Configuration
+	S3 s3.S3Config `envPrefix:"S3_"`
 }
 
 type ApiConfig struct {
