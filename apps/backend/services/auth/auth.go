@@ -1,7 +1,10 @@
 package auth
 
 import (
+	"errors"
 	"time"
+
+	"apps/backend/common/customerror"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -24,8 +27,26 @@ func (s *AuthService) SetUserContext(ctx *fiber.Ctx, user *JwtClaims) {
 	ctx.Locals("user", user)
 }
 
-func (s *AuthService) GetUserContext(ctx *fiber.Ctx) *JwtClaims {
-	return ctx.Locals("user").(*JwtClaims)
+func (s *AuthService) GetUserContext(ctx *fiber.Ctx) (*JwtClaims, error) {
+	user := ctx.Locals("user")
+	if user == nil {
+		return nil, nil
+	}
+
+	return s.RequireUserContext(ctx)
+}
+
+func (s *AuthService) RequireUserContext(ctx *fiber.Ctx) (*JwtClaims, error) {
+	user := ctx.Locals("user")
+	if user == nil {
+		return nil, customerror.AsPresetError(customerror.ErrUnauthenticated, errors.New("user not found"))
+	}
+	// check parsing
+	userClaims, ok := user.(*JwtClaims)
+	if !ok {
+		return nil, customerror.AsPresetError(customerror.ErrUnauthenticated, errors.New("invalid user claims"))
+	}
+	return userClaims, nil
 }
 
 // Logout removes authentication cookies from the user's session

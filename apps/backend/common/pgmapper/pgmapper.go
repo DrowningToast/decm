@@ -106,12 +106,12 @@ func Int32ToPgInt4(value int32) pgtype.Int4 {
 
 // EncryptPII encrypts plaintext PII data using AES-GCM
 func EncryptPII(plaintext string, encryptionKey string) (string, error) {
-	return encryptutils.EncryptAESGCM(plaintext, encryptionKey)
+	return encryptutils.EncryptDeterministicAES(plaintext, encryptionKey)
 }
 
 // DecryptPII decrypts ciphertext PII data using AES-GCM
 func DecryptPII(ciphertext string, encryptionKey string) (string, error) {
-	return encryptutils.DecryptAESGCM(ciphertext, encryptionKey)
+	return encryptutils.DecryptDeterministicAES(ciphertext, encryptionKey)
 }
 
 // EncryptStringPtrToPgText encrypts a nullable string pointer and returns pgtype.Text

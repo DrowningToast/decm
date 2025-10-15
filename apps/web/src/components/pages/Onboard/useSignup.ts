@@ -23,25 +23,29 @@ export const useSignup = () => {
 		useMutation({
 			mutationKey: ["createProfile"],
 			mutationFn: async ({
-				authenticationCredentialId,
 				profile,
 				...params
 			}: CreateAccountParams & {
-				authenticationCredentialId: string;
 				profile: ProfileCreateProfileRequest;
 			}) => {
 				const status = await onboardService.checkOnboardStatus(params);
+				if (!status.authentication_credential_id) {
+					throw new Error(t("errors.generic"));
+				}
+
 				if (status.profile_id) {
-					if (!status.authentication_credential_id) {
-						throw new Error(t("errors.generic"));
-					}
+					console.log(
+						"status.authentication_credential_id",
+						status.authentication_credential_id
+					);
 					return await authService.updateProfile(
 						status.authentication_credential_id,
 						profile
 					);
 				}
+
 				return await authService.createProfile(
-					authenticationCredentialId,
+					status.authentication_credential_id,
 					profile
 				);
 			},

@@ -8,7 +8,7 @@ interface ErrorProps {
     description?: string
 }
 
-export const Error: React.FC<ErrorProps> = ({ title, description }) => {
+export const ErrorPage: React.FC<ErrorProps> = ({ title, description }) => {
     const { t } = useTranslation();
 
     const handleRefresh = () => {

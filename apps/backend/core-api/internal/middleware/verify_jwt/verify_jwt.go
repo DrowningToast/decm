@@ -11,7 +11,7 @@ type VerifyJwtMiddleware struct {
 	authService *auth.AuthService
 }
 
-func NewVerifyJwtMiddleware(authService *auth.AuthService) *VerifyJwtMiddleware {
+func New(authService *auth.AuthService) *VerifyJwtMiddleware {
 	return &VerifyJwtMiddleware{
 		authService: authService,
 	}

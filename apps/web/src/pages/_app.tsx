@@ -5,7 +5,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { queryClient } from '@/lib/api/queryClient';
 import "../index.css"
 import { ErrorBoundary } from "react-error-boundary";
-import { Error } from "@/components/pages/Error";
+import { ErrorPage } from "@/components/pages/Error";
 import { Toaster } from "@/components/ui/sonner";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
@@ -21,7 +21,7 @@ const Layout = () => {
     const isMobile = useMediaQuery("(max-width: 768px)");
 
     return (
-        <ErrorBoundary fallback={<Error />}>
+        <ErrorBoundary fallback={<ErrorPage />}>
             <Toaster richColors position={isMobile ? "top-center" : "bottom-right"} toastOptions={{
                 duration: 3000,
             }} />

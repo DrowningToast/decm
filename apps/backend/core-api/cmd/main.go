@@ -19,6 +19,7 @@ import (
 	"apps/backend/core-api/internal/handler/onboard"
 	"apps/backend/core-api/internal/handler/profile"
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
+	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
 	"apps/backend/core-api/internal/repositories/postgres"
 	oauth_usecase "apps/backend/core-api/internal/usecase/oauth"
 	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
@@ -69,11 +70,13 @@ func main() {
 	logger.Info("Sucessfully connected to pg pool")
 
 	// services
-	authService := auth.NewAuthService(cfg.Jwt.Issuer, cfg.Jwt.SecretKey, cfg.Jwt.Expiration)
+	expiration, err := time.ParseDuration(cfg.Jwt.Expiration)
+	if err != nil {
+		logger.ErrorContext(ctx, "failed to parse jwt expiration", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+	authService := auth.NewAuthService(cfg.Jwt.Issuer, cfg.Jwt.SecretKey, expiration)
 	googleOAuthService := oauth.NewGoogleOAuthService()
-
-	// middlewares
-	authenticationGuardMiddleware := authenticationguard.NewMiddleware(authService)
 
 	// repo
 	pgRepo := postgres.NewRepository(pgConn, cfg.PIIEncryptionKey)
@@ -136,8 +139,15 @@ func main() {
 	// API v1
 	apiV1 := app.Group("/api/v1")
 
+	authenticationGuardMiddleware := authenticationguard.New(authService)
+	verifyJwtMiddleware := verifyjwt.New(authService)
+
 	// Onboard handler
-	onboardHandler := onboard.NewHandler(onboardUc, authService)
+	onboardHandler, err := onboard.NewHandler(onboardUc, profileUc, authService, googleOAuthService, verifyJwtMiddleware)
+	if err != nil {
+		logger.ErrorContext(ctx, "failed to create onboard handler", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
 	onboardHandler.Mount(apiV1)
 
 	authHandler := auth_handler.NewHandler(oauthUc, googleOAuthService, authService)

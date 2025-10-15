@@ -62,6 +62,10 @@ export type GetMyProfileError = CustomerrorErr;
 
 export type GetRegisterSignMessageData = OnboardGetRegisterSignMessageResponse;
 
+export type LogoutData = Record<string, string>;
+
+export type LogoutError = CustomerrorErrResponse;
+
 export interface OnboardCheckOnboardStatusRequest {
   access_token?: string;
   expires_in?: number;
@@ -454,6 +458,23 @@ export class Api<SecurityDataType extends unknown> {
   }
 
   v1 = {
+    /**
+     * @description Logout user by clearing session and OAuth cookies
+     *
+     * @tags Auth
+     * @name Logout
+     * @summary Logout
+     * @request POST:/api/v1/auth/logout
+     */
+    logout: (params: RequestParams = {}) =>
+      this.http.request<LogoutData, LogoutError>({
+        path: `/api/v1/auth/logout`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
     /**
      * @description Request Google OAuth
      *

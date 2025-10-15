@@ -7,18 +7,14 @@ import { OnboardPageContext } from "@/pages/onboard/[method]";
 import { useNavigate } from "react-router-dom";
 
 export const OAuthOnboardPasswordPage = () => {
+    const navigate = useNavigate();
     const { setStep } = useContext(OnboardPageContext)
     const { form } = useContext(OAuthOnboardContext);
     const [passwordType, setPasswordType] = useState<OAuthOnboardPasswordType>("PINS");
-    const navigate = useNavigate();
 
     const handlePasswordSet = (password: string) => {
         form.setValue("password", password);
         setStep(2);
-    };
-
-    const handleLogout = () => {
-        navigate("/");
     };
 
     if (passwordType === "PINS") {
@@ -26,7 +22,6 @@ export const OAuthOnboardPasswordPage = () => {
             <PinPasswordPage
                 onPasswordSet={handlePasswordSet}
                 onSwitchToPassword={() => setPasswordType("PASSWORD")}
-                onLogout={handleLogout}
             />
         );
     }
@@ -35,7 +30,7 @@ export const OAuthOnboardPasswordPage = () => {
         return (
             <PasswordInputPage
                 onSwitchToPin={() => setPasswordType("PINS")}
-                onLogout={handleLogout}
+                onLogout={() => navigate("/signout")}
             />
         );
     }

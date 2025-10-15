@@ -13,12 +13,13 @@ type AuthenticationGuardMiddleware struct {
 	authService *auth.AuthService
 }
 
-func NewMiddleware(authService *auth.AuthService) *AuthenticationGuardMiddleware {
+func New(authService *auth.AuthService) *AuthenticationGuardMiddleware {
 	return &AuthenticationGuardMiddleware{
 		authService: authService,
 	}
 }
 
+// Verify JWT token from cookie and inject user into context
 func (m *AuthenticationGuardMiddleware) Middleware(ctx *fiber.Ctx) error {
 	token := m.authService.GetJwtCookie(ctx)
 	if token == "" {
