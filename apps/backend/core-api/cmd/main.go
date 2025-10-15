@@ -16,15 +16,18 @@ import (
 	"apps/backend/common/pgclient"
 	"apps/backend/core-api/config"
 	auth_handler "apps/backend/core-api/internal/handler/auth"
+	"apps/backend/core-api/internal/handler/event"
 	"apps/backend/core-api/internal/handler/onboard"
 	"apps/backend/core-api/internal/handler/profile"
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
 	"apps/backend/core-api/internal/repositories/postgres"
+	event_usecase "apps/backend/core-api/internal/usecase/event"
 	oauth_usecase "apps/backend/core-api/internal/usecase/oauth"
 	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
 	profile_usecase "apps/backend/core-api/internal/usecase/profile"
 	"apps/backend/services/auth"
 	"apps/backend/services/oauth"
+	"apps/backend/services/s3"
 
 	json "github.com/goccy/go-json"
 
@@ -71,6 +74,11 @@ func main() {
 	// services
 	authService := auth.NewAuthService(cfg.Jwt.Issuer, cfg.Jwt.SecretKey, cfg.Jwt.Expiration)
 	googleOAuthService := oauth.NewGoogleOAuthService()
+	s3Service, err := s3.NewS3Service()
+	if err != nil {
+		logger.Error("Failed to initialize S3 service", "error", err)
+		panic(fmt.Sprintf("S3 service initialization failed: %v", err))
+	}
 
 	// middlewares
 	authenticationGuardMiddleware := authenticationguard.NewMiddleware(authService)
@@ -81,6 +89,7 @@ func main() {
 	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo, authService, googleOAuthService)
 	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo)
+	eventUc := event_usecase.NewEventUsecase(pgRepo, s3Service, logger)
 
 	// Setup HTTP server
 	app := fiber.New(fiber.Config{
@@ -145,6 +154,9 @@ func main() {
 
 	profileHandler := profile.NewHandler(profileUc, authService, authenticationGuardMiddleware)
 	profileHandler.Mount(apiV1)
+
+	eventHandler := event.NewHandler(eventUc)
+	eventHandler.Mount(apiV1)
 
 	// Start HTTP Server
 	go func() {
