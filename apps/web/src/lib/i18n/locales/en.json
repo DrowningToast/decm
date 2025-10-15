@@ -331,6 +331,11 @@
       "academicInstitution": "Academic Institution",
       "academicEmail": "Academic Email"
     },
+    "requireRegistrationPassword": "Require Registration Password",
+    "requireRegistrationPasswordDescription": "Require participants to set a password during registration",
+    "registrationPassword": "Registration Password",
+    "registrationPasswordPlaceholder": "Enter registration password",
+    "registrationPasswordDescription": "Password must be at least 8 characters long",
     "saveSettings": "Save Settings",
     "saveSuccess": "Participant settings saved successfully",
     "saveError": "Failed to save participant settings. Please try again.",
@@ -346,7 +351,8 @@
       "bookingRequired": "Approval Required",
       "transferable": "Transferable",
       "register": "Register for Event",
-      "note": "This is a preview only. The form is disabled."
+      "note": "This is a preview only. The form is disabled.",
+      "comingSoon": "Preview feature coming soon"
     }
   },
   "certificateSettings": {

@@ -20,6 +20,8 @@ export const participantSettingsSchema = z.object({
     eventType: eventTypeEnum,
     isBookingRequired: z.boolean(),
     isTicketTransferable: z.boolean(),
+    requireRegistrationPassword: z.boolean().default(false),
+    registrationPassword: z.string().optional(),
 
     // Participant Requirements
     firstName: fieldRequirementEnum,
@@ -30,7 +32,33 @@ export const participantSettingsSchema = z.object({
     address: fieldRequirementEnum,
     academicInstitution: fieldRequirementEnum,
     academicEmail: fieldRequirementEnum,
-});
+})
+.refine(
+    (data) => {
+        // If registration password is required, password must be provided
+        if (data.requireRegistrationPassword) {
+            return data.registrationPassword && data.registrationPassword.trim().length > 0;
+        }
+        return true;
+    },
+    {
+        message: "participantSettings.validation.registrationPasswordRequired",
+        path: ["registrationPassword"],
+    },
+)
+.refine(
+    (data) => {
+        // If registration password is provided, it must meet minimum length
+        if (data.registrationPassword && data.registrationPassword.trim().length > 0) {
+            return data.registrationPassword.length >= 8;
+        }
+        return true;
+    },
+    {
+        message: "participantSettings.validation.registrationPasswordMinLength",
+        path: ["registrationPassword"],
+    },
+);
 
 export type ParticipantSettingsData = z.infer<typeof participantSettingsSchema>;
 
@@ -41,6 +69,8 @@ export const defaultParticipantSettings: ParticipantSettingsData = {
     eventType: "public",
     isBookingRequired: false,
     isTicketTransferable: true,
+    requireRegistrationPassword: false,
+    registrationPassword: "",
     firstName: "not_required",
     lastName: "not_required",
     email: "not_required",

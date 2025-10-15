@@ -332,6 +332,11 @@
             "academicInstitution": "สถาบันการศึกษา",
             "academicEmail": "อีเมลสถาบัน"
         },
+        "requireRegistrationPassword": "ต้องการรหัสรหัสผ่าน",
+        "requireRegistrationPasswordDescription": "กำหนดให้ผู้เข้าร่วมตั้งรหัสผ่านระหว่างการลงทะเบียน",
+        "registrationPassword": "รหัสผ่าน",
+        "registrationPasswordPlaceholder": "กรอกรหัสผ่าน",
+        "registrationPasswordDescription": "รหัสผ่านต้องมีความอย่างน้อย 8 ตัวอักษร",
         "saveSettings": "บันทึกการตั้งค่า",
         "saveSuccess": "บันทึกการตั้งค่าผู้เข้าร่วมเรียบร้อยแล้ว",
         "saveError": "ไม่สามารถบันทึกการตั้งค่าผู้เข้าร่วม กรุณาลองอีกครั้ง",
@@ -347,7 +352,8 @@
             "bookingRequired": "ต้องการการอนุมัติ",
             "transferable": "โอนได้",
             "register": "ลงทะเบียนกิจกรรม",
-            "note": "นี่เป็นเพียงตัวอย่าง ฟอร์มถูกปิดใช้งาน"
+            "note": "นี่เป็นเพียงตัวอย่าง ฟอร์มถูกปิดใช้งาน",
+            "comingSoon": "ฟีเจอร์แสดงตัวอย่างเร็วม"
         }
     },
     "certificateSettings": {
