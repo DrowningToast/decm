@@ -13,6 +13,7 @@ import { toast } from "sonner"
 import { handleUniversalError } from "@/common/Err"
 import { USECASE_IDS } from "@/constants/usecase"
 import { OnboardPageContext } from "../../../../pages/onboard/[method]"
+import { useNavigate } from "@/router"
 
 type OAuthOnboardContextType = {
     form: UseFormReturn<OAuthOnboardForm>
@@ -31,9 +32,10 @@ const createOAuthOnboardFormSchema = (t: (key: string) => string) => {
 
 type OAuthOnboardForm = z.infer<ReturnType<typeof createOAuthOnboardFormSchema>>
 
-type OAuthOnboardErrorType = "missingAccessToken" | "missingExpiresIn"
+type OAuthOnboardErrorType = "missingAccessToken" | "missingExpiresIn" | "alreadyOnboarded"
 
 const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
+    const navigate = useNavigate()
     const { t } = useTranslation()
     const { accessToken, expiresIn, onboardStatus } = useContext(OnboardPageContext)
     const { createAccount, upsertProfile, isLoading } = useSignup()
@@ -46,7 +48,6 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
     })
 
     const onSubmit = async (data: OAuthOnboardForm) => {
-        console.log(isLoading);
         if (isLoading) {
             toast.error(t("errors.generic"))
             return;
@@ -63,6 +64,7 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
             if (error instanceof Error) {
                 handleUniversalError(t, error)
             }
+            return
         }
 
         let credential_id: string | undefined = undefined
@@ -97,13 +99,11 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
         }
 
         try {
-            console.log(credential_id);
             await upsertProfile({
                 method: OnboardRegistrationMethod.RegistrationMethodGoogle,
                 accessToken: data.accessToken ?? "",
                 expiresIn: data.expiresIn ?? undefined,
                 password: data.password,
-                authenticationCredentialId: credential_id ?? "",
                 profile: {
                     authentication_credential_id: credential_id ?? "",
                     email: data.email,
@@ -129,8 +129,10 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
                     },
                 }, USECASE_IDS.OAUTH_GOOGLE_CREATE_PROFILE);
             }
+            return
         }
 
+        navigate("/app")
     }
 
     // TODOL Determine is valid
@@ -156,9 +158,11 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
         if (form.formState.errors.expiresIn) {
             return "missingExpiresIn"
         }
+        if (onboardStatus?.authentication_credential_id && onboardStatus?.profile_id) {
+            return "alreadyOnboarded"
+        }
         return undefined
-    }, [form.formState.errors])
-    console.log(form.formState.errors)
+    }, [form.formState.errors, onboardStatus?.authentication_credential_id, onboardStatus?.profile_id])
 
     useEffect(() => {
         const init = async () => {
@@ -172,7 +176,14 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
     }, [accessToken, form, expiresIn])
 
     if (errorType) {
-        return <ErrorPage />
+        switch (errorType) {
+            case "alreadyOnboarded":
+                return <ErrorPage title={t("flow.oauth_google.already_onboarded")} description={t("flow.oauth_google.already_onboarded_description")} />
+            case "missingAccessToken":
+                return <ErrorPage title={t("flow.oauth_google.missing_access_token")} description={t("flow.oauth_google.missing_access_token_description")} />
+            case "missingExpiresIn":
+                return <ErrorPage title={t("flow.oauth_google.missing_expires_in")} description={t("flow.oauth_google.missing_expires_in_description")} />
+        }
     }
 
     return (

@@ -1,6 +1,7 @@
 import { useSignout } from "@/components/useSignout";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const SignoutPage = () => {
 
@@ -8,8 +9,14 @@ const SignoutPage = () => {
     const navigate = useNavigate();
     useEffect(() => {
         const init = async () => {
-            await signout();
-            navigate("/");
+            try {
+                await signout();
+                navigate("/");
+            } catch (error) {
+                if (error instanceof Error) {
+                    toast.error(error.message);
+                }
+            }
         }
         init();
     }, [navigate, signout]);

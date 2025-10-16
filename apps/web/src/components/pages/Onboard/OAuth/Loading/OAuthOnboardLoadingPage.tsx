@@ -46,12 +46,12 @@ export const OAuthOnboardLoadingPage = () => {
 
     useEffect(() => {
         const init = async () => {
-            if (!accessToken) {
-                setError("missing_access_token");
+            if (isStatusLoading) {
                 return;
             }
 
-            if (isStatusLoading) {
+            if (!accessToken) {
+                setError("missing_access_token");
                 return;
             }
 

@@ -7,7 +7,6 @@ export type Path =
   | `/`
   | `/app`
   | `/error`
-  | `/oauth-success/google`
   | `/onboard/:method`
   | `/signin`
   | `/signout`
