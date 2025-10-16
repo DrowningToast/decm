@@ -107,11 +107,13 @@ const OnboardingPage = () => {
 
     // handle and clear search params when access token or expires in is changed
     useEffect(() => {
-        if (_accessToken) {
+        if (_accessToken != null && _accessToken?.length > 0) {
+            console.log("access token", _accessToken);
             setAccessToken(_accessToken);
             setSearchParams({ ...searchParams, access_token: "" });
         }
-        if (_expiresIn) {
+        if (_expiresIn != null && _expiresIn?.length > 0) {
+            console.log("expires in", _expiresIn);
             setExpiresIn(parseInt(_expiresIn));
             setSearchParams({ ...searchParams, expires_in: "" });
         }

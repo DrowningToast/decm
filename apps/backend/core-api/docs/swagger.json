@@ -142,7 +142,6 @@
                         "description": "Method",
                         "name": "method",
                         "in": "body",
-                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/onboard.CheckOnboardStatusRequest"
                         }
@@ -713,9 +712,6 @@
         },
         "onboard.CheckOnboardStatusRequest": {
             "type": "object",
-            "required": [
-                "method"
-            ],
             "properties": {
                 "access_token": {
                     "type": "string"

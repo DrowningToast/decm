@@ -15,7 +15,7 @@ const getQueryKey = (param?: CheckOnboardParams) => {
 
 export const useCheckOnboardStatus = (param?: CheckOnboardParams) => {
     const { mutateAsync: checkOnboardStatus, isPending } = useMutation({
-        mutationFn: async (param: CheckOnboardParams) => {
+        mutationFn: async (param?: CheckOnboardParams) => {
             const response = await onboardService.checkOnboardStatus(param);
             return response;
         },
@@ -24,15 +24,10 @@ export const useCheckOnboardStatus = (param?: CheckOnboardParams) => {
     const { data: onboardStatus, isLoading, error } = useQuery({
         queryKey: getQueryKey(param),
         queryFn: async () => {
-            if (!param) {
-                return
-            }
-
             const response = await checkOnboardStatus(param);
 
             return response;
         },
-        enabled: !!param,
     });
 
     return { checkOnboardStatus, isPending, isLoading, onboardStatus, error };

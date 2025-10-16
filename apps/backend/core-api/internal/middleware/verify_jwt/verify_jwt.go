@@ -2,6 +2,7 @@ package verifyjwt
 
 import (
 	"apps/backend/common/customerror"
+	"apps/backend/common/log"
 	"apps/backend/services/auth"
 
 	"github.com/gofiber/fiber/v2"
@@ -19,6 +20,8 @@ func New(authService *auth.AuthService) *VerifyJwtMiddleware {
 
 func (m *VerifyJwtMiddleware) Middleware(ctx *fiber.Ctx) error {
 	token := m.authService.GetJwtCookie(ctx)
+	logger := log.LoadLogger()
+	logger.Info("Verifying JWT", "token", token)
 	if len(token) != 0 {
 		claims, err := m.authService.VerifyToken(token)
 		if err != nil {

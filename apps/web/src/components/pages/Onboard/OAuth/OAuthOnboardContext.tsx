@@ -14,6 +14,7 @@ import { handleUniversalError } from "@/common/Err"
 import { USECASE_IDS } from "@/constants/usecase"
 import { OnboardPageContext } from "../../../../pages/onboard/[method]"
 import { useNavigate } from "@/router"
+import { AccountAlreadyExistsPage } from "../AccountAlreadyExistPage"
 
 type OAuthOnboardContextType = {
     form: UseFormReturn<OAuthOnboardForm>
@@ -132,10 +133,10 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
             return
         }
 
+        toast.success(t("flow.oauth_google.create_profile_success"))
         navigate("/app")
     }
 
-    // TODOL Determine is valid
     const handleSubmit = async () => {
         const data = form.getValues()
         if (!data.accessToken || !data.expiresIn) {
@@ -178,7 +179,8 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
     if (errorType) {
         switch (errorType) {
             case "alreadyOnboarded":
-                return <ErrorPage title={t("flow.oauth_google.already_onboarded")} description={t("flow.oauth_google.already_onboarded_description")} />
+                console.log("already onboarded")
+                return <AccountAlreadyExistsPage />
             case "missingAccessToken":
                 return <ErrorPage title={t("flow.oauth_google.missing_access_token")} description={t("flow.oauth_google.missing_access_token_description")} />
             case "missingExpiresIn":

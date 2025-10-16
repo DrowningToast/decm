@@ -16,7 +16,7 @@ const (
 )
 
 type CheckOnboardStatusRequest struct {
-	Method RegistrationMethod `json:"method" validate:"required,oneof=google wallet"`
+	Method *RegistrationMethod `json:"method" validate:"omitempty,oneof=google wallet"`
 
 	AccessToken *string `json:"access_token"`
 	ExpiresIn   *int    `json:"expires_in"`
@@ -33,7 +33,7 @@ type CheckOnboardStatusResponse struct {
 // @Description Check onboard status
 // @ID check-onboard-status
 // @Tags Onboard
-// @Param method body onboard.CheckOnboardStatusRequest.Method true "Method"
+// @Param method body onboard.CheckOnboardStatusRequest.Method false "Method"
 // @Param access_token body onboard.CheckOnboardStatusRequest.AccessToken false "Access token"
 // @Param expires_in body onboard.CheckOnboardStatusRequest.ExpiresIn false "Expires in"
 // @Param sign_message body onboard.CheckOnboardStatusRequest.SignMessage false "Sign message"
@@ -48,6 +48,25 @@ func (h Handler) CheckOnboardStatus(ctx *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+	// If user is authenticated, check onboard status with JWT
+	if currentUser != nil {
+		jwt, profileId, err := h.OnboardUc.CheckOnboardStatusWithJwt(ctx.UserContext(), *currentUser)
+		if err != nil {
+			return errors.Wrap(err, "failed to check onboard status with jwt")
+		}
+		authenticationCredentialIdStr := jwt.UserId.String()
+		if profileId == nil {
+			return ctx.Status(fiber.StatusOK).JSON(CheckOnboardStatusResponse{
+				AuthenticationCredentialId: &authenticationCredentialIdStr,
+				ProfileId:                  nil,
+			})
+		}
+		profileIdStr := profileId.String()
+		return ctx.Status(fiber.StatusOK).JSON(CheckOnboardStatusResponse{
+			AuthenticationCredentialId: &authenticationCredentialIdStr,
+			ProfileId:                  &profileIdStr,
+		})
+	}
 
 	requestBody := CheckOnboardStatusRequest{}
 	if err := requestBody.Parse(ctx); err != nil {
@@ -57,11 +76,19 @@ func (h Handler) CheckOnboardStatus(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	switch requestBody.Method {
+	if requestBody.Method == nil {
+		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("method is required when not authenticated"))
+	}
+
+	switch *requestBody.Method {
+	// If user is not authenticated, check onboard status with Google connector ref
 	case RegistrationMethodGoogle:
-		jwt, profileId, err := h.OnboardUc.CheckOnboardStatusWithGoogleConnectorRef(ctx.UserContext(), currentUser, requestBody.AccessToken, requestBody.ExpiresIn)
+		if requestBody.AccessToken == nil || requestBody.ExpiresIn == nil {
+			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("access token and expires in are required"))
+		}
+		jwt, profileId, err := h.OnboardUc.CheckOnboardStatusWithGoogleConnectorRef(ctx.UserContext(), *requestBody.AccessToken, *requestBody.ExpiresIn)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to check onboard status with google connector ref")
 		}
 		if jwt == nil {
 			return ctx.Status(fiber.StatusOK).JSON(CheckOnboardStatusResponse{
@@ -86,6 +113,7 @@ func (h Handler) CheckOnboardStatus(ctx *fiber.Ctx) error {
 			AuthenticationCredentialId: &authenticationCredentialIdStr,
 			ProfileId:                  &profileIdStr,
 		})
+	// If user is not authenticated, check onboard status with wallet address
 	case RegistrationMethodWallet:
 		signMessage := requestBody.SignMessage
 		if signMessage == nil {
