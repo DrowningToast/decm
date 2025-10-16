@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"apps/backend/core-api/internal/datagateway"
+	datagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
 	"context"
 

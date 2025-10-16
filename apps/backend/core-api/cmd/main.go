@@ -22,6 +22,7 @@ import (
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
 	"apps/backend/core-api/internal/repositories/postgres"
 	event_usecase "apps/backend/core-api/internal/usecase/event"
+	event_config_usecase "apps/backend/core-api/internal/usecase/event_config"
 	oauth_usecase "apps/backend/core-api/internal/usecase/oauth"
 	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
 	profile_usecase "apps/backend/core-api/internal/usecase/profile"
@@ -90,6 +91,7 @@ func main() {
 	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo)
 	eventUc := event_usecase.NewEventUsecase(pgRepo, s3Service, logger)
+	eventConfigUc := event_config_usecase.NewEventConfigUsecase(pgRepo)
 
 	// Setup HTTP server
 	app := fiber.New(fiber.Config{
@@ -157,6 +159,9 @@ func main() {
 
 	eventHandler := event.NewHandler(eventUc)
 	eventHandler.Mount(apiV1)
+
+	// Event config handler
+	eventConfigHandler.RegisterEventConfigRoutes(app, eventConfigUc)
 
 	// Start HTTP Server
 	go func() {
