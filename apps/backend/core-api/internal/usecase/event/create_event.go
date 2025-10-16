@@ -1,12 +1,28 @@
 package event
 
 import (
-	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 	"context"
+	"mime/multipart"
+	"time"
 )
 
-func (uc *EventUsecase) CreateEvent(ctx context.Context, params datagateway.CreateEventParameters) (*entity.Event, error) {
+type CreateEventParameters struct {
+	Name             string
+	ShortDescription string
+	Description      string
+	StartDate        time.Time
+	EndDate          time.Time
+	SeatsCount       int
+	ContactNumber    string
+	ContactAddress   string
+	Location         string
+	GoogleMapQuery   string
+	EventBanner      *multipart.FileHeader
+	EventIcon        *multipart.FileHeader
+}
+
+func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParameters) (*entity.Event, error) {
 	// bannerStorageKey, err := uc.UploadEventBanner(ctx, uuid.New(), params.EventBanner)
 	// if err != nil {
 	// 	return nil, err

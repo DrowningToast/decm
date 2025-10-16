@@ -1,14 +1,17 @@
 package eventconfig
 
 import (
+	"apps/backend/common/log"
+
 	"github.com/gofiber/fiber/v2"
 )
 
-func (h *Handler) RegisterEventConfigRoutes(
-	app *fiber.App,
-) {
+func (h *Handler) Mount(r fiber.Router) {
+	logger := log.LoadLogger()
+	defer logger.Info("Mounted event config routes")
+
 	// Create event config group with authentication middleware
-	eventConfigGroup := app.Group("/api/v1/events/:event_id/config").Use(
+	eventConfigGroup := r.Group("/events/:event_id/config").Use(
 		h.AuthenticationGuardMiddleware.Middleware,
 	)
 
