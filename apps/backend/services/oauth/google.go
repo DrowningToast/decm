@@ -67,9 +67,9 @@ func NewGoogleOAuthService() *GoogleOAuthService {
 	sessionStore := session.New(session.Config{
 		Expiration:     time.Hour * 2, // 2 hour expiration
 		CookieHTTPOnly: true,
-		CookieName:     "google_oauth_session",  // Explicit cookie name
-		CookiePath:     "/",                     // Ensure cookie is sent on all paths
-		CookieSecure:   cfg.Env == "production", // Only secure in production
+		KeyLookup:      "cookie:google_oauth_session", // Format: <source>:<name>
+		CookiePath:     "/",                           // Ensure cookie is sent on all paths
+		CookieSecure:   cfg.Env == "production",       // Only secure in production
 		CookieSameSite: "Lax",
 		KeyGenerator: func() string {
 			return utils.GenerateSecureRandomString(32)

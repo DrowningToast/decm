@@ -3,17 +3,16 @@ import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
+import { LogoutButton } from "../LogoutButton";
 
 interface PinPasswordPageProps {
     onPasswordSet: (password: string) => void;
     onSwitchToPassword: () => void;
-    onLogout: () => void;
 }
 
 export const PinPasswordPage: React.FC<PinPasswordPageProps> = ({
     onPasswordSet,
     onSwitchToPassword,
-    onLogout,
 }) => {
     const { t } = useTranslation();
     const [pin, setPin] = useState("");
@@ -106,20 +105,7 @@ export const PinPasswordPage: React.FC<PinPasswordPageProps> = ({
                         </button>
 
                         {/* Logout Link */}
-                        <button
-                            type="button"
-                            onClick={onLogout}
-                            className="text-start h-[14.5px] inline-block"
-                        >
-                            <Typography
-                                variant="text"
-                                tag="span"
-                                color="background-alt"
-                                className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
-                            >
-                                {t("onboard.logout")}
-                            </Typography>
-                        </button>
+                        <LogoutButton />
                     </div>
 
                     {/* Confirm Button */}

@@ -8,7 +8,7 @@ interface ErrorProps {
     description?: string
 }
 
-export const Error: React.FC<ErrorProps> = ({ title, description }) => {
+export const ErrorPage: React.FC<ErrorProps> = ({ title, description }) => {
     const { t } = useTranslation();
 
     const handleRefresh = () => {
@@ -52,8 +52,8 @@ export const Error: React.FC<ErrorProps> = ({ title, description }) => {
                 {/* Primary CTAs */}
                 <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <Link to="/">
-                        <Button size="lg" className="min-w-[180px]">
-                            <Typography variant="text" tag="span" className="font-medium">
+                        <Button size="lg" variant="primary" className="min-w-[180px]">
+                            <Typography variant="text" tag="span" className="font-medium text-secondary">
                                 {t('error.backHome')}
                             </Typography>
                         </Button>
@@ -65,7 +65,7 @@ export const Error: React.FC<ErrorProps> = ({ title, description }) => {
                         className="min-w-[180px]"
                         onClick={handleRefresh}
                     >
-                        <Typography variant="text" tag="span" className="font-medium">
+                        <Typography variant="text" tag="span" className="font-medium text-secondary-foreground">
                             {t('error.tryAgain')}
                         </Typography>
                     </Button>
@@ -84,7 +84,7 @@ export const Error: React.FC<ErrorProps> = ({ title, description }) => {
                     <div className="flex flex-wrap justify-center gap-3">
                         <Link to="/">
                             <Button variant="secondary-light" size="sm">
-                                <Typography variant="text" tag="span">
+                                <Typography variant="text" tag="span" className="text-secondary-foreground">
                                     {t('error.suggestions.home')}
                                 </Typography>
                             </Button>
@@ -95,14 +95,14 @@ export const Error: React.FC<ErrorProps> = ({ title, description }) => {
                             size="sm"
                             onClick={handleRefresh}
                         >
-                            <Typography variant="text" tag="span">
+                            <Typography variant="text" tag="span" className="text-secondary-foreground">
                                 {t('error.suggestions.refresh')}
                             </Typography>
                         </Button>
 
                         <Link to="/signup">
                             <Button variant="secondary-light" size="sm">
-                                <Typography variant="text" tag="span">
+                                <Typography variant="text" tag="span" className="text-secondary-foreground">
                                     {t('error.suggestions.signup')}
                                 </Typography>
                             </Button>

@@ -1,8 +1,8 @@
 import { FaviconHelmet } from '@/components/providers/helmets/FaviconHelmet';
-import { Error } from '@/components/pages/Error';
+import { ErrorPage } from '@/components/pages/Error';
 import { useTranslation } from 'react-i18next';
 
-const ErrorPage = () => {
+const Page = () => {
     const { t } = useTranslation();
 
     return (
@@ -11,10 +11,10 @@ const ErrorPage = () => {
                 title={`${t('error.title')} | ${t('common.appName')}`}
                 description={t('error.description')}
             />
-            <Error />
+            <ErrorPage />
         </>
     );
 };
 
-export default ErrorPage;
+export default Page;
 

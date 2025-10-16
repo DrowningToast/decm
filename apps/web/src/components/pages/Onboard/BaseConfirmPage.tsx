@@ -3,6 +3,7 @@ import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSignup } from "./useSignup";
+import { LogoutButton } from "./OAuth/LogoutButton";
 
 export interface ConfirmationItem {
     id: string;
@@ -121,10 +122,12 @@ export const BaseConfirmPage: React.FC<BaseConfirmPageProps> = ({
                         onClick={onBack}
                         variant="secondary-light"
                         size="xl"
-                        className="w-full hidden md:flex"
+                        className="w-full flex"
                     >
                         {backButtonText}
                     </Button>
+
+                    <LogoutButton />
                 </div>
             </div>
         </div>

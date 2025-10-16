@@ -1168,7 +1168,6 @@ const docTemplate = `{
                         "description": "Method",
                         "name": "method",
                         "in": "body",
-                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/onboard.CheckOnboardStatusRequest"
                         }
@@ -2053,9 +2052,6 @@ const docTemplate = `{
         },
         "onboard.CheckOnboardStatusRequest": {
             "type": "object",
-            "required": [
-                "method"
-            ],
             "properties": {
                 "access_token": {
                     "type": "string"

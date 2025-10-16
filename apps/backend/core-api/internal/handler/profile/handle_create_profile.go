@@ -6,7 +6,6 @@ import (
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/profile"
-	"apps/backend/services/auth"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -48,8 +47,12 @@ func (h *Handler) CreateProfile(c *fiber.Ctx) error {
 	if err := createProfileRequest.CreateProfileParameters.IsValid(); err != nil {
 		return err
 	}
-	if !auth.IsCurrentUser(c, createProfileRequest.CreateProfileParameters.AuthenticationCredentialId) {
-		return customerror.Parse(&customerror.ErrUnauthorized, errors.New("unauthorized"))
+	isCurrentUser, err := h.AuthenticationService.IsCurrentUser(c, createProfileRequest.CreateProfileParameters.AuthenticationCredentialId)
+	if err != nil {
+		return customerror.Parse(&customerror.ErrInternalServer, err)
+	}
+	if !isCurrentUser {
+		return customerror.Parse(&customerror.ErrUnauthorized, errors.New("mismatch authentication credential id"))
 	}
 
 	profile, err := h.ProfileUc.CreateProfile(c.Context(), createProfileRequest.CreateProfileParameters)

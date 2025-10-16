@@ -136,6 +136,10 @@ export class AuthService {
 			}
 		);
 	}
+
+	public async signOut() {
+		return await this._coreApi.v1.logout();
+	}
 }
 
 // Default instance

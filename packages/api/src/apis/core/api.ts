@@ -353,7 +353,7 @@ export type LogoutError = CustomerrorErrResponse;
 export interface OnboardCheckOnboardStatusRequest {
   access_token?: string;
   expires_in?: number;
-  method: "google" | "wallet";
+  method?: "google" | "wallet";
   sign_message?: string;
 }
 

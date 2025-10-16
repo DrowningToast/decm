@@ -3,8 +3,12 @@ package onboard
 import (
 	"time"
 
+	customerror "apps/backend/common/customerror"
 	"apps/backend/core-api/config"
+	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
+	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
 	usecase "apps/backend/core-api/internal/usecase/onboard"
+	profile_usecase "apps/backend/core-api/internal/usecase/profile"
 	"apps/backend/services/auth"
 	oauth_services "apps/backend/services/oauth"
 )
@@ -14,17 +18,27 @@ type Handler struct {
 	AuthService        *auth.AuthService
 	GoogleOAuthService *oauth_services.GoogleOAuthService
 
-	OnboardUc *usecase.OnboardUsecase
+	OnboardUc *onboard_usecase.OnboardUsecase
+	ProfileUc *profile_usecase.ProfileUsecase
+
+	VerifyJwtMiddleware *verifyjwt.VerifyJwtMiddleware
 }
 
-func NewHandler(onboardUc *usecase.OnboardUsecase, authService *auth.AuthService) Handler {
+func NewHandler(onboardUc *usecase.OnboardUsecase, profileUc *profile_usecase.ProfileUsecase, authService *auth.AuthService, googleOAuthService *oauth_services.GoogleOAuthService, verifyJwtMiddleware *verifyjwt.VerifyJwtMiddleware) (*Handler, error) {
 	cfg := config.LoadConfig()
 
-	return Handler{
-		SessionExpiration: cfg.Jwt.Expiration,
-		AuthService:       authService,
-		OnboardUc:         onboardUc,
+	expiration, err := time.ParseDuration(cfg.Jwt.Expiration)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
+
+	return &Handler{
+		SessionExpiration:   expiration,
+		AuthService:         authService,
+		GoogleOAuthService:  googleOAuthService,
+		OnboardUc:           onboardUc,
+		VerifyJwtMiddleware: verifyjwt.New(authService),
+	}, nil
 }
 
 type registerResponse struct {

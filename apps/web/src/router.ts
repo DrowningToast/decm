@@ -6,6 +6,7 @@ import { components, hooks, utils } from '@generouted/react-router/client'
 export type Path =
   | `/`
   | `/app`
+  | `/auth/success`
   | `/error`
   | `/host/events`
   | `/host/events/:eventId`
@@ -17,6 +18,7 @@ export type Path =
   | `/oauth-success/google`
   | `/onboard/:method`
   | `/signin`
+  | `/signout`
   | `/signup`
 
 export type Params = {

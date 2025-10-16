@@ -13,5 +13,5 @@ func (h *Handler) Mount(r fiber.Router) {
 	profileGroup := r.Group("/profile").Use(h.AuthenticationGuardMiddleware.Middleware)
 	profileGroup.Get("/my", h.GetMyProfile)
 	profileGroup.Post("", h.CreateProfile)
-	profileGroup.Put("/credential/:credential_id", h.UpdateProfileByCredentialId)
+	profileGroup.Patch("/credential/:credential_id", h.UpdateProfileByCredentialId)
 }

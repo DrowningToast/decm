@@ -1,1 +1,1 @@
-export { Error } from "./Error";
+export { ErrorPage } from "./Error";

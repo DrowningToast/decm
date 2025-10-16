@@ -10,6 +10,63 @@ import (
 	"io"
 )
 
+// TODO: Refact this shit later, so fucking messy
+func EncryptDeterministicAES(plaintext string, password string) (string, error) {
+	key := sha256.Sum256([]byte(password))
+	block, err := aes.NewCipher(key[:])
+	if err != nil {
+		return "", err
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
+
+	hash := sha256.Sum256([]byte(plaintext))
+	nonce := hash[:12]
+
+	ciphertext := gcm.Seal(nonce, nonce, []byte(plaintext), nil)
+
+	return base64.StdEncoding.EncodeToString(ciphertext), nil
+}
+
+func DecryptDeterministicAES(ciphertext string, password string) (string, error) {
+	// Decode from base64
+	data, err := base64.StdEncoding.DecodeString(ciphertext)
+	if err != nil {
+		return "", err
+	}
+
+	// Create key from password
+	key := sha256.Sum256([]byte(password))
+	block, err := aes.NewCipher(key[:])
+	if err != nil {
+		return "", err
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
+
+	// Extract nonce (first 12 bytes)
+	nonceSize := gcm.NonceSize()
+	if len(data) < nonceSize {
+		return "", errors.New("ciphertext too short")
+	}
+
+	nonce, ciphertextBytes := data[:nonceSize], data[nonceSize:]
+
+	// Decrypt
+	plaintext, err := gcm.Open(nil, nonce, ciphertextBytes, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return string(plaintext), nil
+}
+
 // Simple AES-GCM encryption (RECOMMENDED)
 func EncryptAESGCM(plaintext string, password string) (string, error) {
 	// Create key from password
