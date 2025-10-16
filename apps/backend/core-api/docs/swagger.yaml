@@ -20,6 +20,13 @@ definitions:
       message:
         type: string
     type: object
+  entity.Event:
+    properties:
+      event_banner_presigned_url:
+        type: string
+      event_name:
+        type: string
+    type: object
   entity.Profile:
     properties:
       academic_email:
@@ -66,6 +73,204 @@ definitions:
         type: string
       updated_at:
         type: string
+    type: object
+  event_config.CreateEventCertificateConfigRequest:
+    properties:
+      academic_institution_pos_x:
+        type: integer
+      academic_institution_pos_y:
+        type: integer
+      base_certificate_storage_key:
+        type: string
+      event_name_pos_x:
+        type: integer
+      event_name_pos_y:
+        type: integer
+      name_pos_x:
+        type: integer
+      name_pos_y:
+        type: integer
+    type: object
+  event_config.CreateEventContractRequest:
+    properties:
+      access_manager_contract_address:
+        type: string
+      certificate_contract_address:
+        type: string
+      event_contract_address:
+        type: string
+      ticket_contract_address:
+        type: string
+    type: object
+  event_config.CreateEventIssuerRequest:
+    properties:
+      is_signed:
+        type: integer
+      issuer_credential_id:
+        type: string
+      signature:
+        type: string
+    type: object
+  event_config.CreateEventRegistrationConfigRequest:
+    properties:
+      academic_email_requirement_status:
+        type: integer
+      academic_institution_requirement_status:
+        type: integer
+      address_requirement_status:
+        type: integer
+      bio_requirement_status:
+        type: integer
+      email_requirement_status:
+        type: integer
+      first_name_requirement_status:
+        type: integer
+      last_name_requirement_status:
+        type: integer
+      phone_number_requirement_status:
+        type: integer
+    type: object
+  event_config.EventCertificateConfigResponse:
+    properties:
+      academic_institution_pos_x:
+        type: integer
+      academic_institution_pos_y:
+        type: integer
+      base_certificate_storage_key:
+        type: string
+      created_at:
+        type: string
+      event_id:
+        type: string
+      event_name_pos_x:
+        type: integer
+      event_name_pos_y:
+        type: integer
+      id:
+        type: string
+      name_pos_x:
+        type: integer
+      name_pos_y:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  event_config.EventContractResponse:
+    properties:
+      access_manager_contract_address:
+        type: string
+      certificate_contract_address:
+        type: string
+      created_at:
+        type: string
+      event_contract_address:
+        type: string
+      event_id:
+        type: string
+      id:
+        type: string
+      ticket_contract_address:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  event_config.EventIssuerResponse:
+    properties:
+      created_at:
+        type: string
+      event_id:
+        type: string
+      id:
+        type: string
+      is_signed:
+        type: integer
+      issuer_credential_id:
+        type: string
+      signature:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  event_config.EventRegistrationConfigResponse:
+    properties:
+      academic_email_requirement_status:
+        type: integer
+      academic_institution_requirement_status:
+        type: integer
+      address_requirement_status:
+        type: integer
+      bio_requirement_status:
+        type: integer
+      created_at:
+        type: string
+      email_requirement_status:
+        type: integer
+      event_id:
+        type: string
+      first_name_requirement_status:
+        type: integer
+      id:
+        type: string
+      last_name_requirement_status:
+        type: integer
+      phone_number_requirement_status:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  event_config.UpdateEventCertificateConfigRequest:
+    properties:
+      academic_institution_pos_x:
+        type: integer
+      academic_institution_pos_y:
+        type: integer
+      base_certificate_storage_key:
+        type: string
+      event_name_pos_x:
+        type: integer
+      event_name_pos_y:
+        type: integer
+      name_pos_x:
+        type: integer
+      name_pos_y:
+        type: integer
+    type: object
+  event_config.UpdateEventContractRequest:
+    properties:
+      access_manager_contract_address:
+        type: string
+      certificate_contract_address:
+        type: string
+      event_contract_address:
+        type: string
+      ticket_contract_address:
+        type: string
+    type: object
+  event_config.UpdateEventIssuerRequest:
+    properties:
+      is_signed:
+        type: integer
+      signature:
+        type: string
+    type: object
+  event_config.UpdateEventRegistrationConfigRequest:
+    properties:
+      academic_email_requirement_status:
+        type: integer
+      academic_institution_requirement_status:
+        type: integer
+      address_requirement_status:
+        type: integer
+      bio_requirement_status:
+        type: integer
+      email_requirement_status:
+        type: integer
+      first_name_requirement_status:
+        type: integer
+      last_name_requirement_status:
+        type: integer
+      phone_number_requirement_status:
+        type: integer
     type: object
   onboard.CheckOnboardStatusRequest:
     properties:
@@ -389,15 +594,19 @@ paths:
       parameters:
       - in: query
         name: code
+        required: true
         type: string
       - in: query
         name: state
+        required: true
         type: string
       - in: query
         name: code
+        required: true
         type: string
       - in: query
         name: state
+        required: true
         type: string
       produces:
       - application/json
@@ -411,6 +620,692 @@ paths:
       summary: Verify Google OAuth code
       tags:
       - Auth
+  /api/v1/events:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create a new event with banner image upload
+      operationId: create-event
+      parameters:
+      - description: Event name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Event short description
+        in: formData
+        name: short_description
+        required: true
+        type: string
+      - description: Event description
+        in: formData
+        name: description
+        required: true
+        type: string
+      - description: Start date (RFC3339 format)
+        in: formData
+        name: start_date
+        required: true
+        type: string
+      - description: End date (RFC3339 format)
+        in: formData
+        name: end_date
+        required: true
+        type: string
+      - description: Number of seats
+        in: formData
+        name: seats_count
+        required: true
+        type: integer
+      - description: Contact number
+        in: formData
+        name: contact_number
+        required: true
+        type: string
+      - description: Contact address
+        in: formData
+        name: contact_address
+        required: true
+        type: string
+      - description: Location
+        in: formData
+        name: location
+        required: true
+        type: string
+      - description: Google map query
+        in: formData
+        name: google_map_query
+        required: true
+        type: string
+      - description: Event banner image (JPEG, PNG, WebP, max 10MB)
+        in: formData
+        name: banner
+        required: true
+        type: file
+      - description: Event icon image (JPEG, PNG, WebP, max 10MB)
+        in: formData
+        name: icon
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entity.Event'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Create a new event
+      tags:
+      - Event
+  /api/v1/events/{event_id}/certificate-config:
+    delete:
+      consumes:
+      - application/json
+      description: Delete the event certificate configuration for an event
+      operationId: delete-event-certificate-config
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Delete event certificate config
+    get:
+      consumes:
+      - application/json
+      description: Get the event certificate configuration for an event
+      operationId: get-event-certificate-config
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event_config.EventCertificateConfigResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get event certificate config
+    post:
+      consumes:
+      - application/json
+      description: Create a new event certificate configuration for an event
+      operationId: create-event-certificate-config
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Event certificate config data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/event_config.CreateEventCertificateConfigRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event_config.EventCertificateConfigResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Create event certificate config
+    put:
+      consumes:
+      - application/json
+      description: Update the event certificate configuration for an event
+      operationId: update-event-certificate-config
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Event certificate config data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/event_config.UpdateEventCertificateConfigRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event_config.EventCertificateConfigResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Update event certificate config
+  /api/v1/events/{event_id}/contracts:
+    delete:
+      consumes:
+      - application/json
+      description: Delete the event contract for an event
+      operationId: delete-event-contract
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Delete event contract
+    get:
+      consumes:
+      - application/json
+      description: Get the event contract for an event
+      operationId: get-event-contract-by-event-id
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event_config.EventContractResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get event contract by event ID
+    post:
+      consumes:
+      - application/json
+      description: Create a new event contract for an event
+      operationId: create-event-contract
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Event contract data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/event_config.CreateEventContractRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event_config.EventContractResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Create event contract
+    put:
+      consumes:
+      - application/json
+      description: Update the event contract for an event
+      operationId: update-event-contract
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Event contract data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/event_config.UpdateEventContractRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event_config.EventContractResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Update event contract
+  /api/v1/events/{event_id}/issuers:
+    get:
+      consumes:
+      - application/json
+      description: Get all event issuers for an event
+      operationId: get-event-issuers-by-event-id
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/event_config.EventIssuerResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get event issuers by event ID
+    post:
+      consumes:
+      - application/json
+      description: Create a new event issuer for an event
+      operationId: create-event-issuer
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Event issuer data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/event_config.CreateEventIssuerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event_config.EventIssuerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Create event issuer
+  /api/v1/events/{event_id}/issuers/{issuer_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an event issuer
+      operationId: delete-event-issuer
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Issuer ID
+        in: path
+        name: issuer_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Delete event issuer
+    get:
+      consumes:
+      - application/json
+      description: Get an event issuer by its ID
+      operationId: get-event-issuer-by-id
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Issuer ID
+        in: path
+        name: issuer_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event_config.EventIssuerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get event issuer by ID
+    put:
+      consumes:
+      - application/json
+      description: Update an event issuer
+      operationId: update-event-issuer
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Issuer ID
+        in: path
+        name: issuer_id
+        required: true
+        type: string
+      - description: Event issuer data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/event_config.UpdateEventIssuerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event_config.EventIssuerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Update event issuer
+  /api/v1/events/{event_id}/registration-config:
+    delete:
+      consumes:
+      - application/json
+      description: Delete the event registration configuration for an event
+      operationId: delete-event-registration-config
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Delete event registration config
+    get:
+      consumes:
+      - application/json
+      description: Get the event registration configuration for an event
+      operationId: get-event-registration-config
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event_config.EventRegistrationConfigResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get event registration config
+    post:
+      consumes:
+      - application/json
+      description: Create a new event registration configuration for an event
+      operationId: create-event-registration-config
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Event registration config data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/event_config.CreateEventRegistrationConfigRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event_config.EventRegistrationConfigResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Create event registration config
+    put:
+      consumes:
+      - application/json
+      description: Update the event registration configuration for an event
+      operationId: update-event-registration-config
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Event registration config data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/event_config.UpdateEventRegistrationConfigRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event_config.EventRegistrationConfigResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Update event registration config
   /api/v1/onboard/check-onboard-status:
     post:
       consumes:

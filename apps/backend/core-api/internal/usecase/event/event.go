@@ -1,7 +1,7 @@
 package event
 
 import (
-	"apps/backend/core-api/internal/datagateway"
+	datagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/services/s3"
 	"log/slog"
 )

@@ -26,33 +26,25 @@ type AuthenticationCredential struct {
 }
 
 type Event struct {
-	ID                                   uuid.UUID          `json:"id"`
-	ChainID                              int32              `json:"chain_id"`
-	ContactAddress                       string             `json:"contact_address"`
-	OwnerCredentialID                    uuid.UUID          `json:"owner_credential_id"`
-	Title                                string             `json:"title"`
-	ShortDescription                     string             `json:"short_description"`
-	LongDescription                      pgtype.Text        `json:"long_description"`
-	StartDate                            time.Time          `json:"start_date"`
-	EndDate                              time.Time          `json:"end_date"`
-	Location                             string             `json:"location"`
-	GoogleMapQuery                       string             `json:"google_map_query"`
-	MaxAttendees                         int32              `json:"max_attendees"`
-	IsPublic                             int32              `json:"is_public"`
-	IsBookingRequestRequired             int32              `json:"is_booking_request_required"`
-	IsVerified                           int32              `json:"is_verified"`
-	IsTicketTransferable                 int32              `json:"is_ticket_transferable"`
-	FirstNameRequirementStatus           int32              `json:"first_name_requirement_status"`
-	LastNameRequirementStatus            int32              `json:"last_name_requirement_status"`
-	EmailRequirementStatus               int32              `json:"email_requirement_status"`
-	BioRequirementStatus                 int32              `json:"bio_requirement_status"`
-	PhoneNumberRequirementStatus         int32              `json:"phone_number_requirement_status"`
-	AddressRequirementStatus             int32              `json:"address_requirement_status"`
-	AcademicInstitutionRequirementStatus int32              `json:"academic_institution_requirement_status"`
-	AcademicEmailRequirementStatus       int32              `json:"academic_email_requirement_status"`
-	BaseEventCertificateUrl              string             `json:"base_event_certificate_url"`
-	CreatedAt                            pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt                            pgtype.Timestamptz `json:"updated_at"`
+	ID                       uuid.UUID          `json:"id"`
+	ChainID                  int32              `json:"chain_id"`
+	ContactNumber            string             `json:"contact_number"`
+	ContactAddress           string             `json:"contact_address"`
+	OwnerCredentialID        uuid.UUID          `json:"owner_credential_id"`
+	Title                    string             `json:"title"`
+	ShortDescription         string             `json:"short_description"`
+	LongDescription          pgtype.Text        `json:"long_description"`
+	StartDate                time.Time          `json:"start_date"`
+	EndDate                  time.Time          `json:"end_date"`
+	Location                 string             `json:"location"`
+	GoogleMapQuery           string             `json:"google_map_query"`
+	MaxAttendees             int32              `json:"max_attendees"`
+	IsPublic                 pgtype.Int4        `json:"is_public"`
+	IsBookingRequestRequired pgtype.Int4        `json:"is_booking_request_required"`
+	IsVerified               pgtype.Int4        `json:"is_verified"`
+	IsTicketTransferable     pgtype.Int4        `json:"is_ticket_transferable"`
+	CreatedAt                pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                pgtype.Timestamptz `json:"updated_at"`
 }
 
 type EventAttendee struct {
@@ -80,6 +72,56 @@ type EventCertificate struct {
 	IsPublished  int32              `json:"is_published"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+type EventCertificateConfig struct {
+	ID                        uuid.UUID          `json:"id"`
+	EventID                   uuid.UUID          `json:"event_id"`
+	BaseCertificateStorageKey string             `json:"base_certificate_storage_key"`
+	EventNamePosX             int32              `json:"event_name_pos_x"`
+	EventNamePosY             int32              `json:"event_name_pos_y"`
+	NamePosX                  int32              `json:"name_pos_x"`
+	NamePosY                  int32              `json:"name_pos_y"`
+	AcademicInstitutionPosX   pgtype.Int4        `json:"academic_institution_pos_x"`
+	AcademicInstitutionPosY   pgtype.Int4        `json:"academic_institution_pos_y"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+type EventContract struct {
+	ID                           uuid.UUID          `json:"id"`
+	EventID                      uuid.UUID          `json:"event_id"`
+	AccessManagerContractAddress string             `json:"access_manager_contract_address"`
+	EventContractAddress         string             `json:"event_contract_address"`
+	TicketContractAddress        pgtype.Text        `json:"ticket_contract_address"`
+	CertificateContractAddress   pgtype.Text        `json:"certificate_contract_address"`
+	CreatedAt                    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                    pgtype.Timestamptz `json:"updated_at"`
+}
+
+type EventIssuer struct {
+	ID                 uuid.UUID          `json:"id"`
+	EventID            uuid.UUID          `json:"event_id"`
+	IssuerCredentialID uuid.UUID          `json:"issuer_credential_id"`
+	IsSigned           int32              `json:"is_signed"`
+	Signature          pgtype.Text        `json:"signature"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+}
+
+type EventRegistrationConfig struct {
+	ID                                   uuid.UUID          `json:"id"`
+	EventID                              uuid.UUID          `json:"event_id"`
+	FirstNameRequirementStatus           pgtype.Int4        `json:"first_name_requirement_status"`
+	LastNameRequirementStatus            pgtype.Int4        `json:"last_name_requirement_status"`
+	EmailRequirementStatus               pgtype.Int4        `json:"email_requirement_status"`
+	BioRequirementStatus                 pgtype.Int4        `json:"bio_requirement_status"`
+	PhoneNumberRequirementStatus         pgtype.Int4        `json:"phone_number_requirement_status"`
+	AddressRequirementStatus             pgtype.Int4        `json:"address_requirement_status"`
+	AcademicInstitutionRequirementStatus pgtype.Int4        `json:"academic_institution_requirement_status"`
+	AcademicEmailRequirementStatus       pgtype.Int4        `json:"academic_email_requirement_status"`
+	CreatedAt                            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                            pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Profile struct {
