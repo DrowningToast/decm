@@ -8,7 +8,7 @@ import (
 
 	customerror "apps/backend/common/customerror"
 	"apps/backend/common/validatorutils"
-	"apps/backend/core-api/internal/datagateway"
+	eventUc "apps/backend/core-api/internal/usecase/event"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -96,7 +96,7 @@ func (h *Handler) CreateEvent(ctx *fiber.Ctx) error {
 	}
 
 	// 5. Prepare parameters for usecase
-	params := datagateway.CreateEventParameters{
+	params := eventUc.CreateEventParameters{
 		Name:             requestBody.Name,
 		ShortDescription: requestBody.ShortDescription,
 		Description:      requestBody.Description,

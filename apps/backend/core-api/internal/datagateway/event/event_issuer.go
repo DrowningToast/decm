@@ -8,8 +8,9 @@ import (
 )
 
 type EventIssuerDataGateway interface {
-	CreateEventIssuer(ctx context.Context, dbtx generated.DBTX, params generated.CreateEventIssuerParams) (*generated.EventIssuer, error)
-	GetEventIssuersByEventID(ctx context.Context, dbtx generated.DBTX, eventID uuid.UUID) ([]generated.EventIssuer, error)
-	UpdateEventIssuer(ctx context.Context, dbtx generated.DBTX, params generated.UpdateEventIssuerParams) (*generated.EventIssuer, error)
-	DeleteEventIssuer(ctx context.Context, dbtx generated.DBTX, eventID uuid.UUID) error
+	CreateEventIssuer(ctx context.Context, params generated.CreateEventIssuerParams) (*generated.EventIssuer, error)
+	GetEventIssuerByID(ctx context.Context, id uuid.UUID) (generated.EventIssuer, error)
+	GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUID) ([]generated.EventIssuer, error)
+	UpdateEventIssuer(ctx context.Context, params generated.UpdateEventIssuerParams) (*generated.EventIssuer, error)
+	DeleteEventIssuer(ctx context.Context, eventID uuid.UUID) error
 }

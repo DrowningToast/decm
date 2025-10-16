@@ -11,39 +11,30 @@ import (
 
 var _ datagateway.EventIssuerDataGateway = (*Repository)(nil)
 
-func (r *Repository) CreateEventIssuer(ctx context.Context, dbtx generated.DBTX, params generated.CreateEventIssuerParams) (*generated.EventIssuer, error) {
-	queries := generated.New(dbtx)
-	result, err := queries.CreateEventIssuer(ctx, params)
+func (r *Repository) CreateEventIssuer(ctx context.Context, params generated.CreateEventIssuerParams) (*generated.EventIssuer, error) {
+	result, err := r.queries.CreateEventIssuer(ctx, params)
 	if err != nil {
 		return nil, err
 	}
 	return &result, nil
 }
 
-func (r *Repository) GetEventIssuersByEventID(ctx context.Context, dbtx generated.DBTX, eventID uuid.UUID) ([]generated.EventIssuer, error) {
-	queries := generated.New(dbtx)
-	return queries.GetEventIssuersByEventID(ctx, eventID)
+func (r *Repository) GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUID) ([]generated.EventIssuer, error) {
+	return r.queries.GetEventIssuersByEventID(ctx, eventID)
 }
 
-func (r *Repository) GetEventIssuerByID(ctx context.Context, dbtx generated.DBTX, id uuid.UUID) (*generated.EventIssuer, error) {
-	queries := generated.New(dbtx)
-	result, err := queries.GetEventIssuerByID(ctx, id)
+func (r *Repository) GetEventIssuerByID(ctx context.Context, id uuid.UUID) (generated.EventIssuer, error) {
+	return r.queries.GetEventIssuerByID(ctx, id)
+}
+
+func (r *Repository) UpdateEventIssuer(ctx context.Context, params generated.UpdateEventIssuerParams) (*generated.EventIssuer, error) {
+	result, err := r.queries.UpdateEventIssuer(ctx, params)
 	if err != nil {
 		return nil, err
 	}
 	return &result, nil
 }
 
-func (r *Repository) UpdateEventIssuer(ctx context.Context, dbtx generated.DBTX, params generated.UpdateEventIssuerParams) (*generated.EventIssuer, error) {
-	queries := generated.New(dbtx)
-	result, err := queries.UpdateEventIssuer(ctx, params)
-	if err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-func (r *Repository) DeleteEventIssuer(ctx context.Context, dbtx generated.DBTX, id uuid.UUID) error {
-	queries := generated.New(dbtx)
-	return queries.DeleteEventIssuer(ctx, id)
+func (r *Repository) DeleteEventIssuer(ctx context.Context, id uuid.UUID) error {
+	return r.queries.DeleteEventIssuer(ctx, id)
 }

@@ -7,9 +7,12 @@ import (
 )
 
 type EventUsecase struct {
-	EventDataGateway datagateway.EventDataGateway
-	S3Service        *s3.S3Service
-	logger           *slog.Logger
+	EventDataGateway         datagateway.EventDataGateway
+	EventContractDataGateway datagateway.EventContractDataGateway
+	EventIssuerDataGateway   datagateway.EventIssuerDataGateway
+
+	S3Service *s3.S3Service
+	logger    *slog.Logger
 }
 
 func NewEventUsecase(eventDataGateway datagateway.EventDataGateway, s3Service *s3.S3Service, logger *slog.Logger) *EventUsecase {
