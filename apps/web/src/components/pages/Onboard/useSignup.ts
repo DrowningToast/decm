@@ -1,5 +1,5 @@
 import { type ProfileCreateProfileRequest } from "@decm/api";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useMutationState } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { onboardService } from "../../../services/OnboardService";
@@ -11,15 +11,30 @@ import {
 export const useSignup = () => {
 	const { t } = useTranslation();
 
-	const { mutateAsync: createAccount, isPending: isAccountPending } =
+	const createAccountMutation = useMutationState({
+		filters: {
+			mutationKey: ["signup"],
+		},
+		select: (mutation) => mutation.state.status === "pending",
+	});
+	const { mutateAsync: createAccount, isPending: _isAccountPending } =
 		useMutation({
 			mutationKey: ["signup"],
 			mutationFn: async (params: CreateAccountParams) => {
 				return await authService.createAccount(params);
 			},
 		});
+	const isAccountPending = useMemo(() => {
+		return createAccountMutation.some((v) => v) || _isAccountPending;
+	}, [_isAccountPending, createAccountMutation]);
 
-	const { mutateAsync: upsertProfile, isPending: isUpsertProfilePending } =
+	const upsertProfileMutation = useMutationState({
+		filters: {
+			mutationKey: ["createProfile"],
+		},
+		select: (mutation) => mutation.state.status === "pending",
+	});
+	const { mutateAsync: upsertProfile, isPending: _isUpsertProfilePending } =
 		useMutation({
 			mutationKey: ["createProfile"],
 			mutationFn: async ({
@@ -34,10 +49,6 @@ export const useSignup = () => {
 				}
 
 				if (status.profile_id) {
-					console.log(
-						"status.authentication_credential_id",
-						status.authentication_credential_id
-					);
 					return await authService.updateProfile(
 						status.authentication_credential_id,
 						profile
@@ -50,6 +61,9 @@ export const useSignup = () => {
 				);
 			},
 		});
+	const isUpsertProfilePending = useMemo(() => {
+		return upsertProfileMutation.some((v) => v) || _isUpsertProfilePending;
+	}, [_isUpsertProfilePending, upsertProfileMutation]);
 
 	const isLoading = useMemo(() => {
 		return isAccountPending || isUpsertProfilePending;
