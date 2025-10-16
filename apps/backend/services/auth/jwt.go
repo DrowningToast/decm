@@ -44,7 +44,7 @@ func (s *AuthService) CreateToken(payload JwtPayload) (string, error) {
 }
 
 func (s *AuthService) VerifyToken(tokenString string) (*JwtClaims, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &JwtClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(s.SecretKey), nil
 	})
 	if err != nil {

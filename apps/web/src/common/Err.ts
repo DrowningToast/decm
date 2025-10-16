@@ -182,7 +182,7 @@ export const ToastFromAxiosError = (
 export const handleUniversalError = (
 	t: TFunction,
 	err: Error,
-	hooks: Partial<HandlerAxiosErrorHooks>,
+	hooks?: Partial<HandlerAxiosErrorHooks>,
 	useCaseId?: UseCaseId
 ) => {
 	ToastFromError(t, err);
@@ -210,36 +210,36 @@ interface HandlerAxiosErrorHooks {
 export const handleAxiosError = (
 	t: TFunction,
 	err: AxiosError,
-	hooks: Partial<HandlerAxiosErrorHooks>,
+	hooks?: Partial<HandlerAxiosErrorHooks>,
 	useCaseId?: UseCaseId
 ) => {
 	let customErr: Err | undefined;
 
 	switch (err.response?.status) {
 		case 400:
-			customErr = hooks.invalidInputErr;
-			hooks.onInvalidInput?.(err);
+			customErr = hooks?.invalidInputErr;
+			hooks?.onInvalidInput?.(err);
 			break;
 		case 401:
-			customErr = hooks.unauthorizedErr;
-			hooks.onUnauthorized?.(err);
+			customErr = hooks?.unauthorizedErr;
+			hooks?.onUnauthorized?.(err);
 			break;
 		case 403:
-			customErr = hooks.forbiddenErr;
-			hooks.onForbidden?.(err);
+			customErr = hooks?.forbiddenErr;
+			hooks?.onForbidden?.(err);
 			break;
 		case 404:
-			customErr = hooks.notFoundErr;
-			hooks.onNotFound?.(err);
+			customErr = hooks?.notFoundErr;
+			hooks?.onNotFound?.(err);
 			break;
 		case 409:
-			customErr = hooks.duplicateEntryErr;
-			hooks.onDuplicateEntry?.(err);
+			customErr = hooks?.duplicateEntryErr;
+			hooks?.onDuplicateEntry?.(err);
 			break;
 		case 500:
 		default:
-			customErr = hooks.internalServerErrorErr;
-			hooks.onInternalServerError?.(err);
+			customErr = hooks?.internalServerErrorErr;
+			hooks?.onInternalServerError?.(err);
 			break;
 	}
 

@@ -3,9 +3,9 @@ package usecase
 import (
 	"context"
 	"encoding/hex"
-	"errors"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	ethutils "github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 
@@ -13,7 +13,6 @@ import (
 	customerror "apps/backend/common/customerror"
 	"apps/backend/common/encryptutils"
 	"apps/backend/common/hashutils"
-	"apps/backend/common/log"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/cyptoutils"
@@ -137,9 +136,6 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 	// Look for duplicate credentials
 	// Must returns not found error
 	credential, customerr := u.AuthenticationCredentialDg.GetAuthenticationCredentialByGoogleConnectorRef(ctx, userInfo.Email)
-	logger := log.LoadLogger()
-	logger.Info("Credential", "credential", credential)
-	logger.Info("Custom Error", "customerr", customerr)
 	var cusErr *customerror.Err
 	if !errors.As(customerr, &cusErr) {
 		return nil, nil, cusErr.Extend("failed to check for existing google connector ref")
@@ -236,7 +232,26 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 	return &credential.Id, &sessionToken, nil
 }
 
-func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Context, accessToken string, expiresIn int) (*uuid.UUID, *uuid.UUID, error) {
+func (u *OnboardUsecase) CheckOnboardStatusWithJwt(ctx context.Context, currentUser auth.JwtClaims) (*auth.JwtPayload, *uuid.UUID, error) {
+	jwt := &auth.JwtPayload{
+		UserId:        currentUser.UserId,
+		WalletAddress: currentUser.WalletAddress,
+	}
+
+	profile, err := u.ProfileDg.GetProfileByAuthenticationCredentialId(ctx, currentUser.UserId)
+	if err != nil {
+		var notFoundErr *customerror.Err
+		if errors.As(err, &notFoundErr) {
+			return jwt, nil, nil
+		}
+		return jwt, nil, errors.Wrap(err, "failed to check for existing profile")
+	}
+
+	return jwt, &profile.Id, nil
+}
+
+// Return: JWT token, authentication credential id, profile id, error
+func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Context, accessToken string, expiresIn int) (*auth.JwtPayload, *uuid.UUID, error) {
 	token := &oauth2.Token{
 		AccessToken: accessToken,
 		Expiry:      time.Now().Add(time.Duration(expiresIn) * time.Second),
@@ -248,37 +263,39 @@ func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Co
 			if customErr.Code != &customerror.ErrUnauthenticated.Code {
 				return nil, nil, customErr.Extend("failed to get user info from google")
 			}
-			return nil, nil, customErr.Extend("failed to get user info from google")
+			return nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, err)
 		}
 		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
-
+	// check for existing credential
 	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialByGoogleConnectorRef(ctx, userInfo.Email)
 	if err != nil {
 		var notFoundErr *customerror.Err
-		if !errors.As(err, &notFoundErr) {
-			return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to check for existing google connector ref")
+		if errors.As(err, &notFoundErr) {
+			return nil, nil, nil
 		}
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to check for existing google connector ref")
 	}
-	if credential == nil {
-		return nil, nil, nil
+	jwt := &auth.JwtPayload{
+		UserId:        credential.Id,
+		WalletAddress: credential.WalletAddress,
 	}
 
 	profile, err := u.ProfileDg.GetProfileByAuthenticationCredentialId(ctx, credential.Id)
 	if err != nil {
 		var notFoundErr *customerror.Err
-		if !errors.As(err, &notFoundErr) {
-			return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to check for existing profile")
+		if errors.As(err, &notFoundErr) {
+			return jwt, nil, nil
 		}
+		return jwt, nil, errors.Wrap(err, "failed to check for existing profile")
 	}
-	if profile == nil {
-		return &credential.Id, nil, nil
-	}
-	return &credential.Id, &profile.Id, nil
+
+	return jwt, &profile.Id, nil
 }
 
 // Return: is account exists, is profile exists, error
-func (u *OnboardUsecase) CheckOnboardStatusWithWalletAddress(ctx context.Context, signMessage string) (*uuid.UUID, *uuid.UUID, error) {
+// Return: JWT token, authentication credential id, profile id, error
+func (u *OnboardUsecase) CheckOnboardStatusWithWalletAddress(ctx context.Context, signMessage string) (*auth.JwtPayload, *uuid.UUID, error) {
 	walletAddress, err := cyptoutils.GetAddressFromSignedMessage(u.registerSignMessage, signMessage)
 	if err != nil {
 		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
@@ -302,8 +319,12 @@ func (u *OnboardUsecase) CheckOnboardStatusWithWalletAddress(ctx context.Context
 			return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to check for existing profile")
 		}
 	}
-	if profile == nil {
-		return &credential.Id, nil, nil
+	jwt := &auth.JwtPayload{
+		UserId:        credential.Id,
+		WalletAddress: credential.WalletAddress,
 	}
-	return &credential.Id, &profile.Id, nil
+	if profile == nil {
+		return jwt, nil, nil
+	}
+	return jwt, &profile.Id, nil
 }

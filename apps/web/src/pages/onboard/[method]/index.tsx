@@ -2,7 +2,7 @@ import { OAuthOnboardPasswordPage } from "@/components/pages/Onboard/OAuth/Passw
 import { OAuthOnboardProvider } from "@/components/pages/Onboard/OAuth/OAuthOnboardContext";
 import NotFoundPage from "@/pages/404";
 import { useParams } from "@/router";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
 import { OAuthOnboardLoadingPage } from "@/components/pages/Onboard/OAuth/Loading/OAuthOnboardLoadingPage";
 import { ProfilePage } from "@/components/pages/Onboard/ProfilePage";
 import { OAuthOnboardConfirmPage } from "@/components/pages/Onboard/OAuth/Confirm/OAuthOnboardConfirmPage";
@@ -12,6 +12,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { handleUniversalError } from "@/common/Err";
 import { useTranslation } from "react-i18next";
 import { USECASE_IDS } from "@/constants/usecase";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
 
 export const OnboardMethods = {
     WALLET: "wallet",
@@ -96,15 +98,46 @@ const OnboardingPage = () => {
     const navigate = useNavigate();
 
     const { t } = useTranslation();
-    const [searchParams] = useSearchParams();
-    const accessToken = searchParams.get("access_token");
-    const expiresIn = searchParams.get("expires_in");
+    const [searchParams, setSearchParams] = useSearchParams();
+    const _accessToken = searchParams.get("access_token");
+    const _expiresIn = searchParams.get("expires_in");
 
-    const { onboardStatus, isLoading, error } = useCheckOnboardStatus({
+    const [accessToken, setAccessToken] = useLocalStorage<string | undefined>(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, undefined);
+    const [expiresIn, setExpiresIn] = useLocalStorage<number | undefined>(LOCAL_STORAGE_KEYS.EXPIRES_IN, undefined);
+
+    // handle and clear search params when access token or expires in is changed
+    useEffect(() => {
+        if (_accessToken != null && _accessToken?.length > 0) {
+            console.log("access token", _accessToken);
+            setAccessToken(_accessToken);
+            setSearchParams({ ...searchParams, access_token: "" });
+        }
+        if (_expiresIn != null && _expiresIn?.length > 0) {
+            console.log("expires in", _expiresIn);
+            setExpiresIn(parseInt(_expiresIn));
+            setSearchParams({ ...searchParams, expires_in: "" });
+        }
+    }, [_accessToken, _expiresIn, accessToken, searchParams, setAccessToken, setExpiresIn, setSearchParams]);
+
+    const { onboardStatus, isLoading: _isLoading, error } = useCheckOnboardStatus({
         method: OnboardRegistrationMethod.RegistrationMethodGoogle,
         accessToken: accessToken ?? "",
-        expiresIn: expiresIn ? parseInt(expiresIn) : 0,
+        expiresIn: expiresIn ? expiresIn : 0,
     });
+
+    const isLoading = useMemo(() => {
+        if (_isLoading) {
+            return true
+        }
+        if (_accessToken && accessToken) {
+            return true
+        }
+        if (_expiresIn && expiresIn) {
+            return true
+        }
+        return false
+    }, [_accessToken, _expiresIn, _isLoading, accessToken, expiresIn]);
+
     // handle error
     useEffect(() => {
         if (!error) {
@@ -139,7 +172,7 @@ const OnboardingPage = () => {
         <OnboardPageContext.Provider value={{
             step, setStep,
             accessToken: accessToken ?? undefined,
-            expiresIn: expiresIn ? parseInt(expiresIn) : undefined,
+            expiresIn: expiresIn,
             onboardStatus,
             isStatusLoading: isLoading,
         }}>

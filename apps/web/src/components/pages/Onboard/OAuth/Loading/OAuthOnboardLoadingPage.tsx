@@ -1,6 +1,6 @@
 import { Typography } from "@/components/typography/typography";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { Error } from "@/components/pages/Error";
+import { ErrorPage } from "@/components/pages/Error";
 import { useNavigate } from "@/router";
 import { OnboardPageContext } from "@/pages/onboard/[method]";
 import { useTranslation } from "react-i18next";
@@ -46,12 +46,12 @@ export const OAuthOnboardLoadingPage = () => {
 
     useEffect(() => {
         const init = async () => {
-            if (!accessToken) {
-                setError("missing_access_token");
+            if (isStatusLoading) {
                 return;
             }
 
-            if (isStatusLoading) {
+            if (!accessToken) {
+                setError("missing_access_token");
                 return;
             }
 
@@ -72,7 +72,7 @@ export const OAuthOnboardLoadingPage = () => {
     }, [accessToken, onboardStatus, expiresIn, navigate, setStep, error, isStatusLoading, onboardStatus?.authentication_credential_id, onboardStatus?.profile_id]);
 
     if (error) {
-        return <Error title={errorTitle} description={errorMessage} />;
+        return <ErrorPage title={errorTitle} description={errorMessage} />;
     }
 
     // TODO: Implement

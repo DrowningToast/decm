@@ -8,11 +8,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
 import { OAuthOnboardContext } from "./OAuth/OAuthOnboardContext";
 import { OnboardPageContext } from "@/pages/onboard/[method]";
+import { LogoutButton } from "./OAuth/LogoutButton";
 
 export const ProfilePage: React.FC = () => {
 
     // if already has account, disable back button
-    // const { } = useContext
+    const { onboardStatus } = useContext(OnboardPageContext)
+    const hasAccount = onboardStatus?.authentication_credential_id !== undefined
 
     const { setStep } = useContext(OnboardPageContext);
     const { form } = useContext(OAuthOnboardContext);
@@ -245,16 +247,20 @@ export const ProfilePage: React.FC = () => {
                         {t("common.confirm")}
                     </Button>
 
-                    {/* Back Button - Only visible on desktop */}
-                    <Button
-                        type="button"
-                        onClick={onBack}
-                        variant="secondary-light"
-                        size="xl"
-                        className="w-full"
-                    >
-                        {t("common.back")}
-                    </Button>
+                    {/* Back Button */}
+                    {!hasAccount && (
+                        <Button
+                            type="button"
+                            onClick={onBack}
+                            variant="secondary-light"
+                            size="xl"
+                            className="w-full"
+                        >
+                            {t("common.back")}
+                        </Button>
+                    )}
+
+                    <LogoutButton />
                 </div>
             </div>
         </div>

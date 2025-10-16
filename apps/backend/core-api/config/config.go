@@ -48,9 +48,9 @@ type ApiConfig struct {
 }
 
 type JwtConfig struct {
-	Issuer     string        `env:"ISSUER" envDefault:"decm-service"`
-	SecretKey  string        `env:"SECRET,required"`
-	Expiration time.Duration `env:"EXPIRATION" envDefault:"24h"`
+	Issuer     string `env:"ISSUER" envDefault:"decm-service"`
+	SecretKey  string `env:"SECRET,required"`
+	Expiration string `env:"EXPIRATION" envDefault:"24h"`
 }
 
 func LoadConfig() Config {
