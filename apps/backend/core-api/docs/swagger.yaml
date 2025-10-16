@@ -81,8 +81,6 @@ definitions:
         - wallet
       sign_message:
         type: string
-    required:
-    - method
     type: object
   onboard.CheckOnboardStatusResponse:
     properties:
@@ -421,7 +419,6 @@ paths:
       - description: Method
         in: body
         name: method
-        required: true
         schema:
           $ref: '#/definitions/onboard.CheckOnboardStatusRequest'
       - description: Access token

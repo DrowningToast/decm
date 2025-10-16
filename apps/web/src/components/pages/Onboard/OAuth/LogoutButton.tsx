@@ -1,20 +1,26 @@
 import { Typography } from "@/components/typography/typography"
+import { cn } from "@/lib/utils";
+import { useNavigate } from "@/router";
+import type { ClassValue } from "clsx";
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom";
 
-export const LogoutButton: React.FC = () => {
+interface LogoutButtonProps {
+    className?: ClassValue
+}
+
+export const LogoutButton: React.FC<LogoutButtonProps> = ({ className }) => {
     const navigate = useNavigate();
     const { t } = useTranslation()
 
-    const onLogout = () => {
-        navigate("/");
+    const onLogout = async () => {
+        navigate("/signout");
     };
 
     return (
         <button
             type="button"
             onClick={onLogout}
-            className="text-start h-[14.5px] inline-block"
+            className={cn("text-start h-[14.5px] inline-block", className)}
         >
             <Typography
                 variant="text"

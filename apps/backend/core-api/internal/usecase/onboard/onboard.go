@@ -3,9 +3,9 @@ package usecase
 import (
 	"context"
 	"encoding/hex"
-	"errors"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	ethutils "github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 
@@ -232,65 +232,64 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 	return &credential.Id, &sessionToken, nil
 }
 
-// Return: JWT token, authentication credential id, profile id, error
-func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Context, curretnUser *auth.JwtClaims, accessToken *string, expiresIn *int) (*auth.JwtPayload, *uuid.UUID, error) {
-	var credential *entity.AuthenticationCredential
-	if curretnUser == nil {
-		if accessToken == nil || expiresIn == nil {
-			return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("access token and expires in are required"))
-		}
-
-		token := &oauth2.Token{
-			AccessToken: *accessToken,
-			Expiry:      time.Now().Add(time.Duration(*expiresIn) * time.Second),
-		}
-		userInfo, err := u.googleOAuthService.GetUserInfo(ctx, token)
-		if err != nil {
-			var customErr *customerror.Err
-			if errors.As(err, &customErr) {
-				if customErr.Code != &customerror.ErrUnauthenticated.Code {
-					return nil, nil, customErr.Extend("failed to get user info from google")
-				}
-				return nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, err)
-			}
-			return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
-		}
-		// check for existing credential
-		credential, err = u.AuthenticationCredentialDg.GetAuthenticationCredentialByGoogleConnectorRef(ctx, userInfo.Email)
-		if err != nil {
-			var notFoundErr *customerror.Err
-			if !errors.As(err, &notFoundErr) {
-				return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to check for existing google connector ref")
-			}
-		}
-		if credential == nil {
-			return nil, nil, nil
-		}
-	} else {
-		var err error
-		credential, err = u.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, curretnUser.UserId)
-		if err != nil {
-			return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to get credential")
-		}
-	}
-	if credential == nil {
-		return nil, nil, customerror.AsPresetError(customerror.ErrInvalidArgument, errors.New("credential not found"))
+func (u *OnboardUsecase) CheckOnboardStatusWithJwt(ctx context.Context, currentUser auth.JwtClaims) (*auth.JwtPayload, *uuid.UUID, error) {
+	jwt := &auth.JwtPayload{
+		UserId:        currentUser.UserId,
+		WalletAddress: currentUser.WalletAddress,
 	}
 
-	profile, err := u.ProfileDg.GetProfileByAuthenticationCredentialId(ctx, credential.Id)
+	profile, err := u.ProfileDg.GetProfileByAuthenticationCredentialId(ctx, currentUser.UserId)
 	if err != nil {
 		var notFoundErr *customerror.Err
-		if !errors.As(err, &notFoundErr) {
-			return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to check for existing profile")
+		if errors.As(err, &notFoundErr) {
+			return jwt, nil, nil
 		}
+		return jwt, nil, errors.Wrap(err, "failed to check for existing profile")
+	}
+
+	return jwt, &profile.Id, nil
+}
+
+// Return: JWT token, authentication credential id, profile id, error
+func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Context, accessToken string, expiresIn int) (*auth.JwtPayload, *uuid.UUID, error) {
+	token := &oauth2.Token{
+		AccessToken: accessToken,
+		Expiry:      time.Now().Add(time.Duration(expiresIn) * time.Second),
+	}
+	userInfo, err := u.googleOAuthService.GetUserInfo(ctx, token)
+	if err != nil {
+		var customErr *customerror.Err
+		if errors.As(err, &customErr) {
+			if customErr.Code != &customerror.ErrUnauthenticated.Code {
+				return nil, nil, customErr.Extend("failed to get user info from google")
+			}
+			return nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, err)
+		}
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
+	}
+	// check for existing credential
+	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialByGoogleConnectorRef(ctx, userInfo.Email)
+	if err != nil {
+		var notFoundErr *customerror.Err
+		if errors.As(err, &notFoundErr) {
+			return nil, nil, nil
+		}
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to check for existing google connector ref")
 	}
 	jwt := &auth.JwtPayload{
 		UserId:        credential.Id,
 		WalletAddress: credential.WalletAddress,
 	}
-	if profile == nil {
-		return jwt, nil, nil
+
+	profile, err := u.ProfileDg.GetProfileByAuthenticationCredentialId(ctx, credential.Id)
+	if err != nil {
+		var notFoundErr *customerror.Err
+		if errors.As(err, &notFoundErr) {
+			return jwt, nil, nil
+		}
+		return jwt, nil, errors.Wrap(err, "failed to check for existing profile")
 	}
+
 	return jwt, &profile.Id, nil
 }
 
