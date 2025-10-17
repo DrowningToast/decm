@@ -111,8 +111,13 @@ func (h *Handler) CreateEvent(ctx *fiber.Ctx) error {
 		EventIcon:        iconFile,
 	}
 
+	currentUser, err := h.AuthenticationService.GetUserContext(ctx)
+	if err != nil {
+		return err
+	}
+
 	// 6. Call usecase
-	event, err := h.EventUc.CreateEvent(ctx.UserContext(), params)
+	event, err := h.EventUc.CreateEvent(ctx.UserContext(), params, currentUser)
 	if err != nil {
 		return err
 	}

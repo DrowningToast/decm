@@ -13,7 +13,7 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     children,
-    redirectTo = "/signin",
+    redirectTo = "/signup",
     requiredRoles,
     fallback,
 }) => {

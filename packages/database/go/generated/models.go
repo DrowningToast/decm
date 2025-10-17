@@ -31,6 +31,8 @@ type Event struct {
 	ContactNumber            string             `json:"contact_number"`
 	ContactAddress           string             `json:"contact_address"`
 	OwnerCredentialID        uuid.UUID          `json:"owner_credential_id"`
+	BannerStorageKey         string             `json:"banner_storage_key"`
+	IconStorageKey           string             `json:"icon_storage_key"`
 	Title                    string             `json:"title"`
 	ShortDescription         string             `json:"short_description"`
 	LongDescription          pgtype.Text        `json:"long_description"`

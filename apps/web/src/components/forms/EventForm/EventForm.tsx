@@ -68,7 +68,12 @@ export const EventForm = ({
         await onSubmit(data);
     };
 
-    const handleNext = async () => {
+    const handleNext = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+        // Prevent form submission if this is called from a button click
+        if (e) {
+            e.preventDefault();
+        }
+
         // Validate current step fields
         const fieldsToValidate: Array<keyof EventFormData> = [];
 
@@ -340,12 +345,12 @@ export const EventForm = ({
                 {currentStep === 1 && <div />}
 
                 {/* Next or Submit Button */}
-                {currentStep < totalSteps ? (
+                {currentStep === 1 ? (
                     <Button
                         type="button"
                         variant="primary"
                         size="lg"
-                        onClick={handleNext}
+                        onClick={(e) => handleNext(e)}
                         disabled={isLoading}
                         className="min-w-[150px]"
                     >

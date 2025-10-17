@@ -2,7 +2,6 @@ package datagateway
 
 import (
 	"context"
-	"mime/multipart"
 	"time"
 
 	"apps/backend/core-api/internal/entity"
@@ -11,18 +10,23 @@ import (
 )
 
 type CreateEventParameters struct {
-	Name             string
-	ShortDescription string
-	Description      string
-	StartDate        time.Time
-	EndDate          time.Time
-	SeatsCount       int
-	ContactNumber    string
-	ContactAddress   string
-	Location         string
-	GoogleMapQuery   string
-	EventBanner      *multipart.FileHeader
-	EventIcon        *multipart.FileHeader
+	Name                     string
+	ShortDescription         string
+	Description              string
+	StartDate                time.Time
+	EndDate                  time.Time
+	SeatsCount               int
+	ContactNumber            string
+	ContactAddress           string
+	Location                 string
+	GoogleMapQuery           string
+	BannerStorageKey         string
+	IconStorageKey           string
+	OwnerCredentialID        uuid.UUID
+	IsPublic                 bool
+	IsBookingRequestRequired bool
+	IsVerified               bool
+	IsTicketTransferable     bool
 }
 
 type EventDataGateway interface {
