@@ -15,7 +15,6 @@ export type Path =
   | `/host/events/:eventId/settings/participant`
   | `/host/events/create`
   | `/host/home`
-  | `/oauth-success/google`
   | `/onboard/:method`
   | `/signin`
   | `/signout`
