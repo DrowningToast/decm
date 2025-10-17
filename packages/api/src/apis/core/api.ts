@@ -15,7 +15,7 @@ export type CheckOnboardStatusData = OnboardCheckOnboardStatusResponse;
 export type CheckOnboardStatusError = CustomerrorErrResponse;
 
 export type CreateEventCertificateConfigData =
-  EventConfigEventCertificateConfigResponse;
+  EventconfigEventCertificateConfigResponse;
 
 export type CreateEventCertificateConfigError = CustomerrorErrResponse;
 
@@ -24,7 +24,7 @@ export interface CreateEventCertificateConfigParams {
   eventId: string;
 }
 
-export type CreateEventContractData = EventConfigEventContractResponse;
+export type CreateEventContractData = EventEventContractResponse;
 
 export type CreateEventContractError = CustomerrorErrResponse;
 
@@ -37,7 +37,7 @@ export type CreateEventData = EntityEvent;
 
 export type CreateEventError = CustomerrorErrResponse;
 
-export type CreateEventIssuerData = EventConfigEventIssuerResponse;
+export type CreateEventIssuerData = EventEventIssuerResponse;
 
 export type CreateEventIssuerError = CustomerrorErrResponse;
 
@@ -80,7 +80,7 @@ export interface CreateEventPayload {
 }
 
 export type CreateEventRegistrationConfigData =
-  EventConfigEventRegistrationConfigResponse;
+  EventconfigEventRegistrationConfigResponse;
 
 export type CreateEventRegistrationConfigError = CustomerrorErrResponse;
 
@@ -104,6 +104,15 @@ export interface CustomerrorErr {
 /** Response for the client to sign to register */
 export interface CustomerrorErrResponse {
   message?: string;
+}
+
+export type DeleteEventByIdData = any;
+
+export type DeleteEventByIdError = CustomerrorErrResponse;
+
+export interface DeleteEventByIdParams {
+  /** Event ID */
+  eventId: string;
 }
 
 export type DeleteEventCertificateConfigData = Record<string, string>;
@@ -145,8 +154,27 @@ export interface DeleteEventRegistrationConfigParams {
 }
 
 export interface EntityEvent {
-  event_banner_presigned_url?: string;
-  event_name?: string;
+  banner_storage_key?: string;
+  chain_id?: number;
+  contact_address?: string;
+  contact_number?: string;
+  created_at?: string;
+  end_date?: string;
+  google_map_query?: string;
+  icon_storage_key?: string;
+  id?: string;
+  is_booking_request_required?: boolean;
+  is_public?: boolean;
+  is_ticket_transferable?: boolean;
+  is_verified?: boolean;
+  location?: string;
+  long_description?: string;
+  max_attendees?: number;
+  owner_credential_id?: string;
+  short_description?: string;
+  start_date?: string;
+  title?: string;
+  updated_at?: string;
 }
 
 export interface EntityProfile {
@@ -174,55 +202,20 @@ export interface EntityProfile {
   updated_at?: string;
 }
 
-export interface EventConfigCreateEventCertificateConfigRequest {
-  academic_institution_pos_x?: number;
-  academic_institution_pos_y?: number;
-  base_certificate_storage_key?: string;
-  event_name_pos_x?: number;
-  event_name_pos_y?: number;
-  name_pos_x?: number;
-  name_pos_y?: number;
-}
-
-export interface EventConfigCreateEventContractRequest {
+export interface EventCreateEventContractRequest {
   access_manager_contract_address?: string;
   certificate_contract_address?: string;
   event_contract_address?: string;
   ticket_contract_address?: string;
 }
 
-export interface EventConfigCreateEventIssuerRequest {
+export interface EventCreateEventIssuerRequest {
   is_signed?: number;
   issuer_credential_id?: string;
   signature?: string;
 }
 
-export interface EventConfigCreateEventRegistrationConfigRequest {
-  academic_email_requirement_status?: number;
-  academic_institution_requirement_status?: number;
-  address_requirement_status?: number;
-  bio_requirement_status?: number;
-  email_requirement_status?: number;
-  first_name_requirement_status?: number;
-  last_name_requirement_status?: number;
-  phone_number_requirement_status?: number;
-}
-
-export interface EventConfigEventCertificateConfigResponse {
-  academic_institution_pos_x?: number;
-  academic_institution_pos_y?: number;
-  base_certificate_storage_key?: string;
-  created_at?: string;
-  event_id?: string;
-  event_name_pos_x?: number;
-  event_name_pos_y?: number;
-  id?: string;
-  name_pos_x?: number;
-  name_pos_y?: number;
-  updated_at?: string;
-}
-
-export interface EventConfigEventContractResponse {
+export interface EventEventContractResponse {
   access_manager_contract_address?: string;
   certificate_contract_address?: string;
   created_at?: string;
@@ -233,7 +226,7 @@ export interface EventConfigEventContractResponse {
   updated_at?: string;
 }
 
-export interface EventConfigEventIssuerResponse {
+export interface EventEventIssuerResponse {
   created_at?: string;
   event_id?: string;
   id?: string;
@@ -243,7 +236,79 @@ export interface EventConfigEventIssuerResponse {
   updated_at?: string;
 }
 
-export interface EventConfigEventRegistrationConfigResponse {
+export interface EventEventResponse {
+  banner_presigned_url?: string;
+  banner_storage_key?: string;
+  chain_id?: number;
+  contact_number?: string;
+  created_at?: string;
+  end_date?: string;
+  google_map_query?: string;
+  icon_presigned_url?: string;
+  icon_storage_key?: string;
+  id?: string;
+  is_booking_request_required?: boolean;
+  is_public?: boolean;
+  is_ticket_transferable?: boolean;
+  is_verified?: boolean;
+  location?: string;
+  long_description?: string;
+  max_attendees?: number;
+  owner_credential_id?: string;
+  short_description?: string;
+  start_date?: string;
+  title?: string;
+  updated_at?: string;
+}
+
+export interface EventUpdateEventContractRequest {
+  access_manager_contract_address?: string;
+  certificate_contract_address?: string;
+  event_contract_address?: string;
+  ticket_contract_address?: string;
+}
+
+export interface EventUpdateEventIssuerRequest {
+  is_signed?: number;
+  signature?: string;
+}
+
+export interface EventconfigCreateEventCertificateConfigRequest {
+  academic_institution_pos_x?: number;
+  academic_institution_pos_y?: number;
+  base_certificate_storage_key?: string;
+  event_name_pos_x?: number;
+  event_name_pos_y?: number;
+  name_pos_x?: number;
+  name_pos_y?: number;
+}
+
+export interface EventconfigCreateEventRegistrationConfigRequest {
+  academic_email_requirement_status?: number;
+  academic_institution_requirement_status?: number;
+  address_requirement_status?: number;
+  bio_requirement_status?: number;
+  email_requirement_status?: number;
+  first_name_requirement_status?: number;
+  last_name_requirement_status?: number;
+  phone_number_requirement_status?: number;
+}
+
+export interface EventconfigEventCertificateConfigResponse {
+  academic_institution_pos_x?: number;
+  academic_institution_pos_y?: number;
+  base_certificate_storage_key?: string;
+  created_at?: string;
+  event_id?: string;
+  event_name_pos_x?: number;
+  event_name_pos_y?: number;
+  id?: string;
+  name_pos_x?: number;
+  name_pos_y?: number;
+  updated_at?: string;
+}
+
+export interface EventconfigEventRegistrationConfigResponse {
   academic_email_requirement_status?: number;
   academic_institution_requirement_status?: number;
   address_requirement_status?: number;
@@ -258,7 +323,7 @@ export interface EventConfigEventRegistrationConfigResponse {
   updated_at?: string;
 }
 
-export interface EventConfigUpdateEventCertificateConfigRequest {
+export interface EventconfigUpdateEventCertificateConfigRequest {
   academic_institution_pos_x?: number;
   academic_institution_pos_y?: number;
   base_certificate_storage_key?: string;
@@ -268,19 +333,7 @@ export interface EventConfigUpdateEventCertificateConfigRequest {
   name_pos_y?: number;
 }
 
-export interface EventConfigUpdateEventContractRequest {
-  access_manager_contract_address?: string;
-  certificate_contract_address?: string;
-  event_contract_address?: string;
-  ticket_contract_address?: string;
-}
-
-export interface EventConfigUpdateEventIssuerRequest {
-  is_signed?: number;
-  signature?: string;
-}
-
-export interface EventConfigUpdateEventRegistrationConfigRequest {
+export interface EventconfigUpdateEventRegistrationConfigRequest {
   academic_email_requirement_status?: number;
   academic_institution_requirement_status?: number;
   address_requirement_status?: number;
@@ -289,10 +342,19 @@ export interface EventConfigUpdateEventRegistrationConfigRequest {
   first_name_requirement_status?: number;
   last_name_requirement_status?: number;
   phone_number_requirement_status?: number;
+}
+
+export type GetEventByIdData = EventEventResponse;
+
+export type GetEventByIdError = CustomerrorErrResponse;
+
+export interface GetEventByIdParams {
+  /** Event ID */
+  eventId: string;
 }
 
 export type GetEventCertificateConfigData =
-  EventConfigEventCertificateConfigResponse;
+  EventconfigEventCertificateConfigResponse;
 
 export type GetEventCertificateConfigError = CustomerrorErrResponse;
 
@@ -301,7 +363,7 @@ export interface GetEventCertificateConfigParams {
   eventId: string;
 }
 
-export type GetEventContractByEventIdData = EventConfigEventContractResponse;
+export type GetEventContractByEventIdData = EventEventContractResponse;
 
 export type GetEventContractByEventIdError = CustomerrorErrResponse;
 
@@ -310,7 +372,7 @@ export interface GetEventContractByEventIdParams {
   eventId: string;
 }
 
-export type GetEventIssuerByIdData = EventConfigEventIssuerResponse;
+export type GetEventIssuerByIdData = EventEventIssuerResponse[];
 
 export type GetEventIssuerByIdError = CustomerrorErrResponse;
 
@@ -321,7 +383,7 @@ export interface GetEventIssuerByIdParams {
   issuerId: string;
 }
 
-export type GetEventIssuersByEventIdData = EventConfigEventIssuerResponse[];
+export type GetEventIssuersByEventIdData = EventEventIssuerResponse[];
 
 export type GetEventIssuersByEventIdError = CustomerrorErrResponse;
 
@@ -331,13 +393,32 @@ export interface GetEventIssuersByEventIdParams {
 }
 
 export type GetEventRegistrationConfigData =
-  EventConfigEventRegistrationConfigResponse;
+  EventconfigEventRegistrationConfigResponse;
 
 export type GetEventRegistrationConfigError = CustomerrorErrResponse;
 
 export interface GetEventRegistrationConfigParams {
   /** Event ID */
   eventId: string;
+}
+
+export type GetEventsByOwnerCredentialsIdData = EventEventResponse[][];
+
+export type GetEventsByOwnerCredentialsIdError = CustomerrorErrResponse;
+
+export interface GetEventsByOwnerCredentialsIdParams {
+  /**
+   * Limit
+   * @default 10
+   */
+  limit?: number;
+  /**
+   * Offset
+   * @default 0
+   */
+  offset?: number;
+  /** Owner Credentials ID */
+  ownerCredentialId: string;
 }
 
 export type GetMyProfileData = EntityProfile;
@@ -533,7 +614,7 @@ export type RegisterWithWalletError = CustomerrorErrResponse;
 export type RequestGoogleOauthError = CustomerrorErrResponse;
 
 export type UpdateEventCertificateConfigData =
-  EventConfigEventCertificateConfigResponse;
+  EventconfigEventCertificateConfigResponse;
 
 export type UpdateEventCertificateConfigError = CustomerrorErrResponse;
 
@@ -542,7 +623,7 @@ export interface UpdateEventCertificateConfigParams {
   eventId: string;
 }
 
-export type UpdateEventContractData = EventConfigEventContractResponse;
+export type UpdateEventContractData = EventEventContractResponse;
 
 export type UpdateEventContractError = CustomerrorErrResponse;
 
@@ -551,7 +632,11 @@ export interface UpdateEventContractParams {
   eventId: string;
 }
 
-export type UpdateEventIssuerData = EventConfigEventIssuerResponse;
+export type UpdateEventData = EntityEvent;
+
+export type UpdateEventError = CustomerrorErrResponse;
+
+export type UpdateEventIssuerData = EventEventIssuerResponse;
 
 export type UpdateEventIssuerError = CustomerrorErrResponse;
 
@@ -562,8 +647,45 @@ export interface UpdateEventIssuerParams {
   issuerId: string;
 }
 
+export interface UpdateEventParams {
+  eventId: string;
+}
+
+export interface UpdateEventPayload {
+  /**
+   * Event banner image (JPEG, PNG, WebP, max 10MB) - optional
+   * @format binary
+   */
+  banner?: File;
+  /** Contact address */
+  contact_address: string;
+  /** Contact number */
+  contact_number: string;
+  /** Event description */
+  description: string;
+  /** End date (RFC3339 format) */
+  end_date: string;
+  /** Google map query */
+  google_map_query: string;
+  /**
+   * Event icon image (JPEG, PNG, WebP, max 10MB) - optional
+   * @format binary
+   */
+  icon?: File;
+  /** Location */
+  location: string;
+  /** Event name */
+  name: string;
+  /** Number of seats */
+  seats_count: number;
+  /** Event short description */
+  short_description: string;
+  /** Start date (RFC3339 format) */
+  start_date: string;
+}
+
 export type UpdateEventRegistrationConfigData =
-  EventConfigEventRegistrationConfigResponse;
+  EventconfigEventRegistrationConfigResponse;
 
 export type UpdateEventRegistrationConfigError = CustomerrorErrResponse;
 
@@ -854,6 +976,88 @@ export class Api<SecurityDataType extends unknown> {
       }),
 
     /**
+     * @description Update an existing event with optional banner and icon image upload
+     *
+     * @tags Event
+     * @name UpdateEvent
+     * @summary Update an event
+     * @request PUT:/api/v1/events/:event_id
+     */
+    updateEvent: (
+      { eventId, ...query }: UpdateEventParams,
+      data: UpdateEventPayload,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<UpdateEventData, UpdateEventError>({
+        path: `/api/v1/events/${eventId}`,
+        method: "PUT",
+        body: data,
+        type: ContentType.FormData,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get events by owner credentials ID
+     *
+     * @name GetEventsByOwnerCredentialsId
+     * @summary Get events by owner credentials ID
+     * @request GET:/api/v1/events/owner-credentials/{owner_credential_id}
+     */
+    getEventsByOwnerCredentialsId: (
+      { ownerCredentialId, ...query }: GetEventsByOwnerCredentialsIdParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<
+        GetEventsByOwnerCredentialsIdData,
+        GetEventsByOwnerCredentialsIdError
+      >({
+        path: `/api/v1/events/owner-credentials/${ownerCredentialId}`,
+        method: "GET",
+        query: query,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get event by ID
+     *
+     * @name GetEventById
+     * @summary Get event by ID
+     * @request GET:/api/v1/events/{event_id}
+     */
+    getEventById: (
+      { eventId, ...query }: GetEventByIdParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<GetEventByIdData, GetEventByIdError>({
+        path: `/api/v1/events/${eventId}`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete event by ID
+     *
+     * @name DeleteEventById
+     * @summary Delete event by ID
+     * @request DELETE:/api/v1/events/{event_id}
+     */
+    deleteEventById: (
+      { eventId, ...query }: DeleteEventByIdParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<DeleteEventByIdData, DeleteEventByIdError>({
+        path: `/api/v1/events/${eventId}`,
+        method: "DELETE",
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
      * @description Get the event certificate configuration for an event
      *
      * @name GetEventCertificateConfig
@@ -884,7 +1088,7 @@ export class Api<SecurityDataType extends unknown> {
      */
     updateEventCertificateConfig: (
       { eventId, ...query }: UpdateEventCertificateConfigParams,
-      request: EventConfigUpdateEventCertificateConfigRequest,
+      request: EventconfigUpdateEventCertificateConfigRequest,
       params: RequestParams = {},
     ) =>
       this.http.request<
@@ -908,7 +1112,7 @@ export class Api<SecurityDataType extends unknown> {
      */
     createEventCertificateConfig: (
       { eventId, ...query }: CreateEventCertificateConfigParams,
-      request: EventConfigCreateEventCertificateConfigRequest,
+      request: EventconfigCreateEventCertificateConfigRequest,
       params: RequestParams = {},
     ) =>
       this.http.request<
@@ -976,7 +1180,7 @@ export class Api<SecurityDataType extends unknown> {
      */
     updateEventContract: (
       { eventId, ...query }: UpdateEventContractParams,
-      request: EventConfigUpdateEventContractRequest,
+      request: EventUpdateEventContractRequest,
       params: RequestParams = {},
     ) =>
       this.http.request<UpdateEventContractData, UpdateEventContractError>({
@@ -997,7 +1201,7 @@ export class Api<SecurityDataType extends unknown> {
      */
     createEventContract: (
       { eventId, ...query }: CreateEventContractParams,
-      request: EventConfigCreateEventContractRequest,
+      request: EventCreateEventContractRequest,
       params: RequestParams = {},
     ) =>
       this.http.request<CreateEventContractData, CreateEventContractError>({
@@ -1059,7 +1263,7 @@ export class Api<SecurityDataType extends unknown> {
      */
     createEventIssuer: (
       { eventId, ...query }: CreateEventIssuerParams,
-      request: EventConfigCreateEventIssuerRequest,
+      request: EventCreateEventIssuerRequest,
       params: RequestParams = {},
     ) =>
       this.http.request<CreateEventIssuerData, CreateEventIssuerError>({
@@ -1099,7 +1303,7 @@ export class Api<SecurityDataType extends unknown> {
      */
     updateEventIssuer: (
       { eventId, issuerId, ...query }: UpdateEventIssuerParams,
-      request: EventConfigUpdateEventIssuerRequest,
+      request: EventUpdateEventIssuerRequest,
       params: RequestParams = {},
     ) =>
       this.http.request<UpdateEventIssuerData, UpdateEventIssuerError>({
@@ -1161,7 +1365,7 @@ export class Api<SecurityDataType extends unknown> {
      */
     updateEventRegistrationConfig: (
       { eventId, ...query }: UpdateEventRegistrationConfigParams,
-      request: EventConfigUpdateEventRegistrationConfigRequest,
+      request: EventconfigUpdateEventRegistrationConfigRequest,
       params: RequestParams = {},
     ) =>
       this.http.request<
@@ -1185,7 +1389,7 @@ export class Api<SecurityDataType extends unknown> {
      */
     createEventRegistrationConfig: (
       { eventId, ...query }: CreateEventRegistrationConfigParams,
-      request: EventConfigCreateEventRegistrationConfigRequest,
+      request: EventconfigCreateEventRegistrationConfigRequest,
       params: RequestParams = {},
     ) =>
       this.http.request<

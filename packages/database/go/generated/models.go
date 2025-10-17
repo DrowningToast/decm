@@ -47,6 +47,7 @@ type Event struct {
 	IsTicketTransferable     pgtype.Int4        `json:"is_ticket_transferable"`
 	CreatedAt                pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt                pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type EventAttendee struct {
@@ -65,15 +66,6 @@ type EventAttendee struct {
 	AcademicEmail        pgtype.Text        `json:"academic_email"`
 	CreatedAt            pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
-}
-
-type EventCertificate struct {
-	ID           uuid.UUID          `json:"id"`
-	EventID      uuid.UUID          `json:"event_id"`
-	CredentialID uuid.UUID          `json:"credential_id"`
-	IsPublished  int32              `json:"is_published"`
-	CreatedAt    pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 type EventCertificateConfig struct {

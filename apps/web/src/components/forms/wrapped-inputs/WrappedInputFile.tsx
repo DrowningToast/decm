@@ -18,6 +18,7 @@ interface WrappedInputFileProps<T extends FieldValues> {
     className?: string;
     maxSize?: number; // in bytes
     previewClassName?: string;
+    previewUrl?: string;
 }
 
 // Separate component for file input with preview
@@ -33,6 +34,7 @@ const FileInputWithPreview = ({
     label,
     required,
     error,
+    previewUrl,
 }: {
     value: File | undefined;
     onChange: (file: File | undefined) => void;
@@ -45,6 +47,7 @@ const FileInputWithPreview = ({
     label: string;
     required: boolean;
     error?: { message?: string };
+    previewUrl?: string;
 }) => {
     const { t } = useTranslation();
     const [preview, setPreview] = useState<string | null>(null);
@@ -124,6 +127,48 @@ const FileInputWithPreview = ({
         setFileInfo(null);
         onChange(undefined);
     };
+
+    if (previewUrl && !value) {
+        return (
+            <div className="space-y-2">
+                <Label htmlFor={name}>
+                    <Typography variant="text" tag="span" className="text-sm font-medium">
+                        {label}
+                    </Typography>
+                </Label>
+                <div className="relative w-full h-72 rounded-lg overflow-hidden border border-[#D9D9D91A]">
+                    <img
+                        src={previewUrl}
+                        alt="File preview"
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+
+                <input
+                    type="file"
+                    id={`${name}-change`}
+                    accept={accept}
+                    className="hidden"
+                    onChange={(e) => handleFileChange(e.target.files?.[0])}
+                    disabled={disabled}
+                />
+
+                <Button
+                    type="button"
+                    variant="secondary-dark"
+                    size="default"
+                    disabled={disabled}
+                    className="w-full cursor-pointer"
+                    onClick={() => document.getElementById(`${name}-change`)?.click()}
+                >
+                    <Upload className="h-4 w-4 mr-2" />
+                    <Typography variant="text" tag="span" className="font-medium">
+                        {t("common.change")}
+                    </Typography>
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-2">
@@ -280,6 +325,7 @@ export const WrappedInputFile = <T extends FieldValues>({
     className = "",
     maxSize = 5 * 1024 * 1024, // 5MB default
     previewClassName = "",
+    previewUrl,
 }: WrappedInputFileProps<T>) => {
     return (
         <Controller
@@ -298,6 +344,7 @@ export const WrappedInputFile = <T extends FieldValues>({
                     label={label}
                     required={required}
                     error={error}
+                    previewUrl={previewUrl}
                 />
             )}
         />

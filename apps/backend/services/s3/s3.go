@@ -168,13 +168,13 @@ func (s *S3Service) DeleteFile(ctx context.Context, key string) error {
 	return nil
 }
 
-func (s *S3Service) GetPresignedURL(ctx context.Context, key string, expiresIn time.Duration) (string, error) {
+func (s *S3Service) GetPresignedURL(ctx context.Context, key string) (string, error) {
 	req, _ := s.s3Client.GetObjectRequest(&s3.GetObjectInput{
 		Bucket: aws.String(s.s3Config.BucketName),
 		Key:    aws.String(key),
 	})
 
-	urlStr, err := req.Presign(expiresIn)
+	urlStr, err := req.Presign(24 * time.Hour)
 	if err != nil {
 		return "", customerror.Parse(&customerror.ErrInternalServer, err)
 	}
