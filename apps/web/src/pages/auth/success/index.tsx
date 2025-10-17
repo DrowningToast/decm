@@ -6,10 +6,9 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 
 const AuthSuccessPage = () => {
-
-    const { t } = useTranslation()
+    const { t } = useTranslation();
     const navigate = useNavigate();
-    const [searchParams,] = useSearchParams();
+    const [searchParams] = useSearchParams();
 
     const redirectUrl = getLocalStorageItem(LOCAL_STORAGE_KEYS.ON_GOOGLE_OAUTH_SUCCESS_REDIRECT);
 
@@ -21,16 +20,19 @@ const AuthSuccessPage = () => {
     }, [navigate, redirectUrl, searchParams]);
 
     if (!redirectUrl) {
-        return <ErrorPage title={t("errors.notFound.title")} description={t("errors.notFound.description")} />
+        return (
+            <ErrorPage
+                title={t("errors.notFound.title")}
+                description={t("errors.notFound.description")}
+            />
+        );
     }
 
     return (
         <div className="min-h-screen flex flex-col">
             <h1>You're being redirected. Please wait...</h1>
         </div>
-    )
-}
+    );
+};
 
 export default AuthSuccessPage;
-
-
