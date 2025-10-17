@@ -38,3 +38,10 @@ func (r *Repository) UpdateEventIssuer(ctx context.Context, params generated.Upd
 func (r *Repository) DeleteEventIssuer(ctx context.Context, id uuid.UUID) error {
 	return r.queries.DeleteEventIssuer(ctx, id)
 }
+
+func (r *Repository) GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Context, eventID uuid.UUID, issuerCredentialID uuid.UUID) (generated.EventIssuer, error) {
+	return r.queries.GetEventIssuerByEventIDAndIssuerCredentialID(ctx, generated.GetEventIssuerByEventIDAndIssuerCredentialIDParams{
+		EventID:            eventID,
+		IssuerCredentialID: issuerCredentialID,
+	})
+}

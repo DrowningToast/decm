@@ -23,7 +23,7 @@ func ValidateStruct(s interface{}) error {
 }
 
 func ValidateImageFile(file *multipart.FileHeader) error {
-	// Max 5MB
+	// Max 10MB
 	maxSize := int64(10 * 1024 * 1024)
 	if file.Size > maxSize {
 		return customerror.Parse(
@@ -34,17 +34,18 @@ func ValidateImageFile(file *multipart.FileHeader) error {
 
 	// Check file type
 	allowedTypes := map[string]bool{
-		"image/jpeg": true,
-		"image/jpg":  true,
-		"image/png":  true,
-		"image/webp": true,
+		"image/jpeg":    true,
+		"image/jpg":     true,
+		"image/png":     true,
+		"image/webp":    true,
+		"image/svg+xml": true,
 	}
 
 	contentType := utils.GetFileContentType(file)
 	if !allowedTypes[contentType] {
 		return customerror.Parse(
 			&customerror.ErrInvalidArgument,
-			fmt.Errorf("invalid file type '%s': banner must be JPEG, PNG, or WebP", contentType),
+			fmt.Errorf("invalid file type '%s': banner must be JPEG, PNG, WebP, or SVG", contentType),
 		)
 	}
 

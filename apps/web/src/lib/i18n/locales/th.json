@@ -1,535 +1,552 @@
 {
-    "common": {
-        "appName": "DECM",
-        "welcome": "ยินดีต้อนรับ",
-        "loading": "กำลังโหลด...",
-        "searching": "กำลังค้นหา...",
-        "error": "ข้อผิดพลาด",
-        "success": "สำเร็จ",
-        "cancel": "ยกเลิก",
-        "confirm": "ยืนยัน",
-        "save": "บันทึก",
-        "delete": "ลบ",
-        "edit": "แก้ไข",
-        "close": "ปิด",
-        "back": "กลับ",
-        "next": "ถัดไป",
-        "submit": "ส่ง",
-        "search": "ค้นหา",
-        "filter": "กรอง",
-        "sort": "เรียง",
-        "language": "ภาษา",
-        "selectDate": "เลือกวันที่",
-        "clickToUpload": "คลิกเพื่ออัพโหลด",
-        "change": "เปลี่ยน",
-        "remove": "ลบ",
-        "characters": "ตัวอักษร",
-        "yes": "ใช่",
-        "no": "ไม่ใช่",
-        "required": "จำเป็น",
-        "optional": "ไม่บังคับ",
-        "notRequired": "ไม่ต้องการ"
-    },
-    "nav": {
-        "home": "หน้าหลัก",
-        "events": "กิจกรรม",
-        "credentials": "ประกาศนียบัตร",
-        "portfolio": "พอร์ตโฟลิโอ",
-        "profile": "โปรไฟล์",
-        "signIn": "เข้าสู่ระบบ",
-        "signUp": "สมัครสมาชิก",
-        "signOut": "ออกจากระบบ"
-    },
-    "auth": {
-        "signIn": "เข้าสู่ระบบ",
-        "signUp": "สมัครสมาชิก",
-        "signOut": "ออกจากระบบ",
-        "walletConnect": "เชื่อมต่อกระเป๋าเงิน",
-        "emailLogin": "เข้าสู่ระบบด้วยอีเมล",
-        "googleLogin": "ดำเนินการต่อด้วย Google",
-        "welcomeBack": "ยินดีต้อนรับกลับ!",
-        "createAccount": "สร้างบัญชีของคุณ",
-        "forgotPassword": "ลืมรหัสผ่าน?",
-        "noAccount": "ยังไม่มีบัญชี?",
-        "hasAccount": "มีบัญชีอยู่แล้ว?",
-        "email": "อีเมล",
-        "password": "รหัสผ่าน",
-        "confirmPassword": "ยืนยันรหัสผ่าน",
-        "rememberMe": "จำฉันไว้"
-    },
-    "signup": {
-        "title": "สมัครสมาชิก",
-        "subtitle": "นำกระเป๋าเงินของคุณมาใช้หรือสมัครด้วยผู้ให้บริการ OAuth ที่เชื่อถือได้",
-        "walletButton": "เชื่อมต่อด้วยกระเป๋าเงิน",
-        "googleButton": "ดำเนินการต่อด้วย Google",
-        "divider": "หรือ",
-        "terms": "การสมัครสมาชิก คุณยอมรับข้อกำหนดการให้บริการและนโยบายความเป็นส่วนตัวของเรา"
-    },
-    "oauth": {
-        "google": {
-            "title": "กำลังยืนยันตัวตนด้วย Google",
-            "subtitle": "กรุณารอสักครู่ขณะที่เรากำลังยืนยันบัญชีของคุณ",
-            "processing": "กำลังดำเนินการ...",
-            "redirect": "คุณจะถูกเปลี่ยนเส้นทางในไม่ช้า",
-            "error": {
-                "title": "การยืนยันตัวตนล้มเหลว",
-                "invalidParams": "พารามิเตอร์การยืนยันตัวตนไม่ถูกต้อง",
-                "missingCode": "ไม่พบรหัสการอนุญาต",
-                "missingState": "ไม่พบพารามิเตอร์ state",
-                "missingRedirect": "ไม่พบปลายทางการเปลี่ยนเส้นทาง",
-                "verificationFailed": "ไม่สามารถยืนยันบัญชี Google ของคุณได้",
-                "description": "เราไม่สามารถยืนยันตัวตนด้วย Google ได้ นี่อาจเกิดจาก:",
-                "verificationDescription": "กระบวนการยืนยันตัวตนเริ่มต้นแล้ว แต่เราไม่สามารถยืนยันบัญชีของคุณได้ นี่อาจเกิดจาก:",
-                "missingRedirectDescription": "เราไม่สามารถระบุว่าควรเปลี่ยนเส้นทางคุณไปที่ไหนหลังจากการยืนยันตัวตน นี่อาจเกิดจาก:",
-                "missingAccess": "ลิงก์การอนุญาตหมดอายุแล้ว",
-                "unauthenticated": "การยืนยันตัวตนถูกยกเลิก",
-                "expired": "ลิงก์การอนุญาตหมดอายุแล้ว",
-                "internal": "เซิร์ฟเวอร์ของเราพบข้อผิดพลาด",
-                "reasons": {
-                    "missingAccess": "ลิงก์การอนุญาตหมดอายุแล้ว",
-                    "unauthenticated": "การยืนยันตัวตนถูกยกเลิก",
-                    "expired": "ลิงก์การอนุญาตหมดอายุแล้ว",
-                    "internal": "เซิร์ฟเวอร์ของเราพบข้อผิดพลาด"
-                },
-                "tryAgain": "ลองเข้าสู่ระบบอีกครั้ง",
-                "backToSignUp": "กลับไปหน้าสมัครสมาชิก"
-            }
-        }
-    },
-    "home": {
-        "hero": {
-            "title": "ระบบจัดการกิจกรรมแบบกระจายศูนย์",
-            "subtitle": "ตั๋ว NFT, ประกาศนียบัตรดิจิทัล และการยืนยันตัวตนทางวิชาการบนบล็อกเชน",
-            "cta": "เริ่มต้นใช้งาน",
-            "learnMore": "เรียนรู้เพิ่มเติม"
+  "common": {
+    "appName": "DECM",
+    "welcome": "ยินดีต้อนรับ",
+    "loading": "กำลังโหลด...",
+    "searching": "กำลังค้นหา...",
+    "error": "ข้อผิดพลาด",
+    "success": "สำเร็จ",
+    "cancel": "ยกเลิก",
+    "confirm": "ยืนยัน",
+    "save": "บันทึก",
+    "delete": "ลบ",
+    "edit": "แก้ไข",
+    "close": "ปิด",
+    "back": "กลับ",
+    "next": "ถัดไป",
+    "submit": "ส่ง",
+    "search": "ค้นหา",
+    "filter": "กรอง",
+    "sort": "เรียง",
+    "language": "ภาษา",
+    "selectDate": "เลือกวันที่",
+    "clickToUpload": "คลิกเพื่ออัพโหลด",
+    "change": "เปลี่ยน",
+    "remove": "ลบ",
+    "characters": "ตัวอักษร",
+    "yes": "ใช่",
+    "no": "ไม่ใช่",
+    "required": "จำเป็น",
+    "optional": "ไม่บังคับ",
+    "notRequired": "ไม่ต้องการ"
+  },
+  "nav": {
+    "home": "หน้าหลัก",
+    "events": "กิจกรรม",
+    "credentials": "ประกาศนียบัตร",
+    "portfolio": "พอร์ตโฟลิโอ",
+    "profile": "โปรไฟล์",
+    "signIn": "เข้าสู่ระบบ",
+    "signUp": "สมัครสมาชิก",
+    "signOut": "ออกจากระบบ"
+  },
+  "auth": {
+    "signIn": "เข้าสู่ระบบ",
+    "signUp": "สมัครสมาชิก",
+    "signOut": "ออกจากระบบ",
+    "walletConnect": "เชื่อมต่อกระเป๋าเงิน",
+    "emailLogin": "เข้าสู่ระบบด้วยอีเมล",
+    "googleLogin": "ดำเนินการต่อด้วย Google",
+    "welcomeBack": "ยินดีต้อนรับกลับ!",
+    "createAccount": "สร้างบัญชีของคุณ",
+    "forgotPassword": "ลืมรหัสผ่าน?",
+    "noAccount": "ยังไม่มีบัญชี?",
+    "hasAccount": "มีบัญชีอยู่แล้ว?",
+    "email": "อีเมล",
+    "password": "รหัสผ่าน",
+    "confirmPassword": "ยืนยันรหัสผ่าน",
+    "rememberMe": "จำฉันไว้"
+  },
+  "signup": {
+    "title": "สมัครสมาชิก",
+    "subtitle": "นำกระเป๋าเงินของคุณมาใช้หรือสมัครด้วยผู้ให้บริการ OAuth ที่เชื่อถือได้",
+    "walletButton": "เชื่อมต่อด้วยกระเป๋าเงิน",
+    "googleButton": "ดำเนินการต่อด้วย Google",
+    "divider": "หรือ",
+    "terms": "การสมัครสมาชิก คุณยอมรับข้อกำหนดการให้บริการและนโยบายความเป็นส่วนตัวของเรา"
+  },
+  "oauth": {
+    "google": {
+      "title": "กำลังยืนยันตัวตนด้วย Google",
+      "subtitle": "กรุณารอสักครู่ขณะที่เรากำลังยืนยันบัญชีของคุณ",
+      "processing": "กำลังดำเนินการ...",
+      "redirect": "คุณจะถูกเปลี่ยนเส้นทางในไม่ช้า",
+      "error": {
+        "title": "การยืนยันตัวตนล้มเหลว",
+        "invalidParams": "พารามิเตอร์การยืนยันตัวตนไม่ถูกต้อง",
+        "missingCode": "ไม่พบรหัสการอนุญาต",
+        "missingState": "ไม่พบพารามิเตอร์ state",
+        "missingRedirect": "ไม่พบปลายทางการเปลี่ยนเส้นทาง",
+        "verificationFailed": "ไม่สามารถยืนยันบัญชี Google ของคุณได้",
+        "description": "เราไม่สามารถยืนยันตัวตนด้วย Google ได้ นี่อาจเกิดจาก:",
+        "verificationDescription": "กระบวนการยืนยันตัวตนเริ่มต้นแล้ว แต่เราไม่สามารถยืนยันบัญชีของคุณได้ นี่อาจเกิดจาก:",
+        "missingRedirectDescription": "เราไม่สามารถระบุว่าควรเปลี่ยนเส้นทางคุณไปที่ไหนหลังจากการยืนยันตัวตน นี่อาจเกิดจาก:",
+        "missingAccess": "ลิงก์การอนุญาตหมดอายุแล้ว",
+        "unauthenticated": "การยืนยันตัวตนถูกยกเลิก",
+        "expired": "ลิงก์การอนุญาตหมดอายุแล้ว",
+        "internal": "เซิร์ฟเวอร์ของเราพบข้อผิดพลาด",
+        "reasons": {
+          "missingAccess": "ลิงก์การอนุญาตหมดอายุแล้ว",
+          "unauthenticated": "การยืนยันตัวตนถูกยกเลิก",
+          "expired": "ลิงก์การอนุญาตหมดอายุแล้ว",
+          "internal": "เซิร์ฟเวอร์ของเราพบข้อผิดพลาด"
         },
-        "features": {
-            "title": "ฟีเจอร์แพลตฟอร์ม",
-            "events": {
-                "title": "การจัดการกิจกรรม",
-                "description": "สร้างและจัดการกิจกรรมด้วยระบบตั๋ว NFT"
-            },
-            "credentials": {
-                "title": "ประกาศนียบัตรดิจิทัล",
-                "description": "ออกและตรวจสอบใบรับรองบนบล็อกเชน"
-            },
-            "identity": {
-                "title": "ตัวตนทางวิชาการ",
-                "description": "ยืนยันครั้งเดียว ใช้ได้ทุกที่ด้วย LDAP"
-            },
-            "portfolio": {
-                "title": "พอร์ตโฟลิโอ",
-                "description": "แสดงความสำเร็จและประกาศนียบัตรของคุณ"
-            }
-        }
+        "tryAgain": "ลองเข้าสู่ระบบอีกครั้ง",
+        "backToSignUp": "กลับไปหน้าสมัครสมาชิก"
+      }
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "ระบบจัดการกิจกรรมแบบกระจายศูนย์",
+      "subtitle": "ตั๋ว NFT, ประกาศนียบัตรดิจิทัล และการยืนยันตัวตนทางวิชาการบนบล็อกเชน",
+      "cta": "เริ่มต้นใช้งาน",
+      "learnMore": "เรียนรู้เพิ่มเติม"
     },
-    "landing": {
-        "hero": {
-            "title": "ปฏิวัติการออกใบรับรอง",
-            "subtitle": "ใช้เทคโนโลยีบล็อกเชนสำหรับโซลูชันใบรับรอง",
-            "ctaButton": "เริ่มสร้างพอร์ตโฟลิโอของคุณ",
-            "hasAccount": "ฉันมีบัญชีที่ลงทะเบียนแล้ว",
-            "scrollIndicator": "เลื่อนเพื่อสำรวจ"
-        },
-        "about": {
-            "title": "Themis",
-            "description": "แพลตฟอร์มแบบกระจายศูนย์สำหรับการจัดการกิจกรรม การออกใบรับรองดิจิทัล และการยืนยันตัวตนทางวิชาการโดยใช้เทคโนโลยี Web 3.0 และบล็อกเชน"
-        },
-        "features": {
-            "wallet": {
-                "title": "การจัดการกระเป๋าเงินที่ปรับแต่งได้",
-                "description": "นำกระเป๋าเงินของคุณมาใช้หรือให้เราจัดการ private key ของบัญชีคุณ"
-            },
-            "verification": {
-                "title": "ข้อมูลทุกอย่างตรวจสอบได้",
-                "description": "บันทึก ใบรับรอง และกิจกรรมทุกชิ้นเป็นสาธารณะบนบล็อกเชน ให้ความโปร่งใสอย่างเต็มที่พร้อมรักษาความเป็นส่วนตัวของผู้ใช้"
-            },
-            "download": {
-                "title": "ดาวน์โหลดใบรับรองเป็นรูปภาพ",
-                "description": "ใบรับรองสามารถส่งออกเป็นรูปภาพได้ และทุกรูปภาพที่ส่งออกสามารถตรวจสอบความถูกต้องได้"
-            }
-        },
-        "getStarted": {
-            "title": "เริ่มต้นใช้งาน",
-            "mobile": {
-                "verificationPortal": "พอร์ทัลตรวจสอบใบรับรอง",
-                "myCertificate": "ใบรับรองของฉัน",
-                "viewServices": "ดูบริการทั้งหมด"
-            },
-            "public": {
-                "title": "สาธารณะ",
-                "event": "กิจกรรม",
-                "verifyCertificates": "ตรวจสอบใบรับรอง"
-            },
-            "students": {
-                "title": "นักศึกษา",
-                "signIn": "เข้าสู่ระบบ",
-                "signUp": "สมัครสมาชิก",
-                "certificateManagement": "การจัดการใบรับรอง",
-                "myEvents": "กิจกรรมของฉัน",
-                "inbox": "กล่องข้อความ",
-                "identities": "ตัวตน"
-            },
-            "organizer": {
-                "title": "ผู้จัดงาน",
-                "register": "ลงทะเบียนกับเรา",
-                "signIn": "เข้าสู่ระบบ",
-                "eventManagement": "การจัดการกิจกรรม"
-            },
-            "issuer": {
-                "title": "ผู้ออกใบรับรอง",
-                "signInIAM": "เข้าสู่ระบบด้วย IAM",
-                "register": "ลงทะเบียนกับเรา"
-            },
-            "developer": {
-                "title": "นักพัฒนา",
-                "manageIntegration": "จัดการระบบอัตโนมัติและการเชื่อมต่อ",
-                "apiDocuments": "เอกสาร API",
-                "readDocs": "อ่านเอกสาร"
-            }
-        }
-    },
-    "profile": {
-        "title": "โปรไฟล์",
-        "editProfile": "แก้ไขโปรไฟล์",
-        "personalInfo": "ข้อมูลส่วนตัว",
-        "wallet": "ที่อยู่กระเป๋าเงิน",
-        "email": "อีเมล",
-        "name": "ชื่อ",
-        "bio": "ประวัติย่อ",
-        "verifiedIdentity": "ตัวตนที่ยืนยันแล้ว",
-        "academicVerification": "การยืนยันทางวิชาการ",
-        "verifyNow": "ยืนยันตอนนี้"
-    },
-    "events": {
-        "title": "กิจกรรม",
-        "createEvent": "สร้างกิจกรรม",
-        "myEvents": "กิจกรรมของฉัน",
-        "upcomingEvents": "กิจกรรมที่กำลังจะมา",
-        "pastEvents": "กิจกรรมที่ผ่านมา",
-        "eventDetails": "รายละเอียดกิจกรรม",
-        "tickets": "ตั๋ว",
-        "participants": "ผู้เข้าร่วม",
-        "date": "วันที่",
-        "location": "สถานที่",
-        "category": "หมวดหมู่",
-        "register": "ลงทะเบียน",
-        "registered": "ลงทะเบียนแล้ว",
-        "form": {
-            "name": "ชื่อกิจกรรม",
-            "namePlaceholder": "กรอกชื่อกิจกรรม",
-            "shortDescription": "คำอธิบายสั้น",
-            "shortDescriptionPlaceholder": "กรอกคำอธิบายสั้นๆ (สูงสุด 255 ตัวอักษร)",
-            "description": "รายละเอียด",
-            "descriptionPlaceholder": "กรอกรายละเอียดกิจกรรม (ไม่บังคับ)",
-            "eventBanner": "แบนเนอร์กิจกรรม",
-            "eventBannerPlaceholder": "คลิกเพื่ออัพโหลดรูปแบนเนอร์",
-            "eventBannerChange": "เปลี่ยนรูปภาพ",
-            "eventBannerRemove": "ลบรูปภาพ",
-            "eventIcon": "ไอคอนกิจกรรม",
-            "eventIconPlaceholder": "คลิกเพื่ออัพโหลดรูปไอคอน",
-            "eventIconChange": "เปลี่ยนไอคอน",
-            "eventIconRemove": "ลบไอคอน",
-            "startDate": "วันที่เริ่มต้น",
-            "startDatePlaceholder": "เลือกวันที่เริ่มต้น",
-            "endDate": "วันที่สิ้นสุด",
-            "endDatePlaceholder": "เลือกวันที่สิ้นสุด",
-            "seatsCount": "จำนวนที่นั่ง",
-            "seatsCountPlaceholder": "กรอกจำนวนที่นั่งที่มี",
-            "contactNumber": "เบอร์ติดต่อ",
-            "contactNumberPlaceholder": "กรอกเบอร์โทรศัพท์ติดต่อ",
-            "contactAddress": "ที่อยู่ติดต่อ",
-            "contactAddressPlaceholder": "กรอกที่อยู่ติดต่อ",
-            "location": "สถานที่จัดงาน",
-            "locationPlaceholder": "กรอกชื่อสถานที่หรือที่อยู่",
-            "googleMapQuery": "ค้นหา Google Maps",
-            "googleMapQueryPlaceholder": "กรอกสถานที่สำหรับ Google Maps (เช่น Central World Bangkok)",
-            "googleMapPlaceholder": "แผนที่จะแสดงเมื่อคุณกรอกสถานที่",
-            "stepEventInfo": "ข้อมูลกิจกรรม",
-            "stepVenueInfo": "ข้อมูลสถานที่",
-            "next": "ถัดไป",
-            "previous": "ก่อนหน้า",
-            "submitCreate": "สร้างกิจกรรม",
-            "submitUpdate": "อัพเดทกิจกรรม"
-        },
-        "validation": {
-            "nameRequired": "กรุณากรอกชื่อกิจกรรม",
-            "nameMinLength": "ชื่อกิจกรรมต้องมีอย่างน้อย 3 ตัวอักษร",
-            "shortDescriptionRequired": "กรุณากรอกคำอธิบายสั้น",
-            "shortDescriptionMaxLength": "คำอธิบายสั้นต้องไม่เกิน 255 ตัวอักษร",
-            "eventBannerRequired": "กรุณาเลือกรูปภาพแบนเนอร์",
-            "eventBannerSize": "ขนาดรูปภาพต้องไม่เกิน 5MB",
-            "eventBannerType": "รูปภาพต้องเป็นไฟล์ JPEG, PNG หรือ WebP",
-            "eventIconRequired": "กรุณาเลือกรูปภาพไอคอน",
-            "eventIconSize": "ขนาดรูปภาพต้องไม่เกิน 5MB",
-            "eventIconType": "รูปภาพต้องเป็นไฟล์ JPEG, PNG หรือ WebP",
-            "startDateRequired": "กรุณาเลือกวันที่เริ่มต้น",
-            "endDateRequired": "กรุณาเลือกวันที่สิ้นสุด",
-            "endDateAfterStart": "วันที่สิ้นสุดต้องเป็นวันเดียวกันหรือหลังจากวันที่เริ่มต้น",
-            "seatsCountRequired": "กรุณากรอกจำนวนที่นั่ง",
-            "seatsCountMin": "จำนวนที่นั่งต้องมีอย่างน้อย 1 ที่",
-            "seatsCountInteger": "จำนวนที่นั่งต้องเป็นจำนวนเต็ม",
-            "contactNumberRequired": "กรุณากรอกเบอร์ติดต่อ",
-            "contactNumberMinLength": "เบอร์ติดต่อต้องมีอย่างน้อย 10 ตัวอักษร",
-            "contactAddressRequired": "กรุณากรอกที่อยู่ติดต่อ",
-            "contactAddressMinLength": "ที่อยู่ติดต่อต้องมีอย่างน้อย 10 ตัวอักษร",
-            "locationRequired": "กรุณากรอกสถานที่จัดงาน",
-            "locationMinLength": "สถานที่จัดงานต้องมีอย่างน้อย 3 ตัวอักษร",
-            "googleMapQueryRequired": "กรุณากรอกสถานที่สำหรับ Google Maps",
-            "googleMapQueryMinLength": "สถานที่สำหรับ Google Maps ต้องมีอย่างน้อย 3 ตัวอักษร"
-        },
-        "settings": {
-            "eventType": "ประเภทกิจกรรม",
-            "bookingRequired": "ต้องขอเข้าร่วม",
-            "tokenTransferable": "โอน Token ได้",
-            "participantSettings": "ตั้งค่าผู้เข้าร่วม"
-        },
-        "participants": {
-            "requirementsTitle": "ข้อมูลที่ต้องการจากผู้เข้าร่วม",
-            "required": "จำเป็น",
-            "fields": {
-                "firstName": "ชื่อจริง",
-                "lastName": "นามสกุล",
-                "email": "อีเมล",
-                "bio": "ประวัติ",
-                "phoneNumber": "เบอร์โทรศัพท์",
-                "address": "ที่อยู่",
-                "academicInstitution": "สถาบันการศึกษา",
-                "academicEmail": "อีเมลสถาบัน"
-            }
-        }
-    },
-    "participantSettings": {
-        "pageTitle": "ตั้งค่าผู้เข้าร่วม",
-        "pageDescription": "กำหนดค่าข้อกำหนดการลงทะเบียนและฟิลด์ข้อมูลผู้เข้าร่วมสำหรับกิจกรรมของคุณ",
-        "registrationSettings": "การตั้งค่าการลงทะเบียน",
-        "registrationSettingsDescription": "กำหนดค่าวิธีการที่ผู้เข้าร่วมสามารถลงทะเบียนสำหรับกิจกรรมของคุณ",
-        "participantRequirements": "ข้อกำหนดผู้เข้าร่วม",
-        "participantRequirementsDescription": "ระบุฟิลด์ข้อมูลที่ผู้เข้าร่วมต้องให้ในระหว่างการลงทะเบียน",
-        "basicInformation": "ข้อมูลพื้นฐาน",
-        "additionalInformation": "ข้อมูลเพิ่มเติม",
-        "academicInformation": "ข้อมูลทางวิชาการ",
-        "eventType": "ประเภทกิจกรรม",
-        "eventTypePublic": "สาธารณะ",
-        "eventTypePrivate": "ส่วนตัว",
-        "eventTypeDescription": "กิจกรรมสาธารณะจะมองเห็นได้สำหรับทุกคน กิจกรรมส่วนตัวต้องได้รับการอนุมัติหรือคำเชิญ",
-        "bookingRequired": "ต้องการการอนุมัติการจอง",
-        "bookingRequiredDescription": "ผู้เข้าร่วมต้องรอการอนุมัติก่อนที่การลงทะเบียนจะได้รับการยืนยัน",
-        "ticketTransferable": "อนุญาตให้โอนตั๋ว",
-        "ticketTransferableDescription": "อนุญาตให้ผู้เข้าร่วมโอนตั๋วของพวกเขาให้ผู้อื่น",
-        "fieldRequirement": {
-            "notRequired": "ไม่ต้องการ",
-            "optional": "ไม่บังคับ",
-            "required": "จำเป็น"
-        },
-        "fields": {
-            "firstName": "ชื่อจริง",
-            "lastName": "นามสกุล",
-            "email": "อีเมล",
-            "bio": "ประวัติย่อ",
-            "phoneNumber": "หมายเลขโทรศัพท์",
-            "address": "ที่อยู่",
-            "academicInstitution": "สถาบันการศึกษา",
-            "academicEmail": "อีเมลสถาบัน"
-        },
-        "requireRegistrationPassword": "ต้องการรหัสรหัสผ่าน",
-        "requireRegistrationPasswordDescription": "กำหนดให้ผู้เข้าร่วมตั้งรหัสผ่านระหว่างการลงทะเบียน",
-        "registrationPassword": "รหัสผ่าน",
-        "registrationPasswordPlaceholder": "กรอกรหัสผ่าน",
-        "registrationPasswordDescription": "รหัสผ่านต้องมีความอย่างน้อย 8 ตัวอักษร",
-        "saveSettings": "บันทึกการตั้งค่า",
-        "saveSuccess": "บันทึกการตั้งค่าผู้เข้าร่วมเรียบร้อยแล้ว",
-        "saveError": "ไม่สามารถบันทึกการตั้งค่าผู้เข้าร่วม กรุณาลองอีกครั้ง",
-        "tabs": {
-            "settings": "ตั้งค่า",
-            "preview": "ตัวอย่าง"
-        },
-        "preview": {
-            "title": "ตัวอย่างฟอร์มลงทะเบียน",
-            "description": "นี่คือวิธีที่ฟอร์มลงทะเบียนจะปรากฏต่อผู้เข้าร่วม",
-            "enter": "กรอก",
-            "optional": "ไม่บังคับ",
-            "bookingRequired": "ต้องการการอนุมัติ",
-            "transferable": "โอนได้",
-            "register": "ลงทะเบียนกิจกรรม",
-            "note": "นี่เป็นเพียงตัวอย่าง ฟอร์มถูกปิดใช้งาน",
-            "comingSoon": "ฟีเจอร์แสดงตัวอย่างเร็วม"
-        }
-    },
-    "certificateSettings": {
-        "pageTitle": "ตั้งค่าใบประกาศนียบัตร",
-        "pageDescription": "กำหนดค่าผู้ออกใบประกาศนียบัตรและออกแบบเทมเพลตใบประกาศนียบัตร",
-        "step1": {
-            "title": "ขั้นตอนที่ 1: ตั้งค่าผู้ออกใบประกาศนียบัตร",
-            "description": "ค้นหาและเลือกผู้ออกใบประกาศนียบัตรสำหรับกิจกรรมนี้",
-            "searchLabel": "ค้นหาผู้ออกใบประกาศนียบัตร",
-            "searchPlaceholder": "ป้อนชื่อ อีเมล หรือองค์กร...",
-            "searchButton": "ค้นหา",
-            "selectedIssuers": "ผู้ออกที่เลือก",
-            "table": {
-                "name": "ชื่อ",
-                "email": "อีเมล",
-                "organization": "องค์กร",
-                "actions": "การดำเนินการ"
-            },
-            "alert": {
-                "title": "ประกาศสำคัญ",
-                "description": "การตั้งค่าผู้ออกใบประกาศนียบัตรสามารถกำหนดค่าได้เพียงครั้งเดียว คุณสามารถเปลี่ยนผู้ออกหลังจากยืนยันการตั้งค่าได้ แต่ควรดำเนินการอย่างระมัดระวัง"
-            },
-            "modal": {
-                "title": "เลือกผู้ออกใบประกาศนียบัตร",
-                "description": "เลือกผู้ออกหนึ่งรายขึ้นไปจากผลการค้นหา",
-                "selected": "ที่เลือก",
-                "noResults": "ไม่พบผู้ออกใบประกาศนียบัตร",
-                "chooseButton": "เลือก"
-            }
-        },
-        "step2": {
-            "title": "ขั้นตอนที่ 2: ตั้งค่าเทมเพลตใบประกาศนียบัตร",
-            "description": "อัปโหลดเทมเพลตใบประกาศนียบัตร SVG พร้อมคำสำคัญแบบไดนามิก",
-            "instructions": {
-                "title": "วิธีสร้างเทมเพลตใบประกาศนียบัตรใน Figma",
-                "step1": {
-                    "title": "1. ออกแบบใบประกาศนียบัตร",
-                    "description": "สร้างการออกแบบใบประกาศนียบัตรใน Figma พร้อมองค์ประกอบภาพ กรอบ และแบรนด์ที่คุณต้องการ"
-                },
-                "step2": {
-                    "title": "2. เพิ่มตัวแทนข้อความแบบไดนามิก",
-                    "description": "ใช้เลเยอร์ข้อความพร้อมคำสำคัญพิเศษ (เช่น {{ eventName }}, {{ name }}) ที่จะถูกแทนที่ด้วยข้อมูลจริง"
-                },
-                "step3": {
-                    "title": "3. ส่งออกเป็น SVG",
-                    "description": "ส่งออกการออกแบบเป็นไฟล์ SVG ตรวจสอบให้แน่ใจว่ามีองค์ประกอบข้อความทั้งหมดและคงข้อความไว้เป็นแบบแก้ไขได้"
-                }
-            },
-            "keywords": {
-                "title": "คำสำคัญที่ใช้ได้",
-                "description": "ใช้คำสำคัญพิเศษเหล่านี้ในเทมเพลต SVG ของคุณ จะถูกแทนที่ด้วยข้อมูลจริงโดยอัตโนมัติ:"
-            },
-            "upload": {
-                "label": "เทมเพลตใบประกาศนียบัตร (SVG)",
-                "button": "เลือกไฟล์ SVG",
-                "hint": "รองรับเฉพาะไฟล์ SVG ขนาดไฟล์สูงสุด: 5MB"
-            },
-            "preview": {
-                "title": "ตัวอย่างเทมเพลต"
-            },
-            "detectedKeywords": {
-                "title": "คำสำคัญที่ตรวจพบในเทมเพลต",
-                "table": {
-                    "keyword": "คำสำคัญ",
-                    "xPosition": "ตำแหน่ง X",
-                    "yPosition": "ตำแหน่ง Y",
-                    "count": "จำนวน"
-                }
-            }
-        },
-        "confirmButton": "ยืนยันการตั้งค่า",
-        "saveSuccess": "บันทึกการตั้งค่าใบประกาศนียบัตรเรียบร้อยแล้ว",
-        "saveError": "ไม่สามารถบันทึกการตั้งค่าใบประกาศนียบัตร กรุณาลองอีกครั้ง"
-    },
-    "credentials": {
-        "title": "ประกาศนียบัตร",
-        "myCredentials": "ประกาศนียบัตรของฉัน",
-        "issueCredential": "ออกประกาศนียบัตร",
-        "verify": "ตรวจสอบ",
-        "share": "แชร์",
-        "download": "ดาวน์โหลด",
-        "issuer": "ผู้ออก",
-        "issuedDate": "วันที่ออก",
-        "expiryDate": "วันหมดอายุ",
-        "credentialType": "ประเภทประกาศนียบัตร",
-        "qrCode": "คิวอาร์โค้ด"
-    },
-    "portfolio": {
+    "features": {
+      "title": "ฟีเจอร์แพลตฟอร์ม",
+      "events": {
+        "title": "การจัดการกิจกรรม",
+        "description": "สร้างและจัดการกิจกรรมด้วยระบบตั๋ว NFT"
+      },
+      "credentials": {
+        "title": "ประกาศนียบัตรดิจิทัล",
+        "description": "ออกและตรวจสอบใบรับรองบนบล็อกเชน"
+      },
+      "identity": {
+        "title": "ตัวตนทางวิชาการ",
+        "description": "ยืนยันครั้งเดียว ใช้ได้ทุกที่ด้วย LDAP"
+      },
+      "portfolio": {
         "title": "พอร์ตโฟลิโอ",
-        "myPortfolio": "พอร์ตโฟลิโอของฉัน",
-        "achievements": "ความสำเร็จ",
-        "skills": "ทักษะ",
-        "projects": "โครงการ",
-        "addItem": "เพิ่มรายการ",
-        "viewPublic": "ดูโปรไฟล์สาธารณะ",
-        "sharePortfolio": "แชร์พอร์ตโฟลิโอ"
+        "description": "แสดงความสำเร็จและประกาศนียบัตรของคุณ"
+      }
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "ปฏิวัติการออกใบรับรอง",
+      "subtitle": "ใช้เทคโนโลยีบล็อกเชนสำหรับโซลูชันใบรับรอง",
+      "ctaButton": "เริ่มสร้างพอร์ตโฟลิโอของคุณ",
+      "hasAccount": "ฉันมีบัญชีที่ลงทะเบียนแล้ว",
+      "scrollIndicator": "เลื่อนเพื่อสำรวจ"
+    },
+    "about": {
+      "title": "Themis",
+      "description": "แพลตฟอร์มแบบกระจายศูนย์สำหรับการจัดการกิจกรรม การออกใบรับรองดิจิทัล และการยืนยันตัวตนทางวิชาการโดยใช้เทคโนโลยี Web 3.0 และบล็อกเชน"
+    },
+    "features": {
+      "wallet": {
+        "title": "การจัดการกระเป๋าเงินที่ปรับแต่งได้",
+        "description": "นำกระเป๋าเงินของคุณมาใช้หรือให้เราจัดการ private key ของบัญชีคุณ"
+      },
+      "verification": {
+        "title": "ข้อมูลทุกอย่างตรวจสอบได้",
+        "description": "บันทึก ใบรับรอง และกิจกรรมทุกชิ้นเป็นสาธารณะบนบล็อกเชน ให้ความโปร่งใสอย่างเต็มที่พร้อมรักษาความเป็นส่วนตัวของผู้ใช้"
+      },
+      "download": {
+        "title": "ดาวน์โหลดใบรับรองเป็นรูปภาพ",
+        "description": "ใบรับรองสามารถส่งออกเป็นรูปภาพได้ และทุกรูปภาพที่ส่งออกสามารถตรวจสอบความถูกต้องได้"
+      }
+    },
+    "getStarted": {
+      "title": "เริ่มต้นใช้งาน",
+      "mobile": {
+        "verificationPortal": "พอร์ทัลตรวจสอบใบรับรอง",
+        "myCertificate": "ใบรับรองของฉัน",
+        "viewServices": "ดูบริการทั้งหมด"
+      },
+      "public": {
+        "title": "สาธารณะ",
+        "event": "กิจกรรม",
+        "verifyCertificates": "ตรวจสอบใบรับรอง"
+      },
+      "students": {
+        "title": "นักศึกษา",
+        "signIn": "เข้าสู่ระบบ",
+        "signUp": "สมัครสมาชิก",
+        "certificateManagement": "การจัดการใบรับรอง",
+        "myEvents": "กิจกรรมของฉัน",
+        "inbox": "กล่องข้อความ",
+        "identities": "ตัวตน"
+      },
+      "organizer": {
+        "title": "ผู้จัดงาน",
+        "register": "ลงทะเบียนกับเรา",
+        "signIn": "เข้าสู่ระบบ",
+        "eventManagement": "การจัดการกิจกรรม"
+      },
+      "issuer": {
+        "title": "ผู้ออกใบรับรอง",
+        "signInIAM": "เข้าสู่ระบบด้วย IAM",
+        "register": "ลงทะเบียนกับเรา"
+      },
+      "developer": {
+        "title": "นักพัฒนา",
+        "manageIntegration": "จัดการระบบอัตโนมัติและการเชื่อมต่อ",
+        "apiDocuments": "เอกสาร API",
+        "readDocs": "อ่านเอกสาร"
+      }
+    }
+  },
+  "profile": {
+    "title": "โปรไฟล์",
+    "editProfile": "แก้ไขโปรไฟล์",
+    "personalInfo": "ข้อมูลส่วนตัว",
+    "wallet": "ที่อยู่กระเป๋าเงิน",
+    "email": "อีเมล",
+    "name": "ชื่อ",
+    "bio": "ประวัติย่อ",
+    "verifiedIdentity": "ตัวตนที่ยืนยันแล้ว",
+    "academicVerification": "การยืนยันทางวิชาการ",
+    "verifyNow": "ยืนยันตอนนี้"
+  },
+  "events": {
+    "title": "กิจกรรม",
+    "createEvent": "สร้างกิจกรรม",
+    "myEvents": "กิจกรรมของฉัน",
+    "upcomingEvents": "กิจกรรมที่กำลังจะมา",
+    "pastEvents": "กิจกรรมที่ผ่านมา",
+    "eventDetails": "รายละเอียดกิจกรรม",
+    "tickets": "ตั๋ว",
+    "participants": {
+      "requirementsTitle": "ข้อมูลที่ต้องการจากผู้เข้าร่วม",
+      "required": "จำเป็น",
+      "fields": {
+        "firstName": "ชื่อจริง",
+        "lastName": "นามสกุล",
+        "email": "อีเมล",
+        "bio": "ประวัติ",
+        "phoneNumber": "เบอร์โทรศัพท์",
+        "address": "ที่อยู่",
+        "academicInstitution": "สถาบันการศึกษา",
+        "academicEmail": "อีเมลสถาบัน"
+      }
+    },
+    "date": "วันที่",
+    "location": "สถานที่",
+    "category": "หมวดหมู่",
+    "register": "ลงทะเบียน",
+    "registered": "ลงทะเบียนแล้ว",
+    "form": {
+      "name": "ชื่อกิจกรรม",
+      "namePlaceholder": "กรอกชื่อกิจกรรม",
+      "shortDescription": "คำอธิบายสั้น",
+      "shortDescriptionPlaceholder": "กรอกคำอธิบายสั้นๆ (สูงสุด 255 ตัวอักษร)",
+      "description": "รายละเอียด",
+      "descriptionPlaceholder": "กรอกรายละเอียดกิจกรรม (ไม่บังคับ)",
+      "eventBanner": "แบนเนอร์กิจกรรม",
+      "eventBannerPlaceholder": "คลิกเพื่ออัพโหลดรูปแบนเนอร์",
+      "eventBannerChange": "เปลี่ยนรูปภาพ",
+      "eventBannerRemove": "ลบรูปภาพ",
+      "eventIcon": "ไอคอนกิจกรรม",
+      "eventIconPlaceholder": "คลิกเพื่ออัพโหลดรูปไอคอน",
+      "eventIconChange": "เปลี่ยนไอคอน",
+      "eventIconRemove": "ลบไอคอน",
+      "startDate": "วันที่เริ่มต้น",
+      "startDatePlaceholder": "เลือกวันที่เริ่มต้น",
+      "endDate": "วันที่สิ้นสุด",
+      "endDatePlaceholder": "เลือกวันที่สิ้นสุด",
+      "seatsCount": "จำนวนที่นั่ง",
+      "seatsCountPlaceholder": "กรอกจำนวนที่นั่งที่มี",
+      "contactNumber": "เบอร์ติดต่อ",
+      "contactNumberPlaceholder": "กรอกเบอร์โทรศัพท์ติดต่อ",
+      "contactAddress": "ที่อยู่ติดต่อ",
+      "contactAddressPlaceholder": "กรอกที่อยู่ติดต่อ",
+      "location": "สถานที่จัดงาน",
+      "locationPlaceholder": "กรอกชื่อสถานที่หรือที่อยู่",
+      "googleMapQuery": "ค้นหา Google Maps",
+      "googleMapQueryPlaceholder": "กรอกสถานที่สำหรับ Google Maps (เช่น Central World Bangkok)",
+      "googleMapPlaceholder": "แผนที่จะแสดงเมื่อคุณกรอกสถานที่",
+      "stepEventInfo": "ข้อมูลกิจกรรม",
+      "stepVenueInfo": "ข้อมูลสถานที่",
+      "next": "ถัดไป",
+      "previous": "ก่อนหน้า",
+      "submitCreate": "สร้างกิจกรรม",
+      "submitUpdate": "อัพเดทกิจกรรม",
+      "deleteEvent": "ลบกิจกรรม",
+      "deleteEventMessage": "คุณแน่ใจลบกิจกรรมนี้หรือไม่? การกระทำนี้ไม่สามารถถอย้อนคืน",
+      "cancel": "ยกเลิก",
+      "delete": "ลบ"
     },
     "validation": {
-        "required": "ฟิลด์นี้จำเป็นต้องกรอก",
-        "invalidEmail": "อีเมลไม่ถูกต้อง",
-        "passwordTooShort": "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร",
-        "passwordMin6": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
-        "passwordMax32": "รหัสผ่านต้องมีอย่างมาก 32 ตัวอักษร",
-        "passwordMismatch": "รหัสผ่านไม่ตรงกัน",
-        "invalidWallet": "ที่อยู่กระเป๋าเงินไม่ถูกต้อง",
-        "accessTokenAndSignedTokenRequired": "Access token หรือ signed token จำเป็น"
+      "nameRequired": "กรุณากรอกชื่อกิจกรรม",
+      "nameMinLength": "ชื่อกิจกรรมต้องมีอย่างน้อย 3 ตัวอักษร",
+      "shortDescriptionRequired": "กรุณากรอกคำอธิบายสั้น",
+      "shortDescriptionMaxLength": "คำอธิบายสั้นต้องไม่เกิน 255 ตัวอักษร",
+      "eventBannerRequired": "กรุณาเลือกรูปภาพแบนเนอร์",
+      "eventBannerSize": "ขนาดรูปภาพต้องไม่เกิน 5MB",
+      "eventBannerType": "รูปภาพต้องเป็นไฟล์ JPEG, PNG หรือ WebP",
+      "eventIconRequired": "กรุณาเลือกรูปภาพไอคอน",
+      "eventIconSize": "ขนาดรูปภาพต้องไม่เกิน 5MB",
+      "eventIconType": "รูปภาพต้องเป็นไฟล์ JPEG, PNG หรือ WebP",
+      "startDateRequired": "กรุณาเลือกวันที่เริ่มต้น",
+      "endDateRequired": "กรุณาเลือกวันที่สิ้นสุด",
+      "endDateAfterStart": "วันที่สิ้นสุดต้องเป็นวันเดียวกันหรือหลังจากวันที่เริ่มต้น",
+      "seatsCountRequired": "กรุณากรอกจำนวนที่นั่ง",
+      "seatsCountMin": "จำนวนที่นั่งต้องมีอย่างน้อย 1 ที่",
+      "seatsCountInteger": "จำนวนที่นั่งต้องเป็นจำนวนเต็ม",
+      "contactNumberRequired": "กรุณากรอกเบอร์ติดต่อ",
+      "contactNumberMinLength": "เบอร์ติดต่อต้องมีอย่างน้อย 10 ตัวอักษร",
+      "contactAddressRequired": "กรุณากรอกที่อยู่ติดต่อ",
+      "contactAddressMinLength": "ที่อยู่ติดต่อต้องมีอย่างน้อย 10 ตัวอักษร",
+      "locationRequired": "กรุณากรอกสถานที่จัดงาน",
+      "locationMinLength": "สถานที่จัดงานต้องมีอย่างน้อย 3 ตัวอักษร",
+      "googleMapQueryRequired": "กรุณากรอกสถานที่สำหรับ Google Maps",
+      "googleMapQueryMinLength": "สถานที่สำหรับ Google Maps ต้องมีอย่างน้อย 3 ตัวอักษร"
     },
-    "errors": {
-        "generic": "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",
-        "network": "ข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อของคุณ",
-        "unauthorized": "คุณไม่ได้รับอนุญาตให้ทำการกระทำนี้",
-        "notFound": "ไม่พบทรัพยากรที่ร้องขอ",
-        "serverError": "ข้อผิดพลาดเซิร์ฟเวอร์ กรุณาลองอีกครั้งในภายหลัง"
-    },
-    "notFound": {
-        "title": "404 - ไม่พบหน้าที่ต้องการ",
-        "heading": "อ๊ะ! ไม่พบหน้านี้",
-        "description": "หน้าที่คุณกำลังมองหาไม่มีอยู่หรือถูกย้ายไปแล้ว",
-        "backHome": "กลับสู่หน้าหลัก",
-        "suggestions": {
-            "title": "ลองหน้าเหล่านี้แทน:",
-            "home": "ไปหน้าหลัก",
-            "events": "เรียกดูกิจกรรม",
-            "credentials": "ดูประกาศนียบัตร",
-            "signup": "สมัครสมาชิก"
-        }
-    },
-    "error": {
-        "title": "ข้อผิดพลาด - เกิดข้อผิดพลาดบางอย่าง",
-        "heading": "อ๊ะ! เกิดข้อผิดพลาดบางอย่าง",
-        "description": "เราพบข้อผิดพลาดที่ไม่คาดคิด กรุณาลองอีกครั้งหรือติดต่อฝ่ายสนับสนุนหากปัญหายังคงอยู่",
-        "backHome": "กลับสู่หน้าหลัก",
-        "tryAgain": "ลองอีกครั้ง",
-        "suggestions": {
-            "title": "สิ่งที่คุณสามารถทำได้:",
-            "home": "ไปหน้าหลัก",
-            "refresh": "รีเฟรชหน้า",
-            "support": "ติดต่อฝ่ายสนับสนุน",
-            "signup": "สมัครสมาชิก"
-        }
-    },
-    "onboard": {
-        "title": "การตั้งค่าบัญชี",
-        "subtitle": "กรุณาตั้งค่ารหัส PIN/รหัสผ่าน จะใช้เพื่อเข้ารหัสข้อมูลของคุณ",
-        "pinTitle": "ตั้งค่ารหัส PIN",
-        "passwordTitle": "ตั้งค่ารหัสผ่าน",
-        "preferPassword": "ฉันต้องการใช้รหัสผ่าน",
-        "preferPin": "ฉันต้องการใช้รหัส PIN",
-        "logout": "ออกจากระบบ",
-        "enterPin": "กรอกรหัส PIN 6 หลัก",
-        "confirmPin": "ยืนยันรหัส PIN",
-        "enterPassword": "กรอกรหัสผ่าน",
-        "confirmPassword": "ยืนยันรหัสผ่าน",
-        "pinMismatch": "รหัส PIN ไม่ตรงกัน",
-        "pinTooShort": "รหัส PIN ต้องมี 6 หลัก",
-        "profile": {
-            "title": "โปรไฟล์ (ไม่บังคับ)",
-            "subtitle": "เราใช้ข้อมูลส่วนตัวของคุณเพื่อกรอกรายละเอียดที่จำเป็นสำหรับกิจกรรม/ใบรับรองโดยอัตโนมัติ ข้อมูลของคุณถูกเข้ารหัสเสมอและสามารถแก้ไขและลบได้โดยคุณในทุกเวลา ข้อมูลนี้ไม่สามารถกู้คืนได้ โปรดระมัดระวัง",
-            "firstName": "ชื่อจริง",
-            "lastName": "นามสกุล",
-            "email": "อีเมลติดต่อ",
-            "phoneNumber": "หมายเลขโทรศัพท์",
-            "makePublic": "เผยแพร่ข้อมูลนี้เป็นสาธารณะ"
-        },
-        "confirm": {
-            "title": "โปรดทราบ",
-            "oauth": {
-                "description": {
-                    "part1": "ใบรับรองใช้เทคโนโลยีบล็อกเชนเป็นแหล่งความจริง บัญชีของคุณถูกผูกกับ EVM wallet ของคุณอย่างถาวร",
-                    "part2": "Private key ของคุณถูกเข้ารหัสด้วยรหัส PIN/รหัสผ่านที่คุณกรอก <strong>หากคุณไม่ตั้งค่าวิธีการยืนยันตัวตนสำหรับการกู้คืน เราไม่ทำได้</strong>"
-                },
-                "checkboxes": {
-                    "acceptRisk": "ฉันตกลง",
-                    "acknowledgePasswordLoss": "ฉันรับทราบว่าการสูญเสียรหัส PIN/รหัสผ่านของฉันจะส่งผลให้สูญเสียบัญชีทั้งหมด"
-                }
-            }
-        }
+    "settings": {
+      "eventType": "ประเภทกิจกรรม",
+      "bookingRequired": "ต้องขอเข้าร่วม",
+      "tokenTransferable": "โอน Token ได้",
+      "participantSettings": "ตั้งค่าผู้เข้าร่วม"
     }
+  },
+  "participantSettings": {
+    "pageTitle": "ตั้งค่าผู้เข้าร่วม",
+    "pageDescription": "กำหนดค่าข้อกำหนดการลงทะเบียนและฟิลด์ข้อมูลผู้เข้าร่วมสำหรับกิจกรรมของคุณ",
+    "registrationSettings": "การตั้งค่าการลงทะเบียน",
+    "registrationSettingsDescription": "กำหนดค่าวิธีการที่ผู้เข้าร่วมสามารถลงทะเบียนสำหรับกิจกรรมของคุณ",
+    "participantRequirements": "ข้อกำหนดผู้เข้าร่วม",
+    "participantRequirementsDescription": "ระบุฟิลด์ข้อมูลที่ผู้เข้าร่วมต้องให้ในระหว่างการลงทะเบียน",
+    "basicInformation": "ข้อมูลพื้นฐาน",
+    "additionalInformation": "ข้อมูลเพิ่มเติม",
+    "academicInformation": "ข้อมูลทางวิชาการ",
+    "eventType": "ประเภทกิจกรรม",
+    "eventTypePublic": "สาธารณะ",
+    "eventTypePrivate": "ส่วนตัว",
+    "eventTypeInviteOnly": "เฉพาะผู้ที่ได้รับเชิญ",
+    "eventTypeDescription": "กิจกรรมสาธารณะจะมองเห็นได้สำหรับทุกคน กิจกรรมส่วนตัวต้องได้รับการอนุมัติหรือคำเชิญ กิจกรรมเฉพาะผู้ที่ได้รับเชิญสามารถเข้าร่วมได้เฉพาะผู้ที่ได้รับเชิญเท่านั้น",
+    "bookingRequired": "ต้องการการอนุมัติการจอง",
+    "bookingRequiredDescription": "ผู้เข้าร่วมต้องรอการอนุมัติก่อนที่การลงทะเบียนจะได้รับการยืนยัน",
+    "ticketTransferable": "อนุญาตให้โอนตั๋ว",
+    "ticketTransferableDescription": "อนุญาตให้ผู้เข้าร่วมโอนตั๋วของพวกเขาให้ผู้อื่น",
+    "finalCallRegistrationDate": "วันสุดท้ายของการลงทะเบียน",
+    "finalCallRegistrationDatePlaceholder": "เลือกวันสุดท้ายของการลงทะเบียน",
+    "finalCallRegistrationDateDescription": "หลังจากวันนี้ จะไม่รับการลงทะเบียนเพิ่มเติมสำหรับกิจกรรม",
+    "fieldRequirement": {
+      "notRequired": "ไม่ต้องการ",
+      "optional": "ไม่บังคับ",
+      "required": "จำเป็น"
+    },
+    "fields": {
+      "firstName": "ชื่อจริง",
+      "lastName": "นามสกุล",
+      "email": "อีเมล",
+      "bio": "ประวัติย่อ",
+      "phoneNumber": "หมายเลขโทรศัพท์",
+      "address": "ที่อยู่",
+      "academicInstitution": "สถาบันการศึกษา",
+      "academicEmail": "อีเมลสถาบัน"
+    },
+    "requireRegistrationPassword": "ต้องการรหัสรหัสผ่าน",
+    "requireRegistrationPasswordDescription": "กำหนดให้ผู้เข้าร่วมตั้งรหัสผ่านระหว่างการลงทะเบียน",
+    "registrationPassword": "รหัสผ่าน",
+    "registrationPasswordPlaceholder": "กรอกรหัสผ่าน",
+    "registrationPasswordDescription": "รหัสผ่านต้องมีความอย่างน้อย 8 ตัวอักษร",
+    "saveSettings": "บันทึกการตั้งค่า",
+    "saveSuccess": "บันทึกการตั้งค่าผู้เข้าร่วมเรียบร้อยแล้ว",
+    "saveError": "ไม่สามารถบันทึกการตั้งค่าผู้เข้าร่วม กรุณาลองอีกครั้ง",
+    "tabs": {
+      "settings": "ตั้งค่า",
+      "preview": "ตัวอย่าง"
+    },
+    "preview": {
+      "title": "ตัวอย่างฟอร์มลงทะเบียน",
+      "description": "นี่คือวิธีที่ฟอร์มลงทะเบียนจะปรากฏต่อผู้เข้าร่วม",
+      "enter": "กรอก",
+      "optional": "ไม่บังคับ",
+      "bookingRequired": "ต้องการการอนุมัติ",
+      "transferable": "โอนได้",
+      "register": "ลงทะเบียนกิจกรรม",
+      "note": "นี่เป็นเพียงตัวอย่าง ฟอร์มถูกปิดใช้งาน",
+      "comingSoon": "ฟีเจอร์แสดงตัวอย่างเร็วม"
+    }
+  },
+  "certificateSettings": {
+    "pageTitle": "ตั้งค่าใบประกาศนียบัตร",
+    "pageDescription": "กำหนดค่าผู้ออกใบประกาศนียบัตรและออกแบบเทมเพลตใบประกาศนียบัตร",
+    "step1": {
+      "title": "ขั้นตอนที่ 1: ตั้งค่าผู้ออกใบประกาศนียบัตร",
+      "description": "ค้นหาและเลือกผู้ออกใบประกาศนียบัตรสำหรับกิจกรรมนี้",
+      "searchLabel": "ค้นหาผู้ออกใบประกาศนียบัตร",
+      "searchPlaceholder": "ป้อนชื่อ อีเมล หรือองค์กร...",
+      "searchButton": "ค้นหา",
+      "selectedIssuers": "ผู้ออกที่เลือก",
+      "table": {
+        "name": "ชื่อ",
+        "email": "อีเมล",
+        "organization": "องค์กร",
+        "actions": "การดำเนินการ"
+      },
+      "alert": {
+        "title": "ประกาศสำคัญ",
+        "description": "การตั้งค่าผู้ออกใบประกาศนียบัตรสามารถกำหนดค่าได้เพียงครั้งเดียว คุณสามารถเปลี่ยนผู้ออกหลังจากยืนยันการตั้งค่าได้ แต่ควรดำเนินการอย่างระมัดระวัง"
+      },
+      "modal": {
+        "title": "เลือกผู้ออกใบประกาศนียบัตร",
+        "description": "เลือกผู้ออกหนึ่งรายขึ้นไปจากผลการค้นหา",
+        "selected": "ที่เลือก",
+        "noResults": "ไม่พบผู้ออกใบประกาศนียบัตร",
+        "chooseButton": "เลือก"
+      }
+    },
+    "step2": {
+      "title": "ขั้นตอนที่ 2: ตั้งค่าเทมเพลตใบประกาศนียบัตร",
+      "description": "อัปโหลดเทมเพลตใบประกาศนียบัตร SVG พร้อมคำสำคัญแบบไดนามิก",
+      "instructions": {
+        "title": "วิธีสร้างเทมเพลตใบประกาศนียบัตรใน Figma",
+        "step1": {
+          "title": "1. ออกแบบใบประกาศนียบัตร",
+          "description": "สร้างการออกแบบใบประกาศนียบัตรใน Figma พร้อมองค์ประกอบภาพ กรอบ และแบรนด์ที่คุณต้องการ"
+        },
+        "step2": {
+          "title": "2. เพิ่มตัวแทนข้อความแบบไดนามิก",
+          "description": "ใช้เลเยอร์ข้อความพร้อมคำสำคัญพิเศษ (เช่น {{ eventName }}, {{ name }}) ที่จะถูกแทนที่ด้วยข้อมูลจริง"
+        },
+        "step3": {
+          "title": "3. ส่งออกเป็น SVG",
+          "description": "ส่งออกการออกแบบเป็นไฟล์ SVG ตรวจสอบให้แน่ใจว่ามีองค์ประกอบข้อความทั้งหมดและคงข้อความไว้เป็นแบบแก้ไขได้"
+        }
+      },
+      "keywords": {
+        "title": "คำสำคัญที่ใช้ได้",
+        "description": "ใช้คำสำคัญพิเศษเหล่านี้ในเทมเพลต SVG ของคุณ จะถูกแทนที่ด้วยข้อมูลจริงโดยอัตโนมัติ:"
+      },
+      "upload": {
+        "label": "เทมเพลตใบประกาศนียบัตร (SVG)",
+        "button": "เลือกไฟล์ SVG",
+        "hint": "รองรับเฉพาะไฟล์ SVG ขนาดไฟล์สูงสุด: 5MB"
+      },
+      "preview": {
+        "title": "ตัวอย่างเทมเพลต"
+      },
+      "detectedKeywords": {
+        "title": "คำสำคัญที่ตรวจพบในเทมเพลต",
+        "table": {
+          "keyword": "คำสำคัญ",
+          "xPosition": "ตำแหน่ง X",
+          "yPosition": "ตำแหน่ง Y",
+          "count": "จำนวน"
+        }
+      }
+    },
+    "confirmButton": "ยืนยันการตั้งค่า",
+    "saveSuccess": "บันทึกการตั้งค่าใบประกาศนียบัตรเรียบร้อยแล้ว",
+    "saveError": "ไม่สามารถบันทึกการตั้งค่าใบประกาศนียบัตร กรุณาลองอีกครั้ง"
+  },
+  "credentials": {
+    "title": "ประกาศนียบัตร",
+    "myCredentials": "ประกาศนียบัตรของฉัน",
+    "issueCredential": "ออกประกาศนียบัตร",
+    "verify": "ตรวจสอบ",
+    "share": "แชร์",
+    "download": "ดาวน์โหลด",
+    "issuer": "ผู้ออก",
+    "issuedDate": "วันที่ออก",
+    "expiryDate": "วันหมดอายุ",
+    "credentialType": "ประเภทประกาศนียบัตร",
+    "qrCode": "คิวอาร์โค้ด"
+  },
+  "portfolio": {
+    "title": "พอร์ตโฟลิโอ",
+    "myPortfolio": "พอร์ตโฟลิโอของฉัน",
+    "achievements": "ความสำเร็จ",
+    "skills": "ทักษะ",
+    "projects": "โครงการ",
+    "addItem": "เพิ่มรายการ",
+    "viewPublic": "ดูโปรไฟล์สาธารณะ",
+    "sharePortfolio": "แชร์พอร์ตโฟลิโอ"
+  },
+  "validation": {
+    "required": "ฟิลด์นี้จำเป็นต้องกรอก",
+    "invalidEmail": "อีเมลไม่ถูกต้อง",
+    "passwordTooShort": "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร",
+    "passwordMin6": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
+    "passwordMax32": "รหัสผ่านต้องมีอย่างมาก 32 ตัวอักษร",
+    "passwordMismatch": "รหัสผ่านไม่ตรงกัน",
+    "invalidWallet": "ที่อยู่กระเป๋าเงินไม่ถูกต้อง",
+    "accessTokenAndSignedTokenRequired": "Access token หรือ signed token จำเป็น",
+    "finalCallRegistrationDateFuture": "วันสุดท้ายของการลงทะเบียนต้องเป็นวันในอนาคต"
+  },
+  "errors": {
+    "generic": "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",
+    "network": "ข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อของคุณ",
+    "unauthorized": "คุณไม่ได้รับอนุญาตให้ทำการกระทำนี้",
+    "notFound": "ไม่พบทรัพยากรที่ร้องขอ",
+    "serverError": "ข้อผิดพลาดเซิร์ฟเวอร์ กรุณาลองอีกครั้งในภายหลัง"
+  },
+  "notFound": {
+    "title": "404 - ไม่พบหน้าที่ต้องการ",
+    "heading": "อ๊ะ! ไม่พบหน้านี้",
+    "description": "หน้าที่คุณกำลังมองหาไม่มีอยู่หรือถูกย้ายไปแล้ว",
+    "backHome": "กลับสู่หน้าหลัก",
+    "suggestions": {
+      "title": "ลองหน้าเหล่านี้แทน:",
+      "home": "ไปหน้าหลัก",
+      "events": "เรียกดูกิจกรรม",
+      "credentials": "ดูประกาศนียบัตร",
+      "signup": "สมัครสมาชิก"
+    }
+  },
+  "error": {
+    "title": "ข้อผิดพลาด - เกิดข้อผิดพลาดบางอย่าง",
+    "heading": "อ๊ะ! เกิดข้อผิดพลาดบางอย่าง",
+    "description": "เราพบข้อผิดพลาดที่ไม่คาดคิด กรุณาลองอีกครั้งหรือติดต่อฝ่ายสนับสนุนหากปัญหายังคงอยู่",
+    "backHome": "กลับสู่หน้าหลัก",
+    "tryAgain": "ลองอีกครั้ง",
+    "suggestions": {
+      "title": "สิ่งที่คุณสามารถทำได้:",
+      "home": "ไปหน้าหลัก",
+      "refresh": "รีเฟรชหน้า",
+      "support": "ติดต่อฝ่ายสนับสนุน",
+      "signup": "สมัครสมาชิก"
+    }
+  },
+  "onboard": {
+    "title": "การตั้งค่าบัญชี",
+    "subtitle": "กรุณาตั้งค่ารหัส PIN/รหัสผ่าน จะใช้เพื่อเข้ารหัสข้อมูลของคุณ",
+    "pinTitle": "ตั้งค่ารหัส PIN",
+    "passwordTitle": "ตั้งค่ารหัสผ่าน",
+    "preferPassword": "ฉันต้องการใช้รหัสผ่าน",
+    "preferPin": "ฉันต้องการใช้รหัส PIN",
+    "logout": "ออกจากระบบ",
+    "enterPin": "กรอกรหัส PIN 6 หลัก",
+    "confirmPin": "ยืนยันรหัส PIN",
+    "enterPassword": "กรอกรหัสผ่าน",
+    "confirmPassword": "ยืนยันรหัสผ่าน",
+    "pinMismatch": "รหัส PIN ไม่ตรงกัน",
+    "pinTooShort": "รหัส PIN ต้องมี 6 หลัก",
+    "profile": {
+      "title": "โปรไฟล์ (ไม่บังคับ)",
+      "subtitle": "เราใช้ข้อมูลส่วนตัวของคุณเพื่อกรอกรายละเอียดที่จำเป็นสำหรับกิจกรรม/ใบรับรองโดยอัตโนมัติ ข้อมูลของคุณถูกเข้ารหัสเสมอและสามารถแก้ไขและลบได้โดยคุณในทุกเวลา ข้อมูลนี้ไม่สามารถกู้คืนได้ โปรดระมัดระวัง",
+      "firstName": "ชื่อจริง",
+      "lastName": "นามสกุล",
+      "email": "อีเมลติดต่อ",
+      "phoneNumber": "หมายเลขโทรศัพท์",
+      "makePublic": "เผยแพร่ข้อมูลนี้เป็นสาธารณะ"
+    },
+    "confirm": {
+      "title": "โปรดทราบ",
+      "oauth": {
+        "description": {
+          "part1": "ใบรับรองใช้เทคโนโลยีบล็อกเชนเป็นแหล่งความจริง บัญชีของคุณถูกผูกกับ EVM wallet ของคุณอย่างถาวร",
+          "part2": "Private key ของคุณถูกเข้ารหัสด้วยรหัส PIN/รหัสผ่านที่คุณกรอก <strong>หากคุณไม่ตั้งค่าวิธีการยืนยันตัวตนสำหรับการกู้คืน เราไม่ทำได้</strong>"
+        },
+        "checkboxes": {
+          "acceptRisk": "ฉันตกลง",
+          "acknowledgePasswordLoss": "ฉันรับทราบว่าการสูญเสียรหัส PIN/รหัสผ่านของฉันจะส่งผลให้สูญเสียบัญชีทั้งหมด"
+        }
+      }
+    }
+  },
+  "editEvent": {
+    "success": "แก้ไขกิจกรรมสำเร็จ"
+  },
+  "deleteEvent": {
+    "success": "ลบกิจกรรมสำเร็จ"
+  },
+  "createEvent": {
+    "success": "สร้างกิจกรรมสำเร็จ"
+  }
 }

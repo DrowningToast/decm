@@ -10,6 +10,7 @@ export const env = createEnv({
 
 	client: {
 		VITE_CORE_BACKEND_API: z.url(),
+		VITE_WALLETCONNECT_PROJECT_ID: z.string(),
 	},
 
 	/**

@@ -1,0 +1,49 @@
+sequenceDiagram
+    participant Backend as Backend
+    participant Database as Database
+    participant S3 as S3 Object Storage
+    participant AcademicIdentityNFT as Academic ID NFT Contract
+    participant Blockchain as Blockchain Node/Provider
+    participant Participant_ as Participant
+
+    Note over Backend: เริ่มทำงานภายในหลังจาก 'Verify Academic Status' สำเร็จ
+    Note over Backend, Database: เงื่อนไขก่อนเริ่ม: ยืนยันสถานะสำเร็จ, ทราบ Wallet Address ของผู้ใช้
+
+    activate Backend
+    Backend ->> Database: 1. ดึง Wallet Address และข้อมูลที่ยืนยันแล้วของผู้ใช้
+    activate Database
+    Database -->> Backend: 2. คืน Wallet Address และข้อมูล
+    deactivate Database
+    
+    Note over Backend, S3: เตรียม Metadata สำหรับ NFT
+    Backend ->> Backend: 3. สร้าง Metadata JSON (รวมสถานะที่ยืนยัน, สถาบัน ฯลฯ)
+    opt จัดเก็บ Metadata นอกเชน (Off-chain)
+        Backend ->> S3: 4a. อัปโหลด Metadata JSON ไปยัง S3
+        activate S3
+        S3 -->> Backend: 5a. คืน Metadata URI
+        deactivate S3
+        Note over Backend: metadataURI = URI ที่ได้จาก S3
+      
+    end
+
+    Note over Backend, Blockchain: สร้าง (Mint) NFT โดยใช้ Wallet ที่ได้รับอนุญาตของ Backend
+    %% สมมติว่า Backend ถือ Private Key สำหรับการ Mint
+    Backend ->> AcademicIdentityNFT: 6. เรียกฟังก์ชัน mintAcademicIdentity(participantAddress, metadataURI หรือ metadata)
+    Note right of Blockchain: ส่ง Transaction ไปยัง Blockchain
+
+    alt การ Mint NFT ล้มเหลว (Alt Flow A1)
+        Blockchain -->> Backend: 7a. Transaction ถูกยกเลิก / เกิดข้อผิดพลาด (Gas, Network, Logic ใน Contract)
+        Backend ->> Backend: 8a. บันทึกข้อผิดพลาด (Log Error)
+        Backend -->> Participant_: 9a. (ผ่าน Flow ของ Verify Status) แจ้งเตือน 'การออก Academic ID NFT ล้มเหลว'
+        activate Participant_
+    else การ Mint NFT สำเร็จ (Basic Flow)
+        Blockchain -->> Backend: 7b. Transaction ได้รับการยืนยัน (TxHash), มี Event ส่ง Token ID ออกมา
+        Backend ->> Database: 8b. บันทึก Token ID และ TxHash เชื่อมโยงกับโปรไฟล์ผู้ใช้
+        activate Database
+        Database -->> Backend: 9b. ยืนยันการบันทึกสำเร็จ
+        deactivate Database
+        Backend -->> Participant_: 10b. (ผ่าน Flow ของ Verify Status) แจ้งเตือน 'ได้รับ Academic Identity NFT แล้ว'
+        deactivate Participant_
+    end
+
+    deactivate Backend

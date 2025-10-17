@@ -7,13 +7,14 @@ import (
 	"time"
 
 	customerror "apps/backend/common/customerror"
+	"apps/backend/common/pgmapper"
 	"apps/backend/common/validatorutils"
 	eventUc "apps/backend/core-api/internal/usecase/event"
+	eventconfig "apps/backend/core-api/internal/usecase/eventconfig"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-// CreateEventRequest - Form data request (without file)
 type CreateEventRequest struct {
 	Name             string `form:"name"`
 	ShortDescription string `form:"short_description"`
@@ -111,8 +112,29 @@ func (h *Handler) CreateEvent(ctx *fiber.Ctx) error {
 		EventIcon:        iconFile,
 	}
 
+	currentUser, err := h.AuthenticationService.GetUserContext(ctx)
+	if err != nil {
+		return err
+	}
+
 	// 6. Call usecase
-	event, err := h.EventUc.CreateEvent(ctx.UserContext(), params)
+	event, err := h.EventUc.CreateEvent(ctx.UserContext(), params, currentUser)
+	if err != nil {
+		return err
+	}
+
+	eventConfigParams := eventconfig.CreateEventRegistrationConfigParams{
+		FirstNameRequirementStatus:           pgmapper.Int32ToPgInt4(0),
+		LastNameRequirementStatus:            pgmapper.Int32ToPgInt4(0),
+		EmailRequirementStatus:               pgmapper.Int32ToPgInt4(0),
+		BioRequirementStatus:                 pgmapper.Int32ToPgInt4(0),
+		PhoneNumberRequirementStatus:         pgmapper.Int32ToPgInt4(0),
+		AddressRequirementStatus:             pgmapper.Int32ToPgInt4(0),
+		AcademicInstitutionRequirementStatus: pgmapper.Int32ToPgInt4(0),
+		AcademicEmailRequirementStatus:       pgmapper.Int32ToPgInt4(0),
+	}
+
+	_, err = h.EventConfigUc.CreateEventRegistrationConfig(ctx.UserContext(), event.ID, eventConfigParams)
 	if err != nil {
 		return err
 	}

@@ -3,13 +3,14 @@ package datagateway
 import (
 	"context"
 
+	"apps/backend/common"
 	"apps/backend/core-api/internal/entity"
 
 	"github.com/google/uuid"
 )
 
 type UpdateAuthenticationCredentialParameters struct {
-	SolutionStatus      entity.SolutionStatus
+	SolutionStatus      common.SolutionStatus
 	HashedPassword      *string
 	EncryptedPrivateKey *string
 
@@ -18,6 +19,7 @@ type UpdateAuthenticationCredentialParameters struct {
 
 	IsVerifiedOrganizer bool
 	IsVerifiedStudent   bool
+	IsVerifiedIssuer    bool
 }
 
 type AuthenticationCredentialDataGateway interface {

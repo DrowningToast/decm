@@ -1,6 +1,8 @@
 -- name: CreateEventRegistrationConfig :one
 INSERT INTO event_registration_configs (
     event_id,
+    final_call_for_registration,
+    registration_password,
     first_name_requirement_status,
     last_name_requirement_status,
     email_requirement_status,
@@ -11,6 +13,8 @@ INSERT INTO event_registration_configs (
     academic_email_requirement_status
 ) VALUES (
     sqlc.arg('event_id'),
+    sqlc.arg('final_call_for_registration'),
+    sqlc.arg('registration_password'),
     sqlc.arg('first_name_requirement_status'),
     sqlc.arg('last_name_requirement_status'),
     sqlc.arg('email_requirement_status'),
@@ -27,6 +31,8 @@ SELECT * FROM event_registration_configs WHERE event_id = sqlc.arg('event_id');
 -- name: UpdateEventRegistrationConfig :one
 UPDATE event_registration_configs
 SET 
+    final_call_for_registration = sqlc.arg('final_call_for_registration'),
+    registration_password = sqlc.arg('registration_password'),
     first_name_requirement_status = sqlc.arg('first_name_requirement_status'),
     last_name_requirement_status = sqlc.arg('last_name_requirement_status'),
     email_requirement_status = sqlc.arg('email_requirement_status'),

@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant Admin as Admin
+    participant Backend as Backend
+    participant Database as Database
+
+    Note over Admin, Backend: Pre-condition: Admin logged in, Has permission, Audit Trails exist
+    activate Admin
+
+    Admin ->> Backend: 1. เลือก 'View Audit Trails'
+    activate Backend
+
+    Note over Backend: Verify Admin permissions (implicit/explicit)
+    Backend ->> Database: 2. Query Audit Trail records (e.g., latest entries, apply default filters)
+
+    alt ระบบไม่สามารถโหลดข้อมูลได้ (Alt Flow A1)
+        Database -->> Backend: 3a. คืนค่า Error (DB connection error, query failed)
+        activate Database
+
+        Backend -->> Admin: 4a. แสดงข้อความ 'เกิดข้อผิดพลาดในการโหลด Audit Trails'
+    else โหลดข้อมูลสำเร็จ (Basic Flow)
+        Database -->> Backend: 3b. คืนรายการ Audit Trail records
+        deactivate Database
+        
+        Backend ->> Backend: 4b. จัดรูปแบบข้อมูล (Format data for display)
+        Backend -->> Admin: 5b. แสดงรายการ Audit Trails บน UI
+    end
+    deactivate Backend
+    deactivate Admin

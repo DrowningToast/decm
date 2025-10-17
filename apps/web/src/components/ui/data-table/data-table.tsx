@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import type {
     ColumnDef,
@@ -29,6 +29,7 @@ export interface DataTableProps<TData, TValue> {
     pageSize: number;
     onPageChange: (page: number) => void;
     onPageSizeChange: (pageSize: number) => void;
+    disablePagination?: boolean;
     // Search props
     searchValue: string;
     onSearchChange: (value: string) => void;
@@ -48,6 +49,7 @@ export function DataTable<TData, TValue>({
     pageSize,
     onPageChange,
     onPageSizeChange,
+    disablePagination = false,
     searchValue,
     onSearchChange,
     searchPlaceholder,
@@ -181,13 +183,15 @@ export function DataTable<TData, TValue>({
                 </Table>
             </div>
 
-            <DataTablePagination
-                totalItems={totalItems}
-                currentPage={currentPage}
-                pageSize={pageSize}
-                onPageChange={onPageChange}
-                onPageSizeChange={onPageSizeChange}
-            />
+            {!disablePagination && (
+                <DataTablePagination
+                    totalItems={totalItems}
+                    currentPage={currentPage}
+                    pageSize={pageSize}
+                    onPageChange={onPageChange}
+                    onPageSizeChange={onPageSizeChange}
+                />
+            )}
         </div>
     );
 }

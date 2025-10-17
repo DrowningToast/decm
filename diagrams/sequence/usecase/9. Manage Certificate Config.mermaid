@@ -1,0 +1,87 @@
+sequenceDiagram
+    participant Host as Host
+    participant Backend as Backend
+    participant Database as Database
+    participant S3 as S3 Object Storage
+    participant EventAccessManager as Event Access Manager Contract
+    participant EventContract as Event Contract
+    participant EventCertificate as Event Certificate Contract (Deployed)
+    participant Blockchain as Blockchain Node/Provider
+
+    Note over Host, Backend: Pre-condition: Host logged in, Event exists, Host has rights, Issuers exist
+    activate Host
+
+    Host ->> Backend: 1. เข้าถึง 'Manage Events', เลือก Event, เลือก 'Certificate Config'
+    activate Backend
+    Backend ->> Database: 2. Query Current Event Details & Certificate Config (Issuer ID, Template URL)
+    activate Database
+    Database -->> Backend: 3. คืนข้อมูล Config ปัจจุบัน
+    deactivate Database
+
+    Backend -->> Host: 4. แสดงฟอร์ม Certificate Config พร้อมข้อมูลปัจจุบัน
+
+    Host ->> Backend: 5. ค้นหา/กำหนด Issuer, นำเข้า Certificate Template (SVG), กด 'บันทึก'
+    Backend ->> Backend: 6. ตรวจสอบความถูกต้อง (Validate Issuer, Validate SVG Template)
+
+    alt ข้อมูลไม่ถูกต้อง (Alt Flow A1)
+        Backend -->> Host: 7a. แสดงข้อความแจ้งข้อผิดพลาด + ระบุส่วนที่ต้องแก้ไข
+        Note over Host: กลับไปขั้นตอนที่ 5
+    end
+    Note over Backend: ข้อมูลถูกต้อง (Basic Flow)
+    Backend ->> S3: 7b. อัปโหลด SVG Template
+    activate S3
+    S3 -->> Backend: 8b. คืน URL/Identifier ของ Template SVG
+    deactivate S3
+    
+    Backend ->> Database: 9b. บันทึก/อัปเดต Certificate Config (Issuer ID, Template URL) ลง Database
+
+    alt บันทึก Database ล้มเหลว (Alt Flow A2)
+        Database -->> Backend: 10a. แจ้ง Error การบันทึก
+        Backend -->> Host: 11a. แสดงข้อความ 'บันทึกการตั้งค่าล้มเหลว (DB)'
+    else บันทึก Database สำเร็จ
+        Database -->> Backend: 10b. ยืนยันการบันทึกสำเร็จ
+        deactivate Backend
+
+        Note over Backend, Blockchain: Deploy Event Certificate Contract
+        Backend -->> Host: 11b. สร้าง Transaction data สำหรับ Deploy Event Certificate และขอ Signature
+        activate Backend
+        Host ->> Backend: 12b. Sign Transaction ผ่าน Wallet และส่ง Signature กลับ
+        Backend ->> EventAccessManager: 13b. ตรวจสอบสิทธิ์ Host ในการจัดการ Config (isAuthorizedToManage)
+        activate EventAccessManager
+
+        alt Host ไม่มีสิทธิ์
+            EventAccessManager -->> Backend: 14a. Revert Transaction (Access Forbidden)
+            Backend -->> Host: 15a. แสดงข้อความ 'ไม่มีสิทธิ์จัดการการตั้งค่านี้'
+        else Host มีสิทธิ์
+            EventAccessManager -->> Backend: 14b. คืนค่า ยืนยันสิทธิ์
+            deactivate EventAccessManager
+            
+            Backend ->> Blockchain: 15b. Deploy EventCertificate Contract (อาจพร้อม Issuer Address, Template URL)
+            activate Blockchain
+            Blockchain -->> Backend: 16b. คืน Address ของ EventCertificate Contract
+            deactivate Blockchain
+            alt Deploy Contract ล้มเหลว
+                 Blockchain -->> Backend: 16a. คืน Error
+                 Backend -->> Host: 17a. แสดงข้อความ 'Deploy Certificate Contract ล้มเหลว'
+                 Note over Backend, Database: อาจพิจารณา Rollback การบันทึกใน Database
+            else Deploy Contract สำเร็จ
+                Backend ->> Database: 17b. บันทึก EventCertificate Contract Address เชื่อมกับ Event
+                activate Database
+                Database -->> Backend: 18b. ยืนยันการบันทึก Contract Address
+                deactivate Database
+
+                Note over Backend, EventContract: Optionally call function on EventContract if needed to link Certificate Contract
+                %% Example: If EventContract needs to know the Certificate Contract address
+                %% Backend -->> Host: Request Signature for linking
+                %% Host ->> Backend: Send Signature
+                %% Backend ->> EventContract: call setCertificateContract(certificateContractAddress)
+                %% EventContract -->> Backend: Return Result
+                %% Backend ->> Database: Update linking status
+
+                Backend -->> Host: 19b. แสดงข้อความ 'บันทึกการตั้งค่า Certificate เรียบร้อยแล้ว'
+            end
+        end
+        deactivate Backend
+    end
+
+    deactivate Host

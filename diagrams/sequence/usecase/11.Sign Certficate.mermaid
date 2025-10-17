@@ -1,0 +1,70 @@
+sequenceDiagram
+    participant Issuer as Issuer
+    participant Backend as Backend
+    participant Database as Database
+    participant EventAccessManager as Event Access Manager Contract
+    %% participant EventCertificate as Event Certificate Contract %% May not be directly called here, status updated in DB
+
+    Note over Issuer, Backend: Pre-condition: Issuer logged in, Event/Certs exist in 'Pending Signature' state, Issuer assigned
+    activate Issuer
+    activate Backend
+
+    Issuer ->> Backend: 1. เข้าถึง 'Sign Event Certificates'
+    Backend ->> Database: 2. Query Events/Certificates awaiting signature for this Issuer
+    activate Database
+    Database -->> Backend: 3. คืนรายการ
+    deactivate Database
+    Backend -->> Issuer: 4. แสดงรายการ Events/Certificates
+    Issuer ->> Backend: 5. เลือก Event/Certificate Set ที่ต้องการ
+    Backend ->> Database: 6. Query Certificate Details for selected set
+    activate Database
+    Database -->> Backend: 7. คืนรายละเอียด Certificate
+    deactivate Database
+    Backend -->> Issuer: 8. แสดงรายละเอียด Certificate
+    deactivate Backend
+
+    alt Issuer ปฏิเสธการลงนาม (Alt Flow A1)
+        Issuer ->> Backend: 9a. เลือก 'Reject' + ระบุเหตุผล
+        activate Backend
+        
+        Backend ->> Database: 10a. อัปเดตสถานะ Certificate เป็น 'Rejected' + บันทึกเหตุผล
+        activate Database
+        Database -->> Backend: 11a. ยืนยันการอัปเดต
+        deactivate Database
+        Backend -->> Issuer: 12a. แสดงข้อความ 'ปฏิเสธการลงนามเรียบร้อยแล้ว'
+    else Issuer เลือกดำเนินการต่อ (Basic Flow)
+        Issuer ->> Backend: 9b. เลือก 'Sign Certificate'
+        Backend -->> Issuer: 10b. ขอ PIN Code เพื่อยืนยัน
+        Issuer ->> Backend: 11b. กรอก PIN Code
+
+        Backend ->> Backend: 12b. ตรวจสอบ PIN Code
+        alt ยืนยันตัวตนล้มเหลว (Alt Flow A2)
+            Backend -->> Issuer: 13a. แสดงข้อความ 'PIN ไม่ถูกต้อง' / ให้ลองใหม่
+        else ยืนยันตัวตนสำเร็จ
+            Note over Backend, Database: การลงนามคือการอัปเดตสถานะในระบบ
+            Backend ->> EventAccessManager: 13b. ตรวจสอบสิทธิ์ Issuer ในการ Sign (isAuthorizedIssuerForEvent)
+            activate EventAccessManager
+
+            alt Issuer ไม่มีสิทธิ์
+                EventAccessManager -->> Backend: 14a. Revert Transaction / Return False (Access Forbidden)
+                Backend -->> Issuer: 15a. แสดงข้อความ 'ไม่มีสิทธิ์ลงนามสำหรับกิจกรรมนี้'
+            else Issuer มีสิทธิ์
+                EventAccessManager -->> Backend: 14b. คืนค่า ยืนยันสิทธิ์
+                deactivate EventAccessManager
+                Backend ->> Database: 15b. อัปเดตสถานะ Certificate เป็น 'Signed' / 'Approved'
+                activate Database
+                alt บันทึก Database ล้มเหลว (Alt Flow A3 - DB Error)
+                    Database -->> Backend: 16a. แจ้ง Error การบันทึก
+                    Backend -->> Issuer: 17a. แสดงข้อความ 'เกิดข้อผิดพลาดในการบันทึกสถานะ'
+                else บันทึก Database สำเร็จ
+                    Database -->> Backend: 16b. ยืนยันการบันทึกสำเร็จ
+                    deactivate Database
+                    Backend -->> Issuer: 17b. แสดงข้อความ 'ลงนาม Certificate สำเร็จเรียบร้อยแล้ว'
+                    Note over Backend: Certificate is now ready for 'Publish Certificate' Use Case
+                    deactivate Backend
+                end
+            end
+        end
+    end
+
+    deactivate Issuer

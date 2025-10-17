@@ -14,7 +14,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { RequirementItem, type RequirementStatus } from "@/components/ui/requirement-item";
+import { RequirementItem } from "@/components/ui/requirement-item";
 import { TextLabelValue } from "@/components/ui/text-label-value";
 import WrappedButton from "@/components/wrapper/WrappedButton";
 import { CheckCircle2Icon, ExternalLinkIcon } from "lucide-react";
@@ -22,9 +22,21 @@ import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
 import { useDataTable } from "@/hooks/use-data-table";
 import { participantColumns, type Participant } from "./columns/participant-columns";
+import { issuerColumns } from "./columns/issuer-columns";
+import type {
+    EventconfigEventRegistrationConfigResponse,
+    EventEventResponse,
+    GetEventCertificateConfigData,
+    GetEventIssuersByEventIdData,
+} from "@decm/api";
+import { toEventRegistrationConfigStatus } from "@/lib/events/event.utils";
 
 interface HostEventDetailsPageProps {
     eventId: string;
+    event: EventEventResponse;
+    eventRegistrationConfig: EventconfigEventRegistrationConfigResponse;
+    eventCertificateConfig?: GetEventCertificateConfigData;
+    eventIssuers?: GetEventIssuersByEventIdData;
 }
 
 // Mock API function - replace with actual API call
@@ -88,34 +100,33 @@ const mockFetchParticipants = async ({
     };
 };
 
-export default function HostEventDetailsPage({ eventId }: HostEventDetailsPageProps) {
+export default function HostEventDetailsPage({
+    eventId,
+    event,
+    eventRegistrationConfig,
+    eventCertificateConfig,
+    eventIssuers,
+}: HostEventDetailsPageProps) {
     const { t } = useTranslation();
 
-    // Mock participant requirements data - replace with actual data
-    const participantRequirements: Record<string, RequirementStatus> = {
-        firstName: "required",
-        lastName: "required",
-        email: "required",
-        bio: "optional",
-        phoneNumber: "optional",
-        address: "not_required",
-        academicInstitution: "required",
-        academicEmail: "required",
-    };
+    // Certificate state logic
+    const hasCertificateConfig = !!eventCertificateConfig;
+    const allIssuersSigned = eventIssuers?.every((issuer) => issuer.is_signed === 1) ?? false;
 
-    const eventSettings = {
-        eventType: "Public",
-        bookingRequired: true,
-        tokenTransferable: false,
-    };
+    // Mock participant requirements data - replace with actual data
+    // const participantRequirements: Record<string, RequirementStatus> = {
+    //     firstName: "required",
+    //     lastName: "required",
+    //     email: "required",
+    //     bio: "optional",
+    //     phoneNumber: "optional",
+    //     address: "not_required",
+    //     academicInstitution: "required",
+    //     academicEmail: "required",
+    // };
 
     // Use the data table hook
     const participantsTable = useDataTable<Participant>({
-        fetchData: mockFetchParticipants,
-        initialPageSize: 10,
-    });
-
-    const certificatesTable = useDataTable<Participant>({
         fetchData: mockFetchParticipants,
         initialPageSize: 10,
     });
@@ -125,12 +136,17 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
             <SectionContainer>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 bg-white rounded-full"></div>
+                        <img
+                            src={event.icon_presigned_url ?? ""}
+                            alt={event.title}
+                            className="w-12 h-12 rounded-full object-cover"
+                        />
+
                         <div className="flex items-center gap-2">
                             <Typography tag="p" size={"subheader"}>
-                                ToBeIT 67
+                                {event.title}
                             </Typography>
-                            <CheckCircle2Icon color="#eb5331" />
+                            {event.is_verified && <CheckCircle2Icon color="#eb5331" />}
                         </div>
                     </div>
 
@@ -141,33 +157,34 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
             <SectionContainer className="lg:grid lg:grid-cols-4 gap-8">
                 <div className="flex flex-col gap-4 lg:col-span-3">
                     <Typography tag="p" size={"base"} color="muted">
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Fuga magni
-                        exercitationem debitis magnam accusamus ipsum! Velit, provident repellendus
-                        quas tempora, odio, quae iure repudiandae est rerum ea quibusdam maiores!
-                        In?
+                        {event.short_description}
                     </Typography>
 
                     <Typography tag="p" size={"base"} color="muted">
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Fuga magni
-                        exercitationem debitis magnam accusamus ipsum! Velit, provident repellendus
-                        quas tempora, odio, quae iure repudiandae est rerum ea quibusdam maiores!
-                        In?
+                        {event.long_description}
                     </Typography>
 
-                    <div className="w-full h-[175px] bg-white rounded mt-1"></div>
+                    <img
+                        src={event.banner_presigned_url ?? ""}
+                        alt={event.title}
+                        className="w-full h-[250px] object-cover rounded-lg"
+                    />
                 </div>
 
                 <div className="flex flex-col gap-4 mt-6 lg:mt-0">
-                    <TextLabelValue label="Status" value="ToBeIT 67" />
-                    <TextLabelValue label="Final call for request" value="2025-01-01" />
-                    <TextLabelValue label="Participation request" value="Invited Only" />
-                    <TextLabelValue label="Seats count" value="20/40" />
+                    <TextLabelValue label="Status" value="NA" />
+                    <TextLabelValue label="Final call for request" value={"NA"} />
+                    <TextLabelValue
+                        label="Participation request"
+                        value={event.is_booking_request_required ? "Required" : "Not Required"}
+                    />
+                    <TextLabelValue label="Seats count" value={`${0} / ${event.max_attendees}`} />
                     <TextLabelValue
                         label="Event Contract Address"
-                        value="0x0000...0000"
+                        value="NA"
                         endIcon={<ExternalLinkIcon size={16} />}
                         valueClassName="cursor-pointer underline"
-                        href="https://www.google.com"
+                        href="https://www.etherscan.io/address/0x0000000000000000000000000000000000000000"
                     />
                 </div>
             </SectionContainer>
@@ -184,21 +201,24 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
                             <div className="flex flex-col gap-4 flex-1">
                                 <TextLabelValue
                                     label="Venue Location"
-                                    value="School of Information Technology, KMITL"
+                                    value={event.location ?? ""}
                                 />
                                 <TextLabelValue
                                     label="Google Map Search"
-                                    value="School of Information Technology, KMITL"
+                                    value={event.google_map_query ?? ""}
                                 />
 
                                 <TextLabelValue
-                                    label="Contract Address"
-                                    value="Bangkok, Thailand"
+                                    label="Contact Address"
+                                    value={event.contact_number ?? ""}
                                 />
-                                <TextLabelValue label="Contact" value="0656526769" />
+                                <TextLabelValue
+                                    label="Contact"
+                                    value={event.contact_number ?? ""}
+                                />
                             </div>
                             <div className="flex-1">
-                                <GoogleMapsEmbed query="School of Information Technology, KMITL" />
+                                <GoogleMapsEmbed query={event.google_map_query ?? ""} />
                             </div>
                         </div>
                     </StyledTabsContent>
@@ -208,12 +228,12 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 my-6">
                                 <TextLabelValue
                                     label={t("events.settings.eventType")}
-                                    value={eventSettings.eventType}
+                                    value={event.is_public ? "Public" : "Private"}
                                 />
                                 <TextLabelValue
                                     label={t("events.settings.bookingRequired")}
                                     value={
-                                        eventSettings.bookingRequired
+                                        event.is_booking_request_required
                                             ? t("common.yes")
                                             : t("common.no")
                                     }
@@ -221,7 +241,7 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
                                 <TextLabelValue
                                     label={t("events.settings.tokenTransferable")}
                                     value={
-                                        eventSettings.tokenTransferable
+                                        event.is_ticket_transferable
                                             ? t("common.yes")
                                             : t("common.no")
                                     }
@@ -258,39 +278,55 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                                             <RequirementItem
                                                 label={t("events.participants.fields.firstName")}
-                                                status={participantRequirements.firstName}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.first_name_requirement_status,
+                                                )}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.lastName")}
-                                                status={participantRequirements.lastName}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.last_name_requirement_status,
+                                                )}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.email")}
-                                                status={participantRequirements.email}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.email_requirement_status,
+                                                )}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.bio")}
-                                                status={participantRequirements.bio}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.bio_requirement_status,
+                                                )}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.phoneNumber")}
-                                                status={participantRequirements.phoneNumber}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.phone_number_requirement_status,
+                                                )}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.address")}
-                                                status={participantRequirements.address}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.address_requirement_status,
+                                                )}
                                             />
                                             <RequirementItem
                                                 label={t(
                                                     "events.participants.fields.academicInstitution",
                                                 )}
-                                                status={participantRequirements.academicInstitution}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.academic_institution_requirement_status,
+                                                )}
                                             />
                                             <RequirementItem
                                                 label={t(
                                                     "events.participants.fields.academicEmail",
                                                 )}
-                                                status={participantRequirements.academicEmail}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.academic_email_requirement_status,
+                                                )}
                                             />
                                         </div>
                                     </AccordionContent>
@@ -315,37 +351,106 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
                         </div>
                     </StyledTabsContent>
                     <StyledTabsContent value="certificates">
-                        <div className="w-full bg-primary/10 border border-primary/20 rounded-lg p-6 flex flex-col items-center justify-center mb-6">
-                            <p className="font-semibold text-lg text-primary">
-                                Add event&apos;s certificate configuration
-                            </p>
-                            <p className="text-muted-foreground text-base mt-1 text-center max-w-xl">
-                                Set up the certificate template and rules for this event.
-                                Participants will receive certificates based on your configuration.
-                            </p>
-                            <WrappedButton
-                                className="mt-4 px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
-                                href={`/host/events/${eventId}/settings/certificate`}
-                            >
-                                Certificates Settings
-                            </WrappedButton>
-                        </div>
+                        {hasCertificateConfig ? (
+                            <div className="space-y-6">
+                                {/* Certificate Settings Section */}
+                                <div className="w-full bg-primary/10 border border-primary/20 rounded-lg p-6 flex flex-row items-center justify-between">
+                                    <div>
+                                        <p className="font-semibold text-lg text-primary">
+                                            Certificate Settings
+                                        </p>
+                                        <p className="text-muted-foreground text-base mt-1">
+                                            Certificate template and rules are configured for this
+                                            event. Manage issuers and publish certificates when
+                                            ready.
+                                        </p>
+                                    </div>
+                                    <WrappedButton
+                                        className="px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
+                                        href={`/host/events/${eventId}/settings/certificate`}
+                                    >
+                                        Certificate Settings
+                                    </WrappedButton>
+                                </div>
 
-                        <DataTable
-                            columns={participantColumns}
-                            data={certificatesTable.data}
-                            totalItems={certificatesTable.totalItems}
-                            currentPage={certificatesTable.currentPage}
-                            pageSize={certificatesTable.pageSize}
-                            onPageChange={certificatesTable.setCurrentPage}
-                            onPageSizeChange={certificatesTable.setPageSize}
-                            searchValue={certificatesTable.searchValue}
-                            onSearchChange={certificatesTable.setSearchValue}
-                            searchPlaceholder="Search certificates..."
-                            sorting={certificatesTable.sorting}
-                            onSortingChange={certificatesTable.setSorting}
-                            isLoading={certificatesTable.isLoading}
-                        />
+                                {/* Issuers Table */}
+                                {eventIssuers && eventIssuers.length > 0 && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <Typography
+                                                variant="text"
+                                                tag="h3"
+                                                className="text-lg font-semibold"
+                                            >
+                                                Event Issuers ({eventIssuers.length})
+                                            </Typography>
+                                            <WrappedButton
+                                                className="px-4 py-2 rounded-md bg-green-600 text-white font-medium hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                                disabled={!allIssuersSigned}
+                                                onClick={() => {
+                                                    // TODO: Implement publish certificates functionality
+                                                    console.log(
+                                                        "Publish certificates for event:",
+                                                        eventId,
+                                                    );
+                                                }}
+                                            >
+                                                {allIssuersSigned
+                                                    ? "Publish Certificates"
+                                                    : "Waiting for All Signatures"}
+                                            </WrappedButton>
+                                        </div>
+
+                                        <DataTable
+                                            columns={issuerColumns}
+                                            data={eventIssuers}
+                                            totalItems={eventIssuers.length}
+                                            currentPage={1}
+                                            pageSize={10}
+                                            onPageChange={() => {}}
+                                            onPageSizeChange={() => {}}
+                                            searchValue=""
+                                            onSearchChange={() => {}}
+                                            searchPlaceholder="Search issuers..."
+                                            sorting={[]}
+                                            onSortingChange={() => {}}
+                                            isLoading={false}
+                                            disablePagination
+                                        />
+                                    </div>
+                                )}
+
+                                {(!eventIssuers || eventIssuers.length === 0) && (
+                                    <div className="text-center py-8">
+                                        <Typography
+                                            variant="text"
+                                            tag="p"
+                                            className="text-muted-foreground"
+                                        >
+                                            No issuers configured for this event. Please add issuers
+                                            in the certificate settings.
+                                        </Typography>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="w-full bg-primary/10 border border-primary/20 rounded-lg p-6 flex flex-col items-center justify-center">
+                                <p className="font-semibold text-lg text-primary">
+                                    Add event's certificate configuration
+                                </p>
+                                <p className="text-muted-foreground text-base mt-1 text-center max-w-xl">
+                                    Set up the certificate template and rules for this event.
+                                    Participants will receive certificates based on your
+                                    configuration.
+                                </p>
+                                <WrappedButton
+                                    className="mt-4 px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
+                                    href={`/host/events/${eventId}/settings/certificate`}
+                                >
+                                    Certificates Settings
+                                </WrappedButton>
+                            </div>
+                        )}
                     </StyledTabsContent>
                 </StyledTabs>
             </SectionContainer>

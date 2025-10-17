@@ -37,4 +37,5 @@ type ProfileDataGateway interface {
 	UpdateProfile(ctx context.Context, id uuid.UUID, profile UpdateProfileParameters) (*entity.Profile, error)
 	UpdateProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID, profile UpdateProfileParameters) (*entity.Profile, error)
 	DeleteProfile(ctx context.Context, id uuid.UUID) error
+	ListVerifiedIssuerProfiles(ctx context.Context, limitCount int, offsetCount int) ([]entity.Profile, error)
 }
