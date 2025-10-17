@@ -5,7 +5,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"apps/backend/common/customerror"
 	"apps/backend/common/validatorutils"
@@ -13,8 +12,8 @@ import (
 )
 
 type UpdateEventIssuerRequest struct {
-	IsSigned  int32  `json:"is_signed"`
-	Signature string `json:"signature"`
+	EventID            uuid.UUID `json:"event_id"`
+	IssuerCredentialID uuid.UUID `json:"issuer_credential_id"`
 }
 
 func (r *UpdateEventIssuerRequest) IsValid() error {
@@ -28,45 +27,46 @@ func (r *UpdateEventIssuerRequest) IsValid() error {
 // @Accept json
 // @Produce json
 // @Param event_id path string true "Event ID"
-// @Param issuer_id path string true "Issuer ID"
-// @Param request body UpdateEventIssuerRequest true "Event issuer data"
+// @Param request body []UpdateEventIssuerRequest true "Event issuer data"
 // @Success 200 {object} EventIssuerResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
-// @Router /api/v1/events/{event_id}/issuers/{issuer_id} [put]
+// @Router /api/v1/events/{event_id}/issuers [put]
 func (h *Handler) UpdateEventIssuer(ctx *fiber.Ctx) error {
-	issuerID, err := uuid.Parse(ctx.Params("issuer_id"))
+	eventID, err := uuid.Parse(ctx.Params("event_id"))
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
-	var req UpdateEventIssuerRequest
+	var req []UpdateEventIssuerRequest
 	if err := ctx.BodyParser(&req); err != nil {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
-	if err := req.IsValid(); err != nil {
-		return err
+	for _, req := range req {
+		if err := req.IsValid(); err != nil {
+			return err
+		}
 	}
 
-	params := eventUc.UpdateEventIssuerParams{
-		IsSigned:  req.IsSigned,
-		Signature: pgtype.Text{String: req.Signature, Valid: req.Signature != ""},
-	}
-
-	issuer, err := h.EventUc.UpdateEventIssuer(ctx.UserContext(), issuerID, params)
+	currentUser, err := h.AuthenticationService.GetUserContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	return ctx.Status(http.StatusOK).JSON(EventIssuerResponse{
-		ID:                 issuer.ID,
-		EventID:            issuer.EventID,
-		IssuerCredentialID: issuer.IssuerCredentialID,
-		IsSigned:           issuer.IsSigned,
-		Signature:          issuer.Signature.String,
-		CreatedAt:          issuer.CreatedAt.Time.String(),
-		UpdatedAt:          issuer.UpdatedAt.Time.String(),
-	})
+	params := make([]eventUc.UpdateEventIssuerParams, len(req))
+	for i, req := range req {
+		params[i] = eventUc.UpdateEventIssuerParams{
+			EventID:            eventID,
+			IssuerCredentialID: req.IssuerCredentialID,
+		}
+	}
+
+	issuers, err := h.EventUc.UpdateEventIssuer(ctx.UserContext(), eventID, params, currentUser)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Status(http.StatusOK).JSON(issuers)
 }

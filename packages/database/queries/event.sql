@@ -1,0 +1,160 @@
+-- name: CreateEvent :one
+INSERT INTO events (
+    chain_id,
+    contact_number,
+    contact_address,
+    owner_credential_id,
+    banner_storage_key,
+    icon_storage_key,
+    title,
+    short_description,
+    long_description,
+    start_date,
+    end_date,
+    location,
+    google_map_query,
+    max_attendees,
+    is_public,
+    is_booking_request_required,
+    is_verified,
+    is_ticket_transferable
+) VALUES (
+    1, -- Default chain_id, should be parameterized in production
+    sqlc.arg(contact_number),
+    sqlc.arg(contact_address),
+    sqlc.arg(owner_credential_id),
+    sqlc.arg(banner_storage_key),
+    sqlc.arg(icon_storage_key),
+    sqlc.arg(title),
+    sqlc.arg(short_description),
+    sqlc.arg(long_description),
+    sqlc.arg(start_date),
+    sqlc.arg(end_date),
+    sqlc.arg(location),
+    sqlc.arg(google_map_query),
+    sqlc.arg(max_attendees),
+    sqlc.arg(is_public),
+    sqlc.arg(is_booking_request_required),
+    sqlc.arg(is_verified),
+    sqlc.arg(is_ticket_transferable)
+) RETURNING *;
+
+-- name: GetEventById :one
+SELECT 
+    id,
+    event_type,
+    chain_id,
+    contact_number,
+    contact_address,
+    owner_credential_id,
+    banner_storage_key,
+    icon_storage_key,
+    title,
+    short_description,
+    long_description,
+    start_date,
+    end_date,
+    location,
+    google_map_query,
+    max_attendees,
+    is_public,
+    is_booking_request_required,
+    is_verified,
+    is_ticket_transferable,
+    created_at,
+    updated_at
+FROM events
+WHERE id = sqlc.arg(id);
+
+-- name: UpdateEvent :one
+UPDATE events
+SET 
+    title = sqlc.arg(title),
+    short_description = sqlc.arg(short_description),
+    long_description = sqlc.arg(long_description),
+    start_date = sqlc.arg(start_date),
+    end_date = sqlc.arg(end_date),
+    location = sqlc.arg(location),
+    google_map_query = sqlc.arg(google_map_query),
+    max_attendees = sqlc.arg(max_attendees),
+    contact_number = sqlc.arg(contact_number),
+    contact_address = sqlc.arg(contact_address),
+    banner_storage_key = sqlc.arg(banner_storage_key),
+    icon_storage_key = sqlc.arg(icon_storage_key),
+    is_public = sqlc.arg(is_public),
+    is_booking_request_required = sqlc.arg(is_booking_request_required),
+    is_verified = sqlc.arg(is_verified),
+    is_ticket_transferable = sqlc.arg(is_ticket_transferable),
+    event_type = sqlc.arg(event_type)
+WHERE id = sqlc.arg(id)
+RETURNING *;
+
+-- name: DeleteEvent :one
+UPDATE events
+SET
+    deleted_at = now()
+WHERE id = sqlc.arg(id)
+RETURNING *;
+
+-- name: ListEventsByOwner :many
+SELECT 
+    id,
+    event_type,
+    chain_id,
+    contact_number,
+    contact_address,
+    owner_credential_id,
+    banner_storage_key,
+    icon_storage_key,
+    title,
+    short_description,
+    long_description,
+    start_date,
+    end_date,
+    location,
+    google_map_query,
+    max_attendees,
+    is_public,
+    is_booking_request_required,
+    is_verified,
+    is_ticket_transferable,
+    created_at,
+    updated_at
+FROM events
+WHERE owner_credential_id = sqlc.arg(owner_credential_id)
+ORDER BY created_at DESC;
+
+-- name: ListPublicEvents :many
+SELECT 
+    id,
+    event_type,
+    chain_id,
+    contact_number,
+    contact_address,
+    owner_credential_id,
+    banner_storage_key,
+    icon_storage_key,
+    title,
+    short_description,
+    long_description,
+    start_date,
+    end_date,
+    location,
+    google_map_query,
+    max_attendees,
+    is_public,
+    is_booking_request_required,
+    is_verified,
+    is_ticket_transferable,
+    created_at,
+    updated_at
+FROM events
+WHERE is_public = 1
+ORDER BY start_date ASC;
+
+-- name: ListEventsByOwnerCredentialID :many
+SELECT * 
+FROM events 
+WHERE owner_credential_id = sqlc.arg(owner_credential_id) AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);

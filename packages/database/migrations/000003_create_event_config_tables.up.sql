@@ -4,13 +4,16 @@ CREATE TABLE event_registration_configs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
 
+    final_call_for_registration TIMESTAMPTZ,
+    registration_password TEXT,
+
     -- 0: Not Required, 1: Required, 2: Optional
     first_name_requirement_status INTEGER DEFAULT 0 ,
     last_name_requirement_status INTEGER DEFAULT 0,
     email_requirement_status INTEGER DEFAULT 0,
     bio_requirement_status INTEGER DEFAULT 0,
     phone_number_requirement_status INTEGER DEFAULT 0,
-    address_requirement_status INTEGER DEFAULT 0,
+    address_requirement_status INTEGER DEFAULT 0, 
     academic_institution_requirement_status INTEGER DEFAULT 0,
     academic_email_requirement_status INTEGER DEFAULT 0,
 
@@ -29,12 +32,12 @@ CREATE TABLE event_certificate_configs (
     base_certificate_storage_key VARCHAR(255) NOT NULL,
 
     -- element positions
-    event_name_pos_x INTEGER NOT NULL,
-    event_name_pos_y INTEGER NOT NULL,
-    name_pos_x INTEGER NOT NULL,
-    name_pos_y INTEGER NOT NULL,
-    academic_institution_pos_x INTEGER,
-    academic_institution_pos_y INTEGER,
+    event_name_pos_x FLOAT NOT NULL,
+    event_name_pos_y FLOAT NOT NULL,
+    name_pos_x FLOAT NOT NULL,
+    name_pos_y FLOAT NOT NULL,
+    academic_institution_pos_x FLOAT,
+    academic_institution_pos_y FLOAT,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -47,8 +50,10 @@ CREATE TABLE event_issuers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     issuer_credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
-    is_signed INTEGER NOT NULL,
+    -- 0: Not Signed, 1: Signed
+    is_signed INTEGER NOT NULL DEFAULT 0,
     signature TEXT,
+    sign_message TEXT,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()

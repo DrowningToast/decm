@@ -249,17 +249,82 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/events/{event_id}/certificate-config": {
+        "/api/v1/events/owner-credentials/{owner_credential_id}": {
             "get": {
-                "description": "Get the event certificate configuration for an event",
+                "description": "Get events by owner credentials ID",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get event certificate config",
-                "operationId": "get-event-certificate-config",
+                "summary": "Get events by owner credentials ID",
+                "operationId": "get-events-by-owner-credentials-id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Owner Credentials ID",
+                        "name": "owner_credential_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/event.EventResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{event_id}": {
+            "get": {
+                "description": "Get event by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Get event by ID",
+                "operationId": "get-event-by-id",
                 "parameters": [
                     {
                         "type": "string",
@@ -273,7 +338,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventCertificateConfigResponse"
+                            "$ref": "#/definitions/event.EventResponse"
                         }
                     },
                     "400": {
@@ -297,38 +362,100 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Update the event certificate configuration for an event",
+                "description": "Update an existing event with optional banner and icon image upload",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Update event certificate config",
-                "operationId": "update-event-certificate-config",
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Update an event",
+                "operationId": "update-event",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Event ID",
-                        "name": "event_id",
-                        "in": "path",
+                        "description": "Event name",
+                        "name": "name",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Event short description",
+                        "name": "short_description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Event description",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date (RFC3339 format)",
+                        "name": "start_date",
+                        "in": "formData",
                         "required": true
                     },
                     {
-                        "description": "Event certificate config data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/event_config.UpdateEventCertificateConfigRequest"
-                        }
+                        "type": "string",
+                        "description": "End date (RFC3339 format)",
+                        "name": "end_date",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of seats",
+                        "name": "seats_count",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Contact number",
+                        "name": "contact_number",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Contact address",
+                        "name": "contact_address",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Location",
+                        "name": "location",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Google map query",
+                        "name": "google_map_query",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Event banner image (JPEG, PNG, WebP, max 10MB) - optional",
+                        "name": "banner",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Event icon image (JPEG, PNG, WebP, max 10MB) - optional",
+                        "name": "icon",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventCertificateConfigResponse"
+                            "$ref": "#/definitions/entity.Event"
                         }
                     },
                     "400": {
@@ -337,63 +464,14 @@ const docTemplate = `{
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new event certificate configuration for an event",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Create event certificate config",
-                "operationId": "create-event-certificate-config",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event ID",
-                        "name": "event_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Event certificate config data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/event_config.CreateEventCertificateConfigRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/event_config.EventCertificateConfigResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
@@ -407,12 +485,66 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete the event certificate configuration for an event",
+                "description": "Delete event by ID",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Delete event by ID",
+                "operationId": "delete-event-by-id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/event.EventResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{event_id}/certificate-config": {
+            "delete": {
+                "description": "Delete event certificate configuration for an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "EventConfig"
                 ],
                 "summary": "Delete event certificate config",
                 "operationId": "delete-event-certificate-config",
@@ -456,6 +588,258 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/events/{event_id}/config/certificate": {
+            "get": {
+                "description": "Get the event certificate configuration for an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get event certificate config",
+                "operationId": "get-event-certificate-config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_eventconfig.EventCertificateConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update the event certificate configuration for an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update event certificate config",
+                "operationId": "update-event-certificate-config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Base certificate image",
+                        "name": "base_certificate_image",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Event name position x",
+                        "name": "event_name_pos_x",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Event name position y",
+                        "name": "event_name_pos_y",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Name position x",
+                        "name": "name_pos_x",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Name position y",
+                        "name": "name_pos_y",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Academic institution position x",
+                        "name": "academic_institution_pos_x",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Academic institution position y",
+                        "name": "academic_institution_pos_y",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_eventconfig.EventCertificateConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{event_id}/config/registration": {
+            "get": {
+                "description": "Get event registration configuration for an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Get event registration config",
+                "operationId": "get-event-registration-config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update the event registration configuration for an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update event registration config",
+                "operationId": "update-event-registration-config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Event registration config data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/eventconfig.UpdateEventRegistrationConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}/contracts": {
             "get": {
                 "description": "Get the event contract for an event",
@@ -464,6 +848,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Events"
                 ],
                 "summary": "Get event contract by event ID",
                 "operationId": "get-event-contract-by-event-id",
@@ -480,7 +867,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventContractResponse"
+                            "$ref": "#/definitions/event.EventContractResponse"
                         }
                     },
                     "400": {
@@ -527,7 +914,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_config.UpdateEventContractRequest"
+                            "$ref": "#/definitions/event.UpdateEventContractRequest"
                         }
                     }
                 ],
@@ -535,7 +922,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventContractResponse"
+                            "$ref": "#/definitions/event.EventContractResponse"
                         }
                     },
                     "400": {
@@ -566,6 +953,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Event"
+                ],
                 "summary": "Create event contract",
                 "operationId": "create-event-contract",
                 "parameters": [
@@ -582,15 +972,15 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_config.CreateEventContractRequest"
+                            "$ref": "#/definitions/event.CreateEventContractRequest"
                         }
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventContractResponse"
+                            "$ref": "#/definitions/event.EventContractResponse"
                         }
                     },
                     "400": {
@@ -614,12 +1004,15 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete the event contract for an event",
+                "description": "Delete event contract for an event",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Event Contracts"
                 ],
                 "summary": "Delete event contract",
                 "operationId": "delete-event-contract",
@@ -648,6 +1041,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -672,6 +1077,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Events"
+                ],
                 "summary": "Get event issuers by event ID",
                 "operationId": "get-event-issuers-by-event-id",
                 "parameters": [
@@ -689,8 +1097,78 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/event_config.EventIssuerResponse"
+                                "$ref": "#/definitions/event.EventIssuerResponse"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an event issuer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update event issuer",
+                "operationId": "update-event-issuer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Event issuer data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/event.UpdateEventIssuerRequest"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/event.EventIssuerResponse"
                         }
                     },
                     "400": {
@@ -737,7 +1215,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_config.CreateEventIssuerRequest"
+                            "$ref": "#/definitions/event.CreateEventIssuerRequest"
                         }
                     }
                 ],
@@ -745,7 +1223,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventIssuerResponse"
+                            "$ref": "#/definitions/event.EventIssuerResponse"
                         }
                     },
                     "400": {
@@ -800,69 +1278,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventIssuerResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update an event issuer",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Update event issuer",
-                "operationId": "update-event-issuer",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event ID",
-                        "name": "event_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Issuer ID",
-                        "name": "issuer_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Event issuer data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/event_config.UpdateEventIssuerRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/event_config.EventIssuerResponse"
+                            "$ref": "#/definitions/event.EventIssuerResponse"
                         }
                     },
                     "400": {
@@ -892,6 +1308,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Events"
                 ],
                 "summary": "Delete event issuer",
                 "operationId": "delete-event-issuer",
@@ -943,107 +1362,6 @@ const docTemplate = `{
             }
         },
         "/api/v1/events/{event_id}/registration-config": {
-            "get": {
-                "description": "Get the event registration configuration for an event",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Get event registration config",
-                "operationId": "get-event-registration-config",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event ID",
-                        "name": "event_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/event_config.EventRegistrationConfigResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update the event registration configuration for an event",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Update event registration config",
-                "operationId": "update-event-registration-config",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event ID",
-                        "name": "event_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Event registration config data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/event_config.UpdateEventRegistrationConfigRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/event_config.EventRegistrationConfigResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            },
             "post": {
                 "description": "Create a new event registration configuration for an event",
                 "consumes": [
@@ -1068,7 +1386,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_config.CreateEventRegistrationConfigRequest"
+                            "$ref": "#/definitions/eventconfig.CreateEventRegistrationConfigRequest"
                         }
                     }
                 ],
@@ -1076,7 +1394,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventRegistrationConfigResponse"
+                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
                         }
                     },
                     "400": {
@@ -1149,6 +1467,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/issuers": {
+            "get": {
+                "description": "Get verified issuers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Issuer"
+                ],
+                "summary": "Get verified issuers",
+                "operationId": "get-verified-issuers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Profile"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/onboard/check-onboard-status": {
             "post": {
                 "description": "Check onboard status",
@@ -1189,8 +1560,8 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "Sign message",
-                        "name": "sign_message",
+                        "description": "Message signature",
+                        "name": "message_signature",
                         "in": "body",
                         "schema": {
                             "$ref": "#/definitions/onboard.CheckOnboardStatusRequest"
@@ -1320,12 +1691,12 @@ const docTemplate = `{
                     "Onboard"
                 ],
                 "summary": "Get preset message for the client to sign to register",
-                "operationId": "get-register-sign-message",
+                "operationId": "get-sign-message",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/onboard.getRegisterSignMessageResponse"
+                            "$ref": "#/definitions/onboard.getSignMessageResponse"
                         }
                     }
                 }
@@ -1635,6 +2006,47 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "core-api_internal_handler_eventconfig.EventCertificateConfigResponse": {
+            "type": "object",
+            "properties": {
+                "academic_institution_pos_x": {
+                    "type": "number"
+                },
+                "academic_institution_pos_y": {
+                    "type": "number"
+                },
+                "base_certificate_presigned_url": {
+                    "type": "string"
+                },
+                "base_certificate_storage_key": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "event_name_pos_x": {
+                    "type": "number"
+                },
+                "event_name_pos_y": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name_pos_x": {
+                    "type": "number"
+                },
+                "name_pos_y": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "customerror.Err": {
             "description": "Custom error type",
             "type": "object",
@@ -1668,13 +2080,86 @@ const docTemplate = `{
         "entity.Event": {
             "type": "object",
             "properties": {
-                "event_banner_presigned_url": {
+                "banner_storage_key": {
                     "type": "string"
                 },
-                "event_name": {
+                "chain_id": {
+                    "type": "integer"
+                },
+                "contact_address": {
+                    "type": "string"
+                },
+                "contact_number": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "event_type": {
+                    "$ref": "#/definitions/entity.EventType"
+                },
+                "google_map_query": {
+                    "type": "string"
+                },
+                "icon_storage_key": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_booking_request_required": {
+                    "type": "boolean"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "is_ticket_transferable": {
+                    "type": "boolean"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "long_description": {
+                    "type": "string"
+                },
+                "max_attendees": {
+                    "type": "integer"
+                },
+                "owner_credential_id": {
+                    "type": "string"
+                },
+                "short_description": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }
+        },
+        "entity.EventType": {
+            "type": "string",
+            "enum": [
+                "public",
+                "private",
+                "invite"
+            ],
+            "x-enum-varnames": [
+                "EventTypePublic",
+                "EventTypePrivate",
+                "EventTypeInvite"
+            ]
         },
         "entity.Profile": {
             "type": "object",
@@ -1747,34 +2232,12 @@ const docTemplate = `{
                 }
             }
         },
-        "event_config.CreateEventCertificateConfigRequest": {
+        "event.CreateEventContractRequest": {
             "type": "object",
-            "properties": {
-                "academic_institution_pos_x": {
-                    "type": "integer"
-                },
-                "academic_institution_pos_y": {
-                    "type": "integer"
-                },
-                "base_certificate_storage_key": {
-                    "type": "string"
-                },
-                "event_name_pos_x": {
-                    "type": "integer"
-                },
-                "event_name_pos_y": {
-                    "type": "integer"
-                },
-                "name_pos_x": {
-                    "type": "integer"
-                },
-                "name_pos_y": {
-                    "type": "integer"
-                }
-            }
-        },
-        "event_config.CreateEventContractRequest": {
-            "type": "object",
+            "required": [
+                "access_manager_contract_address",
+                "event_contract_address"
+            ],
             "properties": {
                 "access_manager_contract_address": {
                     "type": "string"
@@ -1790,13 +2253,24 @@ const docTemplate = `{
                 }
             }
         },
-        "event_config.CreateEventIssuerRequest": {
+        "event.CreateEventIssuerRequest": {
             "type": "object",
+            "required": [
+                "is_signed",
+                "issuer_credential_id"
+            ],
             "properties": {
                 "is_signed": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1
+                    ]
                 },
                 "issuer_credential_id": {
+                    "type": "string"
+                },
+                "sign_message": {
                     "type": "string"
                 },
                 "signature": {
@@ -1804,74 +2278,7 @@ const docTemplate = `{
                 }
             }
         },
-        "event_config.CreateEventRegistrationConfigRequest": {
-            "type": "object",
-            "properties": {
-                "academic_email_requirement_status": {
-                    "type": "integer"
-                },
-                "academic_institution_requirement_status": {
-                    "type": "integer"
-                },
-                "address_requirement_status": {
-                    "type": "integer"
-                },
-                "bio_requirement_status": {
-                    "type": "integer"
-                },
-                "email_requirement_status": {
-                    "type": "integer"
-                },
-                "first_name_requirement_status": {
-                    "type": "integer"
-                },
-                "last_name_requirement_status": {
-                    "type": "integer"
-                },
-                "phone_number_requirement_status": {
-                    "type": "integer"
-                }
-            }
-        },
-        "event_config.EventCertificateConfigResponse": {
-            "type": "object",
-            "properties": {
-                "academic_institution_pos_x": {
-                    "type": "integer"
-                },
-                "academic_institution_pos_y": {
-                    "type": "integer"
-                },
-                "base_certificate_storage_key": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "event_id": {
-                    "type": "string"
-                },
-                "event_name_pos_x": {
-                    "type": "integer"
-                },
-                "event_name_pos_y": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name_pos_x": {
-                    "type": "integer"
-                },
-                "name_pos_y": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "event_config.EventContractResponse": {
+        "event.EventContractResponse": {
             "type": "object",
             "properties": {
                 "access_manager_contract_address": {
@@ -1900,7 +2307,7 @@ const docTemplate = `{
                 }
             }
         },
-        "event_config.EventIssuerResponse": {
+        "event.EventIssuerResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1918,6 +2325,12 @@ const docTemplate = `{
                 "issuer_credential_id": {
                     "type": "string"
                 },
+                "issuer_profile": {
+                    "$ref": "#/definitions/entity.Profile"
+                },
+                "sign_message": {
+                    "type": "string"
+                },
                 "signature": {
                     "type": "string"
                 },
@@ -1926,7 +2339,141 @@ const docTemplate = `{
                 }
             }
         },
-        "event_config.EventRegistrationConfigResponse": {
+        "event.EventResponse": {
+            "type": "object",
+            "properties": {
+                "banner_presigned_url": {
+                    "type": "string"
+                },
+                "banner_storage_key": {
+                    "type": "string"
+                },
+                "chain_id": {
+                    "type": "integer"
+                },
+                "contact_number": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "google_map_query": {
+                    "type": "string"
+                },
+                "icon_presigned_url": {
+                    "type": "string"
+                },
+                "icon_storage_key": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_booking_request_required": {
+                    "type": "boolean"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "is_ticket_transferable": {
+                    "type": "boolean"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "long_description": {
+                    "type": "string"
+                },
+                "max_attendees": {
+                    "type": "integer"
+                },
+                "owner_credential_id": {
+                    "type": "string"
+                },
+                "short_description": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.UpdateEventContractRequest": {
+            "type": "object",
+            "properties": {
+                "access_manager_contract_address": {
+                    "type": "string"
+                },
+                "certificate_contract_address": {
+                    "type": "string"
+                },
+                "event_contract_address": {
+                    "type": "string"
+                },
+                "ticket_contract_address": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.UpdateEventIssuerRequest": {
+            "type": "object",
+            "properties": {
+                "event_id": {
+                    "type": "string"
+                },
+                "issuer_credential_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "eventconfig.CreateEventRegistrationConfigRequest": {
+            "type": "object",
+            "properties": {
+                "academic_email_requirement_status": {
+                    "type": "integer"
+                },
+                "academic_institution_requirement_status": {
+                    "type": "integer"
+                },
+                "address_requirement_status": {
+                    "type": "integer"
+                },
+                "bio_requirement_status": {
+                    "type": "integer"
+                },
+                "email_requirement_status": {
+                    "type": "integer"
+                },
+                "final_call_for_registration": {
+                    "type": "string"
+                },
+                "first_name_requirement_status": {
+                    "type": "integer"
+                },
+                "last_name_requirement_status": {
+                    "type": "integer"
+                },
+                "phone_number_requirement_status": {
+                    "type": "integer"
+                },
+                "registration_password": {
+                    "type": "string"
+                }
+            }
+        },
+        "eventconfig.EventRegistrationConfigResponse": {
             "type": "object",
             "properties": {
                 "academic_email_requirement_status": {
@@ -1950,6 +2497,9 @@ const docTemplate = `{
                 "event_id": {
                     "type": "string"
                 },
+                "final_call_for_registration": {
+                    "type": "string"
+                },
                 "first_name_requirement_status": {
                     "type": "integer"
                 },
@@ -1962,66 +2512,15 @@ const docTemplate = `{
                 "phone_number_requirement_status": {
                     "type": "integer"
                 },
+                "registration_password": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "string"
                 }
             }
         },
-        "event_config.UpdateEventCertificateConfigRequest": {
-            "type": "object",
-            "properties": {
-                "academic_institution_pos_x": {
-                    "type": "integer"
-                },
-                "academic_institution_pos_y": {
-                    "type": "integer"
-                },
-                "base_certificate_storage_key": {
-                    "type": "string"
-                },
-                "event_name_pos_x": {
-                    "type": "integer"
-                },
-                "event_name_pos_y": {
-                    "type": "integer"
-                },
-                "name_pos_x": {
-                    "type": "integer"
-                },
-                "name_pos_y": {
-                    "type": "integer"
-                }
-            }
-        },
-        "event_config.UpdateEventContractRequest": {
-            "type": "object",
-            "properties": {
-                "access_manager_contract_address": {
-                    "type": "string"
-                },
-                "certificate_contract_address": {
-                    "type": "string"
-                },
-                "event_contract_address": {
-                    "type": "string"
-                },
-                "ticket_contract_address": {
-                    "type": "string"
-                }
-            }
-        },
-        "event_config.UpdateEventIssuerRequest": {
-            "type": "object",
-            "properties": {
-                "is_signed": {
-                    "type": "integer"
-                },
-                "signature": {
-                    "type": "string"
-                }
-            }
-        },
-        "event_config.UpdateEventRegistrationConfigRequest": {
+        "eventconfig.UpdateEventRegistrationConfigRequest": {
             "type": "object",
             "properties": {
                 "academic_email_requirement_status": {
@@ -2039,14 +2538,29 @@ const docTemplate = `{
                 "email_requirement_status": {
                     "type": "integer"
                 },
+                "event_type": {
+                    "$ref": "#/definitions/entity.EventType"
+                },
+                "final_call_for_registration": {
+                    "type": "string"
+                },
                 "first_name_requirement_status": {
                     "type": "integer"
+                },
+                "is_booking_request_required": {
+                    "type": "boolean"
+                },
+                "is_ticket_transferable": {
+                    "type": "boolean"
                 },
                 "last_name_requirement_status": {
                     "type": "integer"
                 },
                 "phone_number_requirement_status": {
                     "type": "integer"
+                },
+                "registration_password": {
+                    "type": "string"
                 }
             }
         },
@@ -2059,6 +2573,9 @@ const docTemplate = `{
                 "expires_in": {
                     "type": "integer"
                 },
+                "message_signature": {
+                    "type": "string"
+                },
                 "method": {
                     "enum": [
                         "google",
@@ -2069,9 +2586,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/onboard.RegistrationMethod"
                         }
                     ]
-                },
-                "sign_message": {
-                    "type": "string"
                 }
             }
         },
@@ -2097,9 +2611,12 @@ const docTemplate = `{
                 "RegistrationMethodWallet"
             ]
         },
-        "onboard.getRegisterSignMessageResponse": {
+        "onboard.getSignMessageResponse": {
             "description": "Response for the client to sign to register",
             "type": "object",
+            "required": [
+                "message"
+            ],
             "properties": {
                 "message": {
                     "type": "string"

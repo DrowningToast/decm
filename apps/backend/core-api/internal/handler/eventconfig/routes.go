@@ -22,7 +22,6 @@ func (h *Handler) Mount(r fiber.Router) {
 	eventConfigGroup.Delete("/registration", h.DeleteEventRegistrationConfig)
 
 	// Event Certificate Config routes
-	eventConfigGroup.Post("/certificate", h.CreateEventCertificateConfig)
 	eventConfigGroup.Get("/certificate", h.GetEventCertificateConfig)
 	eventConfigGroup.Put("/certificate", h.UpdateEventCertificateConfig)
 	eventConfigGroup.Delete("/certificate", h.DeleteEventCertificateConfig)

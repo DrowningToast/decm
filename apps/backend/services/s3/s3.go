@@ -95,8 +95,9 @@ type S3UploadRequestObject struct {
 }
 
 const (
-	StorageKeyTypeEventBanner StorageKeyType = "event/%s/banner/%s%s"
-	StorageKeyTypeEventIcon   StorageKeyType = "event/%s/icon/%s%s"
+	StorageKeyTypeEventBanner      StorageKeyType = "event/%s/banner/%s%s"
+	StorageKeyTypeEventIcon        StorageKeyType = "event/%s/icon/%s%s"
+	StorageKeyTypeEventCertificate StorageKeyType = "event/%s/certificate/%s%s"
 )
 
 func (s *S3Service) GetStorageKey(entityType StorageKeyType, entityID uuid.UUID, fileName string, fileExtension string) string {
@@ -168,13 +169,13 @@ func (s *S3Service) DeleteFile(ctx context.Context, key string) error {
 	return nil
 }
 
-func (s *S3Service) GetPresignedURL(ctx context.Context, key string, expiresIn time.Duration) (string, error) {
+func (s *S3Service) GetPresignedURL(ctx context.Context, key string) (string, error) {
 	req, _ := s.s3Client.GetObjectRequest(&s3.GetObjectInput{
 		Bucket: aws.String(s.s3Config.BucketName),
 		Key:    aws.String(key),
 	})
 
-	urlStr, err := req.Presign(expiresIn)
+	urlStr, err := req.Presign(24 * time.Hour)
 	if err != nil {
 		return "", customerror.Parse(&customerror.ErrInternalServer, err)
 	}

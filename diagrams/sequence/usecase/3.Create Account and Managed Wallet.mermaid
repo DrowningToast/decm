@@ -1,0 +1,64 @@
+sequenceDiagram
+    participant Participant_ as Participant
+    participant Backend as Backend
+    participant GoogleAuth as Google Authentication
+    participant Database as Database
+    participant WalletService as Managed Wallet Service (Internal Backend Component)
+
+    Note over Participant_, Backend: Pre-condition: ผู้ใช้ยังไม่มีบัญชี
+
+    Participant_ ->> Backend: 1. เลือก 'Signup' และเลือกดำเนินการต่อด้วย Google Account
+    activate Participant_
+    activate Backend
+
+    Backend ->> GoogleAuth: 2. ส่งคำขอ Authentication
+    activate GoogleAuth
+    GoogleAuth -->> Backend: 3. คืนข้อมูล User/Token หลังยืนยันตัวตนสำเร็จ
+
+    alt การยืนยันตัวตนผ่าน Provider ล้มเหลว (Alt Flow A2)
+        GoogleAuth -->> Backend: 3a. คืนค่า Error
+        deactivate GoogleAuth
+        Backend -->> Participant_: 4a. แสดงข้อความ 'การยืนยันตัวตนล้มเหลว'
+    else การยืนยันตัวตนสำเร็จ
+        Backend ->> Database: 4. ตรวจสอบ Email/User ID ว่ามีในระบบหรือไม่
+        activate Database
+        Database -->> Backend: 5. คืนผลการตรวจสอบ
+
+        alt ผู้ใช้มีบัญชีอยู่แล้ว (Alt Flow A1)
+            Database -->> Backend: 5a. แจ้งว่าพบข้อมูลผู้ใช้
+            deactivate Database
+            Backend -->> Participant_: 6a. แสดงข้อความ 'บัญชีนี้มีอยู่แล้ว' และแนะนำให้ Signin
+            deactivate Backend
+        else ผู้ใช้ใหม่ (Basic Flow)
+            Backend -->> Participant_: 6. แสดงหน้าตั้งค่า PIN Code
+            Participant_ ->> Backend: 7. กรอกและยืนยัน PIN Code
+            activate Backend
+            Backend ->> Backend: 8. Validate PIN และเตรียมการเข้ารหัส Wallet Key
+            Backend -->> Participant_: 9. แสดงหน้ากรอกข้อมูลพื้นฐาน (Basic Information)
+            Participant_ ->> Backend: 10. กรอกและส่งข้อมูล (ชื่อ-นามสกุล)
+            Backend ->> Database: 11. สร้าง User Record ใหม่ (บันทึกข้อมูลพื้นฐาน, User ID)
+            activate Database
+            Database -->> Backend: 12. ยืนยันการสร้าง User Record
+            deactivate Database
+            Backend ->> WalletService: 13. สร้าง Managed Wallet (Generate Address, Securely Store/Encrypt Private Key using PIN)
+            activate WalletService
+            WalletService -->> Backend: 14. คืน Wallet Address
+            deactivate WalletService
+            Backend ->> Database: 15. เชื่อมโยง Wallet Address กับ User Record
+            activate Database
+            Database -->> Backend: 16. ยืนยันการเชื่อมโยง Wallet
+            deactivate Database
+            Backend -->> Participant_: 17. แสดงหน้าข้อตกลง Wallet (Wallet Agreement)
+            deactivate Backend
+            Participant_ ->> Backend: 18. กดยอมรับข้อตกลง
+            activate Backend
+            Backend ->> Database: 19. บันทึกการยอมรับข้อตกลง
+            activate Database
+            Database -->> Backend: 20. ยืนยันการบันทึก
+            deactivate Database
+            deactivate Backend
+            Backend -->> Participant_: 21. สร้าง Session/Login และ Redirect ไปหน้า Home
+        end
+    end
+
+    deactivate Participant_

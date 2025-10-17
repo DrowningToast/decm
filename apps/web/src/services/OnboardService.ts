@@ -1,4 +1,3 @@
-import { Err } from "@/common/Err";
 import { coreApiClient, type CoreApiType } from "@/lib/api/api";
 import { OnboardRegistrationMethod } from "@decm/api";
 
@@ -10,7 +9,7 @@ export type CheckOnboardParams =
 	  }
 	| {
 			method?: OnboardRegistrationMethod.RegistrationMethodWallet;
-			signMessage: string;
+			signSignature: string;
 	  };
 
 export class OnboardService {
@@ -23,7 +22,8 @@ export class OnboardService {
 	async checkOnboardStatus(params?: CheckOnboardParams) {
 		if (params?.method === OnboardRegistrationMethod.RegistrationMethodGoogle) {
 			if (!params.accessToken || !params.expiresIn) {
-				throw new Err("Invalid access token or expires in");
+				console.error("Invalid access token or expires in");
+				return null;
 			}
 			return this._coreApi.v1.checkOnboardStatus({
 				method: params.method,
@@ -33,18 +33,24 @@ export class OnboardService {
 		} else if (
 			params?.method === OnboardRegistrationMethod.RegistrationMethodWallet
 		) {
-			if (!params?.signMessage) {
-				throw new Err("Invalid sign message");
+			if (!params?.signSignature) {
+				console.error("Invalid sign signature");
+				return null;
 			}
 			return this._coreApi.v1.checkOnboardStatus({
 				method: params.method,
-				sign_message: params.signMessage,
+				message_signature: params.signSignature,
 			});
 		} else if (!params) {
 			// check via jwt cookie
 			return this._coreApi.v1.checkOnboardStatus({});
 		}
 		throw new Error("Invalid method");
+	}
+
+	async getSignMessage() {
+		const response = await this._coreApi.v1.getSignMessage();
+		return response.message;
 	}
 }
 

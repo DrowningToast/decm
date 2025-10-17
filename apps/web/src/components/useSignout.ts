@@ -1,7 +1,9 @@
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
 import { authService } from "@/services/AuthService";
+import { useDisconnect } from "@reown/appkit/react";
 import { useMutation } from "@tanstack/react-query";
+import { useWalletClient } from "wagmi";
 
 export const useSignout = () => {
 	const [, setAccessToken] = useLocalStorage<string | undefined>(
@@ -12,6 +14,12 @@ export const useSignout = () => {
 		LOCAL_STORAGE_KEYS.EXPIRES_IN,
 		undefined
 	);
+	const [, setAuthSignSignature] = useLocalStorage<string | undefined>(
+		LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE,
+		undefined
+	);
+	const { data: walletClient } = useWalletClient();
+	const { disconnect } = useDisconnect();
 
 	const {
 		mutateAsync: signout,
@@ -23,6 +31,10 @@ export const useSignout = () => {
 
 			setAccessToken(undefined);
 			setExpiresIn(undefined);
+			setAuthSignSignature(undefined);
+			if (walletClient) {
+				await disconnect();
+			}
 		},
 	});
 

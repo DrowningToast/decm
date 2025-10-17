@@ -11,7 +11,7 @@ func (h *Handler) Mount(r fiber.Router) {
 	defer logger.Info("Mounted core api routes")
 
 	onboardGroup := r.Group("/onboard")
-	onboardGroup.Get("/sign-message", h.GetRegisterSignMessage)
+	onboardGroup.Get("/sign-message", h.GetSignMessage)
 	onboardGroup.Post("/register-with-wallet", h.RegisterWithWallet)
 	onboardGroup.Post("/register-with-google-oauth", h.RegisterWithGoogleOAuth)
 	onboardGroup.Post("/check-onboard-status", h.VerifyJwtMiddleware.Middleware, h.CheckOnboardStatus)

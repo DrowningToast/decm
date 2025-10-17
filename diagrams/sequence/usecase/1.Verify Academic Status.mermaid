@@ -1,0 +1,63 @@
+sequenceDiagram
+    participant Participant_ as Participant
+    participant Backend as Backend
+    participant ExternalVerification as External Verification (Email/LDAP)
+    participant AcademicIdentityNFT as Academic Identity NFT Contract
+    participant Database as Database
+
+    Note over Participant_, Backend: Pre-condition: Participant logged in
+    
+    Participant_ ->> Backend: 1. เลือก 'ยืนยันสถานะทางการศึกษา'
+    activate Participant_
+    activate Backend
+    Backend -->> Participant_: 2. แสดงช่องทางการยืนยัน
+    deactivate Backend
+    
+    Participant_ ->> Backend: 3. เลือกช่องทางการยืนยัน (เช่น Email/LDAP)
+    activate Backend
+    Participant_ ->> Backend: 4. กรอกข้อมูลที่จำเป็น (เช่น Email/Username/Password)
+    deactivate Backend
+    
+    alt Participant ยกเลิก (Alt Flow A2)
+        Participant_ ->> Backend: ยกเลิกการดำเนินการ
+        activate Backend
+        Backend -->> Participant_: สิ้นสุด Use Case
+        deactivate Backend
+    end
+
+    Backend ->> ExternalVerification: 5. ส่งคำขอยืนยัน + ข้อมูลที่ Participant กรอก
+    activate Backend
+    activate ExternalVerification
+
+    Note over Participant_, ExternalVerification: 6. Participant ดำเนินการยืนยัน<br/>(เช่น คลิก Link ใน Email, Login LDAP)
+
+    alt การยืนยันไม่สำเร็จ (Alt Flow A1)
+        ExternalVerification -->> Backend: 7a. แจ้งผลการยืนยันล้มเหลว
+        Backend -->> Participant_: 8a. แสดงข้อความข้อผิดพลาด<br/>'การยืนยันไม่สำเร็จ โปรดลองใหม่'
+    else การยืนยันสำเร็จ (Basic Flow)
+        ExternalVerification -->> Backend: 7b. ส่งผลการยืนยันสถานะสำเร็จ
+        deactivate Backend
+        deactivate ExternalVerification
+
+        Note over Backend, AcademicIdentityNFT: <<include>> Issue Academic Identity NFT
+        Backend ->> AcademicIdentityNFT: 8. เรียกฟังก์ชัน mintAcademicIdentity() + Wallet Address + Metadata
+        activate Backend
+        activate AcademicIdentityNFT
+
+        AcademicIdentityNFT -->> Backend: 9. คืนผลการ Mint (Success + Token ID/TxHash)
+        
+        alt Mint NFT ล้มเหลว (Sub-flow Alt)
+             AcademicIdentityNFT -->> Backend: 9a. คืนผลการ Mint ล้มเหลว (Error)
+             deactivate AcademicIdentityNFT
+             Backend -->> Participant_: 10a. แสดงข้อความ 'การออก NFT ล้มเหลว'
+        else Mint NFT สำเร็จ
+             Backend ->> Database: 10. บันทึกสถานะยืนยัน + Token ID/TxHash เชื่อมโยงกับ Profile
+             activate Database
+             Database -->> Backend: 11. ยืนยันการบันทึกสำเร็จ
+             deactivate Database
+             deactivate Backend 
+             Backend -->> Participant_: 12. แสดงข้อความ 'ยืนยันสถานะสำเร็จ ได้รับ NFT แล้ว'
+        end
+    end
+
+    deactivate Participant_

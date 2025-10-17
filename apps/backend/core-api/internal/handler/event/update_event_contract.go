@@ -1,7 +1,9 @@
 package event
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -58,7 +60,10 @@ func (h *Handler) UpdateEventContract(ctx *fiber.Ctx) error {
 		CertificateContractAddress:   pgtype.Text{String: req.CertificateContractAddress, Valid: req.CertificateContractAddress != ""},
 	}
 
-	contract, err := h.EventUc.UpdateEventContract(ctx.UserContext(), eventID, params)
+	ctxWithTimeout, cancel := context.WithTimeout(ctx.UserContext(), 30*time.Second)
+	defer cancel()
+
+	contract, err := h.EventUc.UpdateEventContract(ctxWithTimeout, eventID, params)
 	if err != nil {
 		return err
 	}

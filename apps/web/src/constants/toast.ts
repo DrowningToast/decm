@@ -21,4 +21,10 @@ export const TOAST_USECASE_VIEWMODEL = {
 		INTERNAL_ERROR_RESPONSE:
 			"flow.check_onboard_status.internal_error_response",
 	},
+	[USECASE_IDS.OAUTH_GOOGLE_CREATE_ACCOUNT]: {
+		SUCCESS: "flow.oauth_google.create_account_success",
+		ERROR: "flow.oauth_google.create_account_error",
+		ERROR_DUPLICATE: "flow.oauth_google.create_account_error_duplicate",
+		ERROR_PROFILE: "flow.oauth_google.create_profile_error",
+	},
 } satisfies Record<UseCaseId, Record<string, string>>;

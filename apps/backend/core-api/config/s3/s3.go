@@ -15,5 +15,13 @@ func (c *S3Config) IsValid() bool {
 }
 
 func (c *S3Config) String() string {
-	return fmt.Sprintf("s3://%s@%s/%s", c.AccessKeyID, c.Endpoint, c.BucketName)
+	// Mask the AccessKeyID to prevent credential leakage in logs
+	maskedKeyID := ""
+	if len(c.AccessKeyID) > 4 {
+		maskedKeyID = "****" + c.AccessKeyID[len(c.AccessKeyID)-4:]
+	} else if c.AccessKeyID != "" {
+		maskedKeyID = "****"
+	}
+
+	return fmt.Sprintf("s3://%s@%s/%s", maskedKeyID, c.Endpoint, c.BucketName)
 }

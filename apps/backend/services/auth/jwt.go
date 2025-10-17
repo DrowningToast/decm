@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"apps/backend/common"
 	customerror "apps/backend/common/customerror"
 
 	"github.com/gofiber/fiber/v2"
@@ -12,8 +13,9 @@ import (
 )
 
 type JwtPayload struct {
-	UserId        uuid.UUID `json:"id"`
-	WalletAddress string    `json:"wallet_address"`
+	UserId         uuid.UUID             `json:"id"`
+	WalletAddress  string                `json:"wallet_address"`
+	SolutionStatus common.SolutionStatus `json:"solution_status"`
 }
 
 type JwtClaims struct {
