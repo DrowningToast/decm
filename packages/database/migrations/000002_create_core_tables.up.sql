@@ -81,6 +81,9 @@ CREATE TABLE events (
     contact_address VARCHAR(255) NOT NULL,
     owner_credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
 
+    banner_storage_key VARCHAR(255) NOT NULL,
+    icon_storage_key VARCHAR(255) NOT NULL,
+
     title VARCHAR(255) NOT NULL,
     short_description VARCHAR(255) NOT NULL,
     long_description TEXT,

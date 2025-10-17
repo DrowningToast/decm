@@ -18,6 +18,7 @@ type Querier interface {
 	// Authentication Credentials CRUD queries
 	// Note: Encryption is handled at the repository layer using AES-GCM
 	CreateAuthenticationCredential(ctx context.Context, arg CreateAuthenticationCredentialParams) (AuthenticationCredential, error)
+	CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error)
 	CreateEventCertificateConfig(ctx context.Context, arg CreateEventCertificateConfigParams) (EventCertificateConfig, error)
 	CreateEventContract(ctx context.Context, arg CreateEventContractParams) (EventContract, error)
 	CreateEventIssuer(ctx context.Context, arg CreateEventIssuerParams) (EventIssuer, error)
@@ -26,6 +27,7 @@ type Querier interface {
 	// Note: PII encryption is handled at the repository layer using AES-GCM
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error
+	DeleteEvent(ctx context.Context, id uuid.UUID) error
 	DeleteEventCertificateConfig(ctx context.Context, eventID uuid.UUID) error
 	DeleteEventContract(ctx context.Context, eventID uuid.UUID) error
 	DeleteEventIssuer(ctx context.Context, id uuid.UUID) error
@@ -37,6 +39,7 @@ type Querier interface {
 	GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (AuthenticationCredential, error)
 	GetCredentialsBySolutionStatus(ctx context.Context, arg GetCredentialsBySolutionStatusParams) ([]AuthenticationCredential, error)
 	GetCredentialsByVerificationStatus(ctx context.Context, arg GetCredentialsByVerificationStatusParams) ([]AuthenticationCredential, error)
+	GetEventById(ctx context.Context, id uuid.UUID) (Event, error)
 	GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (EventCertificateConfig, error)
 	GetEventContractByEventID(ctx context.Context, eventID uuid.UUID) (EventContract, error)
 	GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIssuer, error)
@@ -47,7 +50,9 @@ type Querier interface {
 	GetProfileByEmail(ctx context.Context, email pgtype.Text) (Profile, error)
 	GetProfileByID(ctx context.Context, id uuid.UUID) (Profile, error)
 	ListAuthenticationCredentials(ctx context.Context, arg ListAuthenticationCredentialsParams) ([]AuthenticationCredential, error)
+	ListEventsByOwner(ctx context.Context, ownerCredentialID uuid.UUID) ([]Event, error)
 	ListProfiles(ctx context.Context, arg ListProfilesParams) ([]Profile, error)
+	ListPublicEvents(ctx context.Context) ([]Event, error)
 	RemoveGithubConnector(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
 	RemoveGoogleConnector(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
 	SetGithubConnector(ctx context.Context, arg SetGithubConnectorParams) (AuthenticationCredential, error)
@@ -58,6 +63,7 @@ type Querier interface {
 	UpdateAuthenticationCredential(ctx context.Context, arg UpdateAuthenticationCredentialParams) (AuthenticationCredential, error)
 	UpdateAuthenticationCredentialKeys(ctx context.Context, arg UpdateAuthenticationCredentialKeysParams) (AuthenticationCredential, error)
 	UpdateAuthenticationCredentialPassword(ctx context.Context, arg UpdateAuthenticationCredentialPasswordParams) (AuthenticationCredential, error)
+	UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event, error)
 	UpdateEventCertificateConfig(ctx context.Context, arg UpdateEventCertificateConfigParams) (EventCertificateConfig, error)
 	UpdateEventContract(ctx context.Context, arg UpdateEventContractParams) (EventContract, error)
 	UpdateEventIssuer(ctx context.Context, arg UpdateEventIssuerParams) (EventIssuer, error)
