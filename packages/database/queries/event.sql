@@ -88,8 +88,11 @@ WHERE id = sqlc.arg(id)
 RETURNING *;
 
 -- name: DeleteEvent :exec
-DELETE FROM events
-WHERE id = sqlc.arg(id);
+UPDATE events
+SET
+    deleted_at = now()
+WHERE id = sqlc.arg(id)
+RETURNING *;
 
 -- name: ListEventsByOwner :many
 SELECT 
@@ -144,3 +147,10 @@ SELECT
 FROM events
 WHERE is_public = 1
 ORDER BY start_date ASC;
+
+-- name: ListEventsByOwnerCredentialID :many
+SELECT * 
+FROM events 
+WHERE owner_credential_id = sqlc.arg(owner_credential_id) AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);

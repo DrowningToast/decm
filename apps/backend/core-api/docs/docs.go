@@ -249,6 +249,267 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/events/:event_id": {
+            "put": {
+                "description": "Update an existing event with optional banner and icon image upload",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Update an event",
+                "operationId": "update-event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Event short description",
+                        "name": "short_description",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Event description",
+                        "name": "description",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date (RFC3339 format)",
+                        "name": "start_date",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date (RFC3339 format)",
+                        "name": "end_date",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of seats",
+                        "name": "seats_count",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Contact number",
+                        "name": "contact_number",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Contact address",
+                        "name": "contact_address",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Location",
+                        "name": "location",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Google map query",
+                        "name": "google_map_query",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Event banner image (JPEG, PNG, WebP, max 10MB) - optional",
+                        "name": "banner",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Event icon image (JPEG, PNG, WebP, max 10MB) - optional",
+                        "name": "icon",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.Event"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/owner-credentials/{owner_credential_id}": {
+            "get": {
+                "description": "Get events by owner credentials ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get events by owner credentials ID",
+                "operationId": "get-events-by-owner-credentials-id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Owner Credentials ID",
+                        "name": "owner_credential_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/event.EventResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{event_id}": {
+            "get": {
+                "description": "Get event by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get event by ID",
+                "operationId": "get-event-by-id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/event.EventResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete event by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete event by ID",
+                "operationId": "delete-event-by-id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}/certificate-config": {
             "get": {
                 "description": "Get the event certificate configuration for an event",
@@ -273,7 +534,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventCertificateConfigResponse"
+                            "$ref": "#/definitions/eventconfig.EventCertificateConfigResponse"
                         }
                     },
                     "400": {
@@ -320,7 +581,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_config.UpdateEventCertificateConfigRequest"
+                            "$ref": "#/definitions/eventconfig.UpdateEventCertificateConfigRequest"
                         }
                     }
                 ],
@@ -328,7 +589,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventCertificateConfigResponse"
+                            "$ref": "#/definitions/eventconfig.EventCertificateConfigResponse"
                         }
                     },
                     "400": {
@@ -375,7 +636,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_config.CreateEventCertificateConfigRequest"
+                            "$ref": "#/definitions/eventconfig.CreateEventCertificateConfigRequest"
                         }
                     }
                 ],
@@ -383,7 +644,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventCertificateConfigResponse"
+                            "$ref": "#/definitions/eventconfig.EventCertificateConfigResponse"
                         }
                     },
                     "400": {
@@ -480,7 +741,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventContractResponse"
+                            "$ref": "#/definitions/event.EventContractResponse"
                         }
                     },
                     "400": {
@@ -527,7 +788,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_config.UpdateEventContractRequest"
+                            "$ref": "#/definitions/event.UpdateEventContractRequest"
                         }
                     }
                 ],
@@ -535,7 +796,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventContractResponse"
+                            "$ref": "#/definitions/event.EventContractResponse"
                         }
                     },
                     "400": {
@@ -582,7 +843,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_config.CreateEventContractRequest"
+                            "$ref": "#/definitions/event.CreateEventContractRequest"
                         }
                     }
                 ],
@@ -590,7 +851,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventContractResponse"
+                            "$ref": "#/definitions/event.EventContractResponse"
                         }
                     },
                     "400": {
@@ -689,7 +950,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/event_config.EventIssuerResponse"
+                                "$ref": "#/definitions/event.EventIssuerResponse"
                             }
                         }
                     },
@@ -737,7 +998,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_config.CreateEventIssuerRequest"
+                            "$ref": "#/definitions/event.CreateEventIssuerRequest"
                         }
                     }
                 ],
@@ -745,7 +1006,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventIssuerResponse"
+                            "$ref": "#/definitions/event.EventIssuerResponse"
                         }
                     },
                     "400": {
@@ -800,7 +1061,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventIssuerResponse"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/event.EventIssuerResponse"
+                            }
                         }
                     },
                     "400": {
@@ -854,7 +1118,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_config.UpdateEventIssuerRequest"
+                            "$ref": "#/definitions/event.UpdateEventIssuerRequest"
                         }
                     }
                 ],
@@ -862,7 +1126,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventIssuerResponse"
+                            "$ref": "#/definitions/event.EventIssuerResponse"
                         }
                     },
                     "400": {
@@ -966,7 +1230,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventRegistrationConfigResponse"
+                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
                         }
                     },
                     "400": {
@@ -1013,7 +1277,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_config.UpdateEventRegistrationConfigRequest"
+                            "$ref": "#/definitions/eventconfig.UpdateEventRegistrationConfigRequest"
                         }
                     }
                 ],
@@ -1021,7 +1285,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventRegistrationConfigResponse"
+                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
                         }
                     },
                     "400": {
@@ -1068,7 +1332,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_config.CreateEventRegistrationConfigRequest"
+                            "$ref": "#/definitions/eventconfig.CreateEventRegistrationConfigRequest"
                         }
                     }
                 ],
@@ -1076,7 +1340,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event_config.EventRegistrationConfigResponse"
+                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
                         }
                     },
                     "400": {
@@ -1668,10 +1932,67 @@ const docTemplate = `{
         "entity.Event": {
             "type": "object",
             "properties": {
-                "event_banner_presigned_url": {
+                "banner_storage_key": {
                     "type": "string"
                 },
-                "event_name": {
+                "chain_id": {
+                    "type": "integer"
+                },
+                "contact_address": {
+                    "type": "string"
+                },
+                "contact_number": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "google_map_query": {
+                    "type": "string"
+                },
+                "icon_storage_key": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_booking_request_required": {
+                    "type": "boolean"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "is_ticket_transferable": {
+                    "type": "boolean"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "long_description": {
+                    "type": "string"
+                },
+                "max_attendees": {
+                    "type": "integer"
+                },
+                "owner_credential_id": {
+                    "type": "string"
+                },
+                "short_description": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }
@@ -1747,7 +2068,192 @@ const docTemplate = `{
                 }
             }
         },
-        "event_config.CreateEventCertificateConfigRequest": {
+        "event.CreateEventContractRequest": {
+            "type": "object",
+            "properties": {
+                "access_manager_contract_address": {
+                    "type": "string"
+                },
+                "certificate_contract_address": {
+                    "type": "string"
+                },
+                "event_contract_address": {
+                    "type": "string"
+                },
+                "ticket_contract_address": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.CreateEventIssuerRequest": {
+            "type": "object",
+            "properties": {
+                "is_signed": {
+                    "type": "integer"
+                },
+                "issuer_credential_id": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.EventContractResponse": {
+            "type": "object",
+            "properties": {
+                "access_manager_contract_address": {
+                    "type": "string"
+                },
+                "certificate_contract_address": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_contract_address": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ticket_contract_address": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.EventIssuerResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_signed": {
+                    "type": "integer"
+                },
+                "issuer_credential_id": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.EventResponse": {
+            "type": "object",
+            "properties": {
+                "banner_presigned_url": {
+                    "type": "string"
+                },
+                "banner_storage_key": {
+                    "type": "string"
+                },
+                "chain_id": {
+                    "type": "integer"
+                },
+                "contact_number": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "google_map_query": {
+                    "type": "string"
+                },
+                "icon_presigned_url": {
+                    "type": "string"
+                },
+                "icon_storage_key": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_booking_request_required": {
+                    "type": "boolean"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "is_ticket_transferable": {
+                    "type": "boolean"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "long_description": {
+                    "type": "string"
+                },
+                "max_attendees": {
+                    "type": "integer"
+                },
+                "owner_credential_id": {
+                    "type": "string"
+                },
+                "short_description": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.UpdateEventContractRequest": {
+            "type": "object",
+            "properties": {
+                "access_manager_contract_address": {
+                    "type": "string"
+                },
+                "certificate_contract_address": {
+                    "type": "string"
+                },
+                "event_contract_address": {
+                    "type": "string"
+                },
+                "ticket_contract_address": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.UpdateEventIssuerRequest": {
+            "type": "object",
+            "properties": {
+                "is_signed": {
+                    "type": "integer"
+                },
+                "signature": {
+                    "type": "string"
+                }
+            }
+        },
+        "eventconfig.CreateEventCertificateConfigRequest": {
             "type": "object",
             "properties": {
                 "academic_institution_pos_x": {
@@ -1773,38 +2279,7 @@ const docTemplate = `{
                 }
             }
         },
-        "event_config.CreateEventContractRequest": {
-            "type": "object",
-            "properties": {
-                "access_manager_contract_address": {
-                    "type": "string"
-                },
-                "certificate_contract_address": {
-                    "type": "string"
-                },
-                "event_contract_address": {
-                    "type": "string"
-                },
-                "ticket_contract_address": {
-                    "type": "string"
-                }
-            }
-        },
-        "event_config.CreateEventIssuerRequest": {
-            "type": "object",
-            "properties": {
-                "is_signed": {
-                    "type": "integer"
-                },
-                "issuer_credential_id": {
-                    "type": "string"
-                },
-                "signature": {
-                    "type": "string"
-                }
-            }
-        },
-        "event_config.CreateEventRegistrationConfigRequest": {
+        "eventconfig.CreateEventRegistrationConfigRequest": {
             "type": "object",
             "properties": {
                 "academic_email_requirement_status": {
@@ -1833,7 +2308,7 @@ const docTemplate = `{
                 }
             }
         },
-        "event_config.EventCertificateConfigResponse": {
+        "eventconfig.EventCertificateConfigResponse": {
             "type": "object",
             "properties": {
                 "academic_institution_pos_x": {
@@ -1871,62 +2346,7 @@ const docTemplate = `{
                 }
             }
         },
-        "event_config.EventContractResponse": {
-            "type": "object",
-            "properties": {
-                "access_manager_contract_address": {
-                    "type": "string"
-                },
-                "certificate_contract_address": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "event_contract_address": {
-                    "type": "string"
-                },
-                "event_id": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "ticket_contract_address": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "event_config.EventIssuerResponse": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "event_id": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "is_signed": {
-                    "type": "integer"
-                },
-                "issuer_credential_id": {
-                    "type": "string"
-                },
-                "signature": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "event_config.EventRegistrationConfigResponse": {
+        "eventconfig.EventRegistrationConfigResponse": {
             "type": "object",
             "properties": {
                 "academic_email_requirement_status": {
@@ -1967,7 +2387,7 @@ const docTemplate = `{
                 }
             }
         },
-        "event_config.UpdateEventCertificateConfigRequest": {
+        "eventconfig.UpdateEventCertificateConfigRequest": {
             "type": "object",
             "properties": {
                 "academic_institution_pos_x": {
@@ -1993,35 +2413,7 @@ const docTemplate = `{
                 }
             }
         },
-        "event_config.UpdateEventContractRequest": {
-            "type": "object",
-            "properties": {
-                "access_manager_contract_address": {
-                    "type": "string"
-                },
-                "certificate_contract_address": {
-                    "type": "string"
-                },
-                "event_contract_address": {
-                    "type": "string"
-                },
-                "ticket_contract_address": {
-                    "type": "string"
-                }
-            }
-        },
-        "event_config.UpdateEventIssuerRequest": {
-            "type": "object",
-            "properties": {
-                "is_signed": {
-                    "type": "integer"
-                },
-                "signature": {
-                    "type": "string"
-                }
-            }
-        },
-        "event_config.UpdateEventRegistrationConfigRequest": {
+        "eventconfig.UpdateEventRegistrationConfigRequest": {
             "type": "object",
             "properties": {
                 "academic_email_requirement_status": {

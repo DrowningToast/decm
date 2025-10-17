@@ -13,7 +13,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// CreateEventRequest - Form data request (without file)
 type CreateEventRequest struct {
 	Name             string `form:"name"`
 	ShortDescription string `form:"short_description"`

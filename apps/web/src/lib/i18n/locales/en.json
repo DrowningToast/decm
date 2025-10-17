@@ -263,7 +263,11 @@
       "next": "Next",
       "previous": "Previous",
       "submitCreate": "Create Event",
-      "submitUpdate": "Update Event"
+      "submitUpdate": "Update Event",
+      "deleteEvent": "Delete Event",
+      "deleteEventMessage": "Are you sure you want to delete this event? This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete"
     },
     "validation": {
       "nameRequired": "Event name is required",

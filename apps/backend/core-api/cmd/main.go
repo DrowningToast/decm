@@ -168,7 +168,7 @@ func main() {
 	profileHandler := profile.NewHandler(profileUc, authService, authenticationGuardMiddleware)
 	profileHandler.Mount(apiV1)
 
-	eventHandler := event.NewHandler(eventUc, authService, authenticationGuardMiddleware)
+	eventHandler := event.NewHandler(eventUc, authService, authenticationGuardMiddleware, logger)
 	eventHandler.Mount(apiV1)
 
 	// Event config handler

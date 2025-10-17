@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, ChevronLeft } from "lucide-react";
-import { eventFormSchema, type EventFormData } from "@/lib/schemas/eventFormSchema";
+import { ChevronRight, ChevronLeft, Trash } from "lucide-react";
+import { createEventFormSchema, type EventFormData } from "@/lib/schemas/eventFormSchema";
 import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -14,38 +14,36 @@ import {
     WrappedDateSelect,
     WrappedInputFile,
 } from "@/components/forms/wrapped-inputs";
+import ConfirmModal from "@/components/ConfirmModal";
 
 interface EventFormProps {
-    /**
-     * Default values for the form (used for editing existing events)
-     */
     defaultValues?: Partial<EventFormData>;
-    /**
-     * Callback function called when form is successfully submitted
-     */
     onSubmit: (data: EventFormData) => void | Promise<void>;
-    /**
-     * Whether the form is in loading/submitting state
-     */
+    onDelete?: () => void | Promise<void>;
     isLoading?: boolean;
-    /**
-     * Form mode: 'create' or 'edit'
-     */
     mode?: "create" | "edit";
+    previewBannerUrl?: string;
+    previewIconUrl?: string;
 }
 
 export const EventForm = ({
     defaultValues,
     onSubmit,
+    onDelete,
     isLoading = false,
     mode = "create",
+    previewBannerUrl,
+    previewIconUrl,
 }: EventFormProps) => {
     const { t } = useTranslation();
     const [currentStep, setCurrentStep] = useState(1);
     const totalSteps = 2;
 
+    // Create schema based on mode
+    const schema = createEventFormSchema(mode);
+
     const { handleSubmit, control, trigger, watch } = useForm<EventFormData>({
-        resolver: zodResolver(eventFormSchema),
+        resolver: zodResolver(schema),
         defaultValues: {
             name: defaultValues?.name || "",
             shortDescription: defaultValues?.shortDescription || "",
@@ -65,7 +63,14 @@ export const EventForm = ({
     const googleMapQuery = watch("googleMapQuery");
 
     const handleFormSubmit = async (data: EventFormData) => {
-        await onSubmit(data);
+        const eventBanner = data.eventBanner ?? null;
+        const eventIcon = data.eventIcon ?? null;
+
+        await onSubmit({
+            ...data,
+            eventBanner: eventBanner,
+            eventIcon: eventIcon,
+        });
     };
 
     const handleNext = async (e?: React.MouseEvent<HTMLButtonElement>) => {
@@ -82,12 +87,15 @@ export const EventForm = ({
                 "name",
                 "shortDescription",
                 "description",
-                "eventBanner",
-                "eventIcon",
                 "startDate",
                 "endDate",
                 "seatsCount",
             );
+        }
+
+        // Only validate banner and icon in create mode
+        if (mode === "create") {
+            fieldsToValidate.push("eventBanner", "eventIcon");
         }
 
         const isValid = await trigger(fieldsToValidate);
@@ -167,8 +175,9 @@ export const EventForm = ({
                                 label={t("events.form.eventBanner")}
                                 accept="image/jpeg,image/jpg,image/png,image/webp"
                                 disabled={isLoading}
-                                required
+                                required={mode === "create"}
                                 previewClassName="object-cover"
+                                previewUrl={previewBannerUrl}
                             />
                         </div>
                         <div>
@@ -178,7 +187,8 @@ export const EventForm = ({
                                 label={t("events.form.eventIcon")}
                                 accept="image/jpeg,image/jpg,image/png,image/webp"
                                 disabled={isLoading}
-                                required
+                                required={mode === "create"}
+                                previewUrl={previewIconUrl}
                             />
                         </div>
                     </div>
@@ -343,6 +353,31 @@ export const EventForm = ({
 
                 {/* Spacer */}
                 {currentStep === 1 && <div />}
+
+                {mode === "edit" && (
+                    <ConfirmModal
+                        title={t("events.form.deleteEvent")}
+                        message={t("events.form.deleteEventMessage")}
+                        onConfirm={() => onDelete?.()}
+                        onCancel={() => {}}
+                        cancelText={t("events.form.cancel")}
+                        confirmText={t("events.form.delete")}
+                    >
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="lg"
+                            onClick={() => {}}
+                            disabled={isLoading}
+                            className="min-w-[150px]"
+                        >
+                            <Trash className="h-4 w-4 mr-2" />
+                            <Typography variant="text" tag="span" className="font-medium">
+                                {t("events.form.delete")}
+                            </Typography>
+                        </Button>
+                    </ConfirmModal>
+                )}
 
                 {/* Next or Submit Button */}
                 {currentStep === 1 ? (

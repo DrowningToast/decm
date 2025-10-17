@@ -1,0 +1,41 @@
+import { coreApiClient } from "@/lib/api/api";
+import { queryClient } from "@/lib/api/queryClient";
+import { useNavigate } from "@/router";
+import { useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+
+export function useDeleteEvent(eventId: string) {
+    const { t } = useTranslation();
+    const navigate = useNavigate();
+
+    const { mutateAsync: _deleteEvent, isPending: isDeletingEvent } = useMutation({
+        mutationKey: ["deleteEvent", eventId],
+        mutationFn: async () => {
+            return await coreApiClient.v1.deleteEventById({
+                eventId,
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["host-events"] });
+        },
+    });
+
+    async function deleteEvent() {
+        try {
+            await _deleteEvent();
+            toast.success(t("deleteEvent.success"));
+
+            navigate("/host/events");
+        } catch (error) {
+            console.error(error);
+            toast.error(t("errors.generic"));
+            throw error;
+        }
+    }
+
+    return {
+        deleteEvent,
+        isDeletingEvent,
+    };
+}

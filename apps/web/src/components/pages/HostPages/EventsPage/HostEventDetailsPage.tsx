@@ -22,9 +22,11 @@ import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
 import { useDataTable } from "@/hooks/use-data-table";
 import { participantColumns, type Participant } from "./columns/participant-columns";
+import type { EventEventResponse } from "@decm/api";
 
 interface HostEventDetailsPageProps {
     eventId: string;
+    event: EventEventResponse;
 }
 
 // Mock API function - replace with actual API call
@@ -88,7 +90,7 @@ const mockFetchParticipants = async ({
     };
 };
 
-export default function HostEventDetailsPage({ eventId }: HostEventDetailsPageProps) {
+export default function HostEventDetailsPage({ eventId, event }: HostEventDetailsPageProps) {
     const { t } = useTranslation();
 
     // Mock participant requirements data - replace with actual data
@@ -128,9 +130,9 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
                         <div className="w-8 h-8 bg-white rounded-full"></div>
                         <div className="flex items-center gap-2">
                             <Typography tag="p" size={"subheader"}>
-                                ToBeIT 67
+                                {event.title}
                             </Typography>
-                            <CheckCircle2Icon color="#eb5331" />
+                            {event.is_verified && <CheckCircle2Icon color="#eb5331" />}
                         </div>
                     </div>
 
@@ -141,33 +143,34 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
             <SectionContainer className="lg:grid lg:grid-cols-4 gap-8">
                 <div className="flex flex-col gap-4 lg:col-span-3">
                     <Typography tag="p" size={"base"} color="muted">
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Fuga magni
-                        exercitationem debitis magnam accusamus ipsum! Velit, provident repellendus
-                        quas tempora, odio, quae iure repudiandae est rerum ea quibusdam maiores!
-                        In?
+                        {event.short_description}
                     </Typography>
 
                     <Typography tag="p" size={"base"} color="muted">
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Fuga magni
-                        exercitationem debitis magnam accusamus ipsum! Velit, provident repellendus
-                        quas tempora, odio, quae iure repudiandae est rerum ea quibusdam maiores!
-                        In?
+                        {event.long_description}
                     </Typography>
 
-                    <div className="w-full h-[175px] bg-white rounded mt-1"></div>
+                    <img
+                        src={event.banner_presigned_url ?? ""}
+                        alt={event.title}
+                        className="w-full h-[250px] object-cover rounded-lg"
+                    />
                 </div>
 
                 <div className="flex flex-col gap-4 mt-6 lg:mt-0">
-                    <TextLabelValue label="Status" value="ToBeIT 67" />
-                    <TextLabelValue label="Final call for request" value="2025-01-01" />
-                    <TextLabelValue label="Participation request" value="Invited Only" />
-                    <TextLabelValue label="Seats count" value="20/40" />
+                    <TextLabelValue label="Status" value="NA" />
+                    <TextLabelValue label="Final call for request" value={"NA"} />
+                    <TextLabelValue
+                        label="Participation request"
+                        value={event.is_booking_request_required ? "Required" : "Not Required"}
+                    />
+                    <TextLabelValue label="Seats count" value={`${0} / ${event.max_attendees}`} />
                     <TextLabelValue
                         label="Event Contract Address"
-                        value="0x0000...0000"
+                        value="NA"
                         endIcon={<ExternalLinkIcon size={16} />}
                         valueClassName="cursor-pointer underline"
-                        href="https://www.google.com"
+                        href="https://www.etherscan.io/address/0x0000000000000000000000000000000000000000"
                     />
                 </div>
             </SectionContainer>
@@ -184,21 +187,24 @@ export default function HostEventDetailsPage({ eventId }: HostEventDetailsPagePr
                             <div className="flex flex-col gap-4 flex-1">
                                 <TextLabelValue
                                     label="Venue Location"
-                                    value="School of Information Technology, KMITL"
+                                    value={event.location ?? ""}
                                 />
                                 <TextLabelValue
                                     label="Google Map Search"
-                                    value="School of Information Technology, KMITL"
+                                    value={event.google_map_query ?? ""}
                                 />
 
                                 <TextLabelValue
-                                    label="Contract Address"
-                                    value="Bangkok, Thailand"
+                                    label="Contact Address"
+                                    value={event.contact_number ?? ""}
                                 />
-                                <TextLabelValue label="Contact" value="0656526769" />
+                                <TextLabelValue
+                                    label="Contact"
+                                    value={event.contact_number ?? ""}
+                                />
                             </div>
                             <div className="flex-1">
-                                <GoogleMapsEmbed query="School of Information Technology, KMITL" />
+                                <GoogleMapsEmbed query={event.google_map_query ?? ""} />
                             </div>
                         </div>
                     </StyledTabsContent>

@@ -3,9 +3,13 @@ package event
 import (
 	authDg "apps/backend/core-api/internal/datagateway"
 	datagateway "apps/backend/core-api/internal/datagateway/event"
+	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"apps/backend/services/s3"
+	"context"
 	"log/slog"
+
+	"github.com/google/uuid"
 )
 
 type EventUsecase struct {
@@ -29,4 +33,22 @@ func NewEventUsecase(eventDataGateway datagateway.EventDataGateway, eventContrac
 		logger:                     logger,
 		authService:                authService,
 	}
+}
+
+func (u *EventUsecase) ListEventsByOwnerCredentialID(ctx context.Context, ownerCredentialID uuid.UUID, limitCount int32, offsetCount int32) ([]*entity.Event, error) {
+	events, err := u.EventDataGateway.ListEventsByOwnerCredentialID(ctx, ownerCredentialID, limitCount, offsetCount)
+	if err != nil {
+		return nil, err
+	}
+
+	return events, nil
+}
+
+func (u *EventUsecase) GetEventById(ctx context.Context, eventId uuid.UUID) (*entity.Event, error) {
+	event, err := u.EventDataGateway.GetEventById(ctx, eventId)
+	if err != nil {
+		return nil, err
+	}
+
+	return event, nil
 }

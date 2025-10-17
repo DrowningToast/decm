@@ -52,7 +52,7 @@ INSERT INTO events (
     $15,
     $16,
     $17
-) RETURNING id, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at
+) RETURNING id, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
 `
 
 type CreateEventParams struct {
@@ -118,13 +118,17 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event
 		&i.IsTicketTransferable,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const DeleteEvent = `-- name: DeleteEvent :exec
-DELETE FROM events
+UPDATE events
+SET
+    deleted_at = now()
 WHERE id = $1
+RETURNING id, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
 `
 
 func (q *Queries) DeleteEvent(ctx context.Context, id uuid.UUID) error {
@@ -159,9 +163,33 @@ FROM events
 WHERE id = $1
 `
 
-func (q *Queries) GetEventById(ctx context.Context, id uuid.UUID) (Event, error) {
+type GetEventByIdRow struct {
+	ID                       uuid.UUID          `json:"id"`
+	ChainID                  int32              `json:"chain_id"`
+	ContactNumber            string             `json:"contact_number"`
+	ContactAddress           string             `json:"contact_address"`
+	OwnerCredentialID        uuid.UUID          `json:"owner_credential_id"`
+	BannerStorageKey         string             `json:"banner_storage_key"`
+	IconStorageKey           string             `json:"icon_storage_key"`
+	Title                    string             `json:"title"`
+	ShortDescription         string             `json:"short_description"`
+	LongDescription          pgtype.Text        `json:"long_description"`
+	StartDate                time.Time          `json:"start_date"`
+	EndDate                  time.Time          `json:"end_date"`
+	Location                 string             `json:"location"`
+	GoogleMapQuery           string             `json:"google_map_query"`
+	MaxAttendees             int32              `json:"max_attendees"`
+	IsPublic                 pgtype.Int4        `json:"is_public"`
+	IsBookingRequestRequired pgtype.Int4        `json:"is_booking_request_required"`
+	IsVerified               pgtype.Int4        `json:"is_verified"`
+	IsTicketTransferable     pgtype.Int4        `json:"is_ticket_transferable"`
+	CreatedAt                pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) GetEventById(ctx context.Context, id uuid.UUID) (GetEventByIdRow, error) {
 	row := q.db.QueryRow(ctx, GetEventById, id)
-	var i Event
+	var i GetEventByIdRow
 	err := row.Scan(
 		&i.ID,
 		&i.ChainID,
@@ -216,8 +244,88 @@ WHERE owner_credential_id = $1
 ORDER BY created_at DESC
 `
 
-func (q *Queries) ListEventsByOwner(ctx context.Context, ownerCredentialID uuid.UUID) ([]Event, error) {
+type ListEventsByOwnerRow struct {
+	ID                       uuid.UUID          `json:"id"`
+	ChainID                  int32              `json:"chain_id"`
+	ContactNumber            string             `json:"contact_number"`
+	ContactAddress           string             `json:"contact_address"`
+	OwnerCredentialID        uuid.UUID          `json:"owner_credential_id"`
+	BannerStorageKey         string             `json:"banner_storage_key"`
+	IconStorageKey           string             `json:"icon_storage_key"`
+	Title                    string             `json:"title"`
+	ShortDescription         string             `json:"short_description"`
+	LongDescription          pgtype.Text        `json:"long_description"`
+	StartDate                time.Time          `json:"start_date"`
+	EndDate                  time.Time          `json:"end_date"`
+	Location                 string             `json:"location"`
+	GoogleMapQuery           string             `json:"google_map_query"`
+	MaxAttendees             int32              `json:"max_attendees"`
+	IsPublic                 pgtype.Int4        `json:"is_public"`
+	IsBookingRequestRequired pgtype.Int4        `json:"is_booking_request_required"`
+	IsVerified               pgtype.Int4        `json:"is_verified"`
+	IsTicketTransferable     pgtype.Int4        `json:"is_ticket_transferable"`
+	CreatedAt                pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) ListEventsByOwner(ctx context.Context, ownerCredentialID uuid.UUID) ([]ListEventsByOwnerRow, error) {
 	rows, err := q.db.Query(ctx, ListEventsByOwner, ownerCredentialID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListEventsByOwnerRow{}
+	for rows.Next() {
+		var i ListEventsByOwnerRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ChainID,
+			&i.ContactNumber,
+			&i.ContactAddress,
+			&i.OwnerCredentialID,
+			&i.BannerStorageKey,
+			&i.IconStorageKey,
+			&i.Title,
+			&i.ShortDescription,
+			&i.LongDescription,
+			&i.StartDate,
+			&i.EndDate,
+			&i.Location,
+			&i.GoogleMapQuery,
+			&i.MaxAttendees,
+			&i.IsPublic,
+			&i.IsBookingRequestRequired,
+			&i.IsVerified,
+			&i.IsTicketTransferable,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const ListEventsByOwnerCredentialID = `-- name: ListEventsByOwnerCredentialID :many
+SELECT id, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at 
+FROM events 
+WHERE owner_credential_id = $1 AND deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $3 OFFSET $2
+`
+
+type ListEventsByOwnerCredentialIDParams struct {
+	OwnerCredentialID uuid.UUID `json:"owner_credential_id"`
+	OffsetCount       int32     `json:"offset_count"`
+	LimitCount        int32     `json:"limit_count"`
+}
+
+func (q *Queries) ListEventsByOwnerCredentialID(ctx context.Context, arg ListEventsByOwnerCredentialIDParams) ([]Event, error) {
+	rows, err := q.db.Query(ctx, ListEventsByOwnerCredentialID, arg.OwnerCredentialID, arg.OffsetCount, arg.LimitCount)
 	if err != nil {
 		return nil, err
 	}
@@ -247,6 +355,7 @@ func (q *Queries) ListEventsByOwner(ctx context.Context, ownerCredentialID uuid.
 			&i.IsTicketTransferable,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -286,15 +395,39 @@ WHERE is_public = 1
 ORDER BY start_date ASC
 `
 
-func (q *Queries) ListPublicEvents(ctx context.Context) ([]Event, error) {
+type ListPublicEventsRow struct {
+	ID                       uuid.UUID          `json:"id"`
+	ChainID                  int32              `json:"chain_id"`
+	ContactNumber            string             `json:"contact_number"`
+	ContactAddress           string             `json:"contact_address"`
+	OwnerCredentialID        uuid.UUID          `json:"owner_credential_id"`
+	BannerStorageKey         string             `json:"banner_storage_key"`
+	IconStorageKey           string             `json:"icon_storage_key"`
+	Title                    string             `json:"title"`
+	ShortDescription         string             `json:"short_description"`
+	LongDescription          pgtype.Text        `json:"long_description"`
+	StartDate                time.Time          `json:"start_date"`
+	EndDate                  time.Time          `json:"end_date"`
+	Location                 string             `json:"location"`
+	GoogleMapQuery           string             `json:"google_map_query"`
+	MaxAttendees             int32              `json:"max_attendees"`
+	IsPublic                 pgtype.Int4        `json:"is_public"`
+	IsBookingRequestRequired pgtype.Int4        `json:"is_booking_request_required"`
+	IsVerified               pgtype.Int4        `json:"is_verified"`
+	IsTicketTransferable     pgtype.Int4        `json:"is_ticket_transferable"`
+	CreatedAt                pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) ListPublicEvents(ctx context.Context) ([]ListPublicEventsRow, error) {
 	rows, err := q.db.Query(ctx, ListPublicEvents)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Event{}
+	items := []ListPublicEventsRow{}
 	for rows.Next() {
-		var i Event
+		var i ListPublicEventsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.ChainID,
@@ -348,7 +481,7 @@ SET
     is_verified = $15,
     is_ticket_transferable = $16
 WHERE id = $17
-RETURNING id, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at
+RETURNING id, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
 `
 
 type UpdateEventParams struct {
@@ -414,6 +547,7 @@ func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event
 		&i.IsTicketTransferable,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }

@@ -101,7 +101,8 @@ CREATE TABLE events (
     is_ticket_transferable INTEGER DEFAULT 0,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
 );
 
 CREATE INDEX idx_events_owner_credential_id ON events(owner_credential_id);
@@ -143,22 +144,22 @@ CREATE INDEX idx_event_attendees_event_id ON event_attendees(event_id);
 CREATE INDEX idx_event_attendees_attendee_credential_id ON event_attendees(attendee_credential_id);
 
 -- event_certificates table, index by event_id and credential_id
-CREATE TABLE event_certificates (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-    credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
+-- CREATE TABLE event_certificates (
+--     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--     event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+--     credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
     
-    -- TODO: Add an entity for handling the issuance of the certificate
+--     -- TODO: Add an entity for handling the issuance of the certificate
     
-    -- 0: Not published, 1: Published
-    is_published INTEGER NOT NULL,
+--     -- 0: Not published, 1: Published
+--     is_published INTEGER NOT NULL,
     
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+--     created_at TIMESTAMPTZ DEFAULT NOW(),
+--     updated_at TIMESTAMPTZ DEFAULT NOW()
+-- );
 
-CREATE INDEX idx_event_certificates_event_id ON event_certificates(event_id);
-CREATE INDEX idx_event_certificates_credential_id ON event_certificates(credential_id);
+-- CREATE INDEX idx_event_certificates_event_id ON event_certificates(event_id);
+-- CREATE INDEX idx_event_certificates_credential_id ON event_certificates(credential_id);
 
 -- Create function to update updated_at column automatically
 CREATE OR REPLACE FUNCTION update_updated_at_column()

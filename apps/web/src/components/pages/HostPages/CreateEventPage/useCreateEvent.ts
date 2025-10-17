@@ -20,8 +20,12 @@ export function useCreateEvent() {
         try {
             const response = await _createEvent(event);
             toast.success(t("createEvent.success"));
-            navigate("/host/events");
-            return response;
+
+            navigate("/host/events/:eventId/settings/participant", {
+                params: {
+                    eventId: response.id ?? "",
+                },
+            });
         } catch (error) {
             console.error(error);
             toast.error(t("errors.generic"));
