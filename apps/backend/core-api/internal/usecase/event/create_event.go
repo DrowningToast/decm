@@ -23,6 +23,7 @@ type CreateEventParameters struct {
 }
 
 func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParameters) (*entity.Event, error) {
+
 	// bannerStorageKey, err := uc.UploadEventBanner(ctx, uuid.New(), params.EventBanner)
 	// if err != nil {
 	// 	return nil, err

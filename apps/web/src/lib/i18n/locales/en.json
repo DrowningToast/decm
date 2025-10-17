@@ -298,6 +298,10 @@
       "participantSettings": "Participant Settings"
     }
   },
+  "createEvent": {
+    "success": "Event created successfully",
+    "error": "Failed to create event. Please try again."
+  },
   "participantSettings": {
     "pageTitle": "Participant Settings",
     "pageDescription": "Configure registration requirements and participant information fields for your event",
