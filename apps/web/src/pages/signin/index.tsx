@@ -20,24 +20,23 @@ const SignInPage = () => {
         const init = async () => {
             // If the user is not authenticated, do nothing
             if (!onboardStatus?.authentication_credential_id) {
-                return
+                return;
             }
             // check if the user has a profile or not
             if (!onboardStatus?.profile_id) {
-                authService.createProfile(onboardStatus.authentication_credential_id, {
-                })
+                authService.createProfile(onboardStatus.authentication_credential_id, {});
             }
             navigate("/app");
-        }
+        };
 
-        init()
+        init();
     }, [navigate, onboardStatus]);
 
     const handleRequestGoogleOAuthUrl = async () => {
         // open new tab with the url
         setLocalStorageItem(LOCAL_STORAGE_KEYS.ON_GOOGLE_OAUTH_SUCCESS_REDIRECT, `/app`);
         window.location.href = `${env.VITE_CORE_BACKEND_API}/api/v1/auth/request-google-oauth`;
-    }
+    };
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -50,15 +49,13 @@ const SignInPage = () => {
             <div className="flex-1 flex items-center justify-center">
                 <div className="flex flex-col gap-y-6 max-w-md w-full px-6">
                     <div className="text-center space-y-2">
-                        <h1 className="text-4xl font-bold">{t('signin.title')}</h1>
-                        <p className="text-muted-foreground">
-                            {t('signin.subtitle')}
-                        </p>
+                        <h1 className="text-4xl font-bold">{t("signin.title")}</h1>
+                        <p className="text-muted-foreground">{t("signin.subtitle")}</p>
                     </div>
 
                     <div className="space-y-4">
                         <Button className="w-full" size="lg" variant="primary">
-                            {t('signup.walletButton')}
+                            {t("signup.walletButton")}
                         </Button>
 
                         <div className="relative">
@@ -67,29 +64,34 @@ const SignInPage = () => {
                             </div>
                             <div className="relative flex justify-center text-xs uppercase">
                                 <span className="bg-background px-2 text-muted-foreground">
-                                    {t('signup.divider')}
+                                    {t("signup.divider")}
                                 </span>
                             </div>
                         </div>
 
-                        <Button variant="secondary-dark" className="w-full" size="lg" onClick={handleRequestGoogleOAuthUrl}>
-                            {t('signup.googleButton')}
+                        <Button
+                            variant="secondary-dark"
+                            className="w-full"
+                            size="lg"
+                            onClick={handleRequestGoogleOAuthUrl}
+                        >
+                            {t("signup.googleButton")}
                         </Button>
                     </div>
 
                     <p className="text-xs text-center text-muted-foreground">
                         <Link to="/signin" className="hover:underline">
-                            {t('auth.hasAccount')}
+                            {t("auth.hasAccount")}
                         </Link>
                     </p>
 
                     <p className="text-xs text-center text-muted-foreground mt-4">
-                        {t('signup.terms')}
+                        {t("signup.terms")}
                     </p>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default SignInPage;

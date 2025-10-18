@@ -20,7 +20,7 @@ import (
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
-// @Router /api/v1/events/{event_id}/registration-config [get]
+// @Router /api/v1/events/{event_id}/config/registration [get]
 func (h *Handler) GetEventRegistrationConfig(ctx *fiber.Ctx) error {
 	eventID, err := uuid.Parse(ctx.Params("event_id"))
 	if err != nil {

@@ -14,7 +14,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
-import { RequirementItem, type RequirementStatus } from "@/components/ui/requirement-item";
+import { RequirementItem } from "@/components/ui/requirement-item";
 import { TextLabelValue } from "@/components/ui/text-label-value";
 import WrappedButton from "@/components/wrapper/WrappedButton";
 import { CheckCircle2Icon, ExternalLinkIcon } from "lucide-react";
@@ -22,11 +22,13 @@ import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
 import { useDataTable } from "@/hooks/use-data-table";
 import { participantColumns, type Participant } from "./columns/participant-columns";
-import type { EventEventResponse } from "@decm/api";
+import type { EventconfigEventRegistrationConfigResponse, EventEventResponse } from "@decm/api";
+import { toEventRegistrationConfigStatus } from "@/lib/events/event.utils";
 
 interface HostEventDetailsPageProps {
     eventId: string;
     event: EventEventResponse;
+    eventRegistrationConfig: EventconfigEventRegistrationConfigResponse;
 }
 
 // Mock API function - replace with actual API call
@@ -90,26 +92,24 @@ const mockFetchParticipants = async ({
     };
 };
 
-export default function HostEventDetailsPage({ eventId, event }: HostEventDetailsPageProps) {
+export default function HostEventDetailsPage({
+    eventId,
+    event,
+    eventRegistrationConfig,
+}: HostEventDetailsPageProps) {
     const { t } = useTranslation();
 
     // Mock participant requirements data - replace with actual data
-    const participantRequirements: Record<string, RequirementStatus> = {
-        firstName: "required",
-        lastName: "required",
-        email: "required",
-        bio: "optional",
-        phoneNumber: "optional",
-        address: "not_required",
-        academicInstitution: "required",
-        academicEmail: "required",
-    };
-
-    const eventSettings = {
-        eventType: "Public",
-        bookingRequired: true,
-        tokenTransferable: false,
-    };
+    // const participantRequirements: Record<string, RequirementStatus> = {
+    //     firstName: "required",
+    //     lastName: "required",
+    //     email: "required",
+    //     bio: "optional",
+    //     phoneNumber: "optional",
+    //     address: "not_required",
+    //     academicInstitution: "required",
+    //     academicEmail: "required",
+    // };
 
     // Use the data table hook
     const participantsTable = useDataTable<Participant>({
@@ -214,12 +214,12 @@ export default function HostEventDetailsPage({ eventId, event }: HostEventDetail
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 my-6">
                                 <TextLabelValue
                                     label={t("events.settings.eventType")}
-                                    value={eventSettings.eventType}
+                                    value={event.is_public ? "Public" : "Private"}
                                 />
                                 <TextLabelValue
                                     label={t("events.settings.bookingRequired")}
                                     value={
-                                        eventSettings.bookingRequired
+                                        event.is_booking_request_required
                                             ? t("common.yes")
                                             : t("common.no")
                                     }
@@ -227,7 +227,7 @@ export default function HostEventDetailsPage({ eventId, event }: HostEventDetail
                                 <TextLabelValue
                                     label={t("events.settings.tokenTransferable")}
                                     value={
-                                        eventSettings.tokenTransferable
+                                        event.is_ticket_transferable
                                             ? t("common.yes")
                                             : t("common.no")
                                     }
@@ -264,39 +264,55 @@ export default function HostEventDetailsPage({ eventId, event }: HostEventDetail
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                                             <RequirementItem
                                                 label={t("events.participants.fields.firstName")}
-                                                status={participantRequirements.firstName}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.first_name_requirement_status,
+                                                )}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.lastName")}
-                                                status={participantRequirements.lastName}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.last_name_requirement_status,
+                                                )}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.email")}
-                                                status={participantRequirements.email}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.email_requirement_status,
+                                                )}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.bio")}
-                                                status={participantRequirements.bio}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.bio_requirement_status,
+                                                )}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.phoneNumber")}
-                                                status={participantRequirements.phoneNumber}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.phone_number_requirement_status,
+                                                )}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.address")}
-                                                status={participantRequirements.address}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.address_requirement_status,
+                                                )}
                                             />
                                             <RequirementItem
                                                 label={t(
                                                     "events.participants.fields.academicInstitution",
                                                 )}
-                                                status={participantRequirements.academicInstitution}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.academic_institution_requirement_status,
+                                                )}
                                             />
                                             <RequirementItem
                                                 label={t(
                                                     "events.participants.fields.academicEmail",
                                                 )}
-                                                status={participantRequirements.academicEmail}
+                                                status={toEventRegistrationConfigStatus(
+                                                    eventRegistrationConfig.academic_email_requirement_status,
+                                                )}
                                             />
                                         </div>
                                     </AccordionContent>
