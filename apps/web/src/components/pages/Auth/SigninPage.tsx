@@ -53,8 +53,8 @@ export const SigninPage: React.FC<SigninPageProps> = ({ onGoogleOAuthClick }) =>
                     </div>
 
                     <p className="text-xs text-center text-muted-foreground">
-                        <Link to="/signin" className="hover:underline">
-                            {t('auth.hasAccount')}
+                        <Link to="/signup" className="hover:underline">
+                            {t('auth.noAccount')}
                         </Link>
                     </p>
 

@@ -84,7 +84,7 @@ const signature = await walletClient.signMessage({
 });
 
 // Store signature in localStorage
-localStorage.setItem("auth-sign-signature", signature);
+localStorage.setItem("authSignSignature", signature);
 ```
 
 #### 4. Check Onboard Status
@@ -311,8 +311,8 @@ const code = urlParams.get("code");
 const { accessToken, expiresIn } = props;
 
 // Store in localStorage
-localStorage.setItem("access-token", accessToken);
-localStorage.setItem("expires-in", expiresIn.toString());
+localStorage.setItem("accessToken", accessToken);
+localStorage.setItem("expiresIn", expiresIn.toString());
 ```
 
 #### 4. Check Onboard Status
@@ -516,10 +516,10 @@ Stored in [localStorage](mdc:apps/web/src/lib/constants/localStorage.ts):
 
 ```typescript
 export const useSignout = () => {
-	const [, setAccessToken] = useLocalStorage("access-token", undefined);
-	const [, setExpiresIn] = useLocalStorage("expires-in", undefined);
+	const [, setAccessToken] = useLocalStorage("accessToken", undefined);
+	const [, setExpiresIn] = useLocalStorage("expiresIn", undefined);
 	const [, setAuthSignSignature] = useLocalStorage(
-		"auth-sign-signature",
+		"authSignSignature",
 		undefined
 	);
 	const { data: walletClient } = useWalletClient();

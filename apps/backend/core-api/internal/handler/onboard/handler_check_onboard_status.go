@@ -121,7 +121,7 @@ func (h Handler) CheckOnboardStatus(ctx *fiber.Ctx) error {
 		}
 		jwt, profileId, err := h.OnboardUc.CheckOnboardStatusWithWalletAddress(ctx.UserContext(), *messageSignature)
 		if err != nil {
-			return errors.Wrap(err, "failed to check onboard status with wallet address")
+			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("message signature is required"))
 		}
 		if jwt == nil {
 			return ctx.Status(fiber.StatusOK).JSON(CheckOnboardStatusResponse{
