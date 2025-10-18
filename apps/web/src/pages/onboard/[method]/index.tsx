@@ -137,7 +137,8 @@ const OnboardingPage = () => {
 
     const checkOnBoardStatusParam: UseCheckOnboardParams | undefined = useMemo(() => {
         if (method === OnboardMethods.GOOGLE) {
-            if (!accessToken || !expiresIn) return undefined;
+            // Only return param when accessToken is non-empty and expiresIn is a positive number
+            if (!accessToken || accessToken.length === 0 || !expiresIn || expiresIn <= 0) return undefined;
             return {
                 method: OnboardRegistrationMethod.RegistrationMethodGoogle,
                 accessToken,
@@ -145,7 +146,8 @@ const OnboardingPage = () => {
             };
         }
         if (method === OnboardMethods.WALLET) {
-            if (!signSignature) return undefined;
+            // Only return param when signSignature is truthy
+            if (!signSignature || signSignature.length === 0) return undefined;
             return {
                 method: OnboardRegistrationMethod.RegistrationMethodWallet,
                 signSignature,
