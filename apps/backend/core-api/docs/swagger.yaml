@@ -1059,6 +1059,38 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Update event certificate config
+  /api/v1/events/{event_id}/config/registration:
+    get:
+      consumes:
+      - application/json
+      description: Get the event registration configuration for an event
+      operationId: get-event-registration-config
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/eventconfig.EventRegistrationConfigResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get event registration config
   /api/v1/events/{event_id}/contracts:
     delete:
       consumes:
@@ -1422,37 +1454,6 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Delete event registration config
-    get:
-      consumes:
-      - application/json
-      description: Get the event registration configuration for an event
-      operationId: get-event-registration-config
-      parameters:
-      - description: Event ID
-        in: path
-        name: event_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/eventconfig.EventRegistrationConfigResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-      summary: Get event registration config
     post:
       consumes:
       - application/json

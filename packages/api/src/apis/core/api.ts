@@ -1150,6 +1150,28 @@ export class Api<SecurityDataType extends unknown> {
       }),
 
     /**
+     * @description Get the event registration configuration for an event
+     *
+     * @name GetEventRegistrationConfig
+     * @summary Get event registration config
+     * @request GET:/api/v1/events/{event_id}/config/registration
+     */
+    getEventRegistrationConfig: (
+      { eventId, ...query }: GetEventRegistrationConfigParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<
+        GetEventRegistrationConfigData,
+        GetEventRegistrationConfigError
+      >({
+        path: `/api/v1/events/${eventId}/config/registration`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Get the event contract for an event
      *
      * @name GetEventContractByEventId
@@ -1329,28 +1351,6 @@ export class Api<SecurityDataType extends unknown> {
       this.http.request<DeleteEventIssuerData, DeleteEventIssuerError>({
         path: `/api/v1/events/${eventId}/issuers/${issuerId}`,
         method: "DELETE",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get the event registration configuration for an event
-     *
-     * @name GetEventRegistrationConfig
-     * @summary Get event registration config
-     * @request GET:/api/v1/events/{event_id}/registration-config
-     */
-    getEventRegistrationConfig: (
-      { eventId, ...query }: GetEventRegistrationConfigParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        GetEventRegistrationConfigData,
-        GetEventRegistrationConfigError
-      >({
-        path: `/api/v1/events/${eventId}/registration-config`,
-        method: "GET",
         type: ContentType.Json,
         format: "json",
         ...params,

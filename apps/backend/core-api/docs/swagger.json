@@ -711,6 +711,54 @@
                 }
             }
         },
+        "/api/v1/events/{event_id}/config/registration": {
+            "get": {
+                "description": "Get the event registration configuration for an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get event registration config",
+                "operationId": "get-event-registration-config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}/contracts": {
             "get": {
                 "description": "Get the event contract for an event",
@@ -1201,52 +1249,6 @@
             }
         },
         "/api/v1/events/{event_id}/registration-config": {
-            "get": {
-                "description": "Get the event registration configuration for an event",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Get event registration config",
-                "operationId": "get-event-registration-config",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event ID",
-                        "name": "event_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            },
             "put": {
                 "description": "Update the event registration configuration for an event",
                 "consumes": [

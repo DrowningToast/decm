@@ -4,6 +4,8 @@ CREATE TABLE event_registration_configs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
 
+    final_call_for_registration TIMESTAMPTZ,
+
     -- 0: Not Required, 1: Required, 2: Optional
     first_name_requirement_status INTEGER DEFAULT 0 ,
     last_name_requirement_status INTEGER DEFAULT 0,
