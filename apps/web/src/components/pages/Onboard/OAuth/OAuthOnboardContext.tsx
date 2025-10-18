@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, } from "react"
 import { useForm, type UseFormReturn } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { ProfileSchema } from "../Profile"
 import { z } from "zod"
 import { useTranslation } from "react-i18next"
 import { Form } from "@/components/ui/form"
@@ -15,6 +14,7 @@ import { USECASE_IDS } from "@/constants/usecase"
 import { OnboardPageContext } from "../../../../pages/onboard/[method]"
 import { useNavigate } from "@/router"
 import { AccountAlreadyExistsPage } from "../AccountAlreadyExistPage"
+import { ProfileSchema } from "../ProfilePage"
 
 type OAuthOnboardContextType = {
     form: UseFormReturn<OAuthOnboardForm>
@@ -31,7 +31,7 @@ const createOAuthOnboardFormSchema = (t: (key: string) => string) => {
     }).extend(ProfileSchema(t).shape)
 }
 
-type OAuthOnboardForm = z.infer<ReturnType<typeof createOAuthOnboardFormSchema>>
+export type OAuthOnboardForm = z.infer<ReturnType<typeof createOAuthOnboardFormSchema>>
 
 type OAuthOnboardErrorType = "missingAccessToken" | "missingExpiresIn" | "alreadyOnboarded"
 

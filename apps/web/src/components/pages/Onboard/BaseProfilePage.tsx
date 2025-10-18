@@ -1,33 +1,39 @@
-import { useContext } from "react";
-import { useTranslation } from "react-i18next";
+import type { UseFormReturn } from "react-hook-form";
+import type { Profile } from "./ProfilePage";
 import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
-import { OAuthOnboardContext } from "./OAuth/OAuthOnboardContext";
-import { OnboardPageContext } from "@/pages/onboard/[method]";
-import { LogoutButton } from "./OAuth/LogoutButton";
+import { LogoutButton } from "@/components/LogoutButton";
+import type { OnboardRegistrationMethod } from "@decm/api";
+import type { OAuthOnboardForm } from "./OAuth/OAuthOnboardContext";
 
-export const ProfilePage: React.FC = () => {
+type BaseProfileForm = ({
+    method: OnboardRegistrationMethod.RegistrationMethodGoogle;
+    form: UseFormReturn<OAuthOnboardForm>;
+} & Profile)
+    | ({
+        method: OnboardRegistrationMethod.RegistrationMethodWallet;
+        form: UseFormReturn<Profile>;
+    } & Profile)
 
-    // if already has account, disable back button
-    const { onboardStatus } = useContext(OnboardPageContext)
-    const hasAccount = onboardStatus?.authentication_credential_id !== undefined
+type BaseProfilePageProps = (BaseProfileForm & {
+    t: (key: string) => string;
+    onConfirm: () => void;
+    onBack: () => void;
+    hasAccount: boolean;
+})
 
-    const { setStep } = useContext(OnboardPageContext);
-    const { form } = useContext(OAuthOnboardContext);
-    const { t } = useTranslation();
-
-    const onConfirm = () => {
-        setStep(3)
-    }
-
-    const onBack = () => {
-        setStep(1)
-    }
-
+export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
+    form,
+    t,
+    onConfirm,
+    onBack,
+    hasAccount,
+    method,
+}) => {
     return (
         <div className="min-h-screen bg-[#e9dede] flex flex-col items-center px-6 py-16 md:py-24 relative overflow-hidden">
             {/* Background decorative image - positioned absolutely */}
@@ -260,9 +266,9 @@ export const ProfilePage: React.FC = () => {
                         </Button>
                     )}
 
-                    <LogoutButton />
+                    <LogoutButton type={method === "wallet" ? "disconnect" : "signout"} />
                 </div>
             </div>
         </div>
     );
-};
+}

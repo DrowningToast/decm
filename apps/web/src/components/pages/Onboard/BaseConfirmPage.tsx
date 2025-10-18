@@ -3,7 +3,7 @@ import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSignup } from "./useSignup";
-import { LogoutButton } from "./OAuth/LogoutButton";
+import { LogoutButton } from "../../LogoutButton";
 
 export interface ConfirmationItem {
     id: string;

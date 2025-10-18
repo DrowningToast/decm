@@ -48,7 +48,7 @@ func (u *OnboardUsecase) GetRegisterSignMessage() string {
 
 // Register authentication credential with wallet address, and generate JWT token
 func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMsg string) (*uuid.UUID, *string, error) {
-	walletAddress, err := cyptoutils.GetAddressFromSignedMessage(u.registerSignMessage, signedMsg)
+	walletAddress, err := cyptoutils.GetAddressFromSignature(u.registerSignMessage, signedMsg)
 	if err != nil {
 		return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
@@ -92,7 +92,7 @@ func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMs
 	// Create new credential
 	credential = &entity.AuthenticationCredential{
 		WalletAddress:  walletAddress.Hex(),
-		SolutionStatus: entity.SolutionStatusBYOK,
+		SolutionStatus: common.SolutionStatusBYOK,
 	}
 
 	credential, err = u.AuthenticationCredentialDg.CreateAuthenticationCredential(ctx, *credential)
@@ -207,7 +207,7 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 	// Create new credential
 	credential = &entity.AuthenticationCredential{
 		GoogleConnectorRef:  &userInfo.Email,
-		SolutionStatus:      entity.SolutionStatusManaged,
+		SolutionStatus:      common.SolutionStatusManaged,
 		WalletAddress:       walletAddress.Hex(),
 		EncryptedPrivateKey: &encryptedPrivateKey,
 		HashedPassword:      &hashedPassword,
@@ -295,17 +295,17 @@ func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Co
 
 // Return: is account exists, is profile exists, error
 // Return: JWT token, authentication credential id, profile id, error
-func (u *OnboardUsecase) CheckOnboardStatusWithWalletAddress(ctx context.Context, signMessage string) (*auth.JwtPayload, *uuid.UUID, error) {
-	walletAddress, err := cyptoutils.GetAddressFromSignedMessage(u.registerSignMessage, signMessage)
+func (u *OnboardUsecase) CheckOnboardStatusWithWalletAddress(ctx context.Context, messageSignature string) (*auth.JwtPayload, *uuid.UUID, error) {
+	walletAddress, err := cyptoutils.GetAddressFromSignature(u.registerSignMessage, messageSignature)
 	if err != nil {
-		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, nil, errors.Wrap(err, "failed to get wallet address from signature")
 	}
 
 	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialByWalletAddress(ctx, walletAddress.Hex())
 	if err != nil {
 		var notFoundErr *customerror.Err
 		if !errors.As(err, &notFoundErr) {
-			return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to check for existing wallet address")
+			return nil, nil, errors.Wrap(err, "failed to check for existing wallet address")
 		}
 	}
 	if credential == nil {
@@ -316,7 +316,7 @@ func (u *OnboardUsecase) CheckOnboardStatusWithWalletAddress(ctx context.Context
 	if err != nil {
 		var notFoundErr *customerror.Err
 		if !errors.As(err, &notFoundErr) {
-			return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to check for existing profile")
+			return nil, nil, errors.Wrap(err, "failed to check for existing profile")
 		}
 	}
 	jwt := &auth.JwtPayload{

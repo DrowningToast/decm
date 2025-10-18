@@ -73,14 +73,14 @@ definitions:
         type: string
       expires_in:
         type: integer
+      message_signature:
+        type: string
       method:
         allOf:
         - $ref: '#/definitions/onboard.RegistrationMethod'
         enum:
         - google
         - wallet
-      sign_message:
-        type: string
     type: object
   onboard.CheckOnboardStatusResponse:
     properties:
@@ -97,11 +97,13 @@ definitions:
     x-enum-varnames:
     - RegistrationMethodGoogle
     - RegistrationMethodWallet
-  onboard.getRegisterSignMessageResponse:
+  onboard.getSignMessageResponse:
     description: Response for the client to sign to register
     properties:
       message:
         type: string
+    required:
+    - message
     type: object
   onboard.registerResponse:
     properties:
@@ -431,9 +433,9 @@ paths:
         name: expires_in
         schema:
           $ref: '#/definitions/onboard.CheckOnboardStatusRequest'
-      - description: Sign message
+      - description: Message signature
         in: body
-        name: sign_message
+        name: message_signature
         schema:
           $ref: '#/definitions/onboard.CheckOnboardStatusRequest'
       produces:
@@ -517,14 +519,14 @@ paths:
   /api/v1/onboard/sign-message:
     get:
       description: Retrieve preset message for the client to sign to register
-      operationId: get-register-sign-message
+      operationId: get-sign-message
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/onboard.getRegisterSignMessageResponse'
+            $ref: '#/definitions/onboard.getSignMessageResponse'
       summary: Get preset message for the client to sign to register
       tags:
       - Onboard
