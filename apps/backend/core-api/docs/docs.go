@@ -763,6 +763,61 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "description": "Update the event registration configuration for an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update event registration config",
+                "operationId": "update-event-registration-config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Event registration config data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/eventconfig.UpdateEventRegistrationConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/events/{event_id}/contracts": {
@@ -1255,61 +1310,6 @@ const docTemplate = `{
             }
         },
         "/api/v1/events/{event_id}/registration-config": {
-            "put": {
-                "description": "Update the event registration configuration for an event",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Update event registration config",
-                "operationId": "update-event-registration-config",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event ID",
-                        "name": "event_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Event registration config data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/eventconfig.UpdateEventRegistrationConfigRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            },
             "post": {
                 "description": "Create a new event registration configuration for an event",
                 "consumes": [
@@ -1952,6 +1952,9 @@ const docTemplate = `{
                 "end_date": {
                     "type": "string"
                 },
+                "event_type": {
+                    "$ref": "#/definitions/entity.EventType"
+                },
                 "google_map_query": {
                     "type": "string"
                 },
@@ -1998,6 +2001,19 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "entity.EventType": {
+            "type": "string",
+            "enum": [
+                "public",
+                "private",
+                "invite"
+            ],
+            "x-enum-varnames": [
+                "EventTypePublic",
+                "EventTypePrivate",
+                "EventTypeInvite"
+            ]
         },
         "entity.Profile": {
             "type": "object",
@@ -2299,6 +2315,9 @@ const docTemplate = `{
                 "email_requirement_status": {
                     "type": "integer"
                 },
+                "final_call_for_registration": {
+                    "type": "string"
+                },
                 "first_name_requirement_status": {
                     "type": "integer"
                 },
@@ -2307,6 +2326,9 @@ const docTemplate = `{
                 },
                 "phone_number_requirement_status": {
                     "type": "integer"
+                },
+                "registration_password": {
+                    "type": "string"
                 }
             }
         },
@@ -2372,6 +2394,9 @@ const docTemplate = `{
                 "event_id": {
                     "type": "string"
                 },
+                "final_call_for_registration": {
+                    "type": "string"
+                },
                 "first_name_requirement_status": {
                     "type": "integer"
                 },
@@ -2383,6 +2408,9 @@ const docTemplate = `{
                 },
                 "phone_number_requirement_status": {
                     "type": "integer"
+                },
+                "registration_password": {
+                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
@@ -2433,14 +2461,29 @@ const docTemplate = `{
                 "email_requirement_status": {
                     "type": "integer"
                 },
+                "event_type": {
+                    "$ref": "#/definitions/entity.EventType"
+                },
+                "final_call_for_registration": {
+                    "type": "string"
+                },
                 "first_name_requirement_status": {
                     "type": "integer"
+                },
+                "is_booking_request_required": {
+                    "type": "boolean"
+                },
+                "is_ticket_transferable": {
+                    "type": "boolean"
                 },
                 "last_name_requirement_status": {
                     "type": "integer"
                 },
                 "phone_number_requirement_status": {
                     "type": "integer"
+                },
+                "registration_password": {
+                    "type": "string"
                 }
             }
         },

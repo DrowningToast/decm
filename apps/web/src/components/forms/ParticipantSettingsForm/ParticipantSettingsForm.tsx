@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { WrappedSelect } from "@/components/forms/WrappedSelect";
+import { WrappedDateSelect } from "@/components/forms/wrapped-inputs";
 import { Controller } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { RegistrationFormPreview } from "./RegistrationFormPreview";
@@ -55,6 +56,7 @@ export const ParticipantSettingsForm = ({
             isTicketTransferable: defaultValues?.isTicketTransferable ?? true,
             requireRegistrationPassword: defaultValues?.requireRegistrationPassword ?? false,
             registrationPassword: defaultValues?.registrationPassword || "",
+            finalCallRegistrationDate: defaultValues?.finalCallRegistrationDate,
             firstName: defaultValues?.firstName || "not_required",
             lastName: defaultValues?.lastName || "not_required",
             email: defaultValues?.email || "not_required",
@@ -67,11 +69,13 @@ export const ParticipantSettingsForm = ({
         mode: "onChange",
     });
 
-    const { control, formState, watch } = form;
+    const { control, watch } = form;
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-    // Watch form values for preview
+    // Watch form values for preview and conditional rendering
     const formValues = watch();
+    const eventType = watch("eventType");
+    const isBookingRequired = watch("isBookingRequired");
 
     const requireRegistrationPassword = watch("requireRegistrationPassword");
 
@@ -114,6 +118,10 @@ export const ParticipantSettingsForm = ({
                         options={[
                             { value: "public", label: t("participantSettings.eventTypePublic") },
                             { value: "private", label: t("participantSettings.eventTypePrivate") },
+                            {
+                                value: "invite",
+                                label: t("participantSettings.eventTypeInviteOnly"),
+                            },
                         ]}
                         disabled={isLoading}
                         valueAs={(value) => value as EventType}
@@ -223,10 +231,11 @@ export const ParticipantSettingsForm = ({
                             )}
                         />
                     </div>
+
                     {/* Registration Password (conditional) */}
                     {requireRegistrationPassword && (
-                        <div className="space-y-2 pt-2 border-t">
-                            <Label htmlFor="registrationPassword">
+                        <div className="space-y-2 pt-2 border-t pb-6">
+                            <Label htmlFor="registrationPassword" className="pt-6">
                                 <Typography
                                     variant="text"
                                     tag="span"
@@ -271,6 +280,29 @@ export const ParticipantSettingsForm = ({
                                 className="text-xs text-muted-foreground"
                             >
                                 {t("participantSettings.registrationPasswordDescription")}
+                            </Typography>
+                        </div>
+                    )}
+
+                    {/* Final Call Registration Date (conditional) */}
+                    {(eventType === "public" || eventType === "private") && isBookingRequired && (
+                        <div className="space-y-2 pt-2 pb-4">
+                            <WrappedDateSelect
+                                control={control}
+                                name="finalCallRegistrationDate"
+                                label={t("participantSettings.finalCallRegistrationDate")}
+                                placeholder={t(
+                                    "participantSettings.finalCallRegistrationDatePlaceholder",
+                                )}
+                                disabled={isLoading}
+                                disablePastDates
+                            />
+                            <Typography
+                                variant="text"
+                                tag="p"
+                                className="text-xs text-muted-foreground"
+                            >
+                                {t("participantSettings.finalCallRegistrationDateDescription")}
                             </Typography>
                         </div>
                     )}
@@ -437,7 +469,7 @@ export const ParticipantSettingsForm = ({
                     type="submit"
                     variant="primary"
                     size="lg"
-                    disabled={isLoading || !formState.isDirty}
+                    disabled={isLoading}
                     className="min-w-[150px]"
                 >
                     <Typography variant="text" tag="span" className="font-medium">

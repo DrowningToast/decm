@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Lock, Globe } from "lucide-react";
+import { Lock, Globe, Mail } from "lucide-react";
 
 interface RegistrationFormPreviewProps {
     /**
@@ -97,6 +97,17 @@ export const RegistrationFormPreview = ({ settings }: RegistrationFormPreviewPro
                                     {t("participantSettings.eventTypePublic")}
                                 </Typography>
                             </>
+                        ) : settings.eventType === "invite" ? (
+                            <>
+                                <Mail className="h-4 w-4 text-orange-500" />
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    className="text-sm text-orange-500 font-medium"
+                                >
+                                    {t("participantSettings.eventTypeInviteOnly")}
+                                </Typography>
+                            </>
                         ) : (
                             <>
                                 <Lock className="h-4 w-4 text-muted-foreground" />
@@ -128,6 +139,18 @@ export const RegistrationFormPreview = ({ settings }: RegistrationFormPreviewPro
                             className="text-xs font-medium text-primary"
                         >
                             {t("participantSettings.preview.bookingRequired")}
+                        </Typography>
+                    </div>
+                )}
+                {settings.finalCallRegistrationDate && (
+                    <div className="flex items-center space-x-2 px-3 py-1.5 rounded-md bg-background border">
+                        <Typography
+                            variant="text"
+                            tag="span"
+                            className="text-xs font-medium text-orange-500"
+                        >
+                            {t("participantSettings.finalCallRegistrationDate")}:{" "}
+                            {settings.finalCallRegistrationDate.toLocaleDateString()}
                         </Typography>
                     </div>
                 )}

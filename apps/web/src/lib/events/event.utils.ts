@@ -16,3 +16,20 @@ export function toEventRegistrationConfigStatus(status?: number): RequirementSta
             return "not_required";
     }
 }
+
+export function toEventRegistrationConfigStatusNumber(status?: RequirementStatus): number {
+    if (!status) {
+        return 0;
+    }
+
+    switch (status) {
+        case "not_required":
+            return 0;
+        case "required":
+            return 1;
+        case "optional":
+            return 2;
+        default:
+            return 0;
+    }
+}

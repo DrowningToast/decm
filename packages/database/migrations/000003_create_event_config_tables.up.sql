@@ -5,6 +5,7 @@ CREATE TABLE event_registration_configs (
     event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
 
     final_call_for_registration TIMESTAMPTZ,
+    registration_password TEXT,
 
     -- 0: Not Required, 1: Required, 2: Optional
     first_name_requirement_status INTEGER DEFAULT 0 ,

@@ -319,11 +319,15 @@
     "eventType": "Event Type",
     "eventTypePublic": "Public",
     "eventTypePrivate": "Private",
-    "eventTypeDescription": "Public events are visible to everyone. Private events require approval or invitation.",
+    "eventTypeInviteOnly": "Invite Only",
+    "eventTypeDescription": "Public events are visible to everyone. Private events require approval or invitation. Invite only events are accessible only to invited participants.",
     "bookingRequired": "Booking Approval Required",
     "bookingRequiredDescription": "Participants must wait for approval before their registration is confirmed",
     "ticketTransferable": "Allow Ticket Transfer",
     "ticketTransferableDescription": "Allow participants to transfer their tickets to others",
+    "finalCallRegistrationDate": "Final Call Registration Date",
+    "finalCallRegistrationDatePlaceholder": "Select final call registration date",
+    "finalCallRegistrationDateDescription": "After this date, no new registrations will be accepted for the event",
     "fieldRequirement": {
       "notRequired": "Not Required",
       "optional": "Optional",
@@ -485,7 +489,8 @@
     "passwordMax32": "Password must be at most 32 characters long",
     "passwordMismatch": "Passwords do not match",
     "invalidWallet": "Invalid wallet address",
-    "accessTokenAndSignedTokenRequired": "Access token or signed token is required"
+    "accessTokenAndSignedTokenRequired": "Access token or signed token is required",
+    "finalCallRegistrationDateFuture": "Final call registration date must be in the future"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",

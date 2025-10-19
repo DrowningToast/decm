@@ -5,11 +5,74 @@
 package generated
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type EventType string
+
+const (
+	EventTypePublic  EventType = "public"
+	EventTypePrivate EventType = "private"
+	EventTypeInvite  EventType = "invite"
+)
+
+func (e *EventType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = EventType(s)
+	case string:
+		*e = EventType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for EventType: %T", src)
+	}
+	return nil
+}
+
+type NullEventType struct {
+	EventType EventType `json:"event_type"`
+	Valid     bool      `json:"valid"` // Valid is true if EventType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullEventType) Scan(value interface{}) error {
+	if value == nil {
+		ns.EventType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.EventType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullEventType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.EventType), nil
+}
+
+func (e EventType) Valid() bool {
+	switch e {
+	case EventTypePublic,
+		EventTypePrivate,
+		EventTypeInvite:
+		return true
+	}
+	return false
+}
+
+func AllEventTypeValues() []EventType {
+	return []EventType{
+		EventTypePublic,
+		EventTypePrivate,
+		EventTypeInvite,
+	}
+}
 
 type AuthenticationCredential struct {
 	ID                  uuid.UUID          `json:"id"`
@@ -27,6 +90,7 @@ type AuthenticationCredential struct {
 
 type Event struct {
 	ID                       uuid.UUID          `json:"id"`
+	EventType                EventType          `json:"event_type"`
 	ChainID                  int32              `json:"chain_id"`
 	ContactNumber            string             `json:"contact_number"`
 	ContactAddress           string             `json:"contact_address"`
@@ -106,6 +170,8 @@ type EventIssuer struct {
 type EventRegistrationConfig struct {
 	ID                                   uuid.UUID          `json:"id"`
 	EventID                              uuid.UUID          `json:"event_id"`
+	FinalCallForRegistration             pgtype.Timestamptz `json:"final_call_for_registration"`
+	RegistrationPassword                 pgtype.Text        `json:"registration_password"`
 	FirstNameRequirementStatus           pgtype.Int4        `json:"first_name_requirement_status"`
 	LastNameRequirementStatus            pgtype.Int4        `json:"last_name_requirement_status"`
 	EmailRequirementStatus               pgtype.Int4        `json:"email_requirement_status"`
