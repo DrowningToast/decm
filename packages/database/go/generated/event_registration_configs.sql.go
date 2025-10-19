@@ -15,6 +15,8 @@ import (
 const CreateEventRegistrationConfig = `-- name: CreateEventRegistrationConfig :one
 INSERT INTO event_registration_configs (
     event_id,
+    final_call_for_registration,
+    registration_password,
     first_name_requirement_status,
     last_name_requirement_status,
     email_requirement_status,
@@ -32,25 +34,31 @@ INSERT INTO event_registration_configs (
     $6,
     $7,
     $8,
-    $9
-) RETURNING id, event_id, first_name_requirement_status, last_name_requirement_status, email_requirement_status, bio_requirement_status, phone_number_requirement_status, address_requirement_status, academic_institution_requirement_status, academic_email_requirement_status, created_at, updated_at
+    $9,
+    $10,
+    $11
+) RETURNING id, event_id, final_call_for_registration, registration_password, first_name_requirement_status, last_name_requirement_status, email_requirement_status, bio_requirement_status, phone_number_requirement_status, address_requirement_status, academic_institution_requirement_status, academic_email_requirement_status, created_at, updated_at
 `
 
 type CreateEventRegistrationConfigParams struct {
-	EventID                              uuid.UUID   `json:"event_id"`
-	FirstNameRequirementStatus           pgtype.Int4 `json:"first_name_requirement_status"`
-	LastNameRequirementStatus            pgtype.Int4 `json:"last_name_requirement_status"`
-	EmailRequirementStatus               pgtype.Int4 `json:"email_requirement_status"`
-	BioRequirementStatus                 pgtype.Int4 `json:"bio_requirement_status"`
-	PhoneNumberRequirementStatus         pgtype.Int4 `json:"phone_number_requirement_status"`
-	AddressRequirementStatus             pgtype.Int4 `json:"address_requirement_status"`
-	AcademicInstitutionRequirementStatus pgtype.Int4 `json:"academic_institution_requirement_status"`
-	AcademicEmailRequirementStatus       pgtype.Int4 `json:"academic_email_requirement_status"`
+	EventID                              uuid.UUID          `json:"event_id"`
+	FinalCallForRegistration             pgtype.Timestamptz `json:"final_call_for_registration"`
+	RegistrationPassword                 pgtype.Text        `json:"registration_password"`
+	FirstNameRequirementStatus           pgtype.Int4        `json:"first_name_requirement_status"`
+	LastNameRequirementStatus            pgtype.Int4        `json:"last_name_requirement_status"`
+	EmailRequirementStatus               pgtype.Int4        `json:"email_requirement_status"`
+	BioRequirementStatus                 pgtype.Int4        `json:"bio_requirement_status"`
+	PhoneNumberRequirementStatus         pgtype.Int4        `json:"phone_number_requirement_status"`
+	AddressRequirementStatus             pgtype.Int4        `json:"address_requirement_status"`
+	AcademicInstitutionRequirementStatus pgtype.Int4        `json:"academic_institution_requirement_status"`
+	AcademicEmailRequirementStatus       pgtype.Int4        `json:"academic_email_requirement_status"`
 }
 
 func (q *Queries) CreateEventRegistrationConfig(ctx context.Context, arg CreateEventRegistrationConfigParams) (EventRegistrationConfig, error) {
 	row := q.db.QueryRow(ctx, CreateEventRegistrationConfig,
 		arg.EventID,
+		arg.FinalCallForRegistration,
+		arg.RegistrationPassword,
 		arg.FirstNameRequirementStatus,
 		arg.LastNameRequirementStatus,
 		arg.EmailRequirementStatus,
@@ -64,6 +72,8 @@ func (q *Queries) CreateEventRegistrationConfig(ctx context.Context, arg CreateE
 	err := row.Scan(
 		&i.ID,
 		&i.EventID,
+		&i.FinalCallForRegistration,
+		&i.RegistrationPassword,
 		&i.FirstNameRequirementStatus,
 		&i.LastNameRequirementStatus,
 		&i.EmailRequirementStatus,
@@ -88,7 +98,7 @@ func (q *Queries) DeleteEventRegistrationConfig(ctx context.Context, eventID uui
 }
 
 const GetEventRegistrationConfigByEventID = `-- name: GetEventRegistrationConfigByEventID :one
-SELECT id, event_id, first_name_requirement_status, last_name_requirement_status, email_requirement_status, bio_requirement_status, phone_number_requirement_status, address_requirement_status, academic_institution_requirement_status, academic_email_requirement_status, created_at, updated_at FROM event_registration_configs WHERE event_id = $1
+SELECT id, event_id, final_call_for_registration, registration_password, first_name_requirement_status, last_name_requirement_status, email_requirement_status, bio_requirement_status, phone_number_requirement_status, address_requirement_status, academic_institution_requirement_status, academic_email_requirement_status, created_at, updated_at FROM event_registration_configs WHERE event_id = $1
 `
 
 func (q *Queries) GetEventRegistrationConfigByEventID(ctx context.Context, eventID uuid.UUID) (EventRegistrationConfig, error) {
@@ -97,6 +107,8 @@ func (q *Queries) GetEventRegistrationConfigByEventID(ctx context.Context, event
 	err := row.Scan(
 		&i.ID,
 		&i.EventID,
+		&i.FinalCallForRegistration,
+		&i.RegistrationPassword,
 		&i.FirstNameRequirementStatus,
 		&i.LastNameRequirementStatus,
 		&i.EmailRequirementStatus,
@@ -114,33 +126,39 @@ func (q *Queries) GetEventRegistrationConfigByEventID(ctx context.Context, event
 const UpdateEventRegistrationConfig = `-- name: UpdateEventRegistrationConfig :one
 UPDATE event_registration_configs
 SET 
-    first_name_requirement_status = $1,
-    last_name_requirement_status = $2,
-    email_requirement_status = $3,
-    bio_requirement_status = $4,
-    phone_number_requirement_status = $5,
-    address_requirement_status = $6,
-    academic_institution_requirement_status = $7,
-    academic_email_requirement_status = $8,
+    final_call_for_registration = $1,
+    registration_password = $2,
+    first_name_requirement_status = $3,
+    last_name_requirement_status = $4,
+    email_requirement_status = $5,
+    bio_requirement_status = $6,
+    phone_number_requirement_status = $7,
+    address_requirement_status = $8,
+    academic_institution_requirement_status = $9,
+    academic_email_requirement_status = $10,
     updated_at = NOW()
-WHERE event_id = $9
-RETURNING id, event_id, first_name_requirement_status, last_name_requirement_status, email_requirement_status, bio_requirement_status, phone_number_requirement_status, address_requirement_status, academic_institution_requirement_status, academic_email_requirement_status, created_at, updated_at
+WHERE event_id = $11
+RETURNING id, event_id, final_call_for_registration, registration_password, first_name_requirement_status, last_name_requirement_status, email_requirement_status, bio_requirement_status, phone_number_requirement_status, address_requirement_status, academic_institution_requirement_status, academic_email_requirement_status, created_at, updated_at
 `
 
 type UpdateEventRegistrationConfigParams struct {
-	FirstNameRequirementStatus           pgtype.Int4 `json:"first_name_requirement_status"`
-	LastNameRequirementStatus            pgtype.Int4 `json:"last_name_requirement_status"`
-	EmailRequirementStatus               pgtype.Int4 `json:"email_requirement_status"`
-	BioRequirementStatus                 pgtype.Int4 `json:"bio_requirement_status"`
-	PhoneNumberRequirementStatus         pgtype.Int4 `json:"phone_number_requirement_status"`
-	AddressRequirementStatus             pgtype.Int4 `json:"address_requirement_status"`
-	AcademicInstitutionRequirementStatus pgtype.Int4 `json:"academic_institution_requirement_status"`
-	AcademicEmailRequirementStatus       pgtype.Int4 `json:"academic_email_requirement_status"`
-	EventID                              uuid.UUID   `json:"event_id"`
+	FinalCallForRegistration             pgtype.Timestamptz `json:"final_call_for_registration"`
+	RegistrationPassword                 pgtype.Text        `json:"registration_password"`
+	FirstNameRequirementStatus           pgtype.Int4        `json:"first_name_requirement_status"`
+	LastNameRequirementStatus            pgtype.Int4        `json:"last_name_requirement_status"`
+	EmailRequirementStatus               pgtype.Int4        `json:"email_requirement_status"`
+	BioRequirementStatus                 pgtype.Int4        `json:"bio_requirement_status"`
+	PhoneNumberRequirementStatus         pgtype.Int4        `json:"phone_number_requirement_status"`
+	AddressRequirementStatus             pgtype.Int4        `json:"address_requirement_status"`
+	AcademicInstitutionRequirementStatus pgtype.Int4        `json:"academic_institution_requirement_status"`
+	AcademicEmailRequirementStatus       pgtype.Int4        `json:"academic_email_requirement_status"`
+	EventID                              uuid.UUID          `json:"event_id"`
 }
 
 func (q *Queries) UpdateEventRegistrationConfig(ctx context.Context, arg UpdateEventRegistrationConfigParams) (EventRegistrationConfig, error) {
 	row := q.db.QueryRow(ctx, UpdateEventRegistrationConfig,
+		arg.FinalCallForRegistration,
+		arg.RegistrationPassword,
 		arg.FirstNameRequirementStatus,
 		arg.LastNameRequirementStatus,
 		arg.EmailRequirementStatus,
@@ -155,6 +173,8 @@ func (q *Queries) UpdateEventRegistrationConfig(ctx context.Context, arg UpdateE
 	err := row.Scan(
 		&i.ID,
 		&i.EventID,
+		&i.FinalCallForRegistration,
+		&i.RegistrationPassword,
 		&i.FirstNameRequirementStatus,
 		&i.LastNameRequirementStatus,
 		&i.EmailRequirementStatus,

@@ -153,33 +153,125 @@ func (r *Repository) DeleteEvent(ctx context.Context, id uuid.UUID) error {
 }
 
 func (r *Repository) UpdateEvent(ctx context.Context, id uuid.UUID, params datagateway.UpdateEventParameters) (*entity.Event, error) {
+	// Get the current event to preserve values that are not being updated
+	currentEvent, err := r.queries.GetEventById(ctx, id)
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
 	// Convert boolean values to pgtype.Int4 for database
 	isPublic := pgmapper.Int32ToPgInt4(0)
-	isBookingRequestRequired := pgmapper.Int32ToPgInt4(0)
 	isVerified := pgmapper.Int32ToPgInt4(0)
+
+	// Use values from params if provided, otherwise use current values
+	isBookingRequestRequired := pgmapper.Int32ToPgInt4(0)
+	if params.IsBookingRequestRequired != nil {
+		if *params.IsBookingRequestRequired {
+			isBookingRequestRequired = pgmapper.Int32ToPgInt4(1)
+		}
+	} else {
+		isBookingRequestRequired = currentEvent.IsBookingRequestRequired
+	}
+
 	isTicketTransferable := pgmapper.Int32ToPgInt4(0)
+	if params.IsTicketTransferable != nil {
+		if *params.IsTicketTransferable {
+			isTicketTransferable = pgmapper.Int32ToPgInt4(1)
+		}
+	} else {
+		isTicketTransferable = currentEvent.IsTicketTransferable
+	}
+
+	// Use event type from params if provided, otherwise use current value
+	eventType := currentEvent.EventType
+	if params.EventType != nil {
+		eventType = generated.EventType(*params.EventType)
+	}
+
+	// Only update fields that are provided in params
+	// For fields that are not provided, use current values
+	name := currentEvent.Title
+	if params.Name != nil {
+		name = *params.Name
+	}
+
+	shortDescription := currentEvent.ShortDescription
+	if params.ShortDescription != nil {
+		shortDescription = *params.ShortDescription
+	}
+
+	description := currentEvent.LongDescription.String
+	if params.Description != nil {
+		description = *params.Description
+	}
+
+	startDate := currentEvent.StartDate
+	if params.StartDate != nil {
+		startDate = *params.StartDate
+	}
+
+	endDate := currentEvent.EndDate
+	if params.EndDate != nil {
+		endDate = *params.EndDate
+	}
+
+	location := currentEvent.Location
+	if params.Location != nil {
+		location = *params.Location
+	}
+
+	googleMapQuery := currentEvent.GoogleMapQuery
+	if params.GoogleMapQuery != nil {
+		googleMapQuery = *params.GoogleMapQuery
+	}
+
+	maxAttendees := currentEvent.MaxAttendees
+	if params.SeatsCount != nil {
+		maxAttendees = int32(*params.SeatsCount)
+	}
+
+	contactNumber := currentEvent.ContactNumber
+	if params.ContactNumber != nil {
+		contactNumber = *params.ContactNumber
+	}
+
+	contactAddress := currentEvent.ContactAddress
+	if params.ContactAddress != nil {
+		contactAddress = *params.ContactAddress
+	}
+
+	bannerStorageKey := currentEvent.BannerStorageKey
+	if params.BannerStorageKey != nil {
+		bannerStorageKey = *params.BannerStorageKey
+	}
+
+	iconStorageKey := currentEvent.IconStorageKey
+	if params.IconStorageKey != nil {
+		iconStorageKey = *params.IconStorageKey
+	}
 
 	// Convert description to pgtype.Text
-	longDescription := pgmapper.StringPtrToPgText(params.Description)
+	longDescription := pgmapper.StringPtrToPgText(&description)
 
 	result, err := r.queries.UpdateEvent(ctx, generated.UpdateEventParams{
 		ID:                       id,
-		ContactNumber:            *params.ContactNumber,
-		ContactAddress:           *params.ContactAddress,
-		BannerStorageKey:         *params.BannerStorageKey,
-		IconStorageKey:           *params.IconStorageKey,
-		Title:                    *params.Name,
-		ShortDescription:         *params.Description,
+		ContactNumber:            contactNumber,
+		ContactAddress:           contactAddress,
+		BannerStorageKey:         bannerStorageKey,
+		IconStorageKey:           iconStorageKey,
+		Title:                    name,
+		ShortDescription:         shortDescription,
 		LongDescription:          longDescription,
-		StartDate:                *params.StartDate,
-		EndDate:                  *params.EndDate,
-		Location:                 *params.Location,
-		GoogleMapQuery:           *params.GoogleMapQuery,
-		MaxAttendees:             int32(*params.SeatsCount),
+		StartDate:                startDate,
+		EndDate:                  endDate,
+		Location:                 location,
+		GoogleMapQuery:           googleMapQuery,
+		MaxAttendees:             maxAttendees,
 		IsPublic:                 isPublic,
 		IsBookingRequestRequired: isBookingRequestRequired,
 		IsVerified:               isVerified,
 		IsTicketTransferable:     isTicketTransferable,
+		EventType:                eventType,
 	})
 
 	if err != nil {
@@ -188,6 +280,7 @@ func (r *Repository) UpdateEvent(ctx context.Context, id uuid.UUID, params datag
 
 	return &entity.Event{
 		ID:                       result.ID,
+		EventType:                entity.EventType(result.EventType),
 		ChainID:                  int(result.ChainID),
 		ContactNumber:            result.ContactNumber,
 		ContactAddress:           result.ContactAddress,

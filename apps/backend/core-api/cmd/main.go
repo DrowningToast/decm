@@ -95,7 +95,7 @@ func main() {
 	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo)
 	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService)
-	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo)
+	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, logger)
 
 	// Setup HTTP server
 	app := fiber.New(fiber.Config{
@@ -172,7 +172,7 @@ func main() {
 	eventHandler.Mount(apiV1)
 
 	// Event config handler
-	eventConfigHandler := eventconfig_handler.NewHandler(eventConfigUc, authService, authenticationGuardMiddleware)
+	eventConfigHandler := eventconfig_handler.NewHandler(eventConfigUc, eventUc, authService, authenticationGuardMiddleware)
 	eventConfigHandler.Mount(apiV1)
 
 	// Start HTTP Server

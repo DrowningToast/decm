@@ -160,6 +160,7 @@ export interface EntityEvent {
   contact_number?: string;
   created_at?: string;
   end_date?: string;
+  event_type?: EntityEventType;
   google_map_query?: string;
   icon_storage_key?: string;
   id?: string;
@@ -175,6 +176,12 @@ export interface EntityEvent {
   start_date?: string;
   title?: string;
   updated_at?: string;
+}
+
+export enum EntityEventType {
+  EventTypePublic = "public",
+  EventTypePrivate = "private",
+  EventTypeInvite = "invite",
 }
 
 export interface EntityProfile {
@@ -289,9 +296,11 @@ export interface EventconfigCreateEventRegistrationConfigRequest {
   address_requirement_status?: number;
   bio_requirement_status?: number;
   email_requirement_status?: number;
+  final_call_for_registration?: string;
   first_name_requirement_status?: number;
   last_name_requirement_status?: number;
   phone_number_requirement_status?: number;
+  registration_password?: string;
 }
 
 export interface EventconfigEventCertificateConfigResponse {
@@ -316,10 +325,12 @@ export interface EventconfigEventRegistrationConfigResponse {
   created_at?: string;
   email_requirement_status?: number;
   event_id?: string;
+  final_call_for_registration?: string;
   first_name_requirement_status?: number;
   id?: string;
   last_name_requirement_status?: number;
   phone_number_requirement_status?: number;
+  registration_password?: string;
   updated_at?: string;
 }
 
@@ -339,9 +350,14 @@ export interface EventconfigUpdateEventRegistrationConfigRequest {
   address_requirement_status?: number;
   bio_requirement_status?: number;
   email_requirement_status?: number;
+  event_type?: EntityEventType;
+  final_call_for_registration?: string;
   first_name_requirement_status?: number;
+  is_booking_request_required?: boolean;
+  is_ticket_transferable?: boolean;
   last_name_requirement_status?: number;
   phone_number_requirement_status?: number;
+  registration_password?: string;
 }
 
 export type GetEventByIdData = EventEventResponse;
@@ -1172,6 +1188,30 @@ export class Api<SecurityDataType extends unknown> {
       }),
 
     /**
+     * @description Update the event registration configuration for an event
+     *
+     * @name UpdateEventRegistrationConfig
+     * @summary Update event registration config
+     * @request PUT:/api/v1/events/{event_id}/config/registration
+     */
+    updateEventRegistrationConfig: (
+      { eventId, ...query }: UpdateEventRegistrationConfigParams,
+      request: EventconfigUpdateEventRegistrationConfigRequest,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<
+        UpdateEventRegistrationConfigData,
+        UpdateEventRegistrationConfigError
+      >({
+        path: `/api/v1/events/${eventId}/config/registration`,
+        method: "PUT",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Get the event contract for an event
      *
      * @name GetEventContractByEventId
@@ -1351,30 +1391,6 @@ export class Api<SecurityDataType extends unknown> {
       this.http.request<DeleteEventIssuerData, DeleteEventIssuerError>({
         path: `/api/v1/events/${eventId}/issuers/${issuerId}`,
         method: "DELETE",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update the event registration configuration for an event
-     *
-     * @name UpdateEventRegistrationConfig
-     * @summary Update event registration config
-     * @request PUT:/api/v1/events/{event_id}/registration-config
-     */
-    updateEventRegistrationConfig: (
-      { eventId, ...query }: UpdateEventRegistrationConfigParams,
-      request: EventconfigUpdateEventRegistrationConfigRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        UpdateEventRegistrationConfigData,
-        UpdateEventRegistrationConfigError
-      >({
-        path: `/api/v1/events/${eventId}/registration-config`,
-        method: "PUT",
-        body: request,
         type: ContentType.Json,
         format: "json",
         ...params,

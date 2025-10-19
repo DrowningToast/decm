@@ -52,7 +52,7 @@ INSERT INTO events (
     $15,
     $16,
     $17
-) RETURNING id, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
+) RETURNING id, event_type, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
 `
 
 type CreateEventParams struct {
@@ -98,6 +98,7 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event
 	var i Event
 	err := row.Scan(
 		&i.ID,
+		&i.EventType,
 		&i.ChainID,
 		&i.ContactNumber,
 		&i.ContactAddress,
@@ -128,7 +129,7 @@ UPDATE events
 SET
     deleted_at = now()
 WHERE id = $1
-RETURNING id, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
+RETURNING id, event_type, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
 `
 
 func (q *Queries) DeleteEvent(ctx context.Context, id uuid.UUID) error {
@@ -139,6 +140,7 @@ func (q *Queries) DeleteEvent(ctx context.Context, id uuid.UUID) error {
 const GetEventById = `-- name: GetEventById :one
 SELECT 
     id,
+    event_type,
     chain_id,
     contact_number,
     contact_address,
@@ -165,6 +167,7 @@ WHERE id = $1
 
 type GetEventByIdRow struct {
 	ID                       uuid.UUID          `json:"id"`
+	EventType                EventType          `json:"event_type"`
 	ChainID                  int32              `json:"chain_id"`
 	ContactNumber            string             `json:"contact_number"`
 	ContactAddress           string             `json:"contact_address"`
@@ -192,6 +195,7 @@ func (q *Queries) GetEventById(ctx context.Context, id uuid.UUID) (GetEventByIdR
 	var i GetEventByIdRow
 	err := row.Scan(
 		&i.ID,
+		&i.EventType,
 		&i.ChainID,
 		&i.ContactNumber,
 		&i.ContactAddress,
@@ -219,6 +223,7 @@ func (q *Queries) GetEventById(ctx context.Context, id uuid.UUID) (GetEventByIdR
 const ListEventsByOwner = `-- name: ListEventsByOwner :many
 SELECT 
     id,
+    event_type,
     chain_id,
     contact_number,
     contact_address,
@@ -246,6 +251,7 @@ ORDER BY created_at DESC
 
 type ListEventsByOwnerRow struct {
 	ID                       uuid.UUID          `json:"id"`
+	EventType                EventType          `json:"event_type"`
 	ChainID                  int32              `json:"chain_id"`
 	ContactNumber            string             `json:"contact_number"`
 	ContactAddress           string             `json:"contact_address"`
@@ -279,6 +285,7 @@ func (q *Queries) ListEventsByOwner(ctx context.Context, ownerCredentialID uuid.
 		var i ListEventsByOwnerRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.EventType,
 			&i.ChainID,
 			&i.ContactNumber,
 			&i.ContactAddress,
@@ -311,7 +318,7 @@ func (q *Queries) ListEventsByOwner(ctx context.Context, ownerCredentialID uuid.
 }
 
 const ListEventsByOwnerCredentialID = `-- name: ListEventsByOwnerCredentialID :many
-SELECT id, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at 
+SELECT id, event_type, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at 
 FROM events 
 WHERE owner_credential_id = $1 AND deleted_at IS NULL
 ORDER BY created_at DESC
@@ -335,6 +342,7 @@ func (q *Queries) ListEventsByOwnerCredentialID(ctx context.Context, arg ListEve
 		var i Event
 		if err := rows.Scan(
 			&i.ID,
+			&i.EventType,
 			&i.ChainID,
 			&i.ContactNumber,
 			&i.ContactAddress,
@@ -370,6 +378,7 @@ func (q *Queries) ListEventsByOwnerCredentialID(ctx context.Context, arg ListEve
 const ListPublicEvents = `-- name: ListPublicEvents :many
 SELECT 
     id,
+    event_type,
     chain_id,
     contact_number,
     contact_address,
@@ -397,6 +406,7 @@ ORDER BY start_date ASC
 
 type ListPublicEventsRow struct {
 	ID                       uuid.UUID          `json:"id"`
+	EventType                EventType          `json:"event_type"`
 	ChainID                  int32              `json:"chain_id"`
 	ContactNumber            string             `json:"contact_number"`
 	ContactAddress           string             `json:"contact_address"`
@@ -430,6 +440,7 @@ func (q *Queries) ListPublicEvents(ctx context.Context) ([]ListPublicEventsRow, 
 		var i ListPublicEventsRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.EventType,
 			&i.ChainID,
 			&i.ContactNumber,
 			&i.ContactAddress,
@@ -479,9 +490,10 @@ SET
     is_public = $13,
     is_booking_request_required = $14,
     is_verified = $15,
-    is_ticket_transferable = $16
-WHERE id = $17
-RETURNING id, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
+    is_ticket_transferable = $16,
+    event_type = $17
+WHERE id = $18
+RETURNING id, event_type, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
 `
 
 type UpdateEventParams struct {
@@ -501,6 +513,7 @@ type UpdateEventParams struct {
 	IsBookingRequestRequired pgtype.Int4 `json:"is_booking_request_required"`
 	IsVerified               pgtype.Int4 `json:"is_verified"`
 	IsTicketTransferable     pgtype.Int4 `json:"is_ticket_transferable"`
+	EventType                EventType   `json:"event_type"`
 	ID                       uuid.UUID   `json:"id"`
 }
 
@@ -522,11 +535,13 @@ func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event
 		arg.IsBookingRequestRequired,
 		arg.IsVerified,
 		arg.IsTicketTransferable,
+		arg.EventType,
 		arg.ID,
 	)
 	var i Event
 	err := row.Scan(
 		&i.ID,
+		&i.EventType,
 		&i.ChainID,
 		&i.ContactNumber,
 		&i.ContactAddress,

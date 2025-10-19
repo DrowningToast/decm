@@ -2,6 +2,7 @@ package eventconfig
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -14,14 +15,16 @@ import (
 
 // Request/Response structures
 type CreateEventRegistrationConfigRequest struct {
-	FirstNameRequirementStatus           int32 `json:"first_name_requirement_status"`
-	LastNameRequirementStatus            int32 `json:"last_name_requirement_status"`
-	EmailRequirementStatus               int32 `json:"email_requirement_status"`
-	BioRequirementStatus                 int32 `json:"bio_requirement_status"`
-	PhoneNumberRequirementStatus         int32 `json:"phone_number_requirement_status"`
-	AddressRequirementStatus             int32 `json:"address_requirement_status"`
-	AcademicInstitutionRequirementStatus int32 `json:"academic_institution_requirement_status"`
-	AcademicEmailRequirementStatus       int32 `json:"academic_email_requirement_status"`
+	FinalCallForRegistration             *string `json:"final_call_for_registration,omitempty"`
+	RegistrationPassword                 *string `json:"registration_password,omitempty"`
+	FirstNameRequirementStatus           int32   `json:"first_name_requirement_status"`
+	LastNameRequirementStatus            int32   `json:"last_name_requirement_status"`
+	EmailRequirementStatus               int32   `json:"email_requirement_status"`
+	BioRequirementStatus                 int32   `json:"bio_requirement_status"`
+	PhoneNumberRequirementStatus         int32   `json:"phone_number_requirement_status"`
+	AddressRequirementStatus             int32   `json:"address_requirement_status"`
+	AcademicInstitutionRequirementStatus int32   `json:"academic_institution_requirement_status"`
+	AcademicEmailRequirementStatus       int32   `json:"academic_email_requirement_status"`
 }
 
 func (r *CreateEventRegistrationConfigRequest) IsValid() error {
@@ -56,7 +59,25 @@ func (h *Handler) CreateEventRegistrationConfig(ctx *fiber.Ctx) error {
 		return err
 	}
 
+	// Parse final_call_for_registration if provided
+	var finalCallForRegistration pgtype.Timestamptz
+	if req.FinalCallForRegistration != nil && *req.FinalCallForRegistration != "" {
+		parsedTime, err := time.Parse(time.RFC3339, *req.FinalCallForRegistration)
+		if err != nil {
+			return customerror.Parse(&customerror.ErrInvalidArgument, err)
+		}
+		finalCallForRegistration = pgtype.Timestamptz{Time: parsedTime, Valid: true}
+	}
+
+	// Handle registration_password
+	var registrationPassword pgtype.Text
+	if req.RegistrationPassword != nil && *req.RegistrationPassword != "" {
+		registrationPassword = pgtype.Text{String: *req.RegistrationPassword, Valid: true}
+	}
+
 	params := eventconfig.CreateEventRegistrationConfigParams{
+		FinalCallForRegistration:             finalCallForRegistration,
+		RegistrationPassword:                 registrationPassword,
 		FirstNameRequirementStatus:           pgtype.Int4{Int32: req.FirstNameRequirementStatus, Valid: true},
 		LastNameRequirementStatus:            pgtype.Int4{Int32: req.LastNameRequirementStatus, Valid: true},
 		EmailRequirementStatus:               pgtype.Int4{Int32: req.EmailRequirementStatus, Valid: true},
@@ -72,9 +93,22 @@ func (h *Handler) CreateEventRegistrationConfig(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
+	// Prepare response with nullable fields
+	var finalCallForRegistrationResp *time.Time
+	if config.FinalCallForRegistration.Valid {
+		finalCallForRegistrationResp = &config.FinalCallForRegistration.Time
+	}
+
+	var registrationPasswordResp *string
+	if config.RegistrationPassword.Valid {
+		registrationPasswordResp = &config.RegistrationPassword.String
+	}
+
 	return ctx.Status(http.StatusOK).JSON(EventRegistrationConfigResponse{
 		ID:                                   config.ID,
 		EventID:                              config.EventID,
+		FinalCallForRegistration:             finalCallForRegistrationResp,
+		RegistrationPassword:                 registrationPasswordResp,
 		FirstNameRequirementStatus:           config.FirstNameRequirementStatus.Int32,
 		LastNameRequirementStatus:            config.LastNameRequirementStatus.Int32,
 		EmailRequirementStatus:               config.EmailRequirementStatus.Int32,

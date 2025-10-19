@@ -315,11 +315,15 @@
     "eventType": "ประเภทกิจกรรม",
     "eventTypePublic": "สาธารณะ",
     "eventTypePrivate": "ส่วนตัว",
-    "eventTypeDescription": "กิจกรรมสาธารณะจะมองเห็นได้สำหรับทุกคน กิจกรรมส่วนตัวต้องได้รับการอนุมัติหรือคำเชิญ",
+    "eventTypeInviteOnly": "เฉพาะผู้ที่ได้รับเชิญ",
+    "eventTypeDescription": "กิจกรรมสาธารณะจะมองเห็นได้สำหรับทุกคน กิจกรรมส่วนตัวต้องได้รับการอนุมัติหรือคำเชิญ กิจกรรมเฉพาะผู้ที่ได้รับเชิญสามารถเข้าร่วมได้เฉพาะผู้ที่ได้รับเชิญเท่านั้น",
     "bookingRequired": "ต้องการการอนุมัติการจอง",
     "bookingRequiredDescription": "ผู้เข้าร่วมต้องรอการอนุมัติก่อนที่การลงทะเบียนจะได้รับการยืนยัน",
     "ticketTransferable": "อนุญาตให้โอนตั๋ว",
     "ticketTransferableDescription": "อนุญาตให้ผู้เข้าร่วมโอนตั๋วของพวกเขาให้ผู้อื่น",
+    "finalCallRegistrationDate": "วันสุดท้ายของการลงทะเบียน",
+    "finalCallRegistrationDatePlaceholder": "เลือกวันสุดท้ายของการลงทะเบียน",
+    "finalCallRegistrationDateDescription": "หลังจากวันนี้ จะไม่รับการลงทะเบียนเพิ่มเติมสำหรับกิจกรรม",
     "fieldRequirement": {
       "notRequired": "ไม่ต้องการ",
       "optional": "ไม่บังคับ",
@@ -462,7 +466,8 @@
     "passwordMax32": "รหัสผ่านต้องมีอย่างมาก 32 ตัวอักษร",
     "passwordMismatch": "รหัสผ่านไม่ตรงกัน",
     "invalidWallet": "ที่อยู่กระเป๋าเงินไม่ถูกต้อง",
-    "accessTokenAndSignedTokenRequired": "Access token หรือ signed token จำเป็น"
+    "accessTokenAndSignedTokenRequired": "Access token หรือ signed token จำเป็น",
+    "finalCallRegistrationDateFuture": "วันสุดท้ายของการลงทะเบียนต้องเป็นวันในอนาคต"
   },
   "errors": {
     "generic": "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",

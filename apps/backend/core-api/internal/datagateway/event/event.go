@@ -30,19 +30,22 @@ type CreateEventParameters struct {
 }
 
 type UpdateEventParameters struct {
-	Name              *string
-	ShortDescription  *string
-	Description       *string
-	StartDate         *time.Time
-	EndDate           *time.Time
-	SeatsCount        *int
-	ContactNumber     *string
-	ContactAddress    *string
-	Location          *string
-	GoogleMapQuery    *string
-	BannerStorageKey  *string
-	IconStorageKey    *string
-	OwnerCredentialID *uuid.UUID
+	Name                     *string
+	ShortDescription         *string
+	Description              *string
+	StartDate                *time.Time
+	EndDate                  *time.Time
+	SeatsCount               *int
+	ContactNumber            *string
+	ContactAddress           *string
+	Location                 *string
+	GoogleMapQuery           *string
+	BannerStorageKey         *string
+	IconStorageKey           *string
+	OwnerCredentialID        *uuid.UUID
+	EventType                *entity.EventType
+	IsBookingRequestRequired *bool
+	IsTicketTransferable     *bool
 }
 type EventDataGateway interface {
 	CreateEvent(ctx context.Context, params CreateEventParameters) (*entity.Event, error)

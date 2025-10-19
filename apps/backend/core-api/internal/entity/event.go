@@ -6,8 +6,17 @@ import (
 	"github.com/google/uuid"
 )
 
+type EventType string
+
+const (
+	EventTypePublic  EventType = "public"
+	EventTypePrivate EventType = "private"
+	EventTypeInvite  EventType = "invite"
+)
+
 type Event struct {
 	ID                       uuid.UUID `json:"id"`
+	EventType                EventType `json:"event_type"`
 	ChainID                  int       `json:"chain_id"`
 	ContactNumber            string    `json:"contact_number"`
 	ContactAddress           string    `json:"contact_address"`

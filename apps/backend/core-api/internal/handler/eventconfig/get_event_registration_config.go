@@ -2,6 +2,7 @@ package eventconfig
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -32,9 +33,22 @@ func (h *Handler) GetEventRegistrationConfig(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrNotFound, err)
 	}
 
+	// Prepare response with nullable fields
+	var finalCallForRegistrationResp *time.Time
+	if config.FinalCallForRegistration.Valid {
+		finalCallForRegistrationResp = &config.FinalCallForRegistration.Time
+	}
+
+	var registrationPasswordResp *string
+	if config.RegistrationPassword.Valid {
+		registrationPasswordResp = &config.RegistrationPassword.String
+	}
+
 	return ctx.Status(http.StatusOK).JSON(EventRegistrationConfigResponse{
 		ID:                                   config.ID,
 		EventID:                              config.EventID,
+		FinalCallForRegistration:             finalCallForRegistrationResp,
+		RegistrationPassword:                 registrationPasswordResp,
 		FirstNameRequirementStatus:           config.FirstNameRequirementStatus.Int32,
 		LastNameRequirementStatus:            config.LastNameRequirementStatus.Int32,
 		EmailRequirementStatus:               config.EmailRequirementStatus.Int32,
