@@ -141,6 +141,8 @@ definitions:
         type: integer
       issuer_credential_id:
         type: string
+      sign_message:
+        type: string
       signature:
         type: string
     type: object
@@ -174,6 +176,8 @@ definitions:
       is_signed:
         type: integer
       issuer_credential_id:
+        type: string
+      sign_message:
         type: string
       signature:
         type: string
@@ -242,6 +246,8 @@ definitions:
     properties:
       is_signed:
         type: integer
+      sign_message:
+        type: string
       signature:
         type: string
     type: object

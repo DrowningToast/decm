@@ -13,8 +13,9 @@ import (
 )
 
 type UpdateEventIssuerRequest struct {
-	IsSigned  int32  `json:"is_signed"`
-	Signature string `json:"signature"`
+	IsSigned    int32  `json:"is_signed"`
+	Signature   string `json:"signature"`
+	SignMessage string `json:"sign_message"`
 }
 
 func (r *UpdateEventIssuerRequest) IsValid() error {
@@ -51,8 +52,9 @@ func (h *Handler) UpdateEventIssuer(ctx *fiber.Ctx) error {
 	}
 
 	params := eventUc.UpdateEventIssuerParams{
-		IsSigned:  req.IsSigned,
-		Signature: pgtype.Text{String: req.Signature, Valid: req.Signature != ""},
+		IsSigned:    req.IsSigned,
+		Signature:   pgtype.Text{String: req.Signature, Valid: req.Signature != ""},
+		SignMessage: pgtype.Text{String: req.SignMessage, Valid: req.SignMessage != ""},
 	}
 
 	issuer, err := h.EventUc.UpdateEventIssuer(ctx.UserContext(), issuerID, params)
@@ -66,6 +68,7 @@ func (h *Handler) UpdateEventIssuer(ctx *fiber.Ctx) error {
 		IssuerCredentialID: issuer.IssuerCredentialID,
 		IsSigned:           issuer.IsSigned,
 		Signature:          issuer.Signature.String,
+		SignMessage:        issuer.SignMessage.String,
 		CreatedAt:          issuer.CreatedAt.Time.String(),
 		UpdatedAt:          issuer.UpdatedAt.Time.String(),
 	})

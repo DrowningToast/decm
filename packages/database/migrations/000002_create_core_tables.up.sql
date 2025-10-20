@@ -21,6 +21,7 @@ CREATE TABLE authentication_credentials (
     github_connector_ref TEXT,
     
     is_verified_organizer INTEGER NOT NULL,
+    is_verified_issuer INTEGER NOT NULL,
     is_verified_student INTEGER NOT NULL,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),

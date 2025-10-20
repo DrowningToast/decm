@@ -10,6 +10,7 @@ type EventIssuerResponse struct {
 	IssuerCredentialID uuid.UUID `json:"issuer_credential_id"`
 	IsSigned           int32     `json:"is_signed"`
 	Signature          string    `json:"signature"`
+	SignMessage        string    `json:"sign_message"`
 	CreatedAt          string    `json:"created_at"`
 	UpdatedAt          string    `json:"updated_at"`
 }

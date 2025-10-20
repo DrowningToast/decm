@@ -2112,6 +2112,9 @@ const docTemplate = `{
                 "issuer_credential_id": {
                     "type": "string"
                 },
+                "sign_message": {
+                    "type": "string"
+                },
                 "signature": {
                     "type": "string"
                 }
@@ -2162,6 +2165,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "issuer_credential_id": {
+                    "type": "string"
+                },
+                "sign_message": {
                     "type": "string"
                 },
                 "signature": {
@@ -2265,6 +2271,9 @@ const docTemplate = `{
             "properties": {
                 "is_signed": {
                     "type": "integer"
+                },
+                "sign_message": {
+                    "type": "string"
                 },
                 "signature": {
                     "type": "string"

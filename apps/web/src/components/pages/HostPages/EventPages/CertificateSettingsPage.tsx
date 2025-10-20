@@ -216,6 +216,8 @@ export const CertificateSettingsPage = () => {
             }
         });
 
+        console.log(keywords);
+
         setDetectedKeywords(keywords);
     };
 

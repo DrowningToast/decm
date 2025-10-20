@@ -13,7 +13,7 @@ CREATE TABLE event_registration_configs (
     email_requirement_status INTEGER DEFAULT 0,
     bio_requirement_status INTEGER DEFAULT 0,
     phone_number_requirement_status INTEGER DEFAULT 0,
-    address_requirement_status INTEGER DEFAULT 0,
+    address_requirement_status INTEGER DEFAULT 0, 
     academic_institution_requirement_status INTEGER DEFAULT 0,
     academic_email_requirement_status INTEGER DEFAULT 0,
 
@@ -50,8 +50,10 @@ CREATE TABLE event_issuers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     issuer_credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
-    is_signed INTEGER NOT NULL,
+    -- 0: Not Signed, 1: Signed
+    is_signed INTEGER NOT NULL DEFAULT 0,
     signature TEXT,
+    sign_message TEXT,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()

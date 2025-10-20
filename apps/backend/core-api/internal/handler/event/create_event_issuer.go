@@ -16,6 +16,7 @@ type CreateEventIssuerRequest struct {
 	IssuerCredentialID uuid.UUID `json:"issuer_credential_id"`
 	IsSigned           int32     `json:"is_signed"`
 	Signature          string    `json:"signature"`
+	SignMessage        string    `json:"sign_message"`
 }
 
 func (r *CreateEventIssuerRequest) IsValid() error {
@@ -55,6 +56,7 @@ func (h *Handler) CreateEventIssuer(ctx *fiber.Ctx) error {
 		IssuerCredentialID: req.IssuerCredentialID,
 		IsSigned:           req.IsSigned,
 		Signature:          pgtype.Text{String: req.Signature, Valid: req.Signature != ""},
+		SignMessage:        pgtype.Text{String: req.SignMessage, Valid: req.SignMessage != ""},
 	}
 
 	issuer, err := h.EventUc.CreateEventIssuer(ctx.UserContext(), params)
@@ -68,6 +70,7 @@ func (h *Handler) CreateEventIssuer(ctx *fiber.Ctx) error {
 		IssuerCredentialID: issuer.IssuerCredentialID,
 		IsSigned:           issuer.IsSigned,
 		Signature:          issuer.Signature.String,
+		SignMessage:        issuer.SignMessage.String,
 		CreatedAt:          issuer.CreatedAt.Time.String(),
 		UpdatedAt:          issuer.UpdatedAt.Time.String(),
 	})
