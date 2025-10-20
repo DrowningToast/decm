@@ -59,14 +59,6 @@ export const useAuthRedirect = () => {
 	}, [isLoading, navigate, onboardStatus]);
 
 	const authCheckWallet = useCallback(async () => {
-		console.log({
-			isLoading,
-			hasWalletClient: !!walletClient,
-			hasAuthenticationCredentialId:
-				!!onboardStatus?.authentication_credential_id,
-			hasProfileId: !!onboardStatus?.profile_id,
-			hasAuthSignSignature: !!authSignSignature,
-		});
 		match({
 			isLoading,
 			hasWalletClient: !!walletClient,
