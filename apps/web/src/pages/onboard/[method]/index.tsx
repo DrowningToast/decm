@@ -137,19 +137,21 @@ const OnboardingPage = () => {
 
     const checkOnBoardStatusParam: UseCheckOnboardParams | undefined = useMemo(() => {
         if (method === OnboardMethods.GOOGLE) {
+            if (!accessToken || !expiresIn) return undefined;
             return {
                 method: OnboardRegistrationMethod.RegistrationMethodGoogle,
-                accessToken: accessToken ?? "",
-                expiresIn: expiresIn ? expiresIn : 0,
-            }
+                accessToken,
+                expiresIn,
+            };
         }
         if (method === OnboardMethods.WALLET) {
+            if (!signSignature) return undefined;
             return {
                 method: OnboardRegistrationMethod.RegistrationMethodWallet,
-                signSignature: signSignature,
-            }
+                signSignature,
+            };
         }
-        return undefined
+        return undefined;
     }, [method, accessToken, expiresIn, signSignature]);
     const { onboardStatus, isLoading: _isLoading, error } = useCheckOnboardStatus(checkOnBoardStatusParam);
 
