@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import DOMPurify from "dompurify";
@@ -42,10 +42,15 @@ interface DetectedKeyword {
     count: number;
 }
 
+const SEARCH_KEYS: string[] = ["{{ name }}", "{{ eventName }}"];
+const CERT_WIDTH: number = 1920;
+const CERT_HEIGHT: number = 1080;
+
 export const CertificateSettingsPage = () => {
     const { t } = useTranslation();
     const { eventId } = useParams<{ eventId: string }>();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const svgTempRef = useRef<HTMLDivElement>(null);
 
     // State for Step 1: Issuer Settings
     const [searchQuery, setSearchQuery] = useState("");
@@ -171,55 +176,73 @@ export const CertificateSettingsPage = () => {
     };
 
     // SVG file handling
-    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file && file.type === "image/svg+xml") {
-            setSvgFile(file);
 
-            // Read file for preview
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target?.result as string;
-                setSvgPreview(content);
-                parseKeywordsFromSVG(content);
-            };
-            reader.readAsText(file);
-        }
+        if (!file) return;
+        setSvgFile(file);
+
+        const reader = new FileReader();
+
+        reader.onload = (e: ProgressEvent<FileReader>) => {
+            const svgString = e.target?.result as string;
+            setSvgPreview(svgString);
+
+            try {
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(svgString, "image/svg+xml");
+                const svgElement = svgDoc.documentElement;
+
+                if (svgElement.tagName.toLowerCase() !== "svg") return;
+                generateCertificate(svgDoc);
+            } catch (error) {
+                console.error("[ERROR] SVG Parsing Error:", error);
+            }
+        };
+
+        reader.readAsText(file);
     };
 
-    // Parse keywords from SVG content
-    const parseKeywordsFromSVG = (svgContent: string) => {
-        const keywords: DetectedKeyword[] = [];
-        const keywordRegex = /\{\{\s*(\w+)\s*\}\}/g;
+    const generateCertificate = useCallback(async (_svgDoc: Document): Promise<void> => {
+        const originalSvgElement = _svgDoc.documentElement;
+        const clonedSvgElement = originalSvgElement.cloneNode(true) as SVGSVGElement;
 
-        // Parse SVG to extract text elements with keywords and their positions
-        const parser = new DOMParser();
-        const svgDoc = parser.parseFromString(svgContent, "image/svg+xml");
-        const textElements = svgDoc.querySelectorAll("text, tspan");
+        const tempContainer = svgTempRef.current;
+        if (!tempContainer) return;
 
-        textElements.forEach((element) => {
-            const text = element.textContent || "";
-            const matches = text.matchAll(keywordRegex);
+        tempContainer.innerHTML = "";
+        tempContainer.appendChild(clonedSvgElement);
 
-            for (const match of matches) {
-                const keyword = `{{ ${match[1]} }}`;
-                const x = parseFloat(element.getAttribute("x") || "0");
-                const y = parseFloat(element.getAttribute("y") || "0");
+        clonedSvgElement.setAttribute("width", CERT_WIDTH.toString());
+        clonedSvgElement.setAttribute("height", CERT_HEIGHT.toString());
+        clonedSvgElement.setAttribute("viewBox", `0 0 ${CERT_WIDTH} ${CERT_HEIGHT}`);
 
-                // Check if keyword already exists
-                const existingKeyword = keywords.find((k) => k.keyword === keyword);
-                if (existingKeyword) {
-                    existingKeyword.count++;
-                } else {
-                    keywords.push({ keyword, x, y, count: 1 });
-                }
+        SEARCH_KEYS.forEach((key) => {
+            const escapedKey = CSS.escape(key);
+            const placeholder = clonedSvgElement.querySelector(
+                `#${escapedKey}`,
+            ) as SVGGraphicsElement | null;
+
+            if (placeholder) {
+                const bbox = placeholder.getBBox();
+
+                const centerX = bbox.x + bbox.width / 2;
+                const y = bbox.y + bbox.height * 0.9;
+
+                setDetectedKeywords((prev) => [
+                    ...prev,
+                    {
+                        keyword: key,
+                        x: centerX,
+                        y: y,
+                        count: 1,
+                    },
+                ]);
+            } else {
+                console.log(`[INFO] ไม่พบ Element ID: ${key}`);
             }
         });
-
-        console.log(keywords);
-
-        setDetectedKeywords(keywords);
-    };
+    }, []);
 
     const handleSubmit = async () => {
         setIsLoading(true);
@@ -584,6 +607,18 @@ export const CertificateSettingsPage = () => {
                                 {t("common.cancel")}
                             </Typography>
                         </Button>
+                        {/* <Button
+                            type="button"
+                            variant="secondary-dark"
+                            size="lg"
+                            onClick={generateCertificate}
+                            disabled={isLoading}
+                            className="min-w-[150px]"
+                        >
+                            <Typography variant="text" tag="span" className="font-medium">
+                                Test
+                            </Typography>
+                        </Button> */}
                         <Button
                             type="button"
                             variant="primary"
@@ -718,6 +753,12 @@ export const CertificateSettingsPage = () => {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <div
+                ref={svgTempRef}
+                id="svg-temp-container"
+                className="absolute top-0 left-0 w-[1920px] h-[1080px] overflow-hidden opacity-0 pointer-events-none"
+            ></div>
         </PageContainer>
     );
 };
