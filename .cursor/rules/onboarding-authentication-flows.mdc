@@ -735,7 +735,6 @@ return customerror.Parse(&customerror.ErrDuplicateEntry,
 ### Wallet Authentication
 
 - ✅ **Signature verification** - Backend verifies wallet ownership
-- ✅ **Message freshness** - Standard message prevents replay attacks
 - ✅ **No password storage** - Wallet signature is proof of ownership
 - ❌ **Session expiration** - JWT tokens expire after 24 hours
 
@@ -766,7 +765,7 @@ CREATE TABLE authentication_credentials (
     wallet_address TEXT UNIQUE, -- For wallet auth
     google_oauth_email BYTEA,   -- Encrypted, for OAuth
     password_hash TEXT,          -- For OAuth
-    solution_status TEXT,        -- "byok" (Bring Your Own Keys)
+    solution_status int32,        -- "byok" (Bring Your Own Keys)
     created_at TIMESTAMP,
     updated_at TIMESTAMP
 );
