@@ -16,6 +16,11 @@ import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
 import { WalletOnboardProvider } from "@/components/pages/Onboard/Wallet/WalletOnboardContext";
 import { WalletOnboardSignPage } from "@/components/pages/Onboard/Wallet/WalletOnboardSignPage";
 import { OAuthOnboardProfilePage } from "@/components/pages/Onboard/OAuth/Profile/OAuthOnboardProfilePage";
+import { useForm, type UseFormReturn } from "react-hook-form";
+import type { Profile } from "@/components/pages/Onboard/ProfilePage";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ProfileSchema } from "@/components/pages/Onboard/ProfilePage";
+import { WalletOnboardConfirmPage } from "@/components/pages/Onboard/Wallet/WalletOnboardConfirmPage";
 
 export const OnboardMethods = {
     WALLET: "wallet",
@@ -46,7 +51,7 @@ const OnboardSteps: OnboardSteps = {
         2: {
             // UI: Show confirmation
             // Action: Create account + create profile
-            render: () => <div></div>,
+            render: () => <WalletOnboardConfirmPage />,
         },
         Parent: WalletOnboardProvider,
     },
@@ -90,6 +95,8 @@ type OnboardPageContextType = {
     onboardStatus?: OnboardCheckOnboardStatusResponse;
     isStatusLoading: boolean
     onboardStatusError?: Error;
+
+    profileForm: UseFormReturn<Profile>;
 }
 
 const OnboardPageContext = createContext<OnboardPageContextType>({} as OnboardPageContextType);
@@ -110,6 +117,11 @@ const OnboardingPage = () => {
     const [accessToken, setAccessToken] = useLocalStorage<string | undefined>(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, undefined);
     const [expiresIn, setExpiresIn] = useLocalStorage<number | undefined>(LOCAL_STORAGE_KEYS.EXPIRES_IN, undefined);
     const [signSignature,] = useLocalStorage<string | undefined>(LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE, undefined);
+
+    const profileForm = useForm<Profile>({
+        resolver: zodResolver(ProfileSchema(t)),
+        mode: 'onChange'
+    })
 
     // handle and clear search params when access token or expires in is changed
     useEffect(() => {
@@ -186,6 +198,7 @@ const OnboardingPage = () => {
         <OnboardPageContext.Provider value={{
             method: method as OnboardMethod,
             step, setStep,
+            profileForm,
             accessToken: accessToken ?? undefined,
             expiresIn: expiresIn,
             onboardStatus: onboardStatus ?? undefined,

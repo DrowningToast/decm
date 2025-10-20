@@ -78,15 +78,18 @@ func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMs
 
 	// Check for already existing wallet address
 	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialByWalletAddress(context.Background(), walletAddress.Hex())
-	if err == nil || credential != nil {
+	if credential != nil {
 		return nil, nil, customerror.Parse(&customerror.ErrDuplicateEntry, errors.New("wallet address already exists"))
 	}
-
-	var cusErr *customerror.Err
-	if errors.As(err, &cusErr) {
-		if cusErr.Code != &customerror.ErrNotFound.Code {
-			return nil, nil, cusErr.Extend("failed to check for existing wallet address")
-		}
+	if err == nil {
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to get authentication credential by wallet address")
+	}
+	var errNotFound *customerror.Err
+	if !errors.As(err, &errNotFound) {
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to get authentication credential by wallet address")
+	}
+	if *errNotFound.Code != customerror.ErrNotFound.Code {
+		return nil, nil, errNotFound.Extend("failed to get authentication credential by wallet address")
 	}
 
 	// Create new credential
@@ -97,11 +100,7 @@ func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMs
 
 	credential, err = u.AuthenticationCredentialDg.CreateAuthenticationCredential(ctx, *credential)
 	if err != nil {
-		var cusErr *customerror.Err
-		if errors.As(err, &cusErr) {
-			return nil, nil, cusErr.Extend("failed to create new credential")
-		}
-		return nil, nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "failed to create new credential")
+		return nil, nil, errors.Wrap(err, "failed to create new credential")
 	}
 
 	sessionToken, err := u.authService.CreateToken(auth.JwtPayload{

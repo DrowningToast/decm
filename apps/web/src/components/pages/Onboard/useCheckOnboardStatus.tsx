@@ -14,7 +14,6 @@ export type UseCheckOnboardParams = | {
 export const useCheckOnboardStatus = (param?: UseCheckOnboardParams) => {
     const { mutateAsync: checkOnboardStatus, isPending } = useMutation({
         mutationFn: async (param?: CheckOnboardParams) => {
-            console.log("param", param)
             const response = await onboardService.checkOnboardStatus(param);
             return response;
         },

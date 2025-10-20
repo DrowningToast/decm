@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSignup } from "./useSignup";
 import { LogoutButton } from "../../LogoutButton";
+import { OnboardPageContext } from "../../../pages/onboard/[method]";
 
 export interface ConfirmationItem {
     id: string;
@@ -38,6 +39,7 @@ export const BaseConfirmPage: React.FC<BaseConfirmPageProps> = ({
     children,
 }) => {
 
+    const { method } = useContext(OnboardPageContext)
     const { isLoading } = useSignup()
 
     const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(
@@ -47,6 +49,8 @@ export const BaseConfirmPage: React.FC<BaseConfirmPageProps> = ({
     const handleCheckChange = (id: string, checked: boolean) => {
         setCheckedItems((prev) => ({ ...prev, [id]: checked }));
     };
+
+    const logoutButtonType = method === "wallet" ? "disconnect" : "signout";
 
     const allChecked = Object.values(checkedItems).every((checked) => checked);
     const isConfirmDisabled = requireAllChecked && !allChecked;
@@ -127,7 +131,7 @@ export const BaseConfirmPage: React.FC<BaseConfirmPageProps> = ({
                         {backButtonText}
                     </Button>
 
-                    <LogoutButton />
+                    <LogoutButton type={logoutButtonType} />
                 </div>
             </div>
         </div>

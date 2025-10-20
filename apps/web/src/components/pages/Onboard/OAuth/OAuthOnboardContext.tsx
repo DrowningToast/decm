@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, } from "react"
+import { createContext, useContext, useMemo, } from "react"
 import { useForm, type UseFormReturn } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -14,21 +14,20 @@ import { USECASE_IDS } from "@/constants/usecase"
 import { OnboardPageContext } from "../../../../pages/onboard/[method]"
 import { useNavigate } from "@/router"
 import { AccountAlreadyExistsPage } from "../AccountAlreadyExistPage"
-import { ProfileSchema } from "../ProfilePage"
+import type { Profile } from "../ProfilePage"
 
 type OAuthOnboardContextType = {
     form: UseFormReturn<OAuthOnboardForm>
     handleSubmit: () => Promise<void>
 }
 
-const OAuthOnboardContext = createContext<OAuthOnboardContextType>(undefined as unknown as OAuthOnboardContextType)
+//eslint-disable-next-line react-refresh/only-export-components
+export const OAuthOnboardContext = createContext<OAuthOnboardContextType>(undefined as unknown as OAuthOnboardContextType)
 
 const createOAuthOnboardFormSchema = (t: (key: string) => string) => {
     return z.object({
         password: z.string().min(6, { message: t("validation.passwordMin6") }).max(32, { message: t("validation.passwordMax32") }),
-        accessToken: z.string(),
-        expiresIn: z.number(),
-    }).extend(ProfileSchema(t).shape)
+    })
 }
 
 export type OAuthOnboardForm = z.infer<ReturnType<typeof createOAuthOnboardFormSchema>>
@@ -42,13 +41,13 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
     const { createAccount, upsertProfile, isLoading } = useSignup()
 
     const OAuthOnboardFormSchema = createOAuthOnboardFormSchema(t)
-
-    const form = useForm<OAuthOnboardForm>({
+    const oauthForm = useForm<OAuthOnboardForm>({
         resolver: zodResolver(OAuthOnboardFormSchema),
         mode: 'onChange'
     })
+    const { profileForm } = useContext(OnboardPageContext)
 
-    const onSubmit = async (data: OAuthOnboardForm) => {
+    const onSubmit = async (data: OAuthOnboardForm, profile: Profile) => {
         if (isLoading) {
             toast.error(t("errors.generic"))
             return;
@@ -58,8 +57,8 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
         try {
             status = await coreApiClient.v1.checkOnboardStatus({
                 method: OnboardRegistrationMethod.RegistrationMethodGoogle,
-                access_token: data.accessToken,
-                expires_in: data.expiresIn,
+                access_token: accessToken,
+                expires_in: expiresIn
             })
         } catch (error) {
             if (error instanceof Error) {
@@ -73,8 +72,8 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
             try {
                 const { credential_id: _credential_id, } = await createAccount({
                     method: OnboardRegistrationMethod.RegistrationMethodGoogle,
-                    accessToken: data.accessToken ?? "",
-                    expiresIn: data.expiresIn ?? undefined,
+                    accessToken: accessToken ?? "",
+                    expiresIn: expiresIn ?? 0,
                     password: data.password,
                 })
                 credential_id = _credential_id
@@ -102,19 +101,19 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
         try {
             await upsertProfile({
                 method: OnboardRegistrationMethod.RegistrationMethodGoogle,
-                accessToken: data.accessToken ?? "",
-                expiresIn: data.expiresIn ?? undefined,
+                accessToken: accessToken ?? "",
+                expiresIn: expiresIn ?? 0,
                 password: data.password,
                 profile: {
                     authentication_credential_id: credential_id ?? "",
-                    email: data.email,
-                    phone_number: data.phoneNumber,
-                    first_name: data.firstName,
-                    last_name: data.lastName,
-                    is_email_public: data.isEmailPublic,
-                    is_phone_number_public: data.isPhoneNumberPublic,
-                    is_first_name_public: data.isFirstNamePublic,
-                    is_last_name_public: data.isLastNamePublic,
+                    email: profile.email,
+                    phone_number: profile.phoneNumber,
+                    first_name: profile.firstName,
+                    last_name: profile.lastName,
+                    is_email_public: profile.isEmailPublic,
+                    is_phone_number_public: profile.isPhoneNumberPublic,
+                    is_first_name_public: profile.isFirstNamePublic,
+                    is_last_name_public: profile.isLastNamePublic,
                 }
             })
         } catch (error) {
@@ -138,8 +137,9 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
     }
 
     const handleSubmit = async () => {
-        const data = form.getValues()
-        if (!data.accessToken || !data.expiresIn) {
+        const data = oauthForm.getValues()
+        const profile = profileForm.getValues()
+        if (!accessToken || !expiresIn) {
             return
         }
         if (!onboardStatus?.authentication_credential_id) {
@@ -149,37 +149,25 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
             }
         }
 
-        await onSubmit(data)
+        await onSubmit(data, profile)
     }
 
     const errorType: OAuthOnboardErrorType | undefined = useMemo(() => {
-        if (form.formState.errors.accessToken) {
+        if (!accessToken) {
             return "missingAccessToken"
         }
-        if (form.formState.errors.expiresIn) {
+        if (!expiresIn) {
             return "missingExpiresIn"
         }
         if (onboardStatus?.authentication_credential_id && onboardStatus?.profile_id) {
             return "alreadyOnboarded"
         }
         return undefined
-    }, [form.formState.errors, onboardStatus?.authentication_credential_id, onboardStatus?.profile_id])
-
-    useEffect(() => {
-        const init = async () => {
-            if (!accessToken || !expiresIn) {
-                return
-            }
-            form.setValue("accessToken", accessToken)
-            form.setValue("expiresIn", expiresIn)
-        }
-        init()
-    }, [accessToken, form, expiresIn])
+    }, [accessToken, expiresIn, onboardStatus?.authentication_credential_id, onboardStatus?.profile_id])
 
     if (errorType) {
         switch (errorType) {
             case "alreadyOnboarded":
-                console.log("already onboarded")
                 return <AccountAlreadyExistsPage />
             case "missingAccessToken":
                 return <ErrorPage title={t("flow.oauth_google.missing_access_token")} description={t("flow.oauth_google.missing_access_token_description")} />
@@ -189,8 +177,8 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
     }
 
     return (
-        <OAuthOnboardContext.Provider value={{ form, handleSubmit }}>
-            <Form {...form}>
+        <OAuthOnboardContext.Provider value={{ form: oauthForm, handleSubmit }}>
+            <Form {...oauthForm}>
                 <form>
                     {children}
                 </form>
@@ -201,9 +189,4 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
 
 export {
     OAuthOnboardProvider,
-    OAuthOnboardContext,
-}
-
-export type {
-    OAuthOnboardForm,
 }

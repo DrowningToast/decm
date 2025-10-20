@@ -105,7 +105,7 @@ export const PinPasswordPage: React.FC<PinPasswordPageProps> = ({
                         </button>
 
                         {/* Logout Link */}
-                        <LogoutButton />
+                        <LogoutButton type="signout" />
                     </div>
 
                     {/* Confirm Button */}
