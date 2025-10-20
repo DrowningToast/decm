@@ -29,7 +29,6 @@ type WalletOnboardContextType = {
 const WalletOnboardContext = createContext<WalletOnboardContextType>({} as WalletOnboardContextType)
 
 const WalletOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-
     const { t } = useTranslation()
     const navigate = useNavigate()
     const { signout } = useSignout()
@@ -136,6 +135,7 @@ const WalletOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) 
 
         toast.success(t("flow.wallet.create_profile_success"))
         navigate("/app")
+
     }, [isPending, navigate, signMessage, signSignature, t, upsertProfile])
 
     return (
