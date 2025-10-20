@@ -2106,6 +2106,9 @@
                 "issuer_credential_id": {
                     "type": "string"
                 },
+                "sign_message": {
+                    "type": "string"
+                },
                 "signature": {
                     "type": "string"
                 }
@@ -2156,6 +2159,9 @@
                     "type": "integer"
                 },
                 "issuer_credential_id": {
+                    "type": "string"
+                },
+                "sign_message": {
                     "type": "string"
                 },
                 "signature": {
@@ -2259,6 +2265,9 @@
             "properties": {
                 "is_signed": {
                     "type": "integer"
+                },
+                "sign_message": {
+                    "type": "string"
                 },
                 "signature": {
                     "type": "string"

@@ -14,6 +14,7 @@ type CreateEventIssuerParams struct {
 	IssuerCredentialID uuid.UUID
 	IsSigned           int32
 	Signature          pgtype.Text
+	SignMessage        pgtype.Text
 }
 
 func (u *EventUsecase) CreateEventIssuer(ctx context.Context, params CreateEventIssuerParams) (*generated.EventIssuer, error) {
@@ -22,6 +23,7 @@ func (u *EventUsecase) CreateEventIssuer(ctx context.Context, params CreateEvent
 		IssuerCredentialID: params.IssuerCredentialID,
 		IsSigned:           params.IsSigned,
 		Signature:          params.Signature,
+		SignMessage:        params.SignMessage,
 	}
 
 	return u.EventIssuerDataGateway.CreateEventIssuer(ctx, createParams)

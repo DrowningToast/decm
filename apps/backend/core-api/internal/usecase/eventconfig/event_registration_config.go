@@ -129,12 +129,6 @@ func (uc *EventConfigUsecase) UpdateEventRegistrationConfig(ctx context.Context,
 		return nil, err
 	}
 
-	uc.logger.InfoContext(ctx, "Updating event registration config",
-		"event_type", params.EventType,
-		"is_booking_request_required", params.IsBookingRequestRequired,
-		"is_ticket_transferable", params.IsTicketTransferable,
-	)
-
 	// Only update event if EventType is provided
 	if params.EventType != nil {
 		updateEventParams := eventDg.UpdateEventParameters{

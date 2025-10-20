@@ -10,15 +10,17 @@ import (
 )
 
 type UpdateEventIssuerParams struct {
-	IsSigned  int32
-	Signature pgtype.Text
+	IsSigned    int32
+	Signature   pgtype.Text
+	SignMessage pgtype.Text
 }
 
 func (u *EventUsecase) UpdateEventIssuer(ctx context.Context, id uuid.UUID, params UpdateEventIssuerParams) (*generated.EventIssuer, error) {
 	updateParams := generated.UpdateEventIssuerParams{
-		ID:        id,
-		IsSigned:  params.IsSigned,
-		Signature: params.Signature,
+		ID:          id,
+		IsSigned:    params.IsSigned,
+		Signature:   params.Signature,
+		SignMessage: params.SignMessage,
 	}
 
 	return u.EventIssuerDataGateway.UpdateEventIssuer(ctx, updateParams)

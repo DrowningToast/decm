@@ -17,13 +17,15 @@ INSERT INTO event_issuers (
     event_id,
     issuer_credential_id,
     is_signed,
-    signature
+    signature,
+    sign_message
 ) VALUES (
     $1,
     $2,
     $3,
-    $4
-) RETURNING id, event_id, issuer_credential_id, is_signed, signature, created_at, updated_at
+    $4,
+    $5
+) RETURNING id, event_id, issuer_credential_id, is_signed, signature, sign_message, created_at, updated_at
 `
 
 type CreateEventIssuerParams struct {
@@ -31,6 +33,7 @@ type CreateEventIssuerParams struct {
 	IssuerCredentialID uuid.UUID   `json:"issuer_credential_id"`
 	IsSigned           int32       `json:"is_signed"`
 	Signature          pgtype.Text `json:"signature"`
+	SignMessage        pgtype.Text `json:"sign_message"`
 }
 
 func (q *Queries) CreateEventIssuer(ctx context.Context, arg CreateEventIssuerParams) (EventIssuer, error) {
@@ -39,6 +42,7 @@ func (q *Queries) CreateEventIssuer(ctx context.Context, arg CreateEventIssuerPa
 		arg.IssuerCredentialID,
 		arg.IsSigned,
 		arg.Signature,
+		arg.SignMessage,
 	)
 	var i EventIssuer
 	err := row.Scan(
@@ -47,6 +51,7 @@ func (q *Queries) CreateEventIssuer(ctx context.Context, arg CreateEventIssuerPa
 		&i.IssuerCredentialID,
 		&i.IsSigned,
 		&i.Signature,
+		&i.SignMessage,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -63,7 +68,7 @@ func (q *Queries) DeleteEventIssuer(ctx context.Context, id uuid.UUID) error {
 }
 
 const GetEventIssuerByID = `-- name: GetEventIssuerByID :one
-SELECT id, event_id, issuer_credential_id, is_signed, signature, created_at, updated_at FROM event_issuers WHERE id = $1
+SELECT id, event_id, issuer_credential_id, is_signed, signature, sign_message, created_at, updated_at FROM event_issuers WHERE id = $1
 `
 
 func (q *Queries) GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIssuer, error) {
@@ -75,6 +80,7 @@ func (q *Queries) GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIs
 		&i.IssuerCredentialID,
 		&i.IsSigned,
 		&i.Signature,
+		&i.SignMessage,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -82,7 +88,7 @@ func (q *Queries) GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIs
 }
 
 const GetEventIssuersByEventID = `-- name: GetEventIssuersByEventID :many
-SELECT id, event_id, issuer_credential_id, is_signed, signature, created_at, updated_at FROM event_issuers WHERE event_id = $1
+SELECT id, event_id, issuer_credential_id, is_signed, signature, sign_message, created_at, updated_at FROM event_issuers WHERE event_id = $1
 `
 
 func (q *Queries) GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUID) ([]EventIssuer, error) {
@@ -100,6 +106,7 @@ func (q *Queries) GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUI
 			&i.IssuerCredentialID,
 			&i.IsSigned,
 			&i.Signature,
+			&i.SignMessage,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -118,19 +125,26 @@ UPDATE event_issuers
 SET 
     is_signed = $1,
     signature = $2,
+    sign_message = $3,
     updated_at = NOW()
-WHERE id = $3
-RETURNING id, event_id, issuer_credential_id, is_signed, signature, created_at, updated_at
+WHERE id = $4
+RETURNING id, event_id, issuer_credential_id, is_signed, signature, sign_message, created_at, updated_at
 `
 
 type UpdateEventIssuerParams struct {
-	IsSigned  int32       `json:"is_signed"`
-	Signature pgtype.Text `json:"signature"`
-	ID        uuid.UUID   `json:"id"`
+	IsSigned    int32       `json:"is_signed"`
+	Signature   pgtype.Text `json:"signature"`
+	SignMessage pgtype.Text `json:"sign_message"`
+	ID          uuid.UUID   `json:"id"`
 }
 
 func (q *Queries) UpdateEventIssuer(ctx context.Context, arg UpdateEventIssuerParams) (EventIssuer, error) {
-	row := q.db.QueryRow(ctx, UpdateEventIssuer, arg.IsSigned, arg.Signature, arg.ID)
+	row := q.db.QueryRow(ctx, UpdateEventIssuer,
+		arg.IsSigned,
+		arg.Signature,
+		arg.SignMessage,
+		arg.ID,
+	)
 	var i EventIssuer
 	err := row.Scan(
 		&i.ID,
@@ -138,6 +152,7 @@ func (q *Queries) UpdateEventIssuer(ctx context.Context, arg UpdateEventIssuerPa
 		&i.IssuerCredentialID,
 		&i.IsSigned,
 		&i.Signature,
+		&i.SignMessage,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

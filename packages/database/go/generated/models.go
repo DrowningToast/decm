@@ -83,6 +83,7 @@ type AuthenticationCredential struct {
 	GoogleConnectorRef  pgtype.Text        `json:"google_connector_ref"`
 	GithubConnectorRef  pgtype.Text        `json:"github_connector_ref"`
 	IsVerifiedOrganizer int32              `json:"is_verified_organizer"`
+	IsVerifiedIssuer    int32              `json:"is_verified_issuer"`
 	IsVerifiedStudent   int32              `json:"is_verified_student"`
 	CreatedAt           pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
@@ -163,6 +164,7 @@ type EventIssuer struct {
 	IssuerCredentialID uuid.UUID          `json:"issuer_credential_id"`
 	IsSigned           int32              `json:"is_signed"`
 	Signature          pgtype.Text        `json:"signature"`
+	SignMessage        pgtype.Text        `json:"sign_message"`
 	CreatedAt          pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
 }

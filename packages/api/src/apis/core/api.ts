@@ -219,6 +219,7 @@ export interface EventCreateEventContractRequest {
 export interface EventCreateEventIssuerRequest {
   is_signed?: number;
   issuer_credential_id?: string;
+  sign_message?: string;
   signature?: string;
 }
 
@@ -239,6 +240,7 @@ export interface EventEventIssuerResponse {
   id?: string;
   is_signed?: number;
   issuer_credential_id?: string;
+  sign_message?: string;
   signature?: string;
   updated_at?: string;
 }
@@ -277,6 +279,7 @@ export interface EventUpdateEventContractRequest {
 
 export interface EventUpdateEventIssuerRequest {
   is_signed?: number;
+  sign_message?: string;
   signature?: string;
 }
 
