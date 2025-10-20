@@ -497,9 +497,9 @@ cookie := &fiber.Cookie{
 
 Stored in [localStorage](mdc:apps/web/src/lib/constants/localStorage.ts):
 
-- `auth-sign-signature` - Wallet signature (wallet flow)
-- `access-token` - Google access token (OAuth flow)
-- `expires-in` - Token expiration time (OAuth flow)
+- `authSignSignature` - Wallet signature (wallet flow)
+- `accessToken` - Google access token (OAuth flow)
+- `expiresIn` - Token expiration time (OAuth flow)
 
 **Why both cookie AND localStorage?**
 
