@@ -16,33 +16,62 @@ const SEARCH_KEYS = [
 // const CERT_WIDTH = 1920;
 // const CERT_HEIGHT = 1080;
 
-export function loadSvgTemplateFile(file: File): Document | null {
-    const reader = new FileReader();
-    let currentSvgDoc: Document | null = null;
+export function loadSvgTemplateFile(file: File): Promise<Document | null> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const svgString = e?.target?.result;
+                if (!svgString) return "";
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(svgString.toString(), "image/svg+xml");
 
-    reader.onload = (e) => {
-        const svgString = e?.target?.result;
-        if (!svgString) return "";
+                const originalSvgElement = svgDoc.documentElement;
+                const clonedSvgElement = originalSvgElement.cloneNode(true) as HTMLElement;
 
-        try {
-            const parser = new DOMParser();
-            const svgDoc = parser.parseFromString(svgString.toString(), "image/svg+xml");
-            const svgElement = svgDoc.documentElement;
+                const CERT_WIDTH = "1920";
+                const CERT_HEIGHT = "1080";
 
-            if (svgElement.tagName.toLowerCase() !== "svg") {
-                console.error("[ERROR] Root Element ไม่ใช่ <svg>");
-                return;
+                const svgTempContainer = document.createElement("div");
+                svgTempContainer.innerHTML = "";
+                svgTempContainer.appendChild(clonedSvgElement);
+
+                clonedSvgElement.setAttribute("width", CERT_WIDTH);
+                clonedSvgElement.setAttribute("height", CERT_HEIGHT);
+                clonedSvgElement.setAttribute("viewBox", `0 0 ${CERT_WIDTH} ${CERT_HEIGHT}`);
+                console.log("[DOM] แทรก SVG เข้าสู่ DOM ชั่วคราว (ขนาด 1920x1080)");
+
+                SEARCH_KEYS.forEach((key) => {
+                    const escapedKey = CSS.escape(key);
+                    const placeholder = clonedSvgElement.querySelector(`#${escapedKey}`);
+
+                    if (placeholder) {
+                        console.log(
+                            `[FOUND] พบตัวแปร ID: ${key} ใน Element <${placeholder.tagName}>`,
+                        );
+
+                        try {
+                            const bbox = (placeholder as SVGGraphicsElement).getBBox();
+
+                            const centerX = bbox.x + bbox.width / 2;
+                            const y = bbox.y + bbox.height * 0.9;
+
+                            console.log("centerX", centerX);
+                            console.log("y", y);
+                        } catch (error) {
+                            console.error("[ERROR] การคำนวณ BBox ของ Element ล้มเหลว:", error);
+                        }
+                    }
+                });
+
+                resolve(svgDoc);
+            } catch (error) {
+                console.error("[ERROR] SVG Parsing Error:", error);
+                reject(error);
             }
-
-            console.log(`[PARSE] SVG Parsing สำเร็จ. Root element: <${svgElement.tagName}>`);
-            currentSvgDoc = svgDoc;
-        } catch (error) {
-            console.error("[ERROR] SVG Parsing Error:", error);
-        }
-    };
-
-    reader.readAsText(file);
-    return currentSvgDoc;
+        };
+        reader.readAsText(file);
+    });
 }
 
 type DetectTemplateKeysResponse = {
@@ -54,7 +83,7 @@ type DetectTemplateKeysResponse = {
 }[];
 
 export async function detectTemplateKeys(svgDoc: Document): Promise<DetectTemplateKeysResponse> {
-    if (!svgDoc) throw new Error("SVG document is required");
+    console.log("svgDoc", svgDoc);
 
     const originalSvgElement = svgDoc.documentElement;
     const clonedSvgElement = originalSvgElement.cloneNode(true) as HTMLElement;

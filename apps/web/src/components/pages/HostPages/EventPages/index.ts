@@ -1,1 +1,0 @@
-export { CertificateSettingsPage } from "./CertificateSettingsPage";
