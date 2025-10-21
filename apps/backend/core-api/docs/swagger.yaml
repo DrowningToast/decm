@@ -251,23 +251,6 @@ definitions:
       signature:
         type: string
     type: object
-  eventconfig.CreateEventCertificateConfigRequest:
-    properties:
-      academic_institution_pos_x:
-        type: integer
-      academic_institution_pos_y:
-        type: integer
-      base_certificate_storage_key:
-        type: string
-      event_name_pos_x:
-        type: integer
-      event_name_pos_y:
-        type: integer
-      name_pos_x:
-        type: integer
-      name_pos_y:
-        type: integer
-    type: object
   eventconfig.CreateEventRegistrationConfigRequest:
     properties:
       academic_email_requirement_status:
@@ -294,9 +277,9 @@ definitions:
   eventconfig.EventCertificateConfigResponse:
     properties:
       academic_institution_pos_x:
-        type: integer
+        type: number
       academic_institution_pos_y:
-        type: integer
+        type: number
       base_certificate_storage_key:
         type: string
       created_at:
@@ -304,15 +287,15 @@ definitions:
       event_id:
         type: string
       event_name_pos_x:
-        type: integer
+        type: number
       event_name_pos_y:
-        type: integer
+        type: number
       id:
         type: string
       name_pos_x:
-        type: integer
+        type: number
       name_pos_y:
-        type: integer
+        type: number
       updated_at:
         type: string
     type: object
@@ -346,23 +329,6 @@ definitions:
         type: string
       updated_at:
         type: string
-    type: object
-  eventconfig.UpdateEventCertificateConfigRequest:
-    properties:
-      academic_institution_pos_x:
-        type: integer
-      academic_institution_pos_y:
-        type: integer
-      base_certificate_storage_key:
-        type: string
-      event_name_pos_x:
-        type: integer
-      event_name_pos_y:
-        type: integer
-      name_pos_x:
-        type: integer
-      name_pos_y:
-        type: integer
     type: object
   eventconfig.UpdateEventRegistrationConfigRequest:
     properties:
@@ -990,6 +956,7 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Delete event certificate config
+  /api/v1/events/{event_id}/config/certificate:
     get:
       consumes:
       - application/json
@@ -1021,43 +988,6 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get event certificate config
-    post:
-      consumes:
-      - application/json
-      description: Create a new event certificate configuration for an event
-      operationId: create-event-certificate-config
-      parameters:
-      - description: Event ID
-        in: path
-        name: event_id
-        required: true
-        type: string
-      - description: Event certificate config data
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/eventconfig.CreateEventCertificateConfigRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/eventconfig.EventCertificateConfigResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-      summary: Create event certificate config
     put:
       consumes:
       - application/json
@@ -1069,12 +999,45 @@ paths:
         name: event_id
         required: true
         type: string
-      - description: Event certificate config data
-        in: body
-        name: request
+      - description: Base certificate image
+        in: formData
+        name: base_certificate_image
         required: true
-        schema:
-          $ref: '#/definitions/eventconfig.UpdateEventCertificateConfigRequest'
+        type: file
+      - description: Event name position x
+        format: float64
+        in: formData
+        name: event_name_pos_x
+        required: true
+        type: number
+      - description: Event name position y
+        format: float64
+        in: formData
+        name: event_name_pos_y
+        required: true
+        type: number
+      - description: Name position x
+        format: float64
+        in: formData
+        name: name_pos_x
+        required: true
+        type: number
+      - description: Name position y
+        format: float64
+        in: formData
+        name: name_pos_y
+        required: true
+        type: number
+      - description: Academic institution position x
+        format: float64
+        in: formData
+        name: academic_institution_pos_x
+        type: number
+      - description: Academic institution position y
+        format: float64
+        in: formData
+        name: academic_institution_pos_y
+        type: number
       produces:
       - application/json
       responses:

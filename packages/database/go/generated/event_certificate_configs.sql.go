@@ -35,14 +35,14 @@ INSERT INTO event_certificate_configs (
 `
 
 type CreateEventCertificateConfigParams struct {
-	EventID                   uuid.UUID   `json:"event_id"`
-	BaseCertificateStorageKey string      `json:"base_certificate_storage_key"`
-	EventNamePosX             int32       `json:"event_name_pos_x"`
-	EventNamePosY             int32       `json:"event_name_pos_y"`
-	NamePosX                  int32       `json:"name_pos_x"`
-	NamePosY                  int32       `json:"name_pos_y"`
-	AcademicInstitutionPosX   pgtype.Int4 `json:"academic_institution_pos_x"`
-	AcademicInstitutionPosY   pgtype.Int4 `json:"academic_institution_pos_y"`
+	EventID                   uuid.UUID     `json:"event_id"`
+	BaseCertificateStorageKey string        `json:"base_certificate_storage_key"`
+	EventNamePosX             float64       `json:"event_name_pos_x"`
+	EventNamePosY             float64       `json:"event_name_pos_y"`
+	NamePosX                  float64       `json:"name_pos_x"`
+	NamePosY                  float64       `json:"name_pos_y"`
+	AcademicInstitutionPosX   pgtype.Float8 `json:"academic_institution_pos_x"`
+	AcademicInstitutionPosY   pgtype.Float8 `json:"academic_institution_pos_y"`
 }
 
 func (q *Queries) CreateEventCertificateConfig(ctx context.Context, arg CreateEventCertificateConfigParams) (EventCertificateConfig, error) {
@@ -121,14 +121,14 @@ RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_na
 `
 
 type UpdateEventCertificateConfigParams struct {
-	BaseCertificateStorageKey string      `json:"base_certificate_storage_key"`
-	EventNamePosX             int32       `json:"event_name_pos_x"`
-	EventNamePosY             int32       `json:"event_name_pos_y"`
-	NamePosX                  int32       `json:"name_pos_x"`
-	NamePosY                  int32       `json:"name_pos_y"`
-	AcademicInstitutionPosX   pgtype.Int4 `json:"academic_institution_pos_x"`
-	AcademicInstitutionPosY   pgtype.Int4 `json:"academic_institution_pos_y"`
-	EventID                   uuid.UUID   `json:"event_id"`
+	BaseCertificateStorageKey string        `json:"base_certificate_storage_key"`
+	EventNamePosX             float64       `json:"event_name_pos_x"`
+	EventNamePosY             float64       `json:"event_name_pos_y"`
+	NamePosX                  float64       `json:"name_pos_x"`
+	NamePosY                  float64       `json:"name_pos_y"`
+	AcademicInstitutionPosX   pgtype.Float8 `json:"academic_institution_pos_x"`
+	AcademicInstitutionPosY   pgtype.Float8 `json:"academic_institution_pos_y"`
+	EventID                   uuid.UUID     `json:"event_id"`
 }
 
 func (q *Queries) UpdateEventCertificateConfig(ctx context.Context, arg UpdateEventCertificateConfigParams) (EventCertificateConfig, error) {

@@ -95,8 +95,9 @@ type S3UploadRequestObject struct {
 }
 
 const (
-	StorageKeyTypeEventBanner StorageKeyType = "event/%s/banner/%s%s"
-	StorageKeyTypeEventIcon   StorageKeyType = "event/%s/icon/%s%s"
+	StorageKeyTypeEventBanner      StorageKeyType = "event/%s/banner/%s%s"
+	StorageKeyTypeEventIcon        StorageKeyType = "event/%s/icon/%s%s"
+	StorageKeyTypeEventCertificate StorageKeyType = "event/%s/certificate/%s%s"
 )
 
 func (s *S3Service) GetStorageKey(entityType StorageKeyType, entityID uuid.UUID, fileName string, fileExtension string) string {

@@ -14,16 +14,6 @@ export type CheckOnboardStatusData = OnboardCheckOnboardStatusResponse;
 
 export type CheckOnboardStatusError = CustomerrorErrResponse;
 
-export type CreateEventCertificateConfigData =
-  EventconfigEventCertificateConfigResponse;
-
-export type CreateEventCertificateConfigError = CustomerrorErrResponse;
-
-export interface CreateEventCertificateConfigParams {
-  /** Event ID */
-  eventId: string;
-}
-
 export type CreateEventContractData = EventEventContractResponse;
 
 export type CreateEventContractError = CustomerrorErrResponse;
@@ -283,16 +273,6 @@ export interface EventUpdateEventIssuerRequest {
   signature?: string;
 }
 
-export interface EventconfigCreateEventCertificateConfigRequest {
-  academic_institution_pos_x?: number;
-  academic_institution_pos_y?: number;
-  base_certificate_storage_key?: string;
-  event_name_pos_x?: number;
-  event_name_pos_y?: number;
-  name_pos_x?: number;
-  name_pos_y?: number;
-}
-
 export interface EventconfigCreateEventRegistrationConfigRequest {
   academic_email_requirement_status?: number;
   academic_institution_requirement_status?: number;
@@ -335,16 +315,6 @@ export interface EventconfigEventRegistrationConfigResponse {
   phone_number_requirement_status?: number;
   registration_password?: string;
   updated_at?: string;
-}
-
-export interface EventconfigUpdateEventCertificateConfigRequest {
-  academic_institution_pos_x?: number;
-  academic_institution_pos_y?: number;
-  base_certificate_storage_key?: string;
-  event_name_pos_x?: number;
-  event_name_pos_y?: number;
-  name_pos_x?: number;
-  name_pos_y?: number;
 }
 
 export interface EventconfigUpdateEventRegistrationConfigRequest {
@@ -640,6 +610,41 @@ export type UpdateEventCertificateConfigError = CustomerrorErrResponse;
 export interface UpdateEventCertificateConfigParams {
   /** Event ID */
   eventId: string;
+}
+
+export interface UpdateEventCertificateConfigPayload {
+  /**
+   * Academic institution position x
+   * @format float64
+   */
+  academic_institution_pos_x?: number;
+  /**
+   * Academic institution position y
+   * @format float64
+   */
+  academic_institution_pos_y?: number;
+  /** Base certificate image */
+  base_certificate_image: File;
+  /**
+   * Event name position x
+   * @format float64
+   */
+  event_name_pos_x: number;
+  /**
+   * Event name position y
+   * @format float64
+   */
+  event_name_pos_y: number;
+  /**
+   * Name position x
+   * @format float64
+   */
+  name_pos_x: number;
+  /**
+   * Name position y
+   * @format float64
+   */
+  name_pos_y: number;
 }
 
 export type UpdateEventContractData = EventEventContractResponse;
@@ -1077,76 +1082,6 @@ export class Api<SecurityDataType extends unknown> {
       }),
 
     /**
-     * @description Get the event certificate configuration for an event
-     *
-     * @name GetEventCertificateConfig
-     * @summary Get event certificate config
-     * @request GET:/api/v1/events/{event_id}/certificate-config
-     */
-    getEventCertificateConfig: (
-      { eventId, ...query }: GetEventCertificateConfigParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        GetEventCertificateConfigData,
-        GetEventCertificateConfigError
-      >({
-        path: `/api/v1/events/${eventId}/certificate-config`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update the event certificate configuration for an event
-     *
-     * @name UpdateEventCertificateConfig
-     * @summary Update event certificate config
-     * @request PUT:/api/v1/events/{event_id}/certificate-config
-     */
-    updateEventCertificateConfig: (
-      { eventId, ...query }: UpdateEventCertificateConfigParams,
-      request: EventconfigUpdateEventCertificateConfigRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        UpdateEventCertificateConfigData,
-        UpdateEventCertificateConfigError
-      >({
-        path: `/api/v1/events/${eventId}/certificate-config`,
-        method: "PUT",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Create a new event certificate configuration for an event
-     *
-     * @name CreateEventCertificateConfig
-     * @summary Create event certificate config
-     * @request POST:/api/v1/events/{event_id}/certificate-config
-     */
-    createEventCertificateConfig: (
-      { eventId, ...query }: CreateEventCertificateConfigParams,
-      request: EventconfigCreateEventCertificateConfigRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        CreateEventCertificateConfigData,
-        CreateEventCertificateConfigError
-      >({
-        path: `/api/v1/events/${eventId}/certificate-config`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * @description Delete the event certificate configuration for an event
      *
      * @name DeleteEventCertificateConfig
@@ -1164,6 +1099,52 @@ export class Api<SecurityDataType extends unknown> {
         path: `/api/v1/events/${eventId}/certificate-config`,
         method: "DELETE",
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get the event certificate configuration for an event
+     *
+     * @name GetEventCertificateConfig
+     * @summary Get event certificate config
+     * @request GET:/api/v1/events/{event_id}/config/certificate
+     */
+    getEventCertificateConfig: (
+      { eventId, ...query }: GetEventCertificateConfigParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<
+        GetEventCertificateConfigData,
+        GetEventCertificateConfigError
+      >({
+        path: `/api/v1/events/${eventId}/config/certificate`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update the event certificate configuration for an event
+     *
+     * @name UpdateEventCertificateConfig
+     * @summary Update event certificate config
+     * @request PUT:/api/v1/events/{event_id}/config/certificate
+     */
+    updateEventCertificateConfig: (
+      { eventId, ...query }: UpdateEventCertificateConfigParams,
+      data: UpdateEventCertificateConfigPayload,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<
+        UpdateEventCertificateConfigData,
+        UpdateEventCertificateConfigError
+      >({
+        path: `/api/v1/events/${eventId}/config/certificate`,
+        method: "PUT",
+        body: data,
+        type: ContentType.FormData,
         format: "json",
         ...params,
       }),

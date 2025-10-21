@@ -137,12 +137,12 @@ type EventCertificateConfig struct {
 	ID                        uuid.UUID          `json:"id"`
 	EventID                   uuid.UUID          `json:"event_id"`
 	BaseCertificateStorageKey string             `json:"base_certificate_storage_key"`
-	EventNamePosX             int32              `json:"event_name_pos_x"`
-	EventNamePosY             int32              `json:"event_name_pos_y"`
-	NamePosX                  int32              `json:"name_pos_x"`
-	NamePosY                  int32              `json:"name_pos_y"`
-	AcademicInstitutionPosX   pgtype.Int4        `json:"academic_institution_pos_x"`
-	AcademicInstitutionPosY   pgtype.Int4        `json:"academic_institution_pos_y"`
+	EventNamePosX             float64            `json:"event_name_pos_x"`
+	EventNamePosY             float64            `json:"event_name_pos_y"`
+	NamePosX                  float64            `json:"name_pos_x"`
+	NamePosY                  float64            `json:"name_pos_y"`
+	AcademicInstitutionPosX   pgtype.Float8      `json:"academic_institution_pos_x"`
+	AcademicInstitutionPosY   pgtype.Float8      `json:"academic_institution_pos_y"`
 	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
 }
