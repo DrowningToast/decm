@@ -505,6 +505,57 @@
             }
         },
         "/api/v1/events/{event_id}/certificate-config": {
+            "delete": {
+                "description": "Delete the event certificate configuration for an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete event certificate config",
+                "operationId": "delete-event-certificate-config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{event_id}/config/certificate": {
             "get": {
                 "description": "Get the event certificate configuration for an event",
                 "consumes": [
@@ -570,13 +621,57 @@
                         "required": true
                     },
                     {
-                        "description": "Event certificate config data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/eventconfig.UpdateEventCertificateConfigRequest"
-                        }
+                        "type": "file",
+                        "description": "Base certificate image",
+                        "name": "base_certificate_image",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Event name position x",
+                        "name": "event_name_pos_x",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Event name position y",
+                        "name": "event_name_pos_y",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Name position x",
+                        "name": "name_pos_x",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Name position y",
+                        "name": "name_pos_y",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Academic institution position x",
+                        "name": "academic_institution_pos_x",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Academic institution position y",
+                        "name": "academic_institution_pos_y",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -584,110 +679,6 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/eventconfig.EventCertificateConfigResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new event certificate configuration for an event",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Create event certificate config",
-                "operationId": "create-event-certificate-config",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event ID",
-                        "name": "event_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Event certificate config data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/eventconfig.CreateEventCertificateConfigRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/eventconfig.EventCertificateConfigResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete the event certificate configuration for an event",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Delete event certificate config",
-                "operationId": "delete-event-certificate-config",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event ID",
-                        "name": "event_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
                         }
                     },
                     "400": {
@@ -2274,32 +2265,6 @@
                 }
             }
         },
-        "eventconfig.CreateEventCertificateConfigRequest": {
-            "type": "object",
-            "properties": {
-                "academic_institution_pos_x": {
-                    "type": "integer"
-                },
-                "academic_institution_pos_y": {
-                    "type": "integer"
-                },
-                "base_certificate_storage_key": {
-                    "type": "string"
-                },
-                "event_name_pos_x": {
-                    "type": "integer"
-                },
-                "event_name_pos_y": {
-                    "type": "integer"
-                },
-                "name_pos_x": {
-                    "type": "integer"
-                },
-                "name_pos_y": {
-                    "type": "integer"
-                }
-            }
-        },
         "eventconfig.CreateEventRegistrationConfigRequest": {
             "type": "object",
             "properties": {
@@ -2339,10 +2304,10 @@
             "type": "object",
             "properties": {
                 "academic_institution_pos_x": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "academic_institution_pos_y": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "base_certificate_storage_key": {
                     "type": "string"
@@ -2354,19 +2319,19 @@
                     "type": "string"
                 },
                 "event_name_pos_x": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "event_name_pos_y": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "id": {
                     "type": "string"
                 },
                 "name_pos_x": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "name_pos_y": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "updated_at": {
                     "type": "string"
@@ -2417,32 +2382,6 @@
                 },
                 "updated_at": {
                     "type": "string"
-                }
-            }
-        },
-        "eventconfig.UpdateEventCertificateConfigRequest": {
-            "type": "object",
-            "properties": {
-                "academic_institution_pos_x": {
-                    "type": "integer"
-                },
-                "academic_institution_pos_y": {
-                    "type": "integer"
-                },
-                "base_certificate_storage_key": {
-                    "type": "string"
-                },
-                "event_name_pos_x": {
-                    "type": "integer"
-                },
-                "event_name_pos_y": {
-                    "type": "integer"
-                },
-                "name_pos_x": {
-                    "type": "integer"
-                },
-                "name_pos_y": {
-                    "type": "integer"
                 }
             }
         },

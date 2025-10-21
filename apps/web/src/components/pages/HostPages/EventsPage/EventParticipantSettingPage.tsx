@@ -49,11 +49,14 @@ export const EventParticipantSettingPage = ({
             final_call_for_registration: data.finalCallRegistrationDate
                 ? new Date(data.finalCallRegistrationDate).toISOString()
                 : undefined,
-            registration_password: data.registrationPassword ?? undefined,
             event_type: data.eventType as EntityEventType,
             is_booking_request_required: data.isBookingRequired,
             is_ticket_transferable: data.isTicketTransferable,
         };
+
+        if (data.requireRegistrationPassword) {
+            params.registration_password = data.registrationPassword ?? undefined;
+        }
 
         await updateParticipantSetting(params);
     };

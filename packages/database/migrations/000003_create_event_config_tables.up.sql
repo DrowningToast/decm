@@ -32,12 +32,12 @@ CREATE TABLE event_certificate_configs (
     base_certificate_storage_key VARCHAR(255) NOT NULL,
 
     -- element positions
-    event_name_pos_x INTEGER NOT NULL,
-    event_name_pos_y INTEGER NOT NULL,
-    name_pos_x INTEGER NOT NULL,
-    name_pos_y INTEGER NOT NULL,
-    academic_institution_pos_x INTEGER,
-    academic_institution_pos_y INTEGER,
+    event_name_pos_x FLOAT NOT NULL,
+    event_name_pos_y FLOAT NOT NULL,
+    name_pos_x FLOAT NOT NULL,
+    name_pos_y FLOAT NOT NULL,
+    academic_institution_pos_x FLOAT,
+    academic_institution_pos_y FLOAT,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()

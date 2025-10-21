@@ -1,277 +1,114 @@
-import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
-import DOMPurify from "dompurify";
 import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Search, AlertCircle } from "lucide-react";
+import { IssuerSelectionModal } from "@/components/IssuerSelectionModal";
+import { SelectedIssuersTable } from "@/components/SelectedIssuersTable";
+import { CertificateTemplateUpload } from "@/components/CertificateTemplateUpload";
+import { CertificatePreview } from "@/components/CertificatePreview";
+import { useIssuerManagement } from "@/hooks/useIssuerManagement";
+import { useCertificateTemplate } from "@/hooks/useCertificateTemplate";
 import PageContainer from "@/components/container/PageContainer";
 import SectionContainer from "@/components/container/SectionContainer";
-import { Search, Trash2, Upload, AlertCircle, Info, Image as ImageIcon } from "lucide-react";
+import { useUpdateCertificateConfig } from "./useUpdateCertificateConfig";
+import type {
+    EventconfigEventCertificateConfigResponse,
+    UpdateEventCertificateConfigPayload,
+} from "@decm/api";
+import { toast } from "sonner";
 
-// Type definitions
-interface Issuer {
-    id: string;
-    name: string;
-    email: string;
-    organization?: string;
+interface CertificateSettingsPageProps {
+    eventId: string;
+    eventCertificateConfig?: EventconfigEventCertificateConfigResponse;
 }
 
-interface DetectedKeyword {
-    keyword: string;
-    x: number;
-    y: number;
-    count: number;
-}
-
-const SEARCH_KEYS: string[] = ["{{ name }}", "{{ eventName }}"];
-const CERT_WIDTH: number = 1920;
-const CERT_HEIGHT: number = 1080;
-
-export const CertificateSettingsPage = () => {
+export const CertificateSettingsPage = ({
+    eventId,
+    eventCertificateConfig,
+}: CertificateSettingsPageProps) => {
     const { t } = useTranslation();
-    const { eventId } = useParams<{ eventId: string }>();
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const svgTempRef = useRef<HTMLDivElement>(null);
 
-    // State for Step 1: Issuer Settings
-    const [searchQuery, setSearchQuery] = useState("");
-    const [selectedIssuers, setSelectedIssuers] = useState<Issuer[]>([]);
-    const [isSearching, setIsSearching] = useState(false);
-    const [searchResults, setSearchResults] = useState<Issuer[]>([]);
-    const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-    const [tempSelectedIds, setTempSelectedIds] = useState<Set<string>>(new Set());
-
-    // State for Step 2: Certificate Template Settings
-    const [svgFile, setSvgFile] = useState<File | null>(null);
-    const [svgPreview, setSvgPreview] = useState<string>("");
-    const [detectedKeywords, setDetectedKeywords] = useState<DetectedKeyword[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-
-    // Available keywords for certificate templates
-    const availableKeywords = [
-        { keyword: "{{ eventName }}", mandatory: true },
-        { keyword: "{{ name }}", mandatory: true },
-        { keyword: "{{ academicInstitutionName }}", mandatory: false },
-        { keyword: "{{ startDate }}", mandatory: false },
-        { keyword: "{{ endDate }}", mandatory: false },
-    ];
-
-    // Check if mandatory keywords are detected
-    const mandatoryKeywords = availableKeywords.filter((kw) => kw.mandatory);
-    const detectedKeywordStrings = detectedKeywords.map((k) => k.keyword);
-    const missingMandatoryKeywords = mandatoryKeywords.filter(
-        (kw) => !detectedKeywordStrings.includes(kw.keyword),
+    const { updateCertificateConfig, isUpdatingCertificateConfig } = useUpdateCertificateConfig(
+        eventId!,
     );
-    const hasMissingMandatory = missingMandatoryKeywords.length > 0;
 
-    // Mock issuer search function
-    const handleSearchIssuers = async () => {
-        setIsSearching(true);
-        try {
-            // TODO: Implement actual API call to search issuers
-            console.log("Searching for:", searchQuery);
-            // Simulate API delay
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Use custom hooks for state management
+    const issuerManagement = useIssuerManagement();
+    const certificateTemplate = useCertificateTemplate();
 
-            // Mock results - replace with actual API data
-            const mockResults: Issuer[] = [
-                {
-                    id: "1",
-                    name: "John Doe",
-                    email: "john.doe@university.edu",
-                    organization: "Computer Science Department",
-                },
-                {
-                    id: "2",
-                    name: "Jane Smith",
-                    email: "jane.smith@university.edu",
-                    organization: "Engineering Department",
-                },
-                {
-                    id: "3",
-                    name: "Dr. Michael Brown",
-                    email: "m.brown@university.edu",
-                    organization: "Mathematics Department",
-                },
-                {
-                    id: "4",
-                    name: "Prof. Sarah Wilson",
-                    email: "s.wilson@university.edu",
-                    organization: "Physics Department",
-                },
-            ];
-
-            // Set search results and open modal
-            setSearchResults(mockResults);
-            setIsSearchModalOpen(true);
-
-            // Pre-select already selected issuers
-            const alreadySelectedIds = new Set(selectedIssuers.map((issuer) => issuer.id));
-            setTempSelectedIds(alreadySelectedIds);
-        } catch (error) {
-            console.error("Error searching issuers:", error);
-        } finally {
-            setIsSearching(false);
-        }
-    };
-
-    const handleToggleIssuerSelection = (issuerId: string) => {
-        const newSelection = new Set(tempSelectedIds);
-        if (newSelection.has(issuerId)) {
-            newSelection.delete(issuerId);
-        } else {
-            newSelection.add(issuerId);
-        }
-        setTempSelectedIds(newSelection);
-    };
-
-    const handleConfirmIssuerSelection = () => {
-        // Get all selected issuers from search results
-        const newSelectedIssuers = searchResults.filter((issuer) => tempSelectedIds.has(issuer.id));
-
-        // Merge with existing selections (avoid duplicates)
-        const merged = [...selectedIssuers];
-        newSelectedIssuers.forEach((issuer) => {
-            if (!merged.some((existing) => existing.id === issuer.id)) {
-                merged.push(issuer);
-            }
-        });
-
-        // Update selected issuers
-        setSelectedIssuers(merged);
-
-        // Close modal and reset
-        setIsSearchModalOpen(false);
-        setSearchResults([]);
-        setTempSelectedIds(new Set());
-    };
-
-    const handleCancelIssuerSelection = () => {
-        setIsSearchModalOpen(false);
-        setSearchResults([]);
-        setTempSelectedIds(new Set());
-    };
-
-    const handleRemoveIssuer = (issuerId: string) => {
-        setSelectedIssuers(selectedIssuers.filter((issuer) => issuer.id !== issuerId));
-    };
-
-    // SVG file handling
-    const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-
-        if (!file) return;
-        setSvgFile(file);
-
-        const reader = new FileReader();
-
-        reader.onload = (e: ProgressEvent<FileReader>) => {
-            const svgString = e.target?.result as string;
-            setSvgPreview(svgString);
-
-            try {
-                const parser = new DOMParser();
-                const svgDoc = parser.parseFromString(svgString, "image/svg+xml");
-                const svgElement = svgDoc.documentElement;
-
-                if (svgElement.tagName.toLowerCase() !== "svg") return;
-                generateCertificate(svgDoc);
-            } catch (error) {
-                console.error("[ERROR] SVG Parsing Error:", error);
-            }
-        };
-
-        reader.readAsText(file);
-    };
-
-    const generateCertificate = useCallback(async (_svgDoc: Document): Promise<void> => {
-        const originalSvgElement = _svgDoc.documentElement;
-        const clonedSvgElement = originalSvgElement.cloneNode(true) as SVGSVGElement;
-
-        const tempContainer = svgTempRef.current;
-        if (!tempContainer) return;
-
-        tempContainer.innerHTML = "";
-        tempContainer.appendChild(clonedSvgElement);
-
-        clonedSvgElement.setAttribute("width", CERT_WIDTH.toString());
-        clonedSvgElement.setAttribute("height", CERT_HEIGHT.toString());
-        clonedSvgElement.setAttribute("viewBox", `0 0 ${CERT_WIDTH} ${CERT_HEIGHT}`);
-
-        SEARCH_KEYS.forEach((key) => {
-            const escapedKey = CSS.escape(key);
-            const placeholder = clonedSvgElement.querySelector(
-                `#${escapedKey}`,
-            ) as SVGGraphicsElement | null;
-
-            if (placeholder) {
-                const bbox = placeholder.getBBox();
-
-                const centerX = bbox.x + bbox.width / 2;
-                const y = bbox.y + bbox.height * 0.9;
-
-                setDetectedKeywords((prev) => [
-                    ...prev,
-                    {
-                        keyword: key,
-                        x: centerX,
-                        y: y,
-                        count: 1,
-                    },
-                ]);
-            } else {
-                console.log(`[INFO] ไม่พบ Element ID: ${key}`);
-            }
-        });
-    }, []);
-
+    // Handle form submission
     const handleSubmit = async () => {
-        setIsLoading(true);
         try {
             // TODO: Implement API call to save certificate settings
             console.log("Event ID:", eventId);
-            console.log("Selected Issuers:", selectedIssuers);
-            console.log("SVG File:", svgFile);
-            console.log("Detected Keywords:", detectedKeywords);
+            console.log("Selected Issuers:", issuerManagement.selectedIssuers);
+            console.log("SVG File:", certificateTemplate.svgFile);
+            console.log("Detected Keywords:", certificateTemplate.detectedKeywords);
 
-            // Simulate API delay
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            const name = certificateTemplate.detectedKeywords.find(
+                (keyword) => keyword.keyword === "{{ name }}",
+            );
 
-            alert(t("certificateSettings.saveSuccess"));
+            const eventName = certificateTemplate.detectedKeywords.find(
+                (keyword) => keyword.keyword === "{{ eventName }}",
+            );
+
+            const acedmicInstitutionName = certificateTemplate.detectedKeywords.find(
+                (keyword) => keyword.keyword === "{{ academicInstitutionName }}",
+            );
+
+            if (!name) {
+                toast.error(t("certificateSettings.nameNotFound"));
+                return;
+            }
+
+            if (!eventName) {
+                toast.error(t("certificateSettings.eventNameNotFound"));
+                return;
+            }
+
+            if (!certificateTemplate.svgFile) {
+                toast.error(t("certificateSettings.svgFileNotFound"));
+                return;
+            }
+
+            const req: UpdateEventCertificateConfigPayload = {
+                name_pos_x: name?.x ?? undefined,
+                name_pos_y: name?.y ?? undefined,
+                event_name_pos_x: eventName?.x ?? undefined,
+                event_name_pos_y: eventName?.y ?? undefined,
+                base_certificate_image: certificateTemplate.svgFile,
+            };
+
+            if (acedmicInstitutionName) {
+                req.academic_institution_pos_x = acedmicInstitutionName.x;
+                req.academic_institution_pos_y = acedmicInstitutionName.y;
+            }
+
+            await updateCertificateConfig(req);
+
+            toast.success(t("certificateSettings.saveSuccess"));
         } catch (error) {
             console.error("Error saving certificate settings:", error);
-            alert(t("certificateSettings.saveError"));
-        } finally {
-            setIsLoading(false);
+            toast.error(t("certificateSettings.saveError"));
         }
     };
 
     const handleCancel = () => {
         // Reset form or navigate back
-        setSelectedIssuers([]);
-        setSvgFile(null);
-        setSvgPreview("");
-        setDetectedKeywords([]);
+        issuerManagement.handleClearSelection();
+        certificateTemplate.clearTemplate();
     };
+
+    // Check if form is valid for submission
+    const isFormValid =
+        issuerManagement.selectedIssuers.length > 0 &&
+        certificateTemplate.svgFile !== null &&
+        certificateTemplate.detectedKeywords.length > 0 &&
+        !certificateTemplate.hasMissingMandatory;
 
     return (
         <PageContainer
@@ -318,19 +155,24 @@ export const CertificateSettingsPage = () => {
                                         placeholder={t(
                                             "certificateSettings.step1.searchPlaceholder",
                                         )}
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        value={issuerManagement.searchQuery}
+                                        onChange={(e) =>
+                                            issuerManagement.handleSearchQueryChange(e.target.value)
+                                        }
                                         onKeyDown={(e) => {
                                             if (e.key === "Enter") {
-                                                handleSearchIssuers();
+                                                issuerManagement.handleSearch();
                                             }
                                         }}
-                                        disabled={isSearching}
+                                        disabled={issuerManagement.isSearching}
                                     />
                                     <Button
                                         type="button"
-                                        onClick={handleSearchIssuers}
-                                        disabled={isSearching || !searchQuery.trim()}
+                                        onClick={issuerManagement.handleSearch}
+                                        disabled={
+                                            issuerManagement.isSearching ||
+                                            !issuerManagement.searchQuery.trim()
+                                        }
                                         className="min-w-[100px]"
                                     >
                                         <Search className="h-4 w-4 mr-2" />
@@ -339,7 +181,7 @@ export const CertificateSettingsPage = () => {
                                             tag="span"
                                             className="font-medium"
                                         >
-                                            {isSearching
+                                            {issuerManagement.isSearching
                                                 ? t("common.searching")
                                                 : t("certificateSettings.step1.searchButton")}
                                         </Typography>
@@ -348,67 +190,10 @@ export const CertificateSettingsPage = () => {
                             </div>
 
                             {/* Selected Issuers Table */}
-                            {selectedIssuers.length > 0 && (
-                                <div className="mt-6">
-                                    <Typography
-                                        variant="text"
-                                        tag="p"
-                                        className="text-sm font-medium mb-3"
-                                    >
-                                        {t("certificateSettings.step1.selectedIssuers")} (
-                                        {selectedIssuers.length})
-                                    </Typography>
-                                    <div className="rounded-md border">
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>
-                                                        {t("certificateSettings.step1.table.name")}
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        {t("certificateSettings.step1.table.email")}
-                                                    </TableHead>
-                                                    <TableHead>
-                                                        {t(
-                                                            "certificateSettings.step1.table.organization",
-                                                        )}
-                                                    </TableHead>
-                                                    <TableHead className="w-[100px]">
-                                                        {t(
-                                                            "certificateSettings.step1.table.actions",
-                                                        )}
-                                                    </TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {selectedIssuers.map((issuer) => (
-                                                    <TableRow key={issuer.id}>
-                                                        <TableCell className="font-medium">
-                                                            {issuer.name}
-                                                        </TableCell>
-                                                        <TableCell>{issuer.email}</TableCell>
-                                                        <TableCell>
-                                                            {issuer.organization || "-"}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Button
-                                                                type="button"
-                                                                variant="secondary-light"
-                                                                size="sm"
-                                                                onClick={() =>
-                                                                    handleRemoveIssuer(issuer.id)
-                                                                }
-                                                            >
-                                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                                            </Button>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                </div>
-                            )}
+                            <SelectedIssuersTable
+                                selectedIssuers={issuerManagement.selectedIssuers}
+                                onRemoveIssuer={issuerManagement.handleRemoveIssuer}
+                            />
 
                             {/* Alert about issuer settings */}
                             <Alert variant="warning">
@@ -442,155 +227,23 @@ export const CertificateSettingsPage = () => {
                             </Typography>
                         </div>
 
-                        <div className="space-y-6 rounded-lg border p-6">
-                            {/* Instructions */}
-                            <div className="space-y-4">
-                                <Typography
-                                    variant="header"
-                                    tag="h3"
-                                    className="text-base font-semibold"
-                                >
-                                    {t("certificateSettings.step2.instructions.title")}
-                                </Typography>
+                        {/* Certificate Template Upload Component */}
+                        <CertificateTemplateUpload
+                            svgFile={certificateTemplate.svgFile}
+                            availableKeywords={certificateTemplate.availableKeywords}
+                            onFileSelect={certificateTemplate.handleFileSelect}
+                            fileInputRef={certificateTemplate.fileInputRef}
+                        />
 
-                                {/* Instruction steps with mockup images */}
-                                <div className="space-y-4">
-                                    {[1, 2, 3].map((step) => (
-                                        <div key={step} className="flex gap-4">
-                                            <div className="flex-shrink-0 w-32 h-24 bg-muted rounded-md flex items-center justify-center border-2 border-dashed">
-                                                <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <Typography
-                                                    variant="text"
-                                                    tag="p"
-                                                    className="text-sm font-medium mb-1"
-                                                >
-                                                    {t(
-                                                        `certificateSettings.step2.instructions.step${step}.title`,
-                                                    )}
-                                                </Typography>
-                                                <Typography
-                                                    variant="text"
-                                                    tag="p"
-                                                    className="text-xs text-muted-foreground"
-                                                >
-                                                    {t(
-                                                        `certificateSettings.step2.instructions.step${step}.description`,
-                                                    )}
-                                                </Typography>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Available Keywords Info */}
-                            <Alert variant="info">
-                                <Info className="h-4 w-4" />
-                                <AlertTitle>
-                                    {t("certificateSettings.step2.keywords.title")}
-                                </AlertTitle>
-                                <AlertDescription>
-                                    <div className="mt-2">
-                                        <Typography
-                                            variant="text"
-                                            tag="p"
-                                            className="text-xs mb-2 text-blue-700"
-                                        >
-                                            {t("certificateSettings.step2.keywords.description")}
-                                        </Typography>
-                                        <div className="flex flex-wrap gap-2">
-                                            {availableKeywords.map((kw) => (
-                                                <div
-                                                    key={kw.keyword}
-                                                    className="inline-flex items-center gap-1"
-                                                >
-                                                    <code className="px-2 py-1 bg-blue-100 text-blue-700 dark:text-blue-400 rounded text-xs font-mono">
-                                                        {kw.keyword}
-                                                    </code>
-                                                    {kw.mandatory && (
-                                                        <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-semibold">
-                                                            Required
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </AlertDescription>
-                            </Alert>
-
-                            {/* SVG Upload */}
-                            <div className="space-y-2">
-                                <Label htmlFor="svg-upload">
-                                    <Typography
-                                        variant="text"
-                                        tag="span"
-                                        className="text-sm font-medium"
-                                    >
-                                        {t("certificateSettings.step2.upload.label")}
-                                    </Typography>
-                                </Label>
-                                <div className="flex gap-2">
-                                    <Input
-                                        id="svg-upload"
-                                        type="file"
-                                        ref={fileInputRef}
-                                        accept=".svg,image/svg+xml"
-                                        onChange={handleFileSelect}
-                                        className="hidden"
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="secondary-light"
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className="w-full h-30"
-                                    >
-                                        <Upload className="h-4 w-4 mr-2" />
-                                        <Typography
-                                            variant="text"
-                                            tag="span"
-                                            className="font-medium text-black"
-                                        >
-                                            {svgFile
-                                                ? svgFile.name
-                                                : t("certificateSettings.step2.upload.button")}
-                                        </Typography>
-                                    </Button>
-                                </div>
-                                <Typography
-                                    variant="text"
-                                    tag="p"
-                                    className="text-xs text-muted-foreground"
-                                >
-                                    {t("certificateSettings.step2.upload.hint")}
-                                </Typography>
-                            </div>
-
-                            {/* SVG Preview */}
-                            {svgPreview && (
-                                <div className="space-y-2">
-                                    <Typography
-                                        variant="text"
-                                        tag="p"
-                                        className="text-sm font-medium"
-                                    >
-                                        {t("certificateSettings.step2.preview.title")}
-                                    </Typography>
-                                    <div className="rounded-md border bg-muted/30 p-4">
-                                        <div className="w-full flex items-center justify-center">
-                                            <div
-                                                className="w-full max-w-4xl [&>svg]:w-full [&>svg]:h-auto [&>svg]:max-h-[500px] [&>svg]:object-contain"
-                                                dangerouslySetInnerHTML={{
-                                                    __html: DOMPurify.sanitize(svgPreview),
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                        {/* Certificate Preview Component */}
+                        <CertificatePreview
+                            svgPreview={certificateTemplate.svgPreview}
+                            imageUrl={
+                                certificateTemplate.svgPreview
+                                    ? undefined
+                                    : eventCertificateConfig?.base_certificate_storage_key
+                            }
+                        />
                     </div>
 
                     {/* Action Buttons */}
@@ -600,41 +253,23 @@ export const CertificateSettingsPage = () => {
                             variant="secondary-dark"
                             size="lg"
                             onClick={handleCancel}
-                            disabled={isLoading}
+                            disabled={isUpdatingCertificateConfig}
                             className="min-w-[150px]"
                         >
                             <Typography variant="text" tag="span" className="font-medium">
                                 {t("common.cancel")}
                             </Typography>
                         </Button>
-                        {/* <Button
-                            type="button"
-                            variant="secondary-dark"
-                            size="lg"
-                            onClick={generateCertificate}
-                            disabled={isLoading}
-                            className="min-w-[150px]"
-                        >
-                            <Typography variant="text" tag="span" className="font-medium">
-                                Test
-                            </Typography>
-                        </Button> */}
                         <Button
                             type="button"
                             variant="primary"
                             size="lg"
                             onClick={handleSubmit}
-                            disabled={
-                                isLoading ||
-                                selectedIssuers.length === 0 ||
-                                !svgFile ||
-                                detectedKeywords.length === 0 ||
-                                hasMissingMandatory
-                            }
+                            disabled={!isFormValid || isUpdatingCertificateConfig}
                             className="min-w-[150px]"
                         >
                             <Typography variant="text" tag="span" className="font-medium">
-                                {isLoading
+                                {isUpdatingCertificateConfig
                                     ? t("common.loading")
                                     : t("certificateSettings.confirmButton")}
                             </Typography>
@@ -644,121 +279,22 @@ export const CertificateSettingsPage = () => {
             </SectionContainer>
 
             {/* Issuer Selection Modal */}
-            <Dialog open={isSearchModalOpen} onOpenChange={setIsSearchModalOpen}>
-                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>
-                            <Typography variant="header" tag="h2" className="text-xl font-bold">
-                                {t("certificateSettings.step1.modal.title")}
-                            </Typography>
-                        </DialogTitle>
-                    </DialogHeader>
+            <IssuerSelectionModal
+                isOpen={issuerManagement.isModalOpen}
+                onClose={issuerManagement.handleCloseModal}
+                onConfirm={issuerManagement.handleConfirmSelection}
+                searchResults={issuerManagement.searchResults}
+                initialSelectedIds={issuerManagement.getSelectedIssuerIds()}
+                isLoading={issuerManagement.isSearching}
+                searchQuery={issuerManagement.searchQuery}
+            />
 
-                    <div className="mt-4">
-                        {searchResults.length === 0 ? (
-                            <Typography
-                                variant="text"
-                                tag="p"
-                                className="text-center text-muted-foreground py-8"
-                            >
-                                {t("certificateSettings.step1.modal.noResults")}
-                            </Typography>
-                        ) : (
-                            <>
-                                <Typography
-                                    variant="text"
-                                    tag="p"
-                                    className="text-sm text-muted-foreground mb-4"
-                                >
-                                    {t("certificateSettings.step1.modal.description")} (
-                                    {tempSelectedIds.size}{" "}
-                                    {t("certificateSettings.step1.modal.selected")})
-                                </Typography>
-
-                                <div className="rounded-md border">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="w-[50px]"></TableHead>
-                                                <TableHead>
-                                                    {t("certificateSettings.step1.table.name")}
-                                                </TableHead>
-                                                <TableHead>
-                                                    {t("certificateSettings.step1.table.email")}
-                                                </TableHead>
-                                                <TableHead>
-                                                    {t(
-                                                        "certificateSettings.step1.table.organization",
-                                                    )}
-                                                </TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {searchResults.map((issuer) => (
-                                                <TableRow
-                                                    key={issuer.id}
-                                                    className="cursor-pointer"
-                                                    onClick={() =>
-                                                        handleToggleIssuerSelection(issuer.id)
-                                                    }
-                                                >
-                                                    <TableCell>
-                                                        <Checkbox
-                                                            checked={tempSelectedIds.has(issuer.id)}
-                                                            onCheckedChange={() =>
-                                                                handleToggleIssuerSelection(
-                                                                    issuer.id,
-                                                                )
-                                                            }
-                                                            onClick={(e) => e.stopPropagation()}
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {issuer.name}
-                                                    </TableCell>
-                                                    <TableCell>{issuer.email}</TableCell>
-                                                    <TableCell>
-                                                        {issuer.organization || "-"}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                            </>
-                        )}
-                    </div>
-
-                    <DialogFooter className="mt-6">
-                        <Button
-                            type="button"
-                            variant="secondary-dark"
-                            onClick={handleCancelIssuerSelection}
-                        >
-                            <Typography variant="text" tag="span" className="font-medium">
-                                {t("common.cancel")}
-                            </Typography>
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="primary"
-                            onClick={handleConfirmIssuerSelection}
-                            disabled={tempSelectedIds.size === 0}
-                        >
-                            <Typography variant="text" tag="span" className="font-medium">
-                                {t("certificateSettings.step1.modal.chooseButton")} (
-                                {tempSelectedIds.size})
-                            </Typography>
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
+            {/* Hidden SVG container for processing */}
             <div
-                ref={svgTempRef}
+                ref={certificateTemplate.svgTempRef}
                 id="svg-temp-container"
                 className="absolute top-0 left-0 w-[1920px] h-[1080px] overflow-hidden opacity-0 pointer-events-none"
-            ></div>
+            />
         </PageContainer>
     );
 };

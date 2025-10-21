@@ -20,7 +20,7 @@ import (
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
-// @Router /api/v1/events/{event_id}/certificate-config [get]
+// @Router /api/v1/events/{event_id}/config/certificate [get]
 func (h *Handler) GetEventCertificateConfig(ctx *fiber.Ctx) error {
 	eventID, err := uuid.Parse(ctx.Params("event_id"))
 	if err != nil {
@@ -40,8 +40,8 @@ func (h *Handler) GetEventCertificateConfig(ctx *fiber.Ctx) error {
 		EventNamePosY:             config.EventNamePosY,
 		NamePosX:                  config.NamePosX,
 		NamePosY:                  config.NamePosY,
-		AcademicInstitutionPosX:   config.AcademicInstitutionPosX.Int32,
-		AcademicInstitutionPosY:   config.AcademicInstitutionPosY.Int32,
+		AcademicInstitutionPosX:   &config.AcademicInstitutionPosX.Float64,
+		AcademicInstitutionPosY:   &config.AcademicInstitutionPosY.Float64,
 		CreatedAt:                 config.CreatedAt.Time.String(),
 		UpdatedAt:                 config.UpdatedAt.Time.String(),
 	})

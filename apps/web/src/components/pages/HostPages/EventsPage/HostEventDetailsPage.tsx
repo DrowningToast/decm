@@ -22,13 +22,18 @@ import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
 import { useDataTable } from "@/hooks/use-data-table";
 import { participantColumns, type Participant } from "./columns/participant-columns";
-import type { EventconfigEventRegistrationConfigResponse, EventEventResponse } from "@decm/api";
+import type {
+    EventconfigEventCertificateConfigResponse,
+    EventconfigEventRegistrationConfigResponse,
+    EventEventResponse,
+} from "@decm/api";
 import { toEventRegistrationConfigStatus } from "@/lib/events/event.utils";
 
 interface HostEventDetailsPageProps {
     eventId: string;
     event: EventEventResponse;
     eventRegistrationConfig: EventconfigEventRegistrationConfigResponse;
+    eventCertificateConfig?: EventconfigEventCertificateConfigResponse;
 }
 
 // Mock API function - replace with actual API call

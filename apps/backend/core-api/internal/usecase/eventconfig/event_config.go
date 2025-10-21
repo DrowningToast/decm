@@ -3,6 +3,7 @@ package eventconfig
 import (
 	"apps/backend/core-api/internal/datagateway"
 	eventDg "apps/backend/core-api/internal/datagateway/event"
+	"apps/backend/services/s3"
 	"log/slog"
 )
 
@@ -11,6 +12,7 @@ type EventConfigUsecase struct {
 	EventDg                    eventDg.EventDataGateway
 	EventCertificateDg         eventDg.EventCertificateConfigDataGateway
 	EventRegistrationDg        eventDg.EventRegistrationConfigDataGateway
+	S3Service                  s3.S3Service
 
 	logger *slog.Logger
 }
@@ -20,6 +22,7 @@ func NewEventConfigUsecase(
 	eventDg eventDg.EventDataGateway,
 	eventCertificateDg eventDg.EventCertificateConfigDataGateway,
 	eventRegistrationDg eventDg.EventRegistrationConfigDataGateway,
+	s3Service s3.S3Service,
 	logger *slog.Logger,
 ) *EventConfigUsecase {
 	return &EventConfigUsecase{
@@ -27,6 +30,7 @@ func NewEventConfigUsecase(
 		EventDg:                    eventDg,
 		EventCertificateDg:         eventCertificateDg,
 		EventRegistrationDg:        eventRegistrationDg,
+		S3Service:                  s3Service,
 		logger:                     logger,
 	}
 }
