@@ -42,6 +42,7 @@ type Querier interface {
 	GetEventById(ctx context.Context, id uuid.UUID) (GetEventByIdRow, error)
 	GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (EventCertificateConfig, error)
 	GetEventContractByEventID(ctx context.Context, eventID uuid.UUID) (EventContract, error)
+	GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Context, arg GetEventIssuerByEventIDAndIssuerCredentialIDParams) (EventIssuer, error)
 	GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIssuer, error)
 	GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUID) ([]EventIssuer, error)
 	GetEventRegistrationConfigByEventID(ctx context.Context, eventID uuid.UUID) (EventRegistrationConfig, error)

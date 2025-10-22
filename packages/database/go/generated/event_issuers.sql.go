@@ -67,6 +67,32 @@ func (q *Queries) DeleteEventIssuer(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const GetEventIssuerByEventIDAndIssuerCredentialID = `-- name: GetEventIssuerByEventIDAndIssuerCredentialID :one
+SELECT id, event_id, issuer_credential_id, is_signed, signature, sign_message, created_at, updated_at FROM event_issuers 
+WHERE event_id = $1 AND issuer_credential_id = $2
+`
+
+type GetEventIssuerByEventIDAndIssuerCredentialIDParams struct {
+	EventID            uuid.UUID `json:"event_id"`
+	IssuerCredentialID uuid.UUID `json:"issuer_credential_id"`
+}
+
+func (q *Queries) GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Context, arg GetEventIssuerByEventIDAndIssuerCredentialIDParams) (EventIssuer, error) {
+	row := q.db.QueryRow(ctx, GetEventIssuerByEventIDAndIssuerCredentialID, arg.EventID, arg.IssuerCredentialID)
+	var i EventIssuer
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.IssuerCredentialID,
+		&i.IsSigned,
+		&i.Signature,
+		&i.SignMessage,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const GetEventIssuerByID = `-- name: GetEventIssuerByID :one
 SELECT id, event_id, issuer_credential_id, is_signed, signature, sign_message, created_at, updated_at FROM event_issuers WHERE id = $1
 `

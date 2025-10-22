@@ -3,8 +3,7 @@ import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Search, AlertCircle } from "lucide-react";
+import { Search } from "lucide-react";
 import { IssuerSelectionModal } from "@/components/IssuerSelectionModal";
 import { SelectedIssuersTable } from "@/components/SelectedIssuersTable";
 import { CertificateTemplateUpload } from "@/components/CertificateTemplateUpload";
@@ -16,22 +15,27 @@ import SectionContainer from "@/components/container/SectionContainer";
 import { useUpdateCertificateConfig } from "./useUpdateCertificateConfig";
 import type {
     CoreApiInternalHandlerEventconfigEventCertificateConfigResponse,
+    GetEventIssuersByEventIdData,
     GetVerifiedIssuersData,
     UpdateEventCertificateConfigPayload,
 } from "@decm/api";
 import { toast } from "sonner";
 import { useNavigate } from "@/router";
+import { useUpdateEventIssuer } from "./useUpdateEventIssuer";
+import { useDeleteEventIssuer } from "./useDeleteEventIssuer";
 
 interface CertificateSettingsPageProps {
     eventId: string;
     eventCertificateConfig?: CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
     verifiedIssuers?: GetVerifiedIssuersData;
+    eventIssuers?: GetEventIssuersByEventIdData;
 }
 
 export const CertificateSettingsPage = ({
     eventId,
     eventCertificateConfig,
     verifiedIssuers,
+    eventIssuers,
 }: CertificateSettingsPageProps) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -40,8 +44,14 @@ export const CertificateSettingsPage = ({
         eventId!,
     );
 
+    const { updateEventIssuer, isUpdatingEventIssuer } = useUpdateEventIssuer(eventId!);
+    const { deleteEventIssuerAsync } = useDeleteEventIssuer();
+
     // Use custom hooks for state management
-    const issuerManagement = useIssuerManagement({ verifiedIssuers });
+    const issuerManagement = useIssuerManagement({
+        verifiedIssuers,
+        selectedIssuers: eventIssuers,
+    });
     const certificateTemplate = useCertificateTemplate();
 
     // Handle form submission
@@ -94,11 +104,28 @@ export const CertificateSettingsPage = ({
             }
 
             await updateCertificateConfig(req);
+            await updateEventIssuer([
+                {
+                    event_id: eventId,
+                    issuer_credential_id: "456e0d34-8497-4e2f-9992-ecb66af8f05a",
+                },
+            ]);
 
             toast.success(t("certificateSettings.saveSuccess"));
         } catch (error) {
             console.error("Error saving certificate settings:", error);
             toast.error(t("certificateSettings.saveError"));
+        }
+    };
+
+    const handleRemoveIssuer = async (issuerId: string) => {
+        try {
+            await deleteEventIssuerAsync({ eventId, issuerId });
+            issuerManagement.handleRemoveIssuer(issuerId);
+            toast.success(t("certificateSettings.removeIssuerSuccess"));
+        } catch (error) {
+            console.error("Error removing issuer:", error);
+            toast.error(t("certificateSettings.removeIssuerError"));
         }
     };
 
@@ -207,19 +234,8 @@ export const CertificateSettingsPage = ({
                             {/* Selected Issuers Table */}
                             <SelectedIssuersTable
                                 selectedIssuers={issuerManagement.selectedIssuers}
-                                onRemoveIssuer={issuerManagement.handleRemoveIssuer}
+                                onRemoveIssuer={handleRemoveIssuer}
                             />
-
-                            {/* Alert about issuer settings */}
-                            <Alert variant="warning">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertTitle>
-                                    {t("certificateSettings.step1.alert.title")}
-                                </AlertTitle>
-                                <AlertDescription>
-                                    {t("certificateSettings.step1.alert.description")}
-                                </AlertDescription>
-                            </Alert>
                         </div>
                     </div>
 
@@ -280,7 +296,9 @@ export const CertificateSettingsPage = ({
                             variant="primary"
                             size="lg"
                             onClick={handleSubmit}
-                            disabled={!isFormValid || isUpdatingCertificateConfig}
+                            disabled={
+                                !isFormValid || isUpdatingCertificateConfig || isUpdatingEventIssuer
+                            }
                             className="min-w-[150px]"
                         >
                             <Typography variant="text" tag="span" className="font-medium">

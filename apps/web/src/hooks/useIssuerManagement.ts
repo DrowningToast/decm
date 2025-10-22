@@ -11,10 +11,11 @@ export interface Issuer {
 export interface UseIssuerManagementProps {
     searchFunction?: (query: string) => Promise<Issuer[]>;
     verifiedIssuers?: EntityProfile[];
+    selectedIssuers?: EntityProfile[];
 }
 
 export interface UseIssuerManagementReturn {
-    selectedIssuers: Issuer[];
+    selectedIssuers: EntityProfile[];
     searchQuery: string;
     isSearching: boolean;
     searchResults: Issuer[];
@@ -32,8 +33,11 @@ export interface UseIssuerManagementReturn {
 export const useIssuerManagement = ({
     searchFunction,
     verifiedIssuers,
+    selectedIssuers: initialSelectedIssuers,
 }: UseIssuerManagementProps = {}): UseIssuerManagementReturn => {
-    const [selectedIssuers, setSelectedIssuers] = useState<Issuer[]>([]);
+    const [selectedIssuers, setSelectedIssuers] = useState<EntityProfile[]>(
+        initialSelectedIssuers || [],
+    );
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearching, setIsSearching] = useState(false);
     const [searchResults, setSearchResults] = useState<Issuer[]>([]);
@@ -131,7 +135,7 @@ export const useIssuerManagement = ({
     }, []);
 
     const getSelectedIssuerIds = useCallback(() => {
-        return new Set(selectedIssuers.map((issuer) => issuer.id));
+        return new Set(selectedIssuers.map((issuer) => issuer.id ?? ""));
     }, [selectedIssuers]);
 
     return {

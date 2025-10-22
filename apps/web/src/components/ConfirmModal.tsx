@@ -52,7 +52,11 @@ export default function ConfirmModal({
                 </AlertDialogHeader>
 
                 <AlertDialogFooter>
-                    <AlertDialogCancel onClick={onCancel} autoFocus={false}>
+                    <AlertDialogCancel
+                        onClick={onCancel}
+                        autoFocus={false}
+                        className="bg-gray-100 text-black"
+                    >
                         {cancelText}
                     </AlertDialogCancel>
                     <AlertDialogAction

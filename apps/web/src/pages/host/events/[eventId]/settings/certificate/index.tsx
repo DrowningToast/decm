@@ -1,6 +1,7 @@
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { CertificateSettingsPage } from "@/components/pages/HostPages/EventPages/CertificateSettingsPage";
 import { useEventCertificateConfig } from "@/components/pages/HostPages/EventPages/useEventCertificateConfig";
+import { useEventIssuers } from "@/components/pages/HostPages/EventPages/useEventIssuers";
 import { useVerifiedIssuers } from "@/hooks/events/useVerifiedIssuers";
 import { useParams } from "react-router-dom";
 
@@ -10,9 +11,10 @@ export default function Page() {
     const { data: eventCertificateConfig, isLoading: isLoadingEventCertificateConfig } =
         useEventCertificateConfig(eventId!);
 
+    const { eventIssuers, isLoadingEventIssuers } = useEventIssuers(eventId!);
     const { verifiedIssuers, isLoadingVerifiedIssuers } = useVerifiedIssuers();
 
-    if (isLoadingEventCertificateConfig || isLoadingVerifiedIssuers) {
+    if (isLoadingEventCertificateConfig || isLoadingVerifiedIssuers || isLoadingEventIssuers) {
         return <div>Loading...</div>;
     }
 
@@ -21,7 +23,8 @@ export default function Page() {
             <CertificateSettingsPage
                 eventId={eventId!}
                 eventCertificateConfig={eventCertificateConfig}
-                verifiedIssuers={verifiedIssuers ?? []}
+                verifiedIssuers={verifiedIssuers}
+                eventIssuers={eventIssuers}
             />
         </ProtectedRoute>
     );

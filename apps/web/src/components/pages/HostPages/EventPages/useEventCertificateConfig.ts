@@ -7,7 +7,7 @@ export function useEventCertificateConfig(eventId: string) {
         isLoading: isLoadingEventCertificateConfig,
         error: errorEventCertificateConfig,
     } = useQuery({
-        queryKey: ["useEventCertificateConfig", eventId],
+        queryKey: ["event", eventId, "certificate", "config"],
         queryFn: () => coreApiClient.v1.getEventCertificateConfig({ eventId: eventId }),
     });
 
