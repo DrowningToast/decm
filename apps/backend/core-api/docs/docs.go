@@ -1067,6 +1067,64 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "description": "Update an event issuer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update event issuer",
+                "operationId": "update-event-issuer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Event issuer data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/event.UpdateEventIssuerRequest"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/event.EventIssuerResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Create a new event issuer for an event",
                 "consumes": [
@@ -1158,68 +1216,6 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/event.EventIssuerResponse"
                             }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update an event issuer",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Update event issuer",
-                "operationId": "update-event-issuer",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event ID",
-                        "name": "event_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Issuer ID",
-                        "name": "issuer_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Event issuer data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/event.UpdateEventIssuerRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/event.EventIssuerResponse"
                         }
                     },
                     "400": {
@@ -2356,13 +2352,10 @@ const docTemplate = `{
         "event.UpdateEventIssuerRequest": {
             "type": "object",
             "properties": {
-                "is_signed": {
-                    "type": "integer"
-                },
-                "sign_message": {
+                "event_id": {
                     "type": "string"
                 },
-                "signature": {
+                "issuer_credential_id": {
                     "type": "string"
                 }
             }

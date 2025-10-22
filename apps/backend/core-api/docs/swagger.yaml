@@ -273,11 +273,9 @@ definitions:
     type: object
   event.UpdateEventIssuerRequest:
     properties:
-      is_signed:
-        type: integer
-      sign_message:
+      event_id:
         type: string
-      signature:
+      issuer_credential_id:
         type: string
     type: object
   eventconfig.CreateEventRegistrationConfigRequest:
@@ -1340,6 +1338,45 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Create event issuer
+    put:
+      consumes:
+      - application/json
+      description: Update an event issuer
+      operationId: update-event-issuer
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Event issuer data
+        in: body
+        name: request
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/event.UpdateEventIssuerRequest'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event.EventIssuerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Update event issuer
   /api/v1/events/{event_id}/issuers/{issuer_id}:
     delete:
       consumes:
@@ -1417,48 +1454,6 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get event issuer by ID
-    put:
-      consumes:
-      - application/json
-      description: Update an event issuer
-      operationId: update-event-issuer
-      parameters:
-      - description: Event ID
-        in: path
-        name: event_id
-        required: true
-        type: string
-      - description: Issuer ID
-        in: path
-        name: issuer_id
-        required: true
-        type: string
-      - description: Event issuer data
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/event.UpdateEventIssuerRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/event.EventIssuerResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-      summary: Update event issuer
   /api/v1/events/{event_id}/registration-config:
     delete:
       consumes:

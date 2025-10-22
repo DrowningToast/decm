@@ -1,5 +1,6 @@
 import { coreApiClient } from "@/lib/api/api";
-import type { EventconfigUpdateEventCertificateConfigRequest } from "@decm/api";
+import { queryClient } from "@/lib/api/queryClient";
+import type { UpdateEventCertificateConfigPayload } from "@decm/api";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback } from "react";
 
@@ -10,17 +11,20 @@ export function useUpdateCertificateConfig(eventId: string) {
         error,
     } = useMutation({
         mutationKey: ["certificate-config", eventId],
-        mutationFn: (data: EventconfigUpdateEventCertificateConfigRequest) =>
+        mutationFn: (data: UpdateEventCertificateConfigPayload) =>
             coreApiClient.v1.updateEventCertificateConfig(
                 {
                     eventId,
                 },
                 data,
             ),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["event"] });
+        },
     });
 
     const updateCertificateConfig = useCallback(
-        async (data: EventconfigUpdateEventCertificateConfigRequest) => {
+        async (data: UpdateEventCertificateConfigPayload) => {
             return await _updateCertificateConfig(data);
         },
         [_updateCertificateConfig],

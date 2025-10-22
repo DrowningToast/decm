@@ -28,7 +28,12 @@ func (h *Handler) DeleteEventIssuer(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
-	err = h.EventUc.DeleteEventIssuer(ctx.UserContext(), issuerID)
+	currentUser, err := h.AuthenticationService.GetUserContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = h.EventUc.DeleteEventIssuer(ctx.UserContext(), issuerID, currentUser)
 	if err != nil {
 		return err
 	}

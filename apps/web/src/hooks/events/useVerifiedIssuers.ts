@@ -7,7 +7,7 @@ export function useVerifiedIssuers() {
         isLoading: isLoadingVerifiedIssuers,
         error: errorVerifiedIssuers,
     } = useQuery({
-        queryKey: ["verifiedIssuers"],
+        queryKey: ["issuers"],
         queryFn: () =>
             coreApiClient.v1.getVerifiedIssuers({
                 limit: 25,

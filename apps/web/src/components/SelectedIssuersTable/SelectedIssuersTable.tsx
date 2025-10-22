@@ -10,6 +10,8 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Trash2 } from "lucide-react";
+import type { EntityProfile } from "@decm/api";
+import ConfirmModal from "../ConfirmModal";
 
 export interface Issuer {
     id: string;
@@ -19,7 +21,7 @@ export interface Issuer {
 }
 
 export interface SelectedIssuersTableProps {
-    selectedIssuers: Issuer[];
+    selectedIssuers: EntityProfile[];
     onRemoveIssuer: (issuerId: string) => void;
 }
 
@@ -55,19 +57,27 @@ export const SelectedIssuersTable = ({
                     <TableBody>
                         {selectedIssuers.map((issuer) => (
                             <TableRow key={issuer.id}>
-                                <TableCell className="font-medium">{issuer.name}</TableCell>
+                                <TableCell className="font-medium">
+                                    {issuer.first_name} {issuer.last_name}
+                                </TableCell>
                                 <TableCell>{issuer.email}</TableCell>
-                                <TableCell>{issuer.organization || "-"}</TableCell>
+                                <TableCell>{issuer.academic_institution || "-"}</TableCell>
                                 <TableCell>
-                                    <Button
-                                        type="button"
-                                        variant="secondary-light"
-                                        size="sm"
-                                        onClick={() => onRemoveIssuer(issuer.id)}
-                                        aria-label={`Remove ${issuer.name}`}
+                                    <ConfirmModal
+                                        title={t("certificateSettings.step1.removeIssuer.title")}
+                                        cancelText={t("common.cancel")}
+                                        confirmText={t("common.remove")}
+                                        message={t(
+                                            "certificateSettings.step1.removeIssuer.description",
+                                        )}
+                                        onConfirm={() => onRemoveIssuer(issuer.id ?? "")}
+                                        onCancel={() => {}}
+                                        destructive
                                     >
-                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                    </Button>
+                                        <Button type="button" variant="secondary-light" size="sm">
+                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                    </ConfirmModal>
                                 </TableCell>
                             </TableRow>
                         ))}

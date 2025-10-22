@@ -31,3 +31,7 @@ RETURNING *;
 
 -- name: DeleteEventIssuer :exec
 DELETE FROM event_issuers WHERE id = sqlc.arg('id');
+
+-- name: GetEventIssuerByEventIDAndIssuerCredentialID :one
+SELECT * FROM event_issuers 
+WHERE event_id = sqlc.arg('event_id') AND issuer_credential_id = sqlc.arg('issuer_credential_id');

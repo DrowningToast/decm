@@ -284,9 +284,8 @@ export interface EventUpdateEventContractRequest {
 }
 
 export interface EventUpdateEventIssuerRequest {
-  is_signed?: number;
-  sign_message?: string;
-  signature?: string;
+  event_id?: string;
+  issuer_credential_id?: string;
 }
 
 export interface EventconfigCreateEventRegistrationConfigRequest {
@@ -680,9 +679,10 @@ export type UpdateEventIssuerError = CustomerrorErrResponse;
 export interface UpdateEventIssuerParams {
   /** Event ID */
   eventId: string;
-  /** Issuer ID */
-  issuerId: string;
 }
+
+/** Event issuer data */
+export type UpdateEventIssuerPayload = EventUpdateEventIssuerRequest[];
 
 export interface UpdateEventParams {
   eventId: string;
@@ -1314,6 +1314,27 @@ export class Api<SecurityDataType extends unknown> {
       }),
 
     /**
+     * @description Update an event issuer
+     *
+     * @name UpdateEventIssuer
+     * @summary Update event issuer
+     * @request PUT:/api/v1/events/{event_id}/issuers
+     */
+    updateEventIssuer: (
+      { eventId, ...query }: UpdateEventIssuerParams,
+      request: UpdateEventIssuerPayload,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<UpdateEventIssuerData, UpdateEventIssuerError>({
+        path: `/api/v1/events/${eventId}/issuers`,
+        method: "PUT",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Create a new event issuer for an event
      *
      * @name CreateEventIssuer
@@ -1348,27 +1369,6 @@ export class Api<SecurityDataType extends unknown> {
       this.http.request<GetEventIssuerByIdData, GetEventIssuerByIdError>({
         path: `/api/v1/events/${eventId}/issuers/${issuerId}`,
         method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update an event issuer
-     *
-     * @name UpdateEventIssuer
-     * @summary Update event issuer
-     * @request PUT:/api/v1/events/{event_id}/issuers/{issuer_id}
-     */
-    updateEventIssuer: (
-      { eventId, issuerId, ...query }: UpdateEventIssuerParams,
-      request: EventUpdateEventIssuerRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<UpdateEventIssuerData, UpdateEventIssuerError>({
-        path: `/api/v1/events/${eventId}/issuers/${issuerId}`,
-        method: "PUT",
-        body: request,
         type: ContentType.Json,
         format: "json",
         ...params,
