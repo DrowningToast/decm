@@ -11,6 +11,22 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+// EventCertificateConfigResponse represents the response structure for event certificate config
+type EventCertificateConfigResponse struct {
+	ID                          uuid.UUID `json:"id"`
+	EventID                     uuid.UUID `json:"event_id"`
+	BaseCertificateStorageKey   string    `json:"base_certificate_storage_key"`
+	BaseCertificatePresignedURL string    `json:"base_certificate_presigned_url"`
+	EventNamePosX               float64   `json:"event_name_pos_x"`
+	EventNamePosY               float64   `json:"event_name_pos_y"`
+	NamePosX                    float64   `json:"name_pos_x"`
+	NamePosY                    float64   `json:"name_pos_y"`
+	AcademicInstitutionPosX     *float64  `json:"academic_institution_pos_x"`
+	AcademicInstitutionPosY     *float64  `json:"academic_institution_pos_y"`
+	CreatedAt                   string    `json:"created_at"`
+	UpdatedAt                   string    `json:"updated_at"`
+}
+
 type CreateEventCertificateConfigParams struct {
 	BaseCertificateImage    multipart.FileHeader
 	EventNamePosX           float64
@@ -119,8 +135,31 @@ func (uc *EventConfigUsecase) UpdateEventCertificateConfig(ctx context.Context, 
 
 }
 
-func (uc *EventConfigUsecase) GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (*generated.EventCertificateConfig, error) {
-	return uc.EventCertificateDg.GetEventCertificateConfigByEventID(ctx, eventID)
+func (uc *EventConfigUsecase) GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (*EventCertificateConfigResponse, error) {
+	eventCertConfig, err := uc.EventCertificateDg.GetEventCertificateConfigByEventID(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
+
+	baseConfigPresignedURL, err := uc.S3Service.GetPresignedURL(ctx, eventCertConfig.BaseCertificateStorageKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return &EventCertificateConfigResponse{
+		ID:                          eventCertConfig.ID,
+		EventID:                     eventCertConfig.EventID,
+		BaseCertificateStorageKey:   eventCertConfig.BaseCertificateStorageKey,
+		BaseCertificatePresignedURL: baseConfigPresignedURL,
+		EventNamePosX:               eventCertConfig.EventNamePosX,
+		EventNamePosY:               eventCertConfig.EventNamePosY,
+		NamePosX:                    eventCertConfig.NamePosX,
+		NamePosY:                    eventCertConfig.NamePosY,
+		AcademicInstitutionPosX:     &eventCertConfig.AcademicInstitutionPosX.Float64,
+		AcademicInstitutionPosY:     &eventCertConfig.AcademicInstitutionPosY.Float64,
+		CreatedAt:                   eventCertConfig.CreatedAt.Time.String(),
+		UpdatedAt:                   eventCertConfig.UpdatedAt.Time.String(),
+	}, nil
 }
 
 func (uc *EventConfigUsecase) DeleteEventCertificateConfig(ctx context.Context, eventID uuid.UUID) error {

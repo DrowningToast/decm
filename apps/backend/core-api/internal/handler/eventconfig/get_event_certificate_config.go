@@ -33,16 +33,17 @@ func (h *Handler) GetEventCertificateConfig(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(http.StatusOK).JSON(EventCertificateConfigResponse{
-		ID:                        config.ID,
-		EventID:                   config.EventID,
-		BaseCertificateStorageKey: config.BaseCertificateStorageKey,
-		EventNamePosX:             config.EventNamePosX,
-		EventNamePosY:             config.EventNamePosY,
-		NamePosX:                  config.NamePosX,
-		NamePosY:                  config.NamePosY,
-		AcademicInstitutionPosX:   &config.AcademicInstitutionPosX.Float64,
-		AcademicInstitutionPosY:   &config.AcademicInstitutionPosY.Float64,
-		CreatedAt:                 config.CreatedAt.Time.String(),
-		UpdatedAt:                 config.UpdatedAt.Time.String(),
+		ID:                          config.ID,
+		EventID:                     config.EventID,
+		BaseCertificateStorageKey:   config.BaseCertificateStorageKey,
+		BaseCertificatePresignedURL: config.BaseCertificatePresignedURL,
+		EventNamePosX:               config.EventNamePosX,
+		EventNamePosY:               config.EventNamePosY,
+		NamePosX:                    config.NamePosX,
+		NamePosY:                    config.NamePosY,
+		AcademicInstitutionPosX:     config.AcademicInstitutionPosX,
+		AcademicInstitutionPosY:     config.AcademicInstitutionPosY,
+		CreatedAt:                   config.CreatedAt,
+		UpdatedAt:                   config.UpdatedAt,
 	})
 }

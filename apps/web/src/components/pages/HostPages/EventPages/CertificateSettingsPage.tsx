@@ -15,14 +15,17 @@ import PageContainer from "@/components/container/PageContainer";
 import SectionContainer from "@/components/container/SectionContainer";
 import { useUpdateCertificateConfig } from "./useUpdateCertificateConfig";
 import type {
-    EventconfigEventCertificateConfigResponse,
+    CoreApiInternalHandlerEventconfigEventCertificateConfigResponse,
+    GetVerifiedIssuersData,
     UpdateEventCertificateConfigPayload,
 } from "@decm/api";
 import { toast } from "sonner";
+import { useNavigate } from "@/router";
 
 interface CertificateSettingsPageProps {
     eventId: string;
-    eventCertificateConfig?: EventconfigEventCertificateConfigResponse;
+    eventCertificateConfig?: CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
+    verifiedIssuers?: GetVerifiedIssuersData;
 }
 
 export const CertificateSettingsPage = ({
@@ -30,6 +33,7 @@ export const CertificateSettingsPage = ({
     eventCertificateConfig,
 }: CertificateSettingsPageProps) => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
 
     const { updateCertificateConfig, isUpdatingCertificateConfig } = useUpdateCertificateConfig(
         eventId!,
@@ -60,27 +64,27 @@ export const CertificateSettingsPage = ({
                 (keyword) => keyword.keyword === "{{ academicInstitutionName }}",
             );
 
-            if (!name) {
+            if (certificateTemplate.svgFile && !name) {
                 toast.error(t("certificateSettings.nameNotFound"));
                 return;
             }
 
-            if (!eventName) {
+            if (certificateTemplate.svgFile && !eventName) {
                 toast.error(t("certificateSettings.eventNameNotFound"));
                 return;
             }
 
-            if (!certificateTemplate.svgFile) {
+            if (certificateTemplate.svgFile && !acedmicInstitutionName) {
                 toast.error(t("certificateSettings.svgFileNotFound"));
                 return;
             }
 
             const req: UpdateEventCertificateConfigPayload = {
-                name_pos_x: name?.x ?? undefined,
-                name_pos_y: name?.y ?? undefined,
-                event_name_pos_x: eventName?.x ?? undefined,
-                event_name_pos_y: eventName?.y ?? undefined,
-                base_certificate_image: certificateTemplate.svgFile,
+                name_pos_x: name?.x ?? eventCertificateConfig?.name_pos_x ?? 0,
+                name_pos_y: name?.y ?? eventCertificateConfig?.name_pos_y ?? 0,
+                event_name_pos_x: eventName?.x ?? eventCertificateConfig?.event_name_pos_x ?? 0,
+                event_name_pos_y: eventName?.y ?? eventCertificateConfig?.event_name_pos_y ?? 0,
+                base_certificate_image: certificateTemplate.svgFile ?? undefined,
             };
 
             if (acedmicInstitutionName) {
@@ -101,14 +105,24 @@ export const CertificateSettingsPage = ({
         // Reset form or navigate back
         issuerManagement.handleClearSelection();
         certificateTemplate.clearTemplate();
+        navigate("/host/events/:eventId", {
+            params: {
+                eventId,
+            },
+        });
     };
 
     // Check if form is valid for submission
-    const isFormValid =
-        issuerManagement.selectedIssuers.length > 0 &&
+    const isSelectedIssuer = issuerManagement.selectedIssuers.length > 0;
+
+    const isCreateFormValid =
         certificateTemplate.svgFile !== null &&
         certificateTemplate.detectedKeywords.length > 0 &&
-        !certificateTemplate.hasMissingMandatory;
+        !certificateTemplate.hasMissingMandatory &&
+        isSelectedIssuer;
+    const isUpdateFormValid = true;
+
+    const isFormValid = !eventCertificateConfig ? isCreateFormValid : isUpdateFormValid;
 
     return (
         <PageContainer
@@ -241,7 +255,7 @@ export const CertificateSettingsPage = ({
                             imageUrl={
                                 certificateTemplate.svgPreview
                                     ? undefined
-                                    : eventCertificateConfig?.base_certificate_storage_key
+                                    : eventCertificateConfig?.base_certificate_presigned_url
                             }
                         />
                     </div>
