@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import type { EntityProfile } from "@decm/api";
 
 export interface Issuer {
     id: string;
@@ -9,6 +10,7 @@ export interface Issuer {
 
 export interface UseIssuerManagementProps {
     searchFunction?: (query: string) => Promise<Issuer[]>;
+    verifiedIssuers?: EntityProfile[];
 }
 
 export interface UseIssuerManagementReturn {
@@ -29,6 +31,7 @@ export interface UseIssuerManagementReturn {
 
 export const useIssuerManagement = ({
     searchFunction,
+    verifiedIssuers,
 }: UseIssuerManagementProps = {}): UseIssuerManagementReturn => {
     const [selectedIssuers, setSelectedIssuers] = useState<Issuer[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
@@ -36,46 +39,41 @@ export const useIssuerManagement = ({
     const [searchResults, setSearchResults] = useState<Issuer[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Default mock search function
+    // Helper function to convert EntityProfile to Issuer
+    const convertProfileToIssuer = (profile: EntityProfile): Issuer => {
+        const fullName =
+            [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim() ||
+            "Unknown Name";
+
+        return {
+            id: profile.id || "",
+            name: fullName,
+            email: profile.email || "",
+            organization: profile.academic_institution || profile.bio || undefined,
+        };
+    };
+
+    // Default search function using verified issuers
     const defaultSearchFunction = async (query: string): Promise<Issuer[]> => {
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Simulate API delay for better UX
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
-        // Mock results - replace with actual API data
-        const mockResults: Issuer[] = [
-            {
-                id: "1",
-                name: "John Doe",
-                email: "john.doe@university.edu",
-                organization: "Computer Science Department",
-            },
-            {
-                id: "2",
-                name: "Jane Smith",
-                email: "jane.smith@university.edu",
-                organization: "Engineering Department",
-            },
-            {
-                id: "3",
-                name: "Dr. Michael Brown",
-                email: "m.brown@university.edu",
-                organization: "Mathematics Department",
-            },
-            {
-                id: "4",
-                name: "Prof. Sarah Wilson",
-                email: "s.wilson@university.edu",
-                organization: "Physics Department",
-            },
-        ];
+        if (!verifiedIssuers || verifiedIssuers.length === 0) {
+            return [];
+        }
 
-        // Filter mock results based on query
-        return mockResults.filter(
+        // Convert EntityProfile to Issuer format
+        const issuers = verifiedIssuers.map(convertProfileToIssuer);
+
+        // Filter based on query
+        const filteredIssuers = issuers.filter(
             (issuer) =>
                 issuer.name.toLowerCase().includes(query.toLowerCase()) ||
                 issuer.email.toLowerCase().includes(query.toLowerCase()) ||
                 issuer.organization?.toLowerCase().includes(query.toLowerCase()),
         );
+
+        return filteredIssuers;
     };
 
     const handleSearch = useCallback(async () => {
