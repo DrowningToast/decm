@@ -104,12 +104,15 @@ export const CertificateSettingsPage = ({
             }
 
             await updateCertificateConfig(req);
-            await updateEventIssuer([
-                {
-                    event_id: eventId,
-                    issuer_credential_id: "456e0d34-8497-4e2f-9992-ecb66af8f05a",
-                },
-            ]);
+            await updateEventIssuer(
+                issuerManagement.selectedIssuers.map((issuer) => {
+                    console.log(issuer);
+                    return {
+                        event_id: eventId,
+                        issuer_credential_id: issuer.id,
+                    };
+                }),
+            );
 
             toast.success(t("certificateSettings.saveSuccess"));
         } catch (error) {
@@ -233,7 +236,7 @@ export const CertificateSettingsPage = ({
 
                             {/* Selected Issuers Table */}
                             <SelectedIssuersTable
-                                selectedIssuers={issuerManagement.selectedIssuers}
+                                selectedIssuers={eventIssuers}
                                 onRemoveIssuer={handleRemoveIssuer}
                             />
                         </div>

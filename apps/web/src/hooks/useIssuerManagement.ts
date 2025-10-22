@@ -50,7 +50,7 @@ export const useIssuerManagement = ({
             "Unknown Name";
 
         return {
-            id: profile.id || "",
+            id: profile.authentication_credential_id || "",
             name: fullName,
             email: profile.email || "",
             organization: profile.academic_institution || profile.bio || undefined,

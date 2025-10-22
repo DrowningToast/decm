@@ -22,10 +22,12 @@ import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
 import { useDataTable } from "@/hooks/use-data-table";
 import { participantColumns, type Participant } from "./columns/participant-columns";
+import { issuerColumns } from "./columns/issuer-columns";
 import type {
-    EventconfigEventCertificateConfigResponse,
     EventconfigEventRegistrationConfigResponse,
     EventEventResponse,
+    GetEventCertificateConfigData,
+    GetEventIssuersByEventIdData,
 } from "@decm/api";
 import { toEventRegistrationConfigStatus } from "@/lib/events/event.utils";
 
@@ -33,7 +35,8 @@ interface HostEventDetailsPageProps {
     eventId: string;
     event: EventEventResponse;
     eventRegistrationConfig: EventconfigEventRegistrationConfigResponse;
-    eventCertificateConfig?: EventconfigEventCertificateConfigResponse;
+    eventCertificateConfig?: GetEventCertificateConfigData;
+    eventIssuers?: GetEventIssuersByEventIdData;
 }
 
 // Mock API function - replace with actual API call
@@ -101,8 +104,14 @@ export default function HostEventDetailsPage({
     eventId,
     event,
     eventRegistrationConfig,
+    eventCertificateConfig,
+    eventIssuers,
 }: HostEventDetailsPageProps) {
     const { t } = useTranslation();
+
+    // Certificate state logic
+    const hasCertificateConfig = !!eventCertificateConfig;
+    const allIssuersSigned = eventIssuers?.every((issuer) => issuer.is_signed === 1) ?? false;
 
     // Mock participant requirements data - replace with actual data
     // const participantRequirements: Record<string, RequirementStatus> = {
@@ -122,17 +131,17 @@ export default function HostEventDetailsPage({
         initialPageSize: 10,
     });
 
-    const certificatesTable = useDataTable<Participant>({
-        fetchData: mockFetchParticipants,
-        initialPageSize: 10,
-    });
-
     return (
         <PageContainer title="Events Details">
             <SectionContainer>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 bg-white rounded-full"></div>
+                        <img
+                            src={event.icon_presigned_url ?? ""}
+                            alt={event.title}
+                            className="w-12 h-12 rounded-full object-cover"
+                        />
+
                         <div className="flex items-center gap-2">
                             <Typography tag="p" size={"subheader"}>
                                 {event.title}
@@ -342,37 +351,106 @@ export default function HostEventDetailsPage({
                         </div>
                     </StyledTabsContent>
                     <StyledTabsContent value="certificates">
-                        <div className="w-full bg-primary/10 border border-primary/20 rounded-lg p-6 flex flex-col items-center justify-center mb-6">
-                            <p className="font-semibold text-lg text-primary">
-                                Add event&apos;s certificate configuration
-                            </p>
-                            <p className="text-muted-foreground text-base mt-1 text-center max-w-xl">
-                                Set up the certificate template and rules for this event.
-                                Participants will receive certificates based on your configuration.
-                            </p>
-                            <WrappedButton
-                                className="mt-4 px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
-                                href={`/host/events/${eventId}/settings/certificate`}
-                            >
-                                Certificates Settings
-                            </WrappedButton>
-                        </div>
+                        {hasCertificateConfig ? (
+                            <div className="space-y-6">
+                                {/* Certificate Settings Section */}
+                                <div className="w-full bg-primary/10 border border-primary/20 rounded-lg p-6 flex flex-row items-center justify-between">
+                                    <div>
+                                        <p className="font-semibold text-lg text-primary">
+                                            Certificate Settings
+                                        </p>
+                                        <p className="text-muted-foreground text-base mt-1">
+                                            Certificate template and rules are configured for this
+                                            event. Manage issuers and publish certificates when
+                                            ready.
+                                        </p>
+                                    </div>
+                                    <WrappedButton
+                                        className="px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
+                                        href={`/host/events/${eventId}/settings/certificate`}
+                                    >
+                                        Certificate Settings
+                                    </WrappedButton>
+                                </div>
 
-                        <DataTable
-                            columns={participantColumns}
-                            data={certificatesTable.data}
-                            totalItems={certificatesTable.totalItems}
-                            currentPage={certificatesTable.currentPage}
-                            pageSize={certificatesTable.pageSize}
-                            onPageChange={certificatesTable.setCurrentPage}
-                            onPageSizeChange={certificatesTable.setPageSize}
-                            searchValue={certificatesTable.searchValue}
-                            onSearchChange={certificatesTable.setSearchValue}
-                            searchPlaceholder="Search certificates..."
-                            sorting={certificatesTable.sorting}
-                            onSortingChange={certificatesTable.setSorting}
-                            isLoading={certificatesTable.isLoading}
-                        />
+                                {/* Issuers Table */}
+                                {eventIssuers && eventIssuers.length > 0 && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <Typography
+                                                variant="text"
+                                                tag="h3"
+                                                className="text-lg font-semibold"
+                                            >
+                                                Event Issuers ({eventIssuers.length})
+                                            </Typography>
+                                            <WrappedButton
+                                                className="px-4 py-2 rounded-md bg-green-600 text-white font-medium hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                                disabled={!allIssuersSigned}
+                                                onClick={() => {
+                                                    // TODO: Implement publish certificates functionality
+                                                    console.log(
+                                                        "Publish certificates for event:",
+                                                        eventId,
+                                                    );
+                                                }}
+                                            >
+                                                {allIssuersSigned
+                                                    ? "Publish Certificates"
+                                                    : "Waiting for All Signatures"}
+                                            </WrappedButton>
+                                        </div>
+
+                                        <DataTable
+                                            columns={issuerColumns}
+                                            data={eventIssuers}
+                                            totalItems={eventIssuers.length}
+                                            currentPage={1}
+                                            pageSize={10}
+                                            onPageChange={() => {}}
+                                            onPageSizeChange={() => {}}
+                                            searchValue=""
+                                            onSearchChange={() => {}}
+                                            searchPlaceholder="Search issuers..."
+                                            sorting={[]}
+                                            onSortingChange={() => {}}
+                                            isLoading={false}
+                                            disablePagination
+                                        />
+                                    </div>
+                                )}
+
+                                {(!eventIssuers || eventIssuers.length === 0) && (
+                                    <div className="text-center py-8">
+                                        <Typography
+                                            variant="text"
+                                            tag="p"
+                                            className="text-muted-foreground"
+                                        >
+                                            No issuers configured for this event. Please add issuers
+                                            in the certificate settings.
+                                        </Typography>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="w-full bg-primary/10 border border-primary/20 rounded-lg p-6 flex flex-col items-center justify-center">
+                                <p className="font-semibold text-lg text-primary">
+                                    Add event's certificate configuration
+                                </p>
+                                <p className="text-muted-foreground text-base mt-1 text-center max-w-xl">
+                                    Set up the certificate template and rules for this event.
+                                    Participants will receive certificates based on your
+                                    configuration.
+                                </p>
+                                <WrappedButton
+                                    className="mt-4 px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
+                                    href={`/host/events/${eventId}/settings/certificate`}
+                                >
+                                    Certificates Settings
+                                </WrappedButton>
+                            </div>
+                        )}
                     </StyledTabsContent>
                 </StyledTabs>
             </SectionContainer>
