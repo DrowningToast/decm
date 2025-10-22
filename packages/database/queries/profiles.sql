@@ -122,6 +122,6 @@ DELETE FROM profiles WHERE authentication_credential_id = sqlc.arg(authenticatio
 -- name: ListVerifiedIssuerProfiles :many
 SELECT * FROM profiles 
 INNER JOIN authentication_credentials ON profiles.authentication_credential_id = authentication_credentials.id
-WHERE authentication_credentials.is_verified_issuer = true
+WHERE authentication_credentials.is_verified_issuer = 1
 ORDER BY profiles.created_at DESC
 LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);

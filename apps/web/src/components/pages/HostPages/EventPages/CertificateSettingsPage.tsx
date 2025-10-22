@@ -31,6 +31,7 @@ interface CertificateSettingsPageProps {
 export const CertificateSettingsPage = ({
     eventId,
     eventCertificateConfig,
+    verifiedIssuers,
 }: CertificateSettingsPageProps) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -40,7 +41,7 @@ export const CertificateSettingsPage = ({
     );
 
     // Use custom hooks for state management
-    const issuerManagement = useIssuerManagement();
+    const issuerManagement = useIssuerManagement({ verifiedIssuers });
     const certificateTemplate = useCertificateTemplate();
 
     // Handle form submission

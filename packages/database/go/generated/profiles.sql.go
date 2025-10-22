@@ -323,7 +323,7 @@ func (q *Queries) ListProfiles(ctx context.Context, arg ListProfilesParams) ([]P
 const ListVerifiedIssuerProfiles = `-- name: ListVerifiedIssuerProfiles :many
 SELECT profiles.id, authentication_credential_id, is_profile_picture_public, profile_picture_url, is_first_name_public, first_name, is_last_name_public, last_name, is_email_public, email, is_bio_public, bio, is_phone_number_public, phone_number, is_address_public, address, is_academic_institution_public, academic_institution, is_academic_email_public, academic_email, profiles.created_at, profiles.updated_at, authentication_credentials.id, solution_status, hashed_password, encrypted_private_key, wallet_address, google_connector_ref, github_connector_ref, is_verified_organizer, is_verified_issuer, is_verified_student, authentication_credentials.created_at, authentication_credentials.updated_at FROM profiles 
 INNER JOIN authentication_credentials ON profiles.authentication_credential_id = authentication_credentials.id
-WHERE authentication_credentials.is_verified_issuer = true
+WHERE authentication_credentials.is_verified_issuer = 1
 ORDER BY profiles.created_at DESC
 LIMIT $2 OFFSET $1
 `
