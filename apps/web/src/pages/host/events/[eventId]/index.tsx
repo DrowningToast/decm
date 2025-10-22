@@ -4,6 +4,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useEvent } from "@/hooks/events/useEvent";
 import { useEventRegistrationConfig } from "@/hooks/events/useEventRegistrationConfig";
 import { useEventCertificateConfig } from "@/components/pages/HostPages/EventPages/useEventCertificateConfig";
+import { useEventIssuers } from "@/components/pages/HostPages/EventPages/useEventIssuers";
 
 export default function Page() {
     const { eventId } = useParams("/host/events/:eventId");
@@ -18,8 +19,13 @@ export default function Page() {
     const { data: eventCertificateConfig, isLoading: isLoadingEventCertificateConfig } =
         useEventCertificateConfig(eventId!);
 
+    const { eventIssuers, isLoadingEventIssuers } = useEventIssuers(eventId!);
+
     const isLoading =
-        isLoadingEvent || isLoadingEventRegistrationConfig || isLoadingEventCertificateConfig;
+        isLoadingEvent ||
+        isLoadingEventRegistrationConfig ||
+        isLoadingEventCertificateConfig ||
+        isLoadingEventIssuers;
 
     if (isLoading) {
         return <div>Loading event...</div>;
@@ -41,6 +47,7 @@ export default function Page() {
                 event={event}
                 eventRegistrationConfig={eventRegistrationConfig}
                 eventCertificateConfig={eventCertificateConfig}
+                eventIssuers={eventIssuers}
             />
         </ProtectedRoute>
     );

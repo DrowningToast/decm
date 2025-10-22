@@ -10,7 +10,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Trash2 } from "lucide-react";
-import type { EntityProfile } from "@decm/api";
+import type { GetEventIssuersByEventIdData } from "@decm/api";
 import ConfirmModal from "../ConfirmModal";
 
 export interface Issuer {
@@ -21,7 +21,7 @@ export interface Issuer {
 }
 
 export interface SelectedIssuersTableProps {
-    selectedIssuers: EntityProfile[];
+    selectedIssuers?: GetEventIssuersByEventIdData;
     onRemoveIssuer: (issuerId: string) => void;
 }
 
@@ -31,7 +31,7 @@ export const SelectedIssuersTable = ({
 }: SelectedIssuersTableProps) => {
     const { t } = useTranslation();
 
-    if (selectedIssuers.length === 0) {
+    if (!selectedIssuers || selectedIssuers.length === 0) {
         return null;
     }
 
@@ -58,10 +58,13 @@ export const SelectedIssuersTable = ({
                         {selectedIssuers.map((issuer) => (
                             <TableRow key={issuer.id}>
                                 <TableCell className="font-medium">
-                                    {issuer.first_name} {issuer.last_name}
+                                    {issuer.issuer_profile?.first_name}{" "}
+                                    {issuer.issuer_profile?.last_name}
                                 </TableCell>
-                                <TableCell>{issuer.email}</TableCell>
-                                <TableCell>{issuer.academic_institution || "-"}</TableCell>
+                                <TableCell>{issuer.issuer_profile?.email}</TableCell>
+                                <TableCell>
+                                    {issuer.issuer_profile?.academic_institution || "-"}
+                                </TableCell>
                                 <TableCell>
                                     <ConfirmModal
                                         title={t("certificateSettings.step1.removeIssuer.title")}
