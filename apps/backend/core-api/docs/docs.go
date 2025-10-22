@@ -585,7 +585,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eventconfig.EventCertificateConfigResponse"
+                            "$ref": "#/definitions/core-api_internal_handler_eventconfig.EventCertificateConfigResponse"
                         }
                     },
                     "400": {
@@ -630,8 +630,7 @@ const docTemplate = `{
                         "type": "file",
                         "description": "Base certificate image",
                         "name": "base_certificate_image",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     },
                     {
                         "type": "number",
@@ -684,7 +683,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eventconfig.EventCertificateConfigResponse"
+                            "$ref": "#/definitions/core-api_internal_handler_eventconfig.EventCertificateConfigResponse"
                         }
                     },
                     "400": {
@@ -1406,6 +1405,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/issuers": {
+            "get": {
+                "description": "Get verified issuers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Issuer"
+                ],
+                "summary": "Get verified issuers",
+                "operationId": "get-verified-issuers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Profile"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/onboard/check-onboard-status": {
             "post": {
                 "description": "Check onboard status",
@@ -1892,6 +1944,47 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "core-api_internal_handler_eventconfig.EventCertificateConfigResponse": {
+            "type": "object",
+            "properties": {
+                "academic_institution_pos_x": {
+                    "type": "number"
+                },
+                "academic_institution_pos_y": {
+                    "type": "number"
+                },
+                "base_certificate_presigned_url": {
+                    "type": "string"
+                },
+                "base_certificate_storage_key": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "event_name_pos_x": {
+                    "type": "number"
+                },
+                "event_name_pos_y": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name_pos_x": {
+                    "type": "number"
+                },
+                "name_pos_y": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "customerror.Err": {
             "description": "Custom error type",
             "type": "object",
@@ -2158,6 +2251,9 @@ const docTemplate = `{
                 "issuer_credential_id": {
                     "type": "string"
                 },
+                "issuer_profile": {
+                    "$ref": "#/definitions/entity.Profile"
+                },
                 "sign_message": {
                     "type": "string"
                 },
@@ -2302,44 +2398,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "registration_password": {
-                    "type": "string"
-                }
-            }
-        },
-        "eventconfig.EventCertificateConfigResponse": {
-            "type": "object",
-            "properties": {
-                "academic_institution_pos_x": {
-                    "type": "number"
-                },
-                "academic_institution_pos_y": {
-                    "type": "number"
-                },
-                "base_certificate_storage_key": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "event_id": {
-                    "type": "string"
-                },
-                "event_name_pos_x": {
-                    "type": "number"
-                },
-                "event_name_pos_y": {
-                    "type": "number"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name_pos_x": {
-                    "type": "number"
-                },
-                "name_pos_y": {
-                    "type": "number"
-                },
-                "updated_at": {
                     "type": "string"
                 }
             }

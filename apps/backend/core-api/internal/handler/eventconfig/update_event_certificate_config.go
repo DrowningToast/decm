@@ -38,7 +38,7 @@ func (r *UpdateEventCertificateConfigRequest) Parse(ctx *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param event_id path string true "Event ID"
-// @Param base_certificate_image formData file true "Base certificate image"
+// @Param base_certificate_image formData file false "Base certificate image"
 // @Param event_name_pos_x formData float64 true "Event name position x"
 // @Param event_name_pos_y formData float64 true "Event name position y"
 // @Param name_pos_x formData float64 true "Name position x"
@@ -127,9 +127,9 @@ func (h *Handler) UpdateEventCertificateConfig(ctx *fiber.Ctx) error {
 		EventNamePosY:             dbEventCertConfig.EventNamePosY,
 		NamePosX:                  dbEventCertConfig.NamePosX,
 		NamePosY:                  dbEventCertConfig.NamePosY,
-		AcademicInstitutionPosX:   &dbEventCertConfig.AcademicInstitutionPosX.Float64,
-		AcademicInstitutionPosY:   &dbEventCertConfig.AcademicInstitutionPosY.Float64,
-		CreatedAt:                 dbEventCertConfig.CreatedAt.Time.String(),
-		UpdatedAt:                 dbEventCertConfig.UpdatedAt.Time.String(),
+		AcademicInstitutionPosX:   dbEventCertConfig.AcademicInstitutionPosX,
+		AcademicInstitutionPosY:   dbEventCertConfig.AcademicInstitutionPosY,
+		CreatedAt:                 dbEventCertConfig.CreatedAt,
+		UpdatedAt:                 dbEventCertConfig.UpdatedAt,
 	})
 }

@@ -18,6 +18,7 @@ import (
 	auth_handler "apps/backend/core-api/internal/handler/auth"
 	"apps/backend/core-api/internal/handler/event"
 	eventconfig_handler "apps/backend/core-api/internal/handler/eventconfig"
+	"apps/backend/core-api/internal/handler/issuer"
 	"apps/backend/core-api/internal/handler/onboard"
 	"apps/backend/core-api/internal/handler/profile"
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
@@ -25,6 +26,7 @@ import (
 	"apps/backend/core-api/internal/repositories/postgres"
 	event_usecase "apps/backend/core-api/internal/usecase/event"
 	eventconfig_usecase "apps/backend/core-api/internal/usecase/eventconfig"
+	issuer_usecase "apps/backend/core-api/internal/usecase/issuer"
 	oauth_usecase "apps/backend/core-api/internal/usecase/oauth"
 	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
 	profile_usecase "apps/backend/core-api/internal/usecase/profile"
@@ -96,6 +98,7 @@ func main() {
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo)
 	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService)
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, logger)
+	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)
 
 	// Setup HTTP server
 	app := fiber.New(fiber.Config{
@@ -168,12 +171,14 @@ func main() {
 	profileHandler := profile.NewHandler(profileUc, authService, authenticationGuardMiddleware)
 	profileHandler.Mount(apiV1)
 
-	eventHandler := event.NewHandler(eventUc, eventConfigUc, authService, authenticationGuardMiddleware, logger)
+	eventHandler := event.NewHandler(eventUc, eventConfigUc, profileUc, authService, authenticationGuardMiddleware, logger)
 	eventHandler.Mount(apiV1)
 
-	// Event config handler
 	eventConfigHandler := eventconfig_handler.NewHandler(eventConfigUc, eventUc, authService, authenticationGuardMiddleware)
 	eventConfigHandler.Mount(apiV1)
+
+	issuerHandler := issuer.NewHandler(issuerUc, authService, authenticationGuardMiddleware)
+	issuerHandler.Mount(apiV1)
 
 	// Start HTTP Server
 	go func() {

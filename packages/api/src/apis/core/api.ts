@@ -14,6 +14,21 @@ export type CheckOnboardStatusData = OnboardCheckOnboardStatusResponse;
 
 export type CheckOnboardStatusError = CustomerrorErrResponse;
 
+export interface CoreApiInternalHandlerEventconfigEventCertificateConfigResponse {
+  academic_institution_pos_x?: number;
+  academic_institution_pos_y?: number;
+  base_certificate_presigned_url?: string;
+  base_certificate_storage_key?: string;
+  created_at?: string;
+  event_id?: string;
+  event_name_pos_x?: number;
+  event_name_pos_y?: number;
+  id?: string;
+  name_pos_x?: number;
+  name_pos_y?: number;
+  updated_at?: string;
+}
+
 export type CreateEventContractData = EventEventContractResponse;
 
 export type CreateEventContractError = CustomerrorErrResponse;
@@ -230,6 +245,7 @@ export interface EventEventIssuerResponse {
   id?: string;
   is_signed?: number;
   issuer_credential_id?: string;
+  issuer_profile?: EntityProfile;
   sign_message?: string;
   signature?: string;
   updated_at?: string;
@@ -286,20 +302,6 @@ export interface EventconfigCreateEventRegistrationConfigRequest {
   registration_password?: string;
 }
 
-export interface EventconfigEventCertificateConfigResponse {
-  academic_institution_pos_x?: number;
-  academic_institution_pos_y?: number;
-  base_certificate_storage_key?: string;
-  created_at?: string;
-  event_id?: string;
-  event_name_pos_x?: number;
-  event_name_pos_y?: number;
-  id?: string;
-  name_pos_x?: number;
-  name_pos_y?: number;
-  updated_at?: string;
-}
-
 export interface EventconfigEventRegistrationConfigResponse {
   academic_email_requirement_status?: number;
   academic_institution_requirement_status?: number;
@@ -343,7 +345,7 @@ export interface GetEventByIdParams {
 }
 
 export type GetEventCertificateConfigData =
-  EventconfigEventCertificateConfigResponse;
+  CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
 
 export type GetEventCertificateConfigError = CustomerrorErrResponse;
 
@@ -415,6 +417,17 @@ export type GetMyProfileData = EntityProfile;
 export type GetMyProfileError = CustomerrorErr;
 
 export type GetRegisterSignMessageData = OnboardGetRegisterSignMessageResponse;
+
+export type GetVerifiedIssuersData = EntityProfile[];
+
+export type GetVerifiedIssuersError = CustomerrorErr;
+
+export interface GetVerifiedIssuersParams {
+  /** Limit */
+  limit?: number;
+  /** Offset */
+  offset?: number;
+}
 
 export type LogoutData = Record<string, string>;
 
@@ -603,7 +616,7 @@ export type RegisterWithWalletError = CustomerrorErrResponse;
 export type RequestGoogleOauthError = CustomerrorErrResponse;
 
 export type UpdateEventCertificateConfigData =
-  EventconfigEventCertificateConfigResponse;
+  CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
 
 export type UpdateEventCertificateConfigError = CustomerrorErrResponse;
 
@@ -624,7 +637,7 @@ export interface UpdateEventCertificateConfigPayload {
    */
   academic_institution_pos_y?: number;
   /** Base certificate image */
-  base_certificate_image: File;
+  base_certificate_image?: File;
   /**
    * Event name position x
    * @format float64
@@ -1421,6 +1434,27 @@ export class Api<SecurityDataType extends unknown> {
       >({
         path: `/api/v1/events/${eventId}/registration-config`,
         method: "DELETE",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get verified issuers
+     *
+     * @tags Issuer
+     * @name GetVerifiedIssuers
+     * @summary Get verified issuers
+     * @request GET:/api/v1/issuers
+     */
+    getVerifiedIssuers: (
+      query: GetVerifiedIssuersParams,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<GetVerifiedIssuersData, GetVerifiedIssuersError>({
+        path: `/api/v1/issuers`,
+        method: "GET",
+        query: query,
         type: ContentType.Json,
         format: "json",
         ...params,

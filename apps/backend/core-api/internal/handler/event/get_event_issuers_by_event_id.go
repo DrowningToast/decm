@@ -34,6 +34,12 @@ func (h *Handler) GetEventIssuersByEventID(ctx *fiber.Ctx) error {
 
 	var response []EventIssuerResponse
 	for _, issuer := range issuers {
+		issuerCredentialId := issuer.IssuerCredentialID
+		issuerProfile, err := h.ProfileUc.GetProfileByAuthenticationCredentialId(ctx.UserContext(), issuerCredentialId)
+		if err != nil {
+			return customerror.Parse(&customerror.ErrNotFound, err)
+		}
+
 		response = append(response, EventIssuerResponse{
 			ID:                 issuer.ID,
 			EventID:            issuer.EventID,
@@ -42,6 +48,7 @@ func (h *Handler) GetEventIssuersByEventID(ctx *fiber.Ctx) error {
 			Signature:          issuer.Signature.String,
 			CreatedAt:          issuer.CreatedAt.Time.String(),
 			UpdatedAt:          issuer.UpdatedAt.Time.String(),
+			IssuerProfile:      issuerProfile,
 		})
 	}
 

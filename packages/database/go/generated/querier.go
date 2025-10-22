@@ -54,6 +54,7 @@ type Querier interface {
 	ListEventsByOwnerCredentialID(ctx context.Context, arg ListEventsByOwnerCredentialIDParams) ([]Event, error)
 	ListProfiles(ctx context.Context, arg ListProfilesParams) ([]Profile, error)
 	ListPublicEvents(ctx context.Context) ([]ListPublicEventsRow, error)
+	ListVerifiedIssuerProfiles(ctx context.Context, arg ListVerifiedIssuerProfilesParams) ([]ListVerifiedIssuerProfilesRow, error)
 	RemoveGithubConnector(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
 	RemoveGoogleConnector(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
 	SetGithubConnector(ctx context.Context, arg SetGithubConnectorParams) (AuthenticationCredential, error)

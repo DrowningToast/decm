@@ -1,5 +1,32 @@
 basePath: /
 definitions:
+  core-api_internal_handler_eventconfig.EventCertificateConfigResponse:
+    properties:
+      academic_institution_pos_x:
+        type: number
+      academic_institution_pos_y:
+        type: number
+      base_certificate_presigned_url:
+        type: string
+      base_certificate_storage_key:
+        type: string
+      created_at:
+        type: string
+      event_id:
+        type: string
+      event_name_pos_x:
+        type: number
+      event_name_pos_y:
+        type: number
+      id:
+        type: string
+      name_pos_x:
+        type: number
+      name_pos_y:
+        type: number
+      updated_at:
+        type: string
+    type: object
   customerror.Err:
     description: Custom error type
     properties:
@@ -177,6 +204,8 @@ definitions:
         type: integer
       issuer_credential_id:
         type: string
+      issuer_profile:
+        $ref: '#/definitions/entity.Profile'
       sign_message:
         type: string
       signature:
@@ -272,31 +301,6 @@ definitions:
       phone_number_requirement_status:
         type: integer
       registration_password:
-        type: string
-    type: object
-  eventconfig.EventCertificateConfigResponse:
-    properties:
-      academic_institution_pos_x:
-        type: number
-      academic_institution_pos_y:
-        type: number
-      base_certificate_storage_key:
-        type: string
-      created_at:
-        type: string
-      event_id:
-        type: string
-      event_name_pos_x:
-        type: number
-      event_name_pos_y:
-        type: number
-      id:
-        type: string
-      name_pos_x:
-        type: number
-      name_pos_y:
-        type: number
-      updated_at:
         type: string
     type: object
   eventconfig.EventRegistrationConfigResponse:
@@ -974,7 +978,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eventconfig.EventCertificateConfigResponse'
+            $ref: '#/definitions/core-api_internal_handler_eventconfig.EventCertificateConfigResponse'
         "400":
           description: Bad Request
           schema:
@@ -1002,7 +1006,6 @@ paths:
       - description: Base certificate image
         in: formData
         name: base_certificate_image
-        required: true
         type: file
       - description: Event name position x
         format: float64
@@ -1044,7 +1047,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eventconfig.EventCertificateConfigResponse'
+            $ref: '#/definitions/core-api_internal_handler_eventconfig.EventCertificateConfigResponse'
         "400":
           description: Bad Request
           schema:
@@ -1569,6 +1572,41 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get events by owner credentials ID
+  /api/v1/issuers:
+    get:
+      consumes:
+      - application/json
+      description: Get verified issuers
+      operationId: get-verified-issuers
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Profile'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.Err'
+      summary: Get verified issuers
+      tags:
+      - Issuer
   /api/v1/onboard/check-onboard-status:
     post:
       consumes:
