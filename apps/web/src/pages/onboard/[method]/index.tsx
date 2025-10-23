@@ -147,7 +147,7 @@ const OnboardingPage = () => {
         }
         if (method === OnboardMethods.WALLET) {
             // Only return param when signSignature is truthy
-            if (!signSignature || signSignature.length === 0) return undefined;
+            if (!signSignature) return undefined;
             return {
                 method: OnboardRegistrationMethod.RegistrationMethodWallet,
                 signSignature,
