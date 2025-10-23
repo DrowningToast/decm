@@ -7,7 +7,6 @@ import { useWalletClient } from "wagmi";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
 import { match } from "ts-pattern";
-import { OnboardRegistrationMethod } from "@decm/api";
 import { OnboardMethods } from "@/pages/onboard/[method]";
 
 // eg. Sign in, Sign up, onboard page
@@ -19,7 +18,7 @@ export const useAuthRedirect = () => {
 		LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE,
 		undefined
 	);
-	const [accessToken, setAccessToken] = useLocalStorage<string | undefined>(
+	const [accessToken] = useLocalStorage<string | undefined>(
 		LOCAL_STORAGE_KEYS.ACCESS_TOKEN,
 		undefined
 	);
