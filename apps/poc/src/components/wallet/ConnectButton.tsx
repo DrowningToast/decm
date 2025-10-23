@@ -1,7 +1,7 @@
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 
-export function ConnectButton() {
+export function WalletConnectButton() {
   const { isConnected, address } = useAccount();
   const { connect, connectors, status } = useConnect();
   const { disconnect } = useDisconnect();

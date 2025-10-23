@@ -1494,8 +1494,8 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "Sign message",
-                        "name": "sign_message",
+                        "description": "Message signature",
+                        "name": "message_signature",
                         "in": "body",
                         "schema": {
                             "$ref": "#/definitions/onboard.CheckOnboardStatusRequest"
@@ -1625,12 +1625,12 @@ const docTemplate = `{
                     "Onboard"
                 ],
                 "summary": "Get preset message for the client to sign to register",
-                "operationId": "get-register-sign-message",
+                "operationId": "get-sign-message",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/onboard.getRegisterSignMessageResponse"
+                            "$ref": "#/definitions/onboard.getSignMessageResponse"
                         }
                     }
                 }
@@ -2495,6 +2495,9 @@ const docTemplate = `{
                 "expires_in": {
                     "type": "integer"
                 },
+                "message_signature": {
+                    "type": "string"
+                },
                 "method": {
                     "enum": [
                         "google",
@@ -2505,9 +2508,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/onboard.RegistrationMethod"
                         }
                     ]
-                },
-                "sign_message": {
-                    "type": "string"
                 }
             }
         },
@@ -2533,9 +2533,12 @@ const docTemplate = `{
                 "RegistrationMethodWallet"
             ]
         },
-        "onboard.getRegisterSignMessageResponse": {
+        "onboard.getSignMessageResponse": {
             "description": "Response for the client to sign to register",
             "type": "object",
+            "required": [
+                "message"
+            ],
             "properties": {
                 "message": {
                     "type": "string"

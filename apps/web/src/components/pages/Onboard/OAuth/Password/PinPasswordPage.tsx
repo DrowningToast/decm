@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
-import { LogoutButton } from "../LogoutButton";
+import { LogoutButton } from "../../../../LogoutButton";
 
 interface PinPasswordPageProps {
     onPasswordSet: (password: string) => void;
@@ -105,7 +105,7 @@ export const PinPasswordPage: React.FC<PinPasswordPageProps> = ({
                         </button>
 
                         {/* Logout Link */}
-                        <LogoutButton />
+                        <LogoutButton type="signout" />
                     </div>
 
                     {/* Confirm Button */}

@@ -300,6 +300,123 @@
       "bookingRequired": "Booking Request Required",
       "tokenTransferable": "Token Transferable",
       "participantSettings": "Participant Settings"
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "network": "Network error. Please check your connection.",
+      "unauthorized": "You are not authorized to perform this action.",
+      "forbidden": "You are not authorized to perform this action.",
+      "notFound": "The requested resource was not found.",
+      "conflict": "The input already exists.",
+      "serverError": "Something went wrong. Please try again later.",
+      "invalidInput": "Invalid input",
+      "invalidInputDescription": "Please check your input and try again.",
+      "networkDescription": "Network error. Please check your connection.",
+      "unauthorizedDescription": "You are not authorized to perform this action.",
+      "notFoundDescription": "The requested resource was not found.",
+      "duplicateEntryDescription": "The input already exists.",
+      "internalServerErrorDescription": "Something went wrong. Please try again later.",
+      "internalClientErrorDescription": "Client error. Please try again later.",
+      "forbiddenDescription": "You are not authorized to perform this action."
+    },
+    "notFound": {
+      "title": "404 - Page Not Found",
+      "heading": "Oops! Page not found",
+      "description": "The page you're looking for doesn't exist or has been moved.",
+      "backHome": "Back to Home",
+      "suggestions": {
+        "title": "Try these instead:",
+        "home": "Go to Home",
+        "events": "Browse Events",
+        "credentials": "View Credentials",
+        "signup": "Sign Up"
+      }
+    },
+    "error": {
+      "title": "Error - Something Went Wrong",
+      "heading": "Oops! Something went wrong",
+      "description": "We encountered an unexpected error. Please try again or contact support if the problem persists.",
+      "backHome": "Back to Home",
+      "tryAgain": "Try Again",
+      "suggestions": {
+        "title": "What you can do:",
+        "home": "Go to Home",
+        "refresh": "Refresh Page",
+        "support": "Contact Support",
+        "signup": "Sign Up"
+      }
+    },
+    "onboard": {
+      "title": "Account onboarding",
+      "subtitle": "Please setup your passcode/password. This will be used to encrypt your info. This cannot be recover, please be careful.",
+      "pinTitle": "Setup PIN",
+      "passwordTitle": "Setup Password",
+      "preferPassword": "I prefer password",
+      "preferPin": "I prefer PIN",
+      "logout": "Logout",
+      "enterPin": "Enter your 6-digit PIN",
+      "confirmPin": "Confirm your PIN",
+      "enterPassword": "Enter your password",
+      "confirmPassword": "Confirm your password",
+      "pinMismatch": "PINs do not match",
+      "pinTooShort": "PIN must be 6 digits",
+      "profile": {
+        "title": "Profile (optional)",
+        "subtitle": "We use your personal data to prefill some of the details required by the events/certificates. Your data is always encrypted and can be changed and deleted by you at any moment.",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Contact email",
+        "phoneNumber": "Phone number",
+        "makePublic": "Make this information public"
+      },
+      "confirm": {
+        "title": "Heads up",
+        "oauth": {
+          "description": {
+            "part1": "Certificates rely on blockchain technology as a source of truth. Since you’re using OAuth account instead of web3 wallet as a account. We’re managing the your account/wallet private key behind the scene.",
+            "part2": "Your private key is encrypted with your passcode/password you provided. Losing your passcode/password will result in total account lost."
+          },
+          "checkboxes": {
+            "acceptRisk": "I'm ok with that.",
+            "acknowledgePasswordLoss": "I acknowledged that losing my passcode/password will result in total account lost"
+          }
+        },
+        "wallet": {
+          "description": {
+            "part1": "Certificates rely on blockchain technology as a source of truth. Your account is permanently bonded with your EVM wallet. ",
+            "part2": "If you lose your wallet, you’ll no-longer able to access your portfolio."
+          },
+          "checkboxes": {
+            "acceptRisk": "I'm ok with that.",
+            "acknowledgeWalletLoss": "I acknowledged that losing my wallet will result in total account lost"
+          }
+        }
+      },
+      "flow": {
+        "check_onboard_status": {
+          "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
+          "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
+          "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
+        },
+        "oauth_google": {
+          "create_account_pending": "Authenticating with Google...",
+          "create_account_success": "Authenticated with Google successfully",
+          "create_account_error": "Failed to authenticate with Google",
+          "create_account_error_duplicate": "The account with this email already exists.",
+          "create_profile_pending": "Updating profile...",
+          "create_profile_success": "Profile updated successfully",
+          "create_profile_error_duplicate": "The profile with this email already exists.",
+          "create_profile_error": "Failed to update profile. Please try again later.",
+          "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
+          "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
+          "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
+        }
+      },
+      "api": {
+        "error": {
+          "authentication_credential_id_already_exists": "Authentication credential ID already exists"
+        }
+      }
     }
   },
   "createEvent": {
