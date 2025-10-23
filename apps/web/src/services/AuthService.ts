@@ -13,7 +13,7 @@ export type CreateAccountParams =
 	  }
 	| {
 			method: OnboardRegistrationMethod.RegistrationMethodWallet;
-			signMessage: string;
+			signSignature: string;
 	  };
 
 export interface CreateProfileParams {
@@ -69,11 +69,11 @@ export class AuthService {
 					password: params.password,
 				});
 			case OnboardRegistrationMethod.RegistrationMethodWallet:
-				if (!params.signMessage) {
+				if (!params.signSignature) {
 					throw new Error("Invalid sign message");
 				}
 				return coreApiClient.v1.registerWithWallet({
-					signed_message: params.signMessage,
+					signed_message: params.signSignature,
 				});
 			default:
 				throw new Error("Invalid method");

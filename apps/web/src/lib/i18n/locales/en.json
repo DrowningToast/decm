@@ -311,11 +311,21 @@
             "oauth": {
                 "description": {
                     "part1": "Certificates rely on blockchain technology as a source of truth. Since you’re using OAuth account instead of web3 wallet as a account. We’re managing the your account/wallet private key behind the scene.",
-                    "part2": "Your private key is encrypted with your passcode/password you provided.  <strong>If you do not set up a back-up authentication method. We do not either.</strong>"
+                    "part2": "Your private key is encrypted with your passcode/password you provided. Losing your passcode/password will result in total account lost."
                 },
                 "checkboxes": {
                     "acceptRisk": "I'm ok with that.",
                     "acknowledgePasswordLoss": "I acknowledged that losing my passcode/password will result in total account lost"
+                }
+            },
+            "wallet": {
+                "description": {
+                    "part1": "Certificates rely on blockchain technology as a source of truth. Your account is permanently bonded with your EVM wallet. ",
+                    "part2": "If you lose your wallet, you’ll no-longer able to access your portfolio."
+                },
+                "checkboxes": {
+                    "acceptRisk": "I'm ok with that.",
+                    "acknowledgeWalletLoss": "I acknowledged that losing my wallet will result in total account lost"
                 }
             }
         },

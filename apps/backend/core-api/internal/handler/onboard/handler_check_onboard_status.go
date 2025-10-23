@@ -21,7 +21,7 @@ type CheckOnboardStatusRequest struct {
 	AccessToken *string `json:"access_token"`
 	ExpiresIn   *int    `json:"expires_in"`
 
-	SignMessage *string `json:"sign_message"`
+	MessageSignature *string `json:"message_signature"`
 }
 
 type CheckOnboardStatusResponse struct {
@@ -36,7 +36,7 @@ type CheckOnboardStatusResponse struct {
 // @Param method body onboard.CheckOnboardStatusRequest.Method false "Method"
 // @Param access_token body onboard.CheckOnboardStatusRequest.AccessToken false "Access token"
 // @Param expires_in body onboard.CheckOnboardStatusRequest.ExpiresIn false "Expires in"
-// @Param sign_message body onboard.CheckOnboardStatusRequest.SignMessage false "Sign message"
+// @Param message_signature body onboard.CheckOnboardStatusRequest.MessageSignature false "Message signature"
 // @Accept json
 // @Produce json
 // @Success 200 {object} CheckOnboardStatusResponse
@@ -115,11 +115,11 @@ func (h Handler) CheckOnboardStatus(ctx *fiber.Ctx) error {
 		})
 	// If user is not authenticated, check onboard status with wallet address
 	case RegistrationMethodWallet:
-		signMessage := requestBody.SignMessage
-		if signMessage == nil {
+		messageSignature := requestBody.MessageSignature
+		if messageSignature == nil {
 			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("sign message is required"))
 		}
-		jwt, profileId, err := h.OnboardUc.CheckOnboardStatusWithWalletAddress(ctx.UserContext(), *signMessage)
+		jwt, profileId, err := h.OnboardUc.CheckOnboardStatusWithWalletAddress(ctx.UserContext(), *messageSignature)
 		if err != nil {
 			return errors.Wrap(err, "failed to check onboard status with wallet address")
 		}

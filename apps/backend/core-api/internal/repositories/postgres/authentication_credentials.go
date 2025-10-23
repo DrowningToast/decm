@@ -4,6 +4,7 @@ import (
 	"context"
 	"decm-database/go/generated"
 
+	"apps/backend/common"
 	"apps/backend/common/log"
 	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
@@ -35,7 +36,7 @@ func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id uui
 
 	return &entity.AuthenticationCredential{
 		Id:                  query.ID,
-		SolutionStatus:      entity.SolutionStatus(query.SolutionStatus),
+		SolutionStatus:      common.SolutionStatus(query.SolutionStatus),
 		HashedPassword:      pgmapper.PgTextToStringPtr(query.HashedPassword),
 		EncryptedPrivateKey: nil, // EncryptedPrivateKey is []byte, not decrypted - kept as nil for security
 		WalletAddress:       query.WalletAddress,
@@ -67,7 +68,7 @@ func (r *Repository) GetAuthenticationCredentialByWalletAddress(ctx context.Cont
 
 	return &entity.AuthenticationCredential{
 		Id:                  query.ID,
-		SolutionStatus:      entity.SolutionStatus(query.SolutionStatus),
+		SolutionStatus:      common.SolutionStatus(query.SolutionStatus),
 		HashedPassword:      pgmapper.PgTextToStringPtr(query.HashedPassword),
 		EncryptedPrivateKey: nil, // EncryptedPrivateKey is []byte, not decrypted - kept as nil for security
 		WalletAddress:       query.WalletAddress,
@@ -108,7 +109,7 @@ func (r *Repository) GetAuthenticationCredentialByGoogleConnectorRef(ctx context
 
 	return &entity.AuthenticationCredential{
 		Id:                  query.ID,
-		SolutionStatus:      entity.SolutionStatus(query.SolutionStatus),
+		SolutionStatus:      common.SolutionStatus(query.SolutionStatus),
 		HashedPassword:      pgmapper.PgTextToStringPtr(query.HashedPassword),
 		EncryptedPrivateKey: nil, // EncryptedPrivateKey is []byte, not decrypted - kept as nil for security
 		WalletAddress:       query.WalletAddress,
@@ -169,7 +170,7 @@ func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credent
 
 	return &entity.AuthenticationCredential{
 		Id:                  query.ID,
-		SolutionStatus:      entity.SolutionStatus(query.SolutionStatus),
+		SolutionStatus:      common.SolutionStatus(query.SolutionStatus),
 		HashedPassword:      pgmapper.PgTextToStringPtr(query.HashedPassword),
 		EncryptedPrivateKey: nil, // Don't return encrypted private key for security
 		WalletAddress:       query.WalletAddress,
@@ -228,7 +229,7 @@ func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id uuid
 
 	return &entity.AuthenticationCredential{
 		Id:                  query.ID,
-		SolutionStatus:      entity.SolutionStatus(query.SolutionStatus),
+		SolutionStatus:      common.SolutionStatus(query.SolutionStatus),
 		HashedPassword:      pgmapper.PgTextToStringPtr(query.HashedPassword),
 		EncryptedPrivateKey: nil, // Don't return encrypted private key for security
 		WalletAddress:       query.WalletAddress,
