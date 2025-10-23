@@ -5,7 +5,7 @@ const AppPage = () => {
         <ProtectedRoute>
             <h1>app page</h1>
             {/* PH */}
-            <LogoutButton />
+            <LogoutButton type="signout" />
         </ProtectedRoute>
     );
 };

@@ -59,9 +59,8 @@ const mockFetchParticipants = async ({
     // Mock data - replace with actual API call
     const allParticipants: Participant[] = Array.from({ length: 45 }, (_, i) => ({
         id: `participant-${i + 1}`,
-        name: `${["John", "Jane", "Bob", "Alice", "Charlie", "David", "Emma", "Frank"][i % 8]} ${
-            ["Doe", "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller"][i % 8]
-        }`,
+        name: `${["John", "Jane", "Bob", "Alice", "Charlie", "David", "Emma", "Frank"][i % 8]} ${["Doe", "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller"][i % 8]
+            }`,
         email: `user${i + 1}@email.com`,
         phoneNumber: `+1 ${Math.floor(100 + Math.random() * 900)} ${Math.floor(100 + Math.random() * 900)} ${Math.floor(1000 + Math.random() * 9000)}`,
         walletAddress: `0x${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
@@ -407,13 +406,13 @@ export default function HostEventDetailsPage({
                                             totalItems={eventIssuers.length}
                                             currentPage={1}
                                             pageSize={10}
-                                            onPageChange={() => {}}
-                                            onPageSizeChange={() => {}}
+                                            onPageChange={() => { }}
+                                            onPageSizeChange={() => { }}
                                             searchValue=""
-                                            onSearchChange={() => {}}
+                                            onSearchChange={() => { }}
                                             searchPlaceholder="Search issuers..."
                                             sorting={[]}
-                                            onSortingChange={() => {}}
+                                            onSortingChange={() => { }}
                                             isLoading={false}
                                             disablePagination
                                         />

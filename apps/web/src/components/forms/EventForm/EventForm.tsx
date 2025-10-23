@@ -118,13 +118,12 @@ export const EventForm = ({
                 return (
                     <div key={step} className="flex items-center">
                         <div
-                            className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors ${
-                                currentStep === step
-                                    ? "border-primary bg-primary text-primary-foreground"
-                                    : currentStep > step
-                                      ? "border-primary bg-primary/20 text-primary"
-                                      : "border-muted-foreground text-muted-foreground"
-                            }`}
+                            className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors ${currentStep === step
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : currentStep > step
+                                    ? "border-primary bg-primary/20 text-primary"
+                                    : "border-muted-foreground text-muted-foreground"
+                                }`}
                         >
                             <Typography variant="text" tag="span" className="font-semibold">
                                 {step}
@@ -132,9 +131,8 @@ export const EventForm = ({
                         </div>
                         {step < totalSteps && (
                             <div
-                                className={`w-16 h-1 mx-2 ${
-                                    currentStep > step ? "bg-primary" : "bg-muted"
-                                }`}
+                                className={`w-16 h-1 mx-2 ${currentStep > step ? "bg-primary" : "bg-muted"
+                                    }`}
                             />
                         )}
                     </div>
@@ -359,7 +357,7 @@ export const EventForm = ({
                         title={t("events.form.deleteEvent")}
                         message={t("events.form.deleteEventMessage")}
                         onConfirm={() => onDelete?.()}
-                        onCancel={() => {}}
+                        onCancel={() => { }}
                         cancelText={t("events.form.cancel")}
                         confirmText={t("events.form.delete")}
                     >
@@ -367,7 +365,7 @@ export const EventForm = ({
                             type="button"
                             variant="ghost"
                             size="lg"
-                            onClick={() => {}}
+                            onClick={() => { }}
                             disabled={isLoading}
                             className="min-w-[150px]"
                         >
@@ -406,8 +404,8 @@ export const EventForm = ({
                             {isLoading
                                 ? t("common.loading")
                                 : mode === "create"
-                                  ? t("events.form.submitCreate")
-                                  : t("events.form.submitUpdate")}
+                                    ? t("events.form.submitCreate")
+                                    : t("events.form.submitUpdate")}
                         </Typography>
                     </Button>
                 )}
