@@ -138,7 +138,7 @@ const OnboardingPage = () => {
     const checkOnBoardStatusParam: UseCheckOnboardParams | undefined = useMemo(() => {
         if (method === OnboardMethods.GOOGLE) {
             // Only return param when accessToken is non-empty and expiresIn is a positive number
-            if (!accessToken || accessToken.length === 0 || !expiresIn || expiresIn <= 0) return undefined;
+            if (!accessToken || !expiresIn || expiresIn <= 0) return undefined;
             return {
                 method: OnboardRegistrationMethod.RegistrationMethodGoogle,
                 accessToken,
