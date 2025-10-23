@@ -180,6 +180,9 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@types/axios':
+        specifier: ^0.14.4
+        version: 0.14.4
       '@types/react-router-dom':
         specifier: ^5.3.3
         version: 5.3.3
@@ -2427,6 +2430,9 @@ packages:
   '@walletconnect/sign-client@2.22.3':
     resolution: {integrity: sha512-kZIXnLBk9MBVv49SSGKNucaHtNut5hEDw6PXuxmvTPEcp6EIV/sPOCItWQJ6MxJ7sqSZlyiGevRqnBDdG3MSgA==}
 
+  '@walletconnect/sign-client@2.22.3':
+    resolution: {integrity: sha512-kZIXnLBk9MBVv49SSGKNucaHtNut5hEDw6PXuxmvTPEcp6EIV/sPOCItWQJ6MxJ7sqSZlyiGevRqnBDdG3MSgA==}
+
   '@walletconnect/time@1.0.2':
     resolution: {integrity: sha512-uzdd9woDcJ1AaBZRhqy5rNC9laqWGErfc4dxA9a87mPdKOgWMD85mcFo9dIYIts/Jwocfwn07EC6EzclKubk/g==}
 
@@ -2446,6 +2452,9 @@ packages:
   '@walletconnect/universal-provider@2.21.1':
     resolution: {integrity: sha512-Wjx9G8gUHVMnYfxtasC9poGm8QMiPCpXpbbLFT+iPoQskDDly8BwueWnqKs4Mx2SdIAWAwuXeZ5ojk5qQOxJJg==}
     deprecated: 'Reliability and performance improvements. See: https://github.com/WalletConnect/walletconnect-monorepo/releases'
+
+  '@walletconnect/universal-provider@2.22.3':
+    resolution: {integrity: sha512-md/AzJWxC6bPZWVyAp4ErtYdlMImpGSw/TUyYXIFDa07eTxUlZsniAysG0Tl+3Thy7VRz7CctCPP7pWP1HZ0Mg==}
 
   '@walletconnect/universal-provider@2.22.3':
     resolution: {integrity: sha512-md/AzJWxC6bPZWVyAp4ErtYdlMImpGSw/TUyYXIFDa07eTxUlZsniAysG0Tl+3Thy7VRz7CctCPP7pWP1HZ0Mg==}
@@ -12653,11 +12662,24 @@ snapshots:
       react: 19.1.1
       use-sync-external-store: 1.4.0(react@19.1.1)
 
+  zustand@5.0.0(@types/react@19.1.12)(react@19.1.1)(use-sync-external-store@1.5.0(react@19.1.1)):
+    optionalDependencies:
+      '@types/react': 19.1.12
+      react: 19.1.1
+      use-sync-external-store: 1.5.0(react@19.1.1)
+
   zustand@5.0.3(@types/react@19.1.12)(react@19.1.1)(use-sync-external-store@1.4.0(react@19.1.1)):
     optionalDependencies:
       '@types/react': 19.1.12
       react: 19.1.1
       use-sync-external-store: 1.4.0(react@19.1.1)
+
+  zustand@5.0.3(@types/react@19.1.12)(react@19.1.1)(use-sync-external-store@1.5.0(react@19.1.1)):
+    optionalDependencies:
+      '@types/react': 19.1.12
+      react: 19.1.1
+      use-sync-external-store: 1.5.0(react@19.1.1)
+    optional: true
 
   zustand@5.0.8(@types/react@19.1.12)(react@19.1.1)(use-sync-external-store@1.4.0(react@19.1.1)):
     optionalDependencies:

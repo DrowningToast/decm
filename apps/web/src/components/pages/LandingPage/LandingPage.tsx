@@ -1,5 +1,4 @@
 import { Typography } from '@/components/typography/typography';
-import { PublicNavbar } from '@/components/layouts/navigations/PublicNavbar';
 import { Link } from '@/router';
 import { useTranslation } from 'react-i18next';
 
@@ -8,8 +7,6 @@ export const LandingPage = () => {
 
     return (
         <div className="min-h-screen bg-background">
-            <PublicNavbar />
-
             {/* Hero Section */}
             <section className="relative min-h-[812px] md:min-h-[982px] overflow-hidden">
                 {/* Gradient Background */}
@@ -32,7 +29,7 @@ export const LandingPage = () => {
                             <Typography
                                 variant="header"
                                 tag="h1"
-                                className="text-[36px] md:text-[64px] leading-[40px] md:leading-[56px] text-foreground text-right md:text-center font-['Cormorant_Garamond'] font-bold tracking-[0.06px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
+                                className="text-[36px] md:text-[64px] leading-[40px] md:leading-[56px] text-foreground text-right md:text-center font-primary tracking-[0.06px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                             >
                                 {t('landing.hero.title')}
                             </Typography>
@@ -185,7 +182,7 @@ export const LandingPage = () => {
                         <Typography
                             variant="header"
                             tag="h2"
-                            className="text-base md:text-base text-foreground font-['Cormorant_Garamond'] font-semibold tracking-[0.06px]"
+                            className="text-base md:text-base text-foreground font-primary font-semibold tracking-[0.06px]"
                         >
                             {t('landing.getStarted.title')}
                         </Typography>

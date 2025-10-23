@@ -1,5 +1,6 @@
 import { FaviconHelmet } from '@/components/providers/helmets/FaviconHelmet';
 import { LandingPage } from '@/components/pages/LandingPage/LandingPage';
+import { PublicNavbar } from '@/components/layouts/navigations/PublicNavbar';
 
 const IndexPage = () => {
     return (
@@ -8,6 +9,7 @@ const IndexPage = () => {
                 title="Home | DECM - Decentralized Event Management"
                 description="Welcome to DECM - Web 3.0 platform for NFT ticketing, digital credentials, and academic identity verification"
             />
+            <PublicNavbar />
             <LandingPage />
         </>
     );

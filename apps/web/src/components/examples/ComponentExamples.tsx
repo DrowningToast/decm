@@ -61,19 +61,19 @@ export function NavbarExamples() {
             {/* Primary Navbar */}
             <div className="relative h-20 mb-4">
                 <p className="text-sm text-muted-foreground px-8 pb-2">Primary Variant</p>
-                <PublicNavbar variant="primary" className="relative" />
+                <PublicNavbar variant="light" className="relative" />
             </div>
 
             {/* Secondary Dark Navbar */}
             <div className="relative h-20 mb-4">
                 <p className="text-sm text-muted-foreground px-8 pb-2">Secondary Dark Variant</p>
-                <PublicNavbar variant="secondary-dark" className="relative" />
+                <PublicNavbar variant="dark" className="relative" />
             </div>
 
             {/* Secondary Light Navbar */}
             <div className="relative h-20 mb-4">
                 <p className="text-sm text-muted-foreground px-8 pb-2">Secondary Light Variant</p>
-                <PublicNavbar variant="secondary-light" className="relative" />
+                <PublicNavbar variant="light" className="relative" />
             </div>
         </div>
     );

@@ -74,7 +74,7 @@ export const SelectedIssuersTable = ({
                                             "certificateSettings.step1.removeIssuer.description",
                                         )}
                                         onConfirm={() => onRemoveIssuer(issuer.id ?? "")}
-                                        onCancel={() => {}}
+                                        onCancel={() => { }}
                                         destructive
                                     >
                                         <Button type="button" variant="secondary-light" size="sm">
