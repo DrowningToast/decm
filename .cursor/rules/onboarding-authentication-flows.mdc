@@ -1,0 +1,903 @@
+---
+description: "Complete onboarding and authentication flows for wallet-based and OAuth registration"
+---
+
+# Onboarding & Authentication Flows
+
+## Overview
+
+DECM supports two registration methods:
+
+1. **Wallet-based** - Web3 wallet signature authentication (MetaMask, WalletConnect, etc.)
+2. **OAuth Google** - Traditional OAuth 2.0 with Google
+
+Both flows create an `AuthenticationCredential` → `Profile` → `JWT Session`.
+
+## Architecture
+
+### Frontend Services
+
+- **AuthService** - [apps/web/src/services/AuthService.ts](mdc:apps/web/src/services/AuthService.ts)
+  - `createAccount()` - Register new user
+  - `createProfile()` - Create user profile
+  - `updateProfile()` - Update user profile
+  - `signOut()` - Logout user
+
+- **OnboardService** - [apps/web/src/services/OnboardService.ts](mdc:apps/web/src/services/OnboardService.ts)
+  - `checkOnboardStatus()` - Check registration progress
+  - `getSignMessage()` - Get wallet signature message
+
+### Backend Layers
+
+```
+Handler → Usecase → DataGateway (Repository) → Database
+```
+
+- **Handler** - [apps/backend/core-api/internal/handler/onboard/](mdc:apps/backend/core-api/internal/handler/onboard/)
+  - HTTP request parsing and validation
+  - OpenAPI/Swagger documentation
+  - Response formatting
+
+- **Usecase** - [apps/backend/core-api/internal/usecase/onboard/onboard.go](mdc:apps/backend/core-api/internal/usecase/onboard/onboard.go)
+  - Business logic and validation
+  - Signature verification (wallet)
+  - OAuth token verification (Google)
+  - JWT token generation
+
+- **DataGateway** - Database operations with PII encryption
+
+---
+
+## Wallet Onboarding Flow
+
+### Frontend Flow
+
+#### 1. User Connects Wallet
+
+```tsx
+// User clicks "Connect Wallet" button
+// Web3 provider (MetaMask, WalletConnect) connects
+// Wallet address retrieved
+```
+
+#### 2. Get Sign Message
+
+**Hook:** [useGetSignMessage](mdc:apps/web/src/components/pages/Onboard/useGetSignMessage.ts)
+
+```typescript
+const { signMessage, isPending } = useGetSignMessage();
+// Returns: "Please sign this message to prove your ownership of the wallet"
+```
+
+**API Call:**
+
+- `GET /api/v1/onboard/get-sign-message`
+- No authentication required
+- Returns standard message for signature
+
+#### 3. User Signs Message
+
+```typescript
+// User signs message with their wallet (MetaMask popup)
+const signature = await walletClient.signMessage({
+	message: signMessage,
+});
+
+// Store signature in localStorage
+localStorage.setItem("authSignSignature", signature);
+```
+
+#### 4. Check Onboard Status
+
+**Context:** [WalletOnboardContext](mdc:apps/web/src/components/pages/Onboard/Wallet/WalletOnboardContext.tsx)
+
+```typescript
+const onboardStatus = await onboardService.checkOnboardStatus({
+	method: OnboardRegistrationMethod.RegistrationMethodWallet,
+	signSignature: signature,
+});
+
+// Returns:
+// {
+//   authentication_credential_id?: string
+//   profile_id?: string
+// }
+```
+
+**API Call:**
+
+- `POST /api/v1/onboard/check-onboard-status`
+- Body: `{ method: "wallet", message_signature: "0x..." }`
+- Verifies signature on backend
+- Returns existing credential/profile IDs if found
+
+#### 5. Register Account (if not exists)
+
+**Service:** [AuthService.createAccount()](mdc:apps/web/src/services/AuthService.ts)
+
+```typescript
+if (!onboardStatus?.authentication_credential_id) {
+	const account = await authService.createAccount({
+		method: OnboardRegistrationMethod.RegistrationMethodWallet,
+		signSignature: signature,
+	});
+
+	// Returns:
+	// {
+	//   credential_id: "uuid",
+	//   jwt: "token"
+	// }
+}
+```
+
+**API Call:**
+
+- `POST /api/v1/onboard/register-with-wallet`
+- Body: `{ signed_message: "0x..." }`
+- Creates `AuthenticationCredential` in database
+- Sets JWT cookie
+- Returns credential ID and JWT
+
+#### 6. Create/Update Profile
+
+**Hook:** [useSignup](mdc:apps/web/src/components/pages/Onboard/useSignup.ts)
+
+```typescript
+await upsertProfile({
+	method: OnboardRegistrationMethod.RegistrationMethodWallet,
+	signSignature: signature,
+	profile: {
+		authentication_credential_id: account.credential_id,
+		// Optional profile fields:
+		first_name: "John",
+		last_name: "Doe",
+		email: "john@example.com",
+		phone_number: "+1234567890",
+		// Privacy settings:
+		is_first_name_public: true,
+		is_last_name_public: false,
+		// ... more fields
+	},
+});
+```
+
+**API Calls:**
+
+- Check status: `POST /api/v1/onboard/check-onboard-status`
+- Create profile: `POST /api/v1/profile/create`
+  - OR update: `PUT /api/v1/profile/{credentialId}`
+- All PII data encrypted in database
+
+#### 7. Navigate to App
+
+```typescript
+toast.success(t("flow.wallet.create_profile_success"));
+navigate("/app");
+```
+
+### Backend Flow
+
+#### Handler: RegisterWithWallet
+
+[handler_register_with_wallet.go](mdc:apps/backend/core-api/internal/handler/onboard/handler_register_with_wallet.go)
+
+```go
+// 1. Parse request
+type registerWithWalletRequest struct {
+    SignedMessage string `json:"signed_message"`
+}
+
+// 2. Validate
+if len(r.SignedMessage) == 0 {
+    return ErrInvalidArgument
+}
+
+// 3. Call usecase
+credentialId, jwt, err := h.OnboardUc.RegisterWithWalletAddress(
+    ctx.UserContext(),
+    requestBody.SignedMessage
+)
+
+// 4. Set cookie
+h.AuthService.SetJwtCookie(ctx, *jwt)
+
+// 5. Return response
+return ctx.Status(200).JSON(registerResponse{
+    CredentialId: credentialId.String(),
+    Jwt: *jwt,
+})
+```
+
+#### Usecase: RegisterWithWalletAddress
+
+[onboard.go](mdc:apps/backend/core-api/internal/usecase/onboard/onboard.go#L49-L115)
+
+```go
+func (u *OnboardUsecase) RegisterWithWalletAddress(
+    ctx context.Context,
+    signedMsg string
+) (*uuid.UUID, *string, error) {
+    // 1. Extract wallet address from signature
+    walletAddress, err := cyptoutils.GetAddressFromSignature(
+        u.registerSignMessage,
+        signedMsg
+    )
+
+    // 2. Validate EVM address format
+    isValid, errCode := common.ValidateEvmAddress(walletAddress.Hex())
+
+    // 3. Verify signature
+    result, err := cyptoutils.VerifySignedMessageByAddress(
+        address,
+        u.registerSignMessage,
+        signedMsg
+    )
+
+    // 4. Check for duplicate wallet
+    credential, err := u.AuthenticationCredentialDg
+        .GetAuthenticationCredentialByWalletAddress(ctx, walletAddress.Hex())
+    if credential != nil {
+        return ErrDuplicateEntry // Wallet already registered
+    }
+
+    // 5. Create authentication credential
+    credential = &entity.AuthenticationCredential{
+        WalletAddress:  walletAddress.Hex(),
+        SolutionStatus: common.SolutionStatusBYOK,
+    }
+    credential, err = u.AuthenticationCredentialDg
+        .CreateAuthenticationCredential(ctx, *credential)
+
+    // 6. Generate JWT token
+    sessionToken, err := u.authService.CreateToken(auth.JwtPayload{
+        UserId:        credential.Id,
+        WalletAddress: credential.WalletAddress,
+    })
+
+    return &credential.Id, &sessionToken, nil
+}
+```
+
+#### Signature Verification
+
+Uses Ethereum cryptography to verify ownership:
+
+```go
+// 1. Hash the message
+hash := crypto.Keccak256Hash([]byte(message))
+
+// 2. Decode signature
+signatureBytes, _ := hex.DecodeString(signature)
+
+// 3. Recover public key from signature
+pubKey, _ := crypto.SigToPub(hash.Bytes(), signatureBytes)
+
+// 4. Get address from public key
+address := crypto.PubkeyToAddress(*pubKey)
+
+// 5. Compare addresses
+return address == expectedAddress
+```
+
+---
+
+## OAuth Google Onboarding Flow
+
+### Frontend Flow
+
+#### 1. User Clicks "Continue with Google"
+
+```typescript
+// Redirects to Google OAuth consent screen
+window.location.href = `${GOOGLE_OAUTH_URL}?client_id=...&redirect_uri=...`;
+```
+
+#### 2. Google Redirects Back
+
+```typescript
+// URL: /oauth/google?code=abc123&state=xyz
+const urlParams = new URLSearchParams(window.location.search);
+const code = urlParams.get("code");
+
+// Exchange code for access token (backend handles this)
+```
+
+#### 3. Store OAuth Tokens
+
+**Context:** [OAuthOnboardContext](mdc:apps/web/src/components/pages/Onboard/OAuth/OAuthOnboardContext.tsx)
+
+```typescript
+// Tokens passed via URL or props:
+const { accessToken, expiresIn } = props;
+
+// Store in localStorage
+localStorage.setItem("accessToken", accessToken);
+localStorage.setItem("expiresIn", expiresIn.toString());
+```
+
+#### 4. Check Onboard Status
+
+```typescript
+const status = await coreApiClient.v1.checkOnboardStatus({
+	method: OnboardRegistrationMethod.RegistrationMethodGoogle,
+	access_token: accessToken,
+	expires_in: expiresIn,
+});
+
+// Returns:
+// {
+//   authentication_credential_id?: string
+//   profile_id?: string
+// }
+```
+
+**API Call:**
+
+- `POST /api/v1/onboard/check-onboard-status`
+- Body: `{ method: "google", access_token: "ya29...", expires_in: 3600 }`
+- Backend verifies token with Google
+- Returns existing credential/profile if found
+
+#### 5. Set Password
+
+**Form Schema:**
+
+```typescript
+const schema = z.object({
+	password: z
+		.string()
+		.min(6, { message: t("validation.passwordMin6") })
+		.max(32, { message: t("validation.passwordMax32") }),
+});
+```
+
+**Why password?**
+
+- OAuth provides authentication (Google verifies user)
+- Password provides authorization (DECM account protection)
+- Used for future direct login without OAuth
+
+#### 6. Register Account (if not exists)
+
+```typescript
+if (!status?.authentication_credential_id) {
+	const { credential_id } = await createAccount({
+		method: OnboardRegistrationMethod.RegistrationMethodGoogle,
+		accessToken: accessToken,
+		expiresIn: expiresIn,
+		password: data.password,
+	});
+}
+```
+
+**API Call:**
+
+- `POST /api/v1/onboard/register-with-google-oauth`
+- Body: `{ access_token: "ya29...", password: "secret123" }`
+- Verifies token with Google API
+- Extracts user email from Google
+- Hashes password
+- Creates `AuthenticationCredential`
+- Sets JWT cookie
+
+#### 7. Create/Update Profile
+
+```typescript
+await upsertProfile({
+	method: OnboardRegistrationMethod.RegistrationMethodGoogle,
+	accessToken: accessToken,
+	expiresIn: expiresIn,
+	password: data.password,
+	profile: {
+		authentication_credential_id: credential_id,
+		email: profile.email,
+		first_name: profile.firstName,
+		last_name: profile.lastName,
+		phone_number: profile.phoneNumber,
+		// Privacy settings
+		is_email_public: profile.isEmailPublic,
+		is_first_name_public: profile.isFirstNamePublic,
+		// ... more fields
+	},
+});
+```
+
+#### 8. Navigate to App
+
+```typescript
+toast.success(t("flow.oauth_google.create_profile_success"));
+navigate("/app");
+```
+
+### Backend Flow
+
+#### Usecase: RegisterWithGoogleOAuth
+
+```go
+func (u *OnboardUsecase) RegisterWithGoogleOAuth(
+    ctx context.Context,
+    accessToken string,
+    password string,
+    expiresIn time.Duration,
+) (*uuid.UUID, *string, error) {
+    // 1. Verify token with Google
+    token := &oauth2.Token{
+        AccessToken: accessToken,
+        Expiry:      time.Now().Add(expiresIn),
+    }
+
+    // 2. Get user info from Google
+    userInfo, err := u.googleOAuthService.GetUserInfo(ctx, token)
+
+    // 3. Check for duplicate email
+    credential, err := u.AuthenticationCredentialDg
+        .GetAuthenticationCredentialByGoogleEmail(ctx, userInfo.Email)
+    if credential != nil {
+        return ErrDuplicateEntry
+    }
+
+    // 4. Hash password
+    hashedPassword, err := hashutils.HashPassword(password)
+
+    // 5. Encrypt email (PII)
+    encryptedEmail, err := encryptutils.EncryptAESGCM(
+        userInfo.Email,
+        u.piiEncryptionKey
+    )
+
+    // 6. Create credential
+    credential = &entity.AuthenticationCredential{
+        GoogleOAuthEmail: encryptedEmail,
+        PasswordHash:     hashedPassword,
+        SolutionStatus:   common.SolutionStatusBYOK,
+    }
+    credential, err = u.AuthenticationCredentialDg
+        .CreateAuthenticationCredential(ctx, *credential)
+
+    // 7. Generate JWT
+    sessionToken, err := u.authService.CreateToken(auth.JwtPayload{
+        UserId: credential.Id,
+        Email:  userInfo.Email,
+    })
+
+    return &credential.Id, &sessionToken, nil
+}
+```
+
+---
+
+## Session Management
+
+### JWT Token Structure
+
+```json
+{
+    "user_id": "uuid",
+    "wallet_address": "0x..." // OR
+    "email": "user@example.com",
+    "exp": 1234567890,
+    "iat": 1234567890
+}
+```
+
+### Cookie Settings
+
+```go
+cookie := &fiber.Cookie{
+    Name:     "session",
+    Value:    jwt,
+    Expires:  time.Now().Add(24 * time.Hour),
+    HTTPOnly: true,
+    Secure:   true, // HTTPS only in production
+    SameSite: "Lax",
+}
+```
+
+### Local Storage (Frontend)
+
+Stored in [localStorage](mdc:apps/web/src/lib/constants/localStorage.ts):
+
+- `authSignSignature` - Wallet signature (wallet flow)
+- `accessToken` - Google access token (OAuth flow)
+- `expiresIn` - Token expiration time (OAuth flow)
+
+**Why both cookie AND localStorage?**
+
+- **Cookie**: Sent automatically with API requests (HttpOnly, secure)
+- **localStorage**: Client-side state management, onboarding progress
+
+---
+
+## Sign Out Flow
+
+### Frontend: useSignout Hook
+
+[useSignout.ts](mdc:apps/web/src/components/useSignout.ts)
+
+```typescript
+export const useSignout = () => {
+	const [, setAccessToken] = useLocalStorage("accessToken", undefined);
+	const [, setExpiresIn] = useLocalStorage("expiresIn", undefined);
+	const [, setAuthSignSignature] = useLocalStorage(
+		"authSignSignature",
+		undefined
+	);
+	const { data: walletClient } = useWalletClient();
+	const { disconnect } = useDisconnect();
+
+	const signout = async () => {
+		// 1. Call backend logout
+		await authService.signOut();
+
+		// 2. Clear localStorage
+		setAccessToken(undefined);
+		setExpiresIn(undefined);
+		setAuthSignSignature(undefined);
+
+		// 3. Disconnect wallet
+		if (walletClient) {
+			await disconnect();
+		}
+	};
+
+	return { signout };
+};
+```
+
+### Backend: Logout Endpoint
+
+```go
+func (h Handler) Logout(ctx *fiber.Ctx) error {
+    // Clear session cookie
+    ctx.Cookie(&fiber.Cookie{
+        Name:     "session",
+        Value:    "",
+        Expires:  time.Now().Add(-1 * time.Hour), // Expired
+        HTTPOnly: true,
+    })
+
+    return ctx.SendStatus(fiber.StatusNoContent)
+}
+```
+
+---
+
+## Onboard Status Check
+
+### Purpose
+
+Determine user's progress in onboarding:
+
+1. **No credential** → Step 0: Connect wallet/OAuth
+2. **Credential exists, no profile** → Step 1: Create profile
+3. **Credential + profile exist** → Step 2: Complete (redirect to app)
+
+### Frontend Usage
+
+```typescript
+const { onboardStatus, isStatusLoading } = useContext(OnboardPageContext);
+
+useEffect(() => {
+	if (isStatusLoading) return;
+
+	if (onboardStatus?.profile_id) {
+		setStep(2); // Complete
+		navigate("/app");
+	} else if (onboardStatus?.authentication_credential_id) {
+		setStep(1); // Create profile
+	} else {
+		setStep(0); // Register account
+	}
+}, [onboardStatus, isStatusLoading]);
+```
+
+### Backend: CheckOnboardStatus
+
+```go
+// Wallet method
+func (u *OnboardUsecase) CheckOnboardStatusWithWalletAddress(
+    ctx context.Context,
+    messageSignature string,
+) (*auth.JwtPayload, *uuid.UUID, error) {
+    // 1. Extract wallet from signature
+    walletAddress, _ := cyptoutils.GetAddressFromSignature(
+        u.registerSignMessage,
+        messageSignature
+    )
+
+    // 2. Find credential
+    credential, _ := u.AuthenticationCredentialDg
+        .GetAuthenticationCredentialByWalletAddress(ctx, walletAddress.Hex())
+    if credential == nil {
+        return nil, nil, nil // Not registered
+    }
+
+    // 3. Find profile
+    profile, _ := u.ProfileDg
+        .GetProfileByAuthenticationCredentialId(ctx, credential.Id)
+
+    // 4. Generate JWT
+    jwt := &auth.JwtPayload{
+        UserId:        credential.Id,
+        WalletAddress: credential.WalletAddress,
+    }
+
+    if profile == nil {
+        return jwt, nil, nil // Credential only
+    }
+    return jwt, &profile.Id, nil // Complete
+}
+```
+
+---
+
+## Context Providers
+
+### WalletOnboardContext
+
+[WalletOnboardContext.tsx](mdc:apps/web/src/components/pages/Onboard/Wallet/WalletOnboardContext.tsx)
+
+**Responsibilities:**
+
+- Fetch sign message
+- Check onboard status on mount
+- Manage wallet signature from localStorage
+- Handle submission flow
+- Navigate between steps
+
+**Usage:**
+
+```tsx
+<WalletOnboardProvider>
+	<OnboardSteps />
+</WalletOnboardProvider>;
+
+// In child component:
+const { signMessage, isPending, handleSubmit } =
+	useContext(WalletOnboardContext);
+```
+
+### OAuthOnboardContext
+
+[OAuthOnboardContext.tsx](mdc:apps/web/src/components/pages/Onboard/OAuth/OAuthOnboardContext.tsx)
+
+**Responsibilities:**
+
+- Password form validation
+- Access token management
+- Check onboard status
+- Handle submission flow
+- Error handling (missing tokens, already onboarded)
+
+**Usage:**
+
+```tsx
+<OAuthOnboardProvider>
+	<Form {...form}>
+		<PasswordField />
+		<ProfileFields />
+	</Form>
+</OAuthOnboardProvider>;
+
+// In child component:
+const { form, handleSubmit } = useContext(OAuthOnboardContext);
+```
+
+---
+
+## Error Handling
+
+### Frontend: Universal Error Handler
+
+[Err.ts](mdc:apps/web/src/common/Err.ts)
+
+```typescript
+handleUniversalError(t, error, {
+	onDuplicateEntry: () => {
+		toast.error(t("errors.duplicate"));
+	},
+	onUnauthorized: () => {
+		toast.error(t("errors.unauthorized"));
+		navigate("/");
+	},
+	onInternalServerError: () => {
+		toast.error(t("errors.generic"));
+	},
+	unauthorizedErr: {
+		title: t("onboard.error.invalidSignature"),
+		description: t("onboard.error.invalidSignatureDescription"),
+		toastType: "error",
+	},
+});
+```
+
+### Backend: Custom Errors
+
+[customerror](mdc:apps/backend/common/customerror/err.go)
+
+```go
+// Standard errors
+ErrInvalidArgument   // 400 Bad Request
+ErrDuplicateEntry    // 409 Conflict
+ErrNotFound          // 404 Not Found
+ErrUnauthorized      // 401 Unauthorized
+ErrInternalServer    // 500 Internal Server Error
+
+// Usage
+return customerror.Parse(&customerror.ErrDuplicateEntry,
+    errors.New("wallet address already exists"))
+```
+
+---
+
+## Security Considerations
+
+### Wallet Authentication
+
+- ✅ **Signature verification** - Backend verifies wallet ownership
+- ✅ **No password storage** - Wallet signature is proof of ownership
+- ❌ **Session expiration** - JWT tokens expire after 24 hours
+
+### OAuth Authentication
+
+- ✅ **Token verification** - Backend verifies with Google API
+- ✅ **Password hashing** - bcrypt with salt rounds
+- ✅ **PII encryption** - Email encrypted at rest (AES-GCM)
+- ✅ **HttpOnly cookies** - JWT not accessible via JavaScript
+- ✅ **HTTPS only** - Secure flag in production
+
+### Profile Data
+
+- ✅ **PII encryption** - Email, phone, address encrypted
+- ✅ **Privacy controls** - Users control field visibility
+- ✅ **Type safety** - sqlc generates type-safe database queries
+- ✅ **Input validation** - Zod schemas on frontend, Go validation on backend
+
+---
+
+## Database Schema
+
+### authentication_credentials
+
+```sql
+CREATE TABLE authentication_credentials (
+    id UUID PRIMARY KEY,
+    wallet_address TEXT UNIQUE, -- For wallet auth
+    google_oauth_email BYTEA,   -- Encrypted, for OAuth
+    password_hash TEXT,          -- For OAuth
+    solution_status int32,        -- "byok" (Bring Your Own Keys)
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+```
+
+### profiles
+
+```sql
+CREATE TABLE profiles (
+    id UUID PRIMARY KEY,
+    authentication_credential_id UUID REFERENCES authentication_credentials(id),
+    encrypted_email BYTEA,       -- PII encrypted
+    encrypted_first_name BYTEA,  -- PII encrypted
+    encrypted_last_name BYTEA,   -- PII encrypted
+    encrypted_phone_number BYTEA,-- PII encrypted
+    encrypted_address BYTEA,     -- PII encrypted
+    bio TEXT,
+    profile_picture_url TEXT,
+    -- Privacy flags
+    is_email_public BOOLEAN DEFAULT false,
+    is_first_name_public BOOLEAN DEFAULT true,
+    is_last_name_public BOOLEAN DEFAULT true,
+    -- ... more fields
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+```
+
+---
+
+## Testing Flows
+
+### Wallet Flow (Manual)
+
+1. Start frontend: `pnpm dev`
+2. Start backend: `pnpm dev:core`
+3. Navigate to `/onboard/wallet`
+4. Connect MetaMask
+5. Sign message in MetaMask popup
+6. Fill profile form (optional fields)
+7. Submit
+8. Verify redirect to `/app`
+9. Check database for credential and profile
+
+### OAuth Flow (Manual)
+
+1. Start frontend: `pnpm dev`
+2. Start backend: `pnpm dev:core`
+3. Navigate to `/onboard/oauth/google`
+4. Click "Continue with Google"
+5. Complete Google consent
+6. Set password (6-32 characters)
+7. Fill profile form
+8. Submit
+9. Verify redirect to `/app`
+10. Check database for credential and profile
+
+---
+
+## Common Issues
+
+### Issue: "Invalid signature"
+
+**Cause:** Wallet signed different message than backend expects  
+**Fix:** Ensure `registerSignMessage` matches on frontend and backend
+
+### Issue: "Wallet already exists"
+
+**Cause:** Attempting to register with already-registered wallet  
+**Fix:** Use sign-in flow instead, or check onboard status first
+
+### Issue: "Unauthorized" during onboarding
+
+**Cause:** Signature expired or invalid  
+**Fix:** Re-sign message with wallet
+
+### Issue: "Missing access token"
+
+**Cause:** OAuth flow interrupted, tokens not stored  
+**Fix:** Restart OAuth flow from beginning
+
+### Issue: Profile not created
+
+**Cause:** Error in profile creation step  
+**Fix:** Check backend logs, verify PII encryption key is set
+
+---
+
+## Related Files
+
+### Frontend
+
+- [AuthService.ts](mdc:apps/web/src/services/AuthService.ts)
+- [OnboardService.ts](mdc:apps/web/src/services/OnboardService.ts)
+- [useSignout.ts](mdc:apps/web/src/components/useSignout.ts)
+- [useSignup.ts](mdc:apps/web/src/components/pages/Onboard/useSignup.ts)
+- [WalletOnboardContext.tsx](mdc:apps/web/src/components/pages/Onboard/Wallet/WalletOnboardContext.tsx)
+- [OAuthOnboardContext.tsx](mdc:apps/web/src/components/pages/Onboard/OAuth/OAuthOnboardContext.tsx)
+
+### Backend
+
+- [handler/onboard/](mdc:apps/backend/core-api/internal/handler/onboard/)
+- [usecase/onboard/onboard.go](mdc:apps/backend/core-api/internal/usecase/onboard/onboard.go)
+- [services/auth/jwt.go](mdc:apps/backend/services/auth/jwt.go)
+- [usecase/cyptoutils/](mdc:apps/backend/core-api/internal/usecase/cyptoutils/)
+
+### Database
+
+- [migrations/000002_create_core_tables.up.sql](mdc:packages/database/migrations/000002_create_core_tables.up.sql)
+- [queries/authentication_credentials.sql](mdc:packages/database/queries/authentication_credentials.sql)
+- [queries/profiles.sql](mdc:packages/database/queries/profiles.sql)
+
+---
+
+## Best Practices
+
+### ✅ DO:
+
+- Always check onboard status before registration
+- Validate signatures/tokens on backend
+- Encrypt all PII data at rest
+- Use HttpOnly cookies for JWT
+- Clear all auth state on sign out
+- Handle errors gracefully with toasts
+- Use i18n for all user-facing text
+
+### ❌ DON'T:
+
+- Store JWT in localStorage (XSS risk)
+- Skip signature verification
+- Hard-code encryption keys
+- Return raw PII from API
+- Assume wallet/OAuth state persists
+- Show raw error messages to users
+- Mix authentication methods in single flow

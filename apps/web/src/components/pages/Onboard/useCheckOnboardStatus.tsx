@@ -2,18 +2,16 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import { onboardService, type CheckOnboardParams } from "../../../services/OnboardService";
 import { OnboardRegistrationMethod } from "@decm/api";
 
-const getQueryKey = (param?: CheckOnboardParams) => {
-    switch (param?.method) {
-        case OnboardRegistrationMethod.RegistrationMethodGoogle:
-            return ["onboardStatus", param.accessToken, param.expiresIn]
-        case OnboardRegistrationMethod.RegistrationMethodWallet:
-            return ["onboardStatus", param.signMessage]
-    }
+export type UseCheckOnboardParams = | {
+    method?: OnboardRegistrationMethod.RegistrationMethodGoogle;
+    accessToken: string;
+    expiresIn: number;
+} | {
+    method?: OnboardRegistrationMethod.RegistrationMethodWallet;
+    signSignature?: string;
+};
 
-    return ["onboardStatus"]
-}
-
-export const useCheckOnboardStatus = (param?: CheckOnboardParams) => {
+export const useCheckOnboardStatus = (param?: UseCheckOnboardParams) => {
     const { mutateAsync: checkOnboardStatus, isPending } = useMutation({
         mutationFn: async (param?: CheckOnboardParams) => {
             const response = await onboardService.checkOnboardStatus(param);
@@ -21,13 +19,32 @@ export const useCheckOnboardStatus = (param?: CheckOnboardParams) => {
         },
     });
 
+    const getQueryKey = (param?: UseCheckOnboardParams) => {
+        switch (param?.method) {
+            case OnboardRegistrationMethod.RegistrationMethodGoogle:
+                return ["onboardStatus", param.accessToken, param.expiresIn]
+            case OnboardRegistrationMethod.RegistrationMethodWallet:
+                return ["onboardStatus", param.signSignature ?? ""]
+        }
+        return ["onboardStatus"]
+    }
+
     const { data: onboardStatus, isLoading, error } = useQuery({
         queryKey: getQueryKey(param),
         queryFn: async () => {
-            const response = await checkOnboardStatus(param);
-
-            return response;
+            if (param?.method === OnboardRegistrationMethod.RegistrationMethodWallet) {
+                const { signSignature } = param ?? {};
+                if (signSignature === undefined) {
+                    return null;
+                }
+                return await checkOnboardStatus({
+                    method: param.method,
+                    signSignature: signSignature,
+                });
+            }
+            return await checkOnboardStatus(param as CheckOnboardParams);
         },
+
     });
 
     return { checkOnboardStatus, isPending, isLoading, onboardStatus, error };

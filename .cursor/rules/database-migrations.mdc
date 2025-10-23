@@ -1,0 +1,195 @@
+---
+description: "PostgreSQL migration patterns and best practices for DECM platform"
+globs: packages/database/migrations/*.sql
+---
+
+# Database Migration Patterns
+
+## Migration File Structure
+
+### Up Migrations
+
+- Create tables in order of dependencies (parent tables before child tables)
+- Create indexes after table creation
+- Create triggers last
+- Always use proper data types and constraints
+
+### Down Migrations
+
+- Drop objects in **reverse order** to respect foreign key constraints
+- Order: triggers → indexes → tables
+- Always use `IF EXISTS` for safety
+- Always use `CASCADE` on table drops for dependency handling
+
+## PostgreSQL Trigger Syntax
+
+### Creating Triggers
+
+```sql
+CREATE TRIGGER trigger_name
+    BEFORE UPDATE ON table_name
+    FOR EACH ROW EXECUTE FUNCTION function_name();
+```
+
+### Dropping Triggers
+
+**CRITICAL**: Must specify the table name when dropping triggers:
+
+```sql
+-- ✅ Correct
+DROP TRIGGER IF EXISTS update_table_name_updated_at ON table_name;
+
+-- ❌ Incorrect - Will cause syntax error
+DROP TRIGGER IF EXISTS update_table_name_updated_at;
+```
+
+## Index Naming Conventions
+
+### Pattern
+
+Index names must **exactly match** the table name they reference:
+
+```sql
+-- ✅ Correct - index name matches table name
+CREATE TABLE event_registration_requirements (...);
+CREATE INDEX idx_event_registration_requirements_event_id
+    ON event_registration_requirements(event_id);
+
+-- ❌ Incorrect - shortened/mismatched name
+CREATE TABLE event_registration_requirements (...);
+CREATE INDEX idx_event_requirements_event_id
+    ON event_requirements(event_id);  -- Wrong! Table name mismatch
+```
+
+### Standard Format
+
+- Primary key: `idx_{table_name}_id`
+- Foreign key: `idx_{table_name}_{column_name}`
+- Composite: `idx_{table_name}_{col1}_{col2}`
+
+## PII Encryption Pattern
+
+### Encrypted Fields
+
+All PII must be encrypted. Store as `TEXT` type (encrypted data):
+
+```sql
+CREATE TABLE example_table (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    -- ✅ Correct - Single encrypted email field
+    -- PII: Email (encrypted with AES-GCM at repository layer)
+    email TEXT,
+
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### Common Mistake: Duplicate Columns
+
+**Never** define the same column twice (encrypted and unencrypted):
+
+```sql
+-- ❌ Incorrect - email defined twice
+CREATE TABLE bad_example (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) NOT NULL,  -- Unencrypted
+    email TEXT,                    -- Encrypted - DUPLICATE!
+);
+```
+
+### PII Fields Pattern
+
+Standard encrypted PII fields with comments:
+
+```sql
+-- PII: First name (encrypted with AES-GCM at repository layer)
+first_name TEXT,
+-- PII: Last name (encrypted with AES-GCM at repository layer)
+last_name TEXT,
+-- PII: Email (encrypted with AES-GCM at repository layer)
+email TEXT,
+-- PII: Phone number (encrypted with AES-GCM at repository layer)
+phone_number TEXT,
+-- PII: Address (encrypted with AES-GCM at repository layer)
+address TEXT,
+-- PII: Academic institution (encrypted with AES-GCM at repository layer)
+academic_institution TEXT,
+-- PII: Academic email (encrypted with AES-GCM at repository layer)
+academic_email TEXT,
+```
+
+## Down Migration Template
+
+```sql
+-- Drop tables in reverse order to respect foreign key constraints
+
+-- Drop child table with dependencies
+DROP INDEX IF EXISTS idx_child_table_parent_id;
+DROP INDEX IF EXISTS idx_child_table_id;
+DROP TABLE IF EXISTS child_table CASCADE;
+
+-- Drop parent table
+DROP INDEX IF EXISTS idx_parent_table_id;
+DROP TABLE IF EXISTS parent_table CASCADE;
+
+-- Drop lookup/enum tables last
+DROP INDEX IF EXISTS idx_type_table_id;
+DROP TABLE IF EXISTS type_table CASCADE;
+```
+
+## Common Migration Errors
+
+### 1. Missing Table Name in Trigger Drop
+
+**Error**: `syntax error at or near ";"`
+**Cause**: Missing `ON table_name` in trigger drop
+**Fix**: Add table name: `DROP TRIGGER IF EXISTS trigger_name ON table_name;`
+
+### 2. Index Name Mismatch
+
+**Error**: `relation "table_name" does not exist`
+**Cause**: Index references wrong/shortened table name
+**Fix**: Ensure index name exactly matches full table name
+
+### 3. Duplicate Column Definition
+
+**Error**: `column "name" specified more than once`
+**Cause**: Column defined twice (often encrypted + unencrypted)
+**Fix**: Keep only the encrypted TEXT version for PII fields
+
+### 4. Foreign Key Constraint Violations
+
+**Error**: `cannot drop table because other objects depend on it`
+**Cause**: Tables dropped in wrong order in down migration
+**Fix**: Drop child tables before parent tables, use CASCADE
+
+## Checklist
+
+Before committing migrations:
+
+- [ ] Down migration drops objects in reverse order of creation
+- [ ] All trigger drops include `ON table_name`
+- [ ] Index names exactly match their table names
+- [ ] No duplicate column definitions
+- [ ] All PII fields are TEXT type with encryption comments
+- [ ] CASCADE used on all table drops
+- [ ] IF EXISTS used for all drops
+- [ ] Tested up and down migration flow
+
+## Testing Migrations
+
+```bash
+# Force to clean state
+pnpm db:migrate:force 0
+
+# Run migrations up
+pnpm db:migrate
+
+# Test rollback
+pnpm db:migrate:down
+
+# Check database state
+pnpm db:status
+```

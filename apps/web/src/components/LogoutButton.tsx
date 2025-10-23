@@ -6,9 +6,13 @@ import { useTranslation } from "react-i18next"
 
 interface LogoutButtonProps {
     className?: ClassValue
+    // signout: logout from the app
+    // disconnect: disconnect from the wallet + signout from the app
+    // mostly change the label
+    type: "signout" | "disconnect"
 }
 
-export const LogoutButton: React.FC<LogoutButtonProps> = ({ className }) => {
+export const LogoutButton: React.FC<LogoutButtonProps> = ({ className, type }) => {
     const navigate = useNavigate();
     const { t } = useTranslation()
 
@@ -28,7 +32,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({ className }) => {
                 color="background-alt"
                 className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
             >
-                {t("onboard.logout")}
+                {type === "signout" ? t("onboard.logout") : t("onboard.disconnect")}
             </Typography>
         </button>
     )

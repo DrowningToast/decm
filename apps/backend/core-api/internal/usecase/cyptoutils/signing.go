@@ -30,12 +30,26 @@ func Sign(message string, privateKey *ecdsa.PrivateKey) (string, error) {
 	return hex.EncodeToString(signature), nil
 }
 
-func GetAddressFromSignedMessage(message string, signature string) (ethCommon.Address, error) {
+func GetAddressFromSignature(message string, signature string) (ethCommon.Address, error) {
 	hashedMessage := HashEthereumMessage(message)
+
+	// check if signature is valid
+	if len(signature)%2 == 1 {
+		return ethCommon.Address{}, errors.Wrap(customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid ethereum signature")), "failed to get address from signature")
+	}
 	sig := hexutil.MustDecode(signature)
+
+	// Reject non-ethereum signature format
+	if sig[crypto.RecoveryIDOffset] != 27 && sig[crypto.RecoveryIDOffset] != 28 {
+		return ethCommon.Address{}, errors.Wrap(customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid ethereum signature")), "failed to get address from signature")
+	}
+
+	// Adjust recovery ID from Ethereum format (27/28) to go-ethereum format (0/1)
+	sig[crypto.RecoveryIDOffset] -= 27
+
 	usedPublicKey, err := crypto.SigToPub(hashedMessage, sig)
 	if err != nil {
-		return ethCommon.Address{}, errors.Wrap(err, "failed to recover public key")
+		return ethCommon.Address{}, errors.Wrap(customerror.Parse(&customerror.ErrInvalidArgument, err), "failed to recover public key")
 	}
 	return crypto.PubkeyToAddress(*usedPublicKey), nil
 }
@@ -47,7 +61,7 @@ func VerifySignedMessageByAddress(walletAddress ethCommon.Address, message strin
 
 	// Reject non-ethereum signature format
 	if sig[crypto.RecoveryIDOffset] != 27 && sig[crypto.RecoveryIDOffset] != 28 {
-		return false, errors.New("invalid ethereum signature")
+		return false, errors.Wrap(customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid ethereum signature")), "failed to verify signed message by address")
 	}
 
 	sig[crypto.RecoveryIDOffset] -= 27

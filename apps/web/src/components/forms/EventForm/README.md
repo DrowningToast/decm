@@ -34,12 +34,12 @@ import { EventForm } from "@/components/forms/EventForm";
 import type { EventFormData } from "@/lib/schemas/eventFormSchema";
 
 const MyPage = () => {
-  const handleSubmit = async (data: EventFormData) => {
-    console.log("Event data:", data);
-    // Handle form submission
-  };
+    const handleSubmit = async (data: EventFormData) => {
+        console.log("Event data:", data);
+        // Handle form submission
+    };
 
-  return <EventForm onSubmit={handleSubmit} mode="create" />;
+    return <EventForm onSubmit={handleSubmit} mode="create" />;
 };
 ```
 
@@ -47,13 +47,13 @@ const MyPage = () => {
 
 ```tsx
 const existingEvent = {
-  name: "Tech Conference 2024",
-  description: "Annual tech conference",
-  eventBanner: new File([""], "banner.jpg", { type: "image/jpeg" }),
-  eventIcon: new File([""], "icon.png", { type: "image/png" }),
-  startDate: new Date("2024-03-20"),
-  endDate: new Date("2024-03-20"),
-  seatsCount: 100,
+    name: "Tech Conference 2024",
+    description: "Annual tech conference",
+    eventBanner: new File([""], "banner.jpg", { type: "image/jpeg" }),
+    eventIcon: new File([""], "icon.png", { type: "image/png" }),
+    startDate: new Date("2024-03-20"),
+    endDate: new Date("2024-03-20"),
+    seatsCount: 100,
 };
 
 <EventForm defaultValues={existingEvent} onSubmit={handleUpdate} mode="edit" />;
@@ -65,12 +65,12 @@ const existingEvent = {
 const [isLoading, setIsLoading] = useState(false);
 
 const handleSubmit = async (data: EventFormData) => {
-  setIsLoading(true);
-  try {
-    await api.createEvent(data);
-  } finally {
-    setIsLoading(false);
-  }
+    setIsLoading(true);
+    try {
+        await api.createEvent(data);
+    } finally {
+        setIsLoading(false);
+    }
 };
 
 <EventForm onSubmit={handleSubmit} isLoading={isLoading} mode="create" />;
@@ -214,13 +214,13 @@ The form uses:
 import { z } from "zod";
 
 export type EventFormData = {
-  name: string;
-  description?: string;
-  eventBanner?: File; // Image file (JPEG/PNG/WebP, max 5MB)
-  eventIcon?: File; // Image file (JPEG/PNG/WebP, max 5MB)
-  startDate: Date; // Date object from Date Picker
-  endDate: Date; // Date object from Date Picker
-  seatsCount: number;
+    name: string;
+    description?: string;
+    eventBanner?: File; // Image file (JPEG/PNG/WebP, max 5MB)
+    eventIcon?: File; // Image file (JPEG/PNG/WebP, max 5MB)
+    startDate: Date; // Date object from Date Picker
+    endDate: Date; // Date object from Date Picker
+    seatsCount: number;
 };
 ```
 
