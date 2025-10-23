@@ -3,21 +3,16 @@ package entity
 import (
 	"time"
 
+	"apps/backend/common"
+
 	"github.com/google/uuid"
-)
-
-type SolutionStatus int32
-
-const (
-	SolutionStatusManaged SolutionStatus = 0
-	SolutionStatusBYOK    SolutionStatus = 1
 )
 
 // User represented by an authentication credential
 // @description User represented by an authentication credential
 type AuthenticationCredential struct {
-	Id             uuid.UUID      `json:"id"`
-	SolutionStatus SolutionStatus `json:"solution_status"`
+	Id             uuid.UUID             `json:"id"`
+	SolutionStatus common.SolutionStatus `json:"solution_status"`
 	// Hashed of a hashed password using Argon2id
 	HashedPassword *string `json:"password"`
 	// Encrypted by a hash of password using AES-256-GCM

@@ -1,0 +1,3 @@
+reviews:
+  path_filters:
+    - "!packages/api/src/apis/**/api.ts"

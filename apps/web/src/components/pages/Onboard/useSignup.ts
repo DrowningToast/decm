@@ -44,11 +44,11 @@ export const useSignup = () => {
 				profile: ProfileCreateProfileRequest;
 			}) => {
 				const status = await onboardService.checkOnboardStatus(params);
-				if (!status.authentication_credential_id) {
+				if (!status?.authentication_credential_id) {
 					throw new Error(t("errors.generic"));
 				}
 
-				if (status.profile_id) {
+				if (status?.profile_id) {
 					return await authService.updateProfile(
 						status.authentication_credential_id,
 						profile

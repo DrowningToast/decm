@@ -1,4 +1,4 @@
-import { LogoutButton } from "@/components/pages/Onboard/OAuth/LogoutButton";
+import { LogoutButton } from "@/components/LogoutButton";
 
 const AppPage = () => {
     return (
