@@ -17,7 +17,7 @@ import (
 // @Produce json
 // @Param event_id path string true "Event ID"
 // @Param issuer_id path string true "Issuer ID"
-// @Success 200 {array} EventIssuerResponse
+// @Success 200 {object} EventIssuerResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
