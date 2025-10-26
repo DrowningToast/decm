@@ -1,0 +1,102 @@
+sequenceDiagram
+    participant Host as Host
+    participant Backend as Backend
+    participant Database as Database
+    participant EventAccessManager as Event Access Manager Contract
+    participant EventContract as Event Contract
+    participant EventTicket as Event Ticket Contract (Deployed)
+    participant Blockchain as Blockchain Node/Provider
+
+    Note over Host, Backend: Pre-condition: Host logged in, Event exists in draft/pending state
+    activate Host
+
+    Host ->> Backend: 1. เข้าถึง 'Manage Events' และเลือก Event
+    activate Backend
+
+    Backend ->> Database: 2. Query Event Details, Registration Config, Certificate Config
+    activate Database
+    Database -->> Backend: 3. คืนข้อมูล Event
+    deactivate Database
+    Backend -->> Host: 4. แสดงรายละเอียด Event และ Configs
+
+    Host ->> Backend: 5. กด 'Confirm Event'
+    Backend ->> Database: 6. ตรวจสอบความครบถ้วนของ Configs
+    activate Database
+    Database -->> Backend: 7. คืนสถานะความครบถ้วน
+    deactivate Database
+    
+    alt ข้อมูลไม่ครบถ้วน (Alt Flow A1/A2)
+        Backend -->> Host: 8a. แสดงข้อความแจ้งเตือนให้แก้ไขข้อมูลให้สมบูรณ์
+    else ข้อมูลครบถ้วน (Basic Flow)
+        Backend -->> Host: 8b. สร้าง Transaction data สำหรับ confirmEvent และขอ Signature
+        deactivate Backend
+        Host ->> Backend: 9b. Sign Transaction ผ่าน Wallet และส่ง Signature กลับ
+        activate Backend
+        Backend ->> EventAccessManager: 10b. ตรวจสอบสิทธิ์ Host ในการ Confirm Event (isAuthorizedToConfirm)
+        activate EventAccessManager
+
+        alt Host ไม่มีสิทธิ์
+            EventAccessManager -->> Backend: 11a. Revert Transaction (Access Forbidden)
+            Backend -->> Host: 12a. แสดงข้อความ 'ไม่มีสิทธิ์ยืนยันกิจกรรม'
+        else Host มีสิทธิ์
+            EventAccessManager -->> Backend: 11b. คืนค่า ยืนยันสิทธิ์
+            deactivate EventAccessManager
+            Backend ->> EventContract: 12b. เรียกฟังก์ชัน confirmEvent() พร้อม Signed Data
+            activate EventContract
+            alt Event Contract Revert (เช่น Already Confirmed, Inactive)
+                EventContract -->> Backend: 13a. Revert Transaction พร้อม Error
+                Backend -->> Host: 14a. แสดงข้อความ Error จาก Contract
+            else Event Confirmed สำเร็จ
+                EventContract -->> Backend: 13b. คืนผล Transaction สำเร็จ
+                deactivate EventContract
+
+                Backend ->> Database: 14b. อัปเดตสถานะ Event เป็น 'Confirmed' (เบื้องต้น)
+                Note over Backend, Blockchain: Deploy Event Ticket Contract
+                Backend -->> Host: 15b. สร้าง Transaction data สำหรับ Deploy Event Ticket และขอ Signature
+                Host ->> Backend: 16b. Sign Transaction และส่ง Signature กลับ
+                Backend ->> Blockchain: 17b. Deploy EventTicket Contract
+                activate Blockchain
+                Blockchain -->> Backend: 18b. คืน Address ของ EventTicket Contract
+                deactivate Blockchain
+
+                alt Deploy Event Ticket ล้มเหลว
+                    Blockchain -->> Backend: 18a. คืน Error
+                    Backend -->> Host: 19a. แสดงข้อความ 'Deploy Ticket Contract ล้มเหลว'
+                    Backend ->> Database: 20a. อาจ Rollback สถานะ Event หรือตั้งค่าให้ลองใหม่
+                else Deploy Event Ticket สำเร็จ
+                    Backend ->> Database: 19b. บันทึก EventTicket Contract Address และอัปเดตสถานะ Event
+                    activate Database
+                    Database -->> Backend: 20b. ยืนยันการบันทึก
+                    deactivate Database
+                    
+                    Note over Backend, EventTicket: <<include>> Issue Onchain Participant Ticket
+                    activate Database
+                    Backend ->> Database: 21b. Query รายชื่อผู้ลงทะเบียนที่มีสิทธิ์รับ Ticket
+                    Database -->> Backend: 22b. คืนรายชื่อ Addresses
+                      deactivate Database
+                    Backend -->> Host: 23b. สร้าง Transaction data สำหรับ bulkMintParticipantTickets และขอ Signature
+                    Host ->> Backend: 24b. Sign Transaction และส่ง Signature กลับ
+                    Backend ->> EventTicket: 25b. เรียกฟังก์ชัน bulkMintParticipantTickets() พร้อม Addresses และ Signed Data
+                    activate EventTicket
+
+                    alt Mint Ticket ล้มเหลว (Alt Flow A3)
+                         EventTicket -->> Backend: 26a. Revert Transaction / คืน Error
+                         Backend ->> Backend: 27a. Log Error / แจ้งเตือน Admin
+                         Backend -->> Host: 28a. อาจแสดงข้อความ 'ยืนยัน Event สำเร็จ แต่การออก Ticket มีปัญหา'
+                    else Mint Ticket สำเร็จ
+                         EventTicket -->> Backend: 26b. คืนผล Transaction สำเร็จ
+                         deactivate EventTicket
+
+                         Backend ->> Database: 27b. บันทึกข้อมูล Ticket ที่ออกแล้ว (Token IDs)
+                         activate Database
+                         Database -->> Backend: 28b. ยืนยันการบันทึก
+                         deactivate Database
+                         deactivate Backend
+                         Backend -->> Host: 29b. แสดงข้อความ 'ยืนยันกิจกรรมและออก Ticket สำเร็จ'
+                    end
+                end
+            end
+        end
+    end
+
+    deactivate Host

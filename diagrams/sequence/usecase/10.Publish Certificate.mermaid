@@ -1,0 +1,65 @@
+sequenceDiagram
+    participant Host as Host
+    participant Backend as Backend
+    participant Database as Database
+    participant EventAccessManager as Event Access Manager Contract
+    participant EventCertificate as Event Certificate Contract
+
+    Note over Host, Backend: Pre-condition: Host logged in, Event exists, Cert Config done, Certificates Signed, Eligible Participants exist
+    activate Host
+
+    Host ->> Backend: 1. เข้าถึง 'Manage Events', เลือก Event, เลือก 'Certificate Management'
+    activate Backend
+
+    Backend ->> Database: 2. Query Event Status, Certificate Status (Signed?), Eligible Participants
+    activate Database
+    Database -->> Backend: 3. คืนข้อมูลสถานะ และ รายชื่อผู้มีสิทธิ์
+    Backend -->> Host: 4. แสดงสถานะ Certificate และ รายชื่อผู้มีสิทธิ์
+    deactivate Database
+    
+    alt Certificate ยังไม่พร้อม Publish (Alt Flow A1)
+        Note over Backend, Host: (เช่น ยัง Config ไม่เสร็จ หรือ ยัง Sign ไม่ครบ)
+        Backend -->> Host: 5a. แสดงข้อความ 'Certificate ยังไม่พร้อมเผยแพร่'
+    else ไม่มีผู้มีสิทธิ์ (Alt Flow A2)
+        Note over Backend, Host: (ไม่มี Participant ที่ผ่านเงื่อนไข)
+        Backend -->> Host: 5b. แสดงข้อความ 'ไม่พบผู้มีสิทธิ์รับ Certificate'
+    else พร้อม Publish (Basic Flow)
+        Host ->> Backend: 5c. ตรวจสอบรายชื่อ และกด 'Publish Certificates'
+        Backend ->> Backend: 6. เตรียมข้อมูล (list of eligible participant addresses/IDs)
+        deactivate Backend
+
+        Backend -->> Host: 7. สร้าง Transaction data สำหรับ publishCertificates() และขอ Signature
+        activate Backend
+        Host ->> Backend: 8. Sign Transaction ผ่าน Wallet และส่ง Signature กลับ
+        Backend ->> EventAccessManager: 9. ตรวจสอบสิทธิ์ Host ในการ Publish (isAuthorizedToPublish)
+
+        alt Host ไม่มีสิทธิ์
+            EventAccessManager -->> Backend: 10a. Revert Transaction (Access Forbidden)
+            Backend -->> Host: 11a. แสดงข้อความ 'ไม่มีสิทธิ์เผยแพร่ Certificate'
+        else Host มีสิทธิ์
+            EventAccessManager -->> Backend: 10b. คืนค่า ยืนยันสิทธิ์
+            Backend ->> EventCertificate: 11b. เรียกฟังก์ชัน publishCertificates(participantList) พร้อม Signed Data
+
+            alt Publish บน Contract ล้มเหลว (Alt Flow A3 - Blockchain Error)
+                EventCertificate -->> Backend: 12a. Revert Transaction / คืน Error (Gas issue, etc.)
+                Backend ->> Backend: 13a. Log Error / แจ้งเตือน Admin
+                Backend -->> Host: 14a. แสดงข้อความ 'การ Publish บน Blockchain ล้มเหลว'
+            else Publish บน Contract สำเร็จ
+                EventCertificate -->> Backend: 12b. คืนผล Transaction สำเร็จ (TxHash)
+                Backend ->> Database: 13b. อัปเดตสถานะ Certificates เป็น 'Published' / 'Ready to Claim'
+
+                alt บันทึก Database ล้มเหลว (Alt Flow A2 - DB Error)
+                     Database -->> Backend: 14c. แจ้ง Error การบันทึก
+                     Backend -->> Host: 15c. แสดงข้อความ 'Publish สำเร็จบน Blockchain แต่เกิดข้อผิดพลาดในการบันทึกสถานะ'
+                     Note over Backend: อาจต้องมีกลไก Retry หรือแจ้ง Admin
+                else บันทึก Database สำเร็จ
+                     Database -->> Backend: 14d. ยืนยันการบันทึกสำเร็จ
+                     Backend -->> Host: 15d. แสดงข้อความ 'เผยแพร่ Certificate เรียบร้อยแล้ว'
+                     deactivate Backend
+                     Note over Backend: Participants can now start 'Collect Certificate' Use Case
+                end
+            end
+        end
+    end
+
+    deactivate Host

@@ -1,0 +1,74 @@
+sequenceDiagram
+    participant Host as Host
+    participant Backend as Backend
+    participant Database as Database
+    participant S3 as S3 Object Storage
+    participant EventAccessManager as Event Access Manager Contract
+    participant EventContract as Event Contract (Deployed)
+    participant Blockchain as Blockchain Node/Provider
+
+    Note over Host, Backend: Pre-condition: Host logged in, Has permission to create events
+    activate Host
+
+    Host ->> Backend: 1. เลือก 'Create Events'
+    activate Backend
+
+    Backend -->> Host: 2. แสดงฟอร์มสร้าง Event
+    Host ->> Backend: 3. กรอกข้อมูล Event (Details, Image) และกด 'สร้างกิจกรรม'
+
+    Backend ->> Backend: 4. ตรวจสอบความครบถ้วน/ถูกต้องของข้อมูล (Validation)
+    deactivate Backend
+
+    alt ข้อมูลไม่ถูกต้อง/ไม่ครบ (Alt Flow A1)
+        Backend -->> Host: 5a. แสดงข้อความข้อผิดพลาด + ระบุช่องที่ต้องแก้ไข
+        Note over Host: กลับไปขั้นตอนที่ 3
+    else ข้อมูลถูกต้อง (Basic Flow)
+        Backend ->> S3: 5b. อัปโหลดรูปภาพประกอบ (ถ้ามี)
+        activate S3
+        activate Backend
+        S3 -->> Backend: 6b. คืน URL/Identifier ของรูปภาพ
+        deactivate S3
+        Backend ->> Database: 7b. บันทึกข้อมูล Event เบื้องต้น (รวม Image URL, Status: Pending)
+        activate Database
+        Database -->> Backend: 8b. ยืนยันการบันทึกเบื้องต้น
+        deactivate Database
+        Backend -->> Host: 9b. สร้าง Transaction data สำหรับ Deploy Contracts และขอ Signature
+        Host ->> Backend: 10b. Sign Transaction ผ่าน Wallet และส่ง Signature กลับ
+
+        Note over Backend, Blockchain: Deploy EventAccessManager Contract
+       
+
+        Backend ->> Blockchain: 11b. Deploy EventAccessManager Contract (Assume factory or direct deployment)
+        activate Blockchain
+        Blockchain -->> Backend: 12b. คืน Address ของ EventAccessManager
+        deactivate Blockchain
+        Backend ->> Database: 13b. บันทึก/อัปเดต Address ของ EventAccessManager (ถ้าจำเป็น)
+
+        Backend ->> EventAccessManager: 14b. ตรวจสอบสิทธิ์ Host ในการสร้าง Event (isAuthorizedToCreate)
+        activate EventAccessManager
+            alt Host ไม่มีสิทธิ์
+                EventAccessManager -->> Backend: 15a. Revert Transaction (Access Forbidden)
+                Backend -->> Host: 16a. แสดงข้อความ 'ไม่มีสิทธิ์สร้างกิจกรรม'
+            else Host มีสิทธิ์
+                EventAccessManager -->> Backend: 15b. คืนค่า ยืนยันสิทธิ์
+                deactivate EventAccessManager
+                Backend ->> Blockchain: 16b. Deploy Event Contract พร้อมข้อมูล Event และ Signature
+                Note right of Blockchain: (Blockchain Interaction)
+                activate Blockchain
+                
+                alt Deploy Event Contract ล้มเหลว
+                    Blockchain -->> Backend: 17a. คืน Error (Gas issue, network error etc.)
+                    Backend -->> Host: 18a. แสดงข้อความ 'การสร้าง Event บน Blockchain ล้มเหลว'
+                    Backend ->> Database: 19a. อาจอัปเดตสถานะ Event เป็น Failed
+                else Deploy Event Contract สำเร็จ
+                    Blockchain -->> Backend: 17b. คืน Contract Address (EventContract) และ Transaction Hash
+                    deactivate Blockchain
+                    Backend ->> Database: 18b. อัปเดต Event Record (เพิ่ม Contract Address, Status: Created/Active)
+                    Database -->> Backend: 19b. ยืนยันการอัปเดต
+                    Backend -->> Host: 20b. แสดงข้อความ 'สร้างกิจกรรมสำเร็จ'
+                end
+            end
+             deactivate Backend
+    end
+
+    deactivate Host

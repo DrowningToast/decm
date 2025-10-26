@@ -1,0 +1,44 @@
+sequenceDiagram
+    participant Backend as Backend
+    participant Database as Database
+    participant Host as Host
+    participant EventTicket as Deployed Contract
+    participant Blockchain as Blockchain Node/Provider
+    participant Participant_ as  Participant
+
+    Note over Backend: เริ่มทำงานภายในหลังจาก Event ได้รับการ Confirm และ EventTicket Contract ถูก Deploy แล้ว
+    activate Backend
+
+    Note over Backend, Database: เงื่อนไขก่อนเริ่ม: Confirm Event สำเร็จ, EventTicket Contract Address ทราบแล้ว, มีรายชื่อผู้ลงทะเบียน
+
+    Backend ->> Database: 1. ดึงรายชื่อ Wallet Addresses ของผู้ลงทะเบียนที่มีสิทธิ์รับ Ticket
+    activate Database
+    Database -->> Backend: 2. คืนรายชื่อ Addresses
+    deactivate Database
+
+    Note over Backend: เตรียมข้อมูลสำหรับการ Mint Ticket จำนวนมาก (Bulk Mint)
+    Backend ->> Backend: 3. สร้างข้อมูล Addresses และ Metadata (ถ้าจำเป็น) สำหรับ bulkMint
+
+    Backend -->> Host: 4. สร้าง Transaction data สำหรับ bulkMintParticipantTickets และขอ Signature จาก Host
+    activate Host
+    Host ->> Backend: 5. Host Sign Transaction ผ่าน Wallet และส่ง Signature กลับ
+    deactivate Host
+
+    Backend ->> EventTicket: 6. เรียกฟังก์ชัน bulkMintParticipantTickets(participantAddresses, metadata?) พร้อม Signed Data
+    Note right of Blockchain: ส่ง Transaction ไปยัง Blockchain
+
+    alt การ Mint NFT ล้มเหลว (Alt Flow A1)
+        Blockchain -->> Backend: 7a. Transaction ถูกยกเลิก / เกิดข้อผิดพลาด (Gas, Network, Logic ใน Contract, Address ไม่ถูกต้อง)
+        Backend ->> Backend: 8a. บันทึกข้อผิดพลาด (Log Error)
+        Backend -->> Host: 9a. (แจ้งเตือน) 'การออก NFT Ticket ล้มเหลว' (อาจระบุสาเหตุ)
+    else การ Mint NFT สำเร็จ (Basic Flow)
+        Blockchain -->> Backend: 7b. Transaction ได้รับการยืนยัน (TxHash), อาจมี Events ส่ง Token IDs ออกมา
+        Backend ->> Database: 8b. บันทึก Token IDs ที่ออกใหม่ เชื่อมโยงกับ Participant แต่ละราย
+        activate Database
+        Database -->> Backend: 9b. ยืนยันการบันทึกสำเร็จ
+        deactivate Database
+        Backend -->> Host: 10b. (แจ้งเตือน) 'ออก NFT Ticket ให้ผู้ลงทะเบียนเรียบร้อยแล้ว'
+        Note over Backend, Participant_: ระบบอาจมีการแจ้งเตือน Participant แต่ละรายว่าได้รับ Ticket แล้ว (Optional)
+    end
+
+    deactivate Backend
