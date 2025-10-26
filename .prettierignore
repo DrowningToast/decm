@@ -1,0 +1,60 @@
+# Solidity files (Foundry/Hardhat)
+**/*.sol
+
+# Dependencies
+node_modules
+**/node_modules
+
+# Build outputs
+dist
+build
+out
+bin
+.turbo
+*.tsbuildinfo
+
+# Generated files
+apps/backend/core-api/docs
+packages/api/dist
+packages/database/go/generated
+
+# Database
+database/backups
+
+# Contracts build artifacts
+apps/contracts/broadcast
+apps/contracts/cache
+apps/contracts/out
+apps/contracts/lib
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+go.sum
+go.work.sum
+
+# Editor directories
+.vscode
+.idea
+*.swp
+*.swo
+

@@ -10,7 +10,8 @@ INSERT INTO authentication_credentials (
     google_connector_ref,
     github_connector_ref,
     is_verified_organizer,
-    is_verified_student
+    is_verified_student,
+    is_verified_issuer
 ) VALUES (
     sqlc.arg(solution_status),
     sqlc.narg(hashed_password),
@@ -19,7 +20,8 @@ INSERT INTO authentication_credentials (
     sqlc.narg(google_connector_ref),
     sqlc.narg(github_connector_ref),
     sqlc.arg(is_verified_organizer),
-    sqlc.arg(is_verified_student)
+    sqlc.arg(is_verified_student),
+    sqlc.arg(is_verified_issuer)
 ) RETURNING *;
 
 -- name: GetAuthenticationCredentialById :one
@@ -49,6 +51,7 @@ UPDATE authentication_credentials SET
     github_connector_ref = COALESCE(sqlc.narg(github_connector_ref), github_connector_ref),
     is_verified_organizer = COALESCE(sqlc.narg(is_verified_organizer), is_verified_organizer),
     is_verified_student = COALESCE(sqlc.narg(is_verified_student), is_verified_student),
+    is_verified_issuer = COALESCE(sqlc.narg(is_verified_issuer), is_verified_issuer),
     updated_at = NOW()
 WHERE id = sqlc.arg(id) 
 RETURNING *;
@@ -72,6 +75,7 @@ RETURNING *;
 UPDATE authentication_credentials SET 
     is_verified_organizer = sqlc.arg(is_verified_organizer),
     is_verified_student = sqlc.arg(is_verified_student),
+    is_verified_issuer = sqlc.arg(is_verified_issuer),
     updated_at = NOW()
 WHERE id = sqlc.arg(id) 
 RETURNING *;
@@ -108,6 +112,7 @@ RETURNING *;
 SELECT * FROM authentication_credentials 
 WHERE (sqlc.narg(is_verified_organizer) IS NULL OR is_verified_organizer = sqlc.narg(is_verified_organizer))
   AND (sqlc.narg(is_verified_student) IS NULL OR is_verified_student = sqlc.narg(is_verified_student))
+  AND (sqlc.narg(is_verified_issuer) IS NULL OR is_verified_issuer = sqlc.narg(is_verified_issuer))
 ORDER BY created_at DESC
 LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);
 
@@ -126,7 +131,8 @@ SELECT
     COUNT(*) FILTER (WHERE is_verified_organizer = 1) as verified_organizers,
     COUNT(*) FILTER (WHERE is_verified_student = 1) as verified_students,
     COUNT(*) FILTER (WHERE solution_status = 0) as byok_credentials,
-    COUNT(*) FILTER (WHERE solution_status = 1) as system_managed_credentials
+    COUNT(*) FILTER (WHERE solution_status = 1) as system_managed_credentials,
+    COUNT(*) FILTER (WHERE is_verified_issuer = 1) as verified_issuers
 FROM authentication_credentials;
 
 -- name: DeleteAuthenticationCredential :exec

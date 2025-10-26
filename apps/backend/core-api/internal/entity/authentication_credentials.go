@@ -24,6 +24,7 @@ type AuthenticationCredential struct {
 	GithubConnectorRef  *string   `json:"github_connector_ref"`
 	IsVerifiedOrganizer bool      `json:"is_verified_organizer"`
 	IsVerifiedStudent   bool      `json:"is_verified_student"`
+	IsVerifiedIssuer    bool      `json:"is_verified_issuer"`
 	CreatedAt           time.Time `json:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at"`
 } // @name AuthenticationCredential

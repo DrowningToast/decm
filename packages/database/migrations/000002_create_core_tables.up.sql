@@ -21,6 +21,7 @@ CREATE TABLE authentication_credentials (
     github_connector_ref TEXT,
     
     is_verified_organizer INTEGER NOT NULL,
+    is_verified_issuer INTEGER NOT NULL,
     is_verified_student INTEGER NOT NULL,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -72,13 +73,20 @@ CREATE TABLE profiles (
 CREATE INDEX idx_profiles_authentication_credential_id ON profiles(authentication_credential_id);
 CREATE INDEX idx_profiles_id ON profiles(id);
 
+CREATE TYPE event_type AS ENUM ('public', 'private', 'invite');
+
 -- events table, index by id and owner_credential_id
 CREATE TABLE events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_type event_type NOT NULL DEFAULT 'private',
     
     chain_id INTEGER NOT NULL,
+    contact_number VARCHAR(255) NOT NULL,
     contact_address VARCHAR(255) NOT NULL,
     owner_credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
+
+    banner_storage_key VARCHAR(255) NOT NULL,
+    icon_storage_key VARCHAR(255) NOT NULL,
 
     title VARCHAR(255) NOT NULL,
     short_description VARCHAR(255) NOT NULL,
@@ -91,26 +99,14 @@ CREATE TABLE events (
     google_map_query VARCHAR(255) NOT NULL,
     max_attendees INTEGER NOT NULL,
 
-    is_public INTEGER NOT NULL,
-    is_booking_request_required INTEGER NOT NULL,
-    is_verified INTEGER NOT NULL,
-    is_ticket_transferable INTEGER NOT NULL,
-
-    -- 0: Not Required, 1: Required, 2: Optional
-    first_name_requirement_status INTEGER NOT NULL,
-    last_name_requirement_status INTEGER NOT NULL,
-    email_requirement_status INTEGER NOT NULL,
-    bio_requirement_status INTEGER NOT NULL,
-    phone_number_requirement_status INTEGER NOT NULL,
-    address_requirement_status INTEGER NOT NULL,
-    academic_institution_requirement_status INTEGER NOT NULL,
-    academic_email_requirement_status INTEGER NOT NULL,
-
-    -- base event certificate image references
-    base_event_certificate_url VARCHAR(255) NOT NULL,
+    is_public INTEGER DEFAULT 0,
+    is_booking_request_required INTEGER DEFAULT 0,
+    is_verified INTEGER DEFAULT 0,
+    is_ticket_transferable INTEGER DEFAULT 0,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
 );
 
 CREATE INDEX idx_events_owner_credential_id ON events(owner_credential_id);
@@ -152,22 +148,22 @@ CREATE INDEX idx_event_attendees_event_id ON event_attendees(event_id);
 CREATE INDEX idx_event_attendees_attendee_credential_id ON event_attendees(attendee_credential_id);
 
 -- event_certificates table, index by event_id and credential_id
-CREATE TABLE event_certificates (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-    credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
+-- CREATE TABLE event_certificates (
+--     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--     event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+--     credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
     
-    -- TODO: Add an entity for handling the issuance of the certificate
+--     -- TODO: Add an entity for handling the issuance of the certificate
     
-    -- 0: Not published, 1: Published
-    is_published INTEGER NOT NULL,
+--     -- 0: Not published, 1: Published
+--     is_published INTEGER NOT NULL,
     
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+--     created_at TIMESTAMPTZ DEFAULT NOW(),
+--     updated_at TIMESTAMPTZ DEFAULT NOW()
+-- );
 
-CREATE INDEX idx_event_certificates_event_id ON event_certificates(event_id);
-CREATE INDEX idx_event_certificates_credential_id ON event_certificates(credential_id);
+-- CREATE INDEX idx_event_certificates_event_id ON event_certificates(event_id);
+-- CREATE INDEX idx_event_certificates_credential_id ON event_certificates(credential_id);
 
 -- Create function to update updated_at column automatically
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -195,6 +191,6 @@ CREATE TRIGGER update_event_attendees_updated_at
     BEFORE UPDATE ON event_attendees 
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_event_certificates_updated_at 
-    BEFORE UPDATE ON event_certificates 
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- CREATE TRIGGER update_event_certificates_updated_at 
+--     BEFORE UPDATE ON event_certificates 
+--     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

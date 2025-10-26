@@ -1,0 +1,47 @@
+package postgres
+
+import (
+	datagateway "apps/backend/core-api/internal/datagateway/event"
+	"context"
+
+	"github.com/google/uuid"
+
+	"decm-database/go/generated"
+)
+
+var _ datagateway.EventIssuerDataGateway = (*Repository)(nil)
+
+func (r *Repository) CreateEventIssuer(ctx context.Context, params generated.CreateEventIssuerParams) (*generated.EventIssuer, error) {
+	result, err := r.queries.CreateEventIssuer(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (r *Repository) GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUID) ([]generated.EventIssuer, error) {
+	return r.queries.GetEventIssuersByEventID(ctx, eventID)
+}
+
+func (r *Repository) GetEventIssuerByID(ctx context.Context, id uuid.UUID) (generated.EventIssuer, error) {
+	return r.queries.GetEventIssuerByID(ctx, id)
+}
+
+func (r *Repository) UpdateEventIssuer(ctx context.Context, params generated.UpdateEventIssuerParams) (*generated.EventIssuer, error) {
+	result, err := r.queries.UpdateEventIssuer(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (r *Repository) DeleteEventIssuer(ctx context.Context, id uuid.UUID) error {
+	return r.queries.DeleteEventIssuer(ctx, id)
+}
+
+func (r *Repository) GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Context, eventID uuid.UUID, issuerCredentialID uuid.UUID) (generated.EventIssuer, error) {
+	return r.queries.GetEventIssuerByEventIDAndIssuerCredentialID(ctx, generated.GetEventIssuerByEventIDAndIssuerCredentialIDParams{
+		EventID:            eventID,
+		IssuerCredentialID: issuerCredentialID,
+	})
+}

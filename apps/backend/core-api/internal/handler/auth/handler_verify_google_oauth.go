@@ -13,8 +13,8 @@ import (
 )
 
 type verifyGoogleOAuthRequest struct {
-	Code  string `query:"code"`
-	State string `query:"state"`
+	Code  string `query:"code" validate:"required"`
+	State string `query:"state" validate:"required"`
 }
 
 // @Summary Verify Google OAuth code

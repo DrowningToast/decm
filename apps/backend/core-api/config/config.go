@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"apps/backend/core-api/config/postgres"
+	"apps/backend/core-api/config/s3"
 
 	google "apps/backend/core-api/config/google"
 
@@ -37,6 +38,19 @@ type Config struct {
 	Jwt JwtConfig `envPrefix:"JWT_"`
 	// Google OAuth Configuration
 	GoogleOAuth google.GoogleOAuthConfig `envPrefix:"GOOGLE_OAUTH_"`
+	// S3 Configuration
+	S3 s3.S3Config `envPrefix:"S3_"`
+}
+
+// Validate validates the configuration and returns an error if any required configuration is invalid
+func (c *Config) Validate() error {
+	if !c.S3.IsValid() {
+		return errors.New("S3 configuration is invalid: AccessKeyID, SecretAccessKey, BucketName, and Endpoint are all required")
+	}
+	
+	// Add additional component validators here as needed
+	
+	return nil
 }
 
 type ApiConfig struct {

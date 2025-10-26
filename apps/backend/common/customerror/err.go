@@ -123,3 +123,13 @@ func AsPresetError(preset ErrSignature, err error) *Err {
 		LoggerLevel: preset.LoggerLevel,
 	}
 }
+
+func TryParseAsCustomErr(err error) *Err {
+	// Check if err is already a customerror type
+	var customErr *Err
+	if errors.As(err, &customErr) {
+		return customErr
+	}
+	// Return nil if it's not a custom error
+	return nil
+}
