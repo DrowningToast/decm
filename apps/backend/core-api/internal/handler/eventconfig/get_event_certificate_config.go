@@ -29,7 +29,11 @@ func (h *Handler) GetEventCertificateConfig(ctx *fiber.Ctx) error {
 
 	config, err := h.EventConfigUc.GetEventCertificateConfigByEventID(ctx.UserContext(), eventID)
 	if err != nil {
-		return customerror.Parse(&customerror.ErrNotFound, err)
+		// Check if this is a "not found" error
+		if err.Error() == "sql: no rows in result set" {
+			return customerror.Parse(&customerror.ErrNotFound, err)
+		}
+		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	return ctx.Status(http.StatusOK).JSON(EventCertificateConfigResponse{
