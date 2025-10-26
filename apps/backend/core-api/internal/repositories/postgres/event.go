@@ -143,13 +143,36 @@ func (r *Repository) ListEventsByOwnerCredentialID(ctx context.Context, ownerCre
 	return eventsEntity, nil
 }
 
-func (r *Repository) DeleteEvent(ctx context.Context, id uuid.UUID) error {
-	err := r.queries.DeleteEvent(ctx, id)
+func (r *Repository) DeleteEvent(ctx context.Context, id uuid.UUID) (*entity.Event, error) {
+	result, err := r.queries.DeleteEvent(ctx, id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &entity.Event{
+		ID:                       result.ID,
+		EventType:                entity.EventType(result.EventType),
+		ChainID:                  int(result.ChainID),
+		ContactNumber:            result.ContactNumber,
+		ContactAddress:           result.ContactAddress,
+		OwnerCredentialID:        result.OwnerCredentialID,
+		BannerStorageKey:         result.BannerStorageKey,
+		IconStorageKey:           result.IconStorageKey,
+		Title:                    result.Title,
+		ShortDescription:         result.ShortDescription,
+		LongDescription:          result.LongDescription.String,
+		StartDate:                result.StartDate,
+		EndDate:                  result.EndDate,
+		Location:                 result.Location,
+		GoogleMapQuery:           result.GoogleMapQuery,
+		MaxAttendees:             int(result.MaxAttendees),
+		IsPublic:                 result.IsPublic.Int32 == 1,
+		IsBookingRequestRequired: result.IsBookingRequestRequired.Int32 == 1,
+		IsVerified:               result.IsVerified.Int32 == 1,
+		IsTicketTransferable:     result.IsTicketTransferable.Int32 == 1,
+		CreatedAt:                result.CreatedAt.Time,
+		UpdatedAt:                result.UpdatedAt.Time,
+	}, nil
 }
 
 func (r *Repository) UpdateEvent(ctx context.Context, id uuid.UUID, params datagateway.UpdateEventParameters) (*entity.Event, error) {

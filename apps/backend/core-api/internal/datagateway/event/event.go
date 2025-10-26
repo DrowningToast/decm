@@ -52,5 +52,5 @@ type EventDataGateway interface {
 	GetEventById(ctx context.Context, id uuid.UUID) (*entity.Event, error)
 	ListEventsByOwnerCredentialID(ctx context.Context, ownerCredentialID uuid.UUID, limitCount int32, offsetCount int32) ([]*entity.Event, error)
 	UpdateEvent(ctx context.Context, id uuid.UUID, params UpdateEventParameters) (*entity.Event, error)
-	DeleteEvent(ctx context.Context, id uuid.UUID) error
+	DeleteEvent(ctx context.Context, id uuid.UUID) (*entity.Event, error)
 }
