@@ -11,7 +11,8 @@ import (
 
 // DeleteEventCertificateConfig godoc
 // @Summary Delete event certificate config
-// @Description Delete the event certificate configuration for an event
+// @Description Delete event certificate configuration for an event
+// @Tags EventConfig
 // @ID delete-event-certificate-config
 // @Accept json
 // @Produce json
