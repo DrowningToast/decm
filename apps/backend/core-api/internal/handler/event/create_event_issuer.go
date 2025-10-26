@@ -1,8 +1,10 @@
 package event
 
 import (
+	"errors"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -48,7 +50,12 @@ func (h *Handler) CreateEventIssuer(ctx *fiber.Ctx) error {
 	}
 
 	if err := req.IsValid(); err != nil {
-		return err
+		// Ensure validation errors are properly wrapped
+		var validationErr *validator.ValidationErrors
+		if errors.As(err, &validationErr) {
+			return customerror.ParseValidationErr(validationErr)
+		}
+		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
 	params := eventUc.CreateEventIssuerParams{
