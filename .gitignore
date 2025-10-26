@@ -40,3 +40,4 @@ yarn-error.log*
 
 # Golang
 apps/*/pkg/mod/*
+claude_code_zai_env.sh
