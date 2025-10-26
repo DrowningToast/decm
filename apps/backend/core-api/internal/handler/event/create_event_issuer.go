@@ -3,6 +3,7 @@ package event
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -78,7 +79,7 @@ func (h *Handler) CreateEventIssuer(ctx *fiber.Ctx) error {
 		IsSigned:           issuer.IsSigned,
 		Signature:          issuer.Signature.String,
 		SignMessage:        issuer.SignMessage.String,
-		CreatedAt:          issuer.CreatedAt.Time.String(),
-		UpdatedAt:          issuer.UpdatedAt.Time.String(),
+		CreatedAt:          issuer.CreatedAt.Time.Format(time.RFC3339),
+		UpdatedAt:          issuer.UpdatedAt.Time.Format(time.RFC3339),
 	})
 }
