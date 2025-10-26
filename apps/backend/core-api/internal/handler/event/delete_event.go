@@ -1,6 +1,9 @@
 package event
 
 import (
+	"context"
+	"time"
+
 	customerror "apps/backend/common/customerror"
 
 	"github.com/gofiber/fiber/v2"
@@ -31,7 +34,11 @@ func (h *Handler) DeleteEvent(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	event, err := h.EventUc.DeleteEvent(ctx.UserContext(), eventID, currentUser)
+	// Add a 30-second timeout for the usecase call
+	ctxWithTimeout, cancel := context.WithTimeout(ctx.UserContext(), 30*time.Second)
+	defer cancel()
+
+	event, err := h.EventUc.DeleteEvent(ctxWithTimeout, eventID, currentUser)
 	if err != nil {
 		return err
 	}
