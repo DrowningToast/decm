@@ -16,16 +16,23 @@ import (
 	"apps/backend/common/pgclient"
 	"apps/backend/core-api/config"
 	auth_handler "apps/backend/core-api/internal/handler/auth"
+	"apps/backend/core-api/internal/handler/event"
+	eventconfig_handler "apps/backend/core-api/internal/handler/eventconfig"
+	"apps/backend/core-api/internal/handler/issuer"
 	"apps/backend/core-api/internal/handler/onboard"
 	"apps/backend/core-api/internal/handler/profile"
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
 	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
 	"apps/backend/core-api/internal/repositories/postgres"
+	event_usecase "apps/backend/core-api/internal/usecase/event"
+	eventconfig_usecase "apps/backend/core-api/internal/usecase/eventconfig"
+	issuer_usecase "apps/backend/core-api/internal/usecase/issuer"
 	oauth_usecase "apps/backend/core-api/internal/usecase/oauth"
 	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
 	profile_usecase "apps/backend/core-api/internal/usecase/profile"
 	"apps/backend/services/auth"
 	"apps/backend/services/oauth"
+	"apps/backend/services/s3"
 
 	json "github.com/goccy/go-json"
 
@@ -56,6 +63,14 @@ func main() {
 	defer stop()
 
 	cfg := config.LoadConfig()
+
+	// Validate configuration
+	if err := cfg.Validate(); err != nil {
+		logger := log.LoadLogger()
+		logger.ErrorContext(ctx, "Configuration validation failed", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+
 	logger := log.LoadLogger()
 
 	pgConn, err := pgclient.NewPool(ctx, &cfg.Postgres)
@@ -77,6 +92,11 @@ func main() {
 	}
 	authService := auth.NewAuthService(cfg.Jwt.Issuer, cfg.Jwt.SecretKey, expiration)
 	googleOAuthService := oauth.NewGoogleOAuthService()
+	s3Service, err := s3.NewS3Service()
+	if err != nil {
+		logger.Error("Failed to initialize S3 service", "error", err)
+		panic(fmt.Sprintf("S3 service initialization failed: %v", err))
+	}
 
 	// repo
 	pgRepo := postgres.NewRepository(pgConn, cfg.PIIEncryptionKey)
@@ -84,6 +104,9 @@ func main() {
 	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo, authService, googleOAuthService)
 	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo)
+	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService)
+	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, logger)
+	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)
 
 	// Setup HTTP server
 	app := fiber.New(fiber.Config{
@@ -155,6 +178,15 @@ func main() {
 
 	profileHandler := profile.NewHandler(profileUc, authService, authenticationGuardMiddleware)
 	profileHandler.Mount(apiV1)
+
+	eventHandler := event.NewHandler(eventUc, eventConfigUc, profileUc, authService, authenticationGuardMiddleware, logger)
+	eventHandler.Mount(apiV1)
+
+	eventConfigHandler := eventconfig_handler.NewHandler(eventConfigUc, eventUc, authService, authenticationGuardMiddleware)
+	eventConfigHandler.Mount(apiV1)
+
+	issuerHandler := issuer.NewHandler(issuerUc, authService, authenticationGuardMiddleware)
+	issuerHandler.Mount(apiV1)
 
 	// Start HTTP Server
 	go func() {

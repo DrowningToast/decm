@@ -1,0 +1,101 @@
+sequenceDiagram
+    participant Participant_ as Participant
+    participant Backend as Backend
+    participant Database as Database
+    participant EventContract as Event Contract
+
+    Note over Participant_, Backend: Pre-condition: Participant logged in, Events exist
+
+    Participant_ ->> Backend: 1. เข้าถึงหน้า 'All Events'
+    activate Participant_
+    activate Backend
+    Backend ->> Database: 2. Query รายการ Events ที่เปิดรับสมัคร
+    activate Database
+    Database -->> Backend: 3. คืนรายการ Events
+    deactivate Database
+
+    Backend -->> Participant_: 4. แสดงรายการ Events
+    Participant_ ->> Backend: 5. เลือกดูรายละเอียด Event ที่สนใจ
+    Backend ->> Database: 6. Query Event Details (รวมถึงเงื่อนไข, รหัสผ่าน?, ประเภท Public/Private)
+    activate Database
+    Database -->> Backend: 7. คืน Event Details
+    deactivate Database
+    Backend -->> Participant_: 8. แสดง Event Details
+    deactivate Backend
+
+    Participant_ ->> Backend: 9. กดปุ่ม 'ลงทะเบียน' (Register)
+    activate Backend
+    Backend ->> Database: 10. Query ข้อมูล Participant Profile (สำหรับ pre-fill)
+    activate Database
+    Database -->> Backend: 11. คืนข้อมูล Profile
+    deactivate Database
+    Backend -->> Participant_: 12. แสดงฟอร์มลงทะเบียน (อาจมีข้อมูล pre-fill)
+    Participant_ ->> Backend: 13. กรอกข้อมูลเพิ่มเติม (ถ้ามี) และกด 'ยืนยันการลงทะเบียน'
+
+    Backend ->> Backend: 14. ตรวจสอบความครบถ้วน/ถูกต้องของข้อมูล
+    deactivate Backend
+    alt ข้อมูลไม่ถูกต้อง/ไม่ครบ (Alt Flow A1)
+        Backend -->> Participant_: 15a. แสดงข้อผิดพลาด + ระบุช่องที่ต้องแก้ไข
+        Note over Participant_: กลับไปขั้นตอนที่ 13
+    else ข้อมูลถูกต้อง
+        Backend ->> Database: 15b. ตรวจสอบว่า Event ต้องใช้รหัสผ่านหรือไม่
+        activate Database
+        Database -->> Backend: 16b. คืนข้อมูลการตั้งค่ารหัสผ่าน และ ประเภท Event
+        deactivate Database
+
+        opt Event Requires Password
+            Backend -->> Participant_: 17. แสดงช่องให้กรอกรหัสเข้าร่วม
+            activate Backend
+            Participant_ ->> Backend: 18. กรอกและส่งรหัส
+            Backend ->> Backend: 19. ตรวจสอบรหัสผ่าน
+            deactivate Backend
+
+            alt รหัสผ่านไม่ถูกต้อง
+                Backend -->> Participant_: 20a. แสดงข้อความ 'รหัสผ่านไม่ถูกต้อง'
+                Note over Participant_: อาจให้ลองใหม่ หรือสิ้นสุด
+            else รหัสผ่านถูกต้อง
+                 Note over Backend, Database: ดำเนินการต่อ (Go to step 21)
+            end
+        end
+
+        Backend ->> Database: 21. ตรวจสอบเงื่อนไขอื่นๆ (เช่น จำนวนผู้สมัคร, สถานะ Academic)
+        activate Backend
+        activate Database
+        Database -->> Backend: 22. คืนผลการตรวจสอบเงื่อนไข
+        deactivate Database
+        
+        alt ไม่ผ่านเงื่อนไข (เช่น เต็มแล้ว, ไม่มีสิทธิ์)
+            Backend -->> Participant_: 23a. แสดงข้อความแจ้งเหตุผลที่ไม่สามารถลงทะเบียนได้
+        else ผ่านเงื่อนไข
+            Backend ->> Database: 23b. บันทึกข้อมูลการลงทะเบียน (อาจมีสถานะ Pending Approval)
+
+            alt ระบบเกิดข้อผิดพลาด (Alt Flow A2)
+                Database -->> Backend: 24a. แจ้ง Error การบันทึก
+                Backend -->> Participant_: 25a. แสดงข้อความ 'ลงทะเบียนล้มเหลว โปรดลองใหม่'
+            else บันทึกสำเร็จ
+                Database -->> Backend: 24b. ยืนยันการบันทึกสำเร็จ
+                deactivate Backend
+
+                opt Event is Public and No Password Required
+                    Backend -->> Participant_: 25b. สร้าง Transaction data สำหรับ addParticipant และขอ Signature
+                    activate Backend
+                    Participant_ ->> Backend: 26b. Sign Transaction ผ่าน Wallet และส่ง Signature กลับ
+                    Backend ->> EventContract: 27b. เรียกฟังก์ชัน addParticipant(participantAddress) พร้อม Signed Data
+                    activate EventContract
+                    EventContract -->> Backend: 28b. คืนผลการทำ Transaction (Success/Fail)
+                    deactivate EventContract
+                    Note over Backend: Handle potential transaction failure if needed
+                    deactivate Backend
+
+                end
+
+                Backend ->> Database: 29b. เพิ่ม Event ใน 'My Events' ของ Participant
+                activate Database
+                Database -->> Backend: 30b. ยืนยันการอัปเดต 'My Events'
+                deactivate Database
+                Backend -->> Participant_: 31b. แสดงข้อความ 'ลงทะเบียนสำเร็จ' หรือ 'รอการอนุมัติ'
+            end
+        end
+    end
+
+    deactivate Participant_

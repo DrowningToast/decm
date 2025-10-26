@@ -44,6 +44,7 @@ func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id uui
 		GithubConnectorRef:  githubConnectorRef,
 		IsVerifiedOrganizer: query.IsVerifiedOrganizer == 1,
 		IsVerifiedStudent:   query.IsVerifiedStudent == 1,
+		IsVerifiedIssuer:    query.IsVerifiedIssuer == 1,
 		CreatedAt:           query.CreatedAt.Time,
 		UpdatedAt:           query.UpdatedAt.Time,
 	}, nil
@@ -76,6 +77,7 @@ func (r *Repository) GetAuthenticationCredentialByWalletAddress(ctx context.Cont
 		GithubConnectorRef:  githubConnectorRef,
 		IsVerifiedOrganizer: query.IsVerifiedOrganizer == 1,
 		IsVerifiedStudent:   query.IsVerifiedStudent == 1,
+		IsVerifiedIssuer:    query.IsVerifiedIssuer == 1,
 		CreatedAt:           query.CreatedAt.Time,
 		UpdatedAt:           query.UpdatedAt.Time,
 	}, nil
@@ -117,6 +119,7 @@ func (r *Repository) GetAuthenticationCredentialByGoogleConnectorRef(ctx context
 		GithubConnectorRef:  githubConnectorRefDecrypted,
 		IsVerifiedOrganizer: query.IsVerifiedOrganizer == 1,
 		IsVerifiedStudent:   query.IsVerifiedStudent == 1,
+		IsVerifiedIssuer:    query.IsVerifiedIssuer == 1,
 		CreatedAt:           query.CreatedAt.Time,
 		UpdatedAt:           query.UpdatedAt.Time,
 	}, nil
@@ -152,6 +155,7 @@ func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credent
 		GithubConnectorRef:  githubConnectorRefEncrypted,
 		IsVerifiedOrganizer: pgmapper.BoolToInt32(credential.IsVerifiedOrganizer),
 		IsVerifiedStudent:   pgmapper.BoolToInt32(credential.IsVerifiedStudent),
+		IsVerifiedIssuer:    pgmapper.BoolToInt32(credential.IsVerifiedIssuer),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
@@ -178,6 +182,7 @@ func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credent
 		GithubConnectorRef:  githubConnectorRefDecrypted,
 		IsVerifiedOrganizer: query.IsVerifiedOrganizer == 1,
 		IsVerifiedStudent:   query.IsVerifiedStudent == 1,
+		IsVerifiedIssuer:    query.IsVerifiedIssuer == 1,
 		CreatedAt:           query.CreatedAt.Time,
 		UpdatedAt:           query.UpdatedAt.Time,
 	}, nil
@@ -211,6 +216,7 @@ func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id uuid
 		GithubConnectorRef:  githubConnectorRefEncrypted,
 		IsVerifiedOrganizer: pgmapper.BoolToPgInt4(params.IsVerifiedOrganizer),
 		IsVerifiedStudent:   pgmapper.BoolToPgInt4(params.IsVerifiedStudent),
+		IsVerifiedIssuer:    pgmapper.BoolToPgInt4(params.IsVerifiedIssuer),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
@@ -237,6 +243,7 @@ func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id uuid
 		GithubConnectorRef:  githubConnectorRefDecrypted,
 		IsVerifiedOrganizer: query.IsVerifiedOrganizer == 1,
 		IsVerifiedStudent:   query.IsVerifiedStudent == 1,
+		IsVerifiedIssuer:    query.IsVerifiedIssuer == 1,
 		CreatedAt:           query.CreatedAt.Time,
 		UpdatedAt:           query.UpdatedAt.Time,
 	}, nil

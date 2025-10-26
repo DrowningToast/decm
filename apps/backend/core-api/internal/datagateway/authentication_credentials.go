@@ -19,6 +19,7 @@ type UpdateAuthenticationCredentialParameters struct {
 
 	IsVerifiedOrganizer bool
 	IsVerifiedStudent   bool
+	IsVerifiedIssuer    bool
 }
 
 type AuthenticationCredentialDataGateway interface {

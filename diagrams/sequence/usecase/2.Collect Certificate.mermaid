@@ -1,0 +1,51 @@
+sequenceDiagram
+    participant Participant_ as Participant
+    participant Backend as Backend
+    participant Database as Database
+    participant EventCertificateNFT as Event Certificate NFT Contract
+
+    Note over Backend, Database: Pre-condition: Participant ผ่านเงื่อนไข, Host/Issuer published certificate, Participant มี Wallet
+
+    Backend ->> Database: 1. ตรวจสอบ Participant ที่ผ่านเงื่อนไขรับ Certificate
+    activate Backend
+    Database -->> Backend: 2. คืนรายชื่อ Participant ที่มีสิทธิ์
+
+
+    Backend -->> Participant_: 3. แจ้งเตือน Participant (มี Certificate ใหม่)
+    activate Participant_
+    deactivate Backend
+
+    Participant_ ->> Backend: 4. เข้าสู่หน้า Certificates / คลิกแจ้งเตือน
+    activate Backend
+    Backend ->> Database: 5. Query รายการ Certificate ที่รอรับ
+    activate Database
+    Database -->> Backend: 6. คืนรายการ Certificate
+    deactivate Database
+    Backend -->> Participant_: 7. แสดงรายการ Certificate ที่รอรับ
+    Participant_ ->> Backend: 8. เลือก Certificate และกด 'รับใบรับรอง' (Claim)
+    deactivate Backend
+    Backend -->> Participant_: 9. สร้าง Transaction data สำหรับการ Claim และขอ Signature
+    activate Backend
+    Participant_ ->> Backend: 10. Sign Transaction ผ่าน Wallet และส่ง Signature กลับ
+
+    Note over Backend, EventCertificateNFT: <<include>> Issue Onchain Certificate NFT
+        Backend ->> EventCertificateNFT: 11. ตรวจสอบ Signature
+        activate EventCertificateNFT
+    Backend ->> EventCertificateNFT: 12. เรียกฟังก์ชัน mintCertificate() + Wallet Address + Metadata + Signed Data
+        alt Mint NFT ล้มเหลว (Alt Flow A1)
+            EventCertificateNFT -->> Backend: 13a. คืนผลการ Mint ล้มเหลว (Error: Gas, Revert etc.)
+            Backend -->> Participant_: 14a. แสดงข้อความ 'การรับ Certificate ล้มเหลว โปรดลองใหม่'
+        else Mint NFT สำเร็จ (Basic Flow)
+            EventCertificateNFT -->> Backend: 13b. คืนผลการ Mint สำเร็จ (Success + Token ID/TxHash)
+            deactivate EventCertificateNFT
+            Backend ->> Database: 14b. บันทึกข้อมูล Certificate NFT (Token ID/TxHash) ลง Profile/e-Portfolio
+            activate Database
+            Database -->> Backend: 15b. ยืนยันการบันทึก
+            Backend ->> Database: 16b. อัปเดตสถานะ Certificate เป็น 'รับแล้ว' (Collected)
+            Database -->> Backend: 17b. ยืนยันการอัปเดตสถานะ
+            deactivate Database
+            Backend -->> Participant_: 18b. แสดงข้อความ 'รับ Certificate สำเร็จ' และแสดง Certificate ในหน้า Profile
+            deactivate Backend
+        end
+
+    deactivate Participant_

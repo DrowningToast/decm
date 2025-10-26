@@ -8,12 +8,23 @@ export type Path =
   | `/app`
   | `/auth/success`
   | `/error`
+  | `/host/events`
+  | `/host/events/:eventId`
+  | `/host/events/:eventId/edit`
+  | `/host/events/:eventId/settings/certificate`
+  | `/host/events/:eventId/settings/participant`
+  | `/host/events/create`
+  | `/host/home`
   | `/onboard/:method`
   | `/signin`
   | `/signout`
   | `/signup`
 
 export type Params = {
+  '/host/events/:eventId': { eventId: string }
+  '/host/events/:eventId/edit': { eventId: string }
+  '/host/events/:eventId/settings/certificate': { eventId: string }
+  '/host/events/:eventId/settings/participant': { eventId: string }
   '/onboard/:method': { method: string }
 }
 
