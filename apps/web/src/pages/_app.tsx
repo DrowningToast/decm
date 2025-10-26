@@ -8,6 +8,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { ErrorPage } from "@/components/pages/Error";
 import { Toaster } from "@/components/ui/sonner";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { AppKitProvider } from "@/config/walletConnect";
 import { AuthProvider } from "@/context/AuthContext";
 
 // Lazy load the DevTools to avoid bundle issues
@@ -29,20 +30,22 @@ const Layout = () => {
                     duration: 3000,
                 }}
             />
-            <main className="font-secondary bg-background text-foreground">
-                <HelmetProvider>
-                    <QueryClientProvider client={queryClient}>
-                        <AuthProvider>
-                            <Outlet />
-                            {process.env.NODE_ENV === "development" && (
-                                <Suspense fallback={null}>
-                                    <ReactQueryDevtools initialIsOpen={false} />
-                                </Suspense>
-                            )}
-                        </AuthProvider>
-                    </QueryClientProvider>
-                </HelmetProvider>
-            </main>
+            <AppKitProvider>
+                <main className="font-secondary bg-background text-foreground">
+                    <HelmetProvider>
+                        <QueryClientProvider client={queryClient}>
+                            <AuthProvider>
+                                <Outlet />
+                                {process.env.NODE_ENV === "development" && (
+                                    <Suspense fallback={null}>
+                                        <ReactQueryDevtools initialIsOpen={false} />
+                                    </Suspense>
+                                )}
+                            </AuthProvider>
+                        </QueryClientProvider>
+                    </HelmetProvider>
+                </main>
+            </AppKitProvider>
         </ErrorBoundary>
     );
 };

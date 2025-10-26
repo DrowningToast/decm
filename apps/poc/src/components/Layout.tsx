@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { ConnectButton } from "./wallet/ConnectButton";
+import { WalletConnectButton } from "./wallet/ConnectButton";
 
 interface LayoutProps {
   children: ReactNode;
@@ -25,7 +25,7 @@ export function Layout({ children }: LayoutProps) {
               Manage hosts, participants, tickets, and certificates in one dashboard
             </p>
           </div>
-          <ConnectButton />
+          <WalletConnectButton />
         </div>
       </header>
 

@@ -2,8 +2,10 @@ package event
 
 import (
 	customerror "apps/backend/common/customerror"
+	"context"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -38,7 +40,11 @@ func (h *Handler) GetEventsByOwnerCredentialsId(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
-	events, err := h.EventUc.ListEventsByOwnerCredentialID(ctx.UserContext(), ownerCredentialID, int32(limitCount), int32(offsetCount))
+	// Add a 30-second timeout for the usecase call
+	ctxWithTimeout, cancel := context.WithTimeout(ctx.UserContext(), 30*time.Second)
+	defer cancel()
+
+	events, err := h.EventUc.ListEventsByOwnerCredentialID(ctxWithTimeout, ownerCredentialID, int32(limitCount), int32(offsetCount))
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}

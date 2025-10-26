@@ -76,7 +76,7 @@ export const CertificateTemplateUpload = ({
                                     </code>
                                     {kw.mandatory && (
                                         <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-semibold">
-                                            Required
+                                            {t("common.required")}
                                         </span>
                                     )}
                                 </div>
@@ -109,7 +109,11 @@ export const CertificateTemplateUpload = ({
                         className="w-full h-30"
                     >
                         <Upload className="h-4 w-4 mr-2" />
-                        <Typography variant="text" tag="span" className="font-medium text-black">
+                        <Typography
+                            variant="text"
+                            tag="span"
+                            className="font-medium text-foreground"
+                        >
                             {svgFile ? svgFile.name : t("certificateSettings.step2.upload.button")}
                         </Typography>
                     </Button>

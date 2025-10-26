@@ -23,7 +23,7 @@ func ValidateStruct(s interface{}) error {
 }
 
 func ValidateImageFile(file *multipart.FileHeader) error {
-	// Max 5MB
+	// Max 10MB
 	maxSize := int64(10 * 1024 * 1024)
 	if file.Size > maxSize {
 		return customerror.Parse(

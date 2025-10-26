@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 interface ProtectedRouteProps {
     children: React.ReactNode;
     redirectTo?: string;
-    requiredRoles?: "ADMIN" | "ISSUER" | "PARTICIPANT" | "HOST";
+    requiredRoles?: ("ADMIN" | "ISSUER" | "PARTICIPANT" | "HOST")[];
     fallback?: React.ReactNode;
 }
 
@@ -17,7 +17,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     requiredRoles,
     fallback,
 }) => {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading, userRole } = useAuth();
     const { t } = useTranslation();
 
     if (isLoading) {
@@ -40,8 +40,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         return <Navigate to={redirectTo as any} replace />;
     }
 
-    if (requiredRoles && requiredRoles.length > 0) {
-        // TODO: Implement role-based access control
+    if (requiredRoles && requiredRoles.length > 0 && userRole) {
+        // Check if user's role is included in the required roles array
+        if (!requiredRoles.includes(userRole)) {
+            // User is authenticated but doesn't have the required role
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return <Navigate to="/unauthorized" replace />;
+        }
     }
 
     return <>{children}</>;

@@ -89,7 +89,7 @@ SET
 WHERE id = sqlc.arg(id)
 RETURNING *;
 
--- name: DeleteEvent :exec
+-- name: DeleteEvent :one
 UPDATE events
 SET
     deleted_at = now()

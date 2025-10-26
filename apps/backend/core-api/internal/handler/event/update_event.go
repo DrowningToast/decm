@@ -31,21 +31,24 @@ type UpdateEventRequest struct {
 // @Tags Event
 // @Accept multipart/form-data
 // @Produce json
-// @Param name formData string true "Event name"
-// @Param short_description formData string true "Event short description"
-// @Param description formData string true "Event description"
+// @Param name formData string false "Event name"
+// @Param short_description formData string false "Event short description"
+// @Param description formData string false "Event description"
 // @Param start_date formData string true "Start date (RFC3339 format)"
 // @Param end_date formData string true "End date (RFC3339 format)"
 // @Param seats_count formData integer true "Number of seats"
-// @Param contact_number formData string true "Contact number"
-// @Param contact_address formData string true "Contact address"
-// @Param location formData string true "Location"
-// @Param google_map_query formData string true "Google map query"
+// @Param contact_number formData string false "Contact number"
+// @Param contact_address formData string false "Contact address"
+// @Param location formData string false "Location"
+// @Param google_map_query formData string false "Google map query"
 // @Param banner formData file false "Event banner image (JPEG, PNG, WebP, max 10MB) - optional"
 // @Param icon formData file false "Event icon image (JPEG, PNG, WebP, max 10MB) - optional"
 // @Success 200 {object} entity.Event
 // @Failure 400 {object} customerror.ErrResponse
-// @Router /api/v1/events/:event_id [put]
+// @Failure 401 {object} customerror.ErrResponse
+// @Failure 403 {object} customerror.ErrResponse
+// @Failure 500 {object} customerror.ErrResponse
+// @Router /api/v1/events/{event_id} [put]
 func (h *Handler) UpdateEvent(ctx *fiber.Ctx) error {
 	eventID, err := uuid.Parse(ctx.Params("event_id"))
 	if err != nil {
@@ -84,6 +87,14 @@ func (h *Handler) UpdateEvent(ctx *fiber.Ctx) error {
 	seatsCount, err := strconv.Atoi(*params.SeatsCount)
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("invalid seats_count: %w", err))
+	}
+
+	if seatsCount <= 0 {
+		return customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("seats_count must be > 0"))
+	}
+
+	if !endDate.After(startDate) {
+		return customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("end_date must be after start_date"))
 	}
 
 	currentUser, err := h.AuthenticationService.GetUserContext(ctx)

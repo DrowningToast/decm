@@ -124,7 +124,7 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event
 	return i, err
 }
 
-const DeleteEvent = `-- name: DeleteEvent :exec
+const DeleteEvent = `-- name: DeleteEvent :one
 UPDATE events
 SET
     deleted_at = now()
@@ -132,9 +132,35 @@ WHERE id = $1
 RETURNING id, event_type, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
 `
 
-func (q *Queries) DeleteEvent(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, DeleteEvent, id)
-	return err
+func (q *Queries) DeleteEvent(ctx context.Context, id uuid.UUID) (Event, error) {
+	row := q.db.QueryRow(ctx, DeleteEvent, id)
+	var i Event
+	err := row.Scan(
+		&i.ID,
+		&i.EventType,
+		&i.ChainID,
+		&i.ContactNumber,
+		&i.ContactAddress,
+		&i.OwnerCredentialID,
+		&i.BannerStorageKey,
+		&i.IconStorageKey,
+		&i.Title,
+		&i.ShortDescription,
+		&i.LongDescription,
+		&i.StartDate,
+		&i.EndDate,
+		&i.Location,
+		&i.GoogleMapQuery,
+		&i.MaxAttendees,
+		&i.IsPublic,
+		&i.IsBookingRequestRequired,
+		&i.IsVerified,
+		&i.IsTicketTransferable,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
 }
 
 const GetEventById = `-- name: GetEventById :one

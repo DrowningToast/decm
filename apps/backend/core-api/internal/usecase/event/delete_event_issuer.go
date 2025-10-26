@@ -12,7 +12,7 @@ import (
 func (u *EventUsecase) DeleteEventIssuer(ctx context.Context, id uuid.UUID, currentUser *auth.JwtClaims) error {
 	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, currentUser.UserId)
 	if err != nil {
-		return err
+		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	isVerifiedOrganizer := credential.IsVerifiedOrganizer
@@ -20,5 +20,10 @@ func (u *EventUsecase) DeleteEventIssuer(ctx context.Context, id uuid.UUID, curr
 		return customerror.Parse(&customerror.ErrUnauthorized, errors.New("user is not a verified organizer"))
 	}
 
-	return u.EventIssuerDataGateway.DeleteEventIssuer(ctx, id)
+	err = u.EventIssuerDataGateway.DeleteEventIssuer(ctx, id)
+	if err != nil {
+		return customerror.Parse(&customerror.ErrInternalServer, err)
+	}
+
+	return nil
 }

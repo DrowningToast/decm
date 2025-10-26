@@ -2,6 +2,8 @@ package event
 
 import (
 	"apps/backend/common/customerror"
+	"context"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -10,12 +12,14 @@ import (
 // GetEventById godoc
 // @Summary Get event by ID
 // @Description Get event by ID
+// @Tags Events
 // @ID get-event-by-id
 // @Accept json
 // @Produce json
 // @Param event_id path string true "Event ID"
 // @Success 200 {object} EventResponse
 // @Failure 400 {object} customerror.ErrResponse
+// @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
 // @Router /api/v1/events/{event_id} [get]
 func (h *Handler) GetEventById(ctx *fiber.Ctx) error {
@@ -24,7 +28,12 @@ func (h *Handler) GetEventById(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
-	event, err := h.EventUc.GetEventById(ctx.Context(), eventId)
+	// Create a context with 30-second timeout
+	base := ctx.UserContext()
+	ctxWithTimeout, cancel := context.WithTimeout(base, 30*time.Second)
+	defer cancel()
+
+	event, err := h.EventUc.GetEventById(ctxWithTimeout, eventId)
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
@@ -33,11 +42,11 @@ func (h *Handler) GetEventById(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrNotFound, nil)
 	}
 
-	bannerPresignedURL, err := h.EventUc.S3Service.GetPresignedURL(ctx.Context(), event.BannerStorageKey)
+	bannerPresignedURL, err := h.EventUc.S3Service.GetPresignedURL(ctxWithTimeout, event.BannerStorageKey)
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
-	iconPresignedURL, err := h.EventUc.S3Service.GetPresignedURL(ctx.Context(), event.IconStorageKey)
+	iconPresignedURL, err := h.EventUc.S3Service.GetPresignedURL(ctxWithTimeout, event.IconStorageKey)
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}

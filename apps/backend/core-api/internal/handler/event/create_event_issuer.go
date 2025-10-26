@@ -1,8 +1,11 @@
 package event
 
 import (
+	"errors"
 	"net/http"
+	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -13,9 +16,9 @@ import (
 )
 
 type CreateEventIssuerRequest struct {
-	IssuerCredentialID uuid.UUID `json:"issuer_credential_id"`
-	IsSigned           int32     `json:"is_signed"`
-	Signature          string    `json:"signature"`
+	IssuerCredentialID uuid.UUID `json:"issuer_credential_id" validate:"required,uuid"`
+	IsSigned           int32     `json:"is_signed" validate:"required,oneof=0 1"`
+	Signature          string    `json:"signature" validate:"required_if=IsSigned 1"`
 	SignMessage        string    `json:"sign_message"`
 }
 
@@ -48,7 +51,12 @@ func (h *Handler) CreateEventIssuer(ctx *fiber.Ctx) error {
 	}
 
 	if err := req.IsValid(); err != nil {
-		return err
+		// Ensure validation errors are properly wrapped
+		var validationErr *validator.ValidationErrors
+		if errors.As(err, &validationErr) {
+			return customerror.ParseValidationErr(validationErr)
+		}
+		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
 	params := eventUc.CreateEventIssuerParams{
@@ -71,7 +79,7 @@ func (h *Handler) CreateEventIssuer(ctx *fiber.Ctx) error {
 		IsSigned:           issuer.IsSigned,
 		Signature:          issuer.Signature.String,
 		SignMessage:        issuer.SignMessage.String,
-		CreatedAt:          issuer.CreatedAt.Time.String(),
-		UpdatedAt:          issuer.UpdatedAt.Time.String(),
+		CreatedAt:          issuer.CreatedAt.Time.Format(time.RFC3339),
+		UpdatedAt:          issuer.UpdatedAt.Time.Format(time.RFC3339),
 	})
 }

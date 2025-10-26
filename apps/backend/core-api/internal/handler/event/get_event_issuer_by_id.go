@@ -2,6 +2,7 @@ package event
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -17,7 +18,7 @@ import (
 // @Produce json
 // @Param event_id path string true "Event ID"
 // @Param issuer_id path string true "Issuer ID"
-// @Success 200 {array} EventIssuerResponse
+// @Success 200 {object} EventIssuerResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
@@ -39,7 +40,8 @@ func (h *Handler) GetEventIssuerByID(ctx *fiber.Ctx) error {
 		IssuerCredentialID: issuer.IssuerCredentialID,
 		IsSigned:           issuer.IsSigned,
 		Signature:          issuer.Signature.String,
-		CreatedAt:          issuer.CreatedAt.Time.String(),
-		UpdatedAt:          issuer.UpdatedAt.Time.String(),
+		SignMessage:        issuer.SignMessage.String,
+		CreatedAt:          issuer.CreatedAt.Time.Format(time.RFC3339),
+		UpdatedAt:          issuer.UpdatedAt.Time.Format(time.RFC3339),
 	})
 }

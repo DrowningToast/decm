@@ -27,7 +27,7 @@ type Querier interface {
 	// Note: PII encryption is handled at the repository layer using AES-GCM
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error
-	DeleteEvent(ctx context.Context, id uuid.UUID) error
+	DeleteEvent(ctx context.Context, id uuid.UUID) (Event, error)
 	DeleteEventCertificateConfig(ctx context.Context, eventID uuid.UUID) error
 	DeleteEventContract(ctx context.Context, eventID uuid.UUID) error
 	DeleteEventIssuer(ctx context.Context, id uuid.UUID) error

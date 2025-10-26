@@ -21,18 +21,14 @@ func (uc *EventUsecase) DeleteEvent(ctx context.Context, id uuid.UUID, currentUs
 		return nil, err
 	}
 
-	if dbEvent == nil {
-		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("event not found"))
-	}
-
 	if credential.Id != dbEvent.OwnerCredentialID {
-		return nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("user is not the owner of the event"))
+		return nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("user is not owner of the event"))
 	}
 
-	err = uc.EventDataGateway.DeleteEvent(ctx, id)
+	deletedEvent, err := uc.EventDataGateway.DeleteEvent(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return nil, nil
+	return deletedEvent, nil
 }
