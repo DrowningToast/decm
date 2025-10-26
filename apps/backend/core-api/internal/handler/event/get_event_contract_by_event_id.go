@@ -30,7 +30,7 @@ func (h *Handler) GetEventContractByEventID(ctx *fiber.Ctx) error {
 
 	contract, err := h.EventUc.GetEventContractByEventID(ctx.UserContext(), eventID)
 	if err != nil {
-		return customerror.Parse(&customerror.ErrNotFound, err)
+		return err
 	}
 
 	return ctx.Status(http.StatusOK).JSON(EventContractResponse{
