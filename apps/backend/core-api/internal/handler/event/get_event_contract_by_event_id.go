@@ -12,6 +12,7 @@ import (
 // GetEventContractByEventID godoc
 // @Summary Get event contract by event ID
 // @Description Get the event contract for an event
+// @Tags Events
 // @ID get-event-contract-by-event-id
 // @Accept json
 // @Produce json
