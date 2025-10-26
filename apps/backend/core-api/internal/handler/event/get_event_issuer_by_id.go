@@ -39,6 +39,7 @@ func (h *Handler) GetEventIssuerByID(ctx *fiber.Ctx) error {
 		IssuerCredentialID: issuer.IssuerCredentialID,
 		IsSigned:           issuer.IsSigned,
 		Signature:          issuer.Signature.String,
+		SignMessage:        issuer.SignMessage.String,
 		CreatedAt:          issuer.CreatedAt.Time.String(),
 		UpdatedAt:          issuer.UpdatedAt.Time.String(),
 	})
