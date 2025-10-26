@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import type React from "react";
 import { Link } from "@/router";
 import { WalletConnectButton } from "@/components/WalletConnectButton";
+import { Separator } from "@/components/ui/separator";
 import { Typography } from "@/components/typography/typography";
 import { ThemisWithScale } from "@/components/assets/ThemisWithScale";
 
@@ -77,19 +78,17 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onGoogleOAuthClick }) =>
                                 {t("signup.googleButton")}
                             </Typography>
                         </Button>
-
-                        {/* Already have account link */}
-                        <Link to="/signin" className="mt-0.5">
-                            <Typography
-                                variant="text"
-                                tag="p"
-                                color="background"
-                                className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] decoration-solid [text-decoration-skip-ink:none] [text-underline-position:from-font]"
-                            >
-                                {t("auth.hasAccount")}
-                            </Typography>
-                        </Link>
                     </div>
+
+                    <p className="text-xs text-center text-muted-foreground">
+                        <Link to="/signin" className="hover:underline">
+                            {t('auth.hasAccount')}
+                        </Link>
+                    </p>
+
+                    <p className="text-xs text-center text-muted-foreground mt-4">
+                        {t('signup.terms')}
+                    </p>
                 </div>
             </div>
 
