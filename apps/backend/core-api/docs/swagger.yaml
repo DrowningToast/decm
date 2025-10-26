@@ -161,10 +161,16 @@ definitions:
         type: string
       ticket_contract_address:
         type: string
+    required:
+    - access_manager_contract_address
+    - event_contract_address
     type: object
   event.CreateEventIssuerRequest:
     properties:
       is_signed:
+        enum:
+        - 0
+        - 1
         type: integer
       issuer_credential_id:
         type: string
@@ -172,6 +178,9 @@ definitions:
         type: string
       signature:
         type: string
+    required:
+    - is_signed
+    - issuer_credential_id
     type: object
   event.EventContractResponse:
     properties:
@@ -790,85 +799,6 @@ paths:
       summary: Create a new event
       tags:
       - Event
-  /api/v1/events/:event_id:
-    put:
-      consumes:
-      - multipart/form-data
-      description: Update an existing event with optional banner and icon image upload
-      operationId: update-event
-      parameters:
-      - description: Event name
-        in: formData
-        name: name
-        required: true
-        type: string
-      - description: Event short description
-        in: formData
-        name: short_description
-        required: true
-        type: string
-      - description: Event description
-        in: formData
-        name: description
-        required: true
-        type: string
-      - description: Start date (RFC3339 format)
-        in: formData
-        name: start_date
-        required: true
-        type: string
-      - description: End date (RFC3339 format)
-        in: formData
-        name: end_date
-        required: true
-        type: string
-      - description: Number of seats
-        in: formData
-        name: seats_count
-        required: true
-        type: integer
-      - description: Contact number
-        in: formData
-        name: contact_number
-        required: true
-        type: string
-      - description: Contact address
-        in: formData
-        name: contact_address
-        required: true
-        type: string
-      - description: Location
-        in: formData
-        name: location
-        required: true
-        type: string
-      - description: Google map query
-        in: formData
-        name: google_map_query
-        required: true
-        type: string
-      - description: Event banner image (JPEG, PNG, WebP, max 10MB) - optional
-        in: formData
-        name: banner
-        type: file
-      - description: Event icon image (JPEG, PNG, WebP, max 10MB) - optional
-        in: formData
-        name: icon
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/entity.Event'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-      summary: Update an event
-      tags:
-      - Event
   /api/v1/events/{event_id}:
     delete:
       consumes:
@@ -886,6 +816,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/event.EventResponse'
         "400":
           description: Bad Request
           schema:
@@ -899,6 +831,8 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Delete event by ID
+      tags:
+      - Event
     get:
       consumes:
       - application/json
@@ -921,16 +855,105 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get event by ID
+      tags:
+      - Events
+    put:
+      consumes:
+      - multipart/form-data
+      description: Update an existing event with optional banner and icon image upload
+      operationId: update-event
+      parameters:
+      - description: Event name
+        in: formData
+        name: name
+        type: string
+      - description: Event short description
+        in: formData
+        name: short_description
+        type: string
+      - description: Event description
+        in: formData
+        name: description
+        type: string
+      - description: Start date (RFC3339 format)
+        in: formData
+        name: start_date
+        required: true
+        type: string
+      - description: End date (RFC3339 format)
+        in: formData
+        name: end_date
+        required: true
+        type: string
+      - description: Number of seats
+        in: formData
+        name: seats_count
+        required: true
+        type: integer
+      - description: Contact number
+        in: formData
+        name: contact_number
+        type: string
+      - description: Contact address
+        in: formData
+        name: contact_address
+        type: string
+      - description: Location
+        in: formData
+        name: location
+        type: string
+      - description: Google map query
+        in: formData
+        name: google_map_query
+        type: string
+      - description: Event banner image (JPEG, PNG, WebP, max 10MB) - optional
+        in: formData
+        name: banner
+        type: file
+      - description: Event icon image (JPEG, PNG, WebP, max 10MB) - optional
+        in: formData
+        name: icon
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Event'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Update an event
+      tags:
+      - Event
   /api/v1/events/{event_id}/certificate-config:
     delete:
       consumes:
       - application/json
-      description: Delete the event certificate configuration for an event
+      description: Delete event certificate configuration for an event
       operationId: delete-event-certificate-config
       parameters:
       - description: Event ID
@@ -960,6 +983,8 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Delete event certificate config
+      tags:
+      - EventConfig
   /api/v1/events/{event_id}/config/certificate:
     get:
       consumes:
@@ -1065,7 +1090,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get the event registration configuration for an event
+      description: Get event registration configuration for an event
       operationId: get-event-registration-config
       parameters:
       - description: Event ID
@@ -1093,6 +1118,8 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get event registration config
+      tags:
+      - Events
     put:
       consumes:
       - application/json
@@ -1134,7 +1161,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Delete the event contract for an event
+      description: Delete event contract for an event
       operationId: delete-event-contract
       parameters:
       - description: Event ID
@@ -1155,6 +1182,14 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
         "404":
           description: Not Found
           schema:
@@ -1164,6 +1199,8 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Delete event contract
+      tags:
+      - Event Contracts
     get:
       consumes:
       - application/json
@@ -1195,6 +1232,8 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get event contract by event ID
+      tags:
+      - Events
     post:
       consumes:
       - application/json
@@ -1215,8 +1254,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             $ref: '#/definitions/event.EventContractResponse'
         "400":
@@ -1232,6 +1271,8 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Create event contract
+      tags:
+      - Event
     put:
       consumes:
       - application/json
@@ -1294,6 +1335,14 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
         "404":
           description: Not Found
           schema:
@@ -1303,6 +1352,8 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get event issuers by event ID
+      tags:
+      - Events
     post:
       consumes:
       - application/json
@@ -1418,6 +1469,8 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Delete event issuer
+      tags:
+      - Events
     get:
       consumes:
       - application/json
@@ -1440,9 +1493,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/event.EventIssuerResponse'
-            type: array
+            $ref: '#/definitions/event.EventIssuerResponse'
         "400":
           description: Bad Request
           schema:
