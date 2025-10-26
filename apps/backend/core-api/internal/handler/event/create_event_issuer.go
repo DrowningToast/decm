@@ -13,9 +13,9 @@ import (
 )
 
 type CreateEventIssuerRequest struct {
-	IssuerCredentialID uuid.UUID `json:"issuer_credential_id"`
-	IsSigned           int32     `json:"is_signed"`
-	Signature          string    `json:"signature"`
+	IssuerCredentialID uuid.UUID `json:"issuer_credential_id" validate:"required,uuid"`
+	IsSigned           int32     `json:"is_signed" validate:"required,oneof=0 1"`
+	Signature          string    `json:"signature" validate:"required_if=IsSigned 1"`
 	SignMessage        string    `json:"sign_message"`
 }
 
