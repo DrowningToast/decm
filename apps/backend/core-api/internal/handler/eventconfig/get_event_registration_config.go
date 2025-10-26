@@ -12,7 +12,8 @@ import (
 
 // GetEventRegistrationConfig godoc
 // @Summary Get event registration config
-// @Description Get the event registration configuration for an event
+// @Description Get event registration configuration for an event
+// @Tags Events
 // @ID get-event-registration-config
 // @Accept json
 // @Produce json
@@ -30,7 +31,12 @@ func (h *Handler) GetEventRegistrationConfig(ctx *fiber.Ctx) error {
 
 	config, err := h.EventConfigUc.GetEventRegistrationConfigByEventID(ctx.UserContext(), eventID)
 	if err != nil {
-		return customerror.Parse(&customerror.ErrNotFound, err)
+		// Check if err is already a customerror type
+		if customErr := customerror.TryParseAsCustomErr(err); customErr != nil {
+			return customErr
+		}
+		// For non-custom errors, wrap as internal error
+		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	// Prepare response with nullable fields

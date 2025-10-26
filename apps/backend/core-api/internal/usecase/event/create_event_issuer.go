@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 
+	"apps/backend/common/customerror"
 	"decm-database/go/generated"
 )
 
@@ -26,5 +27,10 @@ func (u *EventUsecase) CreateEventIssuer(ctx context.Context, params CreateEvent
 		SignMessage:        params.SignMessage,
 	}
 
-	return u.EventIssuerDataGateway.CreateEventIssuer(ctx, createParams)
+	issuer, err := u.EventIssuerDataGateway.CreateEventIssuer(ctx, createParams)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+	}
+
+	return issuer, nil
 }

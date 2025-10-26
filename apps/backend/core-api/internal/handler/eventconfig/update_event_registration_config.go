@@ -15,19 +15,19 @@ import (
 )
 
 type UpdateEventRegistrationConfigRequest struct {
-	FinalCallForRegistration             *time.Time       `json:"final_call_for_registration,omitempty"`
-	RegistrationPassword                 *string          `json:"registration_password,omitempty"`
-	FirstNameRequirementStatus           int32            `json:"first_name_requirement_status"`
-	LastNameRequirementStatus            int32            `json:"last_name_requirement_status"`
-	EmailRequirementStatus               int32            `json:"email_requirement_status"`
-	BioRequirementStatus                 int32            `json:"bio_requirement_status"`
-	PhoneNumberRequirementStatus         int32            `json:"phone_number_requirement_status"`
-	AddressRequirementStatus             int32            `json:"address_requirement_status"`
-	AcademicInstitutionRequirementStatus int32            `json:"academic_institution_requirement_status"`
-	AcademicEmailRequirementStatus       int32            `json:"academic_email_requirement_status"`
-	IsBookingRequestRequired             bool             `json:"is_booking_request_required"`
-	IsTicketTransferable                 bool             `json:"is_ticket_transferable"`
-	EventType                            entity.EventType `json:"event_type,omitempty"`
+	FinalCallForRegistration             *time.Time       `json:"final_call_for_registration,omitempty" valid:"omitempty"`
+	RegistrationPassword                 *string          `json:"registration_password,omitempty" valid:"omitempty"`
+	FirstNameRequirementStatus           int32            `json:"first_name_requirement_status" valid:"required,range(0|2)"`
+	LastNameRequirementStatus            int32            `json:"last_name_requirement_status" valid:"required,range(0|2)"`
+	EmailRequirementStatus               int32            `json:"email_requirement_status" valid:"required,range(0|2)"`
+	BioRequirementStatus                 int32            `json:"bio_requirement_status" valid:"required,range(0|2)"`
+	PhoneNumberRequirementStatus         int32            `json:"phone_number_requirement_status" valid:"required,range(0|2)"`
+	AddressRequirementStatus             int32            `json:"address_requirement_status" valid:"required,range(0|2)"`
+	AcademicInstitutionRequirementStatus int32            `json:"academic_institution_requirement_status" valid:"required,range(0|2)"`
+	AcademicEmailRequirementStatus       int32            `json:"academic_email_requirement_status" valid:"required,range(0|2)"`
+	IsBookingRequestRequired             bool             `json:"is_booking_request_required" valid:"required"`
+	IsTicketTransferable                 bool             `json:"is_ticket_transferable" valid:"required"`
+	EventType                            entity.EventType `json:"event_type,omitempty" valid:"omitempty,oneof=public private invite"`
 }
 
 func (r *UpdateEventRegistrationConfigRequest) IsValid() error {
@@ -85,6 +85,11 @@ func (h *Handler) UpdateEventRegistrationConfig(ctx *fiber.Ctx) error {
 
 	config, err := h.EventConfigUc.UpdateEventRegistrationConfig(ctx.UserContext(), eventID, params, currentUser)
 	if err != nil {
+		// Check if err is already a customerror type
+		if customErr := customerror.TryParseAsCustomErr(err); customErr != nil {
+			return customErr
+		}
+		// For non-custom errors, wrap as internal error
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
