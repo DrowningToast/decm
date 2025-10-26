@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
 import { FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { OAuthOnboardContext } from "../OAuthOnboardContext";
 import { OnboardPageContext } from "@/pages/onboard/[method]";
+import { OAuthOnboardContext } from "../OAuthOnboardContext";
 interface PasswordInputPageProps {
     onSwitchToPin: () => void;
     onLogout: () => void;
@@ -16,7 +16,7 @@ export const PasswordInputPage: React.FC<PasswordInputPageProps> = ({
     onSwitchToPin,
     onLogout,
 }) => {
-    const { form } = useContext(OAuthOnboardContext);
+    const { form } = useContext(OAuthOnboardContext)
     const { setStep } = useContext(OnboardPageContext);
     const { t } = useTranslation();
     const [showPassword, setShowPassword] = useState(false);

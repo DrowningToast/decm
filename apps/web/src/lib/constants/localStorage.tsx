@@ -3,6 +3,7 @@ export const LOCAL_STORAGE_KEYS = {
     JWT: "jwt",
     ACCESS_TOKEN: "accessToken",
     EXPIRES_IN: "expiresIn",
+    AUTH_SIGN_SIGNATURE: "authSignSignature",
 } as const
 
 export type LocalStorageKeys = typeof LOCAL_STORAGE_KEYS[keyof typeof LOCAL_STORAGE_KEYS];

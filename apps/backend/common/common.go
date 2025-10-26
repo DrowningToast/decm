@@ -31,3 +31,10 @@ func ValidateEvmAddress(address string) (bool, *ValidateEvmAddressErrCode) {
 
 	return true, nil
 }
+
+type SolutionStatus int32
+
+const (
+	SolutionStatusManaged SolutionStatus = 0
+	SolutionStatusBYOK    SolutionStatus = 1
+)
