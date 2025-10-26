@@ -30,7 +30,7 @@ func (h *Handler) DeleteEventCertificateConfig(ctx *fiber.Ctx) error {
 
 	err = h.EventConfigUc.DeleteEventCertificateConfig(ctx.UserContext(), eventID)
 	if err != nil {
-		return customerror.Parse(&customerror.ErrInternalServer, err)
+		return err
 	}
 
 	return ctx.Status(http.StatusOK).JSON(map[string]string{"message": "Event certificate config deleted successfully"})
