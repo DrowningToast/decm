@@ -7,20 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"apps/backend/common/customerror"
-	"apps/backend/common/validatorutils"
 )
-
-// Request/Response structures
-type CreateEventContractRequest struct {
-	AccessManagerContractAddress string `json:"access_manager_contract_address" validate:"required,ethereum"`
-	EventContractAddress         string `json:"event_contract_address" validate:"required,ethereum"`
-	TicketContractAddress        string `json:"ticket_contract_address" validate:"ethereum"`
-	CertificateContractAddress   string `json:"certificate_contract_address" validate:"ethereum"`
-}
-
-func (r *CreateEventContractRequest) IsValid() error {
-	return validatorutils.ValidateStruct(r)
-}
 
 // DeleteEventContract godoc
 // @Summary Delete event contract
