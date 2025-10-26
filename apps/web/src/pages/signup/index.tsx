@@ -1,8 +1,8 @@
 import { env } from "@/config/env";
 import { LOCAL_STORAGE_KEYS, setLocalStorageItem } from "@/lib/constants/localStorage";
 import { OnboardMethods } from "../onboard/[method]";
-import { SignupPage } from "@/components/pages/Auth/SignupPage";
 import { useAuthRedirect } from "@/components/pages/Auth/useAuthRedirect";
+import { SignupPage } from "@/components/pages/Auth/SignupPage";
 
 const SignUpPage = () => {
     useAuthRedirect();
