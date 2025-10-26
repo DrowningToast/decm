@@ -63,6 +63,14 @@ func main() {
 	defer stop()
 
 	cfg := config.LoadConfig()
+
+	// Validate configuration
+	if err := cfg.Validate(); err != nil {
+		logger := log.LoadLogger()
+		logger.ErrorContext(ctx, "Configuration validation failed", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+
 	logger := log.LoadLogger()
 
 	pgConn, err := pgclient.NewPool(ctx, &cfg.Postgres)
