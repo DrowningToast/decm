@@ -10,12 +10,14 @@ import (
 // GetEventById godoc
 // @Summary Get event by ID
 // @Description Get event by ID
+// @Tags Events
 // @ID get-event-by-id
 // @Accept json
 // @Produce json
 // @Param event_id path string true "Event ID"
 // @Success 200 {object} EventResponse
 // @Failure 400 {object} customerror.ErrResponse
+// @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
 // @Router /api/v1/events/{event_id} [get]
 func (h *Handler) GetEventById(ctx *fiber.Ctx) error {
