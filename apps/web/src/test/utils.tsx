@@ -1,10 +1,17 @@
 import React from 'react'
 import { render, type RenderOptions } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, setLogger } from '@tanstack/react-query'
 import { MemoryRouter, type MemoryRouterProps } from 'react-router-dom'
 import { I18nextProvider } from 'react-i18next'
 import i18n from 'i18next'
 import { vi } from 'vitest'
+
+// Configure query client logger to silence logs in tests
+setLogger({
+  log: () => { },
+  warn: () => { },
+  error: () => { }
+})
 
 // Initialize i18n for tests
 i18n.init({
@@ -69,11 +76,6 @@ export function renderWithProviders(
       mutations: {
         retry: false
       }
-    },
-    logger: {
-      log: () => {},
-      warn: () => {},
-      error: () => {}
     }
   })
 
@@ -100,7 +102,7 @@ export function renderWithProviders(
 // Mock localStorage helper
 export function createLocalStorageMock() {
   let store: Record<string, string> = {}
-  
+
   return {
     getItem: vi.fn((key: string) => store[key] ?? null),
     setItem: vi.fn((key: string, value: string) => {
@@ -125,7 +127,7 @@ export function createLocalStorageMock() {
 }
 
 // Wait for async updates
-export const waitForAsync = (ms = 0) => 
+export const waitForAsync = (ms = 0) =>
   new Promise(resolve => setTimeout(resolve, ms))
 
 // Mock API response helper
@@ -181,7 +183,7 @@ export const testIds = {
   signOutButton: 'sign-out-button',
   googleSignInButton: 'google-sign-in-button',
   walletSignInButton: 'wallet-sign-in-button',
-  
+
   // Form fields
   emailInput: 'email-input',
   firstNameInput: 'first-name-input',
@@ -191,13 +193,13 @@ export const testIds = {
   bioTextarea: 'bio-textarea',
   academicEmailInput: 'academic-email-input',
   academicInstitutionInput: 'academic-institution-input',
-  
+
   // Onboarding
   onboardingForm: 'onboarding-form',
   createAccountButton: 'create-account-button',
   createProfileButton: 'create-profile-button',
   skipButton: 'skip-button',
-  
+
   // Loading states
   loadingSpinner: 'loading-spinner',
   errorMessage: 'error-message',
