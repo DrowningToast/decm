@@ -10,7 +10,7 @@ import { match } from "ts-pattern";
 import { OnboardMethods } from "@/pages/onboard/[method]";
 
 // eg. Sign in, Sign up, onboard page
-export const useAuthRedirect = () => {
+export const useAuthRedirect = (): void => {
     const navigate = useNavigate();
     const { onboardStatus, isLoading } = useCheckOnboardStatus();
     const { data: walletClient } = useWalletClient();
