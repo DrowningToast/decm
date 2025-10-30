@@ -32,7 +32,11 @@
         "db:config": "node scripts/db-env.js",
         "contract:build": "cd apps/contracts && forge install && forge build",
         "gen-icons:web": "rm -rf apps/web/src/components/icons/gen && pnpm dlx @svgr/cli --typescript --icon --out-dir apps/web/src/components/icons/gen apps/web/src/assets/icons/*",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "test:core": "cd apps/backend && go test ./...",
+        "test:core:verbose": "cd apps/backend && go test -v ./...",
+        "test:core:coverage": "cd apps/backend && go test -cover ./...",
+        "test:core:coverage:report": "cd apps/backend && go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out"
     },
     "devDependencies": {
         "husky": "^9.1.7",
