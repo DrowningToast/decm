@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:${{ env.POSTGRES_VERSION }}
+        image: postgres:16-alpine
         env:
           POSTGRES_USER: decm_user
           POSTGRES_PASSWORD: decm_password
@@ -161,7 +161,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:${{ env.POSTGRES_VERSION }}
+        image: postgres:16-alpine
         env:
           POSTGRES_USER: decm_user
           POSTGRES_PASSWORD: decm_password
