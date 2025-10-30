@@ -18,7 +18,12 @@ export default defineConfig({
     },
     build: {
         rollupOptions: {
-            external: [/.*\.test\.tsx?$/, /.*\.spec\.tsx?$/],
+            output: {
+                manualChunks: undefined,
+            },
         },
+    },
+    optimizeDeps: {
+        exclude: ["**/*.test.tsx?", "**/*.spec.tsx?"],
     },
 });

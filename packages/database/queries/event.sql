@@ -42,7 +42,6 @@ INSERT INTO events (
 -- name: GetEventById :one
 SELECT 
     id,
-    event_type,
     chain_id,
     contact_number,
     contact_address,
@@ -84,8 +83,7 @@ SET
     is_public = sqlc.arg(is_public),
     is_booking_request_required = sqlc.arg(is_booking_request_required),
     is_verified = sqlc.arg(is_verified),
-    is_ticket_transferable = sqlc.arg(is_ticket_transferable),
-    event_type = sqlc.arg(event_type)
+    is_ticket_transferable = sqlc.arg(is_ticket_transferable)
 WHERE id = sqlc.arg(id)
 RETURNING *;
 
@@ -99,7 +97,6 @@ RETURNING *;
 -- name: ListEventsByOwner :many
 SELECT 
     id,
-    event_type,
     chain_id,
     contact_number,
     contact_address,
@@ -127,7 +124,6 @@ ORDER BY created_at DESC;
 -- name: ListPublicEvents :many
 SELECT 
     id,
-    event_type,
     chain_id,
     contact_number,
     contact_address,
