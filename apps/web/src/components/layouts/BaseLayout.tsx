@@ -25,5 +25,3 @@ interface BaseLayoutProps extends React.PropsWithChildren {
 export const BaseLayout = ({ children, className, variant = "dark" }: BaseLayoutProps) => {
     return <div className={cn(componentVariants({ variant }), className)}>{children}</div>;
 };
-
-export { componentVariants };

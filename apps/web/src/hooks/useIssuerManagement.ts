@@ -58,27 +58,30 @@ export const useIssuerManagement = ({
     };
 
     // Default search function using verified issuers
-    const defaultSearchFunction = async (query: string): Promise<Issuer[]> => {
-        // Simulate API delay for better UX
-        await new Promise((resolve) => setTimeout(resolve, 300));
+    const defaultSearchFunction = useCallback(
+        async (query: string): Promise<Issuer[]> => {
+            // Simulate API delay for better UX
+            await new Promise((resolve) => setTimeout(resolve, 300));
 
-        if (!verifiedIssuers || verifiedIssuers.length === 0) {
-            return [];
-        }
+            if (!verifiedIssuers || verifiedIssuers.length === 0) {
+                return [];
+            }
 
-        // Convert EntityProfile to Issuer format
-        const issuers = verifiedIssuers.map(convertProfileToIssuer);
+            // Convert EntityProfile to Issuer format
+            const issuers = verifiedIssuers.map(convertProfileToIssuer);
 
-        // Filter based on query
-        const filteredIssuers = issuers.filter(
-            (issuer) =>
-                issuer.name.toLowerCase().includes(query.toLowerCase()) ||
-                issuer.email.toLowerCase().includes(query.toLowerCase()) ||
-                issuer.organization?.toLowerCase().includes(query.toLowerCase()),
-        );
+            // Filter based on query
+            const filteredIssuers = issuers.filter(
+                (issuer) =>
+                    issuer.name.toLowerCase().includes(query.toLowerCase()) ||
+                    issuer.email.toLowerCase().includes(query.toLowerCase()) ||
+                    issuer.organization?.toLowerCase().includes(query.toLowerCase()),
+            );
 
-        return filteredIssuers;
-    };
+            return filteredIssuers;
+        },
+        [verifiedIssuers],
+    );
 
     const handleSearch = useCallback(async () => {
         if (!searchQuery.trim()) return;
@@ -95,7 +98,7 @@ export const useIssuerManagement = ({
         } finally {
             setIsSearching(false);
         }
-    }, [searchQuery, searchFunction]);
+    }, [searchQuery, searchFunction, defaultSearchFunction]);
 
     const handleSearchQueryChange = useCallback((query: string) => {
         setSearchQuery(query);

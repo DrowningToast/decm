@@ -36,8 +36,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
 
     if (!isAuthenticated) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return <Navigate to={redirectTo as any} replace />;
+        return <Navigate to={redirectTo} replace />;
     }
 
     if (requiredRoles && requiredRoles.length > 0 && userRole) {

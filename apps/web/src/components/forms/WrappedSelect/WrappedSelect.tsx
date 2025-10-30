@@ -1,4 +1,4 @@
-import { Controller } from "react-hook-form";
+import { Controller, type Control as RHFControl } from "react-hook-form";
 import { Typography } from "@/components/typography/typography";
 import { Label } from "@/components/ui/label";
 import {
@@ -9,8 +9,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-// Use any for now to avoid type issues with react-hook-form imports
-type Control = any;
+type Control = RHFControl<Record<string, unknown>>;
 
 interface WrappedSelectProps {
     // Form control
@@ -33,7 +32,7 @@ interface WrappedSelectProps {
     placeholder?: string;
 
     // Type casting for the value
-    valueAs?: (value: string) => any;
+    valueAs?: (value: string) => unknown;
 
     // Layout
     containerClassName?: string;
