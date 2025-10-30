@@ -67,7 +67,7 @@ This ensures:
 
 ### Encryption Flow Diagram
 
-```
+```text
 User Input
     ↓
 Handler (Parse/Validate)
