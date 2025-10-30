@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { PublicNavbar } from "@/components/layouts/navigations/PublicNavbar";
+import { Typography } from "@/components/typography/typography";
+import { useTranslation } from "react-i18next";
 
 /**
  * Component Examples - Usage Guide
@@ -9,6 +11,7 @@ import { PublicNavbar } from "@/components/layouts/navigations/PublicNavbar";
  */
 
 export function ButtonExamples() {
+    const { t } = useTranslation();
     return (
         <div className="space-y-8 p-8">
             <div className="space-y-4">
@@ -42,20 +45,22 @@ export function ButtonExamples() {
             </div>
 
             <div className="space-y-4">
-                <h2 className="text-2xl font-bold">Button Sizes</h2>
+                <Typography variant="header" tag="h2">
+                    {t("examples.buttonSizes")}
+                </Typography>
 
                 <div className="flex flex-wrap items-center gap-4">
                     <Button variant="primary" size="sm">
-                        Small
+                        {t("examples.buttons.small")}
                     </Button>
                     <Button variant="primary" size="default">
-                        Default
+                        {t("examples.buttons.default")}
                     </Button>
                     <Button variant="primary" size="lg">
-                        Large
+                        {t("examples.buttons.large")}
                     </Button>
                     <Button variant="primary" size="xl">
-                        Extra Large
+                        {t("examples.buttons.extraLarge")}
                     </Button>
                 </div>
             </div>

@@ -10,8 +10,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { AppKitProvider } from "@/config/walletConnect";
 import { AuthProvider } from "@/context/AuthContext";
-import { AppKitProvider } from "@/config/walletConnect";
-import { AuthProvider } from "@/context/AuthContext";
 
 // Lazy load the DevTools to avoid bundle issues
 const ReactQueryDevtools = lazy(() =>

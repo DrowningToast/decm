@@ -124,14 +124,12 @@ export const ToastFromError = (t: TFunction, err: Error, type?: ErrType): void =
 
     // Try to determine the error type
     if (err instanceof AxiosError) {
-        return ToastFromAxiosError(t, err);
+        ToastFromAxiosError(t, err);
     } else {
-        return ToastFn("error")(t("errors.generic"), {
+        ToastFn("error")(t("errors.generic"), {
             description: t("errors.genericDescription"),
         });
     }
-
-    return err;
 };
 
 export const ToastFromAxiosError = (
