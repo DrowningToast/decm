@@ -4,7 +4,7 @@
     "type": "module",
     "private": true,
     "scripts": {
-        "dev": "vite",
+        "dev:poc": "vite",
         "build:poc": "vite build",
         "preview:poc": "vite preview"
     },
