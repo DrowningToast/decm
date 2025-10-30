@@ -685,52 +685,52 @@
           "part2": "Your private key is encrypted with your passcode/password you provided.  <strong>If you do not set up a back-up authentication method. We do not either.</strong>"
         },
         "confirm": {
-            "title": "Heads up",
-            "oauth": {
-                "description": {
-                    "part1": "Certificates rely on blockchain technology as a source of truth. Since you’re using OAuth account instead of web3 wallet as a account. We’re managing the your account/wallet private key behind the scene.",
-                    "part2": "Your private key is encrypted with your passcode/password you provided. Losing your passcode/password will result in total account lost."
-                },
-                "checkboxes": {
-                    "acceptRisk": "I'm ok with that.",
-                    "acknowledgePasswordLoss": "I acknowledged that losing my passcode/password will result in total account lost"
-                }
+          "title": "Heads up",
+          "oauth": {
+            "description": {
+              "part1": "Certificates rely on blockchain technology as a source of truth. Since you’re using OAuth account instead of web3 wallet as a account. We’re managing the your account/wallet private key behind the scene.",
+              "part2": "Your private key is encrypted with your passcode/password you provided. Losing your passcode/password will result in total account lost."
             },
-            "wallet": {
-                "description": {
-                    "part1": "Certificates rely on blockchain technology as a source of truth. Your account is permanently bonded with your EVM wallet. ",
-                    "part2": "If you lose your wallet, you’ll no-longer able to access your portfolio."
-                },
-                "checkboxes": {
-                    "acceptRisk": "I'm ok with that.",
-                    "acknowledgeWalletLoss": "I acknowledged that losing my wallet will result in total account lost"
-                }
+            "checkboxes": {
+              "acceptRisk": "I'm ok with that.",
+              "acknowledgePasswordLoss": "I acknowledged that losing my passcode/password will result in total account lost"
             }
+          },
+          "wallet": {
+            "description": {
+              "part1": "Certificates rely on blockchain technology as a source of truth. Your account is permanently bonded with your EVM wallet. ",
+              "part2": "If you lose your wallet, you’ll no-longer able to access your portfolio."
+            },
+            "checkboxes": {
+              "acceptRisk": "I'm ok with that.",
+              "acknowledgeWalletLoss": "I acknowledged that losing my wallet will result in total account lost"
+            }
+          }
         },
         "flow": {
-            "check_onboard_status": {
-                "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
-                "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
-                "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
-            },
-            "oauth_google": {
-                "create_account_pending": "Authenticating with Google...",
-                "create_account_success": "Authenticated with Google successfully",
-                "create_account_error": "Failed to authenticate with Google",
-                "create_account_error_duplicate": "The account with this email already exists.",
-                "create_profile_pending": "Updating profile...",
-                "create_profile_success": "Profile updated successfully",
-                "create_profile_error_duplicate": "The profile with this email already exists.",
-                "create_profile_error": "Failed to update profile. Please try again later.",
-                "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
-                "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
-                "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
-            }
+          "check_onboard_status": {
+            "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
+            "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
+            "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
+          },
+          "oauth_google": {
+            "create_account_pending": "Authenticating with Google...",
+            "create_account_success": "Authenticated with Google successfully",
+            "create_account_error": "Failed to authenticate with Google",
+            "create_account_error_duplicate": "The account with this email already exists.",
+            "create_profile_pending": "Updating profile...",
+            "create_profile_success": "Profile updated successfully",
+            "create_profile_error_duplicate": "The profile with this email already exists.",
+            "create_profile_error": "Failed to update profile. Please try again later.",
+            "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
+            "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
+            "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
+          }
         },
         "api": {
-            "error": {
-                "authentication_credential_id_already_exists": "Authentication credential ID already exists"
-            }
+          "error": {
+            "authentication_credential_id_already_exists": "Authentication credential ID already exists"
+          }
         }
       }
     },

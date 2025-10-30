@@ -2,6 +2,7 @@ package event
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/google/uuid"
 
 	"apps/backend/common/customerror"
-	"errors"
 )
 
 // GetEventIssuersByEventID godoc
