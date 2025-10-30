@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import { PublicNavbar } from "../layouts/navigations/PublicNavbar";
+import { CustomHelmet } from "../providers/helmets/CustomHelmet";
+import { FaviconHelmet } from "../providers/helmets/FaviconHelmet";
 
 const pageContainerVariants = cva("py-10 min-h-dvh lg:py-16", {
     variants: {
@@ -19,12 +21,16 @@ interface PageContainerProps {
     children: ReactNode;
     bgColor?: "default" | "primary";
     className?: string;
+    title?: string;
+    description?: string;
 }
 
 export default function PageContainer({
     children,
     className,
     bgColor = "default",
+    title,
+    description,
 }: PageContainerProps) {
     const _className = cn(
         pageContainerVariants({
@@ -36,8 +42,8 @@ export default function PageContainer({
 
     return (
         <div className={_className}>
-            {/* <CustomHelmet title={`${title} | ${PAGE_TITLE_SUBFIX}`} description={description} />
-      <FaviconHelmet title={`${title} | ${PAGE_TITLE_SUBFIX}`} description={description} /> */}
+            <CustomHelmet title={title} description={description} />
+            <FaviconHelmet title={title} description={description} />
             <PublicNavbar />
             <div className="max-w-[1440px] mx-auto space-y-8 mt-14 lg:mt-10">{children}</div>
         </div>

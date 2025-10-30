@@ -14,6 +14,7 @@ const typographyVariants = cva("text-wrap", {
         color: {
             foreground: "text-foreground",
             background: "text-background",
+            "background-alt": "text-background-alt",
             primary: "text-primary",
             secondary: "text-secondary",
             muted: "text-muted",

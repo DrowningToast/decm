@@ -7,13 +7,18 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 export default defineConfig({
-	plugins: [react(), generouted(), tailwindcss()],
-	server: {
-		port: 3000,
-	},
-	resolve: {
-		alias: {
-			"@": path.resolve(__dirname, "./src"),
-		},
-	},
+    plugins: [react(), generouted(), tailwindcss()],
+    server: {
+        port: 3000,
+    },
+    resolve: {
+        alias: {
+            "@": path.resolve(__dirname, "./src"),
+        },
+    },
+    build: {
+        rollupOptions: {
+            external: [/.*\.test\.tsx?$/, /.*\.spec\.tsx?$/],
+        },
+    },
 });
