@@ -180,3 +180,134 @@ describe('ProtectedRoute', () => {
         expect(screen.getByText('Protected Content')).toBeInTheDocument();
     });
 });
+
+describe('ProtectedRoute - Additional Edge Cases', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('should handle userRole as undefined when authenticated', () => {
+        (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({
+            isAuthenticated: true,
+            isLoading: false,
+            userRole: undefined,
+        });
+
+        render(
+            <ProtectedRoute>
+                <div>Protected Content</div>
+            </ProtectedRoute>,
+        );
+
+        expect(screen.getByText('Protected Content')).toBeInTheDocument();
+    });
+
+    it('should handle empty requiredRoles array', () => {
+        (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({
+            isAuthenticated: true,
+            isLoading: false,
+            userRole: 'PARTICIPANT',
+        });
+
+        render(
+            <ProtectedRoute requiredRoles={[]}>
+                <div>Protected Content</div>
+            </ProtectedRoute>,
+        );
+
+        expect(screen.getByText('Protected Content')).toBeInTheDocument();
+    });
+
+    it('should transition from loading to authenticated', () => {
+        const { rerender } = render(<ProtectedRoute><div>Content</div></ProtectedRoute>);
+
+        (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({
+            isAuthenticated: false,
+            isLoading: true,
+            userRole: undefined,
+        });
+        rerender(<ProtectedRoute><div>Content</div></ProtectedRoute>);
+        expect(screen.getByText('Loading...')).toBeInTheDocument();
+
+        (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({
+            isAuthenticated: true,
+            isLoading: false,
+            userRole: 'ADMIN',
+        });
+        rerender(<ProtectedRoute><div>Content</div></ProtectedRoute>);
+        expect(screen.getByText('Content')).toBeInTheDocument();
+    });
+
+    it('should handle case-sensitive role matching', () => {
+        (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({
+            isAuthenticated: true,
+            isLoading: false,
+            userRole: 'admin' as any, // lowercase
+        });
+
+        render(
+            <ProtectedRoute requiredRoles={['ADMIN']}>
+                <div>Protected Content</div>
+            </ProtectedRoute>,
+        );
+
+        const navigate = screen.getByTestId('navigate');
+        expect(navigate).toHaveAttribute('data-to', '/unauthorized');
+    });
+
+    it('should render complex children correctly', () => {
+        (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({
+            isAuthenticated: true,
+            isLoading: false,
+            userRole: 'ADMIN',
+        });
+
+        render(
+            <ProtectedRoute>
+                <div>
+                    <h1>Title</h1>
+                    <p>Paragraph</p>
+                    <button>Action</button>
+                </div>
+            </ProtectedRoute>,
+        );
+
+        expect(screen.getByText('Title')).toBeInTheDocument();
+        expect(screen.getByText('Paragraph')).toBeInTheDocument();
+        expect(screen.getByText('Action')).toBeInTheDocument();
+    });
+
+    it('should support custom redirectTo paths with query params', () => {
+        (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({
+            isAuthenticated: false,
+            isLoading: false,
+            userRole: undefined,
+        });
+
+        render(
+            <ProtectedRoute redirectTo="/login?returnUrl=/dashboard">
+                <div>Protected Content</div>
+            </ProtectedRoute>,
+        );
+
+        const navigate = screen.getByTestId('navigate');
+        expect(navigate).toHaveAttribute('data-to', '/login?returnUrl=/dashboard');
+    });
+
+    it('should handle multiple required roles with userRole null', () => {
+        (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({
+            isAuthenticated: true,
+            isLoading: false,
+            userRole: null,
+        });
+
+        render(
+            <ProtectedRoute requiredRoles={['ADMIN', 'ISSUER']}>
+                <div>Protected Content</div>
+            </ProtectedRoute>,
+        );
+
+        // Should allow access since requiredRoles is checked but userRole is null
+        expect(screen.getByText('Protected Content')).toBeInTheDocument();
+    });
+});
