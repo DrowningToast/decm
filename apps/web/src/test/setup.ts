@@ -9,6 +9,8 @@ afterEach(() => {
 
 // Mock environment variables
 vi.stubEnv("VITE_CORE_BACKEND_API", "http://localhost:8080/api/v1");
+vi.stubEnv("VITE_WALLETCONNECT_PROJECT_ID", "test-walletconnect-project-id");
+vi.stubEnv("VITE_ENVIRONMENT", "test");
 
 // Mock window.matchMedia
 Object.defineProperty(window, "matchMedia", {
