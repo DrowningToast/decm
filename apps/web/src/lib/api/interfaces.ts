@@ -1,43 +1,41 @@
 import type {
-    CheckOnboardStatusResponse,
-    LoginWithGoogleOauthRequest,
-    LoginWithGoogleOauthResponse,
-    LoginWithWalletRequest,
-    LoginWithWalletResponse,
-    LogoutResponse,
     ProfileCreateProfileRequest,
     ProfileCreateProfileResponse,
-    ProfileUpdateProfileByCredentialIdRequest,
-    ProfileUpdateProfileByCredentialIdResponse,
-    RegisterWithGoogleOauthRequest,
-    RegisterWithGoogleOauthResponse,
-    RegisterWithWalletRequest,
-    RegisterWithWalletResponse,
-    CheckOnboardStatusRequest,
+    OnboardCheckOnboardStatusRequest,
+    OnboardCheckOnboardStatusResponse,
+    OnboardRegisterResponse,
+    ProfileUpdateProfileRequest,
+    ProfileUpdateProfileResponse,
+    OnboardRegisterWithGoogleOAuthRequest,
+    OnboardRegisterWithWalletRequest,
 } from "@decm/api";
 
 // Interface for the Core API V1 client
 export interface ICoreApiV1Client {
     // Auth endpoints
     registerWithGoogleOauth(
-        request: RegisterWithGoogleOauthRequest,
-    ): Promise<RegisterWithGoogleOauthResponse>;
-    registerWithWallet(request: RegisterWithWalletRequest): Promise<RegisterWithWalletResponse>;
-    loginWithGoogleOauth(
-        request: LoginWithGoogleOauthRequest,
-    ): Promise<LoginWithGoogleOauthResponse>;
-    loginWithWallet(request: LoginWithWalletRequest): Promise<LoginWithWalletResponse>;
-    logout(): Promise<LogoutResponse>;
+        request: OnboardRegisterWithGoogleOAuthRequest,
+    ): Promise<OnboardRegisterResponse>;
+    registerWithWallet(request: OnboardRegisterWithWalletRequest): Promise<OnboardRegisterResponse>;
+    // loginWithGoogleOauth(request: Request): Promise<OnboardRegisterResponse>;
+    // loginWithWallet(request: OnboardRegisterRequest): Promise<OnboardRegisterResponse>;
+    logout(): Promise<void>;
 
     // Onboarding endpoints
-    checkOnboardStatus(request?: CheckOnboardStatusRequest): Promise<CheckOnboardStatusResponse>;
+    checkOnboardStatus(
+        request?: OnboardCheckOnboardStatusRequest,
+    ): Promise<OnboardCheckOnboardStatusResponse>;
 
     // Profile endpoints
     createProfile(request: ProfileCreateProfileRequest): Promise<ProfileCreateProfileResponse>;
     updateProfileByCredentialId(
         pathParams: { credentialId: string },
-        request: ProfileUpdateProfileByCredentialIdRequest,
-    ): Promise<ProfileUpdateProfileByCredentialIdResponse>;
+        request: ProfileUpdateProfileRequest,
+    ): Promise<ProfileUpdateProfileResponse>;
+    deleteProfileByCredentialId(pathParams: { credentialId: string }): Promise<void>;
+    getProfileByCredentialId(pathParams: {
+        credentialId: string;
+    }): Promise<ProfileCreateProfileResponse>;
 }
 
 // Interface for the Core API client

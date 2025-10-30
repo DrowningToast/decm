@@ -1,50 +1,48 @@
 import { vi } from "vitest";
-import type { ICoreApiV1Client, ICoreApiClient } from "./interfaces";
-import type {
-    CheckOnboardStatusResponse,
-    LoginWithGoogleOauthResponse,
-    LoginWithWalletResponse,
-    LogoutResponse,
-    ProfileCreateProfileResponse,
-    ProfileUpdateProfileByCredentialIdResponse,
-    RegisterWithGoogleOauthResponse,
-    RegisterWithWalletResponse,
-    OnboardRegistrationMethod,
-} from "@decm/api";
+import type { ICoreApiV1Client } from "./interfaces";
+import type { OnboardCheckOnboardStatusResponse, OnboardRegisterResponse } from "@decm/api";
 
 // Default mock responses
 export const mockResponses = {
     checkOnboardStatus: {
         authentication_credential_id: "mock-credential-id",
-        profile_id: null,
-    } as CheckOnboardStatusResponse,
+        profile_id: undefined,
+    } as OnboardCheckOnboardStatusResponse,
 
     checkOnboardStatusWithProfile: {
         authentication_credential_id: "mock-credential-id",
         profile_id: "mock-profile-id",
-    } as CheckOnboardStatusResponse,
+    } as OnboardCheckOnboardStatusResponse,
 
     registerWithGoogleOauth: {
-        message: "Successfully registered with Google",
+        credential_id: "google-credential-id",
+        jwt: "google-jwt",
         authentication_credential_id: "google-credential-id",
-    } as RegisterWithGoogleOauthResponse,
+    } as OnboardRegisterResponse,
 
     registerWithWallet: {
-        message: "Successfully registered with wallet",
+        credential_id: "wallet-credential-id",
+        jwt: "wallet-jwt",
         authentication_credential_id: "wallet-credential-id",
-    } as RegisterWithWalletResponse,
+    } as OnboardRegisterResponse,
 
     loginWithGoogleOauth: {
         message: "Successfully logged in with Google",
-    } as LoginWithGoogleOauthResponse,
+        credential_id: "google-credential-id",
+        jwt: "google-jwt",
+        authentication_credential_id: "google-credential-id",
+    } as OnboardRegisterResponse,
 
     loginWithWallet: {
         message: "Successfully logged in with wallet",
-    } as LoginWithWalletResponse,
+        credential_id: "wallet-credential-id",
+        jwt: "wallet-jwt",
+        authentication_credential_id: "wallet-credential-id",
+    } as OnboardRegisterResponse,
 
     logout: {
         message: "Successfully logged out",
-    } as LogoutResponse,
+    },
 
     createProfile: {
         id: "profile-id",
@@ -54,7 +52,7 @@ export const mockResponses = {
         last_name: "User",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-    } as ProfileCreateProfileResponse,
+    } as OnboardCheckOnboardStatusResponse,
 
     updateProfile: {
         id: "profile-id",
@@ -64,46 +62,38 @@ export const mockResponses = {
         last_name: "User",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-    } as ProfileUpdateProfileByCredentialIdResponse,
+    } as OnboardCheckOnboardStatusResponse,
 };
 
 // Create mock V1 client
 export const createMockCoreApiV1Client = (
     overrides: Partial<ICoreApiV1Client> = {},
 ): ICoreApiV1Client => {
-    return {
+    const mockClient: ICoreApiV1Client = {
         registerWithGoogleOauth: vi.fn().mockResolvedValue(mockResponses.registerWithGoogleOauth),
         registerWithWallet: vi.fn().mockResolvedValue(mockResponses.registerWithWallet),
-        loginWithGoogleOauth: vi.fn().mockResolvedValue(mockResponses.loginWithGoogleOauth),
-        loginWithWallet: vi.fn().mockResolvedValue(mockResponses.loginWithWallet),
         logout: vi.fn().mockResolvedValue(mockResponses.logout),
         checkOnboardStatus: vi.fn().mockResolvedValue(mockResponses.checkOnboardStatus),
         createProfile: vi.fn().mockResolvedValue(mockResponses.createProfile),
         updateProfileByCredentialId: vi.fn().mockResolvedValue(mockResponses.updateProfile),
+        deleteProfileByCredentialId: vi.fn().mockResolvedValue(undefined),
+        getProfileByCredentialId: vi.fn().mockResolvedValue(mockResponses.createProfile),
         ...overrides,
     };
-};
-
-// Create mock Core API client
-export const createMockCoreApiClient = (
-    v1Overrides: Partial<ICoreApiV1Client> = {},
-): ICoreApiClient => {
-    return {
-        v1: createMockCoreApiV1Client(v1Overrides),
-    };
+    return mockClient;
 };
 
 // Factory for creating different mock scenarios
 export const mockScenarios = {
     // New user scenario (no profile)
     newUser: () =>
-        createMockCoreApiClient({
+        createMockCoreApiV1Client({
             checkOnboardStatus: vi.fn().mockResolvedValue(mockResponses.checkOnboardStatus),
         }),
 
     // Existing user with profile
     existingUser: () =>
-        createMockCoreApiClient({
+        createMockCoreApiV1Client({
             checkOnboardStatus: vi
                 .fn()
                 .mockResolvedValue(mockResponses.checkOnboardStatusWithProfile),
@@ -111,7 +101,7 @@ export const mockScenarios = {
 
     // Failed registration scenario
     failedRegistration: () =>
-        createMockCoreApiClient({
+        createMockCoreApiV1Client({
             registerWithGoogleOauth: vi.fn().mockRejectedValue(new Error("Registration failed")),
             registerWithWallet: vi.fn().mockRejectedValue(new Error("Registration failed")),
         }),
@@ -119,15 +109,15 @@ export const mockScenarios = {
     // Network error scenario
     networkError: () => {
         const networkError = new Error("Network error");
-        return createMockCoreApiClient({
+        return createMockCoreApiV1Client({
             registerWithGoogleOauth: vi.fn().mockRejectedValue(networkError),
             registerWithWallet: vi.fn().mockRejectedValue(networkError),
-            loginWithGoogleOauth: vi.fn().mockRejectedValue(networkError),
-            loginWithWallet: vi.fn().mockRejectedValue(networkError),
             logout: vi.fn().mockRejectedValue(networkError),
             checkOnboardStatus: vi.fn().mockRejectedValue(networkError),
             createProfile: vi.fn().mockRejectedValue(networkError),
             updateProfileByCredentialId: vi.fn().mockRejectedValue(networkError),
+            deleteProfileByCredentialId: vi.fn().mockRejectedValue(networkError),
+            getProfileByCredentialId: vi.fn().mockRejectedValue(networkError),
         });
     },
 };

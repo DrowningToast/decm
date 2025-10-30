@@ -1,6 +1,6 @@
-import { z, type ZodType } from "zod";
+import { z } from "zod";
 
-export const ProfileSchema = (t: (key: string) => string): ZodType =>
+export const ProfileSchema = (t: (key: string) => string) =>
     z.object({
         firstName: z
             .string()
