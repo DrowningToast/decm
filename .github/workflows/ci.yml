@@ -1,0 +1,412 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "18"
+  GO_VERSION: "1.24"
+  PNPM_VERSION: "9.15.0"
+  POSTGRES_VERSION: "16-alpine"
+
+jobs:
+  # Job 1: Environment Setup and Docker Compose Test
+  test-docker-migrations:
+    name: Docker Compose & Database Migrations
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_USER: decm_user
+          POSTGRES_PASSWORD: decm_password
+          POSTGRES_DB: decm_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Copy .env.test to .env
+        run: cp .env.test .env
+
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432 -U decm_user; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+          echo "PostgreSQL is ready!"
+
+      - name: Run database migrations
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: decm_user
+          DB_PASSWORD: decm_password
+          DB_NAME: decm_test
+        run: pnpm db:migrate
+
+      - name: Verify database tables
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: decm_user
+          DB_PASSWORD: decm_password
+          DB_NAME: decm_test
+        run: |
+          PGPASSWORD=decm_password psql -h localhost -U decm_user -d decm_test -c "\dt" || exit 1
+
+  # Job 2: SQLC Generation Check
+  test-sqlc-generation:
+    name: SQLC Generation Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Install sqlc
+        run: |
+          go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+      - name: Generate SQLC code
+        run: pnpm db:generate
+
+      - name: Check for uncommitted changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "❌ Error: Generated files don't match committed files!"
+            echo "Files changed:"
+            git status --porcelain
+            echo ""
+            echo "Please run 'pnpm db:generate' and commit the changes."
+            exit 1
+          else
+            echo "✅ Generated files match committed files"
+          fi
+
+  # Job 3: Core API Build
+  test-core-api-build:
+    name: Core API Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Copy .env.test to .env
+        run: cp .env.test .env
+
+      - name: Build Core API
+        run: pnpm build:core
+
+      - name: Verify binary exists
+        run: |
+          if [ ! -f "apps/backend/bin/decm-backend" ]; then
+            echo "❌ Error: Binary not found!"
+            exit 1
+          else
+            echo "✅ Binary built successfully"
+          fi
+
+  # Job 4: Backend Unit Tests
+  test-backend-unit:
+    name: Backend Unit Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_USER: decm_user
+          POSTGRES_PASSWORD: decm_password
+          POSTGRES_DB: decm_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Copy .env.test to .env
+        run: cp .env.test .env
+
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432 -U decm_user; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+      - name: Run database migrations
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: decm_user
+          DB_PASSWORD: decm_password
+          DB_NAME: decm_test
+        run: pnpm db:migrate
+
+      - name: Run backend unit tests
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: decm_user
+          DB_PASSWORD: decm_password
+          DB_NAME: decm_test
+        run: pnpm test:core
+
+  # Job 5: Frontend Unit Tests
+  test-frontend-unit:
+    name: Frontend Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run frontend unit tests
+        run: |
+          cd apps/web
+          pnpm test
+
+  # Job 6: Project Build
+  test-project-build:
+    name: Project Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Copy .env.test to .env
+        run: cp .env.test .env
+
+      - name: Build project
+        run: pnpm build
+
+  # Job 7: ESLint Check
+  test-eslint:
+    name: ESLint Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ESLint
+        run: pnpm lint
+
+  # Job 8: Contracts Compilation
+  test-contracts:
+    name: Contracts Compilation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Run Forge build
+        run: |
+          cd apps/contracts
+          forge build
+
+  # Job 9: OpenAPI/Swagger Documentation Check
+  test-openapi-docs:
+    name: OpenAPI/Swagger Docs Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Copy .env.test to .env
+        run: cp .env.test .env
+
+      - name: Install swag
+        run: go install github.com/swaggo/swag/cmd/swag@latest
+
+      - name: Generate OpenAPI/Swagger docs
+        run: pnpm docs:core
+
+      - name: Check for uncommitted changes in docs
+        run: |
+          if [ -n "$(git status --porcelain apps/backend/core-api/docs/)" ]; then
+            echo "❌ Error: Generated OpenAPI/Swagger docs don't match committed files!"
+            echo "Files changed:"
+            git status --porcelain apps/backend/core-api/docs/
+            echo ""
+            echo "Please run 'pnpm docs:core' and commit the changes."
+            exit 1
+          else
+            echo "✅ Generated docs match committed files"
+          fi

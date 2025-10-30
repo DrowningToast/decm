@@ -7,7 +7,10 @@
         "dev": "dotenv -e ../../.env.client -- vite",
         "build": "dotenv -e ../../.env.client -- tsc -b && vite build",
         "lint": "eslint .",
-        "preview": "dotenv -e ../../.env.client -- vite preview"
+        "preview": "dotenv -e ../../.env.client -- vite preview",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage"
     },
     "dependencies": {
         "@decm/api": "workspace:*",
