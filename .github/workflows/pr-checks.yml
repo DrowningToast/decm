@@ -11,8 +11,83 @@ env:
     PNPM_VERSION: "9.15.0"
 
 jobs:
-    # Job 1: Database & SQLC Generation
-    database-checks:
+  # Job 1: Docker Compose & Database Setup
+  docker-compose-checks:
+    name: Docker Compose & Database Setup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install golang-migrate
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv migrate /usr/local/bin/
+
+      - name: Copy test environment file
+        run: cp .env.test .env
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start Docker Compose
+        run: pnpm compose:up
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          timeout 60 bash -c 'until docker exec decm-postgres pg_isready -U decm_user -d decm_test; do
+            echo "Waiting for PostgreSQL to be ready..."
+            sleep 2
+          done'
+        env:
+          DB_NAME: decm_test
+          DB_USER: decm_user
+
+      - name: Verify PostgreSQL is accessible
+        run: |
+          docker exec decm-postgres psql -U decm_user -d decm_test -c "SELECT version();"
+
+      - name: Run database migrations
+        run: pnpm db:migrate
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: decm_user
+          DB_PASSWORD: decm_test_password
+          DB_NAME: decm_test
+
+      - name: Verify migrations applied successfully
+        run: |
+          docker exec decm-postgres psql -U decm_user -d decm_test -c "\dt" | tee migration_output.txt
+          # Check if core tables exist
+          grep -q "authentication_credentials" migration_output.txt
+          grep -q "profiles" migration_output.txt
+          grep -q "events" migration_output.txt
+          echo "✅ All core tables verified"
+
+      - name: Verify pgcrypto extension is enabled
+        run: |
+          docker exec decm-postgres psql -U decm_user -d decm_test -c "SELECT * FROM pg_extension WHERE extname = 'pgcrypto';" | grep pgcrypto
+          echo "✅ pgcrypto extension verified"
+
+      - name: Cleanup - Stop Docker Compose
+        if: always()
+        run: pnpm compose:down
+
+  # Job 2: Database & SQLC Generation
+  database-checks:
         name: Database & SQLC Checks
         runs-on: ubuntu-latest
 
@@ -100,11 +175,11 @@ jobs:
                     echo "✅ SQLC generated files match committed files"
                   fi
 
-    # Job 2: Backend Build & Tests
-    backend-checks:
-        name: Backend Build & Tests
-        runs-on: ubuntu-latest
-        needs: database-checks
+  # Job 3: Backend Build & Tests
+  backend-checks:
+    name: Backend Build & Tests
+    runs-on: ubuntu-latest
+    needs: [docker-compose-checks, database-checks]
 
         services:
             postgres:
@@ -193,11 +268,11 @@ jobs:
                   JWT_ISSUER: decm-service-test
                   JWT_EXPIRATION: 24h
 
-    # Job 3: OpenAPI & Swagger Documentation
-    openapi-checks:
-        name: OpenAPI & Swagger Checks
-        runs-on: ubuntu-latest
-        needs: backend-checks
+  # Job 4: OpenAPI & Swagger Documentation
+  openapi-checks:
+    name: OpenAPI & Swagger Checks
+    runs-on: ubuntu-latest
+    needs: backend-checks
 
         steps:
             - name: Checkout code
@@ -243,10 +318,10 @@ jobs:
                     echo "✅ OpenAPI documentation matches committed files"
                   fi
 
-    # Job 4: Frontend Build & Tests
-    frontend-checks:
-        name: Frontend Build & Tests
-        runs-on: ubuntu-latest
+  # Job 5: Frontend Build & Tests
+  frontend-checks:
+    name: Frontend Build & Tests
+    runs-on: ubuntu-latest
 
         steps:
             - name: Checkout code
@@ -295,10 +370,10 @@ jobs:
                     echo "✅ Frontend built successfully"
                   fi
 
-    # Job 5: Smart Contracts
-    contracts-checks:
-        name: Smart Contracts Compilation
-        runs-on: ubuntu-latest
+  # Job 6: Smart Contracts
+  contracts-checks:
+    name: Smart Contracts Compilation
+    runs-on: ubuntu-latest
 
         steps:
             - name: Checkout code
@@ -326,24 +401,30 @@ jobs:
                     echo "✅ Contracts compiled successfully"
                   fi
 
-    # Job 6: Final Summary
-    pr-checks-summary:
-        name: PR Checks Summary
-        runs-on: ubuntu-latest
-        needs: [database-checks, backend-checks, openapi-checks, frontend-checks, contracts-checks]
-        if: always()
+  # Job 7: Final Summary
+  pr-checks-summary:
+    name: PR Checks Summary
+    runs-on: ubuntu-latest
+    needs: [docker-compose-checks, database-checks, backend-checks, openapi-checks, frontend-checks, contracts-checks]
+    if: always()
 
-        steps:
-            - name: Check all jobs status
-              run: |
-                  echo "### PR Quality Checks Summary ###"
-                  echo ""
-
-                  if [ "${{ needs.database-checks.result }}" = "success" ]; then
-                    echo "✅ Database & SQLC Checks: PASSED"
-                  else
-                    echo "❌ Database & SQLC Checks: FAILED"
-                  fi
+    steps:
+      - name: Check all jobs status
+        run: |
+          echo "### PR Quality Checks Summary ###"
+          echo ""
+          
+          if [ "${{ needs.docker-compose-checks.result }}" = "success" ]; then
+            echo "✅ Docker Compose & Database Setup: PASSED"
+          else
+            echo "❌ Docker Compose & Database Setup: FAILED"
+          fi
+          
+          if [ "${{ needs.database-checks.result }}" = "success" ]; then
+            echo "✅ Database & SQLC Checks: PASSED"
+          else
+            echo "❌ Database & SQLC Checks: FAILED"
+          fi
 
                   if [ "${{ needs.backend-checks.result }}" = "success" ]; then
                     echo "✅ Backend Build & Tests: PASSED"
@@ -369,16 +450,17 @@ jobs:
                     echo "❌ Smart Contracts Compilation: FAILED"
                   fi
 
-                  echo ""
-
-                  if [ "${{ needs.database-checks.result }}" = "success" ] && \
-                     [ "${{ needs.backend-checks.result }}" = "success" ] && \
-                     [ "${{ needs.openapi-checks.result }}" = "success" ] && \
-                     [ "${{ needs.frontend-checks.result }}" = "success" ] && \
-                     [ "${{ needs.contracts-checks.result }}" = "success" ]; then
-                    echo "🎉 All checks passed! PR is ready to merge."
-                    exit 0
-                  else
-                    echo "❌ Some checks failed. Please review and fix the issues."
-                    exit 1
-                  fi
+          echo ""
+          
+          if [ "${{ needs.docker-compose-checks.result }}" = "success" ] && \
+             [ "${{ needs.database-checks.result }}" = "success" ] && \
+             [ "${{ needs.backend-checks.result }}" = "success" ] && \
+             [ "${{ needs.openapi-checks.result }}" = "success" ] && \
+             [ "${{ needs.frontend-checks.result }}" = "success" ] && \
+             [ "${{ needs.contracts-checks.result }}" = "success" ]; then
+            echo "🎉 All checks passed! PR is ready to merge."
+            exit 0
+          else
+            echo "❌ Some checks failed. Please review and fix the issues."
+            exit 1
+          fi
