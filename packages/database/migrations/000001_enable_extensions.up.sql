@@ -9,9 +9,6 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 -- Case-insensitive text operations (required for emails and usernames)
 CREATE EXTENSION IF NOT EXISTS "citext";
 
--- Additional crypto functions (useful for blockchain integration and password hashing)
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
 -- JSON operations for array handling (PostgreSQL < 14 compatibility)
 -- CREATE EXTENSION IF NOT EXISTS "btree_gin";
 
@@ -19,4 +16,5 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 COMMENT ON EXTENSION "uuid-ossp" IS 'UUID generation functions for primary keys and unique identifiers';
 COMMENT ON EXTENSION "pg_trgm" IS 'Trigram matching for full-text search on users and events';
 COMMENT ON EXTENSION "citext" IS 'Case-insensitive text data type for emails and usernames';
-COMMENT ON EXTENSION "pgcrypto" IS 'Cryptographic functions for blockchain integration and security';
+
+-- Note: PII encryption is done at application layer using AES-GCM in Go code, not at database level

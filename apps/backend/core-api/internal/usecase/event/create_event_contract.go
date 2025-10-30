@@ -1,14 +1,14 @@
 package event
 
 import (
-	"apps/backend/common/customerror"
 	"context"
+	"decm-database/go/generated"
 	"errors"
+
+	"apps/backend/common/customerror"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-
-	"decm-database/go/generated"
 )
 
 type CreateEventContractParams struct {

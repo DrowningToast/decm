@@ -30,11 +30,13 @@ packages/database/
 ## Quick Start
 
 ### Prerequisites
+
 - PostgreSQL running (via Docker or local)
 - sqlc and migrate tools installed
 - Environment configuration
 
 ### Setup Database
+
 ```bash
 # Complete setup (recommended)
 pnpm db:setup
@@ -47,7 +49,9 @@ pnpm db:generate         # Generate Go code
 ```
 
 ### Environment Configuration
+
 Copy `.env.example` to `.env` and configure:
+
 ```env
 DB_HOST=localhost
 DB_PORT=5432
@@ -60,34 +64,35 @@ DB_SSL_MODE=disable
 ## Database Schema
 
 ### Core Tables
+
 - **authentication_credentials** - User authentication with public/private keys
-  - Supports BYOK (Bring Your Own Key) or system-managed keys
-  - Google/GitHub OAuth integration
-  - Organizer/student verification flags
+    - Supports BYOK (Bring Your Own Key) or system-managed keys
+    - Google/GitHub OAuth integration
+    - Organizer/student verification flags
 
 - **profiles** - User profile data with privacy controls
-  - Privacy flags for each field
-  - Academic institution information
-  - Personal and contact details
+    - Privacy flags for each field
+    - Academic institution information
+    - Personal and contact details
 
 - **events** - Event management with blockchain integration
-  - Blockchain contract addresses and chain IDs
-  - Event requirements and validation
-  - Location and timing information
+    - Blockchain contract addresses and chain IDs
+    - Event requirements and validation
+    - Location and timing information
 
 - **event_attendees** - Event participation tracking
-  - Attendee acceptance status
-  - Profile information provided flags
+    - Attendee acceptance status
+    - Profile information provided flags
 
 - **event_certificates** - Certificate issuance system
-  - Publication status tracking
-  - Linked to events and credentials
+    - Publication status tracking
+    - Linked to events and credentials
 
 ### Extensions
+
 - **uuid-ossp** - UUID generation (for future use)
 - **pg_trgm** - Full-text search capabilities
 - **citext** - Case-insensitive text operations
-- **pgcrypto** - Cryptographic functions for blockchain
 
 ## Available Scripts
 
@@ -114,27 +119,33 @@ pnpm db:generate           # Generate Go code from SQL queries
 ## Query Development
 
 ### Available Queries
+
 Currently implemented:
+
 - **authentication_credentials.sql** - Complete CRUD operations for user authentication
 
 ### Adding New Queries
+
 1. Create `.sql` file in `queries/` directory
 2. Use sqlc annotations:
-   ```sql
-   -- name: CreateSomething :one
-   INSERT INTO table_name (...) VALUES (...) RETURNING *;
-   
-   -- name: GetSomething :one  
-   SELECT * FROM table_name WHERE id = $1;
-   
-   -- name: ListSomething :many
-   SELECT * FROM table_name LIMIT $1 OFFSET $2;
-   ```
+
+    ```sql
+    -- name: CreateSomething :one
+    INSERT INTO table_name (...) VALUES (...) RETURNING *;
+
+    -- name: GetSomething :one
+    SELECT * FROM table_name WHERE id = $1;
+
+    -- name: ListSomething :many
+    SELECT * FROM table_name LIMIT $1 OFFSET $2;
+    ```
+
 3. Generate Go code: `pnpm db:generate`
 
 ## Integration
 
 Import the generated package in your Go application:
+
 ```go
 import generated "decm-database/go/generated"
 
@@ -149,6 +160,7 @@ result, err := queries.GetAuthenticationCredentialByID(ctx, id)
 2. **000002_create_core_tables** - All DECM platform tables
 
 ### Creating New Migrations
+
 ```bash
 pnpm db:migrate:create description_of_change
 # Edit the generated .up.sql and .down.sql files
@@ -158,6 +170,7 @@ pnpm db:migrate
 ## Security Features
 
 - Environment-based configuration (no hardcoded credentials)
-- Automatic update triggers for timestamps  
+- PII encryption at application layer using AES-GCM (not database-level)
+- Automatic update triggers for timestamps
 - Foreign key constraints for data integrity
 - Proper indexing for performance

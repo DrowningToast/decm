@@ -1,0 +1,491 @@
+---
+globs: "*.test.ts,*.test.tsx,*.spec.ts,*.spec.tsx,*_test.go,vitest.config.ts"
+description: "Frontend testing setup with Vitest and React Testing Library"
+---
+
+# Frontend Testing Setup - Vitest & React Testing Library
+
+## Overview
+The DECM frontend uses **Vitest** for unit and integration testing, combined with **React Testing Library** for component testing and **MSW** (Mock Service Worker) for API mocking.
+
+## Test Configuration
+
+### Vitest Config
+[apps/web/vitest.config.ts](mdc:apps/web/vitest.config.ts):
+
+```typescript
+test: {
+  environment: 'happy-dom',      // Lightweight DOM environment
+  globals: true,                  // Global test functions
+  setupFiles: ['./src/test/setup.ts'],
+  coverage: {
+    provider: 'v8',
+    reporter: ['text', 'json', 'html'],
+    exclude: ['node_modules/', 'src/test/', '**/*.test.tsx', 'src/router.ts']
+  },
+  include: ['src/**/*.{test,spec}.{ts,tsx}']
+}
+```
+
+### Test Environment
+- **Environment**: `happy-dom` (lightweight jsdom alternative)
+- **Globals**: Global test/describe/it functions available without imports
+- **Setup File**: [src/test/setup.ts](mdc:apps/web/src/test/setup.ts) - Runs before tests
+
+## Test Setup File
+
+### Expected Setup
+```typescript
+// src/test/setup.ts
+import '@testing-library/jest-dom';
+import { afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
+
+// Cleanup after each test
+afterEach(() => {
+  cleanup();
+});
+
+// Mock window.matchMedia (for responsive components)
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
+```
+
+## Running Tests
+
+### Test Commands
+```bash
+# Run all tests
+pnpm test
+
+# Run tests in watch mode (for development)
+pnpm test --watch
+
+# Run tests with coverage
+pnpm test --coverage
+
+# Run specific test file
+pnpm test Button.test.tsx
+
+# Run tests matching pattern
+pnpm test --grep "handles click"
+
+# Run tests with UI dashboard
+pnpm test --ui
+```
+
+### Coverage Analysis
+```bash
+# Generate coverage report
+pnpm test --coverage
+
+# View HTML coverage report
+# Open coverage/index.html in browser
+```
+
+**Coverage Targets**:
+- Frontend: Minimum 70% coverage
+- Critical paths: 100% coverage
+- Utilities: 90%+ coverage
+
+## Test File Structure
+
+### Naming Conventions
+- Unit tests: `ComponentName.test.tsx` or `function.test.ts`
+- Integration tests: `Feature.integration.test.tsx`
+- Co-located with source files
+
+### Example Structure
+```
+src/
+├── components/
+│   ├── Button/
+│   │   ├── Button.tsx
+│   │   ├── Button.test.tsx        # Unit test
+│   │   ├── Button.stories.tsx      # Storybook
+│   │   └── index.ts
+│   └── Form/
+│       ├── Form.tsx
+│       └── Form.test.tsx
+├── hooks/
+│   ├── useWalletAuth.ts
+│   └── useWalletAuth.test.ts
+├── pages/
+│   ├── HomePage.tsx
+│   └── HomePage.integration.test.tsx
+└── test/
+    ├── setup.ts                    # Test configuration
+    └── mocks/
+        ├── handlers.ts             # MSW handlers
+        └── server.ts               # MSW server
+```
+
+## Component Testing Patterns
+
+### Basic Component Test
+```typescript
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { Button } from './Button';
+
+describe('Button', () => {
+  it('renders button with text', () => {
+    render(<Button>Click me</Button>);
+    
+    expect(screen.getByText('Click me')).toBeInTheDocument();
+  });
+
+  it('is disabled when disabled prop is true', () => {
+    render(<Button disabled>Click me</Button>);
+    
+    expect(screen.getByRole('button')).toBeDisabled();
+  });
+});
+```
+
+### User Interaction Test
+```typescript
+import userEvent from '@testing-library/user-event';
+
+describe('Button', () => {
+  it('calls onClick handler when clicked', async () => {
+    const handleClick = vi.fn();
+    const user = userEvent.setup();
+    
+    render(<Button onClick={handleClick}>Click me</Button>);
+    
+    await user.click(screen.getByRole('button'));
+    
+    expect(handleClick).toHaveBeenCalledOnce();
+  });
+});
+```
+
+### Form Submission Test
+```typescript
+describe('LoginForm', () => {
+  it('submits form with valid data', async () => {
+    const handleSubmit = vi.fn();
+    const user = userEvent.setup();
+    
+    render(<LoginForm onSubmit={handleSubmit} />);
+    
+    await user.type(screen.getByLabelText('Email'), 'test@example.com');
+    await user.type(screen.getByLabelText('Password'), 'password123');
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+    
+    expect(handleSubmit).toHaveBeenCalledWith({
+      email: 'test@example.com',
+      password: 'password123'
+    });
+  });
+});
+```
+
+## API Mocking with MSW
+
+### Setup MSW Server
+```typescript
+// src/test/mocks/server.ts
+import { setupServer } from 'msw/node';
+import { handlers } from './handlers';
+
+export const server = setupServer(...handlers);
+```
+
+### Global Setup
+```typescript
+// src/test/setup.ts
+import { beforeAll, afterEach, afterAll } from 'vitest';
+import { server } from './mocks/server';
+
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+```
+
+### Mock Handlers
+```typescript
+// src/test/mocks/handlers.ts
+import { http, HttpResponse } from 'msw';
+
+export const handlers = [
+  http.post('/api/v1/auth/nonce', () => {
+    return HttpResponse.json({ nonce: 'mock-nonce-123' });
+  }),
+
+  http.post('/api/v1/auth/verify', () => {
+    return HttpResponse.json({
+      user_id: 'user-123',
+      wallet_address: '0x123...',
+    });
+  }),
+
+  http.get('/api/v1/events', () => {
+    return HttpResponse.json([
+      {
+        id: '1',
+        name: 'Event 1',
+        date: '2024-01-01',
+      }
+    ]);
+  }),
+];
+```
+
+### Testing with Mocked API
+```typescript
+describe('EventList', () => {
+  it('displays events from API', async () => {
+    render(<EventList />);
+    
+    // Wait for data to load
+    const eventName = await screen.findByText('Event 1');
+    
+    expect(eventName).toBeInTheDocument();
+  });
+
+  it('handles API error', async () => {
+    server.use(
+      http.get('/api/v1/events', () => {
+        return HttpResponse.json(
+          { error: 'Server error' },
+          { status: 500 }
+        );
+      })
+    );
+
+    render(<EventList />);
+    
+    const errorText = await screen.findByText(/error/i);
+    expect(errorText).toBeInTheDocument();
+  });
+});
+```
+
+## Hook Testing
+
+### Testing Custom Hooks
+```typescript
+import { renderHook, waitFor } from '@testing-library/react';
+import { useWalletConnection } from './useWalletConnection';
+
+describe('useWalletConnection', () => {
+  it('connects wallet successfully', async () => {
+    const { result } = renderHook(() => useWalletConnection());
+    
+    await waitFor(() => {
+      expect(result.current.isConnected).toBe(true);
+    });
+  });
+});
+```
+
+### Testing with Context
+```typescript
+import { ReactNode } from 'react';
+import { AuthProvider } from './AuthContext';
+
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <AuthProvider>{children}</AuthProvider>
+);
+
+describe('useAuth hook', () => {
+  it('provides auth context', () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    
+    expect(result.current.isAuthenticated).toBeDefined();
+  });
+});
+```
+
+## Async Testing
+
+### Waiting for Elements
+```typescript
+describe('AsyncComponent', () => {
+  it('displays data after loading', async () => {
+    render(<AsyncComponent />);
+    
+    // Wait for element to appear
+    const element = await screen.findByText('Loaded data');
+    expect(element).toBeInTheDocument();
+  });
+
+  it('handles loading state', () => {
+    render(<AsyncComponent />);
+    
+    // Loading state appears immediately
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
+});
+```
+
+### Using waitFor
+```typescript
+import { waitFor } from '@testing-library/react';
+
+it('updates state after async operation', async () => {
+  render(<Component />);
+  
+  await waitFor(() => {
+    expect(screen.getByText('Updated')).toBeInTheDocument();
+  });
+});
+```
+
+## Accessibility Testing
+
+### Testing Roles
+```typescript
+describe('Navigation', () => {
+  it('has proper navigation structure', () => {
+    render(<Navigation />);
+    
+    expect(screen.getByRole('navigation')).toBeInTheDocument();
+    expect(screen.getAllByRole('link')).toHaveLength(3);
+  });
+
+  it('button has accessible label', () => {
+    render(<IconButton icon="menu" ariaLabel="Open menu" />);
+    
+    expect(screen.getByRole('button', { name: 'Open menu' })).toBeInTheDocument();
+  });
+});
+```
+
+### Query Priorities
+Use in order of preference:
+1. `getByRole()` - Most accessible
+2. `getByLabelText()` - For form inputs
+3. `getByPlaceholderText()` - Last resort for inputs
+4. `getByText()` - For text content
+5. `getByTestId()` - Only for hard-to-query elements
+
+## Snapshot Testing (Use Sparingly)
+
+```typescript
+it('renders correctly', () => {
+  const { container } = render(<Component />);
+  
+  expect(container.firstChild).toMatchSnapshot();
+});
+```
+
+**⚠️ Warning**: Use snapshots only for complex structures. Prefer specific assertions.
+
+## Best Practices
+
+### ✅ DO
+- Test user interactions, not implementation details
+- Use semantic queries (getByRole, getByLabelText)
+- Mock external APIs with MSW
+- Test accessibility
+- Test error states and loading states
+- Use descriptive test names
+- Keep tests focused and isolated
+- Mock only what's necessary
+
+### ❌ DON'T
+- Test implementation details
+- Use shallow rendering
+- Test third-party libraries
+- Create shared test fixtures
+- Use sleep/timeouts instead of waitFor
+- Mock everything globally
+- Test CSS styling (use visual testing instead)
+- Skip cleanup between tests
+
+## Debugging Tests
+
+### Debug Output
+```typescript
+import { render, screen } from '@testing-library/react';
+
+it('debugs component', () => {
+  const { debug } = render(<Component />);
+  
+  debug(); // Prints DOM tree
+});
+```
+
+### Screen Queries
+```typescript
+// Log all available queries
+screen.logTestingPlaygroundURL();
+
+// Find element by role
+screen.debug(screen.getByRole('button'));
+```
+
+### Vitest UI
+```bash
+pnpm test --ui
+# Opens http://localhost:51204 with test dashboard
+```
+
+## Coverage Reporting
+
+### Generate Report
+```bash
+pnpm test --coverage
+```
+
+### Exclude Files from Coverage
+```typescript
+// vitest.config.ts
+coverage: {
+  exclude: [
+    'node_modules/',
+    'src/test/',
+    'src/**/*.test.tsx',
+    'src/router.ts'
+  ]
+}
+```
+
+## Integration with CI/CD
+
+### GitHub Actions Example
+```yaml
+- name: Run tests
+  run: pnpm test --coverage
+
+- name: Upload coverage
+  uses: codecov/codecov-action@v3
+  with:
+    files: ./coverage/coverage-final.json
+```
+
+## Troubleshooting
+
+### Tests Not Running
+- Verify file naming: `*.test.ts(x)`
+- Check vitest config in `vitest.config.ts`
+- Ensure setup file exists
+
+### DOM Not Available
+- Use `happy-dom` environment (default)
+- Check setupFiles are loaded
+- Verify jsdom/happy-dom installed
+
+### Async Timeouts
+- Use `waitFor()` with higher timeout: `waitFor(() => {...}, { timeout: 5000 })`
+- Verify API mocks are set up
+- Check for race conditions
+
+### Coverage Low
+- Add tests for untested branches
+- Use `pnpm test --coverage` to find gaps
+- Test error cases and edge cases

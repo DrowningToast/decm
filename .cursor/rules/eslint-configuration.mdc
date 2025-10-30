@@ -1,0 +1,440 @@
+---
+globs: "*.ts,*.tsx,*.js,*.jsx"
+description: "ESLint configuration and TypeScript linting rules for DECM frontend"
+---
+
+# ESLint Configuration & Linting Guide
+
+## Overview
+The DECM frontend uses ESLint with TypeScript support for maintaining code quality, preventing bugs, and ensuring consistency across React components and TypeScript files.
+
+## ESLint Configuration
+
+### Configuration File
+[apps/web/eslint.config.js](mdc:apps/web/eslint.config.js) - Uses flat config (ESLint 9+)
+
+### Extended Configurations
+```javascript
+import js from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+```
+
+**Extends**:
+1. `@eslint/js` - ESLint recommended rules
+2. `typescript-eslint` - TypeScript-specific rules
+3. `eslint-plugin-react-hooks` - React Hooks best practices
+4. `eslint-plugin-react-refresh` - React Refresh support
+
+## Running ESLint
+
+### Commands
+```bash
+# Run linting on all files
+pnpm lint
+
+# Run linting on specific file
+pnpm lint apps/web/src/components/Button.tsx
+
+# Fix auto-fixable issues
+pnpm lint -- --fix
+
+# Check specific pattern
+pnpm lint -- --ext .tsx src/
+```
+
+### Root-Level Lint
+```bash
+# Lint entire monorepo (Turbo runs in all workspaces)
+pnpm lint
+
+# Lint with format check
+pnpm format:check
+```
+
+## ESLint Rules by Category
+
+### TypeScript Rules
+
+**Type Safety**:
+- `@typescript-eslint/explicit-function-return-types` - Require explicit return types
+- `@typescript-eslint/no-explicit-any` - Prohibit `any` type
+- `@typescript-eslint/strict-boolean-expressions` - Enforce boolean expressions
+- `@typescript-eslint/no-unused-vars` - Catch unused variables
+
+**Example - Good**:
+```typescript
+interface UserProps {
+  id: string;
+  name: string;
+}
+
+export function UserCard({ id, name }: UserProps): React.ReactElement {
+  return <div>{name}</div>;
+}
+```
+
+**Example - Bad**:
+```typescript
+// ❌ No return type, uses any
+export function UserCard(props: any) {
+  return <div>{props.name}</div>;
+}
+```
+
+### React Hooks Rules
+
+**Plugin**: `eslint-plugin-react-hooks`
+
+**Rules**:
+- `react-hooks/rules-of-hooks` - Hooks can only be called at top level
+- `react-hooks/exhaustive-deps` - Include all dependencies in useEffect
+
+**Example - Good**:
+```typescript
+export function Counter() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    document.title = `Count: ${count}`;
+  }, [count]); // ✅ Dependency included
+
+  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;
+}
+```
+
+**Example - Bad**:
+```typescript
+export function Counter() {
+  const [count, setCount] = useState(0);
+
+  // ❌ Missing dependency
+  useEffect(() => {
+    document.title = `Count: ${count}`;
+  }, []);
+
+  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;
+}
+```
+
+### React Refresh Rules
+
+**Plugin**: `eslint-plugin-react-refresh`
+
+**Rules**:
+- `react-refresh/only-export-components` - Only export components from module
+- Component exports must be valid for Fast Refresh
+
+**Example - Good**:
+```typescript
+// ✅ Only components exported, constants in separate scope
+function useCustomHook() {
+  // ...
+}
+
+export function MyComponent() {
+  return <div />;
+}
+```
+
+**Example - Bad**:
+```typescript
+// ❌ Exports non-component functions alongside component
+export function MyComponent() {
+  return <div />;
+}
+
+export function helperFunction() {
+  // Not a component
+}
+```
+
+### JavaScript/General Rules
+
+**Code Quality**:
+- `no-console` - Warn on console statements (except errors)
+- `no-debugger` - Prevent debugger statements
+- `no-unused-expressions` - Catch orphaned expressions
+- `no-var` - Require const/let instead of var
+- `prefer-const` - Use const for non-reassigned variables
+
+**Example - Good**:
+```typescript
+const name = "John"; // ✅ Uses const
+let count = 0;
+count++;
+
+console.error("Error message"); // ✅ console.error is ok
+```
+
+**Example - Bad**:
+```typescript
+var name = "John"; // ❌ Use const/let
+console.log("debug"); // ⚠️ Remove in production code
+
+debugger; // ❌ Remove before committing
+```
+
+## Common ESLint Errors & Fixes
+
+### Error: "React is not defined"
+**Cause**: Using JSX without importing React
+
+**Fix**:
+```typescript
+// ❌ Old (React 17)
+import React from 'react';
+
+// ✅ New (React 19)
+// No import needed - JSX is automatically transformed
+```
+
+### Error: "'props' is assigned a value but never used"
+**Cause**: Unused variable in destructuring
+
+**Fix**:
+```typescript
+// ❌ Bad
+interface Props {
+  name: string;
+  unused: boolean;
+}
+
+function Component({ name, unused }: Props) {
+  return <div>{name}</div>;
+}
+
+// ✅ Good
+interface Props {
+  name: string;
+}
+
+function Component({ name }: Props) {
+  return <div>{name}</div>;
+}
+```
+
+### Error: "Missing function declaration return type"
+**Cause**: Function lacks explicit return type annotation
+
+**Fix**:
+```typescript
+// ❌ Bad
+function handleClick(e) {
+  console.log(e);
+}
+
+// ✅ Good
+function handleClick(e: React.MouseEvent<HTMLButtonElement>): void {
+  console.log(e);
+}
+```
+
+### Error: "React Hook useEffect has a missing dependency"
+**Cause**: Variable used in effect but not in dependency array
+
+**Fix**:
+```typescript
+// ❌ Bad
+useEffect(() => {
+  fetch(userId); // userId used but not in deps
+}, []);
+
+// ✅ Good
+useEffect(() => {
+  fetch(userId);
+}, [userId]);
+```
+
+### Error: "Unsafe use of optional chaining on left-hand side"
+**Cause**: Using optional chaining in assignment
+
+**Fix**:
+```typescript
+// ❌ Bad
+obj?.prop = value;
+
+// ✅ Good
+if (obj) {
+  obj.prop = value;
+}
+```
+
+## Pre-commit Linting with Husky
+
+**Configuration**: [package.json](mdc:package.json) lint-staged
+
+```json
+"lint-staged": {
+  "*.{ts,tsx,js,jsx}": [
+    "prettier --write",
+    "bash -c 'cd apps/backend && gofmt -w $(git diff --cached --name-only -- \"*.go\") || true'"
+  ],
+  "*.{json,css,scss,md,yaml,yml}": "prettier --write"
+}
+```
+
+**Behavior**: Runs prettier and gofmt on staged files before commit
+
+## Disabling Rules (Use Sparingly)
+
+### Inline Disable
+```typescript
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const data: any = getUntyped();
+```
+
+### Block Disable
+```typescript
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const untypedData = getUntyped() as any;
+/* eslint-enable @typescript-eslint/no-explicit-any */
+```
+
+**⚠️ Warning**: Only disable rules when absolutely necessary. Document why with a comment.
+
+## TypeScript-ESLint Integration
+
+### TypeScript Files
+ESLint is configured to parse `.ts` and `.tsx` files using TypeScript parser
+
+### Type-Aware Rules
+Certain rules require `parserOptions.project` to work (already configured):
+- `@typescript-eslint/await-thenable`
+- `@typescript-eslint/no-floating-promises`
+- `@typescript-eslint/no-unnecessary-type-assertion`
+
+## Component Linting Standards
+
+### Props Interface
+```typescript
+// ✅ Always define props interface
+interface ButtonProps {
+  label: string;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  variant?: 'primary' | 'secondary';
+  disabled?: boolean;
+}
+
+export function Button({ label, onClick, variant = 'primary', disabled = false }: ButtonProps) {
+  return (
+    <button onClick={onClick} disabled={disabled} className={variant}>
+      {label}
+    </button>
+  );
+}
+```
+
+### Hook Usage
+```typescript
+// ✅ Hooks must be called at top level
+export function Form() {
+  const [formData, setFormData] = useState<FormData>({});
+  
+  useEffect(() => {
+    // Effect logic
+  }, [formData]);
+
+  return <form>{/* JSX */}</form>;
+}
+
+// ❌ Don't call hooks conditionally
+function BadComponent(condition: boolean) {
+  if (condition) {
+    useState(0); // ❌ Rules of Hooks violation
+  }
+}
+```
+
+## Fixing ESLint Issues
+
+### Auto-Fix
+```bash
+# Automatically fix fixable issues
+pnpm lint -- --fix
+
+# Only check without fixing
+pnpm lint
+```
+
+### Manual Fixes
+For errors that require manual intervention:
+
+1. Read the ESLint error message
+2. Check the rule documentation
+3. Refactor code to comply
+4. Run linting again to verify
+
+## Integration with IDE
+
+### VS Code ESLint Extension
+Install: `dbaeumer.vscode-eslint`
+
+**Settings** (`.vscode/settings.json`):
+```json
+{
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+}
+```
+
+### On Save Actions
+- ESLint auto-fix runs on save
+- Prettier formats code on save
+- TypeScript checking for errors
+
+## Best Practices
+
+### ✅ DO
+- Use explicit return types
+- Define prop interfaces for all components
+- Include all dependencies in useEffect
+- Use const/let, not var
+- Disable rules only with documented reasons
+- Fix linting errors before committing
+- Run `pnpm lint` in CI/CD pipelines
+
+### ❌ DON'T
+- Use `any` type
+- Ignore ESLint errors
+- Call hooks conditionally
+- Commit console.log statements
+- Disable rules globally
+- Use default exports for components (export named)
+
+## Related Rules & Configuration
+
+- [Code Standards](mdc:.cursor/rules/code-standards.mdc) - Overall TypeScript standards
+- [Testing Conventions](mdc:.cursor/rules/testing-conventions.mdc) - Testing best practices
+- [Prettier Configuration](mdc:apps/web/package.json) - Code formatting
+- [TypeScript Configuration](mdc:apps/web/tsconfig.json) - Type checking
+
+## Troubleshooting
+
+### ESLint Cache Issues
+```bash
+# Clear ESLint cache
+rm -rf .eslintcache
+
+# Re-run linting
+pnpm lint
+```
+
+### Module Resolution Issues
+ESLint uses `tsconfig.json` for module resolution. Verify:
+- Path aliases are configured
+- `@decm/api` package is available
+- All required packages are installed
+
+### Performance
+If linting is slow:
+- Check for expensive rules
+- Verify file globs in config
+- Use `--max-warnings` limit

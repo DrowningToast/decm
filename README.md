@@ -5,6 +5,7 @@ Web 3.0 platform for NFT ticketing, digital credentials, and academic identity v
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - **Node.js** 18+ and **pnpm** 9.15.0+
 - **Go** 1.21+
 - **PostgreSQL** 15+
@@ -27,6 +28,7 @@ pnpm dev
 ```
 
 ### Development URLs
+
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8080/api/v1
 - **API Docs**: http://localhost:8080/swagger/
@@ -35,6 +37,7 @@ pnpm dev
 ## 📦 Tech Stack
 
 ### Frontend
+
 - **React 19** with TypeScript
 - **Vite** for fast development
 - **Tailwind CSS** + **Radix UI** for components
@@ -43,13 +46,15 @@ pnpm dev
 - **React Router** with file-based routing (@generouted)
 
 ### Backend
+
 - **Go Fiber** - Fast HTTP framework
-- **PostgreSQL** with **pgcrypto** for PII encryption
+- **PostgreSQL** with application-layer PII encryption (AES-GCM)
 - **sqlc** for type-safe SQL queries
 - **JWT** authentication with HTTP-only cookies
 - **Swagger/OpenAPI** documentation
 
 ### Infrastructure
+
 - **Monorepo**: Turbo + pnpm workspaces
 - **Database**: PostgreSQL with automated migrations
 - **Package Manager**: pnpm (REQUIRED)
@@ -86,6 +91,7 @@ decm/
 ## 🛠️ Available Commands
 
 ### Development
+
 ```bash
 # Frontend
 pnpm dev              # Start React dev server (Turbo)
@@ -116,34 +122,38 @@ pnpm gen-api:core    # Generate TypeScript client from OpenAPI
 The platform supports multiple languages using **react-i18next**.
 
 ### Supported Languages
+
 - **English** (en) - Default
 - **Thai** (th)
 
 ### Adding Translations
 
 1. Add translations to JSON files:
-   - `apps/web/src/lib/i18n/locales/en.json`
-   - `apps/web/src/lib/i18n/locales/th.json`
+    - `apps/web/src/lib/i18n/locales/en.json`
+    - `apps/web/src/lib/i18n/locales/th.json`
 
 2. Use translations in components:
+
 ```tsx
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 function MyComponent() {
-  const { t } = useTranslation();
-  
-  return <h1>{t('common.welcome')}</h1>;
+    const { t } = useTranslation();
+
+    return <h1>{t("common.welcome")}</h1>;
 }
 ```
 
 3. Add the language switcher:
-```tsx
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
-<LanguageSwitcher />
+```tsx
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+
+<LanguageSwitcher />;
 ```
 
 ### Translation Keys Structure
+
 ```json
 {
   "common": { ... },      // Common UI elements
@@ -161,7 +171,9 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 ```
 
 ### Language Detection
+
 Language is detected and stored in the following order:
+
 1. **localStorage** - User preference saved as `decm-language`
 2. **Browser navigator** - Browser language settings
 3. **HTML tag** - Document language
@@ -169,18 +181,20 @@ Language is detected and stored in the following order:
 ## 🔐 Security
 
 ### PII Encryption
-All personally identifiable information (PII) is encrypted at the database level using PostgreSQL's `pgcrypto` extension.
 
-```sql
--- Encryption pattern
-INSERT INTO profiles (encrypted_email, encrypted_name)
-VALUES (
-    pgp_sym_encrypt(sqlc.arg(email), sqlc.arg(encryption_key)::varchar),
-    pgp_sym_encrypt(sqlc.arg(name), sqlc.arg(encryption_key)::varchar)
-);
+All personally identifiable information (PII) is encrypted at the application layer using AES-256-GCM encryption in the repository layer.
+
+```go
+// Encryption pattern at repository layer
+emailEnc, err := pgmapper.EncryptStringPtrToPgText(profile.Email, r.piiEncryptionKey)
+query, err := r.queries.CreateProfile(ctx, generated.CreateProfileParams{
+    Email: emailEnc,
+})
+emailDec, err := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
 ```
 
 ### Authentication
+
 - **Wallet-based authentication** with message signing
 - **JWT sessions** via HTTP-only cookies
 - **OAuth integration** (Google)
@@ -189,26 +203,31 @@ VALUES (
 ## 📚 Core Features
 
 ### 1. Event Management
+
 - Multi-type events (academic, social, professional)
 - NFT-based ticketing system
 - Event creation and management
 
 ### 2. Digital Credentials
+
 - Blockchain-based certificates
 - QR code verification
 - Certificate issuance and validation
 
 ### 3. Academic Identity
+
 - LDAP integration for institutional verification
 - "Verify Once, Use Everywhere" principle
 - Academic credential management
 
 ### 4. e-Portfolio
+
 - Personal achievement showcase
 - Credential collection
 - Public profile sharing
 
 ### 5. Evaluation System
+
 - Reputation management
 - Feedback system
 - Participant evaluation
@@ -216,16 +235,18 @@ VALUES (
 ## 🔗 API Documentation
 
 Access the interactive Swagger documentation at:
+
 ```
 http://localhost:8080/swagger/
 ```
 
 The API client is automatically generated from OpenAPI specs:
-```typescript
-import { DefaultApi } from '@decm/api';
 
-const api = new DefaultApi({ 
-  basePath: 'http://localhost:8080/api/v1' 
+```typescript
+import { DefaultApi } from "@decm/api";
+
+const api = new DefaultApi({
+    basePath: "http://localhost:8080/api/v1",
 });
 
 // Use generated methods
@@ -235,14 +256,17 @@ const response = await api.getProfile();
 ## 🗄️ Database
 
 ### Migrations
+
 Database migrations are automatically run when starting the backend with `pnpm dev:core`.
 
 Manual migration:
+
 ```bash
 pnpm db:migrate
 ```
 
 ### Query Development
+
 1. Write SQL queries in `packages/database/queries/`
 2. Generate Go code: `pnpm db:generate`
 3. Use generated types in repositories
@@ -252,20 +276,22 @@ pnpm db:migrate
 Built with **Radix UI** and **Tailwind CSS** for accessible, customizable components.
 
 ```tsx
-import { Button } from '@/components/ui/button';
-import { Dialog } from '@/components/ui/dialog';
-import { Select } from '@/components/ui/select';
+import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
+import { Select } from "@/components/ui/select";
 ```
 
 ## 🧪 Development Workflow
 
 ### API-First Development
+
 1. Define Go handler with OpenAPI annotations
 2. Generate TypeScript client: `pnpm gen-api:core`
 3. Use generated client in React frontend
 4. Type safety maintained end-to-end
 
 ### Database-First Development
+
 1. Write SQL queries in `packages/database/queries/`
 2. Generate Go code: `pnpm db:generate`
 3. Use generated types in repositories and handlers

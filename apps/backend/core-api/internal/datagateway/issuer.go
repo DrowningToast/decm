@@ -1,8 +1,9 @@
 package datagateway
 
 import (
-	"apps/backend/core-api/internal/entity"
 	"context"
+
+	"apps/backend/core-api/internal/entity"
 )
 
 type IssuerDataGateway interface {

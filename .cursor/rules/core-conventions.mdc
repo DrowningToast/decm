@@ -1,0 +1,93 @@
+---
+alwaysApply: true
+---
+
+# DECM Core Conventions
+
+## Project Setup
+- **Package Manager**: pnpm only (v9.15.0) - never npm/yarn/bun
+- **Frontend**: React 19 + TypeScript + Tailwind CSS + Radix UI
+- **Backend**: Go Fiber + PostgreSQL + sqlc
+- **Monorepo**: Turbo + pnpm workspaces
+
+## Backend (Go) Conventions
+
+### File Structure
+```
+apps/backend/
+├── core-api/cmd/main.go          # Entry point
+├── core-api/internal/            # Private code (handlers, entities, repos, usecases)
+├── services/auth/, /oauth/       # Shared services
+└── common/                        # Shared utilities
+```
+
+### Key Patterns
+- **Handler Pattern**: Parse → Validate → UseCase → Response
+- **Layers**: Handler → UseCase → Repository → Database
+- **Scripts Naming**: Use `*:core` (e.g., `dev:core`, `build:core`), never `backend`
+- **OpenAPI**: All handlers must include `@Summary`, `@Description`, `@Router` annotations
+
+### Database & SQL
+- **PII Encryption**: Always use pgcrypto: `pgp_sym_encrypt(data, key::varchar)`
+- **sqlc Parameters**: Cast encryption_key with `::varchar` in ALL queries
+
+## Frontend (React/TypeScript) Conventions
+
+### Project Structure
+```
+apps/web/src/
+├── pages/              # Route components (page-level)
+├── components/         # Reusable UI components
+├── hooks/              # Custom React hooks
+├── services/           # API client, utilities
+├── lib/                # Helper functions
+└── config/             # Feature flags, constants
+```
+
+### Code Quality
+- **ESLint**: Strict TypeScript, no `any` type
+- **Testing**: React Testing Library + Vitest, 70% minimum coverage
+- **API Client**: Generate with `pnpm gen-api:core` from OpenAPI
+
+## Essential Commands
+```bash
+# Setup
+pnpm install              # Install deps
+pnpm compose:up           # Start PostgreSQL
+
+# Development
+pnpm dev                  # Frontend (localhost:3000)
+pnpm dev:core             # Backend (localhost:8080/api/v1)
+pnpm gen-api:core         # Generate TypeScript client
+
+# Quality
+pnpm lint                 # ESLint check
+pnpm lint -- --fix        # Auto-fix
+pnpm check-types          # TypeScript
+pnpm test                 # Tests
+pnpm test --coverage      # Coverage
+
+# Database
+pnpm db:generate          # sqlc: SQL → Go
+pnpm db:migrate           # Migrations
+```
+
+## Security
+- **Auth**: Wallet signing + JWT sessions (HTTP-only cookies)
+- **PII**: Encrypted at DB layer with pgcrypto
+- **Type Safety**: sqlc generates safe Go code
+- **Validation**: Input validation on all requests
+
+## Dev Endpoints
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8080/api/v1
+- API Docs: http://localhost:8080/swagger/
+- Database: localhost:5432
+
+## Quick Checklist
+- [ ] Use `pnpm` for all commands
+- [ ] SQL: Cast `sqlc.arg(encryption_key)::varchar`
+- [ ] Go: Include OpenAPI annotations on handlers
+- [ ] TypeScript: Define interfaces, no `any`
+- [ ] Tests: 70% minimum coverage for frontend
+- [ ] Commits: ESLint/TypeScript passing

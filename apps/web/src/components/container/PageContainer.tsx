@@ -17,16 +17,12 @@ const pageContainerVariants = cva("py-10 min-h-dvh lg:py-16", {
 
 interface PageContainerProps {
     children: ReactNode;
-    title: string;
-    description?: string;
     bgColor?: "default" | "primary";
     className?: string;
 }
 
 export default function PageContainer({
     children,
-    title,
-    description,
     className,
     bgColor = "default",
 }: PageContainerProps) {

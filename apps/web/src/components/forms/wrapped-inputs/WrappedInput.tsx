@@ -92,13 +92,12 @@ export const WrappedInput = <T extends FieldValues>({
                             <Typography
                                 variant="text"
                                 tag="p"
-                                className={`text-xs text-right ${
-                                    isOverLimit
-                                        ? "text-destructive font-medium"
-                                        : isNearLimit
-                                          ? "text-yellow-600 dark:text-yellow-500"
-                                          : "text-muted-foreground"
-                                }`}
+                                className={`text-xs text-right ${isOverLimit
+                                    ? "text-destructive font-medium"
+                                    : isNearLimit
+                                        ? "text-yellow-600 dark:text-yellow-500"
+                                        : "text-muted-foreground"
+                                    }`}
                             >
                                 {currentLength} / {maxLength} {t("common.characters")}
                             </Typography>
