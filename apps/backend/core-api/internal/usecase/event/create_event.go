@@ -1,14 +1,15 @@
 package event
 
 import (
-	"apps/backend/common/customerror"
-	datagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
 	"context"
 	"errors"
 	"mime/multipart"
 	"time"
+
+	"apps/backend/common/customerror"
+	datagateway "apps/backend/core-api/internal/datagateway/event"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 
 	"github.com/google/uuid"
 )

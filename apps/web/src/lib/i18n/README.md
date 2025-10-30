@@ -24,14 +24,14 @@ The application uses [react-i18next](https://react.i18next.com/) for internation
 import { useTranslation } from "react-i18next";
 
 function MyComponent() {
-	const { t } = useTranslation();
+    const { t } = useTranslation();
 
-	return (
-		<div>
-			<h1>{t("common.welcome")}</h1>
-			<p>{t("home.hero.subtitle")}</p>
-		</div>
-	);
+    return (
+        <div>
+            <h1>{t("common.welcome")}</h1>
+            <p>{t("home.hero.subtitle")}</p>
+        </div>
+    );
 }
 ```
 
@@ -41,12 +41,12 @@ function MyComponent() {
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 function Header() {
-	return (
-		<header>
-			<nav>{/* Your navigation items */}</nav>
-			<LanguageSwitcher />
-		</header>
-	);
+    return (
+        <header>
+            <nav>{/* Your navigation items */}</nav>
+            <LanguageSwitcher />
+        </header>
+    );
 }
 ```
 
@@ -66,20 +66,20 @@ All translation files follow the same structure:
 
 ```json
 {
-	"common": {
-		"welcome": "Welcome",
-		"loading": "Loading..."
-	},
-	"auth": {
-		"signIn": "Sign In",
-		"signUp": "Sign Up"
-	},
-	"home": {
-		"hero": {
-			"title": "Your Title",
-			"subtitle": "Your Subtitle"
-		}
-	}
+    "common": {
+        "welcome": "Welcome",
+        "loading": "Loading..."
+    },
+    "auth": {
+        "signIn": "Sign In",
+        "signUp": "Sign Up"
+    },
+    "home": {
+        "hero": {
+            "title": "Your Title",
+            "subtitle": "Your Subtitle"
+        }
+    }
 }
 ```
 
@@ -93,10 +93,10 @@ Add the same key to both `en.json` and `th.json`:
 
 ```json
 {
-	"myFeature": {
-		"title": "My Feature",
-		"description": "This is a description"
-	}
+    "myFeature": {
+        "title": "My Feature",
+        "description": "This is a description"
+    }
 }
 ```
 
@@ -104,10 +104,10 @@ Add the same key to both `en.json` and `th.json`:
 
 ```json
 {
-	"myFeature": {
-		"title": "ฟีเจอร์ของฉัน",
-		"description": "นี่คือคำอธิบาย"
-	}
+    "myFeature": {
+        "title": "ฟีเจอร์ของฉัน",
+        "description": "นี่คือคำอธิบาย"
+    }
 }
 ```
 
@@ -115,14 +115,14 @@ Add the same key to both `en.json` and `th.json`:
 
 ```tsx
 function MyFeature() {
-	const { t } = useTranslation();
+    const { t } = useTranslation();
 
-	return (
-		<div>
-			<h2>{t("myFeature.title")}</h2>
-			<p>{t("myFeature.description")}</p>
-		</div>
-	);
+    return (
+        <div>
+            <h2>{t("myFeature.title")}</h2>
+            <p>{t("myFeature.description")}</p>
+        </div>
+    );
 }
 ```
 
@@ -136,7 +136,7 @@ Use variables in translations:
 
 ```json
 {
-	"welcome": "Welcome, {{name}}!"
+    "welcome": "Welcome, {{name}}!"
 }
 ```
 
@@ -155,8 +155,8 @@ Handle singular/plural forms:
 
 ```json
 {
-	"itemCount": "{{count}} item",
-	"itemCount_plural": "{{count}} items"
+    "itemCount": "{{count}} item",
+    "itemCount_plural": "{{count}} items"
 }
 ```
 
@@ -176,18 +176,18 @@ For more control, access the i18n instance directly:
 import { useTranslation } from "react-i18next";
 
 function LanguageInfo() {
-	const { i18n } = useTranslation();
+    const { i18n } = useTranslation();
 
-	const changeLanguage = (lng: string) => {
-		i18n.changeLanguage(lng);
-	};
+    const changeLanguage = (lng: string) => {
+        i18n.changeLanguage(lng);
+    };
 
-	return (
-		<div>
-			<p>Current language: {i18n.language}</p>
-			<button onClick={() => changeLanguage("th")}>Switch to Thai</button>
-		</div>
-	);
+    return (
+        <div>
+            <p>Current language: {i18n.language}</p>
+            <button onClick={() => changeLanguage("th")}>Switch to Thai</button>
+        </div>
+    );
 }
 ```
 
@@ -218,25 +218,24 @@ t("nonexistent.key");
 The i18n configuration is in `apps/web/src/lib/i18n/config.ts`:
 
 ```typescript
-i18n
-	.use(LanguageDetector)
-	.use(initReactI18next)
-	.init({
-		resources: {
-			/* translations */
-		},
-		fallbackLng: "en",
-		supportedLngs: ["en", "th"],
-		debug: process.env.NODE_ENV === "development",
-		interpolation: {
-			escapeValue: false, // React already escapes
-		},
-		detection: {
-			order: ["localStorage", "navigator", "htmlTag"],
-			caches: ["localStorage"],
-			lookupLocalStorage: "decm-language",
-		},
-	});
+i18n.use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+        resources: {
+            /* translations */
+        },
+        fallbackLng: "en",
+        supportedLngs: ["en", "th"],
+        debug: process.env.NODE_ENV === "development",
+        interpolation: {
+            escapeValue: false, // React already escapes
+        },
+        detection: {
+            order: ["localStorage", "navigator", "htmlTag"],
+            caches: ["localStorage"],
+            lookupLocalStorage: "decm-language",
+        },
+    });
 ```
 
 ## Adding a New Language
@@ -247,9 +246,9 @@ Create a new file in `locales/` (e.g., `ja.json` for Japanese):
 
 ```json
 {
-	"common": {
-		"welcome": "ようこそ"
-	}
+    "common": {
+        "welcome": "ようこそ"
+    }
 }
 ```
 
@@ -261,19 +260,19 @@ Create a new file in `locales/` (e.g., `ja.json` for Japanese):
 import jaTranslations from "./locales/ja.json";
 
 export const languages = {
-	en: { label: "English", flag: "🇬🇧" },
-	th: { label: "ไทย", flag: "🇹🇭" },
-	ja: { label: "日本語", flag: "🇯🇵" }, // Add new language
+    en: { label: "English", flag: "🇬🇧" },
+    th: { label: "ไทย", flag: "🇹🇭" },
+    ja: { label: "日本語", flag: "🇯🇵" }, // Add new language
 } as const;
 
 i18n.init({
-	resources: {
-		en: { translation: enTranslations },
-		th: { translation: thTranslations },
-		ja: { translation: jaTranslations }, // Add new resource
-	},
-	supportedLngs: ["en", "th", "ja"], // Add to supported languages
-	// ... rest of config
+    resources: {
+        en: { translation: enTranslations },
+        th: { translation: thTranslations },
+        ja: { translation: jaTranslations }, // Add new resource
+    },
+    supportedLngs: ["en", "th", "ja"], // Add to supported languages
+    // ... rest of config
 });
 ```
 
@@ -289,15 +288,15 @@ Group related translations together:
 
 ```json
 {
-	"auth": {
-		/* authentication related */
-	},
-	"profile": {
-		/* profile related */
-	},
-	"events": {
-		/* events related */
-	}
+    "auth": {
+        /* authentication related */
+    },
+    "profile": {
+        /* profile related */
+    },
+    "events": {
+        /* events related */
+    }
 }
 ```
 
@@ -337,13 +336,13 @@ Use descriptive keys that provide context:
 
 ```json
 {
-	"button": {
-		"save": "Save",
-		"cancel": "Cancel"
-	},
-	"validation": {
-		"required": "This field is required"
-	}
+    "button": {
+        "save": "Save",
+        "cancel": "Cancel"
+    },
+    "validation": {
+        "required": "This field is required"
+    }
 }
 ```
 
@@ -353,11 +352,11 @@ For UI elements, keep translations concise:
 
 ```json
 {
-	"nav": {
-		"home": "Home",
-		"events": "Events",
-		"profile": "Profile"
-	}
+    "nav": {
+        "home": "Home",
+        "events": "Events",
+        "profile": "Profile"
+    }
 }
 ```
 

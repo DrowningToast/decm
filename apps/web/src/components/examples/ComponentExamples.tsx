@@ -1,14 +1,17 @@
-import { Button } from '@/components/ui/button';
-import { PublicNavbar } from '@/components/layouts/navigations/PublicNavbar';
+import { Button } from "@/components/ui/button";
+import { PublicNavbar } from "@/components/layouts/navigations/PublicNavbar";
+import { Typography } from "@/components/typography/typography";
+import { useTranslation } from "react-i18next";
 
 /**
  * Component Examples - Usage Guide
- * 
+ *
  * This file demonstrates how to use the Button and Navbar components
  * with the Figma design system variants.
  */
 
 export function ButtonExamples() {
+    const { t } = useTranslation();
     return (
         <div className="space-y-8 p-8">
             <div className="space-y-4">
@@ -32,7 +35,9 @@ export function ButtonExamples() {
 
                 {/* Secondary Light Button - Portfolio */}
                 <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">Secondary Light Variant (Portfolio)</p>
+                    <p className="text-sm text-muted-foreground">
+                        Secondary Light Variant (Portfolio)
+                    </p>
                     <Button variant="secondary-light" size="xl">
                         Start building your portfolio
                     </Button>
@@ -40,13 +45,23 @@ export function ButtonExamples() {
             </div>
 
             <div className="space-y-4">
-                <h2 className="text-2xl font-bold">Button Sizes</h2>
+                <Typography variant="header" tag="h2">
+                    {t("examples.buttonSizes")}
+                </Typography>
 
                 <div className="flex flex-wrap items-center gap-4">
-                    <Button variant="primary" size="sm">Small</Button>
-                    <Button variant="primary" size="default">Default</Button>
-                    <Button variant="primary" size="lg">Large</Button>
-                    <Button variant="primary" size="xl">Extra Large</Button>
+                    <Button variant="primary" size="sm">
+                        {t("examples.buttons.small")}
+                    </Button>
+                    <Button variant="primary" size="default">
+                        {t("examples.buttons.default")}
+                    </Button>
+                    <Button variant="primary" size="lg">
+                        {t("examples.buttons.large")}
+                    </Button>
+                    <Button variant="primary" size="xl">
+                        {t("examples.buttons.extraLarge")}
+                    </Button>
                 </div>
             </div>
         </div>
@@ -60,20 +75,20 @@ export function NavbarExamples() {
 
             {/* Primary Navbar */}
             <div className="relative h-20 mb-4">
-                <p className="text-sm text-muted-foreground px-8 pb-2">Primary Variant</p>
-                <PublicNavbar variant="primary" className="relative" />
+                <p className="text-sm text-muted-foreground px-8 pb-2">Primary Light Variant</p>
+                <PublicNavbar variant="light" className="relative" />
             </div>
 
             {/* Secondary Dark Navbar */}
             <div className="relative h-20 mb-4">
                 <p className="text-sm text-muted-foreground px-8 pb-2">Secondary Dark Variant</p>
-                <PublicNavbar variant="secondary-dark" className="relative" />
+                <PublicNavbar variant="dark" className="relative" />
             </div>
 
             {/* Secondary Light Navbar */}
             <div className="relative h-20 mb-4">
                 <p className="text-sm text-muted-foreground px-8 pb-2">Secondary Light Variant</p>
-                <PublicNavbar variant="secondary-light" className="relative" />
+                <PublicNavbar variant="light" className="relative" />
             </div>
         </div>
     );
@@ -81,11 +96,11 @@ export function NavbarExamples() {
 
 /**
  * Usage in Your Pages:
- * 
+ *
  * // Import the components
  * import { Button } from '@/components/ui/button';
  * import { PublicNavbar } from '@/components/layouts/navigations/PublicNavbar';
- * 
+ *
  * // Use in your component
  * function MyPage() {
  *   return (
@@ -100,4 +115,3 @@ export function NavbarExamples() {
  *   );
  * }
  */
-

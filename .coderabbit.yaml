@@ -1,4 +1,11 @@
 reviews:
-  path_filters:
-    - "!packages/api/src/apis/**/api.ts"
-    - "**/pkg/**"
+    path_filters:
+        - "!packages/api/src/apis/**/api.ts"
+        - "!**/node_modules/**"
+        - "!**/dist/**"
+        - "!**/build/**"
+        - "!**/pkg/**"
+        - "!**/*.svg"
+        - "!**/*.json"
+        - "!pnpm-lock.yaml"
+        - "!**/gen/**"

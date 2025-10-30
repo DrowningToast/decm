@@ -1,0 +1,173 @@
+---
+description: "CodeRabbit PR review configuration and automation for DECM platform"
+---
+
+# CodeRabbit Configuration & PR Review Guide
+
+## Overview
+CodeRabbit is configured to automatically review pull requests on the DECM platform, providing intelligent code analysis, security checks, and style recommendations across both Go backend and TypeScript/React frontend codebases.
+
+## PR Review Process
+
+### Automated Review Coverage
+CodeRabbit analyzes the following on every PR:
+
+**Backend (Go)**:
+- Code quality and Go best practices
+- Race condition detection
+- Error handling patterns
+- Security vulnerabilities
+- Database query patterns
+- API handler implementations
+- Test coverage and naming conventions
+
+**Frontend (TypeScript/React)**:
+- Component structure and React patterns
+- TypeScript type safety
+- ESLint compliance
+- Performance optimization opportunities
+- Accessibility (a11y) issues
+- Testing practices using Vitest
+- API client usage patterns
+
+## Key Review Areas
+
+### 1. Code Standards Compliance
+CodeRabbit checks adherence to code standards:
+- Go handler/usecase/repository layering
+- TypeScript component structure and typing
+- Proper use of React hooks
+- Error handling patterns
+
+### 2. Security Review
+- PII encryption patterns (pgcrypto usage)
+- JWT and cookie security
+- Input validation on all endpoints
+- SQL injection prevention in sqlc queries
+- Authentication flow compliance
+
+### 3. Database Patterns
+- Correct sqlc parameter casting (`sqlc.arg(encryption_key)::varchar`)
+- PII encryption on sensitive fields
+- Migration naming and structure
+- Query optimization
+
+### 4. API Documentation
+- OpenAPI/Swagger annotations on Go handlers
+- Complete handler documentation
+- Proper parameter descriptions
+- Error response documentation
+
+### 5. Testing Requirements
+- Backend: Go unit tests with table-driven patterns
+- Frontend: React component tests using Vitest + React Testing Library
+- Test naming conventions: `*_test.go` (backend), `*.test.ts(x)` (frontend)
+- Adequate test coverage (backend: 80%, frontend: 70%)
+
+### 6. Linting & Formatting
+- ESLint compliance for TypeScript/React
+- Prettier formatting checks
+- Go formatting (gofmt)
+- No unused imports or variables
+
+### 7. Type Safety
+- Strict TypeScript configuration
+- Generated API client from OpenAPI specs
+- Go type-safe queries via sqlc
+- Proper interface definitions
+
+## Common Review Comments
+
+### ✅ Approved Patterns
+
+**Go Backend**:
+```go
+// OpenAPI documentation present
+// @Summary Create event
+// @Description Create event with validation
+// @ID create-event
+// @Accept json
+// @Produce json
+// @Param request body CreateEventRequest true "Event data"
+// @Success 201 {object} Event
+// @Router /api/v1/events [post]
+func (h *Handler) CreateEvent(c *fiber.Ctx) error {
+    req := CreateEventRequest{}
+    if err := req.Parse(c); err != nil {
+        return *err
+    }
+    if err := req.IsValid(); err != nil {
+        return *err
+    }
+    // Business logic
+    return c.Status(fiber.StatusCreated).JSON(result)
+}
+```
+
+**TypeScript/React**:
+```typescript
+interface ButtonProps {
+  label: string;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  disabled?: boolean;
+}
+
+export function Button({ label, onClick, disabled = false }: ButtonProps) {
+  return (
+    <button onClick={onClick} disabled={disabled}>
+      {label}
+    </button>
+  );
+}
+```
+
+## PR Description Best Practices
+
+When creating a PR, include:
+
+```markdown
+## Description
+Brief explanation of changes
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
+
+## Testing
+- Backend: Run `pnpm test:core`
+- Frontend: Run `pnpm test`
+
+## Checklist
+- [ ] Code follows project conventions
+- [ ] Tests added/updated
+- [ ] No linting errors (`pnpm lint`)
+- [ ] TypeScript types verified (`pnpm check-types`)
+```
+
+## Running Pre-PR Checks
+
+Before creating a PR, ensure:
+
+```bash
+pnpm install
+pnpm format
+pnpm lint
+pnpm check-types
+pnpm test:core
+pnpm test:core:coverage
+pnpm build
+```
+
+## Performance Considerations
+
+CodeRabbit may flag:
+- N+1 query problems in repositories
+- Unnecessary re-renders in React components
+- Missing React.memo on expensive components
+- Unoptimized database queries
+
+## Continuous Improvement
+
+CodeRabbit feedback helps maintain code consistency, security, performance, maintainability, and quality across the DECM platform.

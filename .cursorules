@@ -1,0 +1,475 @@
+# DECM Platform - Cursor Rules
+
+## Project Identity
+
+- **Project**: DECM (Decentralized Event Management)
+- **Type**: Web 3.0 platform for NFT ticketing, digital credentials, and academic identity verification
+- **Monorepo**: Turbo + pnpm workspaces (NEVER use npm/yarn/bun)
+- **Tech Stack**: Go Fiber (backend), React 19 (frontend), PostgreSQL, sqlc
+
+## Critical Rules
+
+### 1. Package Manager - ABSOLUTE
+
+- **MUST use `pnpm`** for all package management operations
+- Never use npm, yarn, or bun
+- Check `packageManager: "pnpm@9.15.0"` in package.json
+
+### 2. PII Encryption - NON-NEGOTIABLE
+
+**ALL personally identifiable information MUST be encrypted at the application layer (repository) using AES-GCM encryption in Go code.**
+
+#### PII Fields (Must Encrypt)
+
+- Authentication: `google_connector_ref`, `github_connector_ref`
+- Profile: `first_name`, `last_name`, `email`, `phone_number`, `address`, `bio`, `profile_picture_url`, `academic_institution`, `academic_email`
+
+#### Encryption Architecture
+
+- **Location**: Application layer (Repository) ONLY - never encrypt at handler, usecase, or database level
+- **Algorithm**: AES-256-GCM in Go code (deterministic for searchability)
+- **Key Management**: `PII_ENCRYPTION_KEY` from environment variables ONLY
+- **Database Storage**: PII stored as `TEXT` columns (already encrypted by application)
+- **Implementation**: Use `apps/backend/common/pgmapper` utilities in Go
+- **NO database-level encryption**: All encryption in Go application code
+
+#### Encryption Implementation
+
+**CREATE Operation**:
+
+```go
+import "apps/backend/common/pgmapper"
+
+func (r *Repository) CreateProfile(ctx context.Context, profile entity.Profile) (*entity.Profile, error) {
+    // 1. Encrypt PII fields in Go application layer
+    emailEnc, err := pgmapper.EncryptStringPtrToPgText(profile.Email, r.piiEncryptionKey)
+    if err != nil {
+        return nil, err
+    }
+
+    // 2. Insert encrypted data (encryption already done in Go)
+    query, err := r.queries.CreateProfile(ctx, generated.CreateProfileParams{
+        Email: emailEnc,
+    })
+
+    // 3. Decrypt for return in Go application layer
+    emailDec, err := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
+    return &entity.Profile{Email: emailDec}, nil
+}
+```
+
+**READ Operation**:
+
+```go
+func (r *Repository) GetProfile(ctx context.Context, id uuid.UUID) (*entity.Profile, error) {
+    query, err := r.queries.GetProfileByID(ctx, id)
+
+    // Decrypt all PII fields in Go application layer
+    email, err := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
+    return &entity.Profile{Email: email}, nil
+}
+```
+
+**SEARCH Operation**:
+
+```go
+func (r *Repository) GetProfileByEmail(ctx context.Context, email string) (*entity.Profile, error) {
+    // Encrypt the search term in Go (deterministic encryption allows direct comparison)
+    encryptedEmail, err := pgmapper.EncryptPII(email, r.piiEncryptionKey)
+
+    query, err := r.queries.GetProfileByEmail(ctx, pgtype.Text{String: encryptedEmail, Valid: true})
+
+    // Decrypt result in Go application layer
+    emailDec, err := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
+    return &entity.Profile{Email: emailDec}, nil
+}
+```
+
+#### SQL Query Pattern (NO encryption in SQL - all encryption in Go)
+
+```sql
+-- Encryption is done in Go application code, NOT in SQL
+-- name: CreateProfile :one
+INSERT INTO profiles (email, first_name)
+VALUES (sqlc.narg(email), sqlc.narg(first_name))
+RETURNING *;
+
+-- name: GetProfileByEmail :one
+SELECT * FROM profiles WHERE email = sqlc.arg(email);
+```
+
+#### Available Functions
+
+- `EncryptStringPtrToPgText(field, key)` - Encrypt string pointer → pgtype.Text
+- `DecryptPgTextToStringPtr(field, key)` - Decrypt pgtype.Text → string pointer
+- `EncryptPII(plaintext, key)` - Encrypt raw strings (for search)
+- `DecryptPII(ciphertext, key)` - Decrypt raw strings
+
+### 3. Backend Architecture - Handler → UseCase → Repository
+
+**Handler Layer** (`apps/backend/core-api/internal/handler/`):
+
+- HTTP request/response handling ONLY
+- Input parsing and validation (use struct tags with `validate:` tags)
+- Swagger/OpenAPI documentation (REQUIRED for all endpoints)
+- Maps errors to HTTP status codes
+- Thin layer (~30 lines per handler)
+
+**UseCase Layer** (`apps/backend/core-api/internal/usecase/`):
+
+- Business logic orchestration
+- Transaction management
+- Domain-specific validation
+- Coordinates multiple repositories
+- No HTTP knowledge
+
+**Repository Layer** (`apps/backend/core-api/internal/repositories/postgres/`):
+
+- Database operations using sqlc-generated queries
+- **PII encryption/decryption using AES-GCM in Go (application layer ONLY)**
+- Error handling with `pgerrutils.ParsePgError()`
+- Data mapping between database and domain entities
+
+**Dependency Injection Flow**:
+
+```
+Config → PG Pool → Repositories → UseCases → Handlers → Routes
+```
+
+### 4. Swagger/OpenAPI - REQUIRED for ALL Endpoints
+
+```go
+// @Summary Brief description
+// @Description Detailed description
+// @ID unique-operation-id
+// @Tags feature-name
+// @Accept json
+// @Produce json
+// @Param param_name body/query/path type true "Description"
+// @Success 200 {object} ResponseStruct
+// @Failure 400 {object} customerror.ErrResponse
+// @Failure 401 {object} customerror.ErrResponse
+// @Router /api/v1/path [method]
+func (h *Handler) HandlerName(ctx *fiber.Ctx) error {
+    // Handler implementation
+}
+```
+
+### 5. Error Handling
+
+**Backend (Go)**:
+
+```go
+// User-facing error
+return customerror.New(customerror.StatusBadRequest, "Invalid email", err)
+
+// Validation error (auto-formats struct validation errors)
+return customerror.NewValidationErr(validationErr)
+
+// Database error parsing (auto-maps PG errors to HTTP codes)
+return pgerrutils.ParsePgError(pgErr)
+```
+
+**Database Errors**: Always use `pgerrutils.ParsePgError()` to parse PostgreSQL-specific errors.
+
+**Validation Errors**: Use `validatorutils` package for struct validation.
+
+### 6. Validation Pattern
+
+```go
+type CreateUserRequest struct {
+    Email string `json:"email" validate:"required,email"`
+    Age   int    `json:"age" validate:"required,min=18,max=100"`
+}
+
+// In handler
+if err := validatorutils.Validate(&req); err != nil {
+    return customerror.NewValidationErr(err)
+}
+```
+
+### 7. SQL & sqlc Conventions
+
+**Query Files** (`packages/database/queries/*.sql`):
+
+```sql
+-- name: GetUserByID :one
+SELECT * FROM users WHERE id = $1;
+
+-- name: CreateUser :one
+INSERT INTO users (email, first_name)
+VALUES ($1, $2)
+RETURNING *;
+```
+
+**Command**:
+
+```bash
+pnpm db:generate  # Generate Go code from SQL
+```
+
+**Migrations** (`packages/database/migrations/`):
+
+```
+000001_enable_extensions.up.sql
+000001_enable_extensions.down.sql
+000002_create_core_tables.up.sql
+000002_create_core_tables.down.sql
+```
+
+### 8. Frontend Conventions (React 19)
+
+**Generated API Usage**:
+
+```typescript
+import { DefaultApi } from "@decm/api";
+
+const api = new DefaultApi({
+    basePath: "http://localhost:8080/api/v1",
+    withCredentials: true,
+});
+```
+
+**Typography** (ALWAYS use for text):
+
+```typescript
+import { Typography } from '@/components/typography/typography';
+
+<Typography variant="h1" tag="h1">{t('title')}</Typography>
+<Typography variant="text" tag="p">{content}</Typography>
+```
+
+**i18n**:
+
+```typescript
+import { useTranslation } from 'react-i18next';
+
+const { t } = useTranslation();
+return <h1>{t('common.welcome')}</h1>;
+```
+
+**Form Handling** (React Hook Form + Zod):
+
+```typescript
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const schema = z.object({
+    email: z.string().email("Invalid email"),
+});
+
+const {
+    register,
+    formState: { errors },
+} = useForm({
+    resolver: zodResolver(schema),
+});
+```
+
+**NO `dangerouslySetInnerHTML`**: Never use unsafe HTML rendering - use Text components or structured data instead.
+
+### 9. Environment Configuration
+
+**Backend (.env file)**:
+
+```env
+# Database (REQUIRED)
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=decm_password
+DB_NAME=decm
+
+# PII Encryption (CRITICAL - REQUIRED)
+PII_ENCRYPTION_KEY=your-secure-256-bit-key-here
+
+# JWT (REQUIRED)
+JWT_SECRET=your-secret-key-change-this-in-production
+JWT_EXPIRATION=24h
+JWT_ISSUER=decm-service
+
+# OAuth
+GOOGLE_OAUTH_CLIENT_ID=
+GOOGLE_OAUTH_CLIENT_SECRET=
+```
+
+**Frontend (.env.client file - MUST use VITE\_ prefix)**:
+
+```env
+VITE_API_URL=http://localhost:8080/api/v1
+VITE_ENVIRONMENT=development
+```
+
+**Pattern**: Use `.env.example` for configuration templates (NOT `env.template`).
+
+### 10. Development Endpoints
+
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8080/api/v1
+- Swagger Docs: http://localhost:8080/swagger/
+- Database: localhost:5432
+- Health Check: http://localhost:8080/
+- Readiness: http://localhost:8080/ready
+
+### 11. Common Commands
+
+```bash
+# Setup
+pnpm install                 # Install dependencies
+pnpm compose:up              # Start PostgreSQL
+pnpm dev:core                # Start API (auto-migrations)
+pnpm dev                     # Start frontend
+
+# Development
+pnpm gen-api:core            # Generate TypeScript client
+pnpm db:generate             # Generate Go from SQL
+pnpm build                   # Production build
+
+# Database
+pnpm db:migrate              # Run pending migrations
+pnpm db:migrate:create       # Create new migration
+pnpm db:console              # PostgreSQL CLI
+```
+
+### 12. Code Quality
+
+**Naming Conventions**:
+
+- Backend scripts use 'core' naming: `dev:core`, `build:core`, `start:core`, `gen-api:core`
+- Files follow Go naming: `snake_case.go` for filenames
+- Functions follow camelCase: `functionName()`
+- Never use 'backend' in script names - always 'core'
+
+**Directory Structure**:
+
+- `apps/backend/core-api/cmd/` - Entry point
+- `apps/backend/core-api/internal/` - Private code
+- `apps/backend/common/` - Shared utilities
+- `apps/backend/services/` - External integrations
+
+**Import Organization**:
+
+```go
+import (
+    "standard/library/imports"
+
+    "third/party/imports"
+
+    "local/package/imports"
+)
+```
+
+### 13. Type Safety
+
+**sqlc Generated Code**: Always use sqlc-generated types from `packages/database/go/generated/`
+
+**pgtype Conversions**:
+
+```go
+// pgtype.Text ↔ *string
+stringPtr := pgmapper.PgTextToStringPtr(pgText)
+pgText := pgmapper.StringPtrToPgText(stringPtr)
+
+// pgtype.Timestamptz ↔ *time.Time
+timePtr := pgmapper.PgTimestampzToTimePtr(timestampz)
+timestampz := pgmapper.TimePtrToPgTimestampz(timePtr)
+```
+
+### 14. Testing
+
+**Backend (Go)**:
+
+```bash
+cd apps/backend
+go test ./...        # Run all tests
+go test -v ./...     # Verbose
+go test -cover ./... # Coverage
+```
+
+**Frontend (TypeScript/React)**:
+
+```bash
+pnpm test            # Run tests (when configured)
+pnpm test:watch      # Watch mode
+```
+
+### 15. Prohibited Patterns
+
+- ❌ Never use npm/yarn/bun for package management
+- ❌ Never hardcode encryption keys
+- ❌ Never skip PII encryption for any field
+- ❌ Never use database-level encryption (pgcrypto) - use application-layer encryption
+- ❌ Never use raw SQL in Go code (use sqlc)
+- ❌ Never access repositories directly from handlers
+- ❌ Never return raw errors to clients (use customerror)
+- ❌ Never skip Swagger annotations on endpoints
+- ❌ Never use `dangerouslySetInnerHTML` in React components
+- ❌ Never skip database migrations (always use migration files)
+
+## File Structure Reference
+
+```
+decm/
+├── apps/
+│   ├── web/                              # React 19 Frontend
+│   │   ├── src/
+│   │   │   ├── pages/                    # File-based routes
+│   │   │   ├── components/               # UI components
+│   │   │   ├── lib/                      # Utilities
+│   │   │   └── hooks/                    # React hooks
+│   └── backend/
+│       ├── common/                       # Shared packages
+│       │   ├── customerror/              # Error handling
+│       │   ├── pgmapper/                 # Encryption + Type conversion
+│       │   ├── encryptutils/             # AES-GCM functions
+│       │   ├── pgerrutils/               # PG error parsing
+│       │   └── validatorutils/           # Validation
+│       └── core-api/                     # Main API
+│           ├── cmd/main.go               # Entry point
+│           └── internal/
+│               ├── handler/              # HTTP handlers
+│               ├── usecase/              # Business logic
+│               ├── repositories/         # Data access
+│               ├── entity/               # Domain models
+│               └── middleware/           # HTTP middleware
+├── packages/
+│   ├── database/                         # Database package
+│   │   ├── migrations/                   # SQL migrations
+│   │   ├── queries/                      # SQL queries
+│   │   └── go/generated/                 # sqlc output
+│   └── api/                              # Generated TypeScript client
+└── scripts/                              # Utility scripts
+```
+
+## API-First Development Workflow
+
+1. **Define Handler** with Swagger annotations in Go
+2. **Generate TypeScript Client**: `pnpm gen-api:core`
+3. **Use in Frontend** with type-safe client
+4. **Type Safety Guaranteed**: Go structs → Swagger → TypeScript → React
+
+## Troubleshooting
+
+**PII Encryption Issues**:
+
+- Verify `PII_ENCRYPTION_KEY` is set in `.env`
+- Use `pgmapper` functions, not raw encryption
+- Check encryption key length (32 bytes for AES-256)
+
+**Backend Won't Start**:
+
+- Check `.env` file has all required variables
+- Verify PostgreSQL running: `pnpm compose:up`
+- Check database connection: `pnpm db:console`
+
+**API Generation Fails**:
+
+- Ensure backend compiles: `cd apps/backend && go build core-api/cmd/main.go`
+- Verify Swagger annotations are correct
+
+**Frontend API Errors**:
+
+- Regenerate client: `pnpm gen-api:core`
+- Check CORS settings in backend
+- Verify `VITE_API_URL` in `.env.client`
