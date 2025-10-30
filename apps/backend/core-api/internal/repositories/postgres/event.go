@@ -151,7 +151,6 @@ func (r *Repository) DeleteEvent(ctx context.Context, id uuid.UUID) (*entity.Eve
 
 	return &entity.Event{
 		ID:                       result.ID,
-		EventType:                entity.EventType(result.EventType),
 		ChainID:                  int(result.ChainID),
 		ContactNumber:            result.ContactNumber,
 		ContactAddress:           result.ContactAddress,
@@ -203,12 +202,6 @@ func (r *Repository) UpdateEvent(ctx context.Context, id uuid.UUID, params datag
 		}
 	} else {
 		isTicketTransferable = currentEvent.IsTicketTransferable
-	}
-
-	// Use event type from params if provided, otherwise use current value
-	eventType := currentEvent.EventType
-	if params.EventType != nil {
-		eventType = generated.EventType(*params.EventType)
 	}
 
 	// Only update fields that are provided in params
@@ -294,7 +287,6 @@ func (r *Repository) UpdateEvent(ctx context.Context, id uuid.UUID, params datag
 		IsBookingRequestRequired: isBookingRequestRequired,
 		IsVerified:               isVerified,
 		IsTicketTransferable:     isTicketTransferable,
-		EventType:                eventType,
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
@@ -302,7 +294,6 @@ func (r *Repository) UpdateEvent(ctx context.Context, id uuid.UUID, params datag
 
 	return &entity.Event{
 		ID:                       result.ID,
-		EventType:                entity.EventType(result.EventType),
 		ChainID:                  int(result.ChainID),
 		ContactNumber:            result.ContactNumber,
 		ContactAddress:           result.ContactAddress,

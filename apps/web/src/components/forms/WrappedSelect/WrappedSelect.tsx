@@ -1,4 +1,4 @@
-import { Controller, type Control as RHFControl } from "react-hook-form";
+import { Controller, type Control as RHFControl, type FieldValues } from "react-hook-form";
 import { Typography } from "@/components/typography/typography";
 import { Label } from "@/components/ui/label";
 import {
@@ -9,11 +9,11 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-type Control = RHFControl<Record<string, unknown>>;
+type Control<T extends FieldValues = FieldValues> = RHFControl<T>;
 
-interface WrappedSelectProps {
+interface WrappedSelectProps<T extends FieldValues = FieldValues> {
     // Form control
-    control: Control;
+    control: Control<T>;
     name: string;
 
     // Label and description
@@ -41,7 +41,7 @@ interface WrappedSelectProps {
     descriptionClassName?: string;
 }
 
-export function WrappedSelect({
+export function WrappedSelect<T extends FieldValues = FieldValues>({
     control,
     name,
     label,
@@ -55,7 +55,7 @@ export function WrappedSelect({
     labelClassName = "text-sm font-medium",
     selectClassName = "",
     descriptionClassName = "text-xs text-muted-foreground",
-}: WrappedSelectProps) {
+}: WrappedSelectProps<T>) {
     return (
         <div className={`space-y-2 ${containerClassName}`}>
             <Label htmlFor={htmlFor}>
@@ -64,11 +64,11 @@ export function WrappedSelect({
                 </Typography>
             </Label>
             <Controller
-                name={name}
+                name={name as any}
                 control={control}
                 render={({ field }) => (
                     <Select
-                        value={field.value}
+                        value={String(field.value ?? "")}
                         onValueChange={(value) => field.onChange(valueAs ? valueAs(value) : value)}
                         disabled={disabled}
                     >

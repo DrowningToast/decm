@@ -1,12 +1,12 @@
 import React from "react";
-import { Navigate } from "@/router";
+import { Navigate, type Path } from "@/router";
 import { useAuth } from "@/context/AuthContext";
 import { Typography } from "@/components/typography/typography";
 import { useTranslation } from "react-i18next";
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
-    redirectTo?: string;
+    redirectTo?: Extract<Path, "/signup" | "/signin" | "/error" | "/">;
     requiredRoles?: ("ADMIN" | "ISSUER" | "PARTICIPANT" | "HOST")[];
     fallback?: React.ReactNode;
 }
