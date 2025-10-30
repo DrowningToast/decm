@@ -1,12 +1,17 @@
 name: PR Quality Checks
 
 on:
-    pull_request:
-        branches:
-            - main
-    push:
-        branches-ignore:
-            - main
+  # Run on all pushes except to main branch
+  push:
+    branches:
+      - '**'
+    branches-ignore:
+      - main
+  
+  # Also run on pull requests targeting main
+  pull_request:
+    branches:
+      - main
 
 env:
     GO_VERSION: "1.23"
