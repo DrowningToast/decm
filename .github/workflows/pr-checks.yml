@@ -3,8 +3,6 @@ name: PR Quality Checks
 on:
     # Run on all pushes except to main branch
     push:
-        branches:
-            - "**"
         branches-ignore:
             - main
 
