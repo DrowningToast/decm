@@ -23,7 +23,7 @@ export const useAuthRedirect = (): void => {
         undefined,
     );
 
-    const authCheckGoogle = useCallback(async () => {
+    const authCheckGoogle = useCallback(() => {
         match({
             isLoading,
             hasAuthenticationCredentialId: !!onboardStatus?.authentication_credential_id,
@@ -84,7 +84,7 @@ export const useAuthRedirect = (): void => {
         onboardStatus?.profile_id,
     ]);
 
-    const authCheckWallet = useCallback(async () => {
+    const authCheckWallet = useCallback(() => {
         match({
             isLoading,
             hasWalletClient: !!walletClient,

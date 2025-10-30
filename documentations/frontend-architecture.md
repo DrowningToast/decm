@@ -170,7 +170,7 @@ react-i18next ใช้สำหรับ translations รองรับ multip
 - **State Management**: React Context + Custom Hooks
 - **Package Manager**: pnpm
 
-## ข้อประจำในการเทพิก
+## ข้อกำหนดในการพัฒนา
 
 - Frontend ทั้งหมดใช้ React 19 ด้วย TypeScript
 - ใช้ directory-based routing แบบ Vite
