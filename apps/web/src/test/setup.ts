@@ -43,6 +43,9 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn(),
 }))
 
-// Mock window.location
-delete (window as any).location
-window.location = { ...window.location, href: 'http://localhost:3000' }
+// Prefer setting the base URL in vitest.config.ts via test.environmentOptions.happyDOM.url
+// If you must stub, redefine via defineProperty with a minimal Location-like object:
+// Object.defineProperty(window, 'location', {
+//   configurable: true,
+//   value: { ...window.location, href: 'http://localhost:3000', assign: vi.fn(), replace: vi.fn(), reload: vi.fn() }
+// })
