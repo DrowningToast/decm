@@ -43,8 +43,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (requiredRoles && requiredRoles.length > 0 && userRole) {
         // Check if user's role is included in the required roles array
         if (!requiredRoles.includes(userRole)) {
-            // User is authenticated but doesn't have the required role
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return <Navigate to="/error" replace />;
         }
     }
