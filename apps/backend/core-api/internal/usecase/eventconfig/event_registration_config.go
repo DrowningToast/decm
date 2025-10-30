@@ -1,20 +1,21 @@
 package eventconfig
 
 import (
+	"context"
+	"decm-database/go/generated"
+	"errors"
+	"fmt"
+
 	"apps/backend/common/customerror"
 	"apps/backend/common/hashutils"
 	"apps/backend/common/pgmapper"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
-	"context"
-	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	eventDg "apps/backend/core-api/internal/datagateway/event"
-	"decm-database/go/generated"
 )
 
 type CreateEventRegistrationConfigParams struct {
