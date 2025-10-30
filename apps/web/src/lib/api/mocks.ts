@@ -17,13 +17,11 @@ export const mockResponses = {
     checkOnboardStatus: {
         authentication_credential_id: "mock-credential-id",
         profile_id: null,
-        message: "User needs to complete onboarding",
     } as CheckOnboardStatusResponse,
 
     checkOnboardStatusWithProfile: {
         authentication_credential_id: "mock-credential-id",
         profile_id: "mock-profile-id",
-        message: "User has completed onboarding",
     } as CheckOnboardStatusResponse,
 
     registerWithGoogleOauth: {

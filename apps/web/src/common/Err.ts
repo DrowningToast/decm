@@ -104,7 +104,7 @@ export class Err extends Error {
     }
 }
 
-export const ToastFromError = (t: TFunction, err: Error, type?: ErrType) => {
+export const ToastFromError = (t: TFunction, err: Error, type?: ErrType): void => {
     // If already an Err instance, toast the given data
     if (err instanceof Err) {
         ToastFn(err.toastType)(t(err.title || "errors.generic"), {
@@ -138,7 +138,7 @@ export const ToastFromAxiosError = (
     t: TFunction,
     err: AxiosError,
     presets: ErrPresets = ERROR_PRESETS,
-) => {
+): void => {
     let errorPresetType: ErrType | undefined;
     switch (err.response?.status) {
         case 400:
@@ -182,7 +182,7 @@ export const handleUniversalError = (
     err: Error,
     hooks?: Partial<HandlerAxiosErrorHooks>,
     useCaseId?: UseCaseId,
-) => {
+): void => {
     ToastFromError(t, err);
 
     if (err instanceof AxiosError) {
@@ -210,7 +210,7 @@ export const handleAxiosError = (
     err: AxiosError,
     hooks?: Partial<HandlerAxiosErrorHooks>,
     useCaseId?: UseCaseId,
-) => {
+): void => {
     let customErr: Err | undefined;
 
     switch (err.response?.status) {
