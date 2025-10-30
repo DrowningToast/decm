@@ -1,17 +1,17 @@
 name: PR Quality Checks
 
 on:
-  # Run on all pushes except to main branch
-  push:
-    branches:
-      - '**'
-    branches-ignore:
-      - main
-  
-  # Also run on pull requests targeting main
-  pull_request:
-    branches:
-      - main
+    # Run on all pushes except to main branch
+    push:
+        branches:
+            - "**"
+        branches-ignore:
+            - main
+
+    # Also run on pull requests targeting main
+    pull_request:
+        branches:
+            - main
 
 env:
     GO_VERSION: "1.23"
@@ -80,7 +80,6 @@ jobs:
             - name: Verify migrations applied successfully
               run: |
                   docker exec decm-postgres psql -U decm_user -d decm_test -c "\dt" | tee migration_output.txt
-                  # Check if core tables exist
                   grep -q "authentication_credentials" migration_output.txt
                   grep -q "profiles" migration_output.txt
                   grep -q "events" migration_output.txt
@@ -251,49 +250,49 @@ jobs:
                   DB_PASSWORD: decm_test_password
                   DB_NAME: decm_test
 
-      - name: Install Go dependencies
-        working-directory: apps/backend
-        run: go mod download
+            - name: Install Go dependencies
+              working-directory: apps/backend
+              run: go mod download
 
-      - name: Setup Go workspace
-        working-directory: apps/backend
-        run: |
-          echo "Setting up Go workspace..."
-          go work use .
-          go work use ../../packages/database
-          go work sync
-          cat go.work
+            - name: Setup Go workspace
+              working-directory: apps/backend
+              run: |
+                  echo "Setting up Go workspace..."
+                  go work use .
+                  go work use ../../packages/database
+                  go work sync
+                  cat go.work
 
-      - name: Build Core API
-        run: pnpm build:core
+            - name: Build Core API
+              run: pnpm build:core
 
-      - name: Verify binary exists
-        run: |
-          if [ ! -f apps/backend/bin/decm-backend ]; then
-            echo "❌ Core API binary not found!"
-            exit 1
-          else
-            echo "✅ Core API binary built successfully"
-          fi
+            - name: Verify binary exists
+              run: |
+                  if [ ! -f apps/backend/bin/decm-backend ]; then
+                    echo "❌ Core API binary not found!"
+                    exit 1
+                  else
+                    echo "✅ Core API binary built successfully"
+                  fi
 
-      - name: Run backend unit tests
-        run: pnpm test:core
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_USER: decm_user
-          DB_PASSWORD: decm_test_password
-          DB_NAME: decm_test
-          PII_ENCRYPTION_KEY: test-encryption-key-for-ci-pipeline-only-32bytes
-          JWT_SECRET: test-jwt-secret-key-for-ci-pipeline-only
-          JWT_ISSUER: decm-service-test
-          JWT_EXPIRATION: 24h
+            - name: Run backend unit tests
+              run: pnpm test:core
+              env:
+                  DB_HOST: localhost
+                  DB_PORT: 5432
+                  DB_USER: decm_user
+                  DB_PASSWORD: decm_test_password
+                  DB_NAME: decm_test
+                  PII_ENCRYPTION_KEY: test-encryption-key-for-ci-pipeline-only-32bytes
+                  JWT_SECRET: test-jwt-secret-key-for-ci-pipeline-only
+                  JWT_ISSUER: decm-service-test
+                  JWT_EXPIRATION: 24h
 
-  # Job 4: OpenAPI & Swagger Documentation
-  openapi-checks:
-    name: OpenAPI & Swagger Checks
-    runs-on: ubuntu-latest
-    needs: backend-checks
+    # Job 4: OpenAPI & Swagger Documentation
+    openapi-checks:
+        name: OpenAPI & Swagger Checks
+        runs-on: ubuntu-latest
+        needs: backend-checks
 
         steps:
             - name: Checkout code
