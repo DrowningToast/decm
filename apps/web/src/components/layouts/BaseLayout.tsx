@@ -1,7 +1,6 @@
 import type { ClassValue } from "clsx";
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
-import type { PropsWithChildren } from "react";
 import type React from "react";
 
 const componentVariants = cva("pt-12 md:pt-[60px]", {
