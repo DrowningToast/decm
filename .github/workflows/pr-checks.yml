@@ -1,11 +1,6 @@
 name: PR Quality Checks
 
 on:
-    # Run on all pushes except to main branch
-    push:
-        branches-ignore:
-            - main
-
     # Also run on pull requests targeting main
     pull_request:
         branches:
