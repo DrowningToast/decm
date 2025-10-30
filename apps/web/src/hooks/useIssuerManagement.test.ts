@@ -281,3 +281,292 @@ describe('useIssuerManagement', () => {
         });
     });
 });
+
+describe('useIssuerManagement - Additional Edge Cases', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('should handle concurrent searches', async () => {
+        let resolveSearch1: (value: any) => void;
+        let resolveSearch2: (value: any) => void;
+
+        const delayedSearch = vi.fn().mockImplementation(() => {
+            return new Promise((resolve) => {
+                if (delayedSearch.mock.calls.length === 1) {
+                    resolveSearch1 = resolve;
+                } else {
+                    resolveSearch2 = resolve;
+                }
+            });
+        });
+
+        const { result } = renderHook(() =>
+            useIssuerManagement({ searchFunction: delayedSearch }),
+        );
+
+        act(() => {
+            result.current.handleSearchQueryChange('query1');
+        });
+
+        const search1Promise = act(async () => {
+            await result.current.handleSearch();
+        });
+
+        act(() => {
+            result.current.handleSearchQueryChange('query2');
+        });
+
+        const search2Promise = act(async () => {
+            await result.current.handleSearch();
+        });
+
+        // Resolve second search first
+        act(() => {
+            resolveSearch2!([{ id: '2', name: 'Result 2', email: 'test2@example.com' }]);
+        });
+
+        await search2Promise;
+
+        // Then resolve first search
+        act(() => {
+            resolveSearch1!([{ id: '1', name: 'Result 1', email: 'test1@example.com' }]);
+        });
+
+        await search1Promise;
+
+        expect(delayedSearch).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle profile with missing optional fields', () => {
+        const profileWithMinimalData: EntityProfile = {
+            authentication_credential_id: '1',
+            first_name: 'John',
+            last_name: '',
+            email: 'john@example.com',
+        } as EntityProfile;
+
+        const { result } = renderHook(() =>
+            useIssuerManagement({
+                verifiedIssuers: [profileWithMinimalData],
+                selectedIssuers: [profileWithMinimalData],
+            }),
+        );
+
+        expect(result.current.selectedIssuers[0].first_name).toBe('John');
+        expect(result.current.selectedIssuers[0].email).toBe('john@example.com');
+    });
+
+    it('should handle selection of issuer with empty ID', () => {
+        const issuerWithEmptyId = {
+            id: '',
+            name: 'Test Issuer',
+            email: 'test@example.com',
+        };
+
+        const { result } = renderHook(() => useIssuerManagement());
+
+        act(() => {
+            result.current.handleConfirmSelection([issuerWithEmptyId]);
+        });
+
+        const selectedIds = result.current.getSelectedIssuerIds();
+        expect(selectedIds.has('')).toBe(true);
+    });
+
+    it('should handle search query with whitespace', async () => {
+        const searchFunction = vi.fn().mockResolvedValue([]);
+
+        const { result } = renderHook(() =>
+            useIssuerManagement({ searchFunction }),
+        );
+
+        act(() => {
+            result.current.handleSearchQueryChange('  test  ');
+        });
+
+        await act(async () => {
+            await result.current.handleSearch();
+        });
+
+        expect(searchFunction).toHaveBeenCalledWith('test');
+    });
+
+    it('should handle removing non-existent issuer gracefully', () => {
+        const { result } = renderHook(() =>
+            useIssuerManagement({ selectedIssuers: mockVerifiedIssuers }),
+        );
+
+        const initialCount = result.current.selectedIssuers.length;
+
+        act(() => {
+            result.current.handleRemoveIssuer('non-existent-id');
+        });
+
+        expect(result.current.selectedIssuers.length).toBe(initialCount);
+    });
+
+    it('should handle profile name construction with only first name', async () => {
+        const profileWithOnlyFirstName: EntityProfile = {
+            authentication_credential_id: '1',
+            first_name: 'John',
+            last_name: '',
+            email: 'john@example.com',
+        } as EntityProfile;
+
+        const { result } = renderHook(() =>
+            useIssuerManagement({ verifiedIssuers: [profileWithOnlyFirstName] }),
+        );
+
+        act(() => {
+            result.current.handleSearchQueryChange('John');
+        });
+
+        await act(async () => {
+            await result.current.handleSearch();
+        });
+
+        await waitFor(() => {
+            expect(result.current.searchResults[0].name).toBe('John');
+        });
+    });
+
+    it('should handle profile with no name fields', async () => {
+        const profileWithNoName: EntityProfile = {
+            authentication_credential_id: '1',
+            first_name: '',
+            last_name: '',
+            email: 'unknown@example.com',
+        } as EntityProfile;
+
+        const { result } = renderHook(() =>
+            useIssuerManagement({ verifiedIssuers: [profileWithNoName] }),
+        );
+
+        act(() => {
+            result.current.handleSearchQueryChange('unknown');
+        });
+
+        await act(async () => {
+            await result.current.handleSearch();
+        });
+
+        await waitFor(() => {
+            expect(result.current.searchResults[0].name).toBe('Unknown Name');
+        });
+    });
+
+    it('should filter by organization when searching', async () => {
+        const profileWithOrganization: EntityProfile = {
+            authentication_credential_id: '1',
+            first_name: 'John',
+            last_name: 'Doe',
+            email: 'john@example.com',
+            academic_institution: 'MIT',
+        } as EntityProfile;
+
+        const { result } = renderHook(() =>
+            useIssuerManagement({ verifiedIssuers: [profileWithOrganization] }),
+        );
+
+        act(() => {
+            result.current.handleSearchQueryChange('MIT');
+        });
+
+        await act(async () => {
+            await result.current.handleSearch();
+        });
+
+        await waitFor(() => {
+            expect(result.current.searchResults.length).toBeGreaterThan(0);
+            expect(result.current.searchResults[0].organization).toBe('MIT');
+        });
+    });
+
+    it('should handle case-insensitive search', async () => {
+        const { result } = renderHook(() =>
+            useIssuerManagement({ verifiedIssuers: mockVerifiedIssuers }),
+        );
+
+        act(() => {
+            result.current.handleSearchQueryChange('JOHN');
+        });
+
+        await act(async () => {
+            await result.current.handleSearch();
+        });
+
+        await waitFor(() => {
+            expect(result.current.searchResults.length).toBeGreaterThan(0);
+        });
+    });
+
+    it('should maintain modal state across multiple open/close cycles', () => {
+        const { result } = renderHook(() => useIssuerManagement());
+
+        act(() => {
+            result.current.handleOpenModal();
+        });
+        expect(result.current.isModalOpen).toBe(true);
+
+        act(() => {
+            result.current.handleCloseModal();
+        });
+        expect(result.current.isModalOpen).toBe(false);
+
+        act(() => {
+            result.current.handleOpenModal();
+        });
+        expect(result.current.isModalOpen).toBe(true);
+    });
+
+    it('should clear search results when modal is closed', () => {
+        const { result } = renderHook(() =>
+            useIssuerManagement({ verifiedIssuers: mockVerifiedIssuers }),
+        );
+
+        act(() => {
+            result.current.handleSearchQueryChange('test');
+        });
+
+        act(async () => {
+            await result.current.handleSearch();
+        });
+
+        waitFor(() => {
+            expect(result.current.searchResults.length).toBeGreaterThan(0);
+        });
+
+        act(() => {
+            result.current.handleCloseModal();
+        });
+
+        expect(result.current.searchResults).toEqual([]);
+    });
+
+    it('should handle selection with bio as organization fallback', async () => {
+        const profileWithBio: EntityProfile = {
+            authentication_credential_id: '1',
+            first_name: 'John',
+            last_name: 'Doe',
+            email: 'john@example.com',
+            bio: 'Software Engineer at TechCorp',
+        } as EntityProfile;
+
+        const { result } = renderHook(() =>
+            useIssuerManagement({ verifiedIssuers: [profileWithBio] }),
+        );
+
+        act(() => {
+            result.current.handleSearchQueryChange('John');
+        });
+
+        await act(async () => {
+            await result.current.handleSearch();
+        });
+
+        await waitFor(() => {
+            expect(result.current.searchResults[0].organization).toBe('Software Engineer at TechCorp');
+        });
+    });
+});
