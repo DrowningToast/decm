@@ -423,14 +423,14 @@ CREATE TABLE profiles (
 
     -- Metadata
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-
-    CONSTRAINT email_format CHECK (email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$')
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX idx_profiles_email ON profiles(email);
 CREATE INDEX idx_profiles_user_id ON profiles(user_id);
 ```
+
+**Important:** Email format validation must be performed in the application layer (e.g., using `validatorutils`) **before** encrypting the value and inserting or updating the database row. Database constraints cannot validate encrypted ciphertext against plaintext patterns.
 
 ### Searchable PII Fields
 

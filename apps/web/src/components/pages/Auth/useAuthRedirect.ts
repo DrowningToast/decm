@@ -62,7 +62,7 @@ export const useAuthRedirect = (): void => {
                 () => {
                     navigate("/onboard/:method", {
                         params: {
-                            method: "wallet",
+                            method: OnboardMethods.WALLET,
                         },
                     });
                 },
@@ -117,7 +117,7 @@ export const useAuthRedirect = (): void => {
                 () => {
                     navigate("/onboard/:method", {
                         params: {
-                            method: "wallet",
+                            method: OnboardMethods.WALLET,
                         },
                     });
                 },
@@ -138,7 +138,7 @@ export const useAuthRedirect = (): void => {
                 () => {
                     navigate("/onboard/:method", {
                         params: {
-                            method: "wallet",
+                            method: OnboardMethods.WALLET,
                         },
                     });
                 },

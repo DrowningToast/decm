@@ -1,9 +1,9 @@
-import { Button } from '@/components/ui/button';
-import { PublicNavbar } from '@/components/layouts/navigations/PublicNavbar';
+import { Button } from "@/components/ui/button";
+import { PublicNavbar } from "@/components/layouts/navigations/PublicNavbar";
 
 /**
  * Component Examples - Usage Guide
- * 
+ *
  * This file demonstrates how to use the Button and Navbar components
  * with the Figma design system variants.
  */
@@ -32,7 +32,9 @@ export function ButtonExamples() {
 
                 {/* Secondary Light Button - Portfolio */}
                 <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">Secondary Light Variant (Portfolio)</p>
+                    <p className="text-sm text-muted-foreground">
+                        Secondary Light Variant (Portfolio)
+                    </p>
                     <Button variant="secondary-light" size="xl">
                         Start building your portfolio
                     </Button>
@@ -43,10 +45,18 @@ export function ButtonExamples() {
                 <h2 className="text-2xl font-bold">Button Sizes</h2>
 
                 <div className="flex flex-wrap items-center gap-4">
-                    <Button variant="primary" size="sm">Small</Button>
-                    <Button variant="primary" size="default">Default</Button>
-                    <Button variant="primary" size="lg">Large</Button>
-                    <Button variant="primary" size="xl">Extra Large</Button>
+                    <Button variant="primary" size="sm">
+                        Small
+                    </Button>
+                    <Button variant="primary" size="default">
+                        Default
+                    </Button>
+                    <Button variant="primary" size="lg">
+                        Large
+                    </Button>
+                    <Button variant="primary" size="xl">
+                        Extra Large
+                    </Button>
                 </div>
             </div>
         </div>
@@ -60,7 +70,7 @@ export function NavbarExamples() {
 
             {/* Primary Navbar */}
             <div className="relative h-20 mb-4">
-                <p className="text-sm text-muted-foreground px-8 pb-2">Primary Variant</p>
+                <p className="text-sm text-muted-foreground px-8 pb-2">Primary Light Variant</p>
                 <PublicNavbar variant="light" className="relative" />
             </div>
 
@@ -81,11 +91,11 @@ export function NavbarExamples() {
 
 /**
  * Usage in Your Pages:
- * 
+ *
  * // Import the components
  * import { Button } from '@/components/ui/button';
  * import { PublicNavbar } from '@/components/layouts/navigations/PublicNavbar';
- * 
+ *
  * // Use in your component
  * function MyPage() {
  *   return (
@@ -100,4 +110,3 @@ export function NavbarExamples() {
  *   );
  * }
  */
-
