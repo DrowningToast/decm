@@ -260,6 +260,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run frontend unit tests
+        env:
+          VITE_CORE_BACKEND_API: http://localhost:8080/api/v1
+          VITE_WALLETCONNECT_PROJECT_ID: test-project-id
         run: |
           cd apps/web
           pnpm test
