@@ -6,7 +6,7 @@ This document provides comprehensive guidance on encrypting Personally Identifia
 
 ## Critical Principle
 
-**ALL PII MUST be encrypted at the application layer in the repository - NEVER at handler, usecase, or database layers.**
+**ALL PII MUST be encrypted at the application layer in the repository - NEVER at handler, use case, or database layers.**
 
 This ensures:
 
