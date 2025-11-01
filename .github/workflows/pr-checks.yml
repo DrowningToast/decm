@@ -29,48 +29,26 @@ jobs:
             - name: Label verified
               run: echo "✅ 'ready-to-review' label is present. Proceeding with checks..."
 
-    # Job 1: Docker Compose Successfully
-    docker-compose:
-        name: Docker Compose
-        runs-on: ubuntu-latest
-        needs: [check-label]
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup Node.js and pnpm
-              uses: ./.github/actions/setup-node-pnpm
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
-                  pnpm-version: ${{ env.PNPM_VERSION }}
-
-            - name: Start Docker Compose
-              run: pnpm compose:up
-
-            - name: Wait for PostgreSQL to be ready
-              run: |
-                  timeout 60 bash -c 'until docker exec decm-postgres pg_isready -U decm_user -d decm_test; do
-                    echo "Waiting for PostgreSQL to be ready..."
-                    sleep 2
-                  done'
-              env:
-                  DB_NAME: decm_test
-                  DB_USER: decm_user
-
-            - name: Verify PostgreSQL is accessible
-              run: |
-                  docker exec decm-postgres psql -U decm_user -d decm_test -c "SELECT version();"
-
-            - name: Cleanup - Stop Docker Compose
-              if: always()
-              run: pnpm compose:down
-
-    # Job 2: Database Can Be Migrated
+    # Job 1: Database Can Be Migrated
     database-migrate:
         name: Database Migration
         runs-on: ubuntu-latest
-        needs: [check-label, docker-compose]
+        needs: [check-label]
+
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_DB: decm_test
+                    POSTGRES_USER: decm_user
+                    POSTGRES_PASSWORD: decm_test_password
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
 
         steps:
             - name: Checkout code
@@ -87,15 +65,12 @@ jobs:
               with:
                   install-sqlc: "false"
 
-            - name: Start Docker Compose
-              run: pnpm compose:up
-
-            - name: Wait for PostgreSQL to be ready
+            - name: Wait for PostgreSQL
               run: |
-                  timeout 60 bash -c 'until docker exec decm-postgres pg_isready -U decm_user -d decm_test; do
-                    echo "Waiting for PostgreSQL to be ready..."
+                  until pg_isready -h localhost -p 5432 -U decm_user; do
+                    echo "Waiting for PostgreSQL..."
                     sleep 2
-                  done'
+                  done
 
             - name: Run database migrations
               run: pnpm db:migrate
@@ -108,15 +83,11 @@ jobs:
 
             - name: Verify migrations applied successfully
               run: |
-                  docker exec decm-postgres psql -U decm_user -d decm_test -c "\dt" | tee migration_output.txt
+                  PGPASSWORD=decm_test_password psql -h localhost -U decm_user -d decm_test -c "\dt" | tee migration_output.txt
                   grep -q "authentication_credentials" migration_output.txt
                   grep -q "profiles" migration_output.txt
                   grep -q "events" migration_output.txt
                   echo "✅ All core tables verified"
-
-            - name: Cleanup - Stop Docker Compose
-              if: always()
-              run: pnpm compose:down
 
     # Job 3: Database Can Be Generated
     database-generate:
@@ -214,93 +185,20 @@ jobs:
         runs-on: ubuntu-latest
         needs: [check-label, database-generate]
 
-        services:
-            postgres:
-                image: postgres:16-alpine
-                env:
-                    POSTGRES_DB: decm_test
-                    POSTGRES_USER: decm_user
-                    POSTGRES_PASSWORD: decm_test_password
-                ports:
-                    - 5432:5432
-                options: >-
-                    --health-cmd pg_isready
-                    --health-interval 10s
-                    --health-timeout 5s
-                    --health-retries 5
-
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: ${{ env.PNPM_VERSION }}
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
+            - name: Setup Node.js and pnpm
+              uses: ./.github/actions/setup-node-pnpm
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: "pnpm"
+                  pnpm-version: ${{ env.PNPM_VERSION }}
 
-            - name: Setup Go
-              uses: actions/setup-go@v5
+            - name: Setup Go Backend
+              uses: ./.github/actions/setup-go-backend
               with:
                   go-version: ${{ env.GO_VERSION }}
-                  cache-dependency-path: |
-                      apps/backend/go.sum
-                      packages/database/go.sum
-
-            - name: Copy test environment file
-              run: cp .env.test .env
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Install golang-migrate
-              run: |
-                  curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
-                  sudo mv migrate /usr/local/bin/
-                  migrate -version
-
-            - name: Wait for PostgreSQL
-              run: |
-                  until pg_isready -h localhost -p 5432 -U decm_user; do
-                    echo "Waiting for PostgreSQL..."
-                    sleep 2
-                  done
-
-            - name: Run database migrations
-              run: pnpm db:migrate
-              env:
-                  DB_HOST: localhost
-                  DB_PORT: 5432
-                  DB_USER: decm_user
-                  DB_PASSWORD: decm_test_password
-                  DB_NAME: decm_test
-
-            - name: Install sqlc
-              run: |
-                  curl -sSfL https://github.com/sqlc-dev/sqlc/releases/download/v1.29.0/sqlc_1.29.0_linux_amd64.tar.gz | tar -xz -C /tmp
-                  sudo mv /tmp/sqlc /usr/local/bin/
-                  sqlc version
-
-            - name: Generate SQLC code
-              run: pnpm db:generate
-
-            - name: Install Go dependencies
-              working-directory: apps/backend
-              run: go mod download
-
-            - name: Setup Go workspace
-              working-directory: apps/backend
-              run: |
-                  echo "Setting up Go workspace..."
-                  go work use .
-                  go work use ../../packages/database
-                  go work sync
-                  cat go.work
 
             - name: Build Core API
               run: pnpm build:core
@@ -339,36 +237,21 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: ${{ env.PNPM_VERSION }}
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
+            - name: Setup Node.js and pnpm
+              uses: ./.github/actions/setup-node-pnpm
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: "pnpm"
+                  pnpm-version: ${{ env.PNPM_VERSION }}
 
-            - name: Setup Go
-              uses: actions/setup-go@v5
+            - name: Setup Go Backend
+              uses: ./.github/actions/setup-go-backend
               with:
                   go-version: ${{ env.GO_VERSION }}
-                  cache-dependency-path: |
-                      apps/backend/go.sum
-                      packages/database/go.sum
 
-            - name: Copy test environment file
-              run: cp .env.test .env
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Install golang-migrate
-              run: |
-                  curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
-                  sudo mv migrate /usr/local/bin/
-                  migrate -version
+            - name: Install Database Tools
+              uses: ./.github/actions/install-db-tools
+              with:
+                  install-sqlc: "false"
 
             - name: Wait for PostgreSQL
               run: |
@@ -385,17 +268,6 @@ jobs:
                   DB_USER: decm_user
                   DB_PASSWORD: decm_test_password
                   DB_NAME: decm_test
-
-            - name: Install Go dependencies
-              working-directory: apps/backend
-              run: go mod download
-
-            - name: Setup Go workspace
-              working-directory: apps/backend
-              run: |
-                  go work use .
-                  go work use ../../packages/database
-                  go work sync
 
             - name: Run Core Tests
               run: pnpm test:core
@@ -420,51 +292,19 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: ${{ env.PNPM_VERSION }}
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
+            - name: Setup Node.js and pnpm
+              uses: ./.github/actions/setup-node-pnpm
               with:
                   node-version: ${{ env.NODE_VERSION }}
-                  cache: "pnpm"
+                  pnpm-version: ${{ env.PNPM_VERSION }}
 
-            - name: Setup Go
-              uses: actions/setup-go@v5
+            - name: Setup Go Backend
+              uses: ./.github/actions/setup-go-backend
               with:
                   go-version: ${{ env.GO_VERSION }}
-                  cache-dependency-path: apps/backend/go.sum
 
             - name: Install swag
               run: go install github.com/swaggo/swag/cmd/swag@latest
-
-            - name: Copy test environment file
-              run: cp .env.test .env
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Install sqlc
-              run: |
-                  curl -sSfL https://github.com/sqlc-dev/sqlc/releases/download/v1.29.0/sqlc_1.29.0_linux_amd64.tar.gz | tar -xz -C /tmp
-                  sudo mv /tmp/sqlc /usr/local/bin/
-                  sqlc version
-
-            - name: Install Go dependencies
-              working-directory: apps/backend
-              run: go mod download
-
-            - name: Setup Go workspace
-              working-directory: apps/backend
-              run: |
-                  go work use .
-                  go work use ../../packages/database
-                  go work sync
-
-            - name: Build Core API (for swag)
-              run: pnpm build:core
 
             - name: Generate OpenAPI documentation
               run: pnpm docs:core
@@ -591,7 +431,6 @@ jobs:
         needs:
             [
                 check-label,
-                docker-compose,
                 database-migrate,
                 database-generate,
                 backend-build,
@@ -610,12 +449,6 @@ jobs:
               run: |
                   echo "### PR Quality Checks Summary ###"
                   echo ""
-
-                  if [ "${{ needs.docker-compose.result }}" = "success" ]; then
-                    echo "✅ Docker Compose: PASSED"
-                  else
-                    echo "❌ Docker Compose: FAILED"
-                  fi
 
                   if [ "${{ needs.database-migrate.result }}" = "success" ]; then
                     echo "✅ Database Migration: PASSED"
@@ -673,8 +506,7 @@ jobs:
 
                   echo ""
 
-                  if [ "${{ needs.docker-compose.result }}" = "success" ] && \
-                     [ "${{ needs.database-migrate.result }}" = "success" ] && \
+                  if [ "${{ needs.database-migrate.result }}" = "success" ] && \
                      [ "${{ needs.database-generate.result }}" = "success" ] && \
                      [ "${{ needs.backend-build.result }}" = "success" ] && \
                      [ "${{ needs.backend-tests.result }}" = "success" ] && \
@@ -711,7 +543,6 @@ jobs:
 
                   | Check | Status |
                   |-------|--------|
-                  | Docker Compose | ${{ needs.docker-compose.result == 'success' && '✅' || '❌' }} |
                   | Database Migration | ${{ needs.database-migrate.result == 'success' && '✅' || '❌' }} |
                   | Database Generation | ${{ needs.database-generate.result == 'success' && '✅' || '❌' }} |
                   | Backend Build | ${{ needs.backend-build.result == 'success' && '✅' || '❌' }} |
