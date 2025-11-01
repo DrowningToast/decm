@@ -1,13 +1,12 @@
 package event
 
 import (
-	"fmt"
-	"strconv"
-	"time"
-
 	customerror "apps/backend/common/customerror"
 	"apps/backend/common/validatorutils"
 	eventUc "apps/backend/core-api/internal/usecase/event"
+	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"

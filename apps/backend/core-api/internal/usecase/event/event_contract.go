@@ -2,9 +2,10 @@ package event
 
 import (
 	"context"
-	"decm-database/go/generated"
 
 	"github.com/google/uuid"
+
+	"decm-database/go/generated"
 )
 
 func (u *EventUsecase) GetEventContractByEventID(ctx context.Context, eventID uuid.UUID) (*generated.EventContract, error) {

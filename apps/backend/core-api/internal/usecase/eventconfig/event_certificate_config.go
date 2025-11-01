@@ -1,12 +1,11 @@
 package eventconfig
 
 import (
+	"apps/backend/services/s3"
 	"context"
 	"decm-database/go/generated"
 	"fmt"
 	"mime/multipart"
-
-	"apps/backend/services/s3"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -133,6 +132,7 @@ func (uc *EventConfigUsecase) UpdateEventCertificateConfig(ctx context.Context, 
 	}
 
 	return uc.EventCertificateDg.UpdateEventCertificateConfig(ctx, updateParams)
+
 }
 
 func (uc *EventConfigUsecase) GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (*EventCertificateConfigResponse, error) {

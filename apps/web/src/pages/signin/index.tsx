@@ -15,7 +15,7 @@ const SignInPage = () => {
 
     return (
         <SigninPage onGoogleOAuthClick={handleRequestGoogleOAuthUrl} />
-    )
-}
+    );
+};
 
 export default SignInPage;

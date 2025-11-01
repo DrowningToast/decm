@@ -53,8 +53,9 @@ export const participantColumns: ColumnDef<Participant>[] = [
             };
             return (
                 <span
-                    className={`inline-block px-2 py-1 rounded text-xs ${statusColors[status as keyof typeof statusColors]
-                        }`}
+                    className={`inline-block px-2 py-1 rounded text-xs ${
+                        statusColors[status as keyof typeof statusColors]
+                    }`}
                 >
                     {statusLabels[status as keyof typeof statusLabels]}
                 </span>

@@ -1,12 +1,11 @@
 package event
 
 import (
+	customerror "apps/backend/common/customerror"
 	"context"
 	"net/http"
 	"strconv"
 	"time"
-
-	customerror "apps/backend/common/customerror"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"

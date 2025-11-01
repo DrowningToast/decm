@@ -1,10 +1,9 @@
 package event
 
 import (
+	"apps/backend/services/s3"
 	"context"
 	"mime/multipart"
-
-	"apps/backend/services/s3"
 
 	"github.com/google/uuid"
 )

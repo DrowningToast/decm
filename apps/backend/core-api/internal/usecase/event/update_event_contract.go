@@ -2,10 +2,11 @@ package event
 
 import (
 	"context"
-	"decm-database/go/generated"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+
+	"decm-database/go/generated"
 )
 
 type UpdateEventContractParams struct {

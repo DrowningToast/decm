@@ -8,7 +8,6 @@ interface AuthContextType {
     user: EntityProfile | null;
     isLoading: boolean;
     isAuthenticated: boolean;
-    userRole?: "ADMIN" | "ISSUER" | "PARTICIPANT" | "HOST";
     refetch: () => void;
 }
 
@@ -53,7 +52,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         user: user || null,
         isLoading: !isInitialized || isLoading,
         isAuthenticated,
-        userRole: undefined, // TODO: Add role property to EntityProfile in backend
         refetch,
     };
 

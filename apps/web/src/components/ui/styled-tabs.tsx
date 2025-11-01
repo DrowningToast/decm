@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface StyledTabsProps {

@@ -1,14 +1,13 @@
 package event
 
 import (
-	"context"
-	"log/slog"
-
 	authDg "apps/backend/core-api/internal/datagateway"
 	datagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"apps/backend/services/s3"
+	"context"
+	"log/slog"
 
 	"github.com/google/uuid"
 )
