@@ -6,13 +6,6 @@ import { I18nextProvider } from "react-i18next";
 import i18n from "i18next";
 import { vi } from "vitest";
 
-// Configure query client logger to silence logs in tests
-setLogger({
-    log: () => {},
-    warn: () => {},
-    error: () => {},
-});
-
 // Initialize i18n for tests
 i18n.init({
     lng: "en",

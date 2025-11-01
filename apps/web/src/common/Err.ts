@@ -130,8 +130,6 @@ export const ToastFromError = (t: TFunction, err: Error, type?: ErrType) => {
             description: t("errors.genericDescription"),
         });
     }
-
-    return err;
 };
 
 export const ToastFromAxiosError = (
