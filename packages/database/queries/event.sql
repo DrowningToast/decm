@@ -42,6 +42,7 @@ INSERT INTO events (
 -- name: GetEventById :one
 SELECT 
     id,
+    event_type,
     chain_id,
     contact_number,
     contact_address,
@@ -71,6 +72,7 @@ SET
     title = sqlc.arg(title),
     short_description = sqlc.arg(short_description),
     long_description = sqlc.arg(long_description),
+    event_type = sqlc.arg(event_type),
     start_date = sqlc.arg(start_date),
     end_date = sqlc.arg(end_date),
     location = sqlc.arg(location),

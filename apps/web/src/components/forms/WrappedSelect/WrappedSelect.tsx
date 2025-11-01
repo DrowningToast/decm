@@ -14,11 +14,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-// Use any for now to avoid type issues with react-hook-form imports
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Control = any;
-
-interface WrappedSelectProps {
+interface WrappedSelectProps<T extends FieldValues = FieldValues> {
     // Form control
     control: ReactHookFormControl<T>;
     name: Path<T>;
