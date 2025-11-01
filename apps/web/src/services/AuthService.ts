@@ -37,7 +37,7 @@ export interface CreateProfileParams {
     isProfilePicturePublic?: boolean;
 }
 
-export type UpdateProfileParams = Omit<CreateProfileParams, "authenticationCredentialId" | "email">;
+export type UpdateProfileParams = Omit<CreateProfileParams, "email">;
 
 export class AuthService {
     private _coreApi: CoreApiType;
