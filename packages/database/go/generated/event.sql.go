@@ -52,7 +52,7 @@ INSERT INTO events (
     $15,
     $16,
     $17
-) RETURNING id, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
+) RETURNING id, event_type, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
 `
 
 type CreateEventParams struct {
@@ -98,6 +98,7 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event
 	var i Event
 	err := row.Scan(
 		&i.ID,
+		&i.EventType,
 		&i.ChainID,
 		&i.ContactNumber,
 		&i.ContactAddress,
@@ -128,7 +129,7 @@ UPDATE events
 SET
     deleted_at = now()
 WHERE id = $1
-RETURNING id, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
+RETURNING id, event_type, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
 `
 
 func (q *Queries) DeleteEvent(ctx context.Context, id uuid.UUID) (Event, error) {
@@ -136,6 +137,7 @@ func (q *Queries) DeleteEvent(ctx context.Context, id uuid.UUID) (Event, error) 
 	var i Event
 	err := row.Scan(
 		&i.ID,
+		&i.EventType,
 		&i.ChainID,
 		&i.ContactNumber,
 		&i.ContactAddress,
@@ -336,7 +338,7 @@ func (q *Queries) ListEventsByOwner(ctx context.Context, ownerCredentialID uuid.
 }
 
 const ListEventsByOwnerCredentialID = `-- name: ListEventsByOwnerCredentialID :many
-SELECT id, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at 
+SELECT id, event_type, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at 
 FROM events 
 WHERE owner_credential_id = $1 AND deleted_at IS NULL
 ORDER BY created_at DESC
@@ -360,6 +362,7 @@ func (q *Queries) ListEventsByOwnerCredentialID(ctx context.Context, arg ListEve
 		var i Event
 		if err := rows.Scan(
 			&i.ID,
+			&i.EventType,
 			&i.ChainID,
 			&i.ContactNumber,
 			&i.ContactAddress,
@@ -506,7 +509,7 @@ SET
     is_verified = $15,
     is_ticket_transferable = $16
 WHERE id = $17
-RETURNING id, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
+RETURNING id, event_type, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
 `
 
 type UpdateEventParams struct {
@@ -552,6 +555,7 @@ func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event
 	var i Event
 	err := row.Scan(
 		&i.ID,
+		&i.EventType,
 		&i.ChainID,
 		&i.ContactNumber,
 		&i.ContactAddress,
