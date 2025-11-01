@@ -1,4 +1,8 @@
-import { Controller } from "react-hook-form";
+import {
+    Controller,
+    type Control as ReactHookFormControl,
+    type FieldValues,
+} from "react-hook-form";
 import { Typography } from "@/components/typography/typography";
 import { Label } from "@/components/ui/label";
 import {
@@ -15,7 +19,7 @@ type Control = any;
 
 interface WrappedSelectProps {
     // Form control
-    control: Control;
+    control: ReactHookFormControl<T>;
     name: string;
 
     // Label and description
@@ -44,7 +48,7 @@ interface WrappedSelectProps {
     descriptionClassName?: string;
 }
 
-export function WrappedSelect({
+export function WrappedSelect<T extends FieldValues = FieldValues>({
     control,
     name,
     label,
@@ -58,7 +62,7 @@ export function WrappedSelect({
     labelClassName = "text-sm font-medium",
     selectClassName = "",
     descriptionClassName = "text-xs text-muted-foreground",
-}: WrappedSelectProps) {
+}: WrappedSelectProps<T>) {
     return (
         <div className={`space-y-2 ${containerClassName}`}>
             <Label htmlFor={htmlFor}>
@@ -79,7 +83,7 @@ export function WrappedSelect({
                             <SelectValue placeholder={placeholder} />
                         </SelectTrigger>
                         <SelectContent>
-                            {options.map((option: { value: string; label: string }) => (
+                            {options.map((option) => (
                                 <SelectItem key={option.value} value={option.value}>
                                     {option.label}
                                 </SelectItem>
