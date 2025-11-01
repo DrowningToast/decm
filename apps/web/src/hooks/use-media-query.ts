@@ -2,34 +2,13 @@ import { useState } from "react";
 
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect";
 
-interface UseMediaQueryOptions {
+type UseMediaQueryOptions = {
     defaultValue?: boolean;
     initializeWithValue?: boolean;
-}
+};
 
 const IS_SERVER = typeof window === "undefined";
 
-/**
- * SSR-aware React hook for media queries
- *
- * @param query - The media query string (e.g., "(max-width: 768px)")
- * @param options - Configuration options
- * @param options.defaultValue - Default value to use on server or when initializeWithValue is false (default: false)
- * @param options.initializeWithValue - Whether to initialize state with actual match value on client (default: true)
- *
- * @returns boolean indicating whether the media query matches the current viewport
- *
- * @description
- * This hook provides an SSR-safe way to use media queries in React applications.
- * - On the server, it returns the defaultValue
- * - On the client, it uses window.matchMedia to get the current match state
- * - Sets up a listener that updates the state when the media query match status changes
- * - Falls back to deprecated addListener/removeListener for Safari < 14 compatibility
- *
- * @example
- * const isMobile = useMediaQuery("(max-width: 768px)");
- * const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1024px)", { defaultValue: false });
- */
 export function useMediaQuery(
     query: string,
     { defaultValue = false, initializeWithValue = true }: UseMediaQueryOptions = {},

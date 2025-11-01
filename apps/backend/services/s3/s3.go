@@ -1,17 +1,18 @@
 package s3
 
 import (
-	"apps/backend/common/customerror"
-	"apps/backend/common/log"
-	"apps/backend/common/utils"
-	config "apps/backend/core-api/config"
-	s3Config "apps/backend/core-api/config/s3"
 	"context"
 	"fmt"
 	"io"
 	"log/slog"
 	"mime/multipart"
 	"time"
+
+	"apps/backend/common/customerror"
+	"apps/backend/common/log"
+	"apps/backend/common/utils"
+	config "apps/backend/core-api/config"
+	s3Config "apps/backend/core-api/config/s3"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -62,7 +63,6 @@ func NewS3Service() (*S3Service, error) {
 			S3ForcePathStyle:       aws.Bool(true),
 		},
 	})
-
 	if err != nil {
 		logger.Error("Failed to create S3 session", "error", err)
 		return nil, fmt.Errorf("failed to create S3 session: %w", err)
@@ -83,16 +83,18 @@ func NewS3Service() (*S3Service, error) {
 	}, nil
 }
 
-type StorageKeyType string
-type S3UploadRequestObject struct {
-	entityType    StorageKeyType
-	entityID      uuid.UUID
-	fileName      string
-	contentType   string
-	fileExtension string
-	storageKey    string
-	file          io.Reader
-}
+type (
+	StorageKeyType        string
+	S3UploadRequestObject struct {
+		entityType    StorageKeyType
+		entityID      uuid.UUID
+		fileName      string
+		contentType   string
+		fileExtension string
+		storageKey    string
+		file          io.Reader
+	}
+)
 
 const (
 	StorageKeyTypeEventBanner      StorageKeyType = "event/%s/banner/%s%s"
@@ -134,7 +136,6 @@ func (s *S3Service) PutFile(ctx context.Context, requestObject *S3UploadRequestO
 		Body:        requestObject.file,
 		ContentType: aws.String(requestObject.contentType),
 	})
-
 	if err != nil {
 		return "", customerror.Parse(&customerror.ErrInternalServer, err)
 	}
@@ -161,7 +162,6 @@ func (s *S3Service) DeleteFile(ctx context.Context, key string) error {
 		Bucket: aws.String(s.s3Config.BucketName),
 		Key:    aws.String(key),
 	})
-
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}

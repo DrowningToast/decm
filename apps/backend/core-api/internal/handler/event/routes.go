@@ -1,8 +1,9 @@
 package event
 
 import (
-	"apps/backend/common/log"
 	"time"
+
+	"apps/backend/common/log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"

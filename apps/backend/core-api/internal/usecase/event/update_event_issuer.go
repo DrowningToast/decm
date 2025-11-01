@@ -1,16 +1,16 @@
 package event
 
 import (
-	"apps/backend/common/customerror"
-	"apps/backend/services/auth"
 	"context"
 	"database/sql"
+	"decm-database/go/generated"
 	"errors"
+
+	"apps/backend/common/customerror"
+	"apps/backend/services/auth"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-
-	"decm-database/go/generated"
 )
 
 type UpdateEventIssuerParams struct {
