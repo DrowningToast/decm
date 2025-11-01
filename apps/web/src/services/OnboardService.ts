@@ -47,8 +47,14 @@ export class OnboardService {
     }
 
     async getSignMessage() {
-        const response = await this._coreApi.v1.getSignMessage();
-        return response.message;
+        try {
+            const response = await this._coreApi.v1.getSignMessage();
+            return response.message;
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Unknown error";
+            console.error(`Failed to fetch sign message: ${errorMessage}`, error);
+            throw new Error(`Failed to retrieve signing message: ${errorMessage}`);
+        }
     }
 }
 
