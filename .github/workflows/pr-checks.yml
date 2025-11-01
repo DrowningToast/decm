@@ -1,8 +1,9 @@
 name: PR Quality Checks
 
 on:
-    # Also run on pull requests targeting main
+    # Run on pull requests targeting main and when labels are added
     pull_request:
+        types: [opened, synchronize, reopened, labeled]
         branches:
             - main
 
