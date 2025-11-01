@@ -1,7 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { CheckOnboardParams, OnboardService } from "./OnboardService";
+import type { CheckOnboardParams } from "./OnboardService";
+import { OnboardService } from "./OnboardService";
 import { OnboardRegistrationMethod } from "@decm/api";
 import type { CoreApiType } from "@/lib/api/api";
+
+// Mock the coreApiClient at the module level - must use factory function
+vi.mock("@/lib/api/api", () => ({
+    coreApiClient: {},
+}));
 
 describe("OnboardService", () => {
     let mockCoreApi: CoreApiType;
@@ -107,7 +113,7 @@ describe("OnboardService", () => {
             const params = {
                 method: OnboardRegistrationMethod.RegistrationMethodWallet,
                 signSignature: "",
-            };
+            } satisfies CheckOnboardParams;
 
             const result = await onboardService.checkOnboardStatus(params);
 
