@@ -16,7 +16,6 @@ export function PublicNavbar({ variant = "primary", className }: PublicNavbarPro
         "secondary-light": "bg-[#e9dede]",
     };
 
-    const logoVariant = variant === "secondary-light" ? "black" : "white";
 
     return (
         <nav

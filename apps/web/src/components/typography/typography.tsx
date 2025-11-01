@@ -14,9 +14,11 @@ const typographyVariants = cva("text-wrap", {
     color: {
       foreground: "text-foreground",
       background: "text-background",
+      "background-alt": "text-background-alt",
       primary: "text-primary",
       secondary: "text-secondary",
       muted: "text-muted",
+      "muted-foreground": "text-muted-foreground",
     },
     variant: {
       header: "font-semibold",
@@ -45,7 +47,7 @@ const typographyVariants = cva("text-wrap", {
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "span", "p"] as const;
+const TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "span", "p", "div"] as const;
 
 type TypographyProps = React.ComponentProps<"span"> &
   React.ComponentProps<"p"> &

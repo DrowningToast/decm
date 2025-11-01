@@ -25,8 +25,8 @@ interface PageContainerProps {
 
 export default function PageContainer({
     children,
-    title,
-    description,
+    // title,
+    // description,
     className,
     bgColor = "default",
 }: PageContainerProps) {

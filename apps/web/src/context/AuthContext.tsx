@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { coreApiClient } from "@/lib/api/api";
 import type { EntityProfile } from "@decm/api";
-
 interface AuthContextType {
     user: EntityProfile | null;
     isLoading: boolean;
