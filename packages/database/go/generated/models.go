@@ -186,6 +186,81 @@ type EventRegistrationConfig struct {
 	UpdatedAt                            pgtype.Timestamptz `json:"updated_at"`
 }
 
+type EventRegistrationEmailReferral struct {
+	ID                  uuid.UUID          `json:"id"`
+	EventID             uuid.UUID          `json:"event_id"`
+	ValidUntil          pgtype.Timestamptz `json:"valid_until"`
+	IsUsed              pgtype.Int4        `json:"is_used"`
+	FirstName           pgtype.Text        `json:"first_name"`
+	LastName            pgtype.Text        `json:"last_name"`
+	Email               pgtype.Text        `json:"email"`
+	Bio                 pgtype.Text        `json:"bio"`
+	PhoneNumber         pgtype.Text        `json:"phone_number"`
+	Address             pgtype.Text        `json:"address"`
+	AcademicInstitution pgtype.Text        `json:"academic_institution"`
+	AcademicEmail       pgtype.Text        `json:"academic_email"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+}
+
+type EventRegistrationInvitation struct {
+	ID             uuid.UUID          `json:"id"`
+	EventID        uuid.UUID          `json:"event_id"`
+	InboxMessageID uuid.UUID          `json:"inbox_message_id"`
+	ValidUntil     pgtype.Timestamptz `json:"valid_until"`
+	Code           pgtype.Text        `json:"code"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+}
+
+type EventRegistrationRequirement struct {
+	ID                             uuid.UUID          `json:"id"`
+	EventID                        uuid.UUID          `json:"event_id"`
+	RequirementTypeID              int32              `json:"requirement_type_id"`
+	Password                       pgtype.Text        `json:"password"`
+	MaxAttemptsInPeriod            pgtype.Int4        `json:"max_attempts_in_period"`
+	PeriodDurationSeconds          pgtype.Int4        `json:"period_duration_seconds"`
+	IsIdentityVerificationRequired pgtype.Int4        `json:"is_identity_verification_required"`
+	CreatedAt                      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                      pgtype.Timestamptz `json:"updated_at"`
+}
+
+type EventRegistrationRequirementType struct {
+	ID        int32              `json:"id"`
+	Name      string             `json:"name"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+}
+
+type EventRegistrationRequirementsTrustedIdentity struct {
+	ID                             uuid.UUID          `json:"id"`
+	EventRegistrationRequirementID uuid.UUID          `json:"event_registration_requirement_id"`
+	TrustedIdentityID              uuid.UUID          `json:"trusted_identity_id"`
+	CreatedAt                      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                      pgtype.Timestamptz `json:"updated_at"`
+}
+
+type InboxMessage struct {
+	ID                     uuid.UUID          `json:"id"`
+	SenderCredentialID     uuid.UUID          `json:"sender_credential_id"`
+	ReceiverCredentialID   uuid.UUID          `json:"receiver_credential_id"`
+	MessageType            int32              `json:"message_type"`
+	MessageContent         []byte             `json:"message_content"`
+	FallbackMessageContent pgtype.Text        `json:"fallback_message_content"`
+	IsRead                 pgtype.Int4        `json:"is_read"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
+	HiddenAt               pgtype.Timestamptz `json:"hidden_at"`
+	DeletedAt              pgtype.Timestamptz `json:"deleted_at"`
+}
+
+type InboxMessageType struct {
+	ID        int32              `json:"id"`
+	Name      string             `json:"name"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+}
+
 type Profile struct {
 	ID                          uuid.UUID          `json:"id"`
 	AuthenticationCredentialID  uuid.UUID          `json:"authentication_credential_id"`
@@ -209,4 +284,14 @@ type Profile struct {
 	AcademicEmail               pgtype.Text        `json:"academic_email"`
 	CreatedAt                   pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                   pgtype.Timestamptz `json:"updated_at"`
+}
+
+type TrustedIdentity struct {
+	ID                      uuid.UUID          `json:"id"`
+	Name                    string             `json:"name"`
+	ExpectedIdentifiers     []pgtype.Text      `json:"expected_identifiers"`
+	ExpectedIssuerAddresses []pgtype.Text      `json:"expected_issuer_addresses"`
+	IsSelfIssued            pgtype.Int4        `json:"is_self_issued"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt               pgtype.Timestamptz `json:"updated_at"`
 }
