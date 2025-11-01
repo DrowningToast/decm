@@ -1,0 +1,35 @@
+name: "Setup Go for Backend"
+description: "Sets up Go with cache for backend and database packages"
+
+inputs:
+    go-version:
+        description: "Go version to use"
+        required: true
+    cache-dependency-path:
+        description: "Path(s) to go.sum files for caching (newline separated)"
+        required: false
+        default: |
+            apps/backend/go.sum
+            packages/database/go.sum
+
+runs:
+    using: "composite"
+    steps:
+        - name: Setup Go
+          uses: actions/setup-go@v5
+          with:
+              go-version: ${{ inputs.go-version }}
+              cache-dependency-path: ${{ inputs.cache-dependency-path }}
+
+        - name: Install Go dependencies
+          shell: bash
+          working-directory: apps/backend
+          run: go mod download
+
+        - name: Setup Go workspace
+          shell: bash
+          working-directory: apps/backend
+          run: |
+              go work use .
+              go work use ../../packages/database
+              go work sync
