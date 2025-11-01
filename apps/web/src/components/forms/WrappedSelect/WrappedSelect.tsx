@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 
 // Use any for now to avoid type issues with react-hook-form imports
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Control = any;
 
 interface WrappedSelectProps {
@@ -33,6 +34,7 @@ interface WrappedSelectProps {
     placeholder?: string;
 
     // Type casting for the value
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     valueAs?: (value: string) => any;
 
     // Layout

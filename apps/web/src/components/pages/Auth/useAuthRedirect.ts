@@ -10,7 +10,7 @@ import { match } from "ts-pattern";
 import { OnboardMethods } from "@/pages/onboard/[method]";
 
 // eg. Sign in, Sign up, onboard page
-export const useAuthRedirect = (): void => {
+export const useAuthRedirect = () => {
     const navigate = useNavigate();
     const { onboardStatus, isLoading } = useCheckOnboardStatus();
     const { data: walletClient } = useWalletClient();
@@ -23,7 +23,7 @@ export const useAuthRedirect = (): void => {
         undefined,
     );
 
-    const authCheckGoogle = useCallback(() => {
+    const authCheckGoogle = useCallback(async () => {
         match({
             isLoading,
             hasAuthenticationCredentialId: !!onboardStatus?.authentication_credential_id,
@@ -62,7 +62,7 @@ export const useAuthRedirect = (): void => {
                 () => {
                     navigate("/onboard/:method", {
                         params: {
-                            method: OnboardMethods.WALLET,
+                            method: "wallet",
                         },
                     });
                 },
@@ -84,7 +84,7 @@ export const useAuthRedirect = (): void => {
         onboardStatus?.profile_id,
     ]);
 
-    const authCheckWallet = useCallback(() => {
+    const authCheckWallet = useCallback(async () => {
         match({
             isLoading,
             hasWalletClient: !!walletClient,
@@ -117,7 +117,7 @@ export const useAuthRedirect = (): void => {
                 () => {
                     navigate("/onboard/:method", {
                         params: {
-                            method: OnboardMethods.WALLET,
+                            method: "wallet",
                         },
                     });
                 },
@@ -138,7 +138,7 @@ export const useAuthRedirect = (): void => {
                 () => {
                     navigate("/onboard/:method", {
                         params: {
-                            method: OnboardMethods.WALLET,
+                            method: "wallet",
                         },
                     });
                 },

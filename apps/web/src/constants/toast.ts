@@ -1,10 +1,6 @@
 import { USECASE_IDS, type UseCaseId } from "./usecase";
 
 export const TOAST_USECASE_VIEWMODEL = {
-    [USECASE_IDS.GENERIC]: {
-        ERROR: "flow.generic.error",
-        SUCCESS: "flow.generic.success",
-    },
     [USECASE_IDS.OAUTH_SIGNUP]: {
         LOADING: "flow.oauth_google.create_account_pending",
         LOADING_PROFILE: "flow.oauth_google.create_profile_pending",
@@ -27,8 +23,8 @@ export const TOAST_USECASE_VIEWMODEL = {
         SUCCESS: "flow.oauth_google.create_account_success",
         ERROR: "flow.oauth_google.create_account_error",
         ERROR_DUPLICATE: "flow.oauth_google.create_account_error_duplicate",
-        ERROR_PROFILE: "flow.oauth_google.create_profile_error",
     },
+    [USECASE_IDS.GENERIC]: {},
     [USECASE_IDS.OAUTH_GOOGLE_CREATE_PROFILE]: {
         SUCCESS: "flow.oauth_google.create_profile_success",
         ERROR: "flow.oauth_google.create_profile_error",
