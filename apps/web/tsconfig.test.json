@@ -1,0 +1,19 @@
+{
+    "extends": "./tsconfig.app.json",
+    "compilerOptions": {
+        "types": ["vitest/globals", "@testing-library/jest-dom", "node"],
+        "baseUrl": ".",
+        "paths": {
+            "@decm/api": ["../../packages/api/src"]
+        },
+        "verbatimModuleSyntax": false
+    },
+    "include": [
+        "src/test/**",
+        "src/**/*.test.ts",
+        "src/**/*.test.tsx",
+        "src/**/*.spec.ts",
+        "src/**/*.spec.tsx"
+    ],
+    "exclude": ["dist", "node_modules"]
+}
