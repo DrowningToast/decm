@@ -166,6 +166,7 @@ func (q *Queries) DeleteEvent(ctx context.Context, id uuid.UUID) (Event, error) 
 const GetEventById = `-- name: GetEventById :one
 SELECT 
     id,
+    event_type,
     chain_id,
     contact_number,
     contact_address,
@@ -192,6 +193,7 @@ WHERE id = $1
 
 type GetEventByIdRow struct {
 	ID                       uuid.UUID          `json:"id"`
+	EventType                EventType          `json:"event_type"`
 	ChainID                  int32              `json:"chain_id"`
 	ContactNumber            string             `json:"contact_number"`
 	ContactAddress           string             `json:"contact_address"`
@@ -219,6 +221,7 @@ func (q *Queries) GetEventById(ctx context.Context, id uuid.UUID) (GetEventByIdR
 	var i GetEventByIdRow
 	err := row.Scan(
 		&i.ID,
+		&i.EventType,
 		&i.ChainID,
 		&i.ContactNumber,
 		&i.ContactAddress,
@@ -495,20 +498,21 @@ SET
     title = $1,
     short_description = $2,
     long_description = $3,
-    start_date = $4,
-    end_date = $5,
-    location = $6,
-    google_map_query = $7,
-    max_attendees = $8,
-    contact_number = $9,
-    contact_address = $10,
-    banner_storage_key = $11,
-    icon_storage_key = $12,
-    is_public = $13,
-    is_booking_request_required = $14,
-    is_verified = $15,
-    is_ticket_transferable = $16
-WHERE id = $17
+    event_type = $4,
+    start_date = $5,
+    end_date = $6,
+    location = $7,
+    google_map_query = $8,
+    max_attendees = $9,
+    contact_number = $10,
+    contact_address = $11,
+    banner_storage_key = $12,
+    icon_storage_key = $13,
+    is_public = $14,
+    is_booking_request_required = $15,
+    is_verified = $16,
+    is_ticket_transferable = $17
+WHERE id = $18
 RETURNING id, event_type, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
 `
 
@@ -516,6 +520,7 @@ type UpdateEventParams struct {
 	Title                    string      `json:"title"`
 	ShortDescription         string      `json:"short_description"`
 	LongDescription          pgtype.Text `json:"long_description"`
+	EventType                EventType   `json:"event_type"`
 	StartDate                time.Time   `json:"start_date"`
 	EndDate                  time.Time   `json:"end_date"`
 	Location                 string      `json:"location"`
@@ -537,6 +542,7 @@ func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event
 		arg.Title,
 		arg.ShortDescription,
 		arg.LongDescription,
+		arg.EventType,
 		arg.StartDate,
 		arg.EndDate,
 		arg.Location,
