@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { AuthService, type CreateProfileParams } from "./AuthService";
+import { AuthService, CreateAccountParams, type CreateProfileParams } from "./AuthService";
 import { OnboardRegistrationMethod } from "@decm/api";
 import type { CoreApiType } from "@/lib/api/api";
 import type { OnboardService } from "./OnboardService";
@@ -58,7 +58,7 @@ describe("AuthService", () => {
                 accessToken: "google-token",
                 password: "secure-password",
                 expiresIn: 3600,
-            };
+            } satisfies CreateAccountParams;
 
             const result = await authService.createAccount(params);
 
@@ -80,7 +80,7 @@ describe("AuthService", () => {
                 mockResponse,
             );
 
-            const params = {
+            const params: CreateAccountParams = {
                 method: OnboardRegistrationMethod.RegistrationMethodWallet,
                 signSignature: "0xsignature",
             };
@@ -99,7 +99,7 @@ describe("AuthService", () => {
                 authentication_credential_id: "existing-id",
             });
 
-            const params = {
+            const params: CreateAccountParams = {
                 method: OnboardRegistrationMethod.RegistrationMethodGoogle,
                 accessToken: "google-token",
                 password: "secure-password",
@@ -116,7 +116,7 @@ describe("AuthService", () => {
                 authentication_credential_id: null,
             });
 
-            const params = {
+            const params: CreateAccountParams = {
                 method: OnboardRegistrationMethod.RegistrationMethodGoogle,
                 accessToken: "",
                 password: "password",
@@ -131,7 +131,7 @@ describe("AuthService", () => {
                 authentication_credential_id: null,
             });
 
-            const params = {
+            const params: CreateAccountParams = {
                 method: OnboardRegistrationMethod.RegistrationMethodWallet,
                 signSignature: "",
             };

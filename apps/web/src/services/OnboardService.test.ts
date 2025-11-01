@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { OnboardService } from "./OnboardService";
+import { CheckOnboardParams, OnboardService } from "./OnboardService";
 import { OnboardRegistrationMethod } from "@decm/api";
 import type { CoreApiType } from "@/lib/api/api";
 
@@ -49,7 +49,7 @@ describe("OnboardService", () => {
                 method: OnboardRegistrationMethod.RegistrationMethodGoogle,
                 accessToken: "google-access-token",
                 expiresIn: 3600,
-            };
+            } satisfies CheckOnboardParams;
 
             const result = await onboardService.checkOnboardStatus(params);
 
@@ -74,7 +74,7 @@ describe("OnboardService", () => {
             const params = {
                 method: OnboardRegistrationMethod.RegistrationMethodWallet,
                 signSignature: "0x123abc",
-            };
+            } satisfies CheckOnboardParams;
 
             const result = await onboardService.checkOnboardStatus(params);
 
@@ -92,7 +92,7 @@ describe("OnboardService", () => {
                 method: OnboardRegistrationMethod.RegistrationMethodGoogle,
                 accessToken: "",
                 expiresIn: 0,
-            };
+            } satisfies CheckOnboardParams;
 
             const result = await onboardService.checkOnboardStatus(params);
 
