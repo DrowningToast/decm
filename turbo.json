@@ -1,69 +1,48 @@
 {
-  "$schema": "https://turborepo.com/schema.json",
-  "ui": "tui",
-  "tasks": {
-    "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        ".env*"
-      ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "bin/**"
-      ]
-    },
-    "lint": {
-      "dependsOn": [
-        "^lint"
-      ]
-    },
-    "check-types": {
-      "dependsOn": [
-        "^check-types"
-      ]
-    },
-    "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "build:core": {
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        ".env*"
-      ],
-      "outputs": [
-        "bin/**"
-      ]
-    },
-    "dev:core": {
-      "cache": false,
-      "persistent": true
-    },
-    "docs:core": {
-      "inputs": [
-        "apps/backend/**/*.go"
-      ],
-      "outputs": [
-        "apps/backend/docs/**"
-      ]
-    },
-    "gen-api": {
-      "dependsOn": [
-        "docs:core"
-      ],
-      "inputs": [
-        "apps/backend/docs/**",
-        "packages/api/scripts/**"
-      ],
-      "outputs": [
-        "packages/api/dist/**",
-        "packages/api/src/**",
-        "packages/api/generated/**"
-      ]
+    "$schema": "https://turborepo.com/schema.json",
+    "ui": "tui",
+    "tasks": {
+        "build": {
+            "dependsOn": ["^build"],
+            "inputs": ["$TURBO_DEFAULT$", ".env*"],
+            "outputs": [".next/**", "!.next/cache/**", "bin/**"]
+        },
+        "lint": {
+            "dependsOn": ["^lint"]
+        },
+        "check-types": {
+            "dependsOn": ["^check-types"]
+        },
+        "test": {
+            "cache": true,
+            "inputs": ["$TURBO_DEFAULT$", "src/**/*.{ts,tsx}", "**/*_test.go"],
+            "outputs": ["coverage/**", "*.coverage.out"]
+        },
+        "test:coverage": {
+            "cache": false,
+            "inputs": ["$TURBO_DEFAULT$", "src/**/*.{ts,tsx}", "**/*_test.go"],
+            "outputs": ["coverage/**", "*.coverage.out"]
+        },
+        "dev": {
+            "cache": false,
+            "persistent": true
+        },
+        "build:core": {
+            "inputs": ["$TURBO_DEFAULT$", ".env*"],
+            "outputs": ["bin/**"]
+        },
+        "dev:core": {
+            "cache": false,
+            "persistent": true
+        },
+        "docs:core": {
+            "inputs": ["apps/backend/**/*.go"],
+            "outputs": ["apps/backend/docs/**"]
+        },
+        "gen-api": {
+            "dependsOn": ["docs:core"],
+            "inputs": ["apps/backend/docs/**", "packages/api/scripts/**"],
+            "outputs": ["packages/api/dist/**", "packages/api/src/**", "packages/api/generated/**"]
+        }
     }
-  }
 }
