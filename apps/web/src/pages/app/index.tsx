@@ -1,16 +1,10 @@
-import { LogoutButton } from "@/components/LogoutButton";
-import { Typography } from "@/components/typography/typography";
-import { useTranslation } from "react-i18next";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { LogoutButton } from "@/components/LogoutButton";
 
 const AppPage = () => {
-    const { t } = useTranslation();
-
     return (
         <ProtectedRoute>
-            <Typography variant="header" tag="h1">
-                {t("app.title")}
-            </Typography>
+            <h1>app page</h1>
             {/* PH */}
             <LogoutButton type="signout" />
         </ProtectedRoute>

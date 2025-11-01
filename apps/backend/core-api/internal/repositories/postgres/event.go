@@ -1,13 +1,13 @@
 package postgres
 
 import (
-	"context"
-	"decm-database/go/generated"
-
 	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
 	datagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
+	"context"
+
+	"decm-database/go/generated"
 
 	"github.com/google/uuid"
 )
@@ -296,6 +296,7 @@ func (r *Repository) UpdateEvent(ctx context.Context, id uuid.UUID, params datag
 		IsTicketTransferable:     isTicketTransferable,
 		EventType:                eventType,
 	})
+
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
 	}

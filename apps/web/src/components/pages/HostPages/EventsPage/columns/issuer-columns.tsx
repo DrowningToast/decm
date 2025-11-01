@@ -52,8 +52,9 @@ export const issuerColumns: ColumnDef<Issuer>[] = [
             };
             return (
                 <span
-                    className={`inline-block px-2 py-1 rounded text-xs ${statusColors[isSigned as keyof typeof statusColors]
-                        }`}
+                    className={`inline-block px-2 py-1 rounded text-xs ${
+                        statusColors[isSigned as keyof typeof statusColors]
+                    }`}
                 >
                     {statusLabels[isSigned as keyof typeof statusLabels]}
                 </span>

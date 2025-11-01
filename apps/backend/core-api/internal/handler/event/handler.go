@@ -1,13 +1,12 @@
 package event
 
 import (
-	"log/slog"
-
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
 	"apps/backend/core-api/internal/usecase/event"
 	eventconfig "apps/backend/core-api/internal/usecase/eventconfig"
 	profile "apps/backend/core-api/internal/usecase/profile"
 	"apps/backend/services/auth"
+	"log/slog"
 )
 
 type Handler struct {

@@ -47,9 +47,9 @@ func (c *Config) Validate() error {
 	if !c.S3.IsValid() {
 		return errors.New("S3 configuration is invalid: AccessKeyID, SecretAccessKey, BucketName, and Endpoint are all required")
 	}
-
+	
 	// Add additional component validators here as needed
-
+	
 	return nil
 }
 

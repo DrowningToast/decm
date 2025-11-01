@@ -1,12 +1,12 @@
 package postgres
 
 import (
-	"context"
-	"decm-database/go/generated"
-
 	datagateway "apps/backend/core-api/internal/datagateway/event"
+	"context"
 
 	"github.com/google/uuid"
+
+	"decm-database/go/generated"
 )
 
 var _ datagateway.EventIssuerDataGateway = (*Repository)(nil)

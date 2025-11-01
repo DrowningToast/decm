@@ -1,11 +1,10 @@
 package event
 
 import (
-	"context"
-	"errors"
-
 	"apps/backend/common/customerror"
 	"apps/backend/services/auth"
+	"context"
+	"errors"
 
 	"github.com/google/uuid"
 )
