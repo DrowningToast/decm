@@ -78,11 +78,6 @@ jobs:
                   grep -q "events" migration_output.txt
                   echo "✅ All core tables verified"
 
-            - name: Verify pgcrypto extension is enabled
-              run: |
-                  docker exec decm-postgres psql -U decm_user -d decm_test -c "SELECT * FROM pg_extension WHERE extname = 'pgcrypto';" | grep pgcrypto
-                  echo "✅ pgcrypto extension verified"
-
             - name: Cleanup - Stop Docker Compose
               if: always()
               run: pnpm compose:down

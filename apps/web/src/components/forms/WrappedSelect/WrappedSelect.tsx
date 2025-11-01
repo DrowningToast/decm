@@ -2,6 +2,7 @@ import {
     Controller,
     type Control as ReactHookFormControl,
     type FieldValues,
+    type Path,
 } from "react-hook-form";
 import { Typography } from "@/components/typography/typography";
 import { Label } from "@/components/ui/label";
@@ -20,7 +21,7 @@ type Control = any;
 interface WrappedSelectProps {
     // Form control
     control: ReactHookFormControl<T>;
-    name: string;
+    name: Path<T>;
 
     // Label and description
     label: string;
