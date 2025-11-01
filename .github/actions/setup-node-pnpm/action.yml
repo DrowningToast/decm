@@ -23,10 +23,23 @@ runs:
               node-version: ${{ inputs.node-version }}
               cache: "pnpm"
 
+        - name: Cache node_modules
+          id: cache-node-modules
+          uses: actions/cache@v4
+          with:
+              path: |
+                  node_modules
+                  apps/*/node_modules
+                  packages/*/node_modules
+              key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+              restore-keys: |
+                  ${{ runner.os }}-pnpm-
+
         - name: Copy test environment file
           shell: bash
           run: cp .env.test .env
 
         - name: Install dependencies
+          if: steps.cache-node-modules.outputs.cache-hit != 'true'
           shell: bash
           run: pnpm install --frozen-lockfile
