@@ -50,7 +50,7 @@ export class AuthService {
 
     public async createAccount(params: CreateAccountParams) {
         const status = await this._onboardService.checkOnboardStatus(params);
-        if (status.authentication_credential_id) {
+        if (status?.authentication_credential_id) {
             throw new Error(t("onboard.api.error.authentication_credential_id_already_exists"));
         }
 

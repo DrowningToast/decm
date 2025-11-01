@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
-import { Link } from "@/router";
+import { Link } from "react-router-dom";
 
 const wrappedButtonVariants = cva("h-12 rounded-[12px]", {
     variants: {

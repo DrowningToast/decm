@@ -14,10 +14,10 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     children,
     redirectTo = "/signup",
-    requiredRoles,
+    // requiredRoles,
     fallback,
 }) => {
-    const { isAuthenticated, isLoading, userRole } = useAuth();
+    const { isAuthenticated, isLoading, } = useAuth();
     const { t } = useTranslation();
 
     if (isLoading) {
@@ -40,14 +40,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         return <Navigate to={redirectTo as any} replace />;
     }
 
-    if (requiredRoles && requiredRoles.length > 0 && userRole) {
-        // Check if user's role is included in the required roles array
-        if (!requiredRoles.includes(userRole)) {
-            // User is authenticated but doesn't have the required role
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return <Navigate to="/unauthorized" replace />;
-        }
-    }
+    // TODO: Implement role based protection
+    // if (requiredRoles && requiredRoles.length > 0 && user?.role) {
+    //     // Check if user's role is included in the required roles array
+    //     if (!requiredRoles.includes(userRole)) {
+    //         // User is authenticated but doesn't have the required role
+
+    //         return <Navigate to="/unauthorized" replace />;
+    //     }
+    // }
 
     return <>{children}</>;
 };

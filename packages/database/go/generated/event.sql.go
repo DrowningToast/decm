@@ -193,7 +193,7 @@ WHERE id = $1
 
 type GetEventByIdRow struct {
 	ID                       uuid.UUID          `json:"id"`
-	EventType                interface{}        `json:"event_type"`
+	EventType                EventType          `json:"event_type"`
 	ChainID                  int32              `json:"chain_id"`
 	ContactNumber            string             `json:"contact_number"`
 	ContactAddress           string             `json:"contact_address"`
@@ -277,7 +277,7 @@ ORDER BY created_at DESC
 
 type ListEventsByOwnerRow struct {
 	ID                       uuid.UUID          `json:"id"`
-	EventType                interface{}        `json:"event_type"`
+	EventType                EventType          `json:"event_type"`
 	ChainID                  int32              `json:"chain_id"`
 	ContactNumber            string             `json:"contact_number"`
 	ContactAddress           string             `json:"contact_address"`
@@ -432,7 +432,7 @@ ORDER BY start_date ASC
 
 type ListPublicEventsRow struct {
 	ID                       uuid.UUID          `json:"id"`
-	EventType                interface{}        `json:"event_type"`
+	EventType                EventType          `json:"event_type"`
 	ChainID                  int32              `json:"chain_id"`
 	ContactNumber            string             `json:"contact_number"`
 	ContactAddress           string             `json:"contact_address"`
@@ -539,7 +539,7 @@ type UpdateEventParams struct {
 	IsBookingRequestRequired pgtype.Int4 `json:"is_booking_request_required"`
 	IsVerified               pgtype.Int4 `json:"is_verified"`
 	IsTicketTransferable     pgtype.Int4 `json:"is_ticket_transferable"`
-	EventType                interface{} `json:"event_type"`
+	EventType                EventType   `json:"event_type"`
 	ID                       uuid.UUID   `json:"id"`
 }
 

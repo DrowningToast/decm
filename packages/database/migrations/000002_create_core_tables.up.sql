@@ -74,11 +74,7 @@ CREATE INDEX idx_profiles_authentication_credential_id ON profiles(authenticatio
 CREATE INDEX idx_profiles_id ON profiles(id);
 
 -- Create enum type if it doesn't exist
-DO $$ BEGIN
-    CREATE TYPE event_type AS ENUM ('public', 'private', 'invite');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
+CREATE TYPE event_type AS ENUM ('public', 'private', 'invite');
 
 -- events table, index by id and owner_credential_id
 CREATE TABLE events (
