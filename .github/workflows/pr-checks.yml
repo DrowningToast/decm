@@ -12,10 +12,27 @@ env:
     PNPM_VERSION: "9.15.0"
 
 jobs:
+    # Job 0: Check for ready-to-review label
+    check-label:
+        name: Check Label
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Check for 'ready-to-review' label
+              if: ${{ !contains(github.event.pull_request.labels.*.name, 'ready-to-review') }}
+              run: |
+                  echo "❌ This PR requires the 'ready-to-review' label before running checks."
+                  echo "Please add the 'ready-to-review' label to proceed with CI/CD checks."
+                  exit 1
+
+            - name: Label verified
+              run: echo "✅ 'ready-to-review' label is present. Proceeding with checks..."
+
     # Job 1: Docker Compose Successfully
     docker-compose:
         name: Docker Compose
         runs-on: ubuntu-latest
+        needs: [check-label]
 
         steps:
             - name: Checkout code
@@ -63,7 +80,7 @@ jobs:
     database-migrate:
         name: Database Migration
         runs-on: ubuntu-latest
-        needs: [docker-compose]
+        needs: [check-label, docker-compose]
 
         steps:
             - name: Checkout code
@@ -127,7 +144,7 @@ jobs:
     database-generate:
         name: Database Generation (SQLC)
         runs-on: ubuntu-latest
-        needs: [database-migrate]
+        needs: [check-label, database-migrate]
 
         services:
             postgres:
@@ -173,7 +190,7 @@ jobs:
 
             - name: Install sqlc
               run: |
-                  curl -sSfL https://github.com/sqlc-dev/sqlc/releases/download/v1.27.0/sqlc_1.29.0_linux_amd64.tar.gz | tar -xz -C /tmp
+                  curl -sSfL https://github.com/sqlc-dev/sqlc/releases/download/v1.29.0/sqlc_1.29.0_linux_amd64.tar.gz | tar -xz -C /tmp
                   sudo mv /tmp/sqlc /usr/local/bin/
                   sqlc version
 
@@ -217,106 +234,7 @@ jobs:
     backend-build:
         name: Backend Build
         runs-on: ubuntu-latest
-        needs: [database-generate]
-
-        services:
-            postgres:
-                image: postgres:16-alpine
-                env:
-                    POSTGRES_DB: decm_test
-                    POSTGRES_USER: decm_user
-                    POSTGRES_PASSWORD: decm_test_password
-                ports:
-                    - 5432:5432
-                options: >-
-                    --health-cmd pg_isready
-                    --health-interval 10s
-                    --health-timeout 5s
-                    --health-retries 5
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: ${{ env.PNPM_VERSION }}
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
-                  cache: "pnpm"
-
-            - name: Setup Go
-              uses: actions/setup-go@v5
-              with:
-                  go-version: ${{ env.GO_VERSION }}
-                  cache-dependency-path: |
-                      apps/backend/go.sum
-                      packages/database/go.sum
-
-            - name: Copy test environment file
-              run: cp .env.test .env
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Install golang-migrate
-              run: |
-                  curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
-                  sudo mv migrate /usr/local/bin/
-                  migrate -version
-
-            - name: Run database migrations
-              run: pnpm db:migrate
-              env:
-                  DB_HOST: localhost
-                  DB_PORT: 5432
-                  DB_USER: decm_user
-                  DB_PASSWORD: decm_test_password
-                  DB_NAME: decm_test
-
-            - name: Install sqlc
-              run: |
-                  curl -sSfL https://github.com/sqlc-dev/sqlc/releases/download/v1.27.0/sqlc_1.27.0_linux_amd64.tar.gz | tar -xz -C /tmp
-                  sudo mv /tmp/sqlc /usr/local/bin/
-                  sqlc version
-
-            - name: Generate SQLC code
-              run: pnpm db:generate
-
-            - name: Install Go dependencies
-              working-directory: apps/backend
-              run: go mod download
-
-            - name: Setup Go workspace
-              working-directory: apps/backend
-              run: |
-                  echo "Setting up Go workspace..."
-                  go work use .
-                  go work use ../../packages/database
-                  go work sync
-                  cat go.work
-
-            - name: Build Core API
-              run: pnpm build:core
-
-            - name: Verify binary exists
-              run: |
-                  if [ ! -f apps/backend/bin/decm-backend ]; then
-                    echo "❌ Core API binary not found!"
-                    exit 1
-                  else
-                    echo "✅ Core API binary built successfully"
-                  fi
-
-    # Job 5: Backend Unit Tests Successfully
-    backend-tests:
-        name: Backend Unit Tests
-        runs-on: ubuntu-latest
-        needs: [backend-build, database-migrate]
+        needs: [check-label, database-generate]
 
         services:
             postgres:
@@ -386,12 +304,109 @@ jobs:
 
             - name: Install sqlc
               run: |
-                  curl -sSfL https://github.com/sqlc-dev/sqlc/releases/download/v1.27.0/sqlc_1.27.0_linux_amd64.tar.gz | tar -xz -C /tmp
+                  curl -sSfL https://github.com/sqlc-dev/sqlc/releases/download/v1.29.0/sqlc_1.29.0_linux_amd64.tar.gz | tar -xz -C /tmp
                   sudo mv /tmp/sqlc /usr/local/bin/
                   sqlc version
 
             - name: Generate SQLC code
               run: pnpm db:generate
+
+            - name: Install Go dependencies
+              working-directory: apps/backend
+              run: go mod download
+
+            - name: Setup Go workspace
+              working-directory: apps/backend
+              run: |
+                  echo "Setting up Go workspace..."
+                  go work use .
+                  go work use ../../packages/database
+                  go work sync
+                  cat go.work
+
+            - name: Build Core API
+              run: pnpm build:core
+
+            - name: Verify binary exists
+              run: |
+                  if [ ! -f apps/backend/bin/decm-backend ]; then
+                    echo "❌ Core API binary not found!"
+                    exit 1
+                  else
+                    echo "✅ Core API binary built successfully"
+                  fi
+
+    # Job 5: Backend Unit Tests Successfully
+    backend-tests:
+        name: Backend Unit Tests
+        runs-on: ubuntu-latest
+        needs: [check-label, backend-build, database-migrate]
+
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_DB: decm_test
+                    POSTGRES_USER: decm_user
+                    POSTGRES_PASSWORD: decm_test_password
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: ${{ env.PNPM_VERSION }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: "pnpm"
+
+            - name: Setup Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: ${{ env.GO_VERSION }}
+                  cache-dependency-path: |
+                      apps/backend/go.sum
+                      packages/database/go.sum
+
+            - name: Copy test environment file
+              run: cp .env.test .env
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Install golang-migrate
+              run: |
+                  curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
+                  sudo mv migrate /usr/local/bin/
+                  migrate -version
+
+            - name: Wait for PostgreSQL
+              run: |
+                  until pg_isready -h localhost -p 5432 -U decm_user; do
+                    echo "Waiting for PostgreSQL..."
+                    sleep 2
+                  done
+
+            - name: Run database migrations
+              run: pnpm db:migrate
+              env:
+                  DB_HOST: localhost
+                  DB_PORT: 5432
+                  DB_USER: decm_user
+                  DB_PASSWORD: decm_test_password
+                  DB_NAME: decm_test
 
             - name: Install Go dependencies
               working-directory: apps/backend
@@ -421,7 +436,7 @@ jobs:
     backend-openapi:
         name: Backend OpenAPI & Swagger
         runs-on: ubuntu-latest
-        needs: [backend-build]
+        needs: [check-label, backend-build]
 
         steps:
             - name: Checkout code
@@ -455,12 +470,9 @@ jobs:
 
             - name: Install sqlc
               run: |
-                  curl -sSfL https://github.com/sqlc-dev/sqlc/releases/download/v1.27.0/sqlc_1.27.0_linux_amd64.tar.gz | tar -xz -C /tmp
+                  curl -sSfL https://github.com/sqlc-dev/sqlc/releases/download/v1.29.0/sqlc_1.29.0_linux_amd64.tar.gz | tar -xz -C /tmp
                   sudo mv /tmp/sqlc /usr/local/bin/
                   sqlc version
-
-            - name: Generate SQLC code
-              run: pnpm db:generate
 
             - name: Install Go dependencies
               working-directory: apps/backend
@@ -494,6 +506,7 @@ jobs:
     frontend-build:
         name: Frontend Build
         runs-on: ubuntu-latest
+        needs: [check-label]
 
         steps:
             - name: Checkout code
@@ -521,9 +534,6 @@ jobs:
             - name: Run TypeScript type checking
               run: pnpm check-types
 
-            - name: Run ESLint
-              run: pnpm lint
-
             - name: Build frontend
               run: pnpm build
 
@@ -536,11 +546,43 @@ jobs:
                     echo "✅ Frontend built successfully"
                   fi
 
-    # Job 8: Frontend Unit Test Successfully
+    # Job 8: Frontend ESLint Check
+    frontend-eslint:
+        name: Frontend ESLint Check
+        runs-on: ubuntu-latest
+        needs: [check-label]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: ${{ env.PNPM_VERSION }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: "pnpm"
+
+            - name: Copy test environment files
+              run: |
+                  cp .env.test .env
+                  cp .env.client.test .env.client
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Run ESLint
+              run: pnpm lint
+
+    # Job 9: Frontend Unit Test Successfully
     frontend-tests:
         name: Frontend Unit Tests
         runs-on: ubuntu-latest
-        needs: [frontend-build]
+        needs: [check-label, frontend-build, frontend-eslint]
 
         steps:
             - name: Checkout code
@@ -575,6 +617,7 @@ jobs:
     contracts-build:
         name: Contract Build
         runs-on: ubuntu-latest
+        needs: [check-label]
 
         steps:
             - name: Checkout code
@@ -608,6 +651,7 @@ jobs:
         runs-on: ubuntu-latest
         needs:
             [
+                check-label,
                 docker-compose,
                 database-migrate,
                 database-generate,
@@ -615,6 +659,7 @@ jobs:
                 backend-tests,
                 backend-openapi,
                 frontend-build,
+                frontend-eslint,
                 frontend-tests,
                 contracts-build,
             ]
@@ -622,6 +667,7 @@ jobs:
 
         steps:
             - name: Check all jobs status
+              id: check_status
               run: |
                   echo "### PR Quality Checks Summary ###"
                   echo ""
@@ -668,6 +714,12 @@ jobs:
                     echo "❌ Frontend Build: FAILED"
                   fi
 
+                  if [ "${{ needs.frontend-eslint.result }}" = "success" ]; then
+                    echo "✅ Frontend ESLint: PASSED"
+                  else
+                    echo "❌ Frontend ESLint: FAILED"
+                  fi
+
                   if [ "${{ needs.frontend-tests.result }}" = "success" ]; then
                     echo "✅ Frontend Unit Tests: PASSED"
                   else
@@ -689,11 +741,51 @@ jobs:
                      [ "${{ needs.backend-tests.result }}" = "success" ] && \
                      [ "${{ needs.backend-openapi.result }}" = "success" ] && \
                      [ "${{ needs.frontend-build.result }}" = "success" ] && \
+                     [ "${{ needs.frontend-eslint.result }}" = "success" ] && \
                      [ "${{ needs.frontend-tests.result }}" = "success" ] && \
                      [ "${{ needs.contracts-build.result }}" = "success" ]; then
                     echo "🎉 All checks passed! PR is ready to merge."
+                    echo "all_passed=true" >> $GITHUB_OUTPUT
                     exit 0
                   else
                     echo "❌ Some checks failed. Please review and fix the issues."
+                    echo "all_passed=false" >> $GITHUB_OUTPUT
                     exit 1
                   fi
+
+            - name: Remove 'ready-to-review' label on failure
+              if: ${{ steps.check_status.outputs.all_passed == 'false' && always() }}
+              run: |
+                  gh pr edit ${{ github.event.pull_request.number }} --remove-label "ready-to-review"
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Post failure comment on PR
+              if: ${{ steps.check_status.outputs.all_passed == 'false' && always() }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  COMMENT_BODY=$(cat <<'EOF'
+                  ❌ **CI/CD Pipeline Failed**
+
+                  The following checks failed:
+
+                  | Check | Status |
+                  |-------|--------|
+                  | Docker Compose | ${{ needs.docker-compose.result == 'success' && '✅' || '❌' }} |
+                  | Database Migration | ${{ needs.database-migrate.result == 'success' && '✅' || '❌' }} |
+                  | Database Generation | ${{ needs.database-generate.result == 'success' && '✅' || '❌' }} |
+                  | Backend Build | ${{ needs.backend-build.result == 'success' && '✅' || '❌' }} |
+                  | Backend Unit Tests | ${{ needs.backend-tests.result == 'success' && '✅' || '❌' }} |
+                  | Backend OpenAPI & Swagger | ${{ needs.backend-openapi.result == 'success' && '✅' || '❌' }} |
+                  | Frontend Build | ${{ needs.frontend-build.result == 'success' && '✅' || '❌' }} |
+                  | Frontend ESLint | ${{ needs.frontend-eslint.result == 'success' && '✅' || '❌' }} |
+                  | Frontend Unit Tests | ${{ needs.frontend-tests.result == 'success' && '✅' || '❌' }} |
+                  | Contract Build | ${{ needs.contracts-build.result == 'success' && '✅' || '❌' }} |
+
+                  **Action Required:** The 'ready-to-review' label has been removed. Please fix the failing checks and reapply the label to retry.
+
+                  [View workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+                  EOF
+                  )
+                  gh pr comment ${{ github.event.pull_request.number }} --body "$COMMENT_BODY"
