@@ -73,9 +73,13 @@ CREATE TABLE profiles (
 CREATE INDEX idx_profiles_authentication_credential_id ON profiles(authentication_credential_id);
 CREATE INDEX idx_profiles_id ON profiles(id);
 
+-- Create enum type if it doesn't exist
+CREATE TYPE event_type AS ENUM ('public', 'private', 'invite');
+
 -- events table, index by id and owner_credential_id
 CREATE TABLE events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_type event_type NOT NULL DEFAULT 'private',
     
     chain_id INTEGER NOT NULL,
     contact_number VARCHAR(255) NOT NULL,

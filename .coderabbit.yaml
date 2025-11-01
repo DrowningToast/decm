@@ -1,10 +1,17 @@
 reviews:
     path_filters:
+        # Include application files
+        - "apps/backend/**"
+        - "apps/web/**"
+        - "packages/**"
         - "!packages/api/src/apis/**/api.ts"
+        # Exclude generated and build artifacts
         - "!**/node_modules/**"
         - "!**/dist/**"
         - "!**/build/**"
         - "!**/pkg/**"
+        - "!**/generated/**"
+        # Exclude other non-code files
         - "!**/*.svg"
         - "!**/*.json"
         - "!pnpm-lock.yaml"

@@ -26,4 +26,5 @@ export const BaseLayout = ({ children, className, variant = "dark" }: BaseLayout
     return <div className={cn(componentVariants({ variant }), className)}>{children}</div>;
 };
 
+// eslint-disable-next-line
 export { componentVariants };

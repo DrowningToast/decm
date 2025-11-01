@@ -46,15 +46,9 @@ export class OnboardService {
         throw new Error("Invalid method");
     }
 
-    async getSignMessage(): Promise<string> {
-        try {
-            const response = await this._coreApi.v1.getSignMessage();
-            return response.message;
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : "Unknown error";
-            console.error(`Failed to fetch sign message: ${errorMessage}`, error);
-            throw new Error(`Failed to retrieve signing message: ${errorMessage}`);
-        }
+    async getSignMessage() {
+        const response = await this._coreApi.v1.getSignMessage();
+        return response.message;
     }
 }
 

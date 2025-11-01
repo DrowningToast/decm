@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -212,13 +211,13 @@ func main() {
 		go func() {
 			<-ctx.Done()
 			if ctx.Err() == context.DeadlineExceeded {
-				logger.ErrorContext(ctx, "Graceful shutdown timeout, force shutdown", errors.New("graceful shutdown timeout"))
+				logger.ErrorContext(ctx, "Graceful shutdown timeout, force shutdown", slog.String("error", "graceful shutdown timeout"))
 				os.Exit(1)
 			}
 		}()
 
 		if err := app.ShutdownWithContext(ctx); err != nil {
-			logger.ErrorContext(ctx, "error in shutdown http server", err)
+			logger.ErrorContext(ctx, "error in shutdown http server", slog.String("error", err.Error()))
 		} else {
 			logger.InfoContext(ctx, "Gracefully stopped HTTP server")
 		}

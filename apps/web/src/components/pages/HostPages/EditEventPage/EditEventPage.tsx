@@ -6,53 +6,50 @@ import TitleSubtitle from "@/components/TitleSubtitle";
 import type { EventEventResponse, UpdateEventPayload } from "@decm/api";
 import { useEditEvent } from "./useEditEvent";
 import { useDeleteEvent } from "./useDeleteEvent";
-import { useTranslation } from "react-i18next";
-import { useCallback } from "react";
 
 interface EditEventPageProps {
     event: EventEventResponse;
 }
 export const EditEventPage = ({ event }: EditEventPageProps) => {
-    const { t } = useTranslation();
     const { editEvent, isEditingEvent } = useEditEvent(event.id ?? "");
     const { deleteEvent, isDeletingEvent } = useDeleteEvent(event.id ?? "");
 
-    const handleEditEvent = useCallback<(data: EventFormData) => Promise<void>>(
-        async (data: EventFormData) => {
-            const req: UpdateEventPayload = {
-                name: data.name,
-                short_description: data.shortDescription,
-                description: data.description ?? "",
-                start_date: data.startDate.toISOString(),
-                end_date: data.endDate.toISOString(),
-                location: data.location,
-                google_map_query: data.googleMapQuery,
-                seats_count: data.seatsCount,
-                contact_address: data.contactAddress,
-                contact_number: data.contactNumber,
-            };
+    const handleEditEvent = async (data: EventFormData) => {
+        const req: UpdateEventPayload = {
+            name: data.name,
+            short_description: data.shortDescription,
+            description: data.description ?? "",
+            start_date: data.startDate.toISOString(),
+            end_date: data.endDate.toISOString(),
+            location: data.location,
+            google_map_query: data.googleMapQuery,
+            seats_count: data.seatsCount,
+            contact_address: data.contactAddress,
+            contact_number: data.contactNumber,
+        };
 
-            if (data.eventBanner) {
-                req.banner = data.eventBanner;
-            }
-            if (data.eventIcon) {
-                req.icon = data.eventIcon;
-            }
+        if (data.eventBanner) {
+            req.banner = data.eventBanner;
+        }
+        if (data.eventIcon) {
+            req.icon = data.eventIcon;
+        }
 
-            await editEvent(req);
-        },
-        [editEvent],
-    );
+        await editEvent(req);
+    };
 
-    const handleDeleteEvent = useCallback<() => Promise<void>>(async () => {
+    const handleDeleteEvent = async () => {
         await deleteEvent();
-    }, [deleteEvent]);
+    };
 
     return (
-        <PageContainer title={t("editEvent.title")} className="space-y-6">
+        <PageContainer title="Edit Event" className="space-y-6">
             {/* Page Header */}
             <SectionContainer>
-                <TitleSubtitle title={t("editEvent.title")} subtitle={t("editEvent.subtitle")} />
+                <TitleSubtitle
+                    title="Edit Event"
+                    subtitle="Fill in the details below to edit the event"
+                />
             </SectionContainer>
 
             <SectionContainer>

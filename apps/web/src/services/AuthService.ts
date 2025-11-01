@@ -57,7 +57,7 @@ export class AuthService {
         switch (params.method) {
             case OnboardRegistrationMethod.RegistrationMethodGoogle:
                 if (!params.accessToken || !params.password) {
-                    throw new Err(t("Invalid access token or password"));
+                    throw new Err("Invalid access token or password");
                 }
                 return coreApiClient.v1.registerWithGoogleOauth({
                     access_token: params.accessToken,
@@ -65,13 +65,13 @@ export class AuthService {
                 });
             case OnboardRegistrationMethod.RegistrationMethodWallet:
                 if (!params.signSignature) {
-                    throw new Error(t("Invalid sign message"));
+                    throw new Error("Invalid sign message");
                 }
                 return coreApiClient.v1.registerWithWallet({
                     signed_message: params.signSignature,
                 });
             default:
-                throw new Error(t("Invalid method"));
+                throw new Error("Invalid method");
         }
     }
 
