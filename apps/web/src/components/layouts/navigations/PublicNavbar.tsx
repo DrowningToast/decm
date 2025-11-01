@@ -2,7 +2,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface PublicNavbarProps {
-    variant?: "primary" | "secondary-dark" | "secondary-light";
+    variant?: "primary" | "dark" | "light";
     className?: string;
 }
 
@@ -10,18 +10,23 @@ export function PublicNavbar({ variant = "primary", className }: PublicNavbarPro
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     // Define navbar styles based on variant
-    const variantStyles = {
+    const bgVariantStyles: Record<PublicNavbarProps["variant"] & string, string> = {
         primary: "bg-[#eb5331]",
-        "secondary-dark": "bg-[#362927]",
-        "secondary-light": "bg-[#e9dede]",
+        dark: "bg-[#362927]",
+        light: "bg-[#e9dede]",
     };
 
+    const textVariantStyles: Record<PublicNavbarProps["variant"] & string, string> = {
+        primary: "text-white",
+        dark: "text-white",
+        light: "text-[#362927]",
+    };
 
     return (
         <nav
             className={cn(
                 "fixed top-0 left-0 right-0 z-50 transition-all",
-                variantStyles[variant],
+                bgVariantStyles[variant],
                 className,
             )}
         >
@@ -37,7 +42,7 @@ export function PublicNavbar({ variant = "primary", className }: PublicNavbarPro
                         href="#features"
                         className={cn(
                             "text-base font-medium transition-all hover:opacity-80",
-                            variant === "secondary-light" ? "text-[#362927]" : "text-white",
+                            textVariantStyles[variant],
                         )}
                     >
                         Features
@@ -46,7 +51,7 @@ export function PublicNavbar({ variant = "primary", className }: PublicNavbarPro
                         href="#about"
                         className={cn(
                             "text-base font-medium transition-all hover:opacity-80",
-                            variant === "secondary-light" ? "text-[#362927]" : "text-white",
+                            textVariantStyles[variant],
                         )}
                     >
                         About
@@ -55,7 +60,7 @@ export function PublicNavbar({ variant = "primary", className }: PublicNavbarPro
                         href="/signin"
                         className={cn(
                             "text-base font-medium transition-all hover:opacity-80",
-                            variant === "secondary-light" ? "text-[#362927]" : "text-white",
+                            textVariantStyles[variant],
                         )}
                     >
                         Sign In
@@ -69,10 +74,7 @@ export function PublicNavbar({ variant = "primary", className }: PublicNavbarPro
                     aria-label="Toggle menu"
                 >
                     <svg
-                        className={cn(
-                            "w-6 h-6",
-                            variant === "secondary-light" ? "text-[#362927]" : "text-white",
-                        )}
+                        className={cn("w-6 h-6", textVariantStyles[variant])}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -101,7 +103,7 @@ export function PublicNavbar({ variant = "primary", className }: PublicNavbarPro
                 <div
                     className={cn(
                         "md:hidden backdrop-blur-sm border-t",
-                        variant === "secondary-light"
+                        variant === "light"
                             ? "bg-[#e9dede]/95 border-[#362927]/20"
                             : "bg-black/20 border-white/10",
                     )}
@@ -111,7 +113,7 @@ export function PublicNavbar({ variant = "primary", className }: PublicNavbarPro
                             href="#features"
                             className={cn(
                                 "px-4 py-3 rounded-lg text-base font-medium transition-all",
-                                variant === "secondary-light"
+                                variant === "light"
                                     ? "text-[#362927] hover:bg-[#362927]/10"
                                     : "text-white hover:bg-white/10",
                             )}
@@ -123,7 +125,7 @@ export function PublicNavbar({ variant = "primary", className }: PublicNavbarPro
                             href="#about"
                             className={cn(
                                 "px-4 py-3 rounded-lg text-base font-medium transition-all",
-                                variant === "secondary-light"
+                                variant === "light"
                                     ? "text-[#362927] hover:bg-[#362927]/10"
                                     : "text-white hover:bg-white/10",
                             )}
@@ -135,7 +137,7 @@ export function PublicNavbar({ variant = "primary", className }: PublicNavbarPro
                             href="/signin"
                             className={cn(
                                 "px-4 py-3 rounded-lg text-base font-medium transition-all",
-                                variant === "secondary-light"
+                                variant === "light"
                                     ? "text-[#362927] hover:bg-[#362927]/10"
                                     : "text-white hover:bg-white/10",
                             )}
