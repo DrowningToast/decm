@@ -7,8 +7,10 @@ describe("cn utility", () => {
     });
 
     it("should handle conditional classes", () => {
-        expect(cn("base", false && "conditional", "always")).toBe("base always");
-        expect(cn("base", true && "conditional", "always")).toBe("base conditional always");
+        const isFalsy = false;
+        const isTruthy = true;
+        expect(cn("base", isFalsy && "conditional", "always")).toBe("base always");
+        expect(cn("base", isTruthy && "conditional", "always")).toBe("base conditional always");
     });
 
     it("should merge tailwind classes correctly", () => {
