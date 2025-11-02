@@ -21,27 +21,33 @@ contract TestUtils is Test {
     uint256 public constant PARTICIPANT_PRIVATE_KEY = 0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6;
     uint256 public constant ISSUER_PRIVATE_KEY = 0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a;
 
+    // Mock sign messages
+    string public constant MOCK_ADMIN_MESSAGE = "MOCK_ADMIN_MESSAGE";
+    string public constant MOCK_HOST_MESSAGE = "MOCK_HOST_MESSAGE";
+    string public constant MOCK_CALLER_MESSAGE = "MOCK_CALLER_MESSAGE";
+    string public constant MOCK_PARTICIPANT_MESSAGE = "MOCK_PARTICIPANT_MESSAGE";
+    string public constant MOCK_ISSUER_MESSAGE = "MOCK_ISSUER_MESSAGE";
+
     /**
      * @dev Creates a sign message with the format: ADDRESS,CONTRACT_ADDRESS,DEADLINE_BLOCK
      * @param signer The address of the signer
-     * @param contractAddress The address of the contract
-     * @param deadlineBlock The deadline block number
      * @return The formatted sign message string
      */
-    function createSignMessage(
-        address signer,
-        address contractAddress,
-        uint256 deadlineBlock
+    function getMockSignMessage(
+        address signer
     ) internal pure returns (string memory) {
-        return string(
-            abi.encodePacked(
-                vm.toString(signer),
-                ",",
-                vm.toString(contractAddress),
-                ",",
-                vm.toString(deadlineBlock)
-            )
-        );
+        if (signer == ADMIN) {
+            return MOCK_ADMIN_MESSAGE;
+        } else if (signer == HOST) {
+            return MOCK_HOST_MESSAGE;
+        } else if (signer == CALLER) {
+            return MOCK_CALLER_MESSAGE;
+        } else if (signer == PARTICIPANT) {
+            return MOCK_PARTICIPANT_MESSAGE;
+        } else if (signer == ISSUER) {
+            return MOCK_ISSUER_MESSAGE;
+        }
+        return "";
     }
 
     /**
@@ -74,7 +80,7 @@ contract TestUtils is Test {
         uint256 deadlineBlocks
     ) internal returns (string memory, bytes memory) {
         uint256 deadlineBlock = block.number + deadlineBlocks;
-        string memory message = createSignMessage(role, contractAddress, deadlineBlock);
+        string memory message = getMockSignMessage(role);
         bytes memory signature = signMessage(message, privateKey);
         return (message, signature);
     }
@@ -107,7 +113,7 @@ contract TestUtils is Test {
         uint256 privateKey
     ) internal returns (string memory, bytes memory) {
         uint256 pastBlock = block.number - 1;
-        string memory message = createSignMessage(role, contractAddress, pastBlock);
+        string memory message = getMockSignMessage(role);
         bytes memory signature = signMessage(message, privateKey);
         return (message, signature);
     }
@@ -124,7 +130,7 @@ contract TestUtils is Test {
     ) internal returns (string memory, bytes memory) {
         address invalidContract = address(0x999);
         uint256 deadlineBlock = block.number + 12;
-        string memory message = createSignMessage(role, invalidContract, deadlineBlock);
+        string memory message = getMockSignMessage(role);
         bytes memory signature = signMessage(message, privateKey);
         return (message, signature);
     }

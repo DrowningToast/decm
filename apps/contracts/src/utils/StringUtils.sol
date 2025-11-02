@@ -21,6 +21,10 @@ library StringUtils {
         });
     }
 
+    function compareStrings(string memory a, string memory b) internal pure returns (bool) {
+        return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
+    }
+
     function toAddress(string memory s) public pure returns (address) {
         return s.parseAddress();
     }

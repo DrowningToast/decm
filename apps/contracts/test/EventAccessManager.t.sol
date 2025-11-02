@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Test, console} from "forge-std/Test.sol";
 import {EventAccessManager} from "../src/contracts/event/EventAccessManager.sol";
 import {TestEventAccessManager} from "./utils/TestEventAccessManager.sol";
 import {MockDecmAccessManager} from "./utils/MockDecmAccessManager.sol";
 import {TestUtils} from "./utils/TestUtils.sol";
-import {Constants} from "../src/contracts/constants/Constants.s.sol";
 
 contract EventAccessManagerTest is TestUtils {
     TestEventAccessManager public eventAccessManager;
