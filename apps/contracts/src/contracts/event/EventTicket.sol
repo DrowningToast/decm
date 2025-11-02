@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";  
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {EventAccessManager} from "./EventAccessManager.sol";
 import {Event} from "./Event.sol";
 import {Constants} from "../constants/Constants.s.sol";
 import {TicketVCStructs} from "../../libraries/TicketVCStructs.sol";
 import {ThemisUtils} from "../../utils/ThemisUtils.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
 
 contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
     // Contracts
