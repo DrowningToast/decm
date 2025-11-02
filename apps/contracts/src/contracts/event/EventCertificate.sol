@@ -48,7 +48,9 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
     mapping(uint256 => address) private tokenIdToParticipantSignedAddress;
 
     function requireHostOrAdmin(address signer) private view {
-        if (!EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(signer)) {
+        bool isAllowedMsgSender = EVENT_ACCESS_MANAGER.checkIsAllowedMsgSender();
+        bool isHostOrAdmin = EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(signer);
+        if (!isHostOrAdmin && !isAllowedMsgSender) {
             revert EventCertificate__NotHostOrAdmin();
         }
     }

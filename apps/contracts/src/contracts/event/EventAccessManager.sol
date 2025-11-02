@@ -18,13 +18,19 @@ contract EventAccessManager is AccessControl, ThemisUtils {
     error EventAccessManager__NotHostOrAdmin();
     error EventAccessManager__NotParticipant();
     error EventAccessManager__NotHostOrAdminOrParticipant();
+    error EventAccessManager__NotAllowedMsgSender();
+
+    // States
+    mapping(address => bool) public allowedMsgSenders;
 
     constructor(address decmAccessManagerAddr, address hostAddress) {
         if (decmAccessManagerAddr == address(0)) {
             revert EventAccessManager__AccessManagerCannotBeZeroAddress();
         }
+
         DECM_ACCESS_MANAGER = DecmAccessManager(decmAccessManagerAddr);
 
+        allowedMsgSenders[msg.sender] = true;
         _grantRole(Constants.HOST_ROLE, hostAddress);
     }
 
@@ -91,8 +97,18 @@ contract EventAccessManager is AccessControl, ThemisUtils {
             checkIsHost(addr) || DECM_ACCESS_MANAGER.checkIsAdmin(addr);
     }
 
+    function checkIsAllowedMsgSender() public view returns (bool) {
+        return allowedMsgSenders[msg.sender];
+    }
+
+    function requireAllowedMsgSender() public view {
+        if (!checkIsAllowedMsgSender()) {
+            revert EventAccessManager__NotAllowedMsgSender();
+        }
+    }
+
     function requireHostOrAdmin(address addr) public view {
-        if (!checkIsHostOrAdmin(addr)) {
+        if (!checkIsHostOrAdmin(addr) && !checkIsAllowedMsgSender()) {
             revert EventAccessManager__NotHostOrAdmin();
         }
     }
@@ -100,14 +116,17 @@ contract EventAccessManager is AccessControl, ThemisUtils {
     function requireHostOrAdminOrParticipant(address addr) public view {
         bool hasHostRole = checkIsHost(addr);
         bool hasParticipantRole = checkIsParticipant(addr);
-         bool hasAdminRole = DECM_ACCESS_MANAGER.checkIsAdmin(addr);
-        if (!hasHostRole && !hasAdminRole && !hasParticipantRole) {
+        bool hasAdminRole = DECM_ACCESS_MANAGER.checkIsAdmin(addr);
+        bool isAllowedMsgSender = checkIsAllowedMsgSender();
+        if (!hasHostRole && !hasAdminRole && !hasParticipantRole && !isAllowedMsgSender) {
             revert EventAccessManager__NotHostOrAdminOrParticipant();
         }
     }
 
     function requireParticipant(address addr) public view {
-        if (!checkIsParticipant(addr)) {
+        bool hasParticipantRole = checkIsParticipant(addr);
+        bool isAllowedMsgSender = checkIsAllowedMsgSender();
+        if (!hasParticipantRole && !isAllowedMsgSender) {
             revert EventAccessManager__NotParticipant();
         }
     }
