@@ -49,10 +49,8 @@ contract Event is EventAccessManager {
         string memory _eventName,
         string memory _eventDescription,
         uint256 _seatsCount,
-        address hostAddress,
-        string memory signMessage,
-        bytes memory signature
-    ) EventAccessManager(decmAccessManagerAddr, hostAddress, signMessage, signature) {
+        address hostAddress
+    ) EventAccessManager(decmAccessManagerAddr, hostAddress) {
         _validateEventName(_eventName);
 
         eventName = _eventName;
