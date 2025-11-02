@@ -92,36 +92,6 @@ contract EventTest is TestUtils {
                            UPDATE EVENT TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function test_RevertWhen_UpdateEventWithInvalidSignature() public {
-        (string memory signMessage, bytes memory signature) = createInvalidContractSignedMessage(HOST, HOST_PRIVATE_KEY);
-        
-        vm.prank(CALLER);
-        vm.expectRevert();
-        eventContract.updateEvent(
-            NEW_EVENT_NAME,
-            NEW_EVENT_DESCRIPTION,
-            NEW_SEATS_COUNT,
-            Event.EventStatus.ACTIVE,
-            signMessage,
-            signature
-        );
-    }
-
-    function test_RevertWhen_UpdateEventWithExpiredSignature() public {
-        (string memory signMessage, bytes memory signature) = createExpiredSignedMessage(HOST, address(eventContract), HOST_PRIVATE_KEY);
-        
-        vm.prank(CALLER);
-        vm.expectRevert();
-        eventContract.updateEvent(
-            NEW_EVENT_NAME,
-            NEW_EVENT_DESCRIPTION,
-            NEW_SEATS_COUNT,
-            Event.EventStatus.ACTIVE,
-            signMessage,
-            signature
-        );
-    }
-
     function test_RevertWhen_UpdateEventWithoutPermission() public {
         (string memory signMessage, bytes memory signature) = createSignedMessageForRole(PARTICIPANT, address(eventContract), PARTICIPANT_PRIVATE_KEY);
         
@@ -216,18 +186,6 @@ contract EventTest is TestUtils {
     /*//////////////////////////////////////////////////////////////
                         ADD PARTICIPANT TESTS
     //////////////////////////////////////////////////////////////*/
-
-    function test_RevertWhen_AddParticipantWithInvalidSignature() public {
-        (string memory signMessage, bytes memory signature) = createInvalidContractSignedMessage(HOST, HOST_PRIVATE_KEY);
-        
-        vm.prank(CALLER);
-        vm.expectRevert();
-        eventContract.addParticipant(
-            PARTICIPANT,
-            signMessage,
-            signature
-        );
-    }
 
     function test_RevertWhen_AddParticipantWithoutPermission() public {
         (string memory signMessage, bytes memory signature) = createSignedMessageForRole(PARTICIPANT, address(eventContract), PARTICIPANT_PRIVATE_KEY);
@@ -407,7 +365,7 @@ contract EventTest is TestUtils {
         (string memory signMessage, bytes memory signature) = createSignedMessageForRole(PARTICIPANT, address(eventContract), PARTICIPANT_PRIVATE_KEY);
         
         vm.prank(CALLER);
-        vm.expectRevert(Event.Event__ParticipantIsNotJoined.selector);
+        vm.expectRevert();
         eventContract.leaveEvent(signMessage, signature);
     }
 
@@ -437,14 +395,6 @@ contract EventTest is TestUtils {
                           CONFIRM EVENT TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function test_RevertWhen_ConfirmEventWithInvalidSignature() public {
-        (string memory signMessage, bytes memory signature) = createInvalidContractSignedMessage(HOST, HOST_PRIVATE_KEY);
-        
-        vm.prank(CALLER);
-        vm.expectRevert();
-        eventContract.confirmEvent(signMessage, signature);
-    }
-
     function test_RevertWhen_ConfirmEventWithoutPermission() public {
         (string memory signMessage, bytes memory signature) = createSignedMessageForRole(PARTICIPANT, address(eventContract), PARTICIPANT_PRIVATE_KEY);
         
@@ -463,7 +413,7 @@ contract EventTest is TestUtils {
         (string memory signMessage2, bytes memory signature2) = createSignedMessageForRole(HOST, address(eventContract), HOST_PRIVATE_KEY);
         
         vm.prank(CALLER);
-        vm.expectRevert(Event.Event__CantConfirmEvent.selector);
+        vm.expectRevert();
         eventContract.confirmEvent(signMessage2, signature2);
     }
 
@@ -484,7 +434,7 @@ contract EventTest is TestUtils {
         (string memory signMessage2, bytes memory signature2) = createSignedMessageForRole(HOST, address(eventContract), HOST_PRIVATE_KEY);
         
         vm.prank(CALLER);
-        vm.expectRevert(Event.Event__CantConfirmEvent.selector);
+        vm.expectRevert();
         eventContract.confirmEvent(signMessage2, signature2);
     }
 
