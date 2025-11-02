@@ -107,10 +107,6 @@ contract Event is EventAccessManager {
             revert Event__AddressCannotBeZero();
         }
 
-        if (isParticipant[participantAddress]) {
-            revert Event__ParticipantIsAlreadyJoined();
-        }
-
         if (currentSeatsCount >= seatsCount) {
             revert Event__SeatsCountReached();
         }

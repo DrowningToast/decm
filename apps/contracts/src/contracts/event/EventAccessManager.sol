@@ -1,16 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
-import {DecmAccessManager} from "../decm/DecmAccessManager.sol";
-import {Constants} from "../constants/Constants.s.sol";
-import {ThemisUtils} from "../../utils/ThemisUtils.sol";
+import { AccessControl } from "@openzeppelin/contracts/access/AccessControl.sol"; 
+import { DecmAccessManager } from "../decm/DecmAccessManager.sol";
+import { Constants } from "../constants/Constants.s.sol";
+import { ThemisUtils } from "../../utils/ThemisUtils.sol";
 
 contract EventAccessManager is AccessControl, ThemisUtils {
     using Constants for *;
 
     // Contracts
     DecmAccessManager public immutable DECM_ACCESS_MANAGER;
+
+    // Events
+    event IssuerRoleGranted(address indexed issuer, address indexed granter);
+    event IssuerRoleRevoked(address indexed issuer, address indexed revoker);
+    event ParticipantRoleGranted(address indexed participant, address indexed granter);
+    event ParticipantRoleRevoked(address indexed participant, address indexed revoker);
+    event HostRoleGranted(address indexed host, address indexed granter);
+    event MsgSenderAllowed(address indexed sender, address indexed granter);
+    event MsgSenderDisallowed(address indexed sender, address indexed revoker);
 
     // Errors
     error EventAccessManager__AccessManagerCannotBeZeroAddress();
@@ -32,6 +41,9 @@ contract EventAccessManager is AccessControl, ThemisUtils {
 
         allowedMsgSenders[msg.sender] = true;
         _grantRole(Constants.HOST_ROLE, hostAddress);
+
+        emit MsgSenderAllowed(msg.sender, msg.sender);
+        emit HostRoleGranted(hostAddress, msg.sender);
     }
 
     function grantIssuerRole(address issuer, address signer) internal {
@@ -41,6 +53,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
             revert EventAccessManager__AccountCannotBeZeroAddress();
         }
         _grantRole(Constants.ISSUER_ROLE, issuer);
+        emit IssuerRoleGranted(issuer, msg.sender);
     }
 
     function revokeIssuerRole(address issuer, address signer) internal {
@@ -50,6 +63,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
             revert EventAccessManager__AccountCannotBeZeroAddress();
         }
         _revokeRole(Constants.ISSUER_ROLE, issuer);
+        emit IssuerRoleRevoked(issuer, msg.sender);
     }
 
     function grantParticipantRole(address participant, address signer) internal {
@@ -59,6 +73,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
             revert EventAccessManager__AccountCannotBeZeroAddress();
         }
         _grantRole(Constants.PARTICIPANT_ROLE, participant);
+        emit ParticipantRoleGranted(participant, msg.sender);
     }
 
     function revokeParticipantRole(address participant, address signer) internal {
@@ -68,6 +83,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
             revert EventAccessManager__AccountCannotBeZeroAddress();
         }
         _revokeRole(Constants.PARTICIPANT_ROLE, participant);
+        emit ParticipantRoleRevoked(participant, msg.sender);
     }
 
     function grantHostRole(address host, address signer) internal {
@@ -77,6 +93,25 @@ contract EventAccessManager is AccessControl, ThemisUtils {
             revert EventAccessManager__AccountCannotBeZeroAddress();
         }
         _grantRole(Constants.HOST_ROLE, host);
+        emit HostRoleGranted(host, msg.sender);
+    }
+
+    function addAllowedMsgSender(address sender) internal onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (sender == address(0)) {
+            revert EventAccessManager__AccountCannotBeZeroAddress();
+        }
+
+        allowedMsgSenders[sender] = true;
+        emit MsgSenderAllowed(sender, msg.sender);
+    }
+
+    function removeAllowedMsgSender(address sender) internal onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (sender == address(0)) {
+            revert EventAccessManager__AccountCannotBeZeroAddress();
+        }
+        
+        allowedMsgSenders[sender] = false;
+        emit MsgSenderDisallowed(sender, msg.sender);
     }
 
     function checkIsHost(address addr) public view returns (bool) {
@@ -86,15 +121,13 @@ contract EventAccessManager is AccessControl, ThemisUtils {
     function checkIsIssuer(address addr) public view returns (bool) {
         return hasRole(Constants.ISSUER_ROLE, addr);
     }
-    
+
     function checkIsParticipant(address addr) public view returns (bool) {
         return hasRole(Constants.PARTICIPANT_ROLE, addr);
     }
 
-
     function checkIsHostOrAdmin(address addr) public view returns (bool) {
-        return
-            checkIsHost(addr) || DECM_ACCESS_MANAGER.checkIsAdmin(addr);
+        return checkIsHost(addr) || DECM_ACCESS_MANAGER.checkIsAdmin(addr);
     }
 
     function checkIsAllowedMsgSender() public view returns (bool) {
