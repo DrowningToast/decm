@@ -335,7 +335,7 @@ export const ParticipantSettingsForm = ({
                                 label={t("participantSettings.fields.firstName")}
                                 options={fieldRequirementOptions}
                                 disabled={isLoading}
-                                valueAs={(value) => value as FieldRequirement}
+                                valueAs={(value) => value}
                                 labelClassName="text-sm font-medium"
                             />
                         </div>
@@ -348,7 +348,7 @@ export const ParticipantSettingsForm = ({
                                 label={t("participantSettings.fields.lastName")}
                                 options={fieldRequirementOptions}
                                 disabled={isLoading}
-                                valueAs={(value) => value as FieldRequirement}
+                                valueAs={(value: unknown) => value as FieldRequirement}
                                 labelClassName="text-sm font-medium"
                             />
                         </div>
@@ -361,7 +361,7 @@ export const ParticipantSettingsForm = ({
                                 label={t("participantSettings.fields.email")}
                                 options={fieldRequirementOptions}
                                 disabled={isLoading}
-                                valueAs={(value) => value as FieldRequirement}
+                                valueAs={(value: unknown) => value as FieldRequirement}
                                 labelClassName="text-sm font-medium"
                             />
                         </div>
@@ -374,7 +374,7 @@ export const ParticipantSettingsForm = ({
                                 label={t("participantSettings.fields.phoneNumber")}
                                 options={fieldRequirementOptions}
                                 disabled={isLoading}
-                                valueAs={(value) => value as FieldRequirement}
+                                valueAs={(value) => value}
                                 labelClassName="text-sm font-medium"
                             />
                         </div>
@@ -394,7 +394,7 @@ export const ParticipantSettingsForm = ({
                                 label={t("participantSettings.fields.bio")}
                                 options={fieldRequirementOptions}
                                 disabled={isLoading}
-                                valueAs={(value) => value as FieldRequirement}
+                                valueAs={(value) => value}
                                 labelClassName="text-sm font-medium"
                             />
                         </div>
@@ -407,7 +407,7 @@ export const ParticipantSettingsForm = ({
                                 label={t("participantSettings.fields.address")}
                                 options={fieldRequirementOptions}
                                 disabled={isLoading}
-                                valueAs={(value) => value as FieldRequirement}
+                                valueAs={(value) => value}
                                 labelClassName="text-sm font-medium"
                             />
                         </div>
@@ -427,7 +427,7 @@ export const ParticipantSettingsForm = ({
                                 label={t("participantSettings.fields.academicInstitution")}
                                 options={fieldRequirementOptions}
                                 disabled={isLoading}
-                                valueAs={(value) => value as FieldRequirement}
+                                valueAs={(value: unknown) => value as FieldRequirement}
                                 labelClassName="text-sm font-medium"
                             />
                         </div>
@@ -440,7 +440,7 @@ export const ParticipantSettingsForm = ({
                                 label={t("participantSettings.fields.academicEmail")}
                                 options={fieldRequirementOptions}
                                 disabled={isLoading}
-                                valueAs={(value) => value as FieldRequirement}
+                                valueAs={(value) => value}
                                 labelClassName="text-sm font-medium"
                             />
                         </div>

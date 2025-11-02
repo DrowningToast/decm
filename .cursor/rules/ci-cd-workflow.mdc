@@ -1,0 +1,383 @@
+# CI/CD Workflow Patterns
+
+## Overview
+DECM uses GitHub Actions for automated CI/CD workflows with label-based gating, composite actions for code reuse, and comprehensive quality checks.
+
+## Workflow Configuration
+
+### Main PR Checks Workflow
+**File**: `.github/workflows/pr-checks.yml`
+
+### Trigger Events
+```yaml
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    branches:
+      - main
+```
+
+**Triggers on**:
+- `opened` - New PR created
+- `synchronize` - New commits pushed
+- `reopened` - Closed PR reopened
+- `labeled` - Label added/changed
+
+## Label-Based Gating
+
+### Ready-to-Review Label
+All CI checks are gated behind the `ready-to-review` label.
+
+**Benefits**:
+- Saves computing resources
+- Prevents premature CI runs
+- Developer controls when checks run
+
+### Label Check Job
+```yaml
+check-label:
+  name: Check Label
+  runs-on: ubuntu-latest
+  
+  steps:
+    - name: Check for 'ready-to-review' label
+      if: ${{ !contains(github.event.pull_request.labels.*.name, 'ready-to-review') }}
+      run: |
+        echo "❌ This PR requires the 'ready-to-review' label"
+        exit 1
+```
+
+### Workflow Behavior
+1. **Without label**: Check fails immediately, other jobs skipped
+2. **With label**: All checks proceed normally
+3. **On failure**: Label automatically removed, comment posted
+
+## Composite Actions (Reusable Setup Steps)
+
+### 1. Frontend Setup
+**File**: `.github/actions/setup-frontend/action.yml`
+
+**Includes**:
+- Setup pnpm
+- Setup Node.js with cache
+- Copy test environment files (.env, .env.client)
+- Install dependencies
+
+**Usage**:
+```yaml
+- name: Setup Frontend Environment
+  uses: ./.github/actions/setup-frontend
+  with:
+    node-version: ${{ env.NODE_VERSION }}
+    pnpm-version: ${{ env.PNPM_VERSION }}
+```
+
+### 2. Node.js and pnpm Setup
+**File**: `.github/actions/setup-node-pnpm/action.yml`
+
+**Includes**:
+- Setup pnpm
+- Setup Node.js with cache
+- Copy test environment file (.env only)
+- Install dependencies
+
+**Usage** (for backend jobs):
+```yaml
+- name: Setup Node.js and pnpm
+  uses: ./.github/actions/setup-node-pnpm
+  with:
+    node-version: ${{ env.NODE_VERSION }}
+    pnpm-version: ${{ env.PNPM_VERSION }}
+```
+
+### 3. Go Backend Setup
+**File**: `.github/actions/setup-go-backend/action.yml`
+
+**Includes**:
+- Setup Go with cache
+- Install Go dependencies
+- Setup Go workspace
+
+**Usage**:
+```yaml
+- name: Setup Go Backend
+  uses: ./.github/actions/setup-go-backend
+  with:
+    go-version: ${{ env.GO_VERSION }}
+```
+
+### 4. Database Tools Installation
+**File**: `.github/actions/install-db-tools/action.yml`
+
+**Includes**:
+- Install golang-migrate (v4.17.0)
+- Install sqlc (v1.29.0, optional)
+
+**Usage**:
+```yaml
+# With both tools
+- name: Install Database Tools
+  uses: ./.github/actions/install-db-tools
+
+# Migrate only
+- name: Install Database Tools
+  uses: ./.github/actions/install-db-tools
+  with:
+    install-sqlc: 'false'
+```
+
+## Job Structure
+
+### Job Dependency Graph
+```
+check-label (gate)
+├── docker-compose
+├── frontend-eslint
+├── contracts-build
+└── database-migrate
+    └── database-generate
+        └── backend-build
+            ├── backend-tests
+            └── backend-openapi
+        
+frontend-eslint
+    └── frontend-build
+        └── frontend-tests
+```
+
+### Job Categories
+
+#### 1. Infrastructure Jobs
+- **docker-compose** - Verify Docker Compose setup
+- **database-migrate** - Test database migrations
+
+#### 2. Backend Jobs
+- **database-generate** - Generate SQLC code, verify matches committed
+- **backend-build** - Build Go binary
+- **backend-tests** - Run Go unit tests
+- **backend-openapi** - Generate OpenAPI docs, verify matches committed
+
+#### 3. Frontend Jobs
+- **frontend-eslint** - Run ESLint (runs first, in parallel with build prep)
+- **frontend-build** - TypeScript type checking + build
+- **frontend-tests** - Run Vitest unit tests
+
+#### 4. Contract Jobs
+- **contracts-build** - Compile Foundry smart contracts
+
+#### 5. Summary Job
+- **pr-checks-summary** - Aggregate results, handle failures
+
+## Failure Handling
+
+### Automatic Actions on Failure
+When any check fails:
+
+1. **Remove Label**:
+```yaml
+- name: Remove 'ready-to-review' label on failure
+  if: ${{ steps.check_status.outputs.all_passed == 'false' && always() }}
+  run: |
+    gh pr edit ${{ github.event.pull_request.number }} --remove-label "ready-to-review"
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+2. **Post Comment**:
+```yaml
+- name: Post failure comment on PR
+  if: ${{ steps.check_status.outputs.all_passed == 'false' && always() }}
+  run: |
+    gh pr comment ${{ github.event.pull_request.number }} --body "..."
+```
+
+### Comment Content
+- ❌ Clear failure notification
+- 📊 Status table showing passed/failed checks
+- 🔗 Link to workflow run
+- 📝 Instructions to reapply label after fixes
+
+## Optimization Patterns
+
+### 1. Code Reuse with Composite Actions
+**Before**:
+```yaml
+# Repeated in 3 jobs
+- name: Setup pnpm
+  uses: pnpm/action-setup@v4
+- name: Setup Node.js
+  uses: actions/setup-node@v4
+- name: Copy env files
+  run: cp .env.test .env
+- name: Install deps
+  run: pnpm install
+```
+
+**After**:
+```yaml
+# Used once, reused 3 times
+- name: Setup Frontend
+  uses: ./.github/actions/setup-frontend
+```
+
+### 2. Parallel Execution
+ESLint and frontend build run in parallel:
+- **frontend-eslint** depends only on `check-label`
+- **frontend-build** depends only on `check-label`
+- **frontend-tests** depends on both
+
+### 3. Dependency Optimization
+- Only run migrations once in `database-migrate`
+- Only generate SQLC once in `database-generate`
+- Backend jobs reuse generated code (no regeneration)
+
+### 4. Caching Strategy
+- pnpm uses built-in GitHub Actions cache
+- Go modules cached via `cache-dependency-path`
+- Caching persists across jobs in same workflow run
+
+## Environment Variables
+
+### Global Variables
+```yaml
+env:
+  GO_VERSION: "1.23"
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9.15.0"
+```
+
+### Job-Specific Secrets
+```yaml
+env:
+  DB_HOST: localhost
+  DB_PORT: 5432
+  DB_USER: decm_user
+  DB_PASSWORD: decm_test_password
+  DB_NAME: decm_test
+  PII_ENCRYPTION_KEY: test-encryption-key-for-ci-pipeline-only-32bytes
+  JWT_SECRET: test-jwt-secret-key-for-ci-pipeline-only
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+## Best Practices
+
+### ✅ DO
+- Use composite actions for repeated setup steps
+- Gate expensive operations behind label checks
+- Provide clear failure feedback with comments
+- Run independent jobs in parallel
+- Cache dependencies appropriately
+- Use semantic job names
+- Verify generated code matches committed files
+
+### ❌ DON'T
+- Run migrations in multiple jobs
+- Generate code multiple times
+- Skip label check for expensive operations
+- Duplicate setup code across jobs
+- Hardcode versions (use env vars)
+- Run jobs sequentially when they can be parallel
+
+## Common Commands
+
+### Manually Trigger Workflow
+1. Push new commit
+2. Add `ready-to-review` label
+3. Re-run failed jobs from GitHub UI
+
+### Debug Workflow
+```bash
+# View workflow runs
+gh run list --workflow=pr-checks.yml
+
+# View specific run
+gh run view <run-id>
+
+# Re-run failed jobs
+gh run rerun <run-id> --failed
+```
+
+### Test Composite Actions Locally
+```bash
+# Use act for local testing
+act pull_request -W .github/workflows/pr-checks.yml
+```
+
+## Workflow Metrics
+
+### Typical Run Times
+- **check-label**: ~5 seconds
+- **frontend-eslint**: ~1-2 minutes
+- **frontend-build**: ~2-3 minutes
+- **frontend-tests**: ~1-2 minutes
+- **backend-build**: ~3-4 minutes
+- **backend-tests**: ~2-3 minutes
+- **contracts-build**: ~2-3 minutes
+- **Total (with parallelization)**: ~8-10 minutes
+
+### Resource Optimization
+- **Without label**: <1 minute (label check only)
+- **With optimizations**: ~5-8 minutes saved vs. duplicate steps
+- **Parallel execution**: ~3-5 minutes saved vs. sequential
+
+## Creating New Composite Actions
+
+### Template
+```yaml
+name: 'Action Name'
+description: 'Action description'
+
+inputs:
+  input-name:
+    description: 'Input description'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Step name
+      shell: bash
+      run: echo "Command"
+```
+
+### Guidelines
+- Use `shell: bash` for all run steps
+- Accept versions as inputs (don't hardcode)
+- Keep actions focused (single responsibility)
+- Document inputs clearly
+- Test with multiple configurations
+
+## Troubleshooting
+
+### Label Not Triggering Workflow
+- Ensure PR event type includes `labeled`
+- Check label name matches exactly (`ready-to-review`)
+- Verify workflow file is in main branch
+
+### Composite Action Not Found
+- Ensure action file exists in `.github/actions/`
+- Path must be relative: `./.github/actions/action-name`
+- Checkout code before using composite actions
+
+### Cache Not Working
+- Verify `cache` key in setup actions
+- Check cache-dependency-path is correct
+- Ensure lock files are committed
+
+### Jobs Failing Randomly
+- Check for race conditions
+- Verify service containers are healthy
+- Add `waitFor` steps for async operations
+
+## Related Files
+- Workflow: `.github/workflows/pr-checks.yml`
+- Composite Actions: `.github/actions/*/action.yml`
+- Environment: `.env.test`, `.env.client.test`
+- Scripts: `scripts/db-migrate.js`, `scripts/wait-for-db.js`
+
+## Version History
+- **v1.0**: Initial workflow with all checks
+- **v2.0**: Added label-based gating
+- **v3.0**: Created composite actions for reuse
+- **v3.1**: Added failure handling (label removal + comments)
+- **v3.2**: Optimized frontend jobs (ESLint first, parallel execution)

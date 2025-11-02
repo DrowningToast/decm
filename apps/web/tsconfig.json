@@ -4,7 +4,8 @@
     "compilerOptions": {
         "baseUrl": ".",
         "paths": {
-            "@/*": ["./src/*"]
+            "@/*": ["./src/*"],
+            "@decm/api": ["../../packages/api/src"]
         },
         "types": ["vite/client"],
         "noUnusedLocals": true

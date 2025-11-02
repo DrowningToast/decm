@@ -1,12 +1,13 @@
 import React from "react";
-import { Navigate } from "@/router";
+import { type Path } from "@/router";
 import { useAuth } from "@/context/AuthContext";
 import { Typography } from "@/components/typography/typography";
 import { useTranslation } from "react-i18next";
+import { Navigate } from "react-router-dom";
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
-    redirectTo?: string;
+    redirectTo?: Path;
     requiredRoles?: ("ADMIN" | "ISSUER" | "PARTICIPANT" | "HOST")[];
     fallback?: React.ReactNode;
 }
@@ -36,8 +37,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
 
     if (!isAuthenticated) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return <Navigate to={redirectTo as any} replace />;
+        return <Navigate to={redirectTo} replace />;
     }
 
     // TODO: Implement role based protection
