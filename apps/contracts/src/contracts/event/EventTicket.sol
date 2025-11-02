@@ -80,7 +80,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         string memory signMessage,
         bytes memory signature
     ) external nonReentrant {
-        address signer = recoverSigner(signMessage, signature);
+        address signer = recoverSigner(signMessage, signature, address(this));
         requireHostOrAdmin(signer);
 
         uint256 tokenId = tokenCounter;
@@ -121,7 +121,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         string memory signMessage,
         bytes memory signature
     ) external nonReentrant {
-        address signer = recoverSigner(signMessage, signature);
+        address signer = recoverSigner(signMessage, signature, address(this));
         requireHostOrAdmin(signer);
 
         for (uint256 i = 0; i < params.length; i++) {
