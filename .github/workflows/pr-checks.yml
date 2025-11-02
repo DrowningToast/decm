@@ -387,10 +387,18 @@ jobs:
                   pnpm-version: ${{ env.PNPM_VERSION }}
 
             - name: Run Web Tests
-              run: pnpm test:web
+              run: pnpm --filter @decm/web run test:coverage
               env:
                   VITE_API_URL: http://localhost:8080/api/v1
                   VITE_ENVIRONMENT: test
+
+            - name: Upload frontend coverage
+              uses: codecov/codecov-action@v4
+              with:
+                  files: ./apps/web/coverage/coverage-final.json
+                  flags: frontend
+                  name: frontend-coverage
+                  token: ${{ secrets.CODECOV_TOKEN }}
 
     # Job 9: Contract Build Successfully
     contracts-build:
