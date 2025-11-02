@@ -24,6 +24,11 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
     // State Variables
     uint256 private tokenCounter;
 
+    // Getter for tokenCounter (for testing)
+    function getTokenCounter() external view returns (uint256) {
+        return tokenCounter;
+    }
+
     // Errors
     error EventTicket__NotHostOrAdmin();
     error EventTicket__TokenIdOutOfBounds();
@@ -83,6 +88,10 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         address signer = recoverSigner(signMessage, signature, address(this));
         requireHostOrAdmin(signer);
 
+        if (receiverAddress == address(0)) {
+            revert EventTicket__InvalidReceiver();
+        }
+
         uint256 tokenId = tokenCounter;
         tokenIdToStatus[tokenId] = TicketStatus.ACTIVE;
 
@@ -103,7 +112,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         _safeMint(receiverAddress, tokenId);
         tokenCounter++;
 
-        emit TicketMinted(tokenId, msg.sender, receiverAddress, ticketId);
+        emit TicketMinted(tokenId, signer, receiverAddress, ticketId);
     }
 
     struct BulkMintParticipantTicketsParams {
@@ -125,6 +134,10 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         requireHostOrAdmin(signer);
 
         for (uint256 i = 0; i < params.length; i++) {
+            if (params[i].receiverAddress == address(0)) {
+                revert EventTicket__InvalidReceiver();
+            }
+            
             uint256 tokenId = tokenCounter;
 
             TicketVCStructs.TicketVcData memory newTicketVcData = _buildTicketVcData(
@@ -146,7 +159,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
 
             tokenCounter++;
 
-            emit TicketMinted(tokenId, msg.sender, params[i].receiverAddress, params[i].ticketId);
+            emit TicketMinted(tokenId, signer, params[i].receiverAddress, params[i].ticketId);
         }
     }
 
