@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import type { PropsWithChildren } from "react";
 import type React from "react";
 
-const typographyVariants = cva("text-wrap", {
+export const typographyVariants = cva("text-wrap", {
     variants: {
         size: {
             small: "text-xs",
