@@ -24,6 +24,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
     // Errors
     error EventAccessManager__AccessManagerCannotBeZeroAddress();
     error EventAccessManager__AccountCannotBeZeroAddress();
+    error EventAccessManager__NotAdmin();
     error EventAccessManager__NotHostOrAdmin();
     error EventAccessManager__NotParticipant();
     error EventAccessManager__NotHostOrAdminOrParticipant();
@@ -35,6 +36,10 @@ contract EventAccessManager is AccessControl, ThemisUtils {
     constructor(address decmAccessManagerAddr, address hostAddress) {
         if (decmAccessManagerAddr == address(0)) {
             revert EventAccessManager__AccessManagerCannotBeZeroAddress();
+        }
+
+        if (hostAddress == address(0)) {
+            revert EventAccessManager__AccountCannotBeZeroAddress();
         }
 
         DECM_ACCESS_MANAGER = DecmAccessManager(decmAccessManagerAddr);
@@ -96,7 +101,9 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         emit HostRoleGranted(host, msg.sender);
     }
 
-    function addAllowedMsgSender(address sender) internal onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addAllowedMsgSender(address sender) internal {
+        requireAdmin(msg.sender);
+        
         if (sender == address(0)) {
             revert EventAccessManager__AccountCannotBeZeroAddress();
         }
@@ -105,7 +112,9 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         emit MsgSenderAllowed(sender, msg.sender);
     }
 
-    function removeAllowedMsgSender(address sender) internal onlyRole(DEFAULT_ADMIN_ROLE) {
+    function removeAllowedMsgSender(address sender) internal {
+        requireAdmin(msg.sender);
+        
         if (sender == address(0)) {
             revert EventAccessManager__AccountCannotBeZeroAddress();
         }
@@ -143,6 +152,12 @@ contract EventAccessManager is AccessControl, ThemisUtils {
     function requireHostOrAdmin(address addr) public view {
         if (!checkIsHostOrAdmin(addr) && !checkIsAllowedMsgSender()) {
             revert EventAccessManager__NotHostOrAdmin();
+        }
+    }
+
+    function requireAdmin(address addr) public view {
+        if (!DECM_ACCESS_MANAGER.checkIsAdmin(addr) && !checkIsAllowedMsgSender()) {
+            revert EventAccessManager__NotAdmin();
         }
     }
 

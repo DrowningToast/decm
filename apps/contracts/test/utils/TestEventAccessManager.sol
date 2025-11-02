@@ -29,7 +29,8 @@ contract TestEventAccessManager is AccessControl, ThemisUtils {
     error EventAccessManager__NotParticipant();
     error EventAccessManager__NotHostOrAdminOrParticipant();
     error EventAccessManager__NotAllowedMsgSender();
-
+    error EventAccessManager__NotAdmin();
+    
     // States
     mapping(address => bool) public allowedMsgSenders;
 
@@ -134,7 +135,9 @@ contract TestEventAccessManager is AccessControl, ThemisUtils {
         emit HostRoleGranted(host, msg.sender);
     }
 
-    function _addAllowedMsgSender(address sender, address signer) internal onlyRole(DEFAULT_ADMIN_ROLE) {
+    function _addAllowedMsgSender(address sender, address signer) internal {
+        requireAdmin(signer);
+
         if (sender == address(0)) {
             revert EventAccessManager__AccountCannotBeZeroAddress();
         }
@@ -143,7 +146,9 @@ contract TestEventAccessManager is AccessControl, ThemisUtils {
         emit MsgSenderAllowed(sender, msg.sender);
     }
 
-    function _removeAllowedMsgSender(address sender, address signer) internal onlyRole(DEFAULT_ADMIN_ROLE) {
+    function _removeAllowedMsgSender(address sender, address signer) internal {
+        requireAdmin(signer);
+
         if (sender == address(0)) {
             revert EventAccessManager__AccountCannotBeZeroAddress();
         }
@@ -176,6 +181,12 @@ contract TestEventAccessManager is AccessControl, ThemisUtils {
     function requireAllowedMsgSender() public view {
         if (!checkIsAllowedMsgSender()) {
             revert EventAccessManager__NotAllowedMsgSender();
+        }
+    }
+
+    function requireAdmin(address addr) public view {
+        if (!DECM_ACCESS_MANAGER.checkIsAdmin(addr)) {
+            revert EventAccessManager__NotAdmin();
         }
     }
 
