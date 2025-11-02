@@ -9,7 +9,7 @@ library TicketVCStructs {
         string ticketId; // References to offchain.
         string userId; // References to offchain.
         string issuerId; // References to offchain.
-        address[] issuerAddresses;
+        address issuerAddress; // Host address in this case.
         address receiverAddress; // Participant's address.
         uint256 issuedAt;
         string encryptedUserData; // Decrypt using User PK.

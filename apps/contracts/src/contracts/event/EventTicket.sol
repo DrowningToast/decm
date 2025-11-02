@@ -76,7 +76,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         string memory issuerId,
         string memory encryptedUserData,
         string memory backendEncryptedUserData,
-        address[] memory issuerAddresses,
+        address issuerAddress,
         string memory signMessage,
         bytes memory signature
     ) external nonReentrant {
@@ -94,7 +94,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
             issuerId,
             encryptedUserData,
             backendEncryptedUserData,
-            issuerAddresses,
+            issuerAddress,
             block.timestamp
         );
 
@@ -113,7 +113,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         string issuerId;
         string encryptedUserData;
         string backendEncryptedUserData;
-        address[] issuerAddresses;
+        address issuerAddress; // Host Address
     }
 
     function bulkMintParticipantTickets(
@@ -135,7 +135,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
                 params[i].issuerId,
                 params[i].encryptedUserData,
                 params[i].backendEncryptedUserData,
-                params[i].issuerAddresses,
+                params[i].issuerAddress,
                 block.timestamp
             );
 
@@ -180,7 +180,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
                         '"userId": "', vc.userId, '",',
                         '"issuerId": "', vc.issuerId, '",',
                         '"issuedAt": "', vc.issuedAt, '",',
-                        '"issuerAddresses": "', vc.issuerAddresses, '",',
+                        '"issuerAddress": "', vc.issuerAddress, '",',
                         '"receiverAddress": "', vc.receiverAddress, '",',
                         '"encryptedUserData": "', vc.encryptedUserData, '",',
                         '"backendEncryptedUserData": "', vc.backendEncryptedUserData, '",',
@@ -209,7 +209,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         string memory issuerId,
         string memory encryptedUserData,
         string memory backendEncryptedUserData,
-        address[] memory issuerAddresses,
+        address issuerAddress,
         uint256 issuedAt
     ) private view returns (TicketVCStructs.TicketVcData memory) {
         return TicketVCStructs.TicketVcData({
@@ -220,7 +220,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
             userId: userId,
             issuerId: issuerId,
             issuedAt: issuedAt,
-            issuerAddresses: issuerAddresses,
+            issuerAddress: issuerAddress,
             receiverAddress: receiverAddress,
             encryptedUserData: encryptedUserData,
             backendEncryptedUserData: backendEncryptedUserData
