@@ -7,7 +7,7 @@ library StringUtils {
     using Strings for string;
 
     struct SignMessageStruct {
-       address callerAddress;
+       address signerAddress;
        address contractAddress;
        uint256 deadlineBlock;
     }
@@ -15,7 +15,7 @@ library StringUtils {
     function toSignMessageStruct(string memory input) internal pure returns (SignMessageStruct memory) {
         (string memory part1, string memory part2, string memory part3) = splitSignMessage(input);
         return SignMessageStruct({
-            callerAddress: toAddress(part1),
+            signerAddress: toAddress(part1),
             contractAddress: toAddress(part2),
             deadlineBlock: toUint256(part3)
         });
