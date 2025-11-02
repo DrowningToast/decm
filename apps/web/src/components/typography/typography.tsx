@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
-import type { PropsWithChildren } from "react";
 import type React from "react";
 
+// eslint-disable-next-line
 export const typographyVariants = cva("text-wrap", {
     variants: {
         size: {
@@ -49,9 +49,8 @@ export const typographyVariants = cva("text-wrap", {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "span", "p", "div", "label"] as const;
 
-type TypographyProps<T extends (typeof TAGS)[number] = "span"> = React.ComponentProps<T> &
-    VariantProps<typeof typographyVariants> &
-    PropsWithChildren & {
+type TypographyProps<T extends (typeof TAGS)[number] = "span"> = React.HTMLAttributes<HTMLElement> &
+    VariantProps<typeof typographyVariants> & {
         tag: T;
     };
 
