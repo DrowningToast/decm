@@ -57,7 +57,7 @@ export function useDataTable<TData>({
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [searchValue]);
+    }, [searchValue, debouncedSearch]);
 
     const loadData = useCallback(async () => {
         setIsLoading(true);

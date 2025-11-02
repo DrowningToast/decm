@@ -1,4 +1,9 @@
-import { Controller } from "react-hook-form";
+import {
+    Controller,
+    type Control as ReactHookFormControl,
+    type FieldValues,
+    type Path,
+} from "react-hook-form";
 import { Typography } from "@/components/typography/typography";
 import { Label } from "@/components/ui/label";
 import {
@@ -9,14 +14,10 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-// Use any for now to avoid type issues with react-hook-form imports
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Control = any;
-
-interface WrappedSelectProps {
+interface WrappedSelectProps<T extends FieldValues = FieldValues> {
     // Form control
-    control: Control;
-    name: string;
+    control: ReactHookFormControl<T>;
+    name: Path<T>;
 
     // Label and description
     label: string;
@@ -44,7 +45,7 @@ interface WrappedSelectProps {
     descriptionClassName?: string;
 }
 
-export function WrappedSelect({
+export function WrappedSelect<T extends FieldValues = FieldValues>({
     control,
     name,
     label,
@@ -58,7 +59,7 @@ export function WrappedSelect({
     labelClassName = "text-sm font-medium",
     selectClassName = "",
     descriptionClassName = "text-xs text-muted-foreground",
-}: WrappedSelectProps) {
+}: WrappedSelectProps<T>) {
     return (
         <div className={`space-y-2 ${containerClassName}`}>
             <Label htmlFor={htmlFor}>
@@ -79,7 +80,7 @@ export function WrappedSelect({
                             <SelectValue placeholder={placeholder} />
                         </SelectTrigger>
                         <SelectContent>
-                            {options.map((option: { value: string; label: string }) => (
+                            {options.map((option) => (
                                 <SelectItem key={option.value} value={option.value}>
                                     {option.label}
                                 </SelectItem>

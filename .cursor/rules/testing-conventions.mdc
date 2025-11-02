@@ -599,6 +599,32 @@ test.describe('Authentication Flow', () => {
 });
 ```
 
+## Test Command Conventions
+
+### ❌ NEVER Create Combined Test Commands
+
+**Critical Rule**: Do NOT add commands that test all aspects (frontend + backend) at once, such as `test:all` or `test:coverage:all`.
+
+**Reasoning**:
+- Tests should be run separately to identify failures quickly
+- Different test suites may have different requirements
+- CI/CD pipelines benefit from separate test jobs
+- Faster feedback loop when debugging failures
+
+**Allowed Commands**:
+- `pnpm test` - Frontend tests only (via Turbo)
+- `pnpm test:web` - Frontend tests directly
+- `pnpm test:core` - Backend tests only
+- `pnpm test:coverage` - Frontend coverage only
+- `pnpm test:core:coverage` - Backend coverage only
+
+**Forbidden Commands**:
+- ❌ `test:all` - Runs both frontend and backend
+- ❌ `test:coverage:all` - Runs coverage for both
+- ❌ Any command that combines multiple test suites
+
+**CI/CD**: Each test suite should be run in separate jobs/steps for better error reporting and parallelization.
+
 ## Best Practices
 
 ### ✅ DO (Backend):
