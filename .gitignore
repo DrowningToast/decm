@@ -42,3 +42,6 @@ yarn-error.log*
 apps/*/pkg/mod/*
 apps/backend/main
 claude_code_zai_env.sh
+
+apps/contracts/.github
+apps/contracts/libss

@@ -141,6 +141,46 @@ pnpm gen-api:core    # Complete: OpenAPI → TypeScript → build
 pnpm docs:core       # Just update OpenAPI docs (faster)
 ```
 
+### Testing
+```bash
+pnpm test            # Run all tests
+pnpm test:web        # Frontend tests only
+pnpm test:core       # Backend tests only
+pnpm test --coverage # With coverage report
+```
+
+## CI/CD Workflow
+
+### Pull Request Process
+1. Create PR targeting `main` branch
+2. Add `ready-to-review` label to trigger CI checks
+3. All checks must pass before merge
+4. If checks fail:
+   - Label automatically removed
+   - Comment posted with failure details
+   - Fix issues and reapply label
+
+### CI Checks
+- ✅ ESLint (frontend code quality)
+- ✅ TypeScript type checking
+- ✅ Frontend build + unit tests
+- ✅ Backend build + unit tests
+- ✅ Database migrations verification
+- ✅ SQLC code generation verification
+- ✅ OpenAPI documentation verification
+- ✅ Smart contract compilation
+
+### Local Pre-commit Checks
+```bash
+# Run these before committing
+pnpm lint            # Check code quality
+pnpm check-types     # TypeScript validation
+pnpm test            # Run tests
+pnpm build           # Verify builds
+```
+
+**See**: [ci-cd-workflow.mdc](mdc:ci-cd-workflow.mdc) for complete CI/CD documentation
+
 ## Troubleshooting
 
 ### Package Manager Error

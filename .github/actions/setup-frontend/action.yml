@@ -1,0 +1,47 @@
+name: "Setup Frontend Environment"
+description: "Sets up Node.js, pnpm, and installs dependencies for frontend projects"
+
+inputs:
+    node-version:
+        description: "Node.js version to use"
+        required: true
+    pnpm-version:
+        description: "pnpm version to use"
+        required: true
+
+runs:
+    using: "composite"
+    steps:
+        - name: Setup pnpm
+          uses: pnpm/action-setup@v4
+          with:
+              version: ${{ inputs.pnpm-version }}
+
+        - name: Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+              node-version: ${{ inputs.node-version }}
+              cache: "pnpm"
+
+        - name: Cache node_modules
+          id: cache-node-modules
+          uses: actions/cache@v4
+          with:
+              path: |
+                  node_modules
+                  apps/*/node_modules
+                  packages/*/node_modules
+              key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+              restore-keys: |
+                  ${{ runner.os }}-pnpm-
+
+        - name: Copy test environment files
+          shell: bash
+          run: |
+              cp .env.test .env
+              cp .env.client.test .env.client
+
+        - name: Install dependencies
+          if: steps.cache-node-modules.outputs.cache-hit != 'true'
+          shell: bash
+          run: pnpm install --frozen-lockfile
