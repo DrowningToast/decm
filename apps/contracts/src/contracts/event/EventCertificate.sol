@@ -80,7 +80,7 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string memory signMessage,
         bytes memory signature
     ) external nonReentrant {
-        address signer = recoverSigner(signMessage, signature);
+        address signer = recoverSigner(signMessage, signature, address(this));
         requireHostOrAdmin(signer);
 
         uint256 tokenId = tokenCounter;
@@ -146,7 +146,7 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string memory signMessage,
         bytes memory signature
     ) external nonReentrant {
-        address signer = recoverSigner(signMessage, signature);
+        address signer = recoverSigner(signMessage, signature, address(this));
         requireHostOrAdmin(signer);
 
         for (uint256 i = 0; i < params.length; i++) {
@@ -226,7 +226,7 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
     }
 
     function revokeCertificate(uint256 tokenId, string memory signMessage, bytes memory signature) external nonReentrant {
-        address signer = recoverSigner(signMessage, signature);
+        address signer = recoverSigner(signMessage, signature, address(this));
         requireHostOrAdmin(signer);
 
         tokenIdToStatus[tokenId] = CertificateStatus.REVOKED;
