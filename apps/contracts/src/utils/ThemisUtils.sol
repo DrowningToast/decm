@@ -6,6 +6,7 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 
 contract ThemisUtils {
     error Themis__InvalidSignature();
+    error Themis__SignatureExpired();
 
     function recoverSigner(string memory message, bytes memory signature) public pure returns (address) {
         bytes32 messageHash = keccak256(abi.encodePacked(message));
