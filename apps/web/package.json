@@ -10,7 +10,7 @@
         "preview": "dotenv -e ../../.env.client -- vite preview",
         "test": "vitest",
         "test:ui": "vitest --ui",
-        "test:coverage": "vitest -r --coverage"
+        "test:coverage": "vitest --run --coverage"
     },
     "dependencies": {
         "@decm/api": "workspace:*",
