@@ -47,17 +47,15 @@ export const typographyVariants = cva("text-wrap", {
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "span", "p", "div"] as const;
+const TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "span", "p", "div", "label"] as const;
 
-type TypographyProps = React.ComponentProps<"span"> &
-    React.ComponentProps<"p"> &
-    React.ComponentProps<"h1"> &
+type TypographyProps<T extends (typeof TAGS)[number] = "span"> = React.ComponentProps<T> &
     VariantProps<typeof typographyVariants> &
     PropsWithChildren & {
-        tag: (typeof TAGS)[number];
+        tag: T;
     };
 
-export const Typography: React.FC<TypographyProps> = ({
+export const Typography = <T extends (typeof TAGS)[number] = "span">({
     className,
     color,
     size,
@@ -67,7 +65,7 @@ export const Typography: React.FC<TypographyProps> = ({
     fontFamily,
     weight,
     ...props
-}) => {
+}: TypographyProps<T>) => {
     const _className = cn(
         typographyVariants({
             size,
@@ -133,6 +131,12 @@ export const Typography: React.FC<TypographyProps> = ({
                 <div className={_className} {...props}>
                     {children}
                 </div>
+            );
+        case "label":
+            return (
+                <label className={_className} {...props}>
+                    {children}
+                </label>
             );
         default:
             break;
