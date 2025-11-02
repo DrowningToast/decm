@@ -13,6 +13,6 @@ library CertificateVCStructs {
         uint256 issuedAt;
         string encryptedUserData; // Decrypt using User PK.
         string backendEncryptedUserData; // Decrypt using Backend PK.
-        address[] issuerAddresses;
+        address[] issuerAddresses; // Issuer addresses.
     }
 }
