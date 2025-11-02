@@ -1,0 +1,569 @@
+name: PR Quality Checks
+
+on:
+    # Run on pull requests targeting main and when labels are added
+    pull_request:
+        types: [opened, synchronize, reopened, labeled]
+        branches:
+            - main
+
+env:
+    GO_VERSION: "1.23"
+    NODE_VERSION: "20"
+    PNPM_VERSION: "9.15.0"
+
+jobs:
+    # Job 0: Check for ready-to-review label
+    check-label:
+        name: Check Label
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Check for 'ready-to-review' label
+              if: ${{ !contains(github.event.pull_request.labels.*.name, 'ready-to-review') }}
+              run: |
+                  echo "❌ This PR requires the 'ready-to-review' label before running checks."
+                  echo "Please add the 'ready-to-review' label to proceed with CI/CD checks."
+                  exit 1
+
+            - name: Label verified
+              run: echo "✅ 'ready-to-review' label is present. Proceeding with checks..."
+
+    # Job 1: Database Can Be Migrated
+    database-migrate:
+        name: Database Migration
+        runs-on: ubuntu-latest
+        needs: [check-label]
+
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_DB: decm_test
+                    POSTGRES_USER: decm_user
+                    POSTGRES_PASSWORD: decm_test_password
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js and pnpm
+              uses: ./.github/actions/setup-node-pnpm
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  pnpm-version: ${{ env.PNPM_VERSION }}
+
+            - name: Install Database Tools
+              uses: ./.github/actions/install-db-tools
+              with:
+                  install-sqlc: "false"
+
+            - name: Wait for PostgreSQL
+              run: |
+                  until pg_isready -h localhost -p 5432 -U decm_user; do
+                    echo "Waiting for PostgreSQL..."
+                    sleep 2
+                  done
+
+            - name: Run database migrations
+              run: pnpm db:migrate
+              env:
+                  DB_HOST: localhost
+                  DB_PORT: 5432
+                  DB_USER: decm_user
+                  DB_PASSWORD: decm_test_password
+                  DB_NAME: decm_test
+
+            - name: Verify migrations applied successfully
+              run: |
+                  PGPASSWORD=decm_test_password psql -h localhost -U decm_user -d decm_test -c "\dt" | tee migration_output.txt
+                  grep -q "authentication_credentials" migration_output.txt
+                  grep -q "profiles" migration_output.txt
+                  grep -q "events" migration_output.txt
+                  echo "✅ All core tables verified"
+
+    # Job 3: Database Can Be Generated
+    database-generate:
+        name: Database Generation (SQLC)
+        runs-on: ubuntu-latest
+        needs: [check-label, database-migrate]
+
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_DB: decm_test
+                    POSTGRES_USER: decm_user
+                    POSTGRES_PASSWORD: decm_test_password
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: ${{ env.PNPM_VERSION }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: "pnpm"
+
+            - name: Setup Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: ${{ env.GO_VERSION }}
+                  cache-dependency-path: packages/database/go.sum
+
+            - name: Copy test environment file
+              run: cp .env.test .env
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Install sqlc
+              run: |
+                  curl -sSfL https://github.com/sqlc-dev/sqlc/releases/download/v1.29.0/sqlc_1.29.0_linux_amd64.tar.gz | tar -xz -C /tmp
+                  sudo mv /tmp/sqlc /usr/local/bin/
+                  sqlc version
+
+            - name: Install golang-migrate
+              run: |
+                  curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
+                  sudo mv migrate /usr/local/bin/
+                  migrate -version
+
+            - name: Wait for PostgreSQL
+              run: |
+                  until pg_isready -h localhost -p 5432 -U decm_user; do
+                    echo "Waiting for PostgreSQL..."
+                    sleep 2
+                  done
+
+            - name: Run database migrations
+              run: pnpm db:migrate
+              env:
+                  DB_HOST: localhost
+                  DB_PORT: 5432
+                  DB_USER: decm_user
+                  DB_PASSWORD: decm_test_password
+                  DB_NAME: decm_test
+
+            - name: Generate SQLC code
+              run: pnpm db:generate
+
+            - name: Check SQLC generated files match committed files
+              run: |
+                  if ! git diff --exit-code packages/database/go/generated/; then
+                    echo "❌ SQLC generated files do not match committed files!"
+                    echo "Run 'pnpm db:generate' locally and commit the changes."
+                    git diff packages/database/go/generated/
+                    exit 1
+                  else
+                    echo "✅ SQLC generated files match committed files"
+                  fi
+
+    # Job 4: Backend Build Successfully
+    backend-build:
+        name: Backend Build
+        runs-on: ubuntu-latest
+        needs: [check-label, database-generate]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js and pnpm
+              uses: ./.github/actions/setup-node-pnpm
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  pnpm-version: ${{ env.PNPM_VERSION }}
+
+            - name: Setup Go Backend
+              uses: ./.github/actions/setup-go-backend
+              with:
+                  go-version: ${{ env.GO_VERSION }}
+
+            - name: Build Core API
+              run: pnpm build:core
+
+            - name: Verify binary exists
+              run: |
+                  if [ ! -f apps/backend/bin/decm-backend ]; then
+                    echo "❌ Core API binary not found!"
+                    exit 1
+                  else
+                    echo "✅ Core API binary built successfully"
+                  fi
+
+    # Job 5: Backend Unit Tests Successfully
+    backend-tests:
+        name: Backend Unit Tests
+        runs-on: ubuntu-latest
+        needs: [check-label, backend-build, database-migrate]
+
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_DB: decm_test
+                    POSTGRES_USER: decm_user
+                    POSTGRES_PASSWORD: decm_test_password
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js and pnpm
+              uses: ./.github/actions/setup-node-pnpm
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  pnpm-version: ${{ env.PNPM_VERSION }}
+
+            - name: Setup Go Backend
+              uses: ./.github/actions/setup-go-backend
+              with:
+                  go-version: ${{ env.GO_VERSION }}
+
+            - name: Install Database Tools
+              uses: ./.github/actions/install-db-tools
+              with:
+                  install-sqlc: "false"
+
+            - name: Wait for PostgreSQL
+              run: |
+                  until pg_isready -h localhost -p 5432 -U decm_user; do
+                    echo "Waiting for PostgreSQL..."
+                    sleep 2
+                  done
+
+            - name: Run database migrations
+              run: pnpm db:migrate
+              env:
+                  DB_HOST: localhost
+                  DB_PORT: 5432
+                  DB_USER: decm_user
+                  DB_PASSWORD: decm_test_password
+                  DB_NAME: decm_test
+
+            - name: Run Core Tests
+              run: pnpm test:core
+              env:
+                  DB_HOST: localhost
+                  DB_PORT: 5432
+                  DB_USER: decm_user
+                  DB_PASSWORD: decm_test_password
+                  DB_NAME: decm_test
+                  PII_ENCRYPTION_KEY: test-encryption-key-for-ci-pipeline-only-32bytes
+                  JWT_SECRET: test-jwt-secret-key-for-ci-pipeline-only
+                  JWT_ISSUER: decm-service-test
+                  JWT_EXPIRATION: 24h
+
+    # Job 6: Backend Generate OpenAPI and Swagger
+    backend-openapi:
+        name: Backend OpenAPI & Swagger
+        runs-on: ubuntu-latest
+        needs: [check-label, backend-build]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js and pnpm
+              uses: ./.github/actions/setup-node-pnpm
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  pnpm-version: ${{ env.PNPM_VERSION }}
+
+            - name: Setup Go Backend
+              uses: ./.github/actions/setup-go-backend
+              with:
+                  go-version: ${{ env.GO_VERSION }}
+
+            - name: Install swag
+              run: go install github.com/swaggo/swag/cmd/swag@latest
+
+            - name: Generate OpenAPI documentation
+              run: pnpm docs:core
+
+            - name: Check OpenAPI documentation matches committed files
+              run: |
+                  if ! git diff --exit-code apps/backend/core-api/docs/; then
+                    echo "❌ OpenAPI documentation does not match committed files!"
+                    echo "Run 'pnpm docs:core' locally and commit the changes."
+                    git diff apps/backend/core-api/docs/
+                    exit 1
+                  else
+                    echo "✅ OpenAPI documentation matches committed files"
+                  fi
+
+    # Job 7: Frontend ESLint Check
+    frontend-eslint:
+        name: Frontend ESLint Check
+        runs-on: ubuntu-latest
+        needs: [check-label]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Frontend Environment
+              uses: ./.github/actions/setup-frontend
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  pnpm-version: ${{ env.PNPM_VERSION }}
+
+            - name: Run ESLint
+              run: pnpm lint
+
+    # Job 8: Frontend Build Successfully
+    frontend-build:
+        name: Frontend Build
+        runs-on: ubuntu-latest
+        needs: [check-label, frontend-eslint]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Frontend Environment
+              uses: ./.github/actions/setup-frontend
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  pnpm-version: ${{ env.PNPM_VERSION }}
+
+            - name: Run TypeScript type checking
+              run: pnpm check-types
+
+            - name: Build frontend
+              run: pnpm build
+
+            - name: Verify build artifacts
+              run: |
+                  if [ ! -d apps/web/dist ]; then
+                    echo "❌ Frontend build artifacts not found!"
+                    exit 1
+                  else
+                    echo "✅ Frontend built successfully"
+                  fi
+
+    # Job 9: Frontend Unit Test Successfully
+    frontend-tests:
+        name: Frontend Unit Tests
+        runs-on: ubuntu-latest
+        needs: [check-label, frontend-build, frontend-eslint]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Frontend Environment
+              uses: ./.github/actions/setup-frontend
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  pnpm-version: ${{ env.PNPM_VERSION }}
+
+            - name: Run Web Tests
+              run: pnpm --filter @decm/web run test:coverage
+              env:
+                  VITE_API_URL: http://localhost:8080/api/v1
+                  VITE_ENVIRONMENT: test
+
+            - name: Upload frontend coverage
+              uses: codecov/codecov-action@v4
+              with:
+                  files: ./apps/web/coverage/coverage-final.json
+                  flags: frontend
+                  name: frontend-coverage
+                  token: ${{ secrets.CODECOV_TOKEN }}
+
+    # Job 9: Contract Build Successfully
+    contracts-build:
+        name: Contract Build
+        runs-on: ubuntu-latest
+        needs: [check-label]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  submodules: recursive
+
+            - name: Install Foundry
+              uses: foundry-rs/foundry-toolchain@v1
+              with:
+                  version: nightly
+
+            - name: Compile smart contracts
+              working-directory: apps/contracts
+              run: |
+                  forge install
+                  forge build
+
+            - name: Verify contract artifacts
+              run: |
+                  if [ ! -d apps/contracts/out ]; then
+                    echo "❌ Contract compilation artifacts not found!"
+                    exit 1
+                  else
+                    echo "✅ Contracts compiled successfully"
+                  fi
+
+    # Job 10: Final Summary
+    pr-checks-summary:
+        name: PR Checks Summary
+        runs-on: ubuntu-latest
+        needs:
+            [
+                check-label,
+                database-migrate,
+                database-generate,
+                backend-build,
+                backend-tests,
+                backend-openapi,
+                frontend-build,
+                frontend-eslint,
+                frontend-tests,
+                contracts-build,
+            ]
+        if: always()
+
+        steps:
+            - name: Check all jobs status
+              id: check_status
+              run: |
+                  echo "### PR Quality Checks Summary ###"
+                  echo ""
+
+                  if [ "${{ needs.database-migrate.result }}" = "success" ]; then
+                    echo "✅ Database Migration: PASSED"
+                  else
+                    echo "❌ Database Migration: FAILED"
+                  fi
+
+                  if [ "${{ needs.database-generate.result }}" = "success" ]; then
+                    echo "✅ Database Generation: PASSED"
+                  else
+                    echo "❌ Database Generation: FAILED"
+                  fi
+
+                  if [ "${{ needs.backend-build.result }}" = "success" ]; then
+                    echo "✅ Backend Build: PASSED"
+                  else
+                    echo "❌ Backend Build: FAILED"
+                  fi
+
+                  if [ "${{ needs.backend-tests.result }}" = "success" ]; then
+                    echo "✅ Backend Unit Tests: PASSED"
+                  else
+                    echo "❌ Backend Unit Tests: FAILED"
+                  fi
+
+                  if [ "${{ needs.backend-openapi.result }}" = "success" ]; then
+                    echo "✅ Backend OpenAPI & Swagger: PASSED"
+                  else
+                    echo "❌ Backend OpenAPI & Swagger: FAILED"
+                  fi
+
+                  if [ "${{ needs.frontend-build.result }}" = "success" ]; then
+                    echo "✅ Frontend Build: PASSED"
+                  else
+                    echo "❌ Frontend Build: FAILED"
+                  fi
+
+                  if [ "${{ needs.frontend-eslint.result }}" = "success" ]; then
+                    echo "✅ Frontend ESLint: PASSED"
+                  else
+                    echo "❌ Frontend ESLint: FAILED"
+                  fi
+
+                  if [ "${{ needs.frontend-tests.result }}" = "success" ]; then
+                    echo "✅ Frontend Unit Tests: PASSED"
+                  else
+                    echo "❌ Frontend Unit Tests: FAILED"
+                  fi
+
+                  if [ "${{ needs.contracts-build.result }}" = "success" ]; then
+                    echo "✅ Contract Build: PASSED"
+                  else
+                    echo "❌ Contract Build: FAILED"
+                  fi
+
+                  echo ""
+
+                  if [ "${{ needs.database-migrate.result }}" = "success" ] && \
+                     [ "${{ needs.database-generate.result }}" = "success" ] && \
+                     [ "${{ needs.backend-build.result }}" = "success" ] && \
+                     [ "${{ needs.backend-tests.result }}" = "success" ] && \
+                     [ "${{ needs.backend-openapi.result }}" = "success" ] && \
+                     [ "${{ needs.frontend-build.result }}" = "success" ] && \
+                     [ "${{ needs.frontend-eslint.result }}" = "success" ] && \
+                     [ "${{ needs.frontend-tests.result }}" = "success" ] && \
+                     [ "${{ needs.contracts-build.result }}" = "success" ]; then
+                    echo "🎉 All checks passed! PR is ready to merge."
+                    echo "all_passed=true" >> $GITHUB_OUTPUT
+                    exit 0
+                  else
+                    echo "❌ Some checks failed. Please review and fix the issues."
+                    echo "all_passed=false" >> $GITHUB_OUTPUT
+                    exit 1
+                  fi
+
+            - name: Remove 'ready-to-review' label on failure
+              if: ${{ steps.check_status.outputs.all_passed == 'false' && always() }}
+              run: |
+                  gh pr edit ${{ github.event.pull_request.number }} --remove-label "ready-to-review"
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Post failure comment on PR
+              if: ${{ steps.check_status.outputs.all_passed == 'false' && always() }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  COMMENT_BODY=$(cat <<'EOF'
+                  ❌ **CI/CD Pipeline Failed**
+
+                  The following checks failed:
+
+                  | Check | Status |
+                  |-------|--------|
+                  | Database Migration | ${{ needs.database-migrate.result == 'success' && '✅' || '❌' }} |
+                  | Database Generation | ${{ needs.database-generate.result == 'success' && '✅' || '❌' }} |
+                  | Backend Build | ${{ needs.backend-build.result == 'success' && '✅' || '❌' }} |
+                  | Backend Unit Tests | ${{ needs.backend-tests.result == 'success' && '✅' || '❌' }} |
+                  | Backend OpenAPI & Swagger | ${{ needs.backend-openapi.result == 'success' && '✅' || '❌' }} |
+                  | Frontend Build | ${{ needs.frontend-build.result == 'success' && '✅' || '❌' }} |
+                  | Frontend ESLint | ${{ needs.frontend-eslint.result == 'success' && '✅' || '❌' }} |
+                  | Frontend Unit Tests | ${{ needs.frontend-tests.result == 'success' && '✅' || '❌' }} |
+                  | Contract Build | ${{ needs.contracts-build.result == 'success' && '✅' || '❌' }} |
+
+                  **Action Required:** The 'ready-to-review' label has been removed. Please fix the failing checks and reapply the label to retry.
+
+                  [View workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+                  EOF
+                  )
+                  gh pr comment ${{ github.event.pull_request.number }} --body "$COMMENT_BODY"

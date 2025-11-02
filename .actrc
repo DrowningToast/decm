@@ -1,0 +1,19 @@
+# act configuration for DECM project
+
+# Run GitHub Actions workflows locally using act
+
+# Use the medium-sized runner image (similar to ubuntu-latest)
+
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+
+# Set workflow directory to only scan .github/workflows/
+
+-W .github/workflows/
+
+# Enable verbose output
+
+-v
+
+# Use Docker socket (needed for docker-compose)
+
+--container-architecture linux/amd64
