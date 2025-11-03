@@ -5,14 +5,14 @@ import { QUERY_KEY } from "@/lib/queryKeys";
 
 export type UseCheckOnboardParams =
     | {
-          method?: OnboardRegistrationMethod.RegistrationMethodGoogle;
-          accessToken: string;
-          expiresIn: number;
-      }
+        method?: OnboardRegistrationMethod.RegistrationMethodGoogle;
+        accessToken: string;
+        expiresIn: number;
+    }
     | {
-          method?: OnboardRegistrationMethod.RegistrationMethodWallet;
-          signSignature?: string;
-      };
+        method?: OnboardRegistrationMethod.RegistrationMethodWallet;
+        signSignature?: string;
+    };
 
 export const useCheckOnboardStatus = (param?: UseCheckOnboardParams, enable: boolean = true) => {
     const { mutateAsync: checkOnboardStatus, isPending } = useMutation({
