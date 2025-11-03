@@ -68,7 +68,7 @@ contract Event is EventAccessManager {
         string memory signMessage,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(signMessage, signature);
+        address signer = recoverSigner(signMessage, signature, address(this));
         requireHostOrAdmin(signer);
 
         // 1. Validate Event Name
@@ -99,16 +99,12 @@ contract Event is EventAccessManager {
         string memory signMessage,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(signMessage, signature);
+        address signer = recoverSigner(signMessage, signature, address(this));
         requireHostOrAdmin(signer);
 
         // Pre Conditions
         if (participantAddress == address(0)) {
             revert Event__AddressCannotBeZero();
-        }
-
-        if (isParticipant[participantAddress]) {
-            revert Event__ParticipantIsAlreadyJoined();
         }
 
         if (currentSeatsCount >= seatsCount) {
@@ -131,7 +127,7 @@ contract Event is EventAccessManager {
         string memory signMessage,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(signMessage, signature);
+        address signer = recoverSigner(signMessage, signature, address(this));
         requireParticipant(signer);
 
         address participantAddress = signer;
@@ -149,7 +145,7 @@ contract Event is EventAccessManager {
     }
 
     function removeParticipant(address participantAddress, string memory signMessage, bytes memory signature) external {
-        address signer = recoverSigner(signMessage, signature);
+        address signer = recoverSigner(signMessage, signature, address(this));
         requireHostOrAdmin(signer);
 
         // Pre Conditions
@@ -173,7 +169,7 @@ contract Event is EventAccessManager {
         string memory signMessage,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(signMessage, signature);
+        address signer = recoverSigner(signMessage, signature, address(this));
         requireHostOrAdmin(signer);
 
         // Pre Conditions
