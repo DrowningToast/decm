@@ -4,7 +4,7 @@ reviews:
         - "apps/backend/**"
         - "apps/web/**"
         - "packages/**"
-        - "apps/contracts/script"
+        - "apps/contracts"
         # Exclude generated and build artifacts
         - "!packages/api/src/apis/**/api.ts"
         - "!**/node_modules/**"
@@ -12,6 +12,10 @@ reviews:
         - "!**/build/**"
         - "!**/pkg/**"
         - "!**/generated/**"
+        - "!**/contracts/lib"
+        - "!**/contracts/out"
+        - "!**/contracts/cache"
+        - "!**/contracts/.github"
         # Exclude other non-code files
         - "!**/*.svg"
         - "!**/*.json"
