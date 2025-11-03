@@ -4,7 +4,7 @@ reviews:
         - "apps/backend/**"
         - "apps/web/**"
         - "packages/**"
-        - "apps/contracts"
+        - "apps/contracts/**"
         # Exclude generated and build artifacts
         - "!packages/api/src/apis/**/api.ts"
         - "!**/node_modules/**"
