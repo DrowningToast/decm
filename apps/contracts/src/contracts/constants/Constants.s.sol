@@ -2,8 +2,6 @@
 pragma solidity ^0.8.20;
 
 library Constants {
-    string public constant VERSION = "1.0.0";
-    
     bytes32 public constant HOST_ROLE = keccak256("HOST_ROLE");
     bytes32 public constant ISSUER_ROLE = keccak256("ISSUER_ROLE");
     bytes32 public constant PARTICIPANT_ROLE = keccak256("PARTICIPANT_ROLE");

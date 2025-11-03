@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";  
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {EventAccessManager} from "./EventAccessManager.sol";
 import {Event} from "./Event.sol";
 import {Constants} from "../constants/Constants.s.sol";
 import {TicketVCStructs} from "../../libraries/TicketVCStructs.sol";
 import {ThemisUtils} from "../../utils/ThemisUtils.sol";
-
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
     // Contracts
@@ -23,11 +22,6 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
 
     // State Variables
     uint256 private tokenCounter;
-
-    // Getter for tokenCounter (for testing)
-    function getTokenCounter() external view returns (uint256) {
-        return tokenCounter;
-    }
 
     // Errors
     error EventTicket__NotHostOrAdmin();
@@ -51,9 +45,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
     mapping(uint256 => TicketStatus) private tokenIdToStatus;
 
     function requireHostOrAdmin(address signer) private view {
-        bool isAllowedMsgSender = EVENT_ACCESS_MANAGER.checkIsAllowedMsgSender();
-        bool isHostOrAdmin = EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(signer);
-        if (!isHostOrAdmin && !isAllowedMsgSender) {
+        if (!EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(signer)) {
             revert EventTicket__NotHostOrAdmin();
         }
     }
@@ -81,16 +73,11 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         string memory issuerId,
         string memory encryptedUserData,
         string memory backendEncryptedUserData,
-        address issuerAddress,
         string memory signMessage,
         bytes memory signature
     ) external nonReentrant {
-        address signer = recoverSigner(signMessage, signature, address(this));
+        address signer = recoverSigner(signMessage, signature);
         requireHostOrAdmin(signer);
-
-        if (receiverAddress == address(0)) {
-            revert EventTicket__InvalidReceiver();
-        }
 
         uint256 tokenId = tokenCounter;
         tokenIdToStatus[tokenId] = TicketStatus.ACTIVE;
@@ -102,9 +89,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
             ticketId,
             issuerId,
             encryptedUserData,
-            backendEncryptedUserData,
-            issuerAddress,
-            block.timestamp
+            backendEncryptedUserData
         );
 
         tokenIdToVcData[tokenId] = newTicketVcData;
@@ -112,7 +97,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         _safeMint(receiverAddress, tokenId);
         tokenCounter++;
 
-        emit TicketMinted(tokenId, signer, receiverAddress, ticketId);
+        emit TicketMinted(tokenId, msg.sender, receiverAddress, ticketId);
     }
 
     struct BulkMintParticipantTicketsParams {
@@ -122,7 +107,6 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         string issuerId;
         string encryptedUserData;
         string backendEncryptedUserData;
-        address issuerAddress; // Host Address
     }
 
     function bulkMintParticipantTickets(
@@ -130,14 +114,10 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         string memory signMessage,
         bytes memory signature
     ) external nonReentrant {
-        address signer = recoverSigner(signMessage, signature, address(this));
+        address signer = recoverSigner(signMessage, signature);
         requireHostOrAdmin(signer);
 
         for (uint256 i = 0; i < params.length; i++) {
-            if (params[i].receiverAddress == address(0)) {
-                revert EventTicket__InvalidReceiver();
-            }
-            
             uint256 tokenId = tokenCounter;
 
             TicketVCStructs.TicketVcData memory newTicketVcData = _buildTicketVcData(
@@ -147,9 +127,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
                 params[i].ticketId,
                 params[i].issuerId,
                 params[i].encryptedUserData,
-                params[i].backendEncryptedUserData,
-                params[i].issuerAddress,
-                block.timestamp
+                params[i].backendEncryptedUserData
             );
 
             _safeMint(params[i].receiverAddress, tokenId);
@@ -159,7 +137,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
 
             tokenCounter++;
 
-            emit TicketMinted(tokenId, signer, params[i].receiverAddress, params[i].ticketId);
+            emit TicketMinted(tokenId, msg.sender, params[i].receiverAddress, params[i].ticketId);
         }
     }
 
@@ -221,9 +199,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         string memory ticketId,
         string memory issuerId,
         string memory encryptedUserData,
-        string memory backendEncryptedUserData,
-        address issuerAddress,
-        uint256 issuedAt
+        string memory backendEncryptedUserData
     ) private view returns (TicketVCStructs.TicketVcData memory) {
         return TicketVCStructs.TicketVcData({
             eventName: EVENT.getEventName(),
@@ -232,8 +208,8 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
             ticketId: ticketId,
             userId: userId,
             issuerId: issuerId,
-            issuedAt: issuedAt,
-            issuerAddress: issuerAddress,
+            issuedAt: block.timestamp,
+            issuerAddress: msg.sender,
             receiverAddress: receiverAddress,
             encryptedUserData: encryptedUserData,
             backendEncryptedUserData: backendEncryptedUserData
