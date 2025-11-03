@@ -14,21 +14,7 @@ contract ThemisUtils {
     error Themis__InvalidSigner();
 
     function recoverSigner(string memory message, bytes memory signature, address contractAddress) public view returns (address) {
-        // Uncomment this for unit testing only!
-        if (StringUtils.compareStrings(MOCK_ADMIN_MESSAGE, message)) {
-            return ADMIN;
-        } else if (StringUtils.compareStrings(MOCK_HOST_MESSAGE, message)) {
-            return HOST;
-        } else if (StringUtils.compareStrings(MOCK_CALLER_MESSAGE, message)) {
-            return CALLER;
-        } else if (StringUtils.compareStrings(MOCK_PARTICIPANT_MESSAGE, message)) {
-            return PARTICIPANT;
-        } else if (StringUtils.compareStrings(MOCK_ISSUER_MESSAGE, message)) {
-            return ISSUER;
-        }
-
         bytes32 messageHash = keccak256(abi.encodePacked(message));
-
         StringUtils.SignMessageStruct memory signMessage = StringUtils.toSignMessageStruct(message);
 
         // 1. Check deadline block
