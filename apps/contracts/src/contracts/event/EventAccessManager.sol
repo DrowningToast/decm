@@ -28,7 +28,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         _grantRole(Constants.HOST_ROLE, hostAddress);
     }
 
-    function grantIssuerRole(address issuer, address signer) internal {
+    function grantIssuerRole(address issuer, address signer) public {
         requireHostOrAdmin(signer);
 
         if (issuer == address(0)) {
@@ -37,7 +37,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         _grantRole(Constants.ISSUER_ROLE, issuer);
     }
 
-    function revokeIssuerRole(address issuer, address signer) internal {
+    function revokeIssuerRole(address issuer, address signer) public {
         requireHostOrAdmin(signer);
 
         if (issuer == address(0)) {
@@ -46,7 +46,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         _revokeRole(Constants.ISSUER_ROLE, issuer);
     }
 
-    function grantParticipantRole(address participant, address signer) internal {
+    function grantParticipantRole(address participant, address signer) public {
         requireHostOrAdmin(signer);
 
         if (participant == address(0)) {
@@ -55,7 +55,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         _grantRole(Constants.PARTICIPANT_ROLE, participant);
     }
 
-    function revokeParticipantRole(address participant, address signer) internal {
+    function revokeParticipantRole(address participant, address signer) public {
         requireHostOrAdminOrParticipant(signer);
 
         if (participant == address(0)) {
@@ -64,13 +64,35 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         _revokeRole(Constants.PARTICIPANT_ROLE, participant);
     }
 
-    function grantHostRole(address host, address signer) internal {
+    function grantHostRole(address host, address signer) public {
         requireHostOrAdmin(signer);
 
         if (host == address(0)) {
             revert EventAccessManager__AccountCannotBeZeroAddress();
         }
         _grantRole(Constants.HOST_ROLE, host);
+    }
+
+    function addAllowedMsgSender(address sender) public {
+        requireAdmin(msg.sender);
+        
+        if (sender == address(0)) {
+            revert EventAccessManager__AccountCannotBeZeroAddress();
+        }
+
+        allowedMsgSenders[sender] = true;
+        emit MsgSenderAllowed(sender, msg.sender);
+    }
+
+    function removeAllowedMsgSender(address sender) public {
+        requireAdmin(msg.sender);
+        
+        if (sender == address(0)) {
+            revert EventAccessManager__AccountCannotBeZeroAddress();
+        }
+        
+        allowedMsgSenders[sender] = false;
+        emit MsgSenderDisallowed(sender, msg.sender);
     }
 
     function checkIsHost(address addr) public view returns (bool) {
