@@ -3,14 +3,22 @@ package event
 import (
 	"context"
 	"errors"
+	"math/big"
 	"mime/multipart"
 	"time"
 
 	"apps/backend/common/customerror"
+	"apps/backend/contracts"
+	"apps/backend/core-api/config"
 	datagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 
+	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/google/uuid"
 )
 
@@ -27,27 +35,28 @@ type CreateEventParameters struct {
 	GoogleMapQuery   string
 	EventBanner      *multipart.FileHeader
 	EventIcon        *multipart.FileHeader
+	HostPassword     string
 }
 
-func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParameters, currentUser *auth.JwtClaims) (*entity.Event, error) {
-	credential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, currentUser.UserId)
+func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParameters, currentUser *auth.JwtClaims) (*entity.Event, common.Address, *types.Transaction, error) {
+	credential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx, currentUser.UserId)
 	if err != nil {
-		return nil, err
+		return nil, common.Address{}, nil, err
 	}
 
 	isVerifiedOrganizer := credential.IsVerifiedOrganizer
 	if !isVerifiedOrganizer {
-		return nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("user is not a verified organizer"))
+		return nil, common.Address{}, nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("user is not a verified organizer"))
 	}
 
 	bannerStorageKey, err := uc.UploadEventBanner(ctx, uuid.New(), params.EventBanner)
 	if err != nil {
-		return nil, err
+		return nil, common.Address{}, nil, err
 	}
 
 	iconStorageKey, err := uc.UploadEventIcon(ctx, uuid.New(), params.EventIcon)
 	if err != nil {
-		return nil, err
+		return nil, common.Address{}, nil, err
 	}
 
 	createEventParams := datagateway.CreateEventParameters{
@@ -74,10 +83,48 @@ func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParam
 	if err != nil {
 		uc.S3Service.DeleteFile(ctx, bannerStorageKey)
 		uc.S3Service.DeleteFile(ctx, iconStorageKey)
-		return nil, err
+		return nil, common.Address{}, nil, err
 	}
 
-	// TODO: Deploy event contracts
+	decmAccessManagerAddress := common.HexToAddress(config.LoadConfig().Blockchain.DecmAccessManagerAddress)
+	if decmAccessManagerAddress == (common.Address{}) {
+		return nil, common.Address{}, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("DecmAccessManagerAddress is required"))
+	}
 
-	return event, nil
+	client, err := cyptoutils.GetEthereumClient()
+	if err != nil {
+		return nil, common.Address{}, nil, err
+	}
+
+	auth, err := cyptoutils.GetKeyedTransactor()
+	if err != nil {
+		return nil, common.Address{}, nil, err
+	}
+
+	_, hostAddress, err := cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, params.HostPassword)
+	if err != nil {
+		return nil, common.Address{}, nil, err
+	}
+
+	eventContractAddress, tx, _, err := contracts.DeployEvent(
+		auth,
+		client,
+		decmAccessManagerAddress,              // DecmAccessManager address
+		event.Title,                           // Event name
+		event.ShortDescription,                // Event description
+		big.NewInt(int64(event.MaxAttendees)), // Seats count
+		*hostAddress,                          // Host address
+	)
+
+	if err != nil {
+		return nil, common.Address{}, nil, err
+	}
+
+	// Wait for transaction to be mined
+	_, err = bind.WaitMined(ctx, client, tx)
+	if err != nil {
+		return nil, common.Address{}, nil, err
+	}
+
+	return event, eventContractAddress, tx, nil
 }
