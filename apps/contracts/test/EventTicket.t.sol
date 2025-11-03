@@ -7,7 +7,6 @@ import {MockDecmAccessManager} from "./utils/MockDecmAccessManager.sol";
 import {MockEvent} from "./utils/MockEvent.sol";
 import {TestUtils} from "./utils/TestUtils.sol";
 import {Event} from "../src/contracts/event/Event.sol";
-import {TicketVCStructs} from "../src/libraries/TicketVCStructs.sol";
 
 contract EventTicketTest is TestUtils {
     EventTicket public eventTicket;
@@ -83,7 +82,7 @@ contract EventTicketTest is TestUtils {
         );
     }
 
-    function test_WhenConstructorParametersAreValid() public {
+    function test_WhenConstructorParametersAreValid() public view {
         assertEq(eventTicket.name(), "DECM Event Ticket", "Token name should be set correctly");
         assertEq(eventTicket.symbol(), "DECMT", "Token symbol should be set correctly");
         assertEq(address(eventTicket.EVENT_ACCESS_MANAGER()), address(eventAccessManager), "Event access manager should be set correctly");
@@ -401,11 +400,11 @@ contract EventTicketTest is TestUtils {
         );
         
         // Get token URI
-        string memory tokenURI = eventTicket.tokenURI(0);
+        string memory tokenUri = eventTicket.tokenURI(0);
         
         // Should be same as getTokenData
         string memory tokenData = eventTicket.getTokenData(0);
-        assertEq(tokenURI, tokenData, "Token URI should be same as token data");
+        assertEq(tokenUri, tokenData, "Token URI should be same as token data");
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -439,8 +438,8 @@ contract EventTicketTest is TestUtils {
         assertTrue(_contains(tokenData, TEST_ISSUER_ID), "Token data should contain issuer ID");
         
         // Verify token URI
-        string memory tokenURI = eventTicket.tokenURI(0);
-        assertEq(tokenURI, tokenData, "Token URI should be same as token data");
+        string memory tokenUri = eventTicket.tokenURI(0);
+        assertEq(tokenUri, tokenData, "Token URI should be same as token data");
     }
 
     function test_MultipleMintsAndTokenCounterIncrement() public {

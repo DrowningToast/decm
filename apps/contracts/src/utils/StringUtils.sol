@@ -25,7 +25,7 @@ library StringUtils {
         return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
     }
 
-    function toAddress(string memory s) public pure returns (address) {
+    function toAddress(string memory s) internal pure returns (address) {
         return s.parseAddress();
     }
 
