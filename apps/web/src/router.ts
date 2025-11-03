@@ -17,6 +17,8 @@ export type Path =
     | `/host/home`
     | `/onboard/:method`
     | `/signin`
+    | `/signin/sign-message`
+    | `/signin/verify-oauth`
     | `/signout`
     | `/signup`;
 

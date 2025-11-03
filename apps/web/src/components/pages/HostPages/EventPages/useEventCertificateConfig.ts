@@ -1,5 +1,6 @@
 import { coreApiClient } from "@/lib/api/api";
 import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 
 export function useEventCertificateConfig(eventId: string) {
     const {
@@ -7,7 +8,7 @@ export function useEventCertificateConfig(eventId: string) {
         isLoading: isLoadingEventCertificateConfig,
         error: errorEventCertificateConfig,
     } = useQuery({
-        queryKey: ["event", eventId, "certificate", "config"],
+        queryKey: queryKeys.event.certificate.config(eventId),
         queryFn: () => coreApiClient.v1.getEventCertificateConfig({ eventId: eventId }),
     });
 

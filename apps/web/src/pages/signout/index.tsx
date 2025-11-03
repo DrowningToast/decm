@@ -4,20 +4,20 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const SignoutPage = () => {
-
     const { signout, isPending, error } = useSignout();
     const navigate = useNavigate();
     useEffect(() => {
         const init = async () => {
             try {
                 await signout();
-                navigate("/");
+                await navigate("/");
+                await navigate(0);
             } catch (error) {
                 if (error instanceof Error) {
                     toast.error(error.message);
                 }
             }
-        }
+        };
         init();
     }, [navigate, signout]);
 
@@ -33,7 +33,7 @@ const SignoutPage = () => {
         <div>
             <h1>You're logging out. Please wait...</h1>
         </div>
-    )
-}
+    );
+};
 
 export default SignoutPage;

@@ -2,10 +2,10 @@ import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { PublicNavbar } from "@/components/layouts/navigations/PublicNavbar";
 import { Outlet } from "react-router-dom";
 
-const Layout = () => {
+const SignInLayout = () => {
     return (
-        <BaseLayout className="max-h-screen w-full overflow-hidden" variant="light">
-            <PublicNavbar variant="light" />
+        <BaseLayout className="max-h-screen w-full overflow-hidden" variant="dark">
+            <PublicNavbar variant="dark" />
             <div className="pt-[15px] md:pt-14">
                 <Outlet />
             </div>
@@ -13,4 +13,4 @@ const Layout = () => {
     );
 };
 
-export default Layout;
+export default SignInLayout;

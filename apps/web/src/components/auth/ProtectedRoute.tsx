@@ -4,11 +4,14 @@ import { useAuth } from "@/context/AuthContext";
 import { Typography } from "@/components/typography/typography";
 import { useTranslation } from "react-i18next";
 import { Navigate } from "react-router-dom";
+import { toast } from "sonner";
+import { TOAST_USECASE_VIEWMODEL } from "@/constants/toast";
+import { USECASE_IDS } from "@/constants/usecase";
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
     redirectTo?: Path;
-    requiredRoles?: ("ADMIN" | "ISSUER" | "PARTICIPANT" | "HOST")[];
+    // requiredRoles?: ("ADMIN" | "ISSUER" | "PARTICIPANT" | "HOST")[];
     fallback?: React.ReactNode;
 }
 
@@ -18,7 +21,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     // requiredRoles,
     fallback,
 }) => {
-    const { isAuthenticated, isLoading, } = useAuth();
+    const { isAuthenticated, isLoading } = useAuth();
     const { t } = useTranslation();
 
     if (isLoading) {
@@ -37,6 +40,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
 
     if (!isAuthenticated) {
+        toast.error(t(TOAST_USECASE_VIEWMODEL[USECASE_IDS.GENERIC].UNAUTHENTICATED_RESPONSE));
         return <Navigate to={redirectTo} replace />;
     }
 

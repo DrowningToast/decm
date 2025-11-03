@@ -136,11 +136,7 @@ export const useAuthRedirect = () => {
                     hasWalletClient: true,
                 },
                 () => {
-                    navigate("/onboard/:method", {
-                        params: {
-                            method: "wallet",
-                        },
-                    });
+                    navigate("/signin/sign-message");
                 },
             );
     }, [

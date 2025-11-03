@@ -163,4 +163,6 @@
     --font-taviraj: "Taviraj", serif;
     --font-anuphan: "Anuphan", serif;
     --font-cormorant: "Cormorant Garamond", serif;
+    --font-header: "Cormorant Garamond", "Taviraj", serif;
+    --font-body: "Inter", "Anuphan", serif;
 }

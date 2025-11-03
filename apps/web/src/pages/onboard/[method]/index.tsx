@@ -6,7 +6,10 @@ import { createContext, useEffect, useMemo, useState } from "react";
 import { OAuthOnboardLoadingPage } from "@/components/pages/Onboard/OAuth/Loading/OAuthOnboardLoadingPage";
 import { OAuthOnboardConfirmPage } from "@/components/pages/Onboard/OAuth/Confirm/OAuthOnboardConfirmPage";
 import { OnboardRegistrationMethod, type OnboardCheckOnboardStatusResponse } from "@decm/api";
-import { useCheckOnboardStatus, type UseCheckOnboardParams } from "@/components/pages/Onboard/useCheckOnboardStatus";
+import {
+    useCheckOnboardStatus,
+    type UseCheckOnboardParams,
+} from "@/components/pages/Onboard/useCheckOnboardStatus";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { handleUniversalError } from "@/common/Err";
 import { useTranslation } from "react-i18next";
@@ -25,15 +28,18 @@ import { WalletOnboardConfirmPage } from "@/components/pages/Onboard/Wallet/Wall
 export const OnboardMethods = {
     WALLET: "wallet",
     GOOGLE: "google",
-} as const
+} as const;
 
 interface OnboardStep {
     render: React.FC<{ step: number }>;
 }
 
-export type OnboardMethod = typeof OnboardMethods[keyof typeof OnboardMethods];
+export type OnboardMethod = (typeof OnboardMethods)[keyof typeof OnboardMethods];
 
-type OnboardSteps = Record<OnboardMethod, Record<number, OnboardStep> & { Parent: React.FC<React.PropsWithChildren> }>
+type OnboardSteps = Record<
+    OnboardMethod,
+    Record<number, OnboardStep> & { Parent: React.FC<React.PropsWithChildren> }
+>;
 
 const OnboardSteps: OnboardSteps = {
     [OnboardMethods.WALLET]: {
@@ -79,9 +85,9 @@ const OnboardSteps: OnboardSteps = {
         3: {
             render: () => <OAuthOnboardConfirmPage />,
         },
-        Parent: OAuthOnboardProvider
+        Parent: OAuthOnboardProvider,
     },
-}
+};
 
 type OnboardPageContextType = {
     method: OnboardMethod;
@@ -93,16 +99,15 @@ type OnboardPageContextType = {
     expiresIn?: number;
 
     onboardStatus?: OnboardCheckOnboardStatusResponse;
-    isStatusLoading: boolean
+    isStatusLoading: boolean;
     onboardStatusError?: Error;
 
     profileForm: UseFormReturn<Profile>;
-}
+};
 
 const OnboardPageContext = createContext<OnboardPageContextType>({} as OnboardPageContextType);
 
-export { OnboardPageContext }
-
+export { OnboardPageContext };
 
 const OnboardingPage = () => {
     const { method } = useParams<"/onboard/:method">("/onboard/:method");
@@ -114,14 +119,23 @@ const OnboardingPage = () => {
     const _accessToken = searchParams.get("access_token");
     const _expiresIn = searchParams.get("expires_in");
 
-    const [accessToken, setAccessToken] = useLocalStorage<string | undefined>(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, undefined);
-    const [expiresIn, setExpiresIn] = useLocalStorage<number | undefined>(LOCAL_STORAGE_KEYS.EXPIRES_IN, undefined);
-    const [signSignature,] = useLocalStorage<string | undefined>(LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE, undefined);
+    const [accessToken, setAccessToken] = useLocalStorage<string | undefined>(
+        LOCAL_STORAGE_KEYS.ACCESS_TOKEN,
+        undefined,
+    );
+    const [expiresIn, setExpiresIn] = useLocalStorage<number | undefined>(
+        LOCAL_STORAGE_KEYS.EXPIRES_IN,
+        undefined,
+    );
+    const [signSignature] = useLocalStorage<string | undefined>(
+        LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE,
+        undefined,
+    );
 
     const profileForm = useForm<Profile>({
         resolver: zodResolver(ProfileSchema(t)),
-        mode: 'onChange'
-    })
+        mode: "onChange",
+    });
 
     // handle and clear search params when access token or expires in is changed
     useEffect(() => {
@@ -133,7 +147,15 @@ const OnboardingPage = () => {
             setExpiresIn(parseInt(_expiresIn));
             setSearchParams({ ...searchParams, expires_in: "" });
         }
-    }, [_accessToken, _expiresIn, accessToken, searchParams, setAccessToken, setExpiresIn, setSearchParams]);
+    }, [
+        _accessToken,
+        _expiresIn,
+        accessToken,
+        searchParams,
+        setAccessToken,
+        setExpiresIn,
+        setSearchParams,
+    ]);
 
     const checkOnBoardStatusParam: UseCheckOnboardParams | undefined = useMemo(() => {
         if (method === OnboardMethods.GOOGLE) {
@@ -155,67 +177,82 @@ const OnboardingPage = () => {
         }
         return undefined;
     }, [method, accessToken, expiresIn, signSignature]);
-    const { onboardStatus, isLoading: _isLoading, error } = useCheckOnboardStatus(checkOnBoardStatusParam);
+    const {
+        onboardStatus,
+        isLoading: _isLoading,
+        error,
+    } = useCheckOnboardStatus(checkOnBoardStatusParam);
 
     const isLoading = useMemo(() => {
         if (_isLoading) {
-            return true
+            return true;
         }
         if (_accessToken && accessToken) {
-            return true
+            return true;
         }
         if (_expiresIn && expiresIn) {
-            return true
+            return true;
         }
-        return false
+        return false;
     }, [_accessToken, _expiresIn, _isLoading, accessToken, expiresIn]);
 
     // handle error
     useEffect(() => {
         if (!error) {
-            return
+            return;
         }
 
-        handleUniversalError(t, error, {
-            onUnauthorized: () => {
-                navigate("/");
+        handleUniversalError(
+            t,
+            error,
+            {
+                onUnauthorized: () => {
+                    navigate("/");
+                },
             },
-        }, USECASE_IDS.CHECK_ONBOARD_STATUS);
-    }, [error, navigate, t])
+            USECASE_IDS.CHECK_ONBOARD_STATUS,
+        );
+    }, [error, navigate, t]);
+
+    // handler account already created
+    useEffect(() => {
+        if (onboardStatus?.authentication_credential_id && onboardStatus?.profile_id) {
+            navigate("/app");
+        }
+    }, [onboardStatus?.authentication_credential_id, onboardStatus?.profile_id, navigate]);
 
     if (!method || !Object.values(OnboardMethods).includes(method as OnboardMethod)) {
-        return <NotFoundPage />
+        return <NotFoundPage />;
     }
 
     const steps = OnboardSteps[method as OnboardMethod];
 
     if (!steps) {
-        return <NotFoundPage />
+        return <NotFoundPage />;
     }
 
     const renderStep = () => {
         const StepComponent = steps[step].render;
         return <StepComponent step={step} />;
-    }
+    };
 
     return (
-        <OnboardPageContext.Provider value={{
-            method: method as OnboardMethod,
-            step, setStep,
-            profileForm,
-            accessToken: accessToken ?? undefined,
-            expiresIn: expiresIn,
-            onboardStatus: onboardStatus ?? undefined,
-            isStatusLoading: isLoading,
-            onboardStatusError: error ?? undefined,
-        }}>
-            <steps.Parent>
-                {
-                    renderStep()
-                }
-            </steps.Parent>
+        <OnboardPageContext.Provider
+            value={{
+                method: method as OnboardMethod,
+                step,
+                setStep,
+                profileForm,
+                accessToken: accessToken ?? undefined,
+                expiresIn: expiresIn,
+                onboardStatus: onboardStatus ?? undefined,
+                isStatusLoading: isLoading,
+                onboardStatusError: error ?? undefined,
+            }}
+        >
+            <steps.Parent>{renderStep()}</steps.Parent>
         </OnboardPageContext.Provider>
-    )
+    );
 };
 
 export default OnboardingPage;
