@@ -31,6 +31,7 @@ export const CreateEventPage = () => {
             icon: data.eventIcon,
             location: data.location,
             name: data.name,
+            host_password: "111111",
         };
 
         await createEvent(req);
