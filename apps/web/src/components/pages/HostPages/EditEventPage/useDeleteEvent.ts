@@ -4,7 +4,7 @@ import { useNavigate } from "@/router";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { QUERY_KEY } from "@/lib/queryKeys";
+import { queryKeys } from "@/lib/queryKeys";
 
 export function useDeleteEvent(eventId: string) {
     const { t } = useTranslation();
@@ -18,7 +18,7 @@ export function useDeleteEvent(eventId: string) {
             });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: QUERY_KEY.hostEvents.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.hostEvents.all });
         },
     });
 

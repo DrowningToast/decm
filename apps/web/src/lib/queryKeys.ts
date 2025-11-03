@@ -6,16 +6,16 @@
  *
  * @example
  * ```tsx
- * import { QUERY_KEY } from '@/lib/queryKeys';
+ * import { queryKeys } from '@/lib/queryKeys';
  *
  * useQuery({
- *   queryKey: QUERY_KEY.user.profile,
+ *   queryKey: queryKeys.user.profile,
  *   queryFn: fetchUserProfile
  * });
  * ```
  */
 
-export const QUERY_KEY = {
+export const queryKeys = {
     // User & Authentication
     user: {
         profile: ["user", "profile"] as const,

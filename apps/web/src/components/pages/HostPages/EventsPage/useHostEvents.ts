@@ -2,7 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { coreApiClient } from "@/lib/api/api";
 import { usePaginationState } from "@/hooks/usePaginationState";
-import { QUERY_KEY } from "@/lib/queryKeys";
+import { queryKeys } from "@/lib/queryKeys";
 
 interface UseHostEventsOptions {
     initialPage?: number;
@@ -22,7 +22,7 @@ export const useHostEvents = (options: UseHostEventsOptions = {}) => {
         error: isLoadingEventsError,
         refetch,
     } = useQuery({
-        queryKey: QUERY_KEY.hostEvents.list(
+        queryKey: queryKeys.hostEvents.list(
             user?.authentication_credential_id,
             rowsPerPage,
             offset,
