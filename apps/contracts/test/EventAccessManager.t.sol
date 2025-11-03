@@ -46,7 +46,7 @@ contract EventAccessManagerTest is TestUtils {
         new EventAccessManager(address(mockDecmAccessManager), address(0));
     }
 
-    function test_WhenConstructorParametersAreValid() public {
+    function test_WhenConstructorParametersAreValid() public view {
         assertTrue(eventAccessManager.checkIsHost(HOST), "Host should have host role");
         assertTrue(eventAccessManager.allowedMsgSenders(ADMIN), "Deployer should be allowed msg sender");
     }
@@ -250,7 +250,7 @@ contract EventAccessManagerTest is TestUtils {
                            VIEW FUNCTION TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function test_CheckIsHost() public {
+    function test_CheckIsHost() public view {
         assertTrue(eventAccessManager.checkIsHost(HOST), "Host should be identified as host");
         assertFalse(eventAccessManager.checkIsHost(PARTICIPANT), "Participant should not be identified as host");
     }
@@ -279,7 +279,7 @@ contract EventAccessManagerTest is TestUtils {
         assertFalse(eventAccessManager.checkIsParticipant(HOST), "Non-participant should not be identified as participant");
     }
 
-    function test_CheckIsHostOrAdmin() public {
+    function test_CheckIsHostOrAdmin() public view {
         assertTrue(eventAccessManager.checkIsHostOrAdmin(HOST), "Host should be identified as host or admin");
         assertTrue(eventAccessManager.checkIsHostOrAdmin(ADMIN), "Admin should be identified as host or admin");
         assertFalse(eventAccessManager.checkIsHostOrAdmin(PARTICIPANT), "Non-host/non-admin should not be identified as host or admin");

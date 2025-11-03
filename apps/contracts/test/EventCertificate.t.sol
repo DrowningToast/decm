@@ -7,7 +7,6 @@ import {MockDecmAccessManager} from "./utils/MockDecmAccessManager.sol";
 import {MockEvent} from "./utils/MockEvent.sol";
 import {TestUtils} from "./utils/TestUtils.sol";
 import {Event} from "../src/contracts/event/Event.sol";
-import {CertificateVCStructs} from "../src/libraries/CertificateVCStructs.sol";
 
 contract EventCertificateTest is TestUtils {
     EventCertificate public eventCertificate;
@@ -142,7 +141,7 @@ contract EventCertificateTest is TestUtils {
         );
     }
 
-    function test_WhenConstructorParametersAreValid() public {
+    function test_WhenConstructorParametersAreValid() public view {
         assertEq(eventCertificate.name(), "DECM Event Certificate", "Token name should be set correctly");
         assertEq(eventCertificate.symbol(), "DECMC", "Token symbol should be set correctly");
         assertEq(address(eventCertificate.EVENT_ACCESS_MANAGER()), address(eventAccessManager), "Event access manager should be set correctly");

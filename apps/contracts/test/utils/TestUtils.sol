@@ -68,18 +68,16 @@ contract TestUtils is Test {
     /**
      * @dev Creates a signed message for a specific role
      * @param role The role address (HOST, ADMIN, etc.)
-     * @param contractAddress The contract address
-     * @param privateKey The private key of the role
-     * @param deadlineBlocks The number of blocks until deadline (default: 12 blocks ≈ 1 minute)
+     * @param privateKey The private key of role
      * @return The sign message and signature
      */
     function createSignedMessageForRole(
         address role,
-        address contractAddress,
+        address /* contractAddress */, // Commented out unused parameter
         uint256 privateKey,
-        uint256 deadlineBlocks
-    ) internal returns (string memory, bytes memory) {
-        uint256 deadlineBlock = block.number + deadlineBlocks;
+        uint256 /* deadlineBlocks */ // Commented out unused parameter
+    ) internal pure returns (string memory, bytes memory) {
+        // uint256 deadlineBlock = block.number + deadlineBlocks; // Commented out unused variable
         string memory message = getMockSignMessage(role);
         bytes memory signature = signMessage(message, privateKey);
         return (message, signature);
@@ -96,26 +94,8 @@ contract TestUtils is Test {
         address role,
         address contractAddress,
         uint256 privateKey
-    ) internal returns (string memory, bytes memory) {
+    ) internal pure returns (string memory, bytes memory) {
         return createSignedMessageForRole(role, contractAddress, privateKey, 12);
-    }
-
-    /**
-     * @dev Creates an expired signed message for testing
-     * @param role The role address (HOST, ADMIN, etc.)
-     * @param contractAddress The contract address
-     * @param privateKey The private key of the role
-     * @return The sign message and signature
-     */
-    function createExpiredSignedMessage(
-        address role,
-        address contractAddress,
-        uint256 privateKey
-    ) internal returns (string memory, bytes memory) {
-        uint256 pastBlock = block.number - 1;
-        string memory message = getMockSignMessage(role);
-        bytes memory signature = signMessage(message, privateKey);
-        return (message, signature);
     }
 
     /**
@@ -127,9 +107,9 @@ contract TestUtils is Test {
     function createInvalidContractSignedMessage(
         address role,
         uint256 privateKey
-    ) internal returns (string memory, bytes memory) {
-        address invalidContract = address(0x999);
-        uint256 deadlineBlock = block.number + 12;
+    ) internal pure returns (string memory, bytes memory) {
+        // address invalidContract = address(0x999); // Commented out unused variable
+        // uint256 deadlineBlock = block.number + 12; // Commented out unused variable
         string memory message = getMockSignMessage(role);
         bytes memory signature = signMessage(message, privateKey);
         return (message, signature);

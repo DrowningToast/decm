@@ -79,7 +79,7 @@ contract EventTest is TestUtils {
         );
     }
 
-    function test_WhenConstructorParametersAreValid() public {
+    function test_WhenConstructorParametersAreValid() public view {
         assertEq(eventContract.eventName(), EVENT_NAME, "Event name should be set correctly");
         assertEq(eventContract.eventDescription(), EVENT_DESCRIPTION, "Event description should be set correctly");
         assertEq(eventContract.seatsCount(), SEATS_COUNT, "Seats count should be set correctly");
@@ -463,11 +463,11 @@ contract EventTest is TestUtils {
                            GETTER FUNCTION TESTS
     //////////////////////////////////////////////////////////////*/
 
-    function test_GetEventName() public {
+    function test_GetEventName() public view {
         assertEq(eventContract.getEventName(), EVENT_NAME, "Should return correct event name");
     }
 
-    function test_GetEventDescription() public {
+    function test_GetEventDescription() public view {
         assertEq(eventContract.getEventDescription(), EVENT_DESCRIPTION, "Should return correct event description");
     }
 
