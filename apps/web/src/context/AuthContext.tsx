@@ -3,7 +3,11 @@ import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { coreApiClient } from "@/lib/api/api";
 import type { EntityProfile } from "@decm/api";
-import { queryKeys } from "@/lib/queryKeys";
+import { QUERY_KEY } from "@/lib/queryKeys";
+import { handleAxiosError } from "@/common/Err";
+import { AxiosError } from "axios";
+import { useTranslation } from "react-i18next";
+import { useSignout } from "@/components/useSignout";
 interface AuthContextType {
     user: EntityProfile | null;
     isLoading: boolean;
@@ -18,20 +22,27 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+    const { t } = useTranslation();
     const [isInitialized, setIsInitialized] = useState(false);
+    const { signout } = useSignout();
 
     const {
         data: user,
         isLoading,
         refetch,
     } = useQuery<EntityProfile | null>({
-        queryKey: queryKeys.user.profile,
+        queryKey: QUERY_KEY.user.profile,
         queryFn: async () => {
             try {
                 const response = await coreApiClient.v1.getMyProfile();
                 return response;
             } catch (error) {
-                console.error(error);
+                if (error instanceof AxiosError) {
+                    console.error(error);
+                    handleAxiosError(t, error);
+                    await signout();
+                    return null;
+                }
                 return null;
             }
         },
