@@ -51,7 +51,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         emit HostRoleGranted(hostAddress, msg.sender);
     }
 
-    function grantIssuerRole(address issuer, address signer) internal {
+    function grantIssuerRole(address issuer, address signer) public {
         requireHostOrAdmin(signer);
 
         if (issuer == address(0)) {
@@ -61,7 +61,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         emit IssuerRoleGranted(issuer, msg.sender);
     }
 
-    function revokeIssuerRole(address issuer, address signer) internal {
+    function revokeIssuerRole(address issuer, address signer) public {
         requireHostOrAdmin(signer);
 
         if (issuer == address(0)) {
@@ -71,7 +71,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         emit IssuerRoleRevoked(issuer, msg.sender);
     }
 
-    function grantParticipantRole(address participant, address signer) internal {
+    function grantParticipantRole(address participant, address signer) public {
         requireHostOrAdmin(signer);
 
         if (participant == address(0)) {
@@ -81,7 +81,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         emit ParticipantRoleGranted(participant, msg.sender);
     }
 
-    function revokeParticipantRole(address participant, address signer) internal {
+    function revokeParticipantRole(address participant, address signer) public {
         requireHostOrAdminOrParticipant(signer);
 
         if (participant == address(0)) {
@@ -91,7 +91,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         emit ParticipantRoleRevoked(participant, msg.sender);
     }
 
-    function grantHostRole(address host, address signer) internal {
+    function grantHostRole(address host, address signer) public {
         requireHostOrAdmin(signer);
 
         if (host == address(0)) {
@@ -101,7 +101,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         emit HostRoleGranted(host, msg.sender);
     }
 
-    function addAllowedMsgSender(address sender) internal {
+    function addAllowedMsgSender(address sender) public {
         requireAdmin(msg.sender);
         
         if (sender == address(0)) {
@@ -112,7 +112,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         emit MsgSenderAllowed(sender, msg.sender);
     }
 
-    function removeAllowedMsgSender(address sender) internal {
+    function removeAllowedMsgSender(address sender) public {
         requireAdmin(msg.sender);
         
         if (sender == address(0)) {

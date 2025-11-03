@@ -5,73 +5,18 @@
 package contracts
 
 import (
-	"apps/backend/contracts/accessmanager"
-	"apps/backend/contracts/certificate"
-	"apps/backend/contracts/decm"
-	"apps/backend/contracts/event"
-	"apps/backend/contracts/ticket"
-	"math/big"
-
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
+    "apps/backend/contracts/event"
+    "apps/backend/contracts/accessmanager"
+    "apps/backend/contracts/ticket"
+    "apps/backend/contracts/certificate"
+    "apps/backend/contracts/decm"
 )
 
 // ContractBindings holds all contract bindings
 type ContractBindings struct {
-	Event              *event.Event
-	EventAccessManager *accessmanager.EventAccessManager
-	EventTicket        *ticket.EventTicket
-	EventCertificate   *certificate.EventCertificate
-	DecmAccessManager  *decm.DecmAccessManager
-}
-
-// DeployEvent deploys a new Event contract
-func DeployEvent(auth *bind.TransactOpts, backend bind.ContractBackend, decmAccessManagerAddr common.Address, _eventName string, _eventDescription string, _seatsCount *big.Int, hostAddress common.Address) (common.Address, *types.Transaction, *event.Event, error) {
-	return event.DeployEvent(auth, backend, decmAccessManagerAddr, _eventName, _eventDescription, _seatsCount, hostAddress)
-}
-
-// DeployEventAccessManager deploys a new EventAccessManager contract
-func DeployEventAccessManager(auth *bind.TransactOpts, backend bind.ContractBackend, decmAccessManagerAddr common.Address, hostAddress common.Address) (common.Address, *types.Transaction, *accessmanager.EventAccessManager, error) {
-	return accessmanager.DeployEventAccessManager(auth, backend, decmAccessManagerAddr, hostAddress)
-}
-
-// DeployEventTicket deploys a new EventTicket contract
-func DeployEventTicket(auth *bind.TransactOpts, backend bind.ContractBackend, eventAccessManagerAddr common.Address, eventAddr common.Address) (common.Address, *types.Transaction, *ticket.EventTicket, error) {
-	return ticket.DeployEventTicket(auth, backend, eventAccessManagerAddr, eventAddr)
-}
-
-// DeployEventCertificate deploys a new EventCertificate contract
-func DeployEventCertificate(auth *bind.TransactOpts, backend bind.ContractBackend, eventAccessManagerAddr common.Address, eventAddr common.Address) (common.Address, *types.Transaction, *certificate.EventCertificate, error) {
-	return certificate.DeployEventCertificate(auth, backend, eventAccessManagerAddr, eventAddr)
-}
-
-// DeployDecmAccessManager deploys a new DecmAccessManager contract
-func DeployDecmAccessManager(auth *bind.TransactOpts, backend bind.ContractBackend, initialAdmins []common.Address) (common.Address, *types.Transaction, *decm.DecmAccessManager, error) {
-	return decm.DeployDecmAccessManager(auth, backend, initialAdmins)
-}
-
-// NewEvent creates a new instance of Event contract
-func NewEvent(address common.Address, backend bind.ContractBackend) (*event.Event, error) {
-	return event.NewEvent(address, backend)
-}
-
-// NewEventAccessManager creates a new instance of EventAccessManager contract
-func NewEventAccessManager(address common.Address, backend bind.ContractBackend) (*accessmanager.EventAccessManager, error) {
-	return accessmanager.NewEventAccessManager(address, backend)
-}
-
-// NewEventTicket creates a new instance of EventTicket contract
-func NewEventTicket(address common.Address, backend bind.ContractBackend) (*ticket.EventTicket, error) {
-	return ticket.NewEventTicket(address, backend)
-}
-
-// NewEventCertificate creates a new instance of EventCertificate contract
-func NewEventCertificate(address common.Address, backend bind.ContractBackend) (*certificate.EventCertificate, error) {
-	return certificate.NewEventCertificate(address, backend)
-}
-
-// NewDecmAccessManager creates a new instance of DecmAccessManager contract
-func NewDecmAccessManager(address common.Address, backend bind.ContractBackend) (*decm.DecmAccessManager, error) {
-	return decm.NewDecmAccessManager(address, backend)
+    Event              *event.Event
+    EventAccessManager *accessmanager.EventAccessManager
+    EventTicket        *ticket.EventTicket
+    EventCertificate   *certificate.EventCertificate
+    DecmAccessManager  *decm.DecmAccessManager
 }

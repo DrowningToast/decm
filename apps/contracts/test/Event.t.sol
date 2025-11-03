@@ -48,8 +48,7 @@ contract EventTest is TestUtils {
             address(mockDecmAccessManager),
             EVENT_NAME,
             EVENT_DESCRIPTION,
-            SEATS_COUNT,
-            HOST
+            SEATS_COUNT
         );
     }
 
@@ -63,8 +62,7 @@ contract EventTest is TestUtils {
             address(0),
             EVENT_NAME,
             EVENT_DESCRIPTION,
-            SEATS_COUNT,
-            HOST
+            SEATS_COUNT
         );
     }
 
@@ -74,8 +72,7 @@ contract EventTest is TestUtils {
             address(mockDecmAccessManager),
             "",
             EVENT_DESCRIPTION,
-            SEATS_COUNT,
-            HOST
+            SEATS_COUNT
         );
     }
 
@@ -85,7 +82,7 @@ contract EventTest is TestUtils {
         assertEq(eventContract.seatsCount(), SEATS_COUNT, "Seats count should be set correctly");
         assertEq(eventContract.currentSeatsCount(), 0, "Current seats count should be 0");
         assertEq(uint256(eventContract.eventStatus()), uint256(Event.EventStatus.ACTIVE), "Event status should be ACTIVE");
-        assertTrue(eventContract.checkIsHost(HOST), "Host should have host role");
+        assertTrue(eventAccessManager.checkIsHost(HOST), "Host should have host role");
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -218,8 +215,7 @@ contract EventTest is TestUtils {
             address(mockDecmAccessManager),
             "Small Event",
             "Small event description",
-            1,
-            HOST
+            1
         );
         
         // Add the first participant
@@ -260,7 +256,7 @@ contract EventTest is TestUtils {
         eventContract.addParticipant(PARTICIPANT, signMessage, signature);
         
         assertEq(eventContract.currentSeatsCount(), 1, "Current seats count should be 1");
-        assertTrue(eventContract.checkIsParticipant(PARTICIPANT), "Participant should have participant role");
+        assertTrue(eventAccessManager.checkIsParticipant(PARTICIPANT), "Participant should have participant role");
         
         address[] memory participants = eventContract.getParticipants();
         assertEq(participants.length, 1, "Participants array should have 1 element");
@@ -335,7 +331,7 @@ contract EventTest is TestUtils {
         eventContract.removeParticipant(PARTICIPANT, signMessage2, signature2);
         
         assertEq(eventContract.currentSeatsCount(), 0, "Current seats count should be 0");
-        assertFalse(eventContract.checkIsParticipant(PARTICIPANT), "Participant should no longer have participant role");
+        assertFalse(eventAccessManager.checkIsParticipant(PARTICIPANT), "Participant should no longer have participant role");
         
         address[] memory participants = eventContract.getParticipants();
         assertEq(participants.length, 0, "Participants array should be empty");
@@ -385,7 +381,7 @@ contract EventTest is TestUtils {
         eventContract.leaveEvent(signMessage2, signature2);
         
         assertEq(eventContract.currentSeatsCount(), 0, "Current seats count should be 0");
-        assertFalse(eventContract.checkIsParticipant(PARTICIPANT), "Participant should no longer have participant role");
+        assertFalse(eventAccessManager.checkIsParticipant(PARTICIPANT), "Participant should no longer have participant role");
         
         address[] memory participants = eventContract.getParticipants();
         assertEq(participants.length, 0, "Participants array should be empty");
