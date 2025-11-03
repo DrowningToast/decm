@@ -5,6 +5,7 @@ import type { UpdateEventPayload } from "@decm/api";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { queryKeys } from "@/lib/queryKeys";
 
 export function useEditEvent(eventId: string) {
     const { t } = useTranslation();
@@ -21,7 +22,7 @@ export function useEditEvent(eventId: string) {
             );
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["event"] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.event.all });
         },
     });
 

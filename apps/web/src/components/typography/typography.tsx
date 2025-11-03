@@ -13,36 +13,23 @@ export const typographyVariants = cva("text-wrap", {
         },
         color: {
             foreground: "text-foreground",
+            "foreground-alt": "text-foreground-alt",
             background: "text-background",
             "background-alt": "text-background-alt",
             primary: "text-primary",
             secondary: "text-secondary",
             muted: "text-muted",
             "muted-foreground": "text-muted-foreground",
+            destructive: "text-destructive",
         },
         variant: {
-            header: "font-semibold",
-            text: "font-normal",
-        },
-        fontFamily: {
-            inter: "font-inter",
-            taviraj: "font-taviraj",
-            anuphan: "font-anuphan",
-            cormorant: "font-cormorant",
-        },
-        weight: {
-            normal: "font-normal",
-            semibold: "font-semibold",
-            bold: "font-bold",
-            medium: "font-medium",
+            header: "font-semibold font-header",
+            text: "font-normal font-body",
         },
     },
     defaultVariants: {
-        color: "foreground",
         variant: "text",
         size: "base",
-        fontFamily: "inter",
-        weight: "normal",
     },
 });
 
@@ -61,8 +48,6 @@ export const Typography = <T extends (typeof TAGS)[number] = "span">({
     variant: level,
     tag,
     children,
-    fontFamily,
-    weight,
     ...props
 }: TypographyProps<T>) => {
     const _className = cn(
@@ -70,8 +55,6 @@ export const Typography = <T extends (typeof TAGS)[number] = "span">({
             size,
             color,
             variant: level,
-            fontFamily,
-            weight,
         }),
         className,
     );

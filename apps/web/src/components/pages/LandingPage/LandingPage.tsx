@@ -1,6 +1,7 @@
-import { Typography } from '@/components/typography/typography';
-import { Link } from '@/router';
-import { useTranslation } from 'react-i18next';
+import { Typography } from "@/components/typography/typography";
+import { Button } from "@/components/ui/button";
+import { Link } from "@/router";
+import { useTranslation } from "react-i18next";
 
 export const LandingPage = () => {
     const { t } = useTranslation();
@@ -31,7 +32,7 @@ export const LandingPage = () => {
                                 tag="h1"
                                 className="text-[36px] md:text-[64px] leading-[40px] md:leading-[56px] text-foreground text-right md:text-center font-primary tracking-[0.06px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                             >
-                                {t('landing.hero.title')}
+                                {t("landing.hero.title")}
                             </Typography>
 
                             <Typography
@@ -39,24 +40,24 @@ export const LandingPage = () => {
                                 tag="p"
                                 className="text-base md:text-2xl text-[#e9dede] text-right md:text-center max-w-[257px] md:max-w-[638px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                             >
-                                {t('landing.hero.subtitle')}
+                                {t("landing.hero.subtitle")}
                             </Typography>
                         </div>
 
                         {/* CTA Buttons */}
                         <div className="flex flex-col items-center gap-1 w-full md:w-auto">
                             <Link to="/signup">
-                                <button className="bg-[#e9dede] hover:bg-[#fcfcfc] transition-colors rounded-xl px-8 py-3 text-primary font-medium text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] w-[325px]">
-                                    {t('landing.hero.ctaButton')}
-                                </button>
+                                <Button className="bg-[#e9dede] hover:bg-[#fcfcfc] transition-colors rounded-xl px-8 py-3 text-primary font-medium text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] w-[325px] h-12">
+                                    {t("landing.hero.ctaButton")}
+                                </Button>
                             </Link>
-                            <Link to="/signup">
+                            <Link to="/signin">
                                 <Typography
                                     variant="text"
                                     tag="span"
                                     className="text-[#e9dede] text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-foreground transition-colors"
                                 >
-                                    {t('landing.hero.hasAccount')}
+                                    {t("landing.hero.hasAccount")}
                                 </Typography>
                             </Link>
                         </div>
@@ -68,13 +69,16 @@ export const LandingPage = () => {
                         tag="p"
                         className="md:hidden absolute bottom-4 right-6 text-[#b8b8b8] text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                     >
-                        {t('landing.hero.scrollIndicator')}
+                        {t("landing.hero.scrollIndicator")}
                     </Typography>
                 </div>
             </section>
 
             {/* About & Features Section */}
-            <section id="features" className="relative bg-gradient-to-b from-[#362927] to-[#0f1012] px-6 py-12 md:px-16 md:py-16">
+            <section
+                id="features"
+                className="relative bg-gradient-to-b from-[#362927] to-[#0f1012] px-6 py-12 md:px-16 md:py-16"
+            >
                 {/* About Themis */}
                 <div className="max-w-[1384px] mx-auto mb-12 md:mb-24">
                     <div className="flex flex-col gap-3 md:gap-6">
@@ -83,7 +87,7 @@ export const LandingPage = () => {
                             tag="h2"
                             className="text-[36px] md:text-[64px] leading-[40px] text-foreground font-['Bodoni_Moda'] font-semibold italic tracking-[0.06px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                         >
-                            {t('landing.about.title')}
+                            {t("landing.about.title")}
                         </Typography>
 
                         <Typography
@@ -91,7 +95,7 @@ export const LandingPage = () => {
                             tag="p"
                             className="text-base md:text-2xl text-foreground max-w-full md:max-w-[1384px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                         >
-                            {t('landing.about.description')}
+                            {t("landing.about.description")}
                         </Typography>
                     </div>
                 </div>
@@ -104,7 +108,7 @@ export const LandingPage = () => {
                             <img
                                 src="/wallet-icon.svg"
                                 alt="Wallet"
-                                className="size-6 md:size-8 shrink-0"
+                                className="size-6 md:size-8 shrink-0 text-black"
                             />
                             <div className="flex flex-col gap-2">
                                 <Typography
@@ -112,14 +116,14 @@ export const LandingPage = () => {
                                     tag="h3"
                                     className="text-base md:text-2xl text-foreground md:text-primary font-normal md:font-semibold [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px] md:[text-shadow:none]"
                                 >
-                                    {t('landing.features.wallet.title')}
+                                    {t("landing.features.wallet.title")}
                                 </Typography>
                                 <Typography
                                     variant="text"
                                     tag="p"
                                     className="text-base text-[#b8b8b8] md:text-[#0f1012] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px] md:[text-shadow:none]"
                                 >
-                                    {t('landing.features.wallet.description')}
+                                    {t("landing.features.wallet.description")}
                                 </Typography>
                             </div>
                         </div>
@@ -129,7 +133,7 @@ export const LandingPage = () => {
                             <img
                                 src="/receipt-text-icon.svg"
                                 alt="Receipt"
-                                className="size-6 md:size-8 shrink-0"
+                                className="size-6 md:size-8 shrink-0 text-black"
                             />
                             <div className="flex flex-col gap-2">
                                 <Typography
@@ -137,14 +141,14 @@ export const LandingPage = () => {
                                     tag="h3"
                                     className="text-base md:text-2xl text-foreground md:text-primary font-normal md:font-semibold [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px] md:[text-shadow:none]"
                                 >
-                                    {t('landing.features.verification.title')}
+                                    {t("landing.features.verification.title")}
                                 </Typography>
                                 <Typography
                                     variant="text"
                                     tag="p"
                                     className="text-base text-[#b8b8b8] md:text-[#0f1012] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px] md:[text-shadow:none]"
                                 >
-                                    {t('landing.features.verification.description')}
+                                    {t("landing.features.verification.description")}
                                 </Typography>
                             </div>
                         </div>
@@ -154,7 +158,7 @@ export const LandingPage = () => {
                             <img
                                 src="/shield-check-icon.svg"
                                 alt="Shield"
-                                className="size-6 md:size-8 shrink-0"
+                                className="size-6 md:size-8 shrink-0 text-black"
                             />
                             <div className="flex flex-col gap-2">
                                 <Typography
@@ -162,14 +166,14 @@ export const LandingPage = () => {
                                     tag="h3"
                                     className="text-base md:text-2xl text-foreground md:text-primary font-normal md:font-semibold [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px] md:[text-shadow:none]"
                                 >
-                                    {t('landing.features.download.title')}
+                                    {t("landing.features.download.title")}
                                 </Typography>
                                 <Typography
                                     variant="text"
                                     tag="p"
                                     className="text-base text-[#b8b8b8] md:text-[#0f1012] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px] md:[text-shadow:none]"
                                 >
-                                    {t('landing.features.download.description')}
+                                    {t("landing.features.download.description")}
                                 </Typography>
                             </div>
                         </div>
@@ -184,7 +188,7 @@ export const LandingPage = () => {
                             tag="h2"
                             className="text-base md:text-base text-foreground font-primary font-semibold tracking-[0.06px]"
                         >
-                            {t('landing.getStarted.title')}
+                            {t("landing.getStarted.title")}
                         </Typography>
 
                         {/* Mobile Links */}
@@ -196,7 +200,7 @@ export const LandingPage = () => {
                                         tag="span"
                                         className="text-[#b8b8b8] text-base italic underline [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                     >
-                                        {t('landing.getStarted.mobile.verificationPortal')}
+                                        {t("landing.getStarted.mobile.verificationPortal")}
                                     </Typography>
                                 </li>
                                 <li>
@@ -205,7 +209,7 @@ export const LandingPage = () => {
                                         tag="span"
                                         className="text-[#b8b8b8] text-base italic underline [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                     >
-                                        {t('landing.getStarted.mobile.myCertificate')}
+                                        {t("landing.getStarted.mobile.myCertificate")}
                                     </Typography>
                                 </li>
                                 <li>
@@ -214,7 +218,7 @@ export const LandingPage = () => {
                                         tag="span"
                                         className="text-[#b8b8b8] text-base italic underline [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                     >
-                                        {t('landing.getStarted.mobile.viewServices')}
+                                        {t("landing.getStarted.mobile.viewServices")}
                                     </Typography>
                                 </li>
                             </ul>
@@ -224,8 +228,12 @@ export const LandingPage = () => {
                         <div className="hidden md:grid md:grid-cols-5 gap-8">
                             {/* Public */}
                             <div className="flex flex-col gap-3">
-                                <Typography variant="text" tag="h3" className="text-foreground text-base">
-                                    {t('landing.getStarted.public.title')}
+                                <Typography
+                                    variant="text"
+                                    tag="h3"
+                                    className="text-foreground text-base"
+                                >
+                                    {t("landing.getStarted.public.title")}
                                 </Typography>
                                 <ul className="list-disc list-inside space-y-1">
                                     <li>
@@ -234,7 +242,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.public.event')}
+                                            {t("landing.getStarted.public.event")}
                                         </Typography>
                                     </li>
                                     <li>
@@ -243,7 +251,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.public.verifyCertificates')}
+                                            {t("landing.getStarted.public.verifyCertificates")}
                                         </Typography>
                                     </li>
                                 </ul>
@@ -251,8 +259,12 @@ export const LandingPage = () => {
 
                             {/* Students */}
                             <div className="flex flex-col gap-3">
-                                <Typography variant="text" tag="h3" className="text-foreground text-base">
-                                    {t('landing.getStarted.students.title')}
+                                <Typography
+                                    variant="text"
+                                    tag="h3"
+                                    className="text-foreground text-base"
+                                >
+                                    {t("landing.getStarted.students.title")}
                                 </Typography>
                                 <ul className="list-disc list-inside space-y-1">
                                     <li>
@@ -261,7 +273,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.students.signIn')}
+                                            {t("landing.getStarted.students.signIn")}
                                         </Typography>
                                     </li>
                                     <li>
@@ -270,7 +282,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.students.signUp')}
+                                            {t("landing.getStarted.students.signUp")}
                                         </Typography>
                                     </li>
                                     <li>
@@ -279,7 +291,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.students.certificateManagement')}
+                                            {t("landing.getStarted.students.certificateManagement")}
                                         </Typography>
                                     </li>
                                     <li>
@@ -288,7 +300,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.students.myEvents')}
+                                            {t("landing.getStarted.students.myEvents")}
                                         </Typography>
                                     </li>
                                     <li>
@@ -297,7 +309,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.students.inbox')}
+                                            {t("landing.getStarted.students.inbox")}
                                         </Typography>
                                     </li>
                                     <li>
@@ -306,7 +318,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.students.identities')}
+                                            {t("landing.getStarted.students.identities")}
                                         </Typography>
                                     </li>
                                 </ul>
@@ -314,8 +326,12 @@ export const LandingPage = () => {
 
                             {/* Organizer */}
                             <div className="flex flex-col gap-3">
-                                <Typography variant="text" tag="h3" className="text-foreground text-base">
-                                    {t('landing.getStarted.organizer.title')}
+                                <Typography
+                                    variant="text"
+                                    tag="h3"
+                                    className="text-foreground text-base"
+                                >
+                                    {t("landing.getStarted.organizer.title")}
                                 </Typography>
                                 <ul className="list-disc list-inside space-y-1">
                                     <li>
@@ -324,7 +340,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.organizer.register')}
+                                            {t("landing.getStarted.organizer.register")}
                                         </Typography>
                                     </li>
                                     <li>
@@ -333,7 +349,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.organizer.signIn')}
+                                            {t("landing.getStarted.organizer.signIn")}
                                         </Typography>
                                     </li>
                                     <li>
@@ -342,7 +358,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.organizer.eventManagement')}
+                                            {t("landing.getStarted.organizer.eventManagement")}
                                         </Typography>
                                     </li>
                                 </ul>
@@ -350,8 +366,12 @@ export const LandingPage = () => {
 
                             {/* Issuer */}
                             <div className="flex flex-col gap-3">
-                                <Typography variant="text" tag="h3" className="text-foreground text-base">
-                                    {t('landing.getStarted.issuer.title')}
+                                <Typography
+                                    variant="text"
+                                    tag="h3"
+                                    className="text-foreground text-base"
+                                >
+                                    {t("landing.getStarted.issuer.title")}
                                 </Typography>
                                 <ul className="list-disc list-inside space-y-1">
                                     <li>
@@ -360,7 +380,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.issuer.signInIAM')}
+                                            {t("landing.getStarted.issuer.signInIAM")}
                                         </Typography>
                                     </li>
                                     <li>
@@ -369,7 +389,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.issuer.register')}
+                                            {t("landing.getStarted.issuer.register")}
                                         </Typography>
                                     </li>
                                 </ul>
@@ -377,8 +397,12 @@ export const LandingPage = () => {
 
                             {/* Developer */}
                             <div className="flex flex-col gap-3">
-                                <Typography variant="text" tag="h3" className="text-foreground text-base">
-                                    {t('landing.getStarted.developer.title')}
+                                <Typography
+                                    variant="text"
+                                    tag="h3"
+                                    className="text-foreground text-base"
+                                >
+                                    {t("landing.getStarted.developer.title")}
                                 </Typography>
                                 <ul className="list-disc list-inside space-y-1">
                                     <li>
@@ -387,7 +411,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.developer.manageIntegration')}
+                                            {t("landing.getStarted.developer.manageIntegration")}
                                         </Typography>
                                     </li>
                                     <li>
@@ -396,7 +420,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.developer.apiDocuments')}
+                                            {t("landing.getStarted.developer.apiDocuments")}
                                         </Typography>
                                     </li>
                                     <li>
@@ -405,7 +429,7 @@ export const LandingPage = () => {
                                             tag="span"
                                             className="text-[#b8b8b8] text-base italic underline cursor-pointer hover:text-foreground transition-colors [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                                         >
-                                            {t('landing.getStarted.developer.readDocs')}
+                                            {t("landing.getStarted.developer.readDocs")}
                                         </Typography>
                                     </li>
                                 </ul>

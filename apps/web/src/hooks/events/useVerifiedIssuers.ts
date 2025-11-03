@@ -1,5 +1,6 @@
 import { coreApiClient } from "@/lib/api/api";
 import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 
 export function useVerifiedIssuers() {
     const {
@@ -7,7 +8,7 @@ export function useVerifiedIssuers() {
         isLoading: isLoadingVerifiedIssuers,
         error: errorVerifiedIssuers,
     } = useQuery({
-        queryKey: ["issuers"],
+        queryKey: queryKeys.issuers.verified,
         queryFn: () =>
             coreApiClient.v1.getVerifiedIssuers({
                 limit: 25,

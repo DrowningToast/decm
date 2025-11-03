@@ -1,17 +1,52 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import type React from "react";
-import { Link } from "@/router";
-import { WalletConnectButton } from "@/components/WalletConnectButton";
 import { Typography } from "@/components/typography/typography";
 import { ThemisWithScale } from "@/components/assets/ThemisWithScale";
+import { Link } from "@/router";
+import { useGetSignMessage } from "../Onboard/useGetSignMessage";
+import { useMemo } from "react";
+import { useSignMessage } from "wagmi";
+import { toast } from "sonner";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
 
-interface SigninPageProps {
-    onGoogleOAuthClick?: () => void;
+interface VerifySignMessagePageProps {
+    onDisconnectWallet?: () => void;
+    isLoading?: boolean;
 }
 
-export const SigninPage: React.FC<SigninPageProps> = ({ onGoogleOAuthClick }) => {
+export const VerifySignMessagePage: React.FC<VerifySignMessagePageProps> = ({
+    onDisconnectWallet,
+    isLoading = false,
+}) => {
     const { t } = useTranslation();
+    const [, setSignSignature] = useLocalStorage<string | undefined>(
+        LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE,
+        undefined,
+    );
+
+    const { signMessageAsync } = useSignMessage();
+
+    const { signMessage, isPending: isGetMessagePending } = useGetSignMessage();
+    const isEnabled = useMemo(() => {
+        return !isGetMessagePending && signMessage && !isLoading;
+    }, [isGetMessagePending, isLoading, signMessage]);
+
+    const handleRequestSigningMessage = async () => {
+        if (!isEnabled || !signMessage || isLoading) {
+            return;
+        }
+
+        try {
+            const signature = await signMessageAsync({ message: signMessage });
+            setSignSignature(signature);
+            toast.loading(t("verify.signMessageLoading"));
+        } catch (error) {
+            console.error(error);
+            toast.error(t("verify.signMessageError"));
+        }
+    };
 
     return (
         <div className="relative min-h-screen flex flex-col text-foreground overflow-hidden">
@@ -23,10 +58,10 @@ export const SigninPage: React.FC<SigninPageProps> = ({ onGoogleOAuthClick }) =>
                         <Typography
                             variant="header"
                             tag="h1"
-                            color="foreground"
+                            color="primary"
                             className="font-['Cormorant_Garamond'] text-[36px] leading-[40px] font-bold [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
                         >
-                            {t("signin.title")}
+                            {t("verify.title")}
                         </Typography>
                         <Typography
                             variant="text"
@@ -34,57 +69,42 @@ export const SigninPage: React.FC<SigninPageProps> = ({ onGoogleOAuthClick }) =>
                             color="foreground-alt"
                             className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] max-w-[294px]"
                         >
-                            {t("signin.subtitle")}
+                            {t("verify.subtitle")}
                         </Typography>
                     </div>
 
-                    {/* Buttons Section */}
+                    {/* Button Section */}
                     <div className="flex flex-col gap-2.5">
-                        {/* Web3 Wallet Button */}
-                        <WalletConnectButton>
-                            <Button
-                                className="w-full h-12 bg-primary hover:bg-primary/90 rounded-[12px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
-                                size="lg"
-                            >
-                                <Typography
-                                    variant="text"
-                                    tag="span"
-                                    color="foreground-alt"
-                                    className="text-base"
-                                >
-                                    {t("signin.walletButton")}
-                                </Typography>
-                            </Button>
-                        </WalletConnectButton>
-
-                        {/* Divider Line */}
-                        <div className="w-full h-0 border-t border-[#b8b8b8]" />
-
-                        {/* Google Button */}
+                        {/* Request Signing Message Button */}
                         <Button
-                            variant="secondary-dark"
-                            className="w-full h-12 bg-foreground-alt hover:bg-foreground-alt/90 rounded-[12px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                            className="w-full h-12 bg-primary hover:bg-primary/90 rounded-[12px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                             size="lg"
-                            onClick={onGoogleOAuthClick}
+                            onClick={handleRequestSigningMessage}
+                            disabled={!isEnabled}
                         >
                             <Typography
                                 variant="text"
                                 tag="span"
-                                color="background-alt"
+                                color="foreground-alt"
                                 className="text-base"
                             >
-                                {t("signin.googleButton")}
+                                {t("verify.requestButton")}
                             </Typography>
                         </Button>
 
-                        {/* Don't have account link */}
-                        <Link to="/signup" className="mt-0.5">
+                        {/* Disconnect wallet link */}
+                        <Link
+                            to="/signout"
+                            onClick={onDisconnectWallet}
+                            className="mt-0.5 text-left"
+                        >
                             <Typography
                                 variant="text"
                                 tag="p"
+                                color="foreground-alt"
                                 className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] decoration-solid [text-decoration-skip-ink:none] [text-underline-position:from-font]"
                             >
-                                {t("auth.noAccount")}
+                                {t("verify.disconnectLink")}
                             </Typography>
                         </Link>
                     </div>
