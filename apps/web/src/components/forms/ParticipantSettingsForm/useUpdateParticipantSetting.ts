@@ -4,7 +4,7 @@ import { useNavigate } from "@/router";
 import type { EventconfigUpdateEventRegistrationConfigRequest } from "@decm/api";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { queryKeys } from "@/lib/queryKeys";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 export function useUpdateParticipantSetting(eventId: string) {
     const navigate = useNavigate();
@@ -30,7 +30,7 @@ export function useUpdateParticipantSetting(eventId: string) {
                 }
             },
             onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: queryKeys.event.all });
+                queryClient.invalidateQueries({ queryKey: QUERY_KEY.event.all });
             },
         });
 

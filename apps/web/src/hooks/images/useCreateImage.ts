@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 export function useCreateImage(url: string) {
     const {
@@ -7,7 +7,7 @@ export function useCreateImage(url: string) {
         isLoading: isLoadingImage,
         isError: isErrorImage,
     } = useQuery({
-        queryKey: queryKeys.image.byUrl(url),
+        queryKey: QUERY_KEY.image.byUrl(url),
         queryFn: async () => {
             const response = await fetch(url);
             const blob = await response.blob();

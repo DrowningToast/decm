@@ -3,6 +3,9 @@ import { onboardService, type OnboardService } from "./OnboardService";
 import { OnboardRegistrationMethod } from "@decm/api";
 import { t } from "i18next";
 import { Err } from "@/common/Err";
+import type { QueryClient } from "@tanstack/react-query";
+import { QUERY_KEY } from "@/lib/queryKeys";
+import { queryClient } from "@/lib/api/queryClient";
 
 export type CreateAccountParams =
     | {
@@ -42,9 +45,11 @@ export type UpdateProfileParams = Omit<CreateProfileParams, "email">;
 export class AuthService {
     private _coreApi: CoreApiType;
     private _onboardService: OnboardService;
+    private _queryClient: QueryClient;
 
-    constructor(coreApi: CoreApiType, onboardService: OnboardService) {
+    constructor(coreApi: CoreApiType, queryClient: QueryClient, onboardService: OnboardService) {
         this._coreApi = coreApi;
+        this._queryClient = queryClient;
         this._onboardService = onboardService;
     }
 
@@ -55,28 +60,36 @@ export class AuthService {
         }
 
         switch (params.method) {
-            case OnboardRegistrationMethod.RegistrationMethodGoogle:
+            case OnboardRegistrationMethod.RegistrationMethodGoogle: {
                 if (!params.accessToken || !params.password) {
                     throw new Err("Invalid access token or password");
                 }
-                return coreApiClient.v1.registerWithGoogleOauth({
+                const response = await coreApiClient.v1.registerWithGoogleOauth({
                     access_token: params.accessToken,
                     password: params.password,
                 });
-            case OnboardRegistrationMethod.RegistrationMethodWallet:
+                await this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
+                return response;
+            }
+
+            case OnboardRegistrationMethod.RegistrationMethodWallet: {
                 if (!params.signSignature) {
                     throw new Error("Invalid sign message");
                 }
-                return coreApiClient.v1.registerWithWallet({
+                const response = await coreApiClient.v1.registerWithWallet({
                     signed_message: params.signSignature,
                 });
+                await this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
+                return response;
+            }
+
             default:
                 throw new Error("Invalid method");
         }
     }
 
     public async createProfile(authenticationCredentialId: string, profile: CreateProfileParams) {
-        return await this._coreApi.v1.createProfile({
+        const profile = await this._coreApi.v1.createProfile({
             authentication_credential_id: authenticationCredentialId,
             academic_email: profile.academicEmail,
             academic_institution: profile.academicInstitution,
@@ -97,39 +110,56 @@ export class AuthService {
             is_phone_number_public: profile.isPhoneNumberPublic,
             is_profile_picture_public: profile.isProfilePicturePublic,
         });
+
+        await this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
+        return profile;
     }
 
     public async updateProfile(authenticationCredentialId: string, profile: UpdateProfileParams) {
-        return await this._coreApi.v1.updateProfileByCredentialId(
-            {
-                credentialId: authenticationCredentialId,
-            },
-            {
-                academic_email: profile.academicEmail,
-                academic_institution: profile.academicInstitution,
-                address: profile.address,
-                bio: profile.bio,
-                first_name: profile.firstName,
-                last_name: profile.lastName,
-                phone_number: profile.phoneNumber,
-                profile_picture_url: profile.profilePictureUrl,
-                is_academic_email_public: profile.isAcademicEmailPublic,
-                is_academic_institution_public: profile.isAcademicInstitutionPublic,
-                is_address_public: profile.isAddressPublic,
-                is_bio_public: profile.isBioPublic,
-                is_email_public: profile.isEmailPublic,
-                is_first_name_public: profile.isFirstNamePublic,
-                is_last_name_public: profile.isLastNamePublic,
-                is_phone_number_public: profile.isPhoneNumberPublic,
-                is_profile_picture_public: profile.isProfilePicturePublic,
-            },
-        );
+        try {
+            const response = await this._coreApi.v1.updateProfileByCredentialId(
+                {
+                    credentialId: authenticationCredentialId,
+                },
+                {
+                    academic_email: profile.academicEmail,
+                    academic_institution: profile.academicInstitution,
+                    address: profile.address,
+                    bio: profile.bio,
+                    first_name: profile.firstName,
+                    last_name: profile.lastName,
+                    phone_number: profile.phoneNumber,
+                    profile_picture_url: profile.profilePictureUrl,
+                    is_academic_email_public: profile.isAcademicEmailPublic,
+                    is_academic_institution_public: profile.isAcademicInstitutionPublic,
+                    is_address_public: profile.isAddressPublic,
+                    is_bio_public: profile.isBioPublic,
+                    is_email_public: profile.isEmailPublic,
+                    is_first_name_public: profile.isFirstNamePublic,
+                    is_last_name_public: profile.isLastNamePublic,
+                    is_phone_number_public: profile.isPhoneNumberPublic,
+                    is_profile_picture_public: profile.isProfilePicturePublic,
+                },
+            );
+            await this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
+            return response;
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
     }
 
     public async signOut() {
-        return await this._coreApi.v1.logout();
+        try {
+            await this._coreApi.v1.logout();
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+        await this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
+        return true;
     }
 }
 
 // Default instance
-export const authService = new AuthService(coreApiClient, onboardService);
+export const authService = new AuthService(coreApiClient, queryClient, onboardService);

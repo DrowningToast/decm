@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { onboardService, type CheckOnboardParams } from "../../../services/OnboardService";
 import { OnboardRegistrationMethod } from "@decm/api";
-import { queryKeys } from "@/lib/queryKeys";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 export type UseCheckOnboardParams =
     | {
@@ -25,11 +25,11 @@ export const useCheckOnboardStatus = (param?: UseCheckOnboardParams, enable: boo
     const getQueryKey = (param?: UseCheckOnboardParams) => {
         switch (param?.method) {
             case OnboardRegistrationMethod.RegistrationMethodGoogle:
-                return queryKeys.onboard.status.google(param.accessToken, param.expiresIn);
+                return QUERY_KEY.onboard.status.google(param.accessToken, param.expiresIn);
             case OnboardRegistrationMethod.RegistrationMethodWallet:
-                return queryKeys.onboard.status.wallet(param.signSignature ?? "");
+                return QUERY_KEY.onboard.status.wallet(param.signSignature ?? "");
         }
-        return queryKeys.onboard.status.all;
+        return QUERY_KEY.onboard.status.all;
     };
 
     const {
