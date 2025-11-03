@@ -1,7 +1,7 @@
 import { coreApiClient } from "@/lib/api/api";
 import { queryClient } from "@/lib/api/queryClient";
 import { useMutation } from "@tanstack/react-query";
-import { QUERY_KEY } from "@/lib/queryKeys";
+import { queryKeys } from "@/lib/queryKeys";
 
 export function useDeleteEventIssuer() {
     const { mutateAsync: deleteEventIssuerAsync, isPending: isDeletingEventIssuer } = useMutation({
@@ -12,7 +12,7 @@ export function useDeleteEventIssuer() {
                 issuerId,
             }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: QUERY_KEY.event.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.event.all });
         },
     });
 

@@ -1,10 +1,10 @@
 import { onboardService } from "@/services/OnboardService";
 import { useQuery } from "@tanstack/react-query";
-import { QUERY_KEY } from "@/lib/queryKeys";
+import { queryKeys } from "@/lib/queryKeys";
 
 export const useGetSignMessage = () => {
     const { data: signMessage, isPending } = useQuery({
-        queryKey: QUERY_KEY.onboard.signMessage,
+        queryKey: queryKeys.onboard.signMessage,
         queryFn: async () => {
             const response = await onboardService.getSignMessage();
             return response;
