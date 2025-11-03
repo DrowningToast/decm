@@ -231,6 +231,13 @@ const docTemplate = `{
                         "name": "icon",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Host password",
+                        "name": "host_password",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
