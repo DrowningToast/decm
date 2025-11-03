@@ -7,10 +7,6 @@ import {Constants} from "../constants/Constants.s.sol";
 contract DecmAccessManager is AccessControl {
     using Constants for *;
 
-    // Events
-    event AdminGranted(address indexed admin, address indexed granter);
-    event AdminRevoked(address indexed admin, address indexed revoker);
-
     // Errors
     error DecmAccessManager__AdminCannotBeZeroAddress();
 
@@ -34,7 +30,6 @@ contract DecmAccessManager is AccessControl {
             revert DecmAccessManager__AdminCannotBeZeroAddress();
         }
         _grantRole(ADMIN_ROLE, admin);
-        emit AdminGranted(admin, msg.sender);
     }
 
     function revokeAdminRole(
@@ -44,7 +39,6 @@ contract DecmAccessManager is AccessControl {
             revert DecmAccessManager__AdminCannotBeZeroAddress();
         }
         _revokeRole(ADMIN_ROLE, admin);
-        emit AdminRevoked(admin, msg.sender);
     }
 
     function checkIsAdmin(address addr) external view returns (bool) {
