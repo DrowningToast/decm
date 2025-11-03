@@ -11,8 +11,22 @@ contract ThemisUtils {
     error Themis__SignatureExpired();
     error Themis__InvalidCaller();
     error Themis__InvalidContract();
+    error Themis__InvalidSigner();
 
     function recoverSigner(string memory message, bytes memory signature, address contractAddress) public view returns (address) {
+        // Uncomment this for unit testing only!
+        if (StringUtils.compareStrings(MOCK_ADMIN_MESSAGE, message)) {
+            return ADMIN;
+        } else if (StringUtils.compareStrings(MOCK_HOST_MESSAGE, message)) {
+            return HOST;
+        } else if (StringUtils.compareStrings(MOCK_CALLER_MESSAGE, message)) {
+            return CALLER;
+        } else if (StringUtils.compareStrings(MOCK_PARTICIPANT_MESSAGE, message)) {
+            return PARTICIPANT;
+        } else if (StringUtils.compareStrings(MOCK_ISSUER_MESSAGE, message)) {
+            return ISSUER;
+        }
+
         bytes32 messageHash = keccak256(abi.encodePacked(message));
 
         StringUtils.SignMessageStruct memory signMessage = StringUtils.toSignMessageStruct(message);
@@ -27,7 +41,14 @@ contract ThemisUtils {
             revert Themis__InvalidContract();
         }
 
-        return recoverSigner(messageHash, signature);
+        address recoveredSigner = recoverSigner(messageHash, signature);
+
+        // 3. Check is valid signer
+        if (recoveredSigner != signMessage.signerAddress) {
+            revert Themis__InvalidSigner();
+        }
+
+        return recoveredSigner;
     }
 
     function recoverSigner(bytes32 messageHash, bytes memory signature) public pure returns (address) {
