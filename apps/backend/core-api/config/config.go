@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"apps/backend/core-api/config/blockchain"
 	"apps/backend/core-api/config/postgres"
 	"apps/backend/core-api/config/s3"
 
@@ -40,12 +41,18 @@ type Config struct {
 	GoogleOAuth google.GoogleOAuthConfig `envPrefix:"GOOGLE_OAUTH_"`
 	// S3 Configuration
 	S3 s3.S3Config `envPrefix:"S3_"`
+	// Blockchain Configuration
+	Blockchain blockchain.BlockchainConfig `envPrefix:"BLOCKCHAIN_"`
 }
 
 // Validate validates the configuration and returns an error if any required configuration is invalid
 func (c *Config) Validate() error {
 	if !c.S3.IsValid() {
 		return errors.New("S3 configuration is invalid: AccessKeyID, SecretAccessKey, BucketName, and Endpoint are all required")
+	}
+
+	if err := c.Blockchain.Validate(); err != nil {
+		return errors.Wrap(err, "blockchain configuration is invalid")
 	}
 
 	// Add additional component validators here as needed
