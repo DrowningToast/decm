@@ -1,13 +1,17 @@
 import { useEffect } from "react";
-import { getLocalStorageItem, LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
-import { useNavigate } from "react-router-dom";
+import {
+    getLocalStorageItem,
+    LOCAL_STORAGE_KEYS,
+    removeLocalStorageItem,
+} from "@/lib/constants/localStorage";
 import { ErrorPage } from "@/components/pages/Error";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
+import { queryClient } from "@/lib/api/queryClient";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 const AuthSuccessPage = () => {
     const { t } = useTranslation();
-    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
     const redirectUrl = getLocalStorageItem(LOCAL_STORAGE_KEYS.ON_GOOGLE_OAUTH_SUCCESS_REDIRECT);
@@ -16,8 +20,12 @@ const AuthSuccessPage = () => {
         if (!redirectUrl) {
             return;
         }
-        navigate(`${redirectUrl}?${searchParams.toString()}`);
-    }, [navigate, redirectUrl, searchParams]);
+        // Ensure the redirect URL starts with '/' for absolute path
+        const absoluteRedirectUrl = redirectUrl.startsWith("/") ? redirectUrl : `/${redirectUrl}`;
+        window.location.href = `${absoluteRedirectUrl}?${searchParams.toString()}`;
+        removeLocalStorageItem(LOCAL_STORAGE_KEYS.ON_GOOGLE_OAUTH_SUCCESS_REDIRECT);
+        queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
+    }, [redirectUrl, searchParams]);
 
     if (!redirectUrl) {
         return (
