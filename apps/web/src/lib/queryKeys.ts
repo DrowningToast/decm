@@ -15,7 +15,7 @@
  * ```
  */
 
-export const queryKeys = {
+export const QUERY_KEY = {
     // User & Authentication
     user: {
         profile: ["user", "profile"] as const,
