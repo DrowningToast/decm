@@ -193,7 +193,6 @@ bun backend:docs  # Generate Swagger docs
 
 ## Validation & Testing
 ```bash
-bun lint          # ESLint + TypeScript check
-bun check-types   # TypeScript compilation
+pnpm lint         # ESLint + TypeScript check
 go build cmd/main.go  # Go compilation check
 ```

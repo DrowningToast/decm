@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { AppKitProvider } from "@/config/walletConnect";
 import { AuthProvider } from "@/context/AuthContext";
+import { WalletProvider } from "@/context/WalletContext";
 
 // Lazy load the DevTools to avoid bundle issues
 const ReactQueryDevtools = lazy(() =>
@@ -22,31 +23,33 @@ const Layout = () => {
     const isMobile = useMediaQuery("(max-width: 768px)");
 
     return (
-        <ErrorBoundary fallback={<ErrorPage />}>
-            <Toaster
-                richColors
-                position={isMobile ? "top-center" : "bottom-right"}
-                toastOptions={{
-                    duration: 3000,
-                }}
-            />
-            <AppKitProvider>
-                <main className="font-secondary bg-background text-foreground">
-                    <HelmetProvider>
-                        <QueryClientProvider client={queryClient}>
-                            <AuthProvider>
-                                <Outlet />
-                                {process.env.NODE_ENV === "development" && (
-                                    <Suspense fallback={null}>
-                                        <ReactQueryDevtools initialIsOpen={false} />
-                                    </Suspense>
-                                )}
-                            </AuthProvider>
-                        </QueryClientProvider>
-                    </HelmetProvider>
-                </main>
-            </AppKitProvider>
-        </ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+            <ErrorBoundary fallback={<ErrorPage />}>
+                <Toaster
+                    richColors
+                    position={isMobile ? "top-center" : "bottom-right"}
+                    toastOptions={{
+                        duration: 3000,
+                    }}
+                />
+                <AppKitProvider>
+                    <WalletProvider>
+                        <main className="font-secondary bg-background text-foreground">
+                            <HelmetProvider>
+                                <AuthProvider>
+                                    <Outlet />
+                                    {process.env.NODE_ENV === "development" && (
+                                        <Suspense fallback={null}>
+                                            <ReactQueryDevtools initialIsOpen={false} />
+                                        </Suspense>
+                                    )}
+                                </AuthProvider>
+                            </HelmetProvider>
+                        </main>
+                    </WalletProvider>
+                </AppKitProvider>
+            </ErrorBoundary>
+        </QueryClientProvider>
     );
 };
 

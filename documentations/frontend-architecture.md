@@ -153,9 +153,7 @@ react-i18next ใช้สำหรับ translations รองรับ multip
 
 **Production Build** ถูก create โดย pnpm build command
 
-**Type Checking** ถูกทำโดย pnpm check-types command
-
-**Linting** ถูกทำโดย pnpm lint command
+**Linting & Type Checking** ถูกทำโดย pnpm lint command
 
 ## Technology Stack
 

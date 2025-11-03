@@ -16,8 +16,22 @@ export type LocalStorageType = {
     [LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE]: string;
 } & Record<keyof typeof LOCAL_STORAGE_KEYS, string | number | undefined>;
 
-export const getLocalStorageItem = <T extends LocalStorageKeys>(key: T): LocalStorageType[T] => {
-    return localStorage.getItem(key) as unknown as LocalStorageType[T];
+export const getLocalStorageItem = <T extends LocalStorageKeys>(
+    key: T,
+): LocalStorageType[T] | undefined => {
+    const value = localStorage.getItem(key);
+    if (value === null) {
+        return undefined;
+    }
+    if (key === LOCAL_STORAGE_KEYS.EXPIRES_IN) {
+        try {
+            return JSON.parse(value) as LocalStorageType[T];
+        } catch {
+            const num = Number(value);
+            return (Number.isNaN(num) ? undefined : num) as LocalStorageType[T];
+        }
+    }
+    return value as LocalStorageType[T];
 };
 
 export const setLocalStorageItem = (

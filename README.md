@@ -96,8 +96,7 @@ decm/
 # Frontend
 pnpm dev              # Start React dev server (Turbo)
 pnpm build           # Production build
-pnpm lint            # Lint code
-pnpm check-types     # TypeScript type checking
+pnpm lint            # Lint code + TypeScript type checking
 
 # Backend
 pnpm dev:core        # Start Go API server

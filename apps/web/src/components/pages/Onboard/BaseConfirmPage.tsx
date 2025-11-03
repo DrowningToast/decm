@@ -3,7 +3,7 @@ import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSignup } from "./useSignup";
-import { LogoutButton } from "../../LogoutButton";
+import { LogoutButton } from "../../auth/LogoutButton";
 import { OnboardPageContext } from "../../../pages/onboard/[method]";
 
 export interface ConfirmationItem {
@@ -38,12 +38,11 @@ export const BaseConfirmPage: React.FC<BaseConfirmPageProps> = ({
     requireAllChecked = true,
     children,
 }) => {
-
-    const { method } = useContext(OnboardPageContext)
-    const { isLoading } = useSignup()
+    const { method } = useContext(OnboardPageContext);
+    const { isLoading } = useSignup();
 
     const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(
-        requiredConfirmations.reduce((acc, item) => ({ ...acc, [item.id]: false }), {})
+        requiredConfirmations.reduce((acc, item) => ({ ...acc, [item.id]: false }), {}),
     );
 
     const handleCheckChange = (id: string, checked: boolean) => {
