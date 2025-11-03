@@ -31,6 +31,8 @@
         "db:console": "node scripts/db-command.js psql",
         "db:config": "node scripts/db-env.js",
         "contract:build": "cd apps/contracts && forge install && forge build",
+        "contract:generate-types": "node scripts/generate-contract-types.js",
+        "contract:all": "pnpm run contract:build && pnpm run contract:generate-types",
         "gen-icons:web": "rm -rf apps/web/src/components/icons/gen && pnpm dlx @svgr/cli --typescript --icon --out-dir apps/web/src/components/icons/gen apps/web/src/assets/icons/*",
         "prepare": "husky install",
         "test:web": "cd apps/web && pnpm test",
