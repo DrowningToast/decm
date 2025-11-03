@@ -6,9 +6,8 @@ import {DecmAccessManager} from "../src/contracts/decm/DecmAccessManager.sol";
 
 contract DeployDecmAccessManager is Script {
     function run() public returns (DecmAccessManager) {
-        address initialAdminAddress = vm.envAddress("INITIAL_ADMIN_ADDRESS");
         address[] memory initialAdmins = new address[](1);
-        initialAdmins[0] = initialAdminAddress;
+        initialAdmins[0] = msg.sender;
 
         vm.startBroadcast();
         DecmAccessManager decmAccessManager = new DecmAccessManager(initialAdmins);
