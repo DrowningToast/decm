@@ -50,6 +50,46 @@ func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id uui
 	}, nil
 }
 
+func (r *Repository) GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx context.Context, id uuid.UUID) (*entity.AuthenticationCredential, error) {
+	query, err := r.queries.GetAuthenticationCredentialById(ctx, id)
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	// Decrypt PII fields
+	googleConnectorRef, err := pgmapper.DecryptPgTextToStringPtr(query.GoogleConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	githubConnectorRef, err := pgmapper.DecryptPgTextToStringPtr(query.GithubConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert []byte to string for EncryptedPrivateKey
+	var encryptedPrivateKeyStr *string
+	if query.EncryptedPrivateKey != nil {
+		str := string(query.EncryptedPrivateKey)
+		encryptedPrivateKeyStr = &str
+	}
+
+	return &entity.AuthenticationCredential{
+		Id:                  query.ID,
+		SolutionStatus:      common.SolutionStatus(query.SolutionStatus),
+		HashedPassword:      pgmapper.PgTextToStringPtr(query.HashedPassword),
+		EncryptedPrivateKey: encryptedPrivateKeyStr,
+		WalletAddress:       query.WalletAddress,
+		GoogleConnectorRef:  googleConnectorRef,
+		GithubConnectorRef:  githubConnectorRef,
+		IsVerifiedOrganizer: query.IsVerifiedOrganizer == 1,
+		IsVerifiedStudent:   query.IsVerifiedStudent == 1,
+		IsVerifiedIssuer:    query.IsVerifiedIssuer == 1,
+		CreatedAt:           query.CreatedAt.Time,
+		UpdatedAt:           query.UpdatedAt.Time,
+	}, nil
+}
+
 func (r *Repository) GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (*entity.AuthenticationCredential, error) {
 	query, err := r.queries.GetAuthenticationCredentialByWalletAddress(ctx, walletAddress)
 	if err != nil {

@@ -785,6 +785,11 @@ paths:
         name: icon
         required: true
         type: file
+      - description: Host password
+        in: formData
+        name: host_password
+        required: true
+        type: string
       produces:
       - application/json
       responses:
