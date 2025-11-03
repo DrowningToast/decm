@@ -11,9 +11,7 @@ import {
     type UseCheckOnboardParams,
 } from "@/components/pages/Onboard/useCheckOnboardStatus";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { handleUniversalError } from "@/common/Err";
 import { useTranslation } from "react-i18next";
-import { USECASE_IDS } from "@/constants/usecase";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
 import { WalletOnboardProvider } from "@/components/pages/Onboard/Wallet/WalletOnboardContext";
@@ -24,6 +22,8 @@ import type { Profile } from "@/components/pages/Onboard/ProfilePage";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProfileSchema } from "@/components/pages/Onboard/ProfilePage";
 import { WalletOnboardConfirmPage } from "@/components/pages/Onboard/Wallet/WalletOnboardConfirmPage";
+import { queryClient } from "@/lib/api/queryClient";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 export const OnboardMethods = {
     WALLET: "wallet",
@@ -177,6 +177,7 @@ const OnboardingPage = () => {
         }
         return undefined;
     }, [method, accessToken, expiresIn, signSignature]);
+
     const {
         onboardStatus,
         isLoading: _isLoading,
@@ -196,29 +197,15 @@ const OnboardingPage = () => {
         return false;
     }, [_accessToken, _expiresIn, _isLoading, accessToken, expiresIn]);
 
-    // handle error
-    useEffect(() => {
-        if (!error) {
-            return;
-        }
-
-        handleUniversalError(
-            t,
-            error,
-            {
-                onUnauthorized: () => {
-                    navigate("/");
-                },
-            },
-            USECASE_IDS.CHECK_ONBOARD_STATUS,
-        );
-    }, [error, navigate, t]);
-
     // handler account already created
     useEffect(() => {
-        if (onboardStatus?.authentication_credential_id && onboardStatus?.profile_id) {
-            navigate("/app");
-        }
+        const init = async () => {
+            if (onboardStatus?.authentication_credential_id && onboardStatus?.profile_id) {
+                await queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
+                navigate("/app");
+            }
+        };
+        init();
     }, [onboardStatus?.authentication_credential_id, onboardStatus?.profile_id, navigate]);
 
     if (!method || !Object.values(OnboardMethods).includes(method as OnboardMethod)) {

@@ -1,0 +1,682 @@
+# Services Layer Pattern
+
+## Overview
+DECM uses a service layer architecture to encapsulate business logic, API interactions, and state management operations. Services act as an intermediary between UI components and the backend API, providing a clean separation of concerns.
+
+## Location
+`apps/web/src/services/`
+
+## Architecture Principles
+
+### 1. **Single Responsibility**
+Each service handles one domain or feature area (Auth, Onboard, Events, etc.)
+
+### 2. **Dependency Injection**
+Services receive dependencies through constructor parameters, making them testable and flexible
+
+### 3. **Type Safety**
+All services use TypeScript with strict typing for parameters, return values, and internal state
+
+### 4. **API Client Integration**
+Services use the generated API client from `@decm/api` package
+
+## Service Structure Pattern
+
+### Basic Service Template
+
+```tsx
+import { coreApiClient, type CoreApiType } from "@/lib/api/api";
+import type { QueryClient } from "@tanstack/react-query";
+import { QUERY_KEY } from "@/lib/queryKeys";
+
+export interface ServiceParams {
+    field1: string;
+    field2?: number;
+}
+
+export class MyService {
+    private _coreApi: CoreApiType;
+    private _queryClient: QueryClient;
+
+    constructor(coreApi: CoreApiType, queryClient: QueryClient) {
+        this._coreApi = coreApi;
+        this._queryClient = queryClient;
+    }
+
+    public async performAction(params: ServiceParams) {
+        try {
+            const response = await this._coreApi.v1.myEndpoint(params);
+            
+            // Invalidate related queries
+            await this._queryClient.invalidateQueries({ 
+                queryKey: QUERY_KEY.myDomain.myData 
+            });
+            
+            return response;
+        } catch (error) {
+            console.error("MyService.performAction error:", error);
+            throw error;
+        }
+    }
+}
+
+// Default instance export
+export const myService = new MyService(coreApiClient, queryClient);
+```
+
+## Core Services
+
+### 1. AuthService
+
+**File:** `apps/web/src/services/AuthService.ts`
+
+Handles authentication, profile creation, and session management.
+
+**Key Methods:**
+- `createAccount(params: CreateAccountParams)` - Register new user
+- `createProfile(credentialId, profile)` - Create user profile
+- `updateProfile(credentialId, profile)` - Update user profile
+- `signOut(options)` - Logout and cleanup
+
+**Usage:**
+```tsx
+import { authService } from '@/services/AuthService';
+
+// Create account with wallet
+await authService.createAccount({
+    method: OnboardRegistrationMethod.RegistrationMethodWallet,
+    signSignature: signature
+});
+
+// Create profile
+await authService.createProfile(credentialId, {
+    firstName: "John",
+    lastName: "Doe",
+    email: "john@example.com",
+    isFirstNamePublic: true,
+    isLastNamePublic: true,
+    isEmailPublic: false
+});
+
+// Sign out
+await authService.signOut({ showSuccessToast: true });
+```
+
+### 2. OnboardService
+
+**File:** `apps/web/src/services/OnboardService.ts`
+
+Manages onboarding flow and verification.
+
+**Key Methods:**
+- `checkOnboardStatus(params?)` - Check user onboarding status
+- `getSignMessage()` - Get wallet signing message
+
+**Usage:**
+```tsx
+import { onboardService } from '@/services/OnboardService';
+
+// Check onboard status with JWT cookie
+const status = await onboardService.checkOnboardStatus();
+
+// Check with wallet signature
+const status = await onboardService.checkOnboardStatus({
+    method: OnboardRegistrationMethod.RegistrationMethodWallet,
+    signSignature: signature
+});
+
+// Get sign message for wallet
+const message = await onboardService.getSignMessage();
+```
+
+## Creating a New Service
+
+### Step 1: Define Types
+
+```tsx
+// Service parameter types
+export interface CreateItemParams {
+    name: string;
+    description?: string;
+    metadata?: Record<string, unknown>;
+}
+
+export interface UpdateItemParams {
+    id: string;
+    name?: string;
+    description?: string;
+}
+
+// Response types (if not from API client)
+export interface ItemResponse {
+    id: string;
+    name: string;
+    created_at: string;
+}
+```
+
+### Step 2: Create Service Class
+
+```tsx
+import { coreApiClient, type CoreApiType } from "@/lib/api/api";
+import type { QueryClient } from "@tanstack/react-query";
+import { QUERY_KEY } from "@/lib/queryKeys";
+import { toast } from "sonner";
+import { t } from "i18next";
+
+export class ItemService {
+    private _coreApi: CoreApiType;
+    private _queryClient: QueryClient;
+
+    constructor(coreApi: CoreApiType, queryClient: QueryClient) {
+        this._coreApi = coreApi;
+        this._queryClient = queryClient;
+    }
+
+    public async createItem(params: CreateItemParams): Promise<ItemResponse> {
+        try {
+            const response = await this._coreApi.v1.createItem({
+                name: params.name,
+                description: params.description,
+                metadata: params.metadata
+            });
+
+            // Invalidate related queries
+            await this._queryClient.invalidateQueries({ 
+                queryKey: QUERY_KEY.items.all 
+            });
+
+            // Show success toast
+            toast.success(t('items.createSuccess'));
+
+            return response;
+        } catch (error) {
+            console.error("ItemService.createItem error:", error);
+            toast.error(t('items.createError'));
+            throw error;
+        }
+    }
+
+    public async updateItem(params: UpdateItemParams): Promise<ItemResponse> {
+        try {
+            const response = await this._coreApi.v1.updateItem(
+                { itemId: params.id },
+                {
+                    name: params.name,
+                    description: params.description
+                }
+            );
+
+            await this._queryClient.invalidateQueries({ 
+                queryKey: QUERY_KEY.items.detail(params.id) 
+            });
+
+            toast.success(t('items.updateSuccess'));
+
+            return response;
+        } catch (error) {
+            console.error("ItemService.updateItem error:", error);
+            toast.error(t('items.updateError'));
+            throw error;
+        }
+    }
+
+    public async deleteItem(itemId: string): Promise<void> {
+        try {
+            await this._coreApi.v1.deleteItem({ itemId });
+
+            await this._queryClient.invalidateQueries({ 
+                queryKey: QUERY_KEY.items.all 
+            });
+
+            toast.success(t('items.deleteSuccess'));
+        } catch (error) {
+            console.error("ItemService.deleteItem error:", error);
+            toast.error(t('items.deleteError'));
+            throw error;
+        }
+    }
+}
+
+// Default singleton instance
+export const itemService = new ItemService(coreApiClient, queryClient);
+```
+
+### Step 3: Add Query Keys
+
+Update `apps/web/src/lib/queryKeys.ts`:
+
+```tsx
+export const QUERY_KEY = {
+    items: {
+        all: ['items'] as const,
+        list: (filters?: ItemFilters) => ['items', 'list', filters] as const,
+        detail: (id: string) => ['items', 'detail', id] as const,
+    },
+    // ... other keys
+};
+```
+
+### Step 4: Create Hook for Service Usage
+
+```tsx
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { itemService } from '@/services/ItemService';
+import type { CreateItemParams } from '@/services/ItemService';
+
+export const useCreateItem = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (params: CreateItemParams) => itemService.createItem(params),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: QUERY_KEY.items.all });
+        }
+    });
+};
+
+export const useUpdateItem = () => {
+    return useMutation({
+        mutationFn: (params: UpdateItemParams) => itemService.updateItem(params)
+    });
+};
+
+export const useDeleteItem = () => {
+    return useMutation({
+        mutationFn: (itemId: string) => itemService.deleteItem(itemId)
+    });
+};
+```
+
+## Service Dependencies
+
+### API Client
+```tsx
+import { coreApiClient, type CoreApiType } from "@/lib/api/api";
+```
+
+Generated from OpenAPI spec:
+- Run `pnpm gen-api:core` to regenerate
+- Located in `packages/api/`
+- Provides type-safe API methods
+
+### Query Client
+```tsx
+import { queryClient } from "@/lib/api/queryClient";
+import type { QueryClient } from "@tanstack/react-query";
+```
+
+React Query client for cache invalidation and state management.
+
+### Other Services
+Services can depend on other services:
+
+```tsx
+import { onboardService, type OnboardService } from "./OnboardService";
+
+export class AuthService {
+    private _onboardService: OnboardService;
+
+    constructor(
+        coreApi: CoreApiType, 
+        queryClient: QueryClient,
+        onboardService: OnboardService
+    ) {
+        this._coreApi = coreApi;
+        this._queryClient = queryClient;
+        this._onboardService = onboardService;
+    }
+
+    public async createAccount(params: CreateAccountParams) {
+        // Use onboard service
+        const status = await this._onboardService.checkOnboardStatus(params);
+        
+        // Continue with account creation
+        // ...
+    }
+}
+
+export const authService = new AuthService(
+    coreApiClient, 
+    queryClient, 
+    onboardService
+);
+```
+
+## Service Method Patterns
+
+### CRUD Operations
+
+```tsx
+// Create
+public async create(params: CreateParams): Promise<Response> {
+    const response = await this._coreApi.v1.create(params);
+    await this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.domain.all });
+    return response;
+}
+
+// Read (usually in hooks, not services)
+// Use React Query's useQuery in hooks
+
+// Update
+public async update(id: string, params: UpdateParams): Promise<Response> {
+    const response = await this._coreApi.v1.update({ id }, params);
+    await this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.domain.detail(id) });
+    return response;
+}
+
+// Delete
+public async delete(id: string): Promise<void> {
+    await this._coreApi.v1.delete({ id });
+    await this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.domain.all });
+}
+```
+
+### Validation Pattern
+
+```tsx
+public async createWithValidation(params: CreateParams) {
+    // Pre-validation
+    if (!params.requiredField) {
+        throw new Error(t('validation.requiredField'));
+    }
+
+    // Business logic validation
+    const existingItem = await this.checkExists(params.name);
+    if (existingItem) {
+        throw new Error(t('validation.alreadyExists'));
+    }
+
+    // Proceed with creation
+    return this.create(params);
+}
+```
+
+### Error Handling Pattern
+
+```tsx
+public async performAction(params: ActionParams) {
+    try {
+        const response = await this._coreApi.v1.action(params);
+        toast.success(t('action.success'));
+        return response;
+    } catch (error) {
+        // Log error
+        console.error("Service.performAction error:", error);
+        
+        // User-friendly error message
+        const errorMessage = error instanceof Error 
+            ? error.message 
+            : t('errors.generic');
+        
+        toast.error(errorMessage);
+        
+        // Re-throw for caller handling
+        throw error;
+    }
+}
+```
+
+### Cleanup Pattern
+
+```tsx
+public async signOut(options?: { showSuccessToast?: boolean }) {
+    try {
+        // Clear local storage
+        removeLocalStorageItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+        removeLocalStorageItem(LOCAL_STORAGE_KEYS.EXPIRES_IN);
+        
+        // Disconnect external services
+        await disconnect(wagmiConfig);
+        
+        // Call API
+        await this._coreApi.v1.logout();
+        
+        // Show feedback
+        if (options?.showSuccessToast !== false) {
+            toast.info(t('auth.signOutSuccess'));
+        }
+        
+        // Clear cache
+        await this._queryClient.invalidateQueries({ 
+            queryKey: QUERY_KEY.user.profile 
+        });
+    } catch (error) {
+        console.error("AuthService.signOut error:", error);
+        throw error;
+    }
+}
+```
+
+## Query Invalidation Strategy
+
+### Invalidate All
+```tsx
+await this._queryClient.invalidateQueries({ 
+    queryKey: QUERY_KEY.domain.all 
+});
+```
+
+### Invalidate Specific
+```tsx
+await this._queryClient.invalidateQueries({ 
+    queryKey: QUERY_KEY.domain.detail(id) 
+});
+```
+
+### Invalidate Multiple
+```tsx
+await Promise.all([
+    this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.domain.all }),
+    this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.related.all })
+]);
+```
+
+### Conditional Invalidation
+```tsx
+if (shouldRefresh) {
+    await this._queryClient.invalidateQueries({ 
+        queryKey: QUERY_KEY.domain.list(filters) 
+    });
+}
+```
+
+## Using Services in Components
+
+### Direct Usage (Not Recommended)
+```tsx
+import { authService } from '@/services/AuthService';
+
+const MyComponent = () => {
+    const handleSignOut = async () => {
+        await authService.signOut();
+    };
+    
+    return <button onClick={handleSignOut}>Sign Out</button>;
+};
+```
+
+### Via Custom Hooks (Recommended)
+```tsx
+import { useSignOut } from '@/hooks/useSignOut';
+
+const MyComponent = () => {
+    const { mutate: signOut, isPending } = useSignOut();
+    
+    return (
+        <button onClick={() => signOut()} disabled={isPending}>
+            {isPending ? 'Signing out...' : 'Sign Out'}
+        </button>
+    );
+};
+```
+
+## Testing Services
+
+### Unit Tests
+
+```tsx
+import { describe, it, expect, vi } from 'vitest';
+import { AuthService } from './AuthService';
+
+describe('AuthService', () => {
+    it('should create account with wallet', async () => {
+        const mockCoreApi = {
+            v1: {
+                registerWithWallet: vi.fn().mockResolvedValue({ id: '123' })
+            }
+        };
+        const mockQueryClient = {
+            invalidateQueries: vi.fn()
+        };
+        const mockOnboardService = {
+            checkOnboardStatus: vi.fn().mockResolvedValue(null)
+        };
+
+        const service = new AuthService(
+            mockCoreApi as any,
+            mockQueryClient as any,
+            mockOnboardService as any
+        );
+
+        const result = await service.createAccount({
+            method: OnboardRegistrationMethod.RegistrationMethodWallet,
+            signSignature: 'signature'
+        });
+
+        expect(result.id).toBe('123');
+        expect(mockQueryClient.invalidateQueries).toHaveBeenCalled();
+    });
+});
+```
+
+## Best Practices
+
+### ✅ DO:
+- Use dependency injection for all dependencies
+- Provide type definitions for all parameters and returns
+- Invalidate React Query cache after mutations
+- Handle errors gracefully with try-catch
+- Log errors for debugging
+- Show user-friendly error/success toasts
+- Export singleton instance for convenience
+- Use private fields with underscore prefix (`_coreApi`)
+- Use public methods for external API
+- Keep services focused on single domain
+
+### ❌ DON'T:
+- Access services directly in components (use hooks)
+- Mix UI logic in services
+- Forget to invalidate queries after mutations
+- Swallow errors without logging
+- Hard-code strings (use i18n)
+- Create god services (too many responsibilities)
+- Use global state in services
+- Access DOM in services
+- Make services stateful (use hooks for state)
+
+## File Organization
+
+```
+apps/web/src/services/
+├── AuthService.ts              # Authentication service
+├── AuthService.test.ts         # Unit tests
+├── OnboardService.ts           # Onboarding service
+├── OnboardService.test.ts      # Unit tests
+├── EventService.ts             # Event management service
+├── EventService.test.ts        # Unit tests
+└── index.ts                    # Barrel exports (optional)
+```
+
+## Integration with Other Patterns
+
+### With Hooks
+```tsx
+// Hook wraps service for React Query integration
+export const useCreateAccount = () => {
+    return useMutation({
+        mutationFn: (params: CreateAccountParams) => 
+            authService.createAccount(params)
+    });
+};
+```
+
+### With Usecases
+```tsx
+// Usecase orchestrates multiple services
+export const useOnboardingUsecase = () => {
+    const checkStatus = async () => {
+        const status = await onboardService.checkOnboardStatus();
+        if (status?.authentication_credential_id) {
+            // Already registered, redirect
+        }
+    };
+
+    const createAccount = async (params: CreateAccountParams) => {
+        await authService.createAccount(params);
+        // Additional usecase logic
+    };
+
+    return { checkStatus, createAccount };
+};
+```
+
+### With Context
+```tsx
+// Service can be accessed via context if needed
+const AuthContext = createContext<{ authService: AuthService }>(null!);
+
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    return context.authService;
+};
+```
+
+## Common Service Patterns
+
+### Batch Operations
+```tsx
+public async batchCreate(items: CreateParams[]): Promise<Response[]> {
+    const promises = items.map(item => this._coreApi.v1.create(item));
+    const results = await Promise.all(promises);
+    
+    await this._queryClient.invalidateQueries({ 
+        queryKey: QUERY_KEY.domain.all 
+    });
+    
+    return results;
+}
+```
+
+### Conditional Logic
+```tsx
+public async createOrUpdate(params: CreateOrUpdateParams) {
+    const existing = await this.findById(params.id);
+    
+    if (existing) {
+        return this.update(params.id, params);
+    } else {
+        return this.create(params);
+    }
+}
+```
+
+### Transform Data
+```tsx
+public async getTransformed(id: string): Promise<TransformedData> {
+    const raw = await this._coreApi.v1.get({ id });
+    
+    // Transform for frontend consumption
+    return {
+        id: raw.id,
+        displayName: `${raw.first_name} ${raw.last_name}`,
+        createdDate: new Date(raw.created_at)
+    };
+}
+```
+
+## Related Documentation
+- API Client: [api-generation.mdc](.cursor/rules/api-generation.mdc)
+- Query Keys: [apps/web/src/lib/queryKeys.README.md](apps/web/src/lib/queryKeys.README.md)
+- Error Handling: [error-handling.mdc](.cursor/rules/error-handling.mdc)
+- Testing: [testing-conventions.mdc](.cursor/rules/testing-conventions.mdc)

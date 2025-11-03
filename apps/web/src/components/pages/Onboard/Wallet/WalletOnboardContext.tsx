@@ -2,7 +2,6 @@ import type React from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo } from "react";
 import { useGetSignMessage } from "../useGetSignMessage";
 import { OnboardPageContext } from "@/pages/onboard/[method]";
-import { handleUniversalError } from "@/common/Err";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useSignout } from "@/components/useSignout";
@@ -57,21 +56,6 @@ const WalletOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) 
 
     useEffect(() => {
         const init = async () => {
-            if (onboardStatusError) {
-                handleUniversalError(t, onboardStatusError, {
-                    onInvalidInput: async () => {
-                        await signout();
-                        navigate("/");
-                    },
-                    unauthorizedErr: {
-                        title: t("onboard.error.invalidSignature"),
-                        description: t("onboard.error.invalidSignatureDescription"),
-                        toastType: "error",
-                        name: "invalid_signature",
-                        message: t("onboard.error.invalidSignatureMessage"),
-                    },
-                });
-            }
             if (isStatusLoading) {
                 return;
             }

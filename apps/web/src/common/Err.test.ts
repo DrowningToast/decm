@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 import { AxiosError } from "axios";
 import { Err, ToastFromError, ToastFromAxiosError, handleAxiosError } from "./Err";
 import { toast } from "sonner";
+import { USECASE_IDS } from "@/constants/usecase";
+import type { TFunction } from "i18next";
 
 // Mock sonner toast
 vi.mock("sonner", () => ({
@@ -12,6 +14,19 @@ vi.mock("sonner", () => ({
         info: vi.fn(),
     },
 }));
+
+// Helper to create mock TFunction with proper branding
+const createMockT = (): TFunction => {
+    const mockFn = vi.fn((key: string) => key) as unknown;
+    // Add the brand property required by i18next
+    Object.defineProperty(mockFn, "$TFunctionBrand", {
+        value: Symbol.for("TFunction"),
+        writable: false,
+        enumerable: false,
+        configurable: false,
+    });
+    return mockFn as TFunction;
+};
 
 describe("Err Class", () => {
     it("should create an Err instance with message", () => {
@@ -50,7 +65,7 @@ describe("Err Class", () => {
     });
 
     it("should handle useCaseId", () => {
-        const mockUseCase = "FORM_SUBMISSION" as string;
+        const mockUseCase = USECASE_IDS.GENERIC;
         const err = new Err("Test", "Title", "Desc", "error", mockUseCase);
 
         expect(err.useCaseId).toBe(mockUseCase);
@@ -59,7 +74,7 @@ describe("Err Class", () => {
 
 describe("ToastFromError", () => {
     it("should toast Err instance with its own properties", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const err = new Err("message", "errors.custom", "errors.customDesc", "success");
 
         ToastFromError(t, err);
@@ -68,7 +83,7 @@ describe("ToastFromError", () => {
     });
 
     it("should use preset for error type", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const regularError = new Error("Regular error");
 
         ToastFromError(t, regularError, "INVALID_INPUT");
@@ -77,7 +92,7 @@ describe("ToastFromError", () => {
     });
 
     it("should fallback to generic error", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const unknownError = new Error("Unknown error");
 
         ToastFromError(t, unknownError);
@@ -86,7 +101,7 @@ describe("ToastFromError", () => {
     });
 
     it("should handle AxiosError", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const axiosError = new AxiosError("Network error", "NETWORK_ERROR", undefined, undefined, {
             status: 400,
             data: null,
@@ -102,7 +117,7 @@ describe("ToastFromError", () => {
     });
 
     it("should use error type if Err instance doesn't match presets", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const err = new Err("message");
 
         ToastFromError(t, err);
@@ -113,7 +128,7 @@ describe("ToastFromError", () => {
 
 describe("ToastFromAxiosError", () => {
     it("should toast 400 error as INVALID_INPUT", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const error = new AxiosError("Bad request", "400", undefined, undefined, {
             status: 400,
             data: null,
@@ -128,7 +143,7 @@ describe("ToastFromAxiosError", () => {
     });
 
     it("should toast 401 error as UNAUTHORIZED", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const error = new AxiosError("Unauthorized", "401", undefined, undefined, {
             status: 401,
             data: null,
@@ -143,7 +158,7 @@ describe("ToastFromAxiosError", () => {
     });
 
     it("should toast 403 error as FORBIDDEN", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const error = new AxiosError("Forbidden", "403", undefined, undefined, {
             status: 403,
             data: null,
@@ -158,7 +173,7 @@ describe("ToastFromAxiosError", () => {
     });
 
     it("should toast 404 error as NOT_FOUND", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const error = new AxiosError("Not found", "404", undefined, undefined, {
             status: 404,
             data: null,
@@ -173,7 +188,7 @@ describe("ToastFromAxiosError", () => {
     });
 
     it("should toast 409 error as DUPLICATE_ENTRY", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const error = new AxiosError("Conflict", "409", undefined, undefined, {
             status: 409,
             data: null,
@@ -188,7 +203,7 @@ describe("ToastFromAxiosError", () => {
     });
 
     it("should toast 500 error as INTERNAL_SERVER_ERROR", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const error = new AxiosError("Server error", "500", undefined, undefined, {
             status: 500,
             data: null,
@@ -203,7 +218,7 @@ describe("ToastFromAxiosError", () => {
     });
 
     it("should toast unknown status as INTERNAL_SERVER_ERROR", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const error = new AxiosError("Unknown", "999", undefined, undefined, {
             status: 999,
             data: null,
@@ -218,11 +233,46 @@ describe("ToastFromAxiosError", () => {
     });
 
     it("should use custom presets when provided", () => {
-        const t = vi.fn((key: string) => key);
-        const customPresets = {
+        const t = createMockT();
+        const customPresets: import("./Err").ErrPresets = {
             INVALID_INPUT: {
                 title: "custom.invalidInput",
                 description: "custom.desc",
+                toastType: "error" as const,
+            },
+            NETWORK_ERROR: {
+                title: "errors.network",
+                description: "errors.networkDescription",
+                toastType: "error" as const,
+            },
+            UNAUTHORIZED: {
+                title: "errors.unauthorized",
+                description: "errors.unauthorizedDescription",
+                toastType: "error" as const,
+            },
+            FORBIDDEN: {
+                title: "errors.forbidden",
+                description: "errors.forbiddenDescription",
+                toastType: "error" as const,
+            },
+            NOT_FOUND: {
+                title: "errors.notFound",
+                description: "errors.notFoundDescription",
+                toastType: "error" as const,
+            },
+            DUPLICATE_ENTRY: {
+                title: "errors.conflict",
+                description: "errors.duplicateEntryDescription",
+                toastType: "error" as const,
+            },
+            INTERNAL_CLIENT_ERROR: {
+                title: "errors.internalClientError",
+                description: "errors.internalClientErrorDescription",
+                toastType: "error" as const,
+            },
+            INTERNAL_SERVER_ERROR: {
+                title: "errors.serverError",
+                description: "errors.internalServerErrorDescription",
                 toastType: "error" as const,
             },
         };
@@ -241,7 +291,7 @@ describe("ToastFromAxiosError", () => {
     });
 
     it("should handle error without response status", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const error = new AxiosError("Network error");
 
         ToastFromAxiosError(t, error);
@@ -252,7 +302,7 @@ describe("ToastFromAxiosError", () => {
 
 describe("handleAxiosError", () => {
     it("should call onInvalidInput hook for 400 error", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const onInvalidInput = vi.fn();
         const error = new AxiosError("Bad request", "400", undefined, undefined, {
             status: 400,
@@ -268,7 +318,7 @@ describe("handleAxiosError", () => {
     });
 
     it("should call onUnauthorized hook for 401 error", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const onUnauthorized = vi.fn();
         const error = new AxiosError("Unauthorized", "401", undefined, undefined, {
             status: 401,
@@ -284,7 +334,7 @@ describe("handleAxiosError", () => {
     });
 
     it("should call onForbidden hook for 403 error", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const onForbidden = vi.fn();
         const error = new AxiosError("Forbidden", "403", undefined, undefined, {
             status: 403,
@@ -300,7 +350,7 @@ describe("handleAxiosError", () => {
     });
 
     it("should call onNotFound hook for 404 error", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const onNotFound = vi.fn();
         const error = new AxiosError("Not found", "404", undefined, undefined, {
             status: 404,
@@ -316,7 +366,7 @@ describe("handleAxiosError", () => {
     });
 
     it("should call onDuplicateEntry hook for 409 error", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const onDuplicateEntry = vi.fn();
         const error = new AxiosError("Conflict", "409", undefined, undefined, {
             status: 409,
@@ -332,7 +382,7 @@ describe("handleAxiosError", () => {
     });
 
     it("should call onInternalServerError hook for 500 error", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const onInternalServerError = vi.fn();
         const error = new AxiosError("Server error", "500", undefined, undefined, {
             status: 500,
@@ -348,7 +398,7 @@ describe("handleAxiosError", () => {
     });
 
     it("should use custom error from hook", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const customErr = new Err("Custom", "custom.title", "custom.desc", "warning");
         const error = new AxiosError("Bad request", "400", undefined, undefined, {
             status: 400,
@@ -364,7 +414,7 @@ describe("handleAxiosError", () => {
     });
 
     it("should handle multiple hooks at once", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const onInvalidInput = vi.fn();
         const invalidInputErr = new Err("Custom", "custom.title", "custom.desc", "warning");
         const error = new AxiosError("Bad request", "400", undefined, undefined, {
@@ -385,7 +435,7 @@ describe("handleAxiosError", () => {
     });
 
     it("should fall back to toast if no custom error is provided", () => {
-        const t = vi.fn((key: string) => key);
+        const t = createMockT();
         const onInvalidInput = vi.fn();
         const error = new AxiosError("Bad request", "400", undefined, undefined, {
             status: 400,
@@ -402,8 +452,14 @@ describe("handleAxiosError", () => {
     });
 
     it("should use useCaseId from custom error if provided", () => {
-        const t = vi.fn((key: string) => key);
-        const customErr = new Err("Custom", "custom.title", "custom.desc", "error", "CUSTOM_CASE");
+        const t = createMockT();
+        const customErr = new Err(
+            "Custom",
+            "custom.title",
+            "custom.desc",
+            "error",
+            USECASE_IDS.SIGN_IN,
+        );
         const error = new AxiosError("Bad request", "400", undefined, undefined, {
             status: 400,
             data: null,
@@ -416,7 +472,7 @@ describe("handleAxiosError", () => {
 
         expect(toast.error).toHaveBeenCalledWith("custom.title", {
             description: expect.any(String),
-            id: "CUSTOM_CASE",
+            id: USECASE_IDS.SIGN_IN,
         });
     });
 });

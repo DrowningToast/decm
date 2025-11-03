@@ -1,19 +1,19 @@
 // Use this hook when the user is in the authentication flow
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useCheckOnboardStatus } from "../Onboard/useCheckOnboardStatus";
-import { useNavigate } from "@/router";
-import { useWalletClient } from "wagmi";
+
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
 import { match } from "ts-pattern";
+import { useNavigate } from "react-router-dom";
 import { OnboardMethods } from "@/pages/onboard/[method]";
+import { useAccount } from "wagmi";
 
-// eg. Sign in, Sign up, onboard page
-export const useAuthRedirect = () => {
+export const useSignInPageRedirect = () => {
     const navigate = useNavigate();
-    const { onboardStatus, isLoading } = useCheckOnboardStatus();
-    const { data: walletClient } = useWalletClient();
+    const { onboardStatus, isLoading: isOnboardStatusLoading } = useCheckOnboardStatus();
+    const { address, isReconnecting, isConnecting } = useAccount();
     const [authSignSignature] = useLocalStorage<string | undefined>(
         LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE,
         undefined,
@@ -22,6 +22,14 @@ export const useAuthRedirect = () => {
         LOCAL_STORAGE_KEYS.ACCESS_TOKEN,
         undefined,
     );
+    const [expiresIn] = useLocalStorage<number | undefined>(
+        LOCAL_STORAGE_KEYS.EXPIRES_IN,
+        undefined,
+    );
+
+    const isLoading = useMemo(() => {
+        return isOnboardStatusLoading || isReconnecting || isConnecting;
+    }, [isOnboardStatusLoading, isReconnecting, isConnecting]);
 
     const authCheckGoogle = useCallback(async () => {
         match({
@@ -46,11 +54,7 @@ export const useAuthRedirect = () => {
                     hasProfileId: false,
                 },
                 () => {
-                    navigate("/onboard/:method", {
-                        params: {
-                            method: OnboardMethods.GOOGLE,
-                        },
-                    });
+                    navigate("/auth/success");
                 },
             )
             .with(
@@ -60,11 +64,14 @@ export const useAuthRedirect = () => {
                     hasProfileId: true,
                 },
                 () => {
-                    navigate("/onboard/:method", {
-                        params: {
-                            method: "wallet",
-                        },
-                    });
+                    const queryParams = new URLSearchParams();
+                    if (!accessToken || !expiresIn) {
+                        return;
+                    }
+                    queryParams.set("access_token", accessToken);
+                    queryParams.set("expires_in", expiresIn.toString());
+                    const searchString = queryParams.toString();
+                    navigate(`/auth/success?${searchString}`);
                 },
             )
             .with(
@@ -78,6 +85,7 @@ export const useAuthRedirect = () => {
             );
     }, [
         accessToken,
+        expiresIn,
         isLoading,
         navigate,
         onboardStatus?.authentication_credential_id,
@@ -87,7 +95,7 @@ export const useAuthRedirect = () => {
     const authCheckWallet = useCallback(async () => {
         match({
             isLoading,
-            hasWalletClient: !!walletClient,
+            hasAddress: !!address,
             hasAuthenticationCredentialId: !!onboardStatus?.authentication_credential_id,
             hasProfileId: !!onboardStatus?.profile_id,
             hasAuthSignSignature: !!authSignSignature,
@@ -103,7 +111,7 @@ export const useAuthRedirect = () => {
             )
             .with(
                 {
-                    hasWalletClient: false,
+                    hasAddress: false,
                 },
                 () => {
                     return;
@@ -115,11 +123,7 @@ export const useAuthRedirect = () => {
                     hasProfileId: false,
                 },
                 () => {
-                    navigate("/onboard/:method", {
-                        params: {
-                            method: "wallet",
-                        },
-                    });
+                    navigate(`/onboard/${OnboardMethods.WALLET}`);
                 },
             )
             .with(
@@ -133,9 +137,11 @@ export const useAuthRedirect = () => {
             )
             .with(
                 {
-                    hasWalletClient: true,
+                    hasAddress: true,
+                    hasAuthSignSignature: false,
                 },
                 () => {
+                    console.log("navigate to sign message");
                     navigate("/signin/sign-message");
                 },
             );
@@ -145,11 +151,15 @@ export const useAuthRedirect = () => {
         navigate,
         onboardStatus?.authentication_credential_id,
         onboardStatus?.profile_id,
-        walletClient,
+        address,
     ]);
 
     useEffect(() => {
         authCheckGoogle();
         authCheckWallet();
     }, [authCheckGoogle, authCheckWallet]);
+
+    return {
+        isLoading,
+    };
 };

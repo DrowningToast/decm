@@ -1,18 +1,16 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import type { ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { coreApiClient } from "@/lib/api/api";
 import type { EntityProfile } from "@decm/api";
-import { QUERY_KEY } from "@/lib/queryKeys";
-import { handleAxiosError } from "@/common/Err";
 import { AxiosError } from "axios";
 import { useTranslation } from "react-i18next";
 import { useSignout } from "@/components/useSignout";
+import { useMyProfile } from "@/hooks/useMyProfile";
+import { handleAxiosError } from "@/common/Err";
 interface AuthContextType {
     user: EntityProfile | null;
-    isLoading: boolean;
+    isPending: boolean;
     isAuthenticated: boolean;
-    refetch: () => void;
+    refetch: () => Promise<unknown>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,46 +21,30 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { t } = useTranslation();
-    const [isInitialized, setIsInitialized] = useState(false);
     const { signout } = useSignout();
-
     const {
         data: user,
-        isLoading,
+        error,
+        isPending,
         refetch,
-    } = useQuery<EntityProfile | null>({
-        queryKey: QUERY_KEY.user.profile,
-        queryFn: async () => {
-            try {
-                const response = await coreApiClient.v1.getMyProfile();
-                return response;
-            } catch (error) {
-                if (error instanceof AxiosError) {
-                    console.error(error);
-                    handleAxiosError(t, error);
-                    await signout();
-                    return null;
-                }
-                return null;
-            }
-        },
-        retry: false,
-        refetchOnWindowFocus: false,
-        staleTime: 5 * 60 * 1000,
-    });
+    } = useMyProfile();
 
     useEffect(() => {
-        if (!isLoading) {
-            setIsInitialized(true);
+        if (!error) {
+            return;
         }
-    }, [isLoading]);
 
-    const isAuthenticated = !!user;
+        console.error(error);
+        if (error instanceof AxiosError) {
+            handleAxiosError(t, error);
+            void signout();
+        }
+    }, [error, signout, t]);
 
     const contextValue: AuthContextType = {
         user: user || null,
-        isLoading: !isInitialized || isLoading,
-        isAuthenticated,
+        isPending,
+        isAuthenticated: !!user,
         refetch,
     };
 

@@ -44,31 +44,41 @@ export const useWalletOnboardUsecase = () => {
             }
             return;
         }
-        if (account?.credential_id) {
-            try {
-                await upsertProfile({
-                    method: OnboardRegistrationMethod.RegistrationMethodWallet,
-                    signSignature: signSignature,
-                    profile: {
-                        authentication_credential_id: account.credential_id,
-                        email: profile.email,
-                        phone_number: profile.phoneNumber,
-                        first_name: profile.firstName,
-                        last_name: profile.lastName,
-                        is_email_public: profile.isEmailPublic,
-                        is_phone_number_public: profile.isPhoneNumberPublic,
-                        is_first_name_public: profile.isFirstNamePublic,
-                        is_last_name_public: profile.isLastNamePublic,
-                    },
-                });
-            } catch (error) {
-                if (error instanceof Error) {
-                    handleUniversalError(t, error);
-                }
-                return;
-            }
+
+        // Derive credential ID from either newly created account or existing onboard status
+        const credentialId = account?.credential_id ?? onboardStatus?.authentication_credential_id;
+
+        if (!credentialId) {
+            // This is a critical error - we should have a credential ID at this point
+            toast.error(t("flow.wallet.create_profile_error"));
+            console.error("Missing credential ID in wallet onboard flow");
+            return;
         }
 
+        try {
+            await upsertProfile({
+                method: OnboardRegistrationMethod.RegistrationMethodWallet,
+                signSignature: signSignature,
+                profile: {
+                    authentication_credential_id: credentialId,
+                    first_name: profile.firstName,
+                    is_first_name_public: profile.isFirstNamePublic,
+                    last_name: profile.lastName,
+                    is_last_name_public: profile.isLastNamePublic,
+                    email: profile.email,
+                    is_email_public: profile.isEmailPublic,
+                    phone_number: profile.phoneNumber,
+                    is_phone_number_public: profile.isPhoneNumberPublic,
+                },
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                handleUniversalError(t, error);
+            }
+            return;
+        }
+
+        // Only show success and navigate if profile was successfully created/updated
         toast.success(t("flow.wallet.create_profile_success"));
         navigate("/app");
     };

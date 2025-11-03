@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { AuthService, CreateAccountParams, type CreateProfileParams } from "./AuthService";
+import { AuthService, type CreateAccountParams, type CreateProfileParams } from "./AuthService";
 import { OnboardRegistrationMethod } from "@decm/api";
 import type { CoreApiType } from "@/lib/api/api";
 import type { OnboardService } from "./OnboardService";
+import type { QueryClient } from "@tanstack/react-query";
+import type { Config } from "wagmi";
 
 // Mock i18next
 vi.mock("i18next", () => ({
@@ -28,7 +30,8 @@ import { coreApiClient } from "@/lib/api/api";
 describe("AuthService", () => {
     let mockCoreApi: CoreApiType;
     let mockOnboardService: OnboardService;
-    let mockQueryClient: { invalidateQueries: ReturnType<typeof vi.fn> };
+    let mockQueryClient: QueryClient;
+    let mockWagmiConfig: Config;
     let authService: AuthService;
 
     beforeEach(() => {
@@ -42,10 +45,17 @@ describe("AuthService", () => {
 
         mockQueryClient = {
             invalidateQueries: vi.fn().mockResolvedValue(undefined),
-        };
+        } as unknown as QueryClient;
 
-        // Constructor order: coreApi, queryClient, onboardService
-        authService = new AuthService(mockCoreApi, mockQueryClient, mockOnboardService);
+        mockWagmiConfig = {} as unknown as Config;
+
+        // Constructor order: coreApi, queryClient, onboardService, wagmiConfig
+        authService = new AuthService(
+            mockCoreApi,
+            mockQueryClient,
+            mockOnboardService,
+            mockWagmiConfig,
+        );
     });
 
     describe("createAccount", () => {
@@ -278,12 +288,11 @@ describe("AuthService", () => {
     describe("signOut", () => {
         it("should sign out successfully", async () => {
             const mockResponse = { success: true };
-            (mockCoreApi.v1.logout as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (coreApiClient.v1.logout as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
 
-            const result = await authService.signOut();
+            await authService.signOut();
 
-            expect(mockCoreApi.v1.logout).toHaveBeenCalled();
-            expect(result).toBe(true); // signOut returns boolean true
+            expect(coreApiClient.v1.logout).toHaveBeenCalled();
             expect(mockQueryClient.invalidateQueries).toHaveBeenCalled();
         });
     });

@@ -118,8 +118,10 @@ export const useIssuerManagement = ({
             // Merge with existing selections (avoid duplicates)
             const merged = [...selectedIssuers];
             newIssuers.forEach((issuer) => {
-                if (!merged.some((existing) => existing.id === issuer.id)) {
-                    merged.push(issuer);
+                if (
+                    !merged.some((existing) => existing.authentication_credential_id === issuer.id)
+                ) {
+                    merged.push(issuer as unknown as EntityProfile);
                 }
             });
 
@@ -130,7 +132,9 @@ export const useIssuerManagement = ({
     );
 
     const handleRemoveIssuer = useCallback((issuerId: string) => {
-        setSelectedIssuers((prev) => prev.filter((issuer) => issuer.id !== issuerId));
+        setSelectedIssuers((prev) =>
+            prev.filter((issuer) => issuer.authentication_credential_id !== issuerId),
+        );
     }, []);
 
     const handleClearSelection = useCallback(() => {
@@ -138,7 +142,7 @@ export const useIssuerManagement = ({
     }, []);
 
     const getSelectedIssuerIds = useCallback(() => {
-        return new Set(selectedIssuers.map((issuer) => issuer.id ?? ""));
+        return new Set(selectedIssuers.map((issuer) => issuer.authentication_credential_id ?? ""));
     }, [selectedIssuers]);
 
     return {

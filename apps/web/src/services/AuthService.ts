@@ -6,6 +6,12 @@ import { Err } from "@/common/Err";
 import type { QueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@/lib/queryKeys";
 import { queryClient } from "@/lib/api/queryClient";
+import { toast } from "sonner";
+import { TOAST_USECASE_VIEWMODEL } from "@/constants/toast";
+import { USECASE_IDS } from "@/constants/usecase";
+import { LOCAL_STORAGE_KEYS, removeLocalStorageItem } from "@/lib/constants/localStorage";
+import { wagmiConfig } from "@/config/walletConnect";
+import { disconnect, getAccount, type Config } from "@wagmi/core";
 
 export type CreateAccountParams =
     | {
@@ -42,15 +48,26 @@ export interface CreateProfileParams {
 
 export type UpdateProfileParams = Omit<CreateProfileParams, "email">;
 
+export interface SignOutParams {
+    showSuccessToast?: boolean;
+}
+
 export class AuthService {
     private _coreApi: CoreApiType;
     private _onboardService: OnboardService;
     private _queryClient: QueryClient;
+    private _wagmiConfig: Config;
 
-    constructor(coreApi: CoreApiType, queryClient: QueryClient, onboardService: OnboardService) {
+    constructor(
+        coreApi: CoreApiType,
+        queryClient: QueryClient,
+        onboardService: OnboardService,
+        wagmiConfig: Config,
+    ) {
         this._coreApi = coreApi;
         this._queryClient = queryClient;
         this._onboardService = onboardService;
+        this._wagmiConfig = wagmiConfig;
     }
 
     public async createAccount(params: CreateAccountParams) {
@@ -149,17 +166,27 @@ export class AuthService {
         }
     }
 
-    public async signOut() {
+    public async signOut({ showSuccessToast: showToast = true }: SignOutParams | undefined = {}) {
         try {
+            const account = await getAccount(this._wagmiConfig);
+            removeLocalStorageItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+            removeLocalStorageItem(LOCAL_STORAGE_KEYS.EXPIRES_IN);
+            removeLocalStorageItem(LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE);
+            // if wallet is connected, disconnect it
+            if (account?.isConnected) {
+                await disconnect(this._wagmiConfig);
+            }
             await this._coreApi.v1.logout();
+            if (showToast) {
+                toast.info(TOAST_USECASE_VIEWMODEL[USECASE_IDS.GENERIC].SIGN_OUT_SUCCESS);
+            }
         } catch (error) {
             console.error(error);
             throw error;
         }
         await this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
-        return true;
     }
 }
 
 // Default instance
-export const authService = new AuthService(coreApiClient, queryClient, onboardService);
+export const authService = new AuthService(coreApiClient, queryClient, onboardService, wagmiConfig);

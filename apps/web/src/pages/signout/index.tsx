@@ -1,17 +1,26 @@
 import { useSignout } from "@/components/useSignout";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { Typography } from "@/components/typography/typography";
+import { delay } from "@/lib/utils";
 
 const SignoutPage = () => {
     const { signout, isPending, error } = useSignout();
     const navigate = useNavigate();
+    const { t } = useTranslation();
+    const hasSignedOut = useRef(false);
+
     useEffect(() => {
         const init = async () => {
+            if (hasSignedOut.current) return;
+            hasSignedOut.current = true;
+
             try {
+                await delay(2000);
                 await signout();
-                navigate("/");
-                window.location.reload();
+                window.location.href = "/";
             } catch (error) {
                 if (error instanceof Error) {
                     toast.error(error.message);
@@ -19,19 +28,34 @@ const SignoutPage = () => {
             }
         };
         init();
-    }, [navigate, signout]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     if (isPending) {
-        return <div>Loading...</div>;
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Typography variant="text" tag="p">
+                    {t("common.loading")}
+                </Typography>
+            </div>
+        );
     }
 
     if (error) {
-        return <div>Error: {error.message}</div>;
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Typography variant="text" tag="p" color="muted">
+                    {t("common.error")}: {error.message}
+                </Typography>
+            </div>
+        );
     }
 
     return (
-        <div>
-            <h1>You're logging out. Please wait...</h1>
+        <div className="flex items-center justify-center min-h-screen">
+            <Typography variant="header" tag="h1">
+                {t("common.signingOut")}
+            </Typography>
         </div>
     );
 };

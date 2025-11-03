@@ -1,0 +1,245 @@
+# Test Timeout Conventions
+
+## Critical Rule: Keep Test Timeouts Short
+
+**Maximum timeout: 1 second (1000ms)** for any test operation.
+
+## Why Short Timeouts Matter
+
+Long timeouts significantly slow down the entire test suite:
+- Tests with 5-10 second timeouts make the suite unbearably slow
+- Fast feedback is essential for development workflow
+- CI/CD pipelines should complete quickly
+
+## Timeout Guidelines
+
+### ✅ DO: Use Short Timeouts
+
+```typescript
+// Good: Maximum 1 second timeout
+await waitFor(
+    () => {
+        expect(mockFunction).toHaveBeenCalled();
+    },
+    { timeout: 1000 },
+);
+
+// Good: No timeout specified (uses default ~1s)
+await waitFor(() => {
+    expect(result.current.isLoading).toBe(false);
+});
+```
+
+### ❌ DON'T: Use Long Timeouts
+
+```typescript
+// Bad: 10 second timeout
+it(
+    "test name",
+    async () => {
+        // test code
+    },
+    { timeout: 10000 }, // ❌ Too slow!
+);
+
+// Bad: 5 second waitFor timeout
+await waitFor(
+    () => {
+        expect(value).toBe(true);
+    },
+    { timeout: 5000 }, // ❌ Too slow!
+);
+```
+
+## Debounce Testing Strategy
+
+**Best Practice: Use Fake Timers** instead of real timeouts for debounced behavior:
+
+```typescript
+it("debounces search input", async () => {
+    vi.useFakeTimers(); // ✅ Use fake timers
+
+    const { result } = renderHook(() => useSearchHook());
+
+    act(() => {
+        result.current.setSearch("test");
+    });
+
+    // Fast-forward time instead of waiting
+    act(() => {
+        vi.advanceTimersByTime(500); // ✅ Instant, no real waiting
+    });
+
+    await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalledWith("test");
+    });
+
+    vi.useRealTimers(); // Clean up
+});
+```
+
+**Avoid:** Real timeouts even if short:
+```typescript
+// ❌ Bad: Actually waits 1 second
+await waitFor(
+    () => {
+        expect(mockFetch).toHaveBeenCalledWith("test");
+    },
+    { timeout: 1000 },
+);
+
+// ❌ Bad: Actually waits 100ms
+await new Promise((resolve) => setTimeout(resolve, 100));
+```
+
+## Async Operation Testing
+
+For async operations like API calls:
+
+```typescript
+it("fetches data", async () => {
+    const mockFetch = vi.fn(async () => ({ data: [] }));
+
+    const { result } = renderHook(() => useDataFetch(mockFetch));
+
+    // Wait for loading to complete
+    await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+    }); // Uses default ~1s timeout
+
+    expect(mockFetch).toHaveBeenCalled();
+});
+```
+
+## Fake Timers for Time-Based Tests
+
+**Always use fake timers** for testing debounce, throttle, or any time-based behavior:
+
+```typescript
+it("handles debounced search", async () => {
+    vi.useFakeTimers(); // ✅ Enable fake timers
+
+    const { result } = renderHook(() => useDebounceHook());
+
+    // Make changes
+    act(() => {
+        result.current.setValue("a");
+        vi.advanceTimersByTime(100); // Partial time
+    });
+
+    act(() => {
+        result.current.setValue("ab");
+        vi.advanceTimersByTime(100); // More partial time
+    });
+
+    act(() => {
+        result.current.setValue("abc");
+        vi.advanceTimersByTime(500); // Complete the debounce
+    });
+
+    // Assertions
+    await waitFor(() => {
+        expect(mockFn).toHaveBeenCalledWith("abc");
+    });
+
+    vi.useRealTimers(); // ✅ Always clean up
+});
+```
+
+### Benefits of Fake Timers
+- ✅ **Instant**: Tests run in milliseconds, not seconds
+- ✅ **Deterministic**: No timing race conditions
+- ✅ **Precise**: Control exact timing of events
+- ✅ **No actual waiting**: CPU can focus on other tests
+
+### When NOT to Use Fake Timers
+- Real API calls (use mocks instead)
+- Animation testing requiring visual verification
+- Integration tests with external services
+
+## Vitest Configuration
+
+Default timeout is set in `vitest.config.ts`:
+
+```typescript
+export default defineConfig({
+    test: {
+        testTimeout: 5000, // Overall test timeout
+        hookTimeout: 10000, // Setup/teardown timeout
+    },
+});
+```
+
+Individual test timeouts should be much shorter (≤1000ms).
+
+## Common Patterns
+
+### ✅ Fast Test Pattern
+
+```typescript
+describe("MyComponent", () => {
+    it("renders correctly", () => {
+        render(<MyComponent />);
+        expect(screen.getByText("Hello")).toBeInTheDocument();
+    });
+
+    it("handles click", async () => {
+        const onClick = vi.fn();
+        render(<MyComponent onClick={onClick} />);
+
+        await userEvent.click(screen.getByRole("button"));
+
+        expect(onClick).toHaveBeenCalled();
+    });
+});
+```
+
+### ❌ Slow Test Pattern (Avoid)
+
+```typescript
+describe("MyComponent", () => {
+    it(
+        "waits for slow operation",
+        async () => {
+            // Don't do this!
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+        },
+        { timeout: 5000 },
+    );
+});
+```
+
+## Summary
+
+- **Use fake timers for time-based tests** (`vi.useFakeTimers()` + `vi.advanceTimersByTime()`)
+- **Avoid explicit timeouts** - use `waitFor` without timeout parameter when possible
+- **Maximum timeout: 1000ms (1 second)** if absolutely necessary
+- **No `setTimeout` or `new Promise` with delays** in tests
+- Mock slow operations instead of waiting for them
+- Fast tests = better developer experience
+- Keep the test suite under 30 seconds total runtime
+
+### Quick Reference
+```typescript
+// ✅ BEST: Use fake timers
+vi.useFakeTimers();
+vi.advanceTimersByTime(500);
+vi.useRealTimers();
+
+// ✅ GOOD: No timeout specified (fast default)
+await waitFor(() => expect(x).toBe(y));
+
+// ⚠️ OK: Short timeout if needed
+await waitFor(() => expect(x).toBe(y), { timeout: 1000 });
+
+// ❌ BAD: Long timeout
+await waitFor(() => expect(x).toBe(y), { timeout: 5000 });
+
+// ❌ BAD: Real waiting
+await new Promise(resolve => setTimeout(resolve, 500));
+```
+
+## Related Documentation
+
+- [Testing Conventions](mdc:.cursor/rules/testing-conventions.mdc) - General testing patterns
+- [Testing Setup](mdc:.cursor/rules/testing-setup.mdc) - Vitest configuration

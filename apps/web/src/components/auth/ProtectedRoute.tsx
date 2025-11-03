@@ -21,10 +21,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     // requiredRoles,
     fallback,
 }) => {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isPending } = useAuth();
     const { t } = useTranslation();
 
-    if (isLoading) {
+    if (isPending) {
         return (
             fallback || (
                 <div className="flex items-center justify-center min-h-screen">
