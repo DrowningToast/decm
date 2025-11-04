@@ -10,8 +10,8 @@ const SignoutPage = () => {
         const init = async () => {
             try {
                 await signout();
-                await navigate("/");
-                await navigate(0);
+                navigate("/");
+                window.location.reload();
             } catch (error) {
                 if (error instanceof Error) {
                     toast.error(error.message);
