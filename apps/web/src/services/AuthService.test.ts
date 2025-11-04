@@ -28,6 +28,7 @@ import { coreApiClient } from "@/lib/api/api";
 describe("AuthService", () => {
     let mockCoreApi: CoreApiType;
     let mockOnboardService: OnboardService;
+    let mockQueryClient: any;
     let authService: AuthService;
 
     beforeEach(() => {
@@ -39,7 +40,12 @@ describe("AuthService", () => {
             checkOnboardStatus: vi.fn(),
         } as unknown as OnboardService;
 
-        authService = new AuthService(mockCoreApi, mockOnboardService);
+        mockQueryClient = {
+            invalidateQueries: vi.fn().mockResolvedValue(undefined),
+        };
+
+        // Constructor order: coreApi, queryClient, onboardService
+        authService = new AuthService(mockCoreApi, mockQueryClient, mockOnboardService);
     });
 
     describe("createAccount", () => {
@@ -186,6 +192,7 @@ describe("AuthService", () => {
                 is_profile_picture_public: undefined,
             });
             expect(result).toEqual(mockResponse);
+            expect(mockQueryClient.invalidateQueries).toHaveBeenCalled();
         });
 
         it("should create profile with minimal fields", async () => {
@@ -222,6 +229,7 @@ describe("AuthService", () => {
                 is_profile_picture_public: undefined,
             });
             expect(result).toEqual(mockResponse);
+            expect(mockQueryClient.invalidateQueries).toHaveBeenCalled();
         });
     });
 
@@ -263,6 +271,7 @@ describe("AuthService", () => {
                 },
             );
             expect(result).toEqual(mockResponse);
+            expect(mockQueryClient.invalidateQueries).toHaveBeenCalled();
         });
     });
 
@@ -274,7 +283,8 @@ describe("AuthService", () => {
             const result = await authService.signOut();
 
             expect(mockCoreApi.v1.logout).toHaveBeenCalled();
-            expect(result).toEqual(mockResponse);
+            expect(result).toBe(true); // signOut returns boolean true
+            expect(mockQueryClient.invalidateQueries).toHaveBeenCalled();
         });
     });
 });
