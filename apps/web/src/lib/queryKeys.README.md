@@ -22,19 +22,19 @@ apps/web/src/lib/queryKeys.ts
 ### Importing
 
 ```tsx
-import { queryKeys } from "@/lib/queryKeys";
+import { QUERY_KEY } from "@/lib/queryKeys";
 ```
 
 ### Using in `useQuery`
 
 ```tsx
 import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
+import { QUERY_KEY } from "@/lib/queryKeys";
 import { coreApiClient } from "@/lib/api/api";
 
 export function useEvent(eventId: string) {
     const { data, isLoading } = useQuery({
-        queryKey: queryKeys.event.byId(eventId),
+        queryKey: QUERY_KEY.event.byId(eventId),
         queryFn: () => coreApiClient.v1.getEventById({ eventId }),
     });
 
@@ -47,7 +47,7 @@ export function useEvent(eventId: string) {
 ```tsx
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/api/queryClient";
-import { queryKeys } from "@/lib/queryKeys";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 export function useUpdateEvent(eventId: string) {
     const { mutateAsync } = useMutation({
@@ -55,12 +55,12 @@ export function useUpdateEvent(eventId: string) {
         onSuccess: () => {
             // Invalidate specific event
             queryClient.invalidateQueries({
-                queryKey: queryKeys.event.byId(eventId),
+                queryKey: QUERY_KEY.event.byId(eventId),
             });
 
             // Or invalidate all events
             queryClient.invalidateQueries({
-                queryKey: queryKeys.event.all,
+                queryKey: QUERY_KEY.event.all,
             });
         },
     });
@@ -75,7 +75,7 @@ export function useUpdateEvent(eventId: string) {
 
 ```tsx
 // User profile
-queryKeys.user.profile;
+QUERY_KEY.user.profile;
 // Result: ["user", "profile"]
 ```
 
@@ -83,19 +83,19 @@ queryKeys.user.profile;
 
 ```tsx
 // Sign message
-queryKeys.onboard.signMessage;
+QUERY_KEY.onboard.signMessage;
 // Result: ["getSignMessage"]
 
 // Onboard status - all
-queryKeys.onboard.status.all;
+QUERY_KEY.onboard.status.all;
 // Result: ["onboardStatus"]
 
 // Onboard status - wallet
-queryKeys.onboard.status.wallet(signSignature);
+QUERY_KEY.onboard.status.wallet(signSignature);
 // Result: ["onboardStatus", signSignature]
 
 // Onboard status - Google
-queryKeys.onboard.status.google(accessToken, expiresIn);
+QUERY_KEY.onboard.status.google(accessToken, expiresIn);
 // Result: ["onboardStatus", accessToken, expiresIn]
 ```
 
@@ -103,7 +103,7 @@ queryKeys.onboard.status.google(accessToken, expiresIn);
 
 ```tsx
 // Image by URL
-queryKeys.image.byUrl(url);
+QUERY_KEY.image.byUrl(url);
 // Result: ["image", url]
 ```
 
@@ -111,23 +111,23 @@ queryKeys.image.byUrl(url);
 
 ```tsx
 // All events (for invalidation)
-queryKeys.event.all;
+QUERY_KEY.event.all;
 // Result: ["event"]
 
 // Event by ID
-queryKeys.event.byId(eventId);
+QUERY_KEY.event.byId(eventId);
 // Result: ["event", eventId]
 
 // Event registration config
-queryKeys.event.registrationConfig(eventId);
+QUERY_KEY.event.registrationConfig(eventId);
 // Result: ["event-registration-config", eventId]
 
 // Event issuers
-queryKeys.event.issuers.byEventId(eventId);
+QUERY_KEY.event.issuers.byEventId(eventId);
 // Result: ["event", eventId, "issuers"]
 
 // Event certificate config
-queryKeys.event.certificate.config(eventId);
+QUERY_KEY.event.certificate.config(eventId);
 // Result: ["event", eventId, "certificate", "config"]
 ```
 
@@ -135,11 +135,11 @@ queryKeys.event.certificate.config(eventId);
 
 ```tsx
 // All host events (for invalidation)
-queryKeys.hostEvents.all;
+QUERY_KEY.hostEvents.all;
 // Result: ["host-events"]
 
 // Host events list with pagination
-queryKeys.hostEvents.list(userId, rowsPerPage, offset);
+QUERY_KEY.hostEvents.list(userId, rowsPerPage, offset);
 // Result: ["host-events", userId, rowsPerPage, offset]
 ```
 
@@ -147,7 +147,7 @@ queryKeys.hostEvents.list(userId, rowsPerPage, offset);
 
 ```tsx
 // Verified issuers
-queryKeys.issuers.verified;
+QUERY_KEY.issuers.verified;
 // Result: ["issuers"]
 ```
 
@@ -158,31 +158,31 @@ queryKeys.issuers.verified;
 Query keys follow a hierarchical structure:
 
 ```tsx
-queryKeys.{domain}.{operation}(params)
+QUERY_KEY.{domain}.{operation}(params)
 ```
 
 **Examples:**
 
-- `queryKeys.event.byId(eventId)` - Single event
-- `queryKeys.event.issuers.byEventId(eventId)` - Event's issuers
-- `queryKeys.event.certificate.config(eventId)` - Event's certificate config
+- `QUERY_KEY.event.byId(eventId)` - Single event
+- `QUERY_KEY.event.issuers.byEventId(eventId)` - Event's issuers
+- `QUERY_KEY.event.certificate.config(eventId)` - Event's certificate config
 
 ### 2. Static vs Dynamic Keys
 
 **Static keys** (constant arrays):
 
 ```tsx
-queryKeys.user.profile;
-queryKeys.onboard.signMessage;
-queryKeys.issuers.verified;
+QUERY_KEY.user.profile;
+QUERY_KEY.onboard.signMessage;
+QUERY_KEY.issuers.verified;
 ```
 
 **Dynamic keys** (factory functions):
 
 ```tsx
-queryKeys.event.byId(eventId);
-queryKeys.image.byUrl(url);
-queryKeys.hostEvents.list(userId, rowsPerPage, offset);
+QUERY_KEY.event.byId(eventId);
+QUERY_KEY.image.byUrl(url);
+QUERY_KEY.hostEvents.list(userId, rowsPerPage, offset);
 ```
 
 ### 3. Invalidation Patterns
@@ -191,7 +191,7 @@ queryKeys.hostEvents.list(userId, rowsPerPage, offset);
 
 ```tsx
 queryClient.invalidateQueries({
-    queryKey: queryKeys.event.byId(eventId),
+    queryKey: QUERY_KEY.event.byId(eventId),
 });
 ```
 
@@ -199,7 +199,7 @@ queryClient.invalidateQueries({
 
 ```tsx
 queryClient.invalidateQueries({
-    queryKey: queryKeys.event.all,
+    queryKey: QUERY_KEY.event.all,
 });
 ```
 
@@ -219,10 +219,10 @@ All query keys are typed as `const` arrays, providing:
 
 ```tsx
 // ✅ Good - Type-safe and autocomplete works
-queryKeys.event.byId(eventId)[
-    // ❌ Bad - No type safety, prone to typos
-    ("event", eventId)
-];
+QUERY_KEY.event.byId(eventId)
+
+// ❌ Bad - No type safety, prone to typos
+["event", eventId]
 ```
 
 ## Examples from the Codebase
@@ -232,12 +232,12 @@ queryKeys.event.byId(eventId)[
 ```tsx
 // useEvent.ts
 import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
+import { QUERY_KEY } from "@/lib/queryKeys";
 import { coreApiClient } from "@/lib/api/api";
 
 export function useEvent(eventId: string) {
     const { data: event, isLoading } = useQuery({
-        queryKey: queryKeys.event.byId(eventId),
+        queryKey: QUERY_KEY.event.byId(eventId),
         queryFn: () => coreApiClient.v1.getEventById({ eventId }),
     });
 
@@ -251,7 +251,7 @@ export function useEvent(eventId: string) {
 // useUpdateCertificateConfig.ts
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/api/queryClient";
-import { queryKeys } from "@/lib/queryKeys";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 export function useUpdateCertificateConfig(eventId: string) {
     const { mutateAsync } = useMutation({
@@ -259,7 +259,7 @@ export function useUpdateCertificateConfig(eventId: string) {
         onSuccess: () => {
             // Invalidate all event-related queries
             queryClient.invalidateQueries({
-                queryKey: queryKeys.event.all,
+                queryKey: QUERY_KEY.event.all,
             });
         },
     });
@@ -273,14 +273,14 @@ export function useUpdateCertificateConfig(eventId: string) {
 ```tsx
 // useHostEvents.ts
 import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
+import { QUERY_KEY } from "@/lib/queryKeys";
 import { useAuth } from "@/context/AuthContext";
 
 export function useHostEvents(rowsPerPage: number, offset: number) {
     const { user } = useAuth();
 
     const { data, isLoading } = useQuery({
-        queryKey: queryKeys.hostEvents.list(
+        queryKey: QUERY_KEY.hostEvents.list(
             user?.authentication_credential_id,
             rowsPerPage,
             offset,
@@ -305,7 +305,7 @@ When adding a new query key, follow these steps:
 ### 1. Add to `queryKeys.ts`
 
 ```tsx
-export const queryKeys = {
+export const QUERY_KEY = {
     // ... existing keys ...
 
     // New domain
@@ -321,11 +321,11 @@ export const queryKeys = {
 
 ```tsx
 import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 export function useCertificate(certificateId: string) {
     const { data } = useQuery({
-        queryKey: queryKeys.certificates.byId(certificateId),
+        queryKey: QUERY_KEY.certificates.byId(certificateId),
         queryFn: () => fetchCertificate(certificateId),
     });
 
@@ -353,10 +353,10 @@ useQuery({
 **After:**
 
 ```tsx
-import { queryKeys } from "@/lib/queryKeys";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 useQuery({
-    queryKey: queryKeys.event.byId(eventId),
+    queryKey: QUERY_KEY.event.byId(eventId),
     queryFn: () => fetchEvent(eventId),
 });
 ```
