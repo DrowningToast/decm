@@ -83,7 +83,7 @@ describe("LogoutButton Component", () => {
     });
 
     it("should combine custom className with default classes", () => {
-        const { container } = render(<LogoutButton type="signout" className="extra-class" />);
+        render(<LogoutButton type="signout" className="extra-class" />);
 
         const button = screen.getByRole("button");
         expect(button.className).toContain("text-start");
