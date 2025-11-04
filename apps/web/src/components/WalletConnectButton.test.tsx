@@ -204,7 +204,7 @@ describe("WalletConnectButton Component", () => {
     it("should maintain event bubbling", () => {
         const parentClick = vi.fn();
 
-        const { container } = render(
+        render(
             <div onClick={parentClick}>
                 <WalletConnectButton>
                     <span>Connect</span>
