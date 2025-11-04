@@ -28,7 +28,7 @@ import { coreApiClient } from "@/lib/api/api";
 describe("AuthService", () => {
     let mockCoreApi: CoreApiType;
     let mockOnboardService: OnboardService;
-    let mockQueryClient: any;
+    let mockQueryClient: { invalidateQueries: ReturnType<typeof vi.fn> };
     let authService: AuthService;
 
     beforeEach(() => {

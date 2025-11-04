@@ -190,7 +190,7 @@ describe("ConfirmModal Component", () => {
     });
 
     it("should apply destructive styling when destructive prop is true", () => {
-        const { container } = render(
+        render(
             <ConfirmModal
                 title="Delete Item"
                 message="This action cannot be undone"
