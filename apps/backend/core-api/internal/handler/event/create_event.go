@@ -121,7 +121,7 @@ func (h *Handler) CreateEvent(ctx *fiber.Ctx) error {
 	}
 
 	// 6. Call usecase
-	event, eventContractAddress, _, err := h.EventUc.CreateEvent(ctx.UserContext(), params, currentUser)
+	event, eventAccessManagerAddress, eventContractAddress, _, err := h.EventUc.CreateEvent(ctx.UserContext(), params, currentUser)
 	if err != nil {
 		return err
 	}
@@ -144,7 +144,7 @@ func (h *Handler) CreateEvent(ctx *fiber.Ctx) error {
 
 	createEventContractParams := eventUc.CreateEventContractParams{
 		EventContractAddress:         eventContractAddress.Hex(),
-		AccessManagerContractAddress: "",
+		AccessManagerContractAddress: eventAccessManagerAddress.Hex(),
 	}
 
 	_, err = h.EventUc.CreateEventContract(ctx.UserContext(), event.ID, createEventContractParams)
