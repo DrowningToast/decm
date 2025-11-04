@@ -18,12 +18,14 @@ vi.mock("react-i18next", () => ({
 
 // Mock Typography
 vi.mock("@/components/typography/typography", () => ({
-    Typography: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+    Typography: ({ children, ...props }: React.ComponentProps<"span">) => (
+        <span {...props}>{children}</span>
+    ),
 }));
 
 // Mock utils
 vi.mock("@/lib/utils", () => ({
-    cn: (...args: any[]) => args.filter(Boolean).join(" "),
+    cn: (...args: Array<string | boolean | undefined>) => args.filter(Boolean).join(" "),
 }));
 
 describe("LogoutButton Component", () => {
