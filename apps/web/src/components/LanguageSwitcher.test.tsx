@@ -17,14 +17,21 @@ vi.mock("react-i18next", () => ({
 
 // Mock components
 vi.mock("@/components/ui/button", () => ({
-    Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+    Button: ({ children, ...props }: React.ComponentProps<"button">) => (
+        <button {...props}>{children}</button>
+    ),
 }));
 
 vi.mock("@/components/ui/dropdown-menu", () => ({
-    DropdownMenu: ({ children }: any) => <div>{children}</div>,
-    DropdownMenuTrigger: ({ children }: any) => <div>{children}</div>,
-    DropdownMenuContent: ({ children }: any) => <div>{children}</div>,
-    DropdownMenuItem: ({ children, onClick }: any) => <div onClick={onClick}>{children}</div>,
+    DropdownMenu: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
+    DropdownMenuTrigger: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
+    DropdownMenuContent: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
+    DropdownMenuItem: ({
+        children,
+        onClick,
+    }: React.PropsWithChildren<{ onClick?: () => void }>) => (
+        <div onClick={onClick}>{children}</div>
+    ),
 }));
 
 // Mock language data

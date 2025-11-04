@@ -16,7 +16,7 @@ describe("useIsomorphicLayoutEffect", () => {
 
     it("should work with the same signature as useLayoutEffect", () => {
         // The hook should be callable with the same arguments as useLayoutEffect
-        const testHook = () => {
+        const useTestHook = () => {
             useIsomorphicLayoutEffect(() => {
                 // Effect body
             }, [1, 2, 3]);
@@ -24,7 +24,7 @@ describe("useIsomorphicLayoutEffect", () => {
 
         // This test verifies the type compatibility - should not throw when used in a component
         expect(() => {
-            renderHook(testHook);
+            renderHook(useTestHook);
         }).not.toThrow();
     });
 
@@ -43,26 +43,26 @@ describe("useIsomorphicLayoutEffect", () => {
 
     it("should call the effect function", () => {
         let effectCalled = false;
-        const testHook = () => {
+        const useTestHook = () => {
             useIsomorphicLayoutEffect(() => {
                 effectCalled = true;
             });
         };
 
-        renderHook(testHook);
+        renderHook(useTestHook);
 
         expect(effectCalled).toBe(true);
     });
 
     it("should support dependency array", () => {
         let callCount = 0;
-        const testHook = () => {
+        const useTestHook = () => {
             useIsomorphicLayoutEffect(() => {
                 callCount++;
             }, []);
         };
 
-        renderHook(testHook);
+        renderHook(useTestHook);
 
         // Effect should be called once on mount
         expect(callCount).toBe(1);
