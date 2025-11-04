@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { OnboardPageContext } from "../../../../pages/onboard/[method]";
 import { AccountAlreadyExistsPage } from "../AccountAlreadyExistPage";
 import type { Profile } from "../ProfilePage";
-import { useOAuthOnboardUsecase } from "../Usecase/useOauthOnboardUsecase";
+import { useOAuthOnboardUsecase } from "../Usecase/useOAuthOnboardUsecase";
 
 type OAuthOnboardContextType = {
     form: UseFormReturn<OAuthOnboardForm>;
