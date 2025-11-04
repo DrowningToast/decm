@@ -50,7 +50,7 @@ describe("Err Class", () => {
     });
 
     it("should handle useCaseId", () => {
-        const mockUseCase = "FORM_SUBMISSION" as any;
+        const mockUseCase = "FORM_SUBMISSION" as string;
         const err = new Err("Test", "Title", "Desc", "error", mockUseCase);
 
         expect(err.useCaseId).toBe(mockUseCase);
@@ -89,7 +89,11 @@ describe("ToastFromError", () => {
         const t = vi.fn((key: string) => key);
         const axiosError = new AxiosError("Network error", "NETWORK_ERROR", undefined, undefined, {
             status: 400,
-        } as any);
+            data: null,
+            statusText: "Bad Request",
+            headers: {},
+            config: {} as never,
+        });
 
         ToastFromError(t, axiosError);
 
@@ -112,7 +116,11 @@ describe("ToastFromAxiosError", () => {
         const t = vi.fn((key: string) => key);
         const error = new AxiosError("Bad request", "400", undefined, undefined, {
             status: 400,
-        } as any);
+            data: null,
+            statusText: "Bad Request",
+            headers: {},
+            config: {} as never,
+        });
 
         ToastFromAxiosError(t, error);
 
@@ -123,7 +131,11 @@ describe("ToastFromAxiosError", () => {
         const t = vi.fn((key: string) => key);
         const error = new AxiosError("Unauthorized", "401", undefined, undefined, {
             status: 401,
-        } as any);
+            data: null,
+            statusText: "Unauthorized",
+            headers: {},
+            config: {} as never,
+        });
 
         ToastFromAxiosError(t, error);
 
@@ -134,7 +146,11 @@ describe("ToastFromAxiosError", () => {
         const t = vi.fn((key: string) => key);
         const error = new AxiosError("Forbidden", "403", undefined, undefined, {
             status: 403,
-        } as any);
+            data: null,
+            statusText: "Forbidden",
+            headers: {},
+            config: {} as never,
+        });
 
         ToastFromAxiosError(t, error);
 
@@ -145,7 +161,11 @@ describe("ToastFromAxiosError", () => {
         const t = vi.fn((key: string) => key);
         const error = new AxiosError("Not found", "404", undefined, undefined, {
             status: 404,
-        } as any);
+            data: null,
+            statusText: "Not Found",
+            headers: {},
+            config: {} as never,
+        });
 
         ToastFromAxiosError(t, error);
 
@@ -156,7 +176,11 @@ describe("ToastFromAxiosError", () => {
         const t = vi.fn((key: string) => key);
         const error = new AxiosError("Conflict", "409", undefined, undefined, {
             status: 409,
-        } as any);
+            data: null,
+            statusText: "Conflict",
+            headers: {},
+            config: {} as never,
+        });
 
         ToastFromAxiosError(t, error);
 
@@ -167,7 +191,11 @@ describe("ToastFromAxiosError", () => {
         const t = vi.fn((key: string) => key);
         const error = new AxiosError("Server error", "500", undefined, undefined, {
             status: 500,
-        } as any);
+            data: null,
+            statusText: "Internal Server Error",
+            headers: {},
+            config: {} as never,
+        });
 
         ToastFromAxiosError(t, error);
 
@@ -178,7 +206,11 @@ describe("ToastFromAxiosError", () => {
         const t = vi.fn((key: string) => key);
         const error = new AxiosError("Unknown", "999", undefined, undefined, {
             status: 999,
-        } as any);
+            data: null,
+            statusText: "Unknown",
+            headers: {},
+            config: {} as never,
+        });
 
         ToastFromAxiosError(t, error);
 
@@ -193,11 +225,15 @@ describe("ToastFromAxiosError", () => {
                 description: "custom.desc",
                 toastType: "error" as const,
             },
-        } as any;
+        };
 
         const error = new AxiosError("Bad request", "400", undefined, undefined, {
             status: 400,
-        } as any);
+            data: null,
+            statusText: "Bad Request",
+            headers: {},
+            config: {} as never,
+        });
 
         ToastFromAxiosError(t, error, customPresets);
 
@@ -220,7 +256,11 @@ describe("handleAxiosError", () => {
         const onInvalidInput = vi.fn();
         const error = new AxiosError("Bad request", "400", undefined, undefined, {
             status: 400,
-        } as any);
+            data: null,
+            statusText: "Bad Request",
+            headers: {},
+            config: {} as never,
+        });
 
         handleAxiosError(t, error, { onInvalidInput });
 
@@ -232,7 +272,11 @@ describe("handleAxiosError", () => {
         const onUnauthorized = vi.fn();
         const error = new AxiosError("Unauthorized", "401", undefined, undefined, {
             status: 401,
-        } as any);
+            data: null,
+            statusText: "Unauthorized",
+            headers: {},
+            config: {} as never,
+        });
 
         handleAxiosError(t, error, { onUnauthorized });
 
@@ -244,7 +288,11 @@ describe("handleAxiosError", () => {
         const onForbidden = vi.fn();
         const error = new AxiosError("Forbidden", "403", undefined, undefined, {
             status: 403,
-        } as any);
+            data: null,
+            statusText: "Forbidden",
+            headers: {},
+            config: {} as never,
+        });
 
         handleAxiosError(t, error, { onForbidden });
 
@@ -256,7 +304,11 @@ describe("handleAxiosError", () => {
         const onNotFound = vi.fn();
         const error = new AxiosError("Not found", "404", undefined, undefined, {
             status: 404,
-        } as any);
+            data: null,
+            statusText: "Not Found",
+            headers: {},
+            config: {} as never,
+        });
 
         handleAxiosError(t, error, { onNotFound });
 
@@ -268,7 +320,11 @@ describe("handleAxiosError", () => {
         const onDuplicateEntry = vi.fn();
         const error = new AxiosError("Conflict", "409", undefined, undefined, {
             status: 409,
-        } as any);
+            data: null,
+            statusText: "Conflict",
+            headers: {},
+            config: {} as never,
+        });
 
         handleAxiosError(t, error, { onDuplicateEntry });
 
@@ -280,7 +336,11 @@ describe("handleAxiosError", () => {
         const onInternalServerError = vi.fn();
         const error = new AxiosError("Server error", "500", undefined, undefined, {
             status: 500,
-        } as any);
+            data: null,
+            statusText: "Internal Server Error",
+            headers: {},
+            config: {} as never,
+        });
 
         handleAxiosError(t, error, { onInternalServerError });
 
@@ -292,7 +352,11 @@ describe("handleAxiosError", () => {
         const customErr = new Err("Custom", "custom.title", "custom.desc", "warning");
         const error = new AxiosError("Bad request", "400", undefined, undefined, {
             status: 400,
-        } as any);
+            data: null,
+            statusText: "Bad Request",
+            headers: {},
+            config: {} as never,
+        });
 
         handleAxiosError(t, error, { invalidInputErr: customErr });
 
@@ -305,7 +369,11 @@ describe("handleAxiosError", () => {
         const invalidInputErr = new Err("Custom", "custom.title", "custom.desc", "warning");
         const error = new AxiosError("Bad request", "400", undefined, undefined, {
             status: 400,
-        } as any);
+            data: null,
+            statusText: "Bad Request",
+            headers: {},
+            config: {} as never,
+        });
 
         handleAxiosError(t, error, {
             onInvalidInput,
@@ -321,7 +389,11 @@ describe("handleAxiosError", () => {
         const onInvalidInput = vi.fn();
         const error = new AxiosError("Bad request", "400", undefined, undefined, {
             status: 400,
-        } as any);
+            data: null,
+            statusText: "Bad Request",
+            headers: {},
+            config: {} as never,
+        });
 
         handleAxiosError(t, error, { onInvalidInput });
 
@@ -334,7 +406,11 @@ describe("handleAxiosError", () => {
         const customErr = new Err("Custom", "custom.title", "custom.desc", "error", "CUSTOM_CASE");
         const error = new AxiosError("Bad request", "400", undefined, undefined, {
             status: 400,
-        } as any);
+            data: null,
+            statusText: "Bad Request",
+            headers: {},
+            config: {} as never,
+        });
 
         handleAxiosError(t, error, { invalidInputErr: customErr });
 
