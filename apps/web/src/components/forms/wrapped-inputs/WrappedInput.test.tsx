@@ -5,15 +5,21 @@ import { WrappedInput } from "./WrappedInput";
 
 // Mock components
 vi.mock("@/components/typography/typography", () => ({
-    Typography: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+    Typography: ({ children, ...props }: React.ComponentProps<"span">) => (
+        <span {...props}>{children}</span>
+    ),
 }));
 
 vi.mock("@/components/ui/input", () => ({
-    Input: ({ ...props }: any) => <input data-testid="input" {...props} />,
+    Input: ({ ...props }: React.ComponentProps<"input">) => (
+        <input data-testid="input" {...props} />
+    ),
 }));
 
 vi.mock("@/components/ui/label", () => ({
-    Label: ({ children, ...props }: any) => <label {...props}>{children}</label>,
+    Label: ({ children, ...props }: React.ComponentProps<"label">) => (
+        <label {...props}>{children}</label>
+    ),
 }));
 
 // Mock translation
