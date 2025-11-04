@@ -6,6 +6,8 @@ export const LOCAL_STORAGE_KEYS = {
     AUTH_SIGN_SIGNATURE: "authSignSignature",
 } as const;
 
+export type LocalStorageKeys = (typeof LOCAL_STORAGE_KEYS)[keyof typeof LOCAL_STORAGE_KEYS];
+
 export type LocalStorageType = {
     [LOCAL_STORAGE_KEYS.ON_GOOGLE_OAUTH_SUCCESS_REDIRECT]: string;
     [LOCAL_STORAGE_KEYS.JWT]: string;
@@ -14,19 +16,18 @@ export type LocalStorageType = {
     [LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE]: string;
 } & Record<keyof typeof LOCAL_STORAGE_KEYS, string | number | undefined>;
 
-export type LocalStorageKeys = (typeof LOCAL_STORAGE_KEYS)[keyof typeof LOCAL_STORAGE_KEYS];
-
-export const getLocalStorageItem = (
-    key: LocalStorageKeys,
-): LocalStorageType[keyof LocalStorageType] => {
-    return localStorage.getItem(key) as LocalStorageType[keyof LocalStorageType];
+export const getLocalStorageItem = <T extends LocalStorageKeys>(key: T): LocalStorageType[T] => {
+    return localStorage.getItem(key) as unknown as LocalStorageType[T];
 };
 
 export const setLocalStorageItem = (
     key: LocalStorageKeys,
     value: LocalStorageType[keyof LocalStorageType],
 ) => {
-    localStorage.setItem(key, JSON.stringify(value));
+    if (typeof value !== "string") {
+        value = JSON.stringify(value);
+    }
+    localStorage.setItem(key, value);
 };
 
 export const removeLocalStorageItem = (key: LocalStorageKeys) => {
