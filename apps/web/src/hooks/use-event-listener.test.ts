@@ -128,7 +128,8 @@ describe("useEventListener", () => {
 
     it("should not add listener if target doesn't support addEventListener", () => {
         const mockHandler = vi.fn();
-        const invalidRef = createRef<any>();
+        const invalidRef = createRef<HTMLDivElement>();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (invalidRef as any).current = {}; // Object without addEventListener
 
         const { unmount } = renderHook(() => useEventListener("click", mockHandler, invalidRef));
