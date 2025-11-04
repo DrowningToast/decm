@@ -4,7 +4,7 @@ import TitleSubtitle from "./TitleSubtitle";
 
 // Mock the Typography component
 vi.mock("./typography/typography", () => ({
-    Typography: ({ children, ...props }: any) => (
+    Typography: ({ children, ...props }: React.ComponentProps<"div">) => (
         <div data-testid="typography" {...props}>
             {children}
         </div>
