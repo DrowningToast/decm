@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import type React from "react";
 import { Link } from "@/router";
 import { WalletConnectButton } from "@/components/WalletConnectButton";
+import { Typography } from "@/components/typography/typography";
+import { ThemisWithScale } from "@/components/assets/ThemisWithScale";
 
 interface SignupPageProps {
     onGoogleOAuthClick?: () => void;
@@ -13,56 +14,89 @@ export const SignupPage: React.FC<SignupPageProps> = ({ onGoogleOAuthClick }) =>
     const { t } = useTranslation();
 
     return (
-        <div className="min-h-screen flex flex-col">
-            {/* Header with Language Switcher */}
-            <div className="flex justify-end p-4">
-                <LanguageSwitcher />
-            </div>
-
+        <div className="relative min-h-screen flex flex-col overflow-hidden">
             {/* Main Content */}
-            <div className="flex-1 flex items-center justify-center">
-                <div className="flex flex-col gap-y-6 max-w-md w-full px-6">
-                    <div className="text-center space-y-2">
-                        <h1 className="text-4xl font-bold">{t('signup.title')}</h1>
-                        <p className="text-muted-foreground">
-                            {t('signup.subtitle')}
-                        </p>
+            <div className="relative z-10 flex-1 flex justify-center px-6">
+                <div className="w-full flex flex-col gap-y-24 md:gap-y-9 md:w-[420px]">
+                    {/* Title Section */}
+                    <div className="flex flex-col gap-1.5">
+                        <Typography
+                            variant="header"
+                            tag="h1"
+                            color="primary"
+                            size="header"
+                            className="leading-[40px] font-bold [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
+                        >
+                            {t("signup.title")}
+                        </Typography>
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="background-alt"
+                            className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] max-w-[294px]"
+                        >
+                            {t("signup.subtitle")}
+                        </Typography>
                     </div>
 
-                    <div className="space-y-4">
-                        <WalletConnectButton >
-                            <Button className="w-full" size="lg" variant="primary" >
-                                {t('signup.walletButton')}
+                    {/* Buttons Section */}
+                    <div className="flex flex-col gap-2.5">
+                        {/* Web3 Wallet Button */}
+                        <WalletConnectButton>
+                            <Button
+                                className="w-full h-12 bg-primary hover:bg-primary/90 rounded-[12px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                                size="lg"
+                            >
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="foreground-alt"
+                                    className="text-base"
+                                >
+                                    {t("signup.walletButton")}
+                                </Typography>
                             </Button>
                         </WalletConnectButton>
 
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t" />
-                            </div>
-                            <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-background px-2 text-muted-foreground">
-                                    {t('signup.divider')}
-                                </span>
-                            </div>
-                        </div>
+                        {/* Divider Line */}
+                        <div className="w-full h-0 border-t border-[#b8b8b8]" />
 
-                        <Button variant="secondary-dark" className="w-full" size="lg" onClick={onGoogleOAuthClick}>
-                            {t('signup.googleButton')}
+                        {/* Google Button */}
+                        <Button
+                            variant="secondary-dark"
+                            className="w-full h-12 bg-background-alt hover:bg-background-alt/90 rounded-[12px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                            size="lg"
+                            onClick={onGoogleOAuthClick}
+                        >
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                color="foreground-alt"
+                                className="text-base"
+                            >
+                                {t("signup.googleButton")}
+                            </Typography>
                         </Button>
-                    </div>
 
-                    <p className="text-xs text-center text-muted-foreground">
-                        <Link to="/signin" className="hover:underline">
-                            {t('auth.hasAccount')}
+                        {/* Already have account link */}
+                        <Link to="/signin" className="mt-0.5">
+                            <Typography
+                                variant="text"
+                                tag="p"
+                                color="background"
+                                className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] decoration-solid [text-decoration-skip-ink:none] [text-underline-position:from-font]"
+                            >
+                                {t("auth.hasAccount")}
+                            </Typography>
                         </Link>
-                    </p>
-
-                    <p className="text-xs text-center text-muted-foreground mt-4">
-                        {t('signup.terms')}
-                    </p>
+                    </div>
                 </div>
             </div>
+
+            {/* Background Image - Themis Statue */}
+            <div className="md:w-[674px] w-[428px] absolute left-1/2 -translate-x-2/3 md:-translate-x-1/2 bottom-0 translate-y-1/2">
+                <ThemisWithScale className="w-full h-full" />
+            </div>
         </div>
-    )
-}
+    );
+};

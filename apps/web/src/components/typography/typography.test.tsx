@@ -41,9 +41,12 @@ describe("Typography", () => {
         render(<Typography tag="p">Default</Typography>);
         const element = screen.getByText("Default");
 
-        expect(element).toHaveClass("text-foreground"); // default color
+        // Default variant is "text" which applies "font-normal font-body"
+        // Default size is "base" which applies "text-base"
+        // No default color, so color must be specified explicitly
         expect(element).toHaveClass("font-normal"); // default variant
         expect(element).toHaveClass("text-base"); // default size
+        expect(element).toHaveClass("font-body"); // default font family
     });
 
     it("should apply header variant", () => {
@@ -127,64 +130,40 @@ describe("Typography", () => {
         expect(screen.getByText("Background")).toHaveClass("text-background");
     });
 
-    it("should apply different font families", () => {
+    it("should apply font families through variant", () => {
         const { rerender } = render(
-            <Typography tag="p" fontFamily="inter">
-                Inter
+            <Typography tag="p" variant="text">
+                Body Text
             </Typography>,
         );
-        expect(screen.getByText("Inter")).toHaveClass("font-inter");
+        // variant="text" applies "font-body"
+        expect(screen.getByText("Body Text")).toHaveClass("font-body");
 
         rerender(
-            <Typography tag="p" fontFamily="taviraj">
-                Taviraj
+            <Typography tag="h1" variant="header">
+                Header Text
             </Typography>,
         );
-        expect(screen.getByText("Taviraj")).toHaveClass("font-taviraj");
-
-        rerender(
-            <Typography tag="p" fontFamily="anuphan">
-                Anuphan
-            </Typography>,
-        );
-        expect(screen.getByText("Anuphan")).toHaveClass("font-anuphan");
-
-        rerender(
-            <Typography tag="p" fontFamily="cormorant">
-                Cormorant
-            </Typography>,
-        );
-        expect(screen.getByText("Cormorant")).toHaveClass("font-cormorant");
+        // variant="header" applies "font-header"
+        expect(screen.getByText("Header Text")).toHaveClass("font-header");
     });
 
-    it("should apply different font weights", () => {
+    it("should apply font weights through variant", () => {
         const { rerender } = render(
-            <Typography tag="p" weight="normal">
+            <Typography tag="p" variant="text">
                 Normal
             </Typography>,
         );
+        // variant="text" applies "font-normal"
         expect(screen.getByText("Normal")).toHaveClass("font-normal");
 
         rerender(
-            <Typography tag="p" weight="medium">
-                Medium
-            </Typography>,
-        );
-        expect(screen.getByText("Medium")).toHaveClass("font-medium");
-
-        rerender(
-            <Typography tag="p" weight="semibold">
+            <Typography tag="h1" variant="header">
                 Semibold
             </Typography>,
         );
+        // variant="header" applies "font-semibold"
         expect(screen.getByText("Semibold")).toHaveClass("font-semibold");
-
-        rerender(
-            <Typography tag="p" weight="bold">
-                Bold
-            </Typography>,
-        );
-        expect(screen.getByText("Bold")).toHaveClass("font-bold");
     });
 
     it("should apply custom className", () => {
@@ -198,25 +177,18 @@ describe("Typography", () => {
 
     it("should combine multiple variant props", () => {
         render(
-            <Typography
-                tag="h1"
-                variant="header"
-                size="header"
-                color="primary"
-                fontFamily="taviraj"
-                weight="bold"
-            >
+            <Typography tag="h1" variant="header" size="header" color="primary">
                 Combined
             </Typography>,
         );
 
         const element = screen.getByText("Combined");
 
-        // Note: weight prop takes precedence, so font-bold is applied instead of font-semibold
+        // variant="header" applies "font-semibold font-header"
         expect(element).toHaveClass("text-4xl"); // size header
         expect(element).toHaveClass("text-primary"); // color primary
-        expect(element).toHaveClass("font-taviraj"); // fontFamily taviraj
-        expect(element).toHaveClass("font-bold"); // weight bold (overrides variant's semibold)
+        expect(element).toHaveClass("font-header"); // fontFamily from variant
+        expect(element).toHaveClass("font-semibold"); // weight from variant
     });
 
     it("should pass through other HTML attributes", () => {

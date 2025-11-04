@@ -3,6 +3,7 @@ import { queryClient } from "@/lib/api/queryClient";
 import type { UpdateEventCertificateConfigPayload } from "@decm/api";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback } from "react";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 export function useUpdateCertificateConfig(eventId: string) {
     const {
@@ -19,7 +20,7 @@ export function useUpdateCertificateConfig(eventId: string) {
                 data,
             ),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["event"] });
+            queryClient.invalidateQueries({ queryKey: QUERY_KEY.event.all });
         },
     });
 

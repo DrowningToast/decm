@@ -1,17 +1,20 @@
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { onboardService, type CheckOnboardParams } from "../../../services/OnboardService";
 import { OnboardRegistrationMethod } from "@decm/api";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
-export type UseCheckOnboardParams = | {
-    method?: OnboardRegistrationMethod.RegistrationMethodGoogle;
-    accessToken: string;
-    expiresIn: number;
-} | {
-    method?: OnboardRegistrationMethod.RegistrationMethodWallet;
-    signSignature?: string;
-};
+export type UseCheckOnboardParams =
+    | {
+          method?: OnboardRegistrationMethod.RegistrationMethodGoogle;
+          accessToken: string;
+          expiresIn: number;
+      }
+    | {
+          method?: OnboardRegistrationMethod.RegistrationMethodWallet;
+          signSignature?: string;
+      };
 
-export const useCheckOnboardStatus = (param?: UseCheckOnboardParams) => {
+export const useCheckOnboardStatus = (param?: UseCheckOnboardParams, enable: boolean = true) => {
     const { mutateAsync: checkOnboardStatus, isPending } = useMutation({
         mutationFn: async (param?: CheckOnboardParams) => {
             const response = await onboardService.checkOnboardStatus(param);
@@ -22,14 +25,18 @@ export const useCheckOnboardStatus = (param?: UseCheckOnboardParams) => {
     const getQueryKey = (param?: UseCheckOnboardParams) => {
         switch (param?.method) {
             case OnboardRegistrationMethod.RegistrationMethodGoogle:
-                return ["onboardStatus", param.accessToken, param.expiresIn]
+                return QUERY_KEY.onboard.status.google(param.accessToken, param.expiresIn);
             case OnboardRegistrationMethod.RegistrationMethodWallet:
-                return ["onboardStatus", param.signSignature ?? ""]
+                return QUERY_KEY.onboard.status.wallet(param.signSignature ?? "");
         }
-        return ["onboardStatus"]
-    }
+        return QUERY_KEY.onboard.status.all;
+    };
 
-    const { data: onboardStatus, isLoading, error } = useQuery({
+    const {
+        data: onboardStatus,
+        isLoading,
+        error,
+    } = useQuery({
         queryKey: getQueryKey(param),
         queryFn: async () => {
             if (param?.method === OnboardRegistrationMethod.RegistrationMethodWallet) {
@@ -44,7 +51,7 @@ export const useCheckOnboardStatus = (param?: UseCheckOnboardParams) => {
             }
             return await checkOnboardStatus(param as CheckOnboardParams);
         },
-
+        enabled: enable,
     });
 
     return { checkOnboardStatus, isPending, isLoading, onboardStatus, error };

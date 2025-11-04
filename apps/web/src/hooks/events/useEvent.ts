@@ -1,5 +1,6 @@
 import { coreApiClient } from "@/lib/api/api";
 import { useQuery } from "@tanstack/react-query";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 export function useEvent(eventId: string) {
     const {
@@ -7,7 +8,7 @@ export function useEvent(eventId: string) {
         isLoading: isLoadingEvent,
         isError: isLoadingEventError,
     } = useQuery({
-        queryKey: ["event", eventId],
+        queryKey: QUERY_KEY.event.byId(eventId),
         queryFn: async () => coreApiClient.v1.getEventById({ eventId }),
     });
 
