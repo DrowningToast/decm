@@ -13,6 +13,67 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type EventStatus string
+
+const (
+	EventStatusActive   EventStatus = "active"
+	EventStatusInactive EventStatus = "inactive"
+	EventStatusClosed   EventStatus = "closed"
+)
+
+func (e *EventStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = EventStatus(s)
+	case string:
+		*e = EventStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for EventStatus: %T", src)
+	}
+	return nil
+}
+
+type NullEventStatus struct {
+	EventStatus EventStatus `json:"event_status"`
+	Valid       bool        `json:"valid"` // Valid is true if EventStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullEventStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.EventStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.EventStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullEventStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.EventStatus), nil
+}
+
+func (e EventStatus) Valid() bool {
+	switch e {
+	case EventStatusActive,
+		EventStatusInactive,
+		EventStatusClosed:
+		return true
+	}
+	return false
+}
+
+func AllEventStatusValues() []EventStatus {
+	return []EventStatus{
+		EventStatusActive,
+		EventStatusInactive,
+		EventStatusClosed,
+	}
+}
+
 type EventType string
 
 const (
@@ -92,6 +153,7 @@ type AuthenticationCredential struct {
 type Event struct {
 	ID                       uuid.UUID          `json:"id"`
 	EventType                EventType          `json:"event_type"`
+	EventStatus              EventStatus        `json:"event_status"`
 	ChainID                  int32              `json:"chain_id"`
 	ContactNumber            string             `json:"contact_number"`
 	ContactAddress           string             `json:"contact_address"`
