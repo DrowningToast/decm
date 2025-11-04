@@ -12,7 +12,7 @@ vi.mock("@reown/appkit/react", () => ({
 
 // Mock utils
 vi.mock("@/lib/utils", () => ({
-    cn: (...args: any[]) => args.filter(Boolean).join(" "),
+    cn: (...args: Array<string | boolean | undefined>) => args.filter(Boolean).join(" "),
 }));
 
 describe("WalletConnectButton Component", () => {
