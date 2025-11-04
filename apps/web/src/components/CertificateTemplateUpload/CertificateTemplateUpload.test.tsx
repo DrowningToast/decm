@@ -5,11 +5,13 @@ import React from "react";
 
 // Mock components
 vi.mock("@/components/typography/typography", () => ({
-    Typography: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    Typography: ({ children, ...props }: React.ComponentProps<"div">) => (
+        <div {...props}>{children}</div>
+    ),
 }));
 
 vi.mock("@/components/ui/button", () => ({
-    Button: ({ children, onClick, ...props }: any) => (
+    Button: ({ children, onClick, ...props }: React.ComponentProps<"button">) => (
         <button onClick={onClick} {...props}>
             {children}
         </button>
@@ -17,13 +19,17 @@ vi.mock("@/components/ui/button", () => ({
 }));
 
 vi.mock("@/components/ui/label", () => ({
-    Label: ({ children, ...props }: any) => <label {...props}>{children}</label>,
+    Label: ({ children, ...props }: React.ComponentProps<"label">) => (
+        <label {...props}>{children}</label>
+    ),
 }));
 
 vi.mock("@/components/ui/alert", () => ({
-    Alert: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    AlertTitle: ({ children }: any) => <div>{children}</div>,
-    AlertDescription: ({ children }: any) => <div>{children}</div>,
+    Alert: ({ children, ...props }: React.ComponentProps<"div">) => (
+        <div {...props}>{children}</div>
+    ),
+    AlertTitle: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
+    AlertDescription: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
 }));
 
 // Mock icons
@@ -148,7 +154,7 @@ describe("CertificateTemplateUpload Component", () => {
         const mockRef = {
             current: {
                 click: clickSpy,
-            } as any,
+            } as unknown as HTMLInputElement,
         };
 
         render(

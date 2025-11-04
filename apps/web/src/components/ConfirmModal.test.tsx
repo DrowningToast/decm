@@ -1,27 +1,47 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ConfirmModal from "./ConfirmModal";
-import { AlertCircle } from "lucide-react";
 
 // Mock AlertDialog components
 vi.mock("./ui/alert-dialog", () => ({
-    AlertDialog: ({ children, open, onOpenChange }: any) => (
+    AlertDialog: ({
+        children,
+        open,
+    }: React.PropsWithChildren<{ open?: boolean; onOpenChange?: (open: boolean) => void }>) => (
         <div data-testid="alert-dialog" data-open={open}>
             {children}
         </div>
     ),
-    AlertDialogTrigger: ({ children }: any) => <button data-testid="trigger">{children}</button>,
-    AlertDialogContent: ({ children }: any) => <div data-testid="content">{children}</div>,
-    AlertDialogHeader: ({ children }: any) => <div data-testid="header">{children}</div>,
-    AlertDialogTitle: ({ children }: any) => <h2 data-testid="title">{children}</h2>,
-    AlertDialogDescription: ({ children }: any) => <p data-testid="description">{children}</p>,
-    AlertDialogFooter: ({ children }: any) => <div data-testid="footer">{children}</div>,
-    AlertDialogCancel: ({ children, onClick }: any) => (
+    AlertDialogTrigger: ({ children }: React.PropsWithChildren) => (
+        <button data-testid="trigger">{children}</button>
+    ),
+    AlertDialogContent: ({ children }: React.PropsWithChildren) => (
+        <div data-testid="content">{children}</div>
+    ),
+    AlertDialogHeader: ({ children }: React.PropsWithChildren) => (
+        <div data-testid="header">{children}</div>
+    ),
+    AlertDialogTitle: ({ children }: React.PropsWithChildren) => (
+        <h2 data-testid="title">{children}</h2>
+    ),
+    AlertDialogDescription: ({ children }: React.PropsWithChildren) => (
+        <p data-testid="description">{children}</p>
+    ),
+    AlertDialogFooter: ({ children }: React.PropsWithChildren) => (
+        <div data-testid="footer">{children}</div>
+    ),
+    AlertDialogCancel: ({
+        children,
+        onClick,
+    }: React.PropsWithChildren<{ onClick?: () => void }>) => (
         <button data-testid="cancel-button" onClick={onClick}>
             {children}
         </button>
     ),
-    AlertDialogAction: ({ children, onClick }: any) => (
+    AlertDialogAction: ({
+        children,
+        onClick,
+    }: React.PropsWithChildren<{ onClick?: () => void }>) => (
         <button data-testid="action-button" onClick={onClick}>
             {children}
         </button>
@@ -168,7 +188,7 @@ describe("ConfirmModal Component", () => {
     });
 
     it("should apply destructive styling when destructive prop is true", () => {
-        const { container } = render(
+        render(
             <ConfirmModal
                 title="Delete Item"
                 message="This action cannot be undone"
