@@ -1,5 +1,4 @@
 // Generouted, changes to this file will be overridden
-/* eslint-disable */
 
 import { components, hooks, utils } from "@generouted/react-router/client";
 
@@ -17,6 +16,8 @@ export type Path =
     | `/host/home`
     | `/onboard/:method`
     | `/signin`
+    | `/signin/sign-message`
+    | `/signin/verify-oauth`
     | `/signout`
     | `/signup`;
 

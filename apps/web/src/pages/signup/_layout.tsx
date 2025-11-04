@@ -4,13 +4,13 @@ import { Outlet } from "react-router-dom";
 
 const Layout = () => {
     return (
-        <BaseLayout className="pt-[68px]" variant="dark">
-            <PublicNavbar variant="dark" />
-            <div className="pt-3 md:pt-[68px]">
+        <BaseLayout className="max-h-screen w-full overflow-hidden" variant="light">
+            <PublicNavbar variant="light" />
+            <div className="pt-[15px] md:pt-14">
                 <Outlet />
             </div>
         </BaseLayout>
-    )
-}
+    );
+};
 
 export default Layout;

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { coreApiClient } from "@/lib/api/api";
 import type { EntityProfile } from "@decm/api";
+import { QUERY_KEY } from "@/lib/queryKeys";
 interface AuthContextType {
     user: EntityProfile | null;
     isLoading: boolean;
@@ -24,7 +25,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isLoading,
         refetch,
     } = useQuery<EntityProfile | null>({
-        queryKey: ["user", "profile"],
+        queryKey: QUERY_KEY.user.profile,
         queryFn: async () => {
             try {
                 const response = await coreApiClient.v1.getMyProfile();

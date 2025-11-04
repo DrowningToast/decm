@@ -24,10 +24,17 @@ export const TOAST_USECASE_VIEWMODEL = {
         ERROR: "flow.oauth_google.create_account_error",
         ERROR_DUPLICATE: "flow.oauth_google.create_account_error_duplicate",
     },
-    [USECASE_IDS.GENERIC]: {},
+    [USECASE_IDS.GENERIC]: {
+        UNAUTHENTICATED_RESPONSE: "flow.generic.unauthenticated_response",
+    },
     [USECASE_IDS.OAUTH_GOOGLE_CREATE_PROFILE]: {
         SUCCESS: "flow.oauth_google.create_profile_success",
         ERROR: "flow.oauth_google.create_profile_error",
         ERROR_DUPLICATE: "flow.oauth_google.create_profile_error_duplicate",
+    },
+    [USECASE_IDS.SIGN_IN]: {
+        NOTFOUND: "flow.sign_in.not_found",
+        ERROR: "flow.sign_in.error",
+        WALLET_NOT_CONNECTED: "flow.sign_in.wallet_not_connected",
     },
 } satisfies Record<UseCaseId, Record<string, string>>;

@@ -57,8 +57,7 @@ function MenuItem({ title, to }: MenuItemProps) {
                 size={"header"}
                 tag="p"
                 color="secondary"
-                fontFamily={"cormorant"}
-                className="underline lg:no-underline lg:text-2xl"
+                className="underline lg:no-underline lg:text-2xl font-cormorant"
             >
                 {title}
             </Typography>

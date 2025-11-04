@@ -16,7 +16,7 @@ const AuthSuccessPage = () => {
         if (!redirectUrl) {
             return;
         }
-        navigate({ pathname: redirectUrl, search: searchParams.toString() });
+        navigate(`${redirectUrl}?${searchParams.toString()}`);
     }, [navigate, redirectUrl, searchParams]);
 
     if (!redirectUrl) {

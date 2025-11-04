@@ -20,7 +20,7 @@ import { Typography } from '@/components/typography/typography';
 
 ### Syntax
 ```tsx
-<Typography variant="variant" tag="htmlTag" className="classes">
+<Typography variant="variant" tag="htmlTag" color="colorVariant" className="classes">
     Content
 </Typography>
 ```
@@ -29,6 +29,18 @@ import { Typography } from '@/components/typography/typography';
 - `header` - For headings and titles
 - `text` - For body text and paragraphs
 - (Check the component file for complete list)
+
+### Available Color Variants
+**IMPORTANT**: Always use the `color` prop instead of text color classes in `className`.
+- `foreground` - Primary text color
+- `foreground-alt` - Alternative foreground color
+- `background` - Background color
+- `background-alt` - Alternative background color
+- `primary` - Brand primary color
+- `secondary` - Brand secondary color
+- `muted` - Muted text color
+- `muted-foreground` - Muted foreground color
+- `destructive` - Error/destructive text color
 
 ### Available HTML Tags
 - `h1`, `h2`, `h3`, `h4`, `h5`, `h6` - Heading tags
@@ -41,31 +53,31 @@ import { Typography } from '@/components/typography/typography';
 
 ### Headers and Titles
 ```tsx
-// Page title
-<Typography variant="header" tag="h1" className="text-2xl font-bold">
+// Page title with primary color
+<Typography variant="header" tag="h1" color="primary" className="text-2xl font-bold">
     {t('home.hero.title')}
 </Typography>
 
 // Section heading
-<Typography variant="header" tag="h2" className="text-xl">
+<Typography variant="header" tag="h2" color="foreground" className="text-xl">
     {t('features.title')}
 </Typography>
 
 // Subsection heading
-<Typography variant="header" tag="h3" className="text-lg font-semibold">
+<Typography variant="header" tag="h3" color="foreground" className="text-lg font-semibold">
     {t('auth.signIn')}
 </Typography>
 ```
 
 ### Body Text
 ```tsx
-// Paragraph text
-<Typography variant="text" tag="p" className="text-base text-muted-foreground">
+// Paragraph text with muted color
+<Typography variant="text" tag="p" color="muted-foreground" className="text-base">
     {t('home.hero.subtitle')}
 </Typography>
 
-// Inline text
-<Typography variant="text" tag="span" className="text-sm">
+// Inline text with alternative foreground
+<Typography variant="text" tag="span" color="foreground-alt" className="text-sm">
     {t('common.loading')}
 </Typography>
 ```
@@ -74,14 +86,14 @@ import { Typography } from '@/components/typography/typography';
 ```tsx
 // Button text
 <button className="btn-primary">
-    <Typography variant="text" tag="span" className="font-medium">
+    <Typography variant="text" tag="span" color="foreground-alt" className="font-medium">
         {t('auth.signUp')}
     </Typography>
 </button>
 
 // Link text
 <Link to="/signup">
-    <Typography variant="text" tag="span" className="underline hover:text-foreground">
+    <Typography variant="text" tag="span" color="foreground-alt" className="underline">
         {t('auth.hasAccount')}
     </Typography>
 </Link>
@@ -91,13 +103,13 @@ import { Typography } from '@/components/typography/typography';
 ```tsx
 // List item
 <li>
-    <Typography variant="text" tag="span" className="text-[#b8b8b8]">
+    <Typography variant="text" tag="span" color="muted-foreground">
         {t('nav.home')}
     </Typography>
 </li>
 
 // Navigation link
-<Typography variant="text" tag="span" className="cursor-pointer hover:text-foreground">
+<Typography variant="text" tag="span" color="foreground" className="cursor-pointer">
     {t('nav.events')}
 </Typography>
 ```
@@ -115,10 +127,10 @@ export const MyComponent = () => {
     
     return (
         <div>
-            <Typography variant="header" tag="h1">
+            <Typography variant="header" tag="h1" color="primary">
                 {t('page.title')}
             </Typography>
-            <Typography variant="text" tag="p">
+            <Typography variant="text" tag="p" color="foreground-alt">
                 {t('page.description')}
             </Typography>
         </div>
@@ -133,7 +145,8 @@ export const MyComponent = () => {
 <Typography
     variant="header"
     tag="h1"
-    className="text-[36px] md:text-[64px] leading-[40px] md:leading-[56px] text-foreground text-center font-bold"
+    color="foreground"
+    className="text-[36px] md:text-[64px] leading-[40px] md:leading-[56px] text-center font-bold"
 >
     {t('home.hero.title')}
 </Typography>
@@ -144,7 +157,8 @@ export const MyComponent = () => {
 <Typography
     variant="text"
     tag="p"
-    className="text-sm text-muted-foreground animate-pulse"
+    color="muted-foreground"
+    className="text-sm animate-pulse"
 >
     {t('common.loading')}
 </Typography>
@@ -152,14 +166,14 @@ export const MyComponent = () => {
 
 ### Error Messages
 ```tsx
-<Typography variant="text" tag="p" className="text-sm text-destructive">
+<Typography variant="text" tag="p" color="destructive" className="text-sm">
     {t('errors.generic')}
 </Typography>
 ```
 
 ### Form Labels
 ```tsx
-<Typography variant="text" tag="label" className="text-sm font-medium">
+<Typography variant="text" tag="label" color="foreground" className="text-sm font-medium">
     {t('auth.email')}
 </Typography>
 ```
@@ -172,6 +186,7 @@ Use Tailwind's responsive prefixes for different screen sizes:
 <Typography
     variant="header"
     tag="h1"
+    color="primary"
     className="text-2xl md:text-4xl lg:text-5xl"
 >
     {t('home.hero.title')}
@@ -180,6 +195,7 @@ Use Tailwind's responsive prefixes for different screen sizes:
 <Typography
     variant="text"
     tag="p"
+    color="foreground-alt"
     className="text-sm md:text-base lg:text-lg"
 >
     {t('home.hero.subtitle')}
@@ -189,12 +205,30 @@ Use Tailwind's responsive prefixes for different screen sizes:
 ## Styling Guidelines
 
 ### Text Colors
-Use Tailwind's semantic color classes:
-- `text-foreground` - Primary text color
-- `text-muted-foreground` - Secondary text color
-- `text-primary` - Brand color text
-- `text-destructive` - Error text
-- Custom colors: `text-[#e9dede]`, `text-[#b8b8b8]`
+**CRITICAL**: Always use the `color` prop instead of text color classes in `className`.
+
+```tsx
+// ✅ Correct - Use color prop
+<Typography variant="text" tag="p" color="foreground-alt">
+    {t('text')}
+</Typography>
+
+// ❌ Wrong - Don't use text color in className
+<Typography variant="text" tag="p" className="text-foreground-alt">
+    {t('text')}
+</Typography>
+```
+
+Available color variants:
+- `foreground` - Primary text color
+- `foreground-alt` - Alternative foreground color
+- `muted-foreground` - Secondary text color
+- `primary` - Brand color text
+- `secondary` - Secondary brand color
+- `background` - Background color
+- `background-alt` - Alternative background color
+- `muted` - Muted text color
+- `destructive` - Error/destructive text color
 
 ### Font Weights
 - `font-normal` - Regular text
@@ -226,33 +260,34 @@ className="line-clamp-2"
 - Always use Typography component for text
 - Combine with i18n translations
 - Use semantic HTML tags (`h1`, `h2`, `p`)
-- Add appropriate className for styling
+- **Use `color` prop for text colors**
+- Add appropriate className for styling (excluding colors)
 - Use responsive classes for mobile/desktop
-- Use semantic color variables
 
 ### ❌ DON'T:
 - Use plain HTML tags (`<h1>`, `<p>`) directly
 - Hard-code text strings
 - Mix Typography with other text components
 - Skip the `tag` prop
+- **Use text color classes in `className` (use `color` prop instead)**
 - Use inline styles instead of Tailwind classes
 - Use non-semantic tags unnecessarily
 
 ## Accessibility Considerations
 
 ```tsx
-// Good: Proper heading hierarchy
-<Typography variant="header" tag="h1">Main Title</Typography>
-<Typography variant="header" tag="h2">Section</Typography>
-<Typography variant="header" tag="h3">Subsection</Typography>
+// Good: Proper heading hierarchy with color props
+<Typography variant="header" tag="h1" color="primary">Main Title</Typography>
+<Typography variant="header" tag="h2" color="foreground">Section</Typography>
+<Typography variant="header" tag="h3" color="foreground">Subsection</Typography>
 
-// Good: Descriptive labels
-<Typography variant="text" tag="label" htmlFor="email">
+// Good: Descriptive labels with color prop
+<Typography variant="text" tag="label" color="foreground" htmlFor="email">
     {t('auth.email')}
 </Typography>
 
-// Good: Sufficient color contrast
-<Typography variant="text" tag="p" className="text-foreground">
+// Good: Sufficient color contrast using color prop
+<Typography variant="text" tag="p" color="foreground">
     {t('content')}
 </Typography>
 ```
@@ -271,21 +306,27 @@ See these files for reference:
 <h1>My Title</h1>
 <p>My text</p>
 
-// ✅ Good: Typography component
-<Typography variant="header" tag="h1">{t('title')}</Typography>
-<Typography variant="text" tag="p">{t('text')}</Typography>
+// ✅ Good: Typography component with color prop
+<Typography variant="header" tag="h1" color="primary">{t('title')}</Typography>
+<Typography variant="text" tag="p" color="foreground-alt">{t('text')}</Typography>
 
 // ❌ Bad: Hard-coded text
 <Typography variant="text" tag="p">Welcome to DECM</Typography>
 
-// ✅ Good: i18n translation
-<Typography variant="text" tag="p">{t('common.welcome')}</Typography>
+// ✅ Good: i18n translation with color prop
+<Typography variant="text" tag="p" color="foreground">{t('common.welcome')}</Typography>
 
 // ❌ Bad: Missing tag prop
 <Typography variant="text">Content</Typography>
 
-// ✅ Good: Explicit tag
-<Typography variant="text" tag="p">Content</Typography>
+// ✅ Good: Explicit tag and color prop
+<Typography variant="text" tag="p" color="foreground">Content</Typography>
+
+// ❌ Bad: Using text color in className
+<Typography variant="text" tag="p" className="text-primary">{t('text')}</Typography>
+
+// ✅ Good: Using color prop instead
+<Typography variant="text" tag="p" color="primary">{t('text')}</Typography>
 ```
 
 ## Performance Tips
