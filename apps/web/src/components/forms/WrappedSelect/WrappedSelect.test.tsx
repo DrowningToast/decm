@@ -5,29 +5,47 @@ import { WrappedSelect } from "./WrappedSelect";
 
 // Mock components
 vi.mock("@/components/typography/typography", () => ({
-    Typography: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+    Typography: ({ children, ...props }: React.ComponentProps<"span">) => (
+        <span {...props}>{children}</span>
+    ),
 }));
 
 vi.mock("@/components/ui/label", () => ({
-    Label: ({ children, ...props }: any) => <label {...props}>{children}</label>,
+    Label: ({ children, ...props }: React.ComponentProps<"label">) => (
+        <label {...props}>{children}</label>
+    ),
 }));
 
 vi.mock("@/components/ui/select", () => ({
-    Select: ({ children, value, onValueChange, disabled }: any) => (
+    Select: ({
+        children,
+        value,
+        disabled,
+    }: React.PropsWithChildren<{
+        value?: string;
+        onValueChange?: (value: string) => void;
+        disabled?: boolean;
+    }>) => (
         <div data-testid="select" data-value={value} data-disabled={disabled}>
             {children}
         </div>
     ),
-    SelectTrigger: ({ children, ...props }: any) => (
+    SelectTrigger: ({ children, ...props }: React.ComponentProps<"button">) => (
         <button data-testid="select-trigger" {...props}>
             {children}
         </button>
     ),
-    SelectValue: ({ placeholder }: any) => (
+    SelectValue: ({ placeholder }: { placeholder?: string }) => (
         <span data-testid="select-value">{placeholder || "Select..."}</span>
     ),
-    SelectContent: ({ children }: any) => <div data-testid="select-content">{children}</div>,
-    SelectItem: ({ children, value, onClick }: any) => (
+    SelectContent: ({ children }: React.PropsWithChildren) => (
+        <div data-testid="select-content">{children}</div>
+    ),
+    SelectItem: ({
+        children,
+        value,
+        onClick,
+    }: React.PropsWithChildren<{ value?: string; onClick?: () => void }>) => (
         <div data-testid={`select-item-${value}`} onClick={onClick}>
             {children}
         </div>
