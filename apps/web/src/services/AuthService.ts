@@ -89,7 +89,7 @@ export class AuthService {
     }
 
     public async createProfile(authenticationCredentialId: string, profile: CreateProfileParams) {
-        const profile = await this._coreApi.v1.createProfile({
+        const createdProfile = await this._coreApi.v1.createProfile({
             authentication_credential_id: authenticationCredentialId,
             academic_email: profile.academicEmail,
             academic_institution: profile.academicInstitution,
@@ -112,7 +112,7 @@ export class AuthService {
         });
 
         await this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
-        return profile;
+        return createdProfile;
     }
 
     public async updateProfile(authenticationCredentialId: string, profile: UpdateProfileParams) {
