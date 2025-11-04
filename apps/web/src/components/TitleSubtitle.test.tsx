@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import TitleSubtitle from "./TitleSubtitle";
 
@@ -10,8 +10,6 @@ vi.mock("./typography/typography", () => ({
         </div>
     ),
 }));
-
-import { vi } from "vitest";
 
 describe("TitleSubtitle Component", () => {
     it("should render title", () => {
