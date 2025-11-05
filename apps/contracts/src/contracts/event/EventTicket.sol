@@ -83,9 +83,10 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         string memory backendEncryptedUserData,
         address issuerAddress,
         string memory signMessage,
+        bytes32 digestHash,
         bytes memory signature
     ) external nonReentrant {
-        address signer = recoverSigner(signMessage, signature, address(this));
+        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
         requireHostOrAdmin(signer);
 
         if (receiverAddress == address(0)) {
@@ -128,9 +129,10 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
     function bulkMintParticipantTickets(
         BulkMintParticipantTicketsParams[] memory params,
         string memory signMessage,
+        bytes32 digestHash,
         bytes memory signature
     ) external nonReentrant {
-        address signer = recoverSigner(signMessage, signature, address(this));
+        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
         requireHostOrAdmin(signer);
 
         for (uint256 i = 0; i < params.length; i++) {

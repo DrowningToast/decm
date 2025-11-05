@@ -76,10 +76,10 @@ contract Event is ThemisUtils {
         uint256 _seatsCount,
         EventStatus _eventStatus,
         string memory signMessage,
-        string memory digestHash,
+        bytes32 digestHash,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(signMessage, signature, address(this));
+        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
         EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
 
         // 1. Validate Event Name
@@ -108,10 +108,10 @@ contract Event is ThemisUtils {
     function addParticipant(
         address participantAddress,
         string memory signMessage,
-        string memory digestHash,
+        bytes32 digestHash,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(signMessage, signature, address(this));
+        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
         EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
 
         // Pre Conditions
@@ -137,9 +137,10 @@ contract Event is ThemisUtils {
 
     function leaveEvent(
         string memory signMessage,
+        bytes32 digestHash,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(signMessage, signature, address(this));
+        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
         EVENT_ACCESS_MANAGER.requireParticipant(signer);
 
         address participantAddress = signer;
@@ -156,8 +157,8 @@ contract Event is ThemisUtils {
         emit RemovedParticipant(participantAddress);
     }
 
-    function removeParticipant(address participantAddress, string memory signMessage, bytes memory signature) external {
-        address signer = recoverSigner(signMessage, signature, address(this));
+    function removeParticipant(address participantAddress, string memory signMessage, bytes32 digestHash, bytes memory signature) external {
+        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
         EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
 
         // Pre Conditions
@@ -179,9 +180,10 @@ contract Event is ThemisUtils {
 
     function confirmEvent(
         string memory signMessage,
+        bytes32 digestHash,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(signMessage, signature, address(this));
+        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
         EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
 
         // Pre Conditions

@@ -3,6 +3,7 @@ package event
 import (
 	"context"
 	"errors"
+	"math/big"
 	"mime/multipart"
 	"time"
 
@@ -31,6 +32,7 @@ type UpdateEventParameters struct {
 	GoogleMapQuery   *string
 	EventBanner      *multipart.FileHeader
 	EventIcon        *multipart.FileHeader
+	HostPassword     string
 }
 
 func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params UpdateEventParameters, currentUser *auth.JwtClaims) (*entity.Event, error) {
@@ -136,12 +138,46 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		return nil, err
 	}
 
-	privateKey, _, err := cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, params.HostPassword)
+	privateKey, hostAddress, err := cyptoutils.DecryptPrivateKey(
+		*credential.EncryptedPrivateKey,
+		params.HostPassword,
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	instance, err := eventContract.NewEvent(eventContractAddress, client)
+	if err != nil {
+		return nil, err
+	}
+
+	calculatedDeadlineBlock, err := cyptoutils.GetCalculatedDeadlineBlock(client)
+	if err != nil {
+		return nil, err
+	}
+
+	signMessage, err := cyptoutils.GetSignMessage(*hostAddress, eventContractAddress, calculatedDeadlineBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	signature, err := cyptoutils.Sign(signMessage, privateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	digestHash := cyptoutils.HashEthereumMessage(signMessage)
+
+	_, err = instance.UpdateEvent(
+		auth,
+		*params.Name,
+		*params.Description,
+		big.NewInt(int64(*params.SeatsCount)),
+		1,
+		signMessage,
+		[32]byte(digestHash),
+		signature,
+	)
 	if err != nil {
 		return nil, err
 	}

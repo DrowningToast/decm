@@ -101,28 +101,6 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         emit HostRoleGranted(host, msg.sender);
     }
 
-    function addAllowedMsgSender(address sender) internal {
-        requireAdmin(msg.sender);
-        
-        if (sender == address(0)) {
-            revert EventAccessManager__AccountCannotBeZeroAddress();
-        }
-
-        allowedMsgSenders[sender] = true;
-        emit MsgSenderAllowed(sender, msg.sender);
-    }
-
-    function removeAllowedMsgSender(address sender) internal {
-        requireAdmin(msg.sender);
-        
-        if (sender == address(0)) {
-            revert EventAccessManager__AccountCannotBeZeroAddress();
-        }
-        
-        allowedMsgSenders[sender] = false;
-        emit MsgSenderDisallowed(sender, msg.sender);
-    }
-
     function addAllowedMsgSender(address sender) public {
         requireAdmin(msg.sender);
         
