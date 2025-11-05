@@ -2,9 +2,9 @@
 pragma solidity ^0.8.20;
 
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
-import {Constants} from "../constants/Constants.s.sol";
+import {Constants} from "../../src/contracts/constants/Constants.s.sol";
 
-contract DecmAccessManager is AccessControl {
+contract MockDecmAccessManager is AccessControl {
     using Constants for *;
 
     // Events
