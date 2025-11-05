@@ -956,6 +956,10 @@ paths:
         in: formData
         name: icon
         type: file
+      - description: Host password
+        in: formData
+        name: host_password
+        type: string
       produces:
       - application/json
       responses:
