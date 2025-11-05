@@ -51,14 +51,14 @@ export const useWalletOnboardUsecase = () => {
                     signSignature: signSignature,
                     profile: {
                         authentication_credential_id: account.credential_id,
-                        email: profile.email,
-                        phone_number: profile.phoneNumber,
                         first_name: profile.firstName,
-                        last_name: profile.lastName,
-                        is_email_public: profile.isEmailPublic,
-                        is_phone_number_public: profile.isPhoneNumberPublic,
                         is_first_name_public: profile.isFirstNamePublic,
+                        last_name: profile.lastName,
                         is_last_name_public: profile.isLastNamePublic,
+                        email: profile.email,
+                        is_email_public: profile.isEmailPublic,
+                        phone_number: profile.phoneNumber,
+                        is_phone_number_public: profile.isPhoneNumberPublic,
                     },
                 });
             } catch (error) {
