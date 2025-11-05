@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"apps/backend/common/customerror"
+	"apps/backend/common/hashutils"
 	"apps/backend/common/validatorutils"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
@@ -13,12 +14,14 @@ import (
 )
 
 type ProfileUsecase struct {
-	ProfileDg datagateway.ProfileDataGateway
+	ProfileDg                  datagateway.ProfileDataGateway
+	AuthenticationCredentialDg datagateway.AuthenticationCredentialDataGateway
 }
 
-func NewProfileUsecase(profileDg datagateway.ProfileDataGateway) *ProfileUsecase {
+func NewProfileUsecase(profileDg datagateway.ProfileDataGateway, authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway) *ProfileUsecase {
 	return &ProfileUsecase{
-		ProfileDg: profileDg,
+		ProfileDg:                  profileDg,
+		AuthenticationCredentialDg: authenticationCredentialDg,
 	}
 }
 
@@ -199,4 +202,23 @@ func (u *ProfileUsecase) CreateProfile(ctx context.Context, profile CreateProfil
 
 func (u *ProfileUsecase) DeleteProfile(ctx context.Context, id uuid.UUID) error {
 	return u.ProfileDg.DeleteProfile(ctx, id)
+}
+
+func (u *ProfileUsecase) VerifyUserPassword(ctx context.Context, credentialId uuid.UUID, password string) (bool, error) {
+	credential, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, credentialId)
+	if err != nil {
+		return false, err
+	}
+
+	dbHashedPassword := credential.HashedPassword
+	if dbHashedPassword == nil {
+		return false, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("password not set"))
+	}
+
+	hashedPassword, err := hashutils.HashPassword(password)
+	if err != nil {
+		return false, err
+	}
+
+	return *dbHashedPassword == hashedPassword, nil
 }
