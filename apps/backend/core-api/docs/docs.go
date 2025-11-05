@@ -456,6 +456,12 @@ const docTemplate = `{
                         "description": "Event icon image (JPEG, PNG, WebP, max 10MB) - optional",
                         "name": "icon",
                         "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Host password",
+                        "name": "host_password",
+                        "in": "formData"
                     }
                 ],
                 "responses": {

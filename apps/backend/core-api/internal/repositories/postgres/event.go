@@ -42,6 +42,7 @@ func (r *Repository) CreateEvent(ctx context.Context, params datagateway.CreateE
 		IsBookingRequestRequired: isBookingRequestRequired,
 		IsVerified:               isVerified,
 		IsTicketTransferable:     isTicketTransferable,
+		EventStatus:              generated.EventStatus(params.EventStatus),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
@@ -69,6 +70,7 @@ func (r *Repository) CreateEvent(ctx context.Context, params datagateway.CreateE
 		IsTicketTransferable:     result.IsTicketTransferable.Int32 == 1,
 		CreatedAt:                result.CreatedAt.Time,
 		UpdatedAt:                result.UpdatedAt.Time,
+		EventStatus:              entity.EventStatus(result.EventStatus),
 	}, nil
 }
 
