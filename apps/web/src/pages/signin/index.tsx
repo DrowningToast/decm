@@ -2,10 +2,10 @@ import { setLocalStorageItem } from "@/lib/constants/localStorage";
 import { env } from "@/config/env";
 import { LOCAL_STORAGE_KEYS } from "../../lib/constants/localStorage";
 import { SigninPage } from "@/components/pages/Auth/SigninPage";
-import { useAuthRedirect } from "@/components/pages/Auth/useAuthRedirect";
+import { useSignInPageRedirect } from "@/components/pages/Auth/useSignInPageRedirect";
 
 const SignInPage = () => {
-    useAuthRedirect();
+    useSignInPageRedirect();
 
     const handleRequestGoogleOAuthUrl = async () => {
         // open new tab with the url

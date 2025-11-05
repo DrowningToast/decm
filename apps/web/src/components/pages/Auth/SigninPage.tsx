@@ -70,7 +70,7 @@ export const SigninPage: React.FC<SigninPageProps> = ({ onGoogleOAuthClick }) =>
                             <Typography
                                 variant="text"
                                 tag="span"
-                                color="background-alt"
+                                color="foreground-alt"
                                 className="text-base"
                             >
                                 {t("signin.googleButton")}

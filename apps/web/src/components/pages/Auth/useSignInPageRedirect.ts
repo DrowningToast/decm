@@ -2,15 +2,14 @@
 
 import { useCallback, useEffect } from "react";
 import { useCheckOnboardStatus } from "../Onboard/useCheckOnboardStatus";
-import { useNavigate } from "@/router";
 import { useWalletClient } from "wagmi";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
 import { match } from "ts-pattern";
+import { useNavigate } from "react-router-dom";
 import { OnboardMethods } from "@/pages/onboard/[method]";
 
-// eg. Sign in, Sign up, onboard page
-export const useAuthRedirect = () => {
+export const useSignInPageRedirect = () => {
     const navigate = useNavigate();
     const { onboardStatus, isLoading } = useCheckOnboardStatus();
     const { data: walletClient } = useWalletClient();
@@ -20,6 +19,10 @@ export const useAuthRedirect = () => {
     );
     const [accessToken] = useLocalStorage<string | undefined>(
         LOCAL_STORAGE_KEYS.ACCESS_TOKEN,
+        undefined,
+    );
+    const [expiresIn] = useLocalStorage<number | undefined>(
+        LOCAL_STORAGE_KEYS.EXPIRES_IN,
         undefined,
     );
 
@@ -46,11 +49,7 @@ export const useAuthRedirect = () => {
                     hasProfileId: false,
                 },
                 () => {
-                    navigate("/onboard/:method", {
-                        params: {
-                            method: OnboardMethods.GOOGLE,
-                        },
-                    });
+                    navigate("/auth/success");
                 },
             )
             .with(
@@ -60,11 +59,14 @@ export const useAuthRedirect = () => {
                     hasProfileId: true,
                 },
                 () => {
-                    navigate("/onboard/:method", {
-                        params: {
-                            method: "wallet",
-                        },
-                    });
+                    const queryParams = new URLSearchParams();
+                    if (!accessToken || !expiresIn) {
+                        return;
+                    }
+                    queryParams.set("access_token", accessToken);
+                    queryParams.set("expires_in", expiresIn.toString());
+                    const searchString = queryParams.toString();
+                    navigate(`/auth/success?${searchString}`);
                 },
             )
             .with(
@@ -78,6 +80,7 @@ export const useAuthRedirect = () => {
             );
     }, [
         accessToken,
+        expiresIn,
         isLoading,
         navigate,
         onboardStatus?.authentication_credential_id,
@@ -115,11 +118,7 @@ export const useAuthRedirect = () => {
                     hasProfileId: false,
                 },
                 () => {
-                    navigate("/onboard/:method", {
-                        params: {
-                            method: "wallet",
-                        },
-                    });
+                    navigate(`/onboard/${OnboardMethods.WALLET}`);
                 },
             )
             .with(
@@ -134,6 +133,7 @@ export const useAuthRedirect = () => {
             .with(
                 {
                     hasWalletClient: true,
+                    hasAuthSignSignature: false,
                 },
                 () => {
                     navigate("/signin/sign-message");

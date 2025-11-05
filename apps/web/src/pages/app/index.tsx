@@ -4,7 +4,6 @@ import { LogoutButton } from "@/components/LogoutButton";
 const AppPage = () => {
     return (
         <ProtectedRoute>
-            {/* PH */}
             <LogoutButton type="signout" />
         </ProtectedRoute>
     );

@@ -4,11 +4,12 @@ import {
     LOCAL_STORAGE_KEYS,
     removeLocalStorageItem,
 } from "@/lib/constants/localStorage";
-import { ErrorPage } from "@/components/pages/Error";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { queryClient } from "@/lib/api/queryClient";
 import { QUERY_KEY } from "@/lib/queryKeys";
+import { handleUniversalError } from "@/common/Err";
+import { ErrorPage } from "@/components/pages/Error";
 
 const AuthSuccessPage = () => {
     const { t } = useTranslation();
@@ -17,15 +18,27 @@ const AuthSuccessPage = () => {
     const redirectUrl = getLocalStorageItem(LOCAL_STORAGE_KEYS.ON_GOOGLE_OAUTH_SUCCESS_REDIRECT);
 
     useEffect(() => {
-        if (!redirectUrl) {
-            return;
-        }
-        // Ensure the redirect URL starts with '/' for absolute path
-        const absoluteRedirectUrl = redirectUrl.startsWith("/") ? redirectUrl : `/${redirectUrl}`;
-        window.location.href = `${absoluteRedirectUrl}?${searchParams.toString()}`;
-        removeLocalStorageItem(LOCAL_STORAGE_KEYS.ON_GOOGLE_OAUTH_SUCCESS_REDIRECT);
-        queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
-    }, [redirectUrl, searchParams]);
+        const init = async () => {
+            try {
+                if (!redirectUrl) {
+                    return;
+                }
+                // Ensure the redirect URL starts with '/' for absolute path
+                const absoluteRedirectUrl = redirectUrl.startsWith("/")
+                    ? redirectUrl
+                    : `/${redirectUrl}`;
+                await queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
+                removeLocalStorageItem(LOCAL_STORAGE_KEYS.ON_GOOGLE_OAUTH_SUCCESS_REDIRECT);
+                window.location.href = `${absoluteRedirectUrl}?${searchParams.toString()}`;
+            } catch (error) {
+                console.error(error);
+                if (error instanceof Error) {
+                    handleUniversalError(t, error);
+                }
+            }
+        };
+        init();
+    }, [redirectUrl, searchParams, t]);
 
     if (!redirectUrl) {
         return (

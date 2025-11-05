@@ -6,6 +6,12 @@ import { Err } from "@/common/Err";
 import type { QueryClient } from "@tanstack/react-query";
 import { QUERY_KEY } from "@/lib/queryKeys";
 import { queryClient } from "@/lib/api/queryClient";
+import { toast } from "sonner";
+import { TOAST_USECASE_VIEWMODEL } from "@/constants/toast";
+import { USECASE_IDS } from "@/constants/usecase";
+import { LOCAL_STORAGE_KEYS, removeLocalStorageItem } from "@/lib/constants/localStorage";
+import { wagmiConfig } from "@/config/walletConnect";
+import { disconnect } from "@wagmi/core";
 
 export type CreateAccountParams =
     | {
@@ -151,13 +157,17 @@ export class AuthService {
 
     public async signOut() {
         try {
+            removeLocalStorageItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+            removeLocalStorageItem(LOCAL_STORAGE_KEYS.EXPIRES_IN);
+            removeLocalStorageItem(LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE);
+            await disconnect(wagmiConfig);
             await this._coreApi.v1.logout();
+            toast.info(TOAST_USECASE_VIEWMODEL[USECASE_IDS.GENERIC].SIGN_OUT_SUCCESS);
         } catch (error) {
             console.error(error);
             throw error;
         }
         await this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
-        return true;
     }
 }
 

@@ -42,7 +42,7 @@ describe("LogoutButton Component", () => {
     it("should render disconnect button for disconnect type", () => {
         render(<LogoutButton type="disconnect" />);
 
-        expect(screen.getByText("onboard.disconnect")).toBeInTheDocument();
+        expect(screen.getByText("logout")).toBeInTheDocument();
     });
 
     it("should navigate to /signout when clicked", async () => {
@@ -139,7 +139,7 @@ describe("LogoutButton Component", () => {
     it("should render with proper styling for disconnect type", () => {
         render(<LogoutButton type="disconnect" />);
 
-        const typography = screen.getByText("onboard.disconnect");
+        const typography = screen.getByText("logout");
         expect(typography).toHaveClass("italic");
         expect(typography).toHaveClass("underline");
     });
@@ -166,13 +166,13 @@ describe("LogoutButton Component", () => {
         render(<LogoutButton type="signout" />);
 
         expect(screen.getByText("onboard.logout")).toBeInTheDocument();
-        expect(screen.queryByText("onboard.disconnect")).not.toBeInTheDocument();
+        expect(screen.queryByText("logout")).not.toBeInTheDocument();
     });
 
     it("should display correct translation key for disconnect", () => {
         render(<LogoutButton type="disconnect" />);
 
-        expect(screen.getByText("onboard.disconnect")).toBeInTheDocument();
+        expect(screen.getByText("logout")).toBeInTheDocument();
         expect(screen.queryByText("onboard.logout")).not.toBeInTheDocument();
     });
 

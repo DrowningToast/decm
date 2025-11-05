@@ -75,7 +75,9 @@
         "title": "Verify",
         "subtitle": "Please sign the following string to prove your ownership of the wallet",
         "requestButton": "Request signing message",
-        "disconnectLink": "Disconnect the wallet"
+        "disconnectLink": "Disconnect the wallet",
+        "signMessageLoading": "Signing message...",
+        "signMessageError": "Failed to sign message. Please try again."
     },
     "oauth": {
         "google": {
