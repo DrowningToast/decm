@@ -215,10 +215,10 @@ func (u *ProfileUsecase) VerifyUserPassword(ctx context.Context, credentialId uu
 		return false, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("password not set"))
 	}
 
-	hashedPassword, err := hashutils.HashPassword(password)
+	isValid, err := hashutils.CompareHash(password, *dbHashedPassword)
 	if err != nil {
 		return false, err
 	}
 
-	return *dbHashedPassword == hashedPassword, nil
+	return isValid, nil
 }

@@ -76,6 +76,7 @@ contract Event is ThemisUtils {
         uint256 _seatsCount,
         EventStatus _eventStatus,
         string memory signMessage,
+        string memory digestHash,
         bytes memory signature
     ) external {
         address signer = recoverSigner(signMessage, signature, address(this));
@@ -107,6 +108,7 @@ contract Event is ThemisUtils {
     function addParticipant(
         address participantAddress,
         string memory signMessage,
+        string memory digestHash,
         bytes memory signature
     ) external {
         address signer = recoverSigner(signMessage, signature, address(this));

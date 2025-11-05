@@ -3,9 +3,11 @@ package hashutils
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"strings"
 
 	"golang.org/x/crypto/argon2"
 )
@@ -96,6 +98,44 @@ func HashPasswordWithCustomSalt(password string, salt []byte) (string, error) {
 		base64.RawStdEncoding.EncodeToString(config.HashRaw),
 	)
 	return encodedHash, nil
+}
+
+func CompareHash(password, hashedPassword string) (bool, error) {
+	var version int
+	var memory, time uint32
+	var threads uint8
+	var salt []byte
+
+	_, err := fmt.Sscanf(hashedPassword, "$argon2id$v=%d$m=%d,t=%d,p=%d", &version, &memory, &time, &threads)
+	if err != nil {
+		return false, fmt.Errorf("invalid hash format: %w", err)
+	}
+
+	parts := strings.Split(hashedPassword, "$")
+	if len(parts) != 6 {
+		return false, fmt.Errorf("invalid hash format")
+	}
+
+	salt, err = base64.RawStdEncoding.DecodeString(parts[4])
+	if err != nil {
+		return false, fmt.Errorf("failed to decode salt: %w", err)
+	}
+
+	expectedHash, err := base64.RawStdEncoding.DecodeString(parts[5])
+	if err != nil {
+		return false, fmt.Errorf("failed to decode hash: %w", err)
+	}
+
+	computedHash := argon2.IDKey(
+		[]byte(password),
+		salt,
+		time,
+		memory,
+		threads,
+		uint32(len(expectedHash)),
+	)
+
+	return subtle.ConstantTimeCompare(computedHash, expectedHash) == 1, nil
 }
 
 // Hash SHA256

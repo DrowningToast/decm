@@ -2010,6 +2010,47 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/profile/password/verify": {
+            "post": {
+                "description": "Verify password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Verify password",
+                "operationId": "verify-password",
+                "parameters": [
+                    {
+                        "description": "Verify Password Request",
+                        "name": "verifyPasswordRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.VerifyPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/profile.VerifyPasswordResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -2105,6 +2146,9 @@ const docTemplate = `{
                 "end_date": {
                     "type": "string"
                 },
+                "event_status": {
+                    "$ref": "#/definitions/entity.EventStatus"
+                },
                 "event_type": {
                     "$ref": "#/definitions/entity.EventType"
                 },
@@ -2154,6 +2198,19 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "entity.EventStatus": {
+            "type": "string",
+            "enum": [
+                "active",
+                "inactive",
+                "closed"
+            ],
+            "x-enum-varnames": [
+                "EventStatusActive",
+                "EventStatusInactive",
+                "EventStatusClosed"
+            ]
         },
         "entity.EventType": {
             "type": "string",
@@ -2366,6 +2423,9 @@ const docTemplate = `{
                 },
                 "end_date": {
                     "type": "string"
+                },
+                "event_status": {
+                    "$ref": "#/definitions/entity.EventStatus"
                 },
                 "google_map_query": {
                     "type": "string"
@@ -2952,6 +3012,28 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "profile.VerifyPasswordRequest": {
+            "type": "object",
+            "properties": {
+                "authentication_credential_id": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "profile.VerifyPasswordResponse": {
+            "type": "object",
+            "properties": {
+                "is_success": {
+                    "type": "boolean"
+                },
+                "message": {
                     "type": "string"
                 }
             }

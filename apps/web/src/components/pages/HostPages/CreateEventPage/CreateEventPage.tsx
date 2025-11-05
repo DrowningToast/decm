@@ -12,7 +12,7 @@ export const CreateEventPage = () => {
     const { t } = useTranslation();
     const { createEvent, isCreatingEvent } = useCreateEvent();
 
-    const handleCreateEvent = async (data: EventFormData) => {
+    const handleCreateEvent = async (data: EventFormData, hostPassword: string) => {
         if (!data.eventBanner || !data.eventIcon) {
             toast.error(t("errors.generic"));
             return;
@@ -31,7 +31,7 @@ export const CreateEventPage = () => {
             icon: data.eventIcon,
             location: data.location,
             name: data.name,
-            host_password: "111111",
+            host_password: hostPassword,
         };
 
         await createEvent(req);
