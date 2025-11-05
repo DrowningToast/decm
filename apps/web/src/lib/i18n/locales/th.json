@@ -562,5 +562,26 @@
     },
     "createEvent": {
         "success": "สร้างกิจกรรมสำเร็จ"
+    },
+    "participant": {
+        "home": {
+            "greeting": {
+                "morning": "สวัสดีตอนเช้า",
+                "afternoon": "สวัสดีตอนบ่าย",
+                "evening": "สวัสดีตอนเย็น"
+            },
+            "actionRequired": "คุณมี {{count}} รายการที่ต้องดำเนินการ",
+            "actionRequired_plural": "คุณมี {{count}} รายการที่ต้องดำเนินการ",
+            "participantServices": "บริการสำหรับผู้เข้าร่วม",
+            "generalServices": "บริการทั่วไป",
+            "services": {
+                "certificates": "ประกาศนียบัตร",
+                "events": "กิจกรรม",
+                "inbox": "กล่องข้อความ",
+                "identities": "ตัวตน",
+                "profile": "โปรไฟล์",
+                "verifyCertificates": "ตรวจสอบใบรับรอง"
+            }
+        }
     }
 }

@@ -433,6 +433,27 @@
             }
         }
     },
+    "participant": {
+        "home": {
+            "greeting": {
+                "morning": "Good morning",
+                "afternoon": "Good afternoon",
+                "evening": "Good evening"
+            },
+            "actionRequired": "You've {{count}} action required.",
+            "actionRequired_plural": "You've {{count}} actions required.",
+            "participantServices": "Participant services",
+            "generalServices": "General services",
+            "services": {
+                "certificates": "Certificates",
+                "events": "Events",
+                "inbox": "Inbox",
+                "identities": "Identities",
+                "profile": "Profile",
+                "verifyCertificates": "Verify certificates"
+            }
+        }
+    },
     "createEvent": {
         "success": "Event created successfully",
         "error": "Failed to create event. Please try again."

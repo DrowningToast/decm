@@ -1,11 +1,10 @@
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { LogoutButton } from "@/components/LogoutButton";
+import { MainPage } from "@/components/pages/Participant/MainPage";
 
 const AppPage = () => {
     return (
-        <ProtectedRoute>
-            <LogoutButton type="signout" />
-        </ProtectedRoute>
+        <>
+            <MainPage />
+        </>
     );
 };
 

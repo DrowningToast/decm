@@ -155,14 +155,18 @@ export class AuthService {
         }
     }
 
-    public async signOut() {
+    public async signOut({
+        showSuccessToast: showToast = true,
+    }: { showSuccessToast?: boolean } | undefined = {}) {
         try {
             removeLocalStorageItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
             removeLocalStorageItem(LOCAL_STORAGE_KEYS.EXPIRES_IN);
             removeLocalStorageItem(LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE);
             await disconnect(wagmiConfig);
             await this._coreApi.v1.logout();
-            toast.info(TOAST_USECASE_VIEWMODEL[USECASE_IDS.GENERIC].SIGN_OUT_SUCCESS);
+            if (showToast) {
+                toast.info(TOAST_USECASE_VIEWMODEL[USECASE_IDS.GENERIC].SIGN_OUT_SUCCESS);
+            }
         } catch (error) {
             console.error(error);
             throw error;
