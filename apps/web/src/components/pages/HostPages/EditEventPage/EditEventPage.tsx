@@ -3,14 +3,19 @@ import type { EventFormData } from "@/lib/schemas/eventFormSchema";
 import PageContainer from "@/components/container/PageContainer";
 import SectionContainer from "@/components/container/SectionContainer";
 import TitleSubtitle from "@/components/TitleSubtitle";
-import type { EventEventResponse, UpdateEventPayload } from "@decm/api";
+import type {
+    EventEventResponse,
+    GetEventContractByEventIdData,
+    UpdateEventPayload,
+} from "@decm/api";
 import { useEditEvent } from "./useEditEvent";
 import { useDeleteEvent } from "./useDeleteEvent";
 
 interface EditEventPageProps {
     event: EventEventResponse;
+    eventContract?: GetEventContractByEventIdData;
 }
-export const EditEventPage = ({ event }: EditEventPageProps) => {
+export const EditEventPage = ({ event, eventContract }: EditEventPageProps) => {
     const { editEvent, isEditingEvent } = useEditEvent(event.id ?? "");
     const { deleteEvent, isDeletingEvent } = useDeleteEvent(event.id ?? "");
 
@@ -72,6 +77,7 @@ export const EditEventPage = ({ event }: EditEventPageProps) => {
                     }}
                     previewBannerUrl={event?.banner_presigned_url ?? ""}
                     previewIconUrl={event?.icon_presigned_url ?? ""}
+                    eventContract={eventContract}
                 />
             </SectionContainer>
         </PageContainer>

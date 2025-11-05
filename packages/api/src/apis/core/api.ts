@@ -166,6 +166,7 @@ export interface EntityEvent {
     contact_number?: string;
     created_at?: string;
     end_date?: string;
+    event_status?: EntityEventStatus;
     event_type?: EntityEventType;
     google_map_query?: string;
     icon_storage_key?: string;
@@ -182,6 +183,12 @@ export interface EntityEvent {
     start_date?: string;
     title?: string;
     updated_at?: string;
+}
+
+export enum EntityEventStatus {
+    EventStatusActive = "active",
+    EventStatusInactive = "inactive",
+    EventStatusClosed = "closed",
 }
 
 export enum EntityEventType {
@@ -259,6 +266,7 @@ export interface EventEventResponse {
     contact_number?: string;
     created_at?: string;
     end_date?: string;
+    event_status?: EntityEventStatus;
     google_map_query?: string;
     icon_presigned_url?: string;
     icon_storage_key?: string;
@@ -604,6 +612,16 @@ export interface ProfileUpdateProfileResponse {
     updated_at?: string;
 }
 
+export interface ProfileVerifyPasswordRequest {
+    authentication_credential_id?: string;
+    password?: string;
+}
+
+export interface ProfileVerifyPasswordResponse {
+    is_success?: boolean;
+    message?: string;
+}
+
 export type RegisterWithGoogleOauthData = OnboardRegisterResponse;
 
 export type RegisterWithGoogleOauthError = CustomerrorErrResponse;
@@ -745,6 +763,10 @@ export interface VerifyGoogleOauthParams {
     code: string;
     state: string;
 }
+
+export type VerifyPasswordData = ProfileVerifyPasswordResponse;
+
+export type VerifyPasswordError = CustomerrorErr;
 
 import type { AxiosInstance, AxiosRequestConfig, HeadersDefaults, ResponseType } from "axios";
 import axios from "axios";
@@ -1551,6 +1573,27 @@ export class Api<SecurityDataType extends unknown> {
             this.http.request<GetMyProfileData, GetMyProfileError>({
                 path: `/api/v1/profile/my`,
                 method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Verify password
+         *
+         * @tags Profile
+         * @name VerifyPassword
+         * @summary Verify password
+         * @request POST:/api/v1/profile/password/verify
+         */
+        verifyPassword: (
+            verifyPasswordRequest: ProfileVerifyPasswordRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<VerifyPasswordData, VerifyPasswordError>({
+                path: `/api/v1/profile/password/verify`,
+                method: "POST",
+                body: verifyPasswordRequest,
                 type: ContentType.Json,
                 format: "json",
                 ...params,

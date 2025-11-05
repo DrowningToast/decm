@@ -61,6 +61,8 @@ definitions:
         type: string
       end_date:
         type: string
+      event_status:
+        $ref: '#/definitions/entity.EventStatus'
       event_type:
         $ref: '#/definitions/entity.EventType'
       google_map_query:
@@ -94,6 +96,16 @@ definitions:
       updated_at:
         type: string
     type: object
+  entity.EventStatus:
+    enum:
+    - active
+    - inactive
+    - closed
+    type: string
+    x-enum-varnames:
+    - EventStatusActive
+    - EventStatusInactive
+    - EventStatusClosed
   entity.EventType:
     enum:
     - public
@@ -236,6 +248,8 @@ definitions:
         type: string
       end_date:
         type: string
+      event_status:
+        $ref: '#/definitions/entity.EventStatus'
       google_map_query:
         type: string
       icon_presigned_url:
@@ -629,6 +643,20 @@ definitions:
       profile_picture_url:
         type: string
       updated_at:
+        type: string
+    type: object
+  profile.VerifyPasswordRequest:
+    properties:
+      authentication_credential_id:
+        type: string
+      password:
+        type: string
+    type: object
+  profile.VerifyPasswordResponse:
+    properties:
+      is_success:
+        type: boolean
+      message:
         type: string
     type: object
 host: localhost:8080
@@ -1978,6 +2006,33 @@ paths:
           schema:
             $ref: '#/definitions/customerror.Err'
       summary: Get my profile
+      tags:
+      - Profile
+  /api/v1/profile/password/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify password
+      operationId: verify-password
+      parameters:
+      - description: Verify Password Request
+        in: body
+        name: verifyPasswordRequest
+        required: true
+        schema:
+          $ref: '#/definitions/profile.VerifyPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/profile.VerifyPasswordResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.Err'
+      summary: Verify password
       tags:
       - Profile
 swagger: "2.0"

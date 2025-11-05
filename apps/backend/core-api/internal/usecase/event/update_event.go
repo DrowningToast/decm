@@ -9,9 +9,13 @@ import (
 	"apps/backend/common/customerror"
 	datagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
+	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 	"apps/backend/services/auth"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
+
+	eventContract "apps/backend/contracts/event"
 )
 
 type UpdateEventParameters struct {
@@ -107,7 +111,37 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		IconStorageKey:   &newEventIconStorageKey,
 	}
 
+	dbEventContracts, err := uc.EventContractDataGateway.GetEventContractByEventID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	eventContractAddress := common.HexToAddress(dbEventContracts.EventContractAddress)
+	if eventContractAddress == (common.Address{}) {
+		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("event contract not found"))
+	}
+
 	event, err := uc.EventDataGateway.UpdateEvent(ctx, id, updateEventParams)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := cyptoutils.GetEthereumClient()
+	if err != nil {
+		return nil, err
+	}
+
+	auth, err := cyptoutils.GetKeyedTransactor()
+	if err != nil {
+		return nil, err
+	}
+
+	privateKey, _, err := cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, params.HostPassword)
+	if err != nil {
+		return nil, err
+	}
+
+	instance, err := eventContract.NewEvent(eventContractAddress, client)
 	if err != nil {
 		return nil, err
 	}

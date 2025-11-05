@@ -42,6 +42,7 @@ export const QUERY_KEY = {
         all: ["event"] as const,
         byId: (eventId: string) => ["event", eventId] as const,
         registrationConfig: (eventId: string) => ["event-registration-config", eventId] as const,
+        contract: (eventId: string) => ["event", eventId, "contract"] as const,
         issuers: {
             byEventId: (eventId: string) => ["event", eventId, "issuers"] as const,
         },

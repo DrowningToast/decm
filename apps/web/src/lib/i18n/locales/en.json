@@ -8,6 +8,7 @@
         "success": "Success",
         "cancel": "Cancel",
         "confirm": "Confirm",
+        "verifying": "Verifying...",
         "save": "Save",
         "delete": "Delete",
         "edit": "Edit",
@@ -75,7 +76,15 @@
         "title": "Verify",
         "subtitle": "Please sign the following string to prove your ownership of the wallet",
         "requestButton": "Request signing message",
-        "disconnectLink": "Disconnect the wallet"
+        "disconnectLink": "Disconnect wallet"
+    },
+    "signing": {
+        "details": {
+            "title": "Signing Details",
+            "contractAddress": "Contract Address",
+            "transactionType": "Transaction Type",
+            "details": "Details"
+        }
     },
     "oauth": {
         "google": {
@@ -671,13 +680,13 @@
         "subtitle": "Please setup your passcode/password. This will be used to encrypt your info. This cannot be recover, please be careful.",
         "pinTitle": "Setup PIN",
         "passwordTitle": "Setup Password",
-        "preferPassword": "I prefer password",
-        "preferPin": "I prefer PIN",
         "logout": "Logout",
         "enterPin": "Enter your 6-digit PIN",
         "confirmPin": "Confirm your PIN",
         "enterPassword": "Enter your password",
         "confirmPassword": "Confirm your password",
+        "preferPassword": "I prefer password",
+        "preferPin": "I prefer PIN",
         "pinMismatch": "PINs do not match",
         "pinTooShort": "PIN must be 6 digits",
         "profile": {

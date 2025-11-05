@@ -17,7 +17,8 @@ INSERT INTO events (
     is_public,
     is_booking_request_required,
     is_verified,
-    is_ticket_transferable
+    is_ticket_transferable,
+    event_status
 ) VALUES (
     1, -- Default chain_id, should be parameterized in production
     sqlc.arg(contact_number),
@@ -36,7 +37,8 @@ INSERT INTO events (
     sqlc.arg(is_public),
     sqlc.arg(is_booking_request_required),
     sqlc.arg(is_verified),
-    sqlc.arg(is_ticket_transferable)
+    sqlc.arg(is_ticket_transferable),
+    sqlc.arg(event_status)
 ) RETURNING *;
 
 -- name: GetEventById :one
@@ -62,7 +64,8 @@ SELECT
     is_verified,
     is_ticket_transferable,
     created_at,
-    updated_at
+    updated_at,
+    event_status
 FROM events
 WHERE id = sqlc.arg(id);
 
@@ -85,7 +88,8 @@ SET
     is_public = sqlc.arg(is_public),
     is_booking_request_required = sqlc.arg(is_booking_request_required),
     is_verified = sqlc.arg(is_verified),
-    is_ticket_transferable = sqlc.arg(is_ticket_transferable)
+    is_ticket_transferable = sqlc.arg(is_ticket_transferable),
+    event_status = sqlc.arg(event_status)
 WHERE id = sqlc.arg(id)
 RETURNING *;
 
@@ -118,7 +122,8 @@ SELECT
     is_verified,
     is_ticket_transferable,
     created_at,
-    updated_at
+    updated_at,
+    event_status
 FROM events
 WHERE owner_credential_id = sqlc.arg(owner_credential_id)
 ORDER BY created_at DESC;
@@ -145,7 +150,8 @@ SELECT
     is_verified,
     is_ticket_transferable,
     created_at,
-    updated_at
+    updated_at,
+    event_status
 FROM events
 WHERE is_public = 1
 ORDER BY start_date ASC;

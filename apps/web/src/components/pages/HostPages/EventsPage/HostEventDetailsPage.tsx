@@ -27,9 +27,11 @@ import type {
     EventconfigEventRegistrationConfigResponse,
     EventEventResponse,
     GetEventCertificateConfigData,
+    GetEventContractByEventIdData,
     GetEventIssuersByEventIdData,
 } from "@decm/api";
 import { toEventRegistrationConfigStatus } from "@/lib/events/event.utils";
+import { formatEthereumAddress } from "@/lib/utils";
 
 interface HostEventDetailsPageProps {
     eventId: string;
@@ -37,6 +39,7 @@ interface HostEventDetailsPageProps {
     eventRegistrationConfig: EventconfigEventRegistrationConfigResponse;
     eventCertificateConfig?: GetEventCertificateConfigData;
     eventIssuers?: GetEventIssuersByEventIdData;
+    eventContract?: GetEventContractByEventIdData;
 }
 
 // Mock API function - replace with actual API call
@@ -59,8 +62,9 @@ const mockFetchParticipants = async ({
     // Mock data - replace with actual API call
     const allParticipants: Participant[] = Array.from({ length: 45 }, (_, i) => ({
         id: `participant-${i + 1}`,
-        name: `${["John", "Jane", "Bob", "Alice", "Charlie", "David", "Emma", "Frank"][i % 8]} ${["Doe", "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller"][i % 8]
-            }`,
+        name: `${["John", "Jane", "Bob", "Alice", "Charlie", "David", "Emma", "Frank"][i % 8]} ${
+            ["Doe", "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller"][i % 8]
+        }`,
         email: `user${i + 1}@email.com`,
         phoneNumber: `+1 ${Math.floor(100 + Math.random() * 900)} ${Math.floor(100 + Math.random() * 900)} ${Math.floor(1000 + Math.random() * 9000)}`,
         walletAddress: `0x${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
@@ -105,6 +109,7 @@ export default function HostEventDetailsPage({
     eventRegistrationConfig,
     eventCertificateConfig,
     eventIssuers,
+    eventContract,
 }: HostEventDetailsPageProps) {
     const { t } = useTranslation();
 
@@ -171,7 +176,10 @@ export default function HostEventDetailsPage({
                 </div>
 
                 <div className="flex flex-col gap-4 mt-6 lg:mt-0">
-                    <TextLabelValue label="Status" value="NA" />
+                    <TextLabelValue
+                        label="Status"
+                        value={event.event_status?.toUpperCase() ?? "NA"}
+                    />
                     <TextLabelValue label="Final call for request" value={"NA"} />
                     <TextLabelValue
                         label="Participation request"
@@ -180,10 +188,14 @@ export default function HostEventDetailsPage({
                     <TextLabelValue label="Seats count" value={`${0} / ${event.max_attendees}`} />
                     <TextLabelValue
                         label="Event Contract Address"
-                        value="NA"
+                        value={
+                            eventContract?.event_contract_address
+                                ? formatEthereumAddress(eventContract.event_contract_address)
+                                : "NA"
+                        }
                         endIcon={<ExternalLinkIcon size={16} />}
                         valueClassName="cursor-pointer underline"
-                        href="https://www.etherscan.io/address/0x0000000000000000000000000000000000000000"
+                        href={`https://www.etherscan.io/address/${eventContract?.event_contract_address}`}
                     />
                 </div>
             </SectionContainer>
@@ -406,13 +418,13 @@ export default function HostEventDetailsPage({
                                             totalItems={eventIssuers.length}
                                             currentPage={1}
                                             pageSize={10}
-                                            onPageChange={() => { }}
-                                            onPageSizeChange={() => { }}
+                                            onPageChange={() => {}}
+                                            onPageSizeChange={() => {}}
                                             searchValue=""
-                                            onSearchChange={() => { }}
+                                            onSearchChange={() => {}}
                                             searchPlaceholder="Search issuers..."
                                             sorting={[]}
-                                            onSortingChange={() => { }}
+                                            onSortingChange={() => {}}
                                             isLoading={false}
                                             disablePagination
                                         />
