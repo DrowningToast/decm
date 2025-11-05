@@ -79,6 +79,7 @@ func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParam
 		IsBookingRequestRequired: false, // Default to false, should be parameterized
 		IsVerified:               false, // Default to false, should be parameterized
 		IsTicketTransferable:     false, // Default to false, should be parameterized
+		EventStatus:              entity.EventStatus(entity.EventStatusActive),
 	}
 
 	event, err := uc.EventDataGateway.CreateEvent(ctx, createEventParams)

@@ -283,24 +283,19 @@ export const EventAccessManagerABI = [
     },
     {
         type: "function",
-        name: "recoverSigner",
+        name: "hashEthereumMessage",
         inputs: [
             {
-                name: "messageHash",
-                type: "bytes32",
-                internalType: "bytes32",
-            },
-            {
-                name: "signature",
-                type: "bytes",
-                internalType: "bytes",
+                name: "rawMessage",
+                type: "string",
+                internalType: "string",
             },
         ],
         outputs: [
             {
                 name: "",
-                type: "address",
-                internalType: "address",
+                type: "bytes32",
+                internalType: "bytes32",
             },
         ],
         stateMutability: "pure",
@@ -309,6 +304,11 @@ export const EventAccessManagerABI = [
         type: "function",
         name: "recoverSigner",
         inputs: [
+            {
+                name: "digestHash",
+                type: "bytes32",
+                internalType: "bytes32",
+            },
             {
                 name: "message",
                 type: "string",
@@ -333,6 +333,30 @@ export const EventAccessManagerABI = [
             },
         ],
         stateMutability: "view",
+    },
+    {
+        type: "function",
+        name: "recoverSigner",
+        inputs: [
+            {
+                name: "messageHash",
+                type: "bytes32",
+                internalType: "bytes32",
+            },
+            {
+                name: "signature",
+                type: "bytes",
+                internalType: "bytes",
+            },
+        ],
+        outputs: [
+            {
+                name: "",
+                type: "address",
+                internalType: "address",
+            },
+        ],
+        stateMutability: "pure",
     },
     {
         type: "function",
@@ -806,6 +830,11 @@ export const EventAccessManagerABI = [
     {
         type: "error",
         name: "Themis__InvalidContract",
+        inputs: [],
+    },
+    {
+        type: "error",
+        name: "Themis__InvalidDigestHash",
         inputs: [],
     },
     {

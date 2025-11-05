@@ -12,10 +12,27 @@ contract ThemisUtils {
     error Themis__InvalidCaller();
     error Themis__InvalidContract();
     error Themis__InvalidSigner();
+    error Themis__InvalidDigestHash();
 
-    function recoverSigner(string memory message, bytes memory signature, address contractAddress) public view returns (address) {
-        bytes32 messageHash = keccak256(abi.encodePacked(message));
+    function hashEthereumMessage(string memory rawMessage) public pure returns (bytes32) {
+        bytes memory message = abi.encodePacked(
+            "\x19Ethereum Signed Message:\n",
+            bytes(rawMessage).length,
+            rawMessage
+        );
+        
+        return keccak256(message);
+    }
+    
+
+    function recoverSigner(bytes32 digestHash, string memory message, bytes memory signature, address contractAddress) public view returns (address) {
+        bytes32 messageHash = hashEthereumMessage(message);
         StringUtils.SignMessageStruct memory signMessage = StringUtils.toSignMessageStruct(message);
+
+
+        if (digestHash != messageHash) {
+            revert Themis__InvalidDigestHash();
+        }
 
         // 1. Check deadline block
         if (block.number > signMessage.deadlineBlock) {

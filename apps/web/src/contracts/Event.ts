@@ -57,6 +57,11 @@ export const EventABI = [
                 internalType: "string",
             },
             {
+                name: "digestHash",
+                type: "bytes32",
+                internalType: "bytes32",
+            },
+            {
                 name: "signature",
                 type: "bytes",
                 internalType: "bytes",
@@ -73,6 +78,11 @@ export const EventABI = [
                 name: "signMessage",
                 type: "string",
                 internalType: "string",
+            },
+            {
+                name: "digestHash",
+                type: "bytes32",
+                internalType: "bytes32",
             },
             {
                 name: "signature",
@@ -176,12 +186,36 @@ export const EventABI = [
     },
     {
         type: "function",
+        name: "hashEthereumMessage",
+        inputs: [
+            {
+                name: "rawMessage",
+                type: "string",
+                internalType: "string",
+            },
+        ],
+        outputs: [
+            {
+                name: "",
+                type: "bytes32",
+                internalType: "bytes32",
+            },
+        ],
+        stateMutability: "pure",
+    },
+    {
+        type: "function",
         name: "leaveEvent",
         inputs: [
             {
                 name: "signMessage",
                 type: "string",
                 internalType: "string",
+            },
+            {
+                name: "digestHash",
+                type: "bytes32",
+                internalType: "bytes32",
             },
             {
                 name: "signature",
@@ -197,29 +231,10 @@ export const EventABI = [
         name: "recoverSigner",
         inputs: [
             {
-                name: "messageHash",
+                name: "digestHash",
                 type: "bytes32",
                 internalType: "bytes32",
             },
-            {
-                name: "signature",
-                type: "bytes",
-                internalType: "bytes",
-            },
-        ],
-        outputs: [
-            {
-                name: "",
-                type: "address",
-                internalType: "address",
-            },
-        ],
-        stateMutability: "pure",
-    },
-    {
-        type: "function",
-        name: "recoverSigner",
-        inputs: [
             {
                 name: "message",
                 type: "string",
@@ -247,6 +262,30 @@ export const EventABI = [
     },
     {
         type: "function",
+        name: "recoverSigner",
+        inputs: [
+            {
+                name: "messageHash",
+                type: "bytes32",
+                internalType: "bytes32",
+            },
+            {
+                name: "signature",
+                type: "bytes",
+                internalType: "bytes",
+            },
+        ],
+        outputs: [
+            {
+                name: "",
+                type: "address",
+                internalType: "address",
+            },
+        ],
+        stateMutability: "pure",
+    },
+    {
+        type: "function",
         name: "removeParticipant",
         inputs: [
             {
@@ -258,6 +297,11 @@ export const EventABI = [
                 name: "signMessage",
                 type: "string",
                 internalType: "string",
+            },
+            {
+                name: "digestHash",
+                type: "bytes32",
+                internalType: "bytes32",
             },
             {
                 name: "signature",
@@ -309,6 +353,11 @@ export const EventABI = [
                 name: "signMessage",
                 type: "string",
                 internalType: "string",
+            },
+            {
+                name: "digestHash",
+                type: "bytes32",
+                internalType: "bytes32",
             },
             {
                 name: "signature",
@@ -497,6 +546,11 @@ export const EventABI = [
     {
         type: "error",
         name: "Themis__InvalidContract",
+        inputs: [],
+    },
+    {
+        type: "error",
+        name: "Themis__InvalidDigestHash",
         inputs: [],
     },
     {

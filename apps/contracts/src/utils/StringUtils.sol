@@ -5,7 +5,7 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 library StringUtils {
     using Strings for string;
-
+    
     struct SignMessageStruct {
        address signerAddress;
        address contractAddress;

@@ -2,7 +2,6 @@ package cyptoutils
 
 import (
 	"crypto/ecdsa"
-	"encoding/hex"
 	"fmt"
 
 	customerror "apps/backend/common/customerror"
@@ -18,16 +17,16 @@ func HashEthereumMessage(message string) []byte {
 	return crypto.Keccak256([]byte(message))
 }
 
-func Sign(message string, privateKey *ecdsa.PrivateKey) (string, error) {
+func Sign(message string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	hashedMessage := HashEthereumMessage(message)
 
 	signature, err := crypto.Sign(hashedMessage, privateKey)
 	if err != nil {
-		return "", customerror.Parse(&customerror.ErrInvalidArgument, err)
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 	signature[crypto.RecoveryIDOffset] += 27
 
-	return hex.EncodeToString(signature), nil
+	return signature, nil
 }
 
 func GetAddressFromSignature(message string, signature string) (ethCommon.Address, error) {
@@ -80,4 +79,9 @@ func VerifySignedMessageByPublicKey(publicKey *ecdsa.PublicKey, message string, 
 	recoveredAddress := crypto.PubkeyToAddress(*publicKey)
 
 	return VerifySignedMessageByAddress(recoveredAddress, message, signature)
+}
+
+func GetSignMessage(signerAddress ethCommon.Address, contractAddress ethCommon.Address, deadlineBlock uint64) (string, error) {
+	signMessage := fmt.Sprintf("%s:%s:%d", signerAddress.Hex(), contractAddress.Hex(), deadlineBlock)
+	return signMessage, nil
 }

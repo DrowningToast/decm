@@ -27,6 +27,7 @@ type CreateEventParameters struct {
 	IsBookingRequestRequired bool
 	IsVerified               bool
 	IsTicketTransferable     bool
+	EventStatus              entity.EventStatus
 }
 
 type UpdateEventParameters struct {
