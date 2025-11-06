@@ -4,10 +4,12 @@ import (
 	"apps/backend/common/encryptutils"
 	"crypto/ecdsa"
 	"encoding/hex"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/pkg/errors"
 )
 
