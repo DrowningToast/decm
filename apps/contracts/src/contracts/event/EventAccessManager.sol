@@ -123,28 +123,6 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         emit MsgSenderDisallowed(sender, msg.sender);
     }
 
-    function addAllowedMsgSender(address sender) public {
-        requireAdmin(msg.sender);
-        
-        if (sender == address(0)) {
-            revert EventAccessManager__AccountCannotBeZeroAddress();
-        }
-
-        allowedMsgSenders[sender] = true;
-        emit MsgSenderAllowed(sender, msg.sender);
-    }
-
-    function removeAllowedMsgSender(address sender) public {
-        requireAdmin(msg.sender);
-        
-        if (sender == address(0)) {
-            revert EventAccessManager__AccountCannotBeZeroAddress();
-        }
-        
-        allowedMsgSenders[sender] = false;
-        emit MsgSenderDisallowed(sender, msg.sender);
-    }
-
     function checkIsHost(address addr) public view returns (bool) {
         return hasRole(Constants.HOST_ROLE, addr);
     }
@@ -173,8 +151,7 @@ contract EventAccessManager is AccessControl, ThemisUtils {
 
     function requireHostOrAdmin(address addr) public view {
         if (!checkIsHostOrAdmin(addr) && !checkIsAllowedMsgSender()) {
-            // revert EventAccessManager__NotHostOrAdmin();
-            require(false, "Not host or admin");
+            revert EventAccessManager__NotHostOrAdmin();
         }
     }
 

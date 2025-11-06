@@ -493,6 +493,25 @@ export const EventCertificateABI = [
         stateMutability: "nonpayable",
     },
     {
+        type: "function",
+        name: "usedSignatures",
+        inputs: [
+            {
+                name: "",
+                type: "bytes",
+                internalType: "bytes",
+            },
+        ],
+        outputs: [
+            {
+                name: "",
+                type: "bool",
+                internalType: "bool",
+            },
+        ],
+        stateMutability: "view",
+    },
+    {
         type: "event",
         name: "Approval",
         inputs: [
@@ -607,6 +626,55 @@ export const EventCertificateABI = [
                 type: "address",
                 indexed: true,
                 internalType: "address",
+            },
+        ],
+        anonymous: false,
+    },
+    {
+        type: "event",
+        name: "SignatureUsed",
+        inputs: [
+            {
+                name: "transactor",
+                type: "address",
+                indexed: true,
+                internalType: "address",
+            },
+            {
+                name: "signer",
+                type: "address",
+                indexed: true,
+                internalType: "address",
+            },
+            {
+                name: "contractAddress",
+                type: "address",
+                indexed: false,
+                internalType: "address",
+            },
+            {
+                name: "functionName",
+                type: "string",
+                indexed: false,
+                internalType: "string",
+            },
+            {
+                name: "signedMessageDigest",
+                type: "string",
+                indexed: false,
+                internalType: "string",
+            },
+            {
+                name: "signature",
+                type: "bytes",
+                indexed: false,
+                internalType: "bytes",
+            },
+            {
+                name: "timestamp",
+                type: "uint256",
+                indexed: false,
+                internalType: "uint256",
             },
         ],
         anonymous: false,
@@ -799,6 +867,11 @@ export const EventCertificateABI = [
     {
         type: "error",
         name: "Themis__InvalidSignature",
+        inputs: [],
+    },
+    {
+        type: "error",
+        name: "Themis__SignatureAlreadyUsed",
         inputs: [],
     },
 ] as const;

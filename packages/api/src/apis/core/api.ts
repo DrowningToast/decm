@@ -236,6 +236,10 @@ export interface EventCreateEventIssuerRequest {
     signature?: string;
 }
 
+export interface EventDeleteEventRequest {
+    host_password?: string;
+}
+
 export interface EventEventContractResponse {
     access_manager_contract_address?: string;
     certificate_contract_address?: string;
@@ -1082,11 +1086,13 @@ export class Api<SecurityDataType extends unknown> {
          */
         deleteEventById: (
             { eventId, ...query }: DeleteEventByIdParams,
+            delete_event_request: EventDeleteEventRequest,
             params: RequestParams = {},
         ) =>
             this.http.request<DeleteEventByIdData, DeleteEventByIdError>({
                 path: `/api/v1/events/${eventId}`,
                 method: "DELETE",
+                body: delete_event_request,
                 type: ContentType.Json,
                 format: "json",
                 ...params,
