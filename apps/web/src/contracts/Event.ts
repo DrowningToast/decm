@@ -272,6 +272,11 @@ export const EventABI = [
                 internalType: "uint256",
             },
             {
+                name: "_eventStatus",
+                type: "uint8",
+                internalType: "enum Event.EventStatus",
+            },
+            {
                 name: "signedMessageDigest",
                 type: "string",
                 internalType: "string",
@@ -284,6 +289,25 @@ export const EventABI = [
         ],
         outputs: [],
         stateMutability: "nonpayable",
+    },
+    {
+        type: "function",
+        name: "usedSignatures",
+        inputs: [
+            {
+                name: "",
+                type: "bytes",
+                internalType: "bytes",
+            },
+        ],
+        outputs: [
+            {
+                name: "",
+                type: "bool",
+                internalType: "bool",
+            },
+        ],
+        stateMutability: "view",
     },
     {
         type: "event",
@@ -326,24 +350,11 @@ export const EventABI = [
                 indexed: false,
                 internalType: "uint256",
             },
-        ],
-        anonymous: false,
-    },
-    {
-        type: "event",
-        name: "LogAddress",
-        inputs: [
             {
-                name: "key",
-                type: "string",
+                name: "eventStatus",
+                type: "uint8",
                 indexed: false,
-                internalType: "string",
-            },
-            {
-                name: "value",
-                type: "address",
-                indexed: false,
-                internalType: "address",
+                internalType: "enum Event.EventStatus",
             },
         ],
         anonymous: false,
@@ -376,6 +387,55 @@ export const EventABI = [
                 type: "address",
                 indexed: true,
                 internalType: "address",
+            },
+        ],
+        anonymous: false,
+    },
+    {
+        type: "event",
+        name: "SignatureUsed",
+        inputs: [
+            {
+                name: "transactor",
+                type: "address",
+                indexed: false,
+                internalType: "address",
+            },
+            {
+                name: "signer",
+                type: "address",
+                indexed: false,
+                internalType: "address",
+            },
+            {
+                name: "contractAddress",
+                type: "address",
+                indexed: false,
+                internalType: "address",
+            },
+            {
+                name: "functionName",
+                type: "string",
+                indexed: false,
+                internalType: "string",
+            },
+            {
+                name: "signedMessageDigest",
+                type: "string",
+                indexed: false,
+                internalType: "string",
+            },
+            {
+                name: "signature",
+                type: "bytes",
+                indexed: false,
+                internalType: "bytes",
+            },
+            {
+                name: "timestamp",
+                type: "uint256",
+                indexed: false,
+                internalType: "uint256",
             },
         ],
         anonymous: false,
@@ -461,6 +521,11 @@ export const EventABI = [
     {
         type: "error",
         name: "Themis__InvalidSignature",
+        inputs: [],
+    },
+    {
+        type: "error",
+        name: "Themis__SignatureAlreadyUsed",
         inputs: [],
     },
 ] as const;

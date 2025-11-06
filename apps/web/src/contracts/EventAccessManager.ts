@@ -469,6 +469,25 @@ export const EventAccessManagerABI = [
         stateMutability: "view",
     },
     {
+        type: "function",
+        name: "usedSignatures",
+        inputs: [
+            {
+                name: "",
+                type: "bytes",
+                internalType: "bytes",
+            },
+        ],
+        outputs: [
+            {
+                name: "",
+                type: "bool",
+                internalType: "bool",
+            },
+        ],
+        stateMutability: "view",
+    },
+    {
         type: "event",
         name: "HostRoleGranted",
         inputs: [
@@ -762,6 +781,11 @@ export const EventAccessManagerABI = [
     {
         type: "error",
         name: "Themis__InvalidSignature",
+        inputs: [],
+    },
+    {
+        type: "error",
+        name: "Themis__SignatureAlreadyUsed",
         inputs: [],
     },
 ] as const;

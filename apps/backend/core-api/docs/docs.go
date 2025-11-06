@@ -518,6 +518,15 @@ const docTemplate = `{
                         "name": "event_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Delete Event Request",
+                        "name": "delete_event_request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event.DeleteEventRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -2345,6 +2354,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "signature": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.DeleteEventRequest": {
+            "type": "object",
+            "properties": {
+                "host_password": {
                     "type": "string"
                 }
             }

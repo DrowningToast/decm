@@ -33,9 +33,18 @@ contract Event is ThemisUtils {
     event EventUpdated(
         string eventName,
         string eventDescription,
-        uint256 seatsCount
+        uint256 seatsCount,
+        EventStatus eventStatus
     );
-    event LogAddress(string key, address value);
+    event SignatureUsed(
+        address transactor,
+        address signer,
+        address contractAddress,
+        string functionName,
+        string signedMessageDigest,
+        bytes signature,
+        uint256 timestamp
+    );
 
     // State Variables
     string public eventName;
@@ -74,6 +83,7 @@ contract Event is ThemisUtils {
         string memory _eventName,
         string memory _eventDescription,
         uint256 _seatsCount,
+        EventStatus _eventStatus,
         string memory signedMessageDigest,
         bytes memory signature
     ) external {
@@ -85,22 +95,32 @@ contract Event is ThemisUtils {
 
         // 2. Validate Seats Count
         if (_seatsCount < seatsCount) {
-            // revert Event__CannotReduceSeatsCount();
-            require(false, "Cannot reduce seats count");
+            revert Event__CannotReduceSeatsCount();
         }
 
         // 3. Update Event 
         eventName = _eventName;
         eventDescription = _eventDescription;
         seatsCount = _seatsCount;
+        eventStatus = _eventStatus;
 
         // 4. Emit Event
         emit EventUpdated(
             _eventName,
             _eventDescription,
-            _seatsCount
+            _seatsCount,
+            _eventStatus
         );
-        emit LogAddress("signer", signer);
+
+        emit SignatureUsed(
+            msg.sender,
+            signer,
+            address(this),
+            "updateEvent",
+            signedMessageDigest,
+            signature,
+            block.timestamp
+        );
     }
 
     function addParticipant(
@@ -130,6 +150,16 @@ contract Event is ThemisUtils {
 
         // 3. Emit Event
         emit AddedParticipant(participantAddress);
+
+        emit SignatureUsed(
+            msg.sender,
+            signer,
+            address(this),
+            "addParticipant",
+            signedMessageDigest,
+            signature,
+            block.timestamp
+        );
     }
 
     function leaveEvent(
@@ -151,6 +181,16 @@ contract Event is ThemisUtils {
 
         // 3. Emit Event
         emit RemovedParticipant(participantAddress);
+
+        emit SignatureUsed(
+            msg.sender,
+            signer,
+            address(this),
+            "leaveEvent",
+            signedMessageDigest,
+            signature,
+            block.timestamp
+        );
     }
 
     function removeParticipant(address participantAddress, string memory signedMessageDigest, bytes memory signature) external {
@@ -195,6 +235,16 @@ contract Event is ThemisUtils {
 
         // 2. Emit Event
         emit EventConfirmed();
+
+        emit SignatureUsed(
+            msg.sender,
+            signer,
+            address(this),
+            "confirmEvent",
+            signedMessageDigest,
+            signature,
+            block.timestamp
+        );
     }
 
     function _addParticipant(address participantAddress, address signer) private {

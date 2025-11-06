@@ -21,7 +21,7 @@ import type { GetEventContractByEventIdData } from "@decm/api";
 interface EventFormProps {
     defaultValues?: Partial<EventFormData>;
     onSubmit: (data: EventFormData, hostPassword: string) => void | Promise<void>;
-    onDelete?: () => void | Promise<void>;
+    onDelete?: (hostPassword: string) => void | Promise<void>;
     isLoading?: boolean;
     mode?: "create" | "edit";
     previewBannerUrl?: string;
@@ -41,6 +41,7 @@ export const EventForm = ({
 }: EventFormProps) => {
     const { t } = useTranslation();
     const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
     const totalSteps = 2;
 
@@ -374,7 +375,7 @@ export const EventForm = ({
                     <ConfirmModal
                         title={t("events.form.deleteEvent")}
                         message={t("events.form.deleteEventMessage")}
-                        onConfirm={() => onDelete?.()}
+                        onConfirm={() => setShowDeleteModal(true)}
                         onCancel={() => {}}
                         cancelText={t("events.form.cancel")}
                         confirmText={t("events.form.delete")}
@@ -441,6 +442,18 @@ export const EventForm = ({
                             : "You're about to update the event. Please confirm to proceed.",
                     contractAddress: eventContract?.event_contract_address ?? undefined,
                     transactionType: mode === "create" ? "Create Event" : "Update Event",
+                }}
+            />
+
+            <PasswordPinModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onSuccess={(result) => onDelete?.(result.value)}
+                showSigningDetails
+                signingDetails={{
+                    details: "You're about to delete the event. Please confirm to proceed.",
+                    transactionType: "Delete Event",
+                    contractAddress: eventContract?.event_contract_address ?? undefined,
                 }}
             />
         </form>

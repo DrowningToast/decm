@@ -15,6 +15,17 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
     EventAccessManager public immutable EVENT_ACCESS_MANAGER;
     Event public immutable EVENT;
 
+    // Events
+     event SignatureUsed(
+        address indexed transactor,
+        address indexed signer,
+        address contractAddress,
+        string functionName,
+        string signedMessageDigest,
+        bytes signature,
+        uint256 timestamp
+    );
+
     // Enums
     enum TicketStatus {
         ACTIVE,
@@ -113,6 +124,16 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         tokenCounter++;
 
         emit TicketMinted(tokenId, signer, receiverAddress, ticketId);
+
+        emit SignatureUsed(
+            msg.sender,
+            signer,
+            address(this),
+            "mintNft",
+            signedMessageDigest,
+            signature,
+            block.timestamp
+        );
     }
 
     struct BulkMintParticipantTicketsParams {
@@ -161,6 +182,16 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
 
             emit TicketMinted(tokenId, signer, params[i].receiverAddress, params[i].ticketId);
         }
+
+        emit SignatureUsed( 
+            msg.sender,
+            signer,
+            address(this),
+            "bulkMintParticipantTickets",
+            signedMessageDigest,
+            signature,
+            block.timestamp
+        );
     }
 
     function getTokenData(

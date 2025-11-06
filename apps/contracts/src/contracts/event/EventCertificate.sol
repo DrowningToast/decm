@@ -14,6 +14,17 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
     EventAccessManager public immutable EVENT_ACCESS_MANAGER;
     Event public immutable EVENT;
 
+    // Events
+     event SignatureUsed(
+        address indexed transactor,
+        address indexed signer,
+        address contractAddress,
+        string functionName,
+        string signedMessageDigest,
+        bytes signature,
+        uint256 timestamp
+    );
+
     // Enums
     enum CertificateStatus {
         VALID,
@@ -109,6 +120,16 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
             issuerId
         );
 
+        emit SignatureUsed(
+            msg.sender,
+            signer,
+            address(this),
+            "mintNft",
+            signedMessageDigest,
+            signature,
+            block.timestamp
+        );
+
         tokenCounter++;
     }
 
@@ -178,6 +199,16 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
 
             _safeMint(params[i].receiverAddress, tokenId);
         }
+
+         emit SignatureUsed(
+                msg.sender,
+                signer,
+                address(this),
+                "bulkMintParticipantCertificates",
+                signedMessageDigest,
+                signature,
+                block.timestamp
+            );
     }
 
     function getTokenData(
@@ -231,6 +262,16 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
 
         tokenIdToStatus[tokenId] = CertificateStatus.REVOKED;
         emit CertificateRevoked(tokenId);
+
+        emit SignatureUsed(
+            msg.sender,
+            signer,
+            address(this),
+            "revokeCertificate",
+            signedMessageDigest,
+            signature,
+            block.timestamp
+        );
     }
 
 

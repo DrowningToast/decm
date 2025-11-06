@@ -194,6 +194,11 @@ definitions:
     - is_signed
     - issuer_credential_id
     type: object
+  event.DeleteEventRequest:
+    properties:
+      host_password:
+        type: string
+    type: object
   event.EventContractResponse:
     properties:
       access_manager_contract_address:
@@ -844,6 +849,12 @@ paths:
         name: event_id
         required: true
         type: string
+      - description: Delete Event Request
+        in: body
+        name: delete_event_request
+        required: true
+        schema:
+          $ref: '#/definitions/event.DeleteEventRequest'
       produces:
       - application/json
       responses:

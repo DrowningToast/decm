@@ -6,6 +6,9 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 
 contract ThemisUtils {
     error Themis__InvalidSignature();
+    error Themis__SignatureAlreadyUsed();
+    
+    mapping(bytes => bool) public usedSignatures;
 
     /**
      * @dev Recovers the signer address from a message digest and signature
@@ -24,6 +27,12 @@ contract ThemisUtils {
             revert Themis__InvalidSignature();
         }
         
+        if (usedSignatures[signature]) {
+            revert Themis__SignatureAlreadyUsed();
+        }
+
+        usedSignatures[signature] = true;
+
         return signer;
     }
 }

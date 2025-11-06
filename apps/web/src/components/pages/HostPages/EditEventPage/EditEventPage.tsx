@@ -44,8 +44,8 @@ export const EditEventPage = ({ event, eventContract }: EditEventPageProps) => {
         await editEvent(req);
     };
 
-    const handleDeleteEvent = async () => {
-        await deleteEvent();
+    const handleDeleteEvent = async (hostPassword: string) => {
+        await deleteEvent(hostPassword);
     };
 
     return (

@@ -2,9 +2,7 @@ package event
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
-	"fmt"
 	"math/big"
 	"mime/multipart"
 	"time"
@@ -17,7 +15,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 
 	eventContract "apps/backend/contracts/event"
@@ -165,31 +162,19 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		return nil, err
 	}
 
-	// Hash the message with Ethereum prefix for signing
-	prefixedMessage := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(signMessage), signMessage)
-	messageHash := crypto.Keccak256Hash([]byte(prefixedMessage))
-
-	signature, err := crypto.Sign(messageHash.Bytes(), privateKey)
+	messageHash := cyptoutils.HashEthereumMessage(signMessage)
+	signature, err := cyptoutils.Sign(messageHash.Bytes(), privateKey)
 	if err != nil {
 		return nil, err
 	}
-
-	// Adjust the recovery ID (v) to be compatible with Solidity's ECDSA.recover
-	// Go-ethereum returns 0/1, but Solidity expects 27/28
-	if signature[64] == 0 || signature[64] == 1 {
-		signature[64] += 27
-	}
-
-	uc.logger.Info("Signature", "signature", hex.EncodeToString(signature[:]))
-	uc.logger.Info("Message Hash", "messageHash", messageHash.String())
-	uc.logger.Info("Host Address", "hostAddress", *hostAddress)
 
 	tx, err := instance.UpdateEvent(
 		auth,
 		*params.Name,
 		*params.Description,
 		big.NewInt(int64(*params.SeatsCount)),
-		signMessage, // Pass the original message, not the hash
+		0,
+		signMessage,
 		signature,
 	)
 	if err != nil {
