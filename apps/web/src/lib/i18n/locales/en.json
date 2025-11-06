@@ -465,7 +465,7 @@
         "ticketTransferableDescription": "Allow participants to transfer their tickets to others",
         "finalCallRegistrationDate": "Final Call Registration Date",
         "finalCallRegistrationDatePlaceholder": "Select final call registration date",
-        "finalCallRegistrationDateDescription": "After this date, no new registrations will be accepted for the event",
+        "finalCallRegistrationDateDescription": "After this date, no new registrations will be accepted for event",
         "fieldRequirement": {
             "notRequired": "Not Required",
             "optional": "Optional",
@@ -487,22 +487,59 @@
         "registrationPasswordPlaceholder": "Enter registration password",
         "registrationPasswordDescription": "Password must be at least 8 characters long",
         "saveSettings": "Save Settings",
-        "saveSuccess": "Participant settings saved successfully",
         "saveError": "Failed to save participant settings. Please try again.",
-        "tabs": {
-            "settings": "Settings",
-            "preview": "Preview"
+        "saveSuccess": "Participant settings saved successfully",
+        "formPreview": {
+            "description": "This is how registration form will appear to participants",
+            "title": "Registration Form Preview"
+        }
+    },
+    "participantImport": {
+        "title": "Import Participants",
+        "description": "Bulk import participants for your event from an Excel file",
+        "eventDetails": "Event Details",
+        "eventName": "Event Name",
+        "eventDate": "Event Date",
+        "eventLocation": "Event Location",
+        "maxAttendees": "Maximum Attendees",
+        "uploadFile": "Upload Excel File",
+        "selectFile": "Click to select Excel file",
+        "fileFormats": "Supported formats: .xlsx, .xls (Max 10MB)",
+        "fileSize": "File Size",
+        "previewData": "Preview Data",
+        "columnMapping": "Column Mapping",
+        "columnMappingDescription": "We've automatically matched columns from your Excel file. ✓ indicates exact match, ~ indicates partial match.",
+        "selectColumn": "Select column",
+        "previewTable": "Preview Table",
+        "rows": "rows",
+        "parsingFile": "Parsing Excel file...",
+        "fields": {
+            "name": "Name",
+            "email": "Email",
+            "phoneNumber": "Phone Number",
+            "academicInstitution": "Academic Institution Name"
         },
-        "preview": {
-            "title": "Registration Form Preview",
-            "description": "This is how the registration form will appear to participants",
-            "enter": "Enter",
-            "optional": "Optional",
-            "bookingRequired": "Approval Required",
-            "transferable": "Transferable",
-            "register": "Register for Event",
-            "note": "This is a preview only. The form is disabled.",
-            "comingSoon": "Preview feature coming soon"
+        "confirmImport": "Confirm Import",
+        "importing": "Importing...",
+        "importSuccess": "Participants imported successfully",
+        "importError": "Failed to import participants. Please try again.",
+        "invalidFileType": "Invalid file type. Please select an Excel file.",
+        "fileTooLarge": "File size exceeds 10MB limit.",
+        "missingColumns": "Missing required columns: {{columns}}. Please ensure your Excel file contains these columns.",
+        "emptyFile": "The Excel file appears to be empty or has no data.",
+        "parseError": "Failed to parse the Excel file. Please check the file format.",
+        "requiredFormat": "Required Excel Format",
+        "requiredFormatDescription": "Your Excel file must contain these exact column headers:",
+        "columnHeader": "Column Header",
+        "downloadTemplate": "Download Template",
+        "downloadTemplateDescription": "Download a template Excel file with the correct format.",
+        "templateSheetName": "Participants",
+        "templateFileName": "participant_import_template",
+        "templateColumns": {
+            "name": "name",
+            "email": "email",
+            "phoneNumber": "phone_number",
+            "academicInstitution": "academic_institution_name"
         }
     },
     "certificateSettings": {

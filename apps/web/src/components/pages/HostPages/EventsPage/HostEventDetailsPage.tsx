@@ -266,7 +266,9 @@ export default function HostEventDetailsPage({
 
                                 <div className="flex items-center justify-end gap-4">
                                     <Button variant="secondary-dark" className="h-full">
-                                        Import Participants
+                                        <a href={`/host/events/${eventId}/imports`}>
+                                            Import Participants
+                                        </a>
                                     </Button>
                                     <WrappedButton
                                         href={`/host/events/${eventId}/settings/participant`}
