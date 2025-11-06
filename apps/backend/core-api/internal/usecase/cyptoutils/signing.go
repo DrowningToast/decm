@@ -17,16 +17,18 @@ func HashEthereumMessage(message string) []byte {
 	return crypto.Keccak256([]byte(message))
 }
 
-func Sign(message string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
-	hashedMessage := HashEthereumMessage(message)
+func HashMessage(message string) []byte {
+	return crypto.Keccak256([]byte(message))
+}
 
-	signature, err := crypto.Sign(hashedMessage, privateKey)
+func Sign(digest []byte, privateKey *ecdsa.PrivateKey) ([]byte, []byte, error) {
+	signature, err := crypto.Sign(digest, privateKey)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, err)
+		return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
-	signature[crypto.RecoveryIDOffset] += 27
+	// signature[crypto.RecoveryIDOffset] += 27
 
-	return signature, nil
+	return signature, digest, nil
 }
 
 func GetAddressFromSignature(message string, signature string) (ethCommon.Address, error) {
@@ -82,6 +84,6 @@ func VerifySignedMessageByPublicKey(publicKey *ecdsa.PublicKey, message string, 
 }
 
 func GetSignMessage(signerAddress ethCommon.Address, contractAddress ethCommon.Address, deadlineBlock uint64) (string, error) {
-	signMessage := fmt.Sprintf("%s:%s:%d", signerAddress.Hex(), contractAddress.Hex(), deadlineBlock)
-	return signMessage, nil
+	rawSignMessage := fmt.Sprintf("%s,%s,%d", signerAddress.Hex(), contractAddress.Hex(), deadlineBlock)
+	return rawSignMessage, nil
 }

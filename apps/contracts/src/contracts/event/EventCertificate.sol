@@ -77,11 +77,10 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string memory encryptedUserData,
         string memory backendEncryptedUserData,
         address[] memory issuerAddresses,
-        string memory signMessage,
-        bytes32 digestHash,
+        string memory signedMessageDigest,
         bytes memory signature
     ) external nonReentrant {
-        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
+        address signer = recoverSigner(signedMessageDigest, signature);
         requireHostOrAdmin(signer);
 
         uint256 tokenId = tokenCounter;
@@ -144,11 +143,10 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
 
     function bulkMintParticipantCertificates(
         BulkMintParticipantCertificatesParams[] memory params,
-        string memory signMessage,
-        bytes32 digestHash,
+        string memory signedMessageDigest,
         bytes memory signature
     ) external nonReentrant {
-        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
+        address signer = recoverSigner(signedMessageDigest, signature);
         requireHostOrAdmin(signer);
 
         for (uint256 i = 0; i < params.length; i++) {
@@ -227,8 +225,8 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         return string(abi.encodePacked("data:application/json;utf8,", json));
     }
 
-    function revokeCertificate(uint256 tokenId, string memory signMessage, bytes32 digestHash, bytes memory signature) external nonReentrant {
-        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
+    function revokeCertificate(uint256 tokenId, string memory signedMessageDigest, bytes memory signature) external nonReentrant {
+        address signer = recoverSigner(signedMessageDigest, signature);
         requireHostOrAdmin(signer);
 
         tokenIdToStatus[tokenId] = CertificateStatus.REVOKED;

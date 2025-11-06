@@ -19,7 +19,7 @@ export const EditEventPage = ({ event, eventContract }: EditEventPageProps) => {
     const { editEvent, isEditingEvent } = useEditEvent(event.id ?? "");
     const { deleteEvent, isDeletingEvent } = useDeleteEvent(event.id ?? "");
 
-    const handleEditEvent = async (data: EventFormData) => {
+    const handleEditEvent = async (data: EventFormData, hostPassword: string) => {
         const req: UpdateEventPayload = {
             name: data.name,
             short_description: data.shortDescription,
@@ -31,6 +31,7 @@ export const EditEventPage = ({ event, eventContract }: EditEventPageProps) => {
             seats_count: data.seatsCount,
             contact_address: data.contactAddress,
             contact_number: data.contactNumber,
+            host_password: hostPassword,
         };
 
         if (data.eventBanner) {

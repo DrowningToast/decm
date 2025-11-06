@@ -956,9 +956,10 @@ paths:
         in: formData
         name: icon
         type: file
-      - description: Host password
+      - description: Host password (required for contract update)
         in: formData
         name: host_password
+        required: true
         type: string
       produces:
       - application/json

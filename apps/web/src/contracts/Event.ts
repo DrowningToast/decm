@@ -52,14 +52,9 @@ export const EventABI = [
                 internalType: "address",
             },
             {
-                name: "signMessage",
+                name: "signedMessageDigest",
                 type: "string",
                 internalType: "string",
-            },
-            {
-                name: "digestHash",
-                type: "bytes32",
-                internalType: "bytes32",
             },
             {
                 name: "signature",
@@ -75,14 +70,9 @@ export const EventABI = [
         name: "confirmEvent",
         inputs: [
             {
-                name: "signMessage",
+                name: "signedMessageDigest",
                 type: "string",
                 internalType: "string",
-            },
-            {
-                name: "digestHash",
-                type: "bytes32",
-                internalType: "bytes32",
             },
             {
                 name: "signature",
@@ -186,36 +176,12 @@ export const EventABI = [
     },
     {
         type: "function",
-        name: "hashEthereumMessage",
-        inputs: [
-            {
-                name: "rawMessage",
-                type: "string",
-                internalType: "string",
-            },
-        ],
-        outputs: [
-            {
-                name: "",
-                type: "bytes32",
-                internalType: "bytes32",
-            },
-        ],
-        stateMutability: "pure",
-    },
-    {
-        type: "function",
         name: "leaveEvent",
         inputs: [
             {
-                name: "signMessage",
+                name: "signedMessageDigest",
                 type: "string",
                 internalType: "string",
-            },
-            {
-                name: "digestHash",
-                type: "bytes32",
-                internalType: "bytes32",
             },
             {
                 name: "signature",
@@ -231,12 +197,7 @@ export const EventABI = [
         name: "recoverSigner",
         inputs: [
             {
-                name: "digestHash",
-                type: "bytes32",
-                internalType: "bytes32",
-            },
-            {
-                name: "message",
+                name: "signedMessageDigest",
                 type: "string",
                 internalType: "string",
             },
@@ -245,11 +206,6 @@ export const EventABI = [
                 type: "bytes",
                 internalType: "bytes",
             },
-            {
-                name: "contractAddress",
-                type: "address",
-                internalType: "address",
-            },
         ],
         outputs: [
             {
@@ -258,31 +214,7 @@ export const EventABI = [
                 internalType: "address",
             },
         ],
-        stateMutability: "view",
-    },
-    {
-        type: "function",
-        name: "recoverSigner",
-        inputs: [
-            {
-                name: "messageHash",
-                type: "bytes32",
-                internalType: "bytes32",
-            },
-            {
-                name: "signature",
-                type: "bytes",
-                internalType: "bytes",
-            },
-        ],
-        outputs: [
-            {
-                name: "",
-                type: "address",
-                internalType: "address",
-            },
-        ],
-        stateMutability: "pure",
+        stateMutability: "nonpayable",
     },
     {
         type: "function",
@@ -294,14 +226,9 @@ export const EventABI = [
                 internalType: "address",
             },
             {
-                name: "signMessage",
+                name: "signedMessageDigest",
                 type: "string",
                 internalType: "string",
-            },
-            {
-                name: "digestHash",
-                type: "bytes32",
-                internalType: "bytes32",
             },
             {
                 name: "signature",
@@ -345,19 +272,9 @@ export const EventABI = [
                 internalType: "uint256",
             },
             {
-                name: "_eventStatus",
-                type: "uint8",
-                internalType: "enum Event.EventStatus",
-            },
-            {
-                name: "signMessage",
+                name: "signedMessageDigest",
                 type: "string",
                 internalType: "string",
-            },
-            {
-                name: "digestHash",
-                type: "bytes32",
-                internalType: "bytes32",
             },
             {
                 name: "signature",
@@ -409,11 +326,24 @@ export const EventABI = [
                 indexed: false,
                 internalType: "uint256",
             },
+        ],
+        anonymous: false,
+    },
+    {
+        type: "event",
+        name: "LogAddress",
+        inputs: [
             {
-                name: "eventStatus",
-                type: "uint8",
+                name: "key",
+                type: "string",
                 indexed: false,
-                internalType: "enum Event.EventStatus",
+                internalType: "string",
+            },
+            {
+                name: "value",
+                type: "address",
+                indexed: false,
+                internalType: "address",
             },
         ],
         anonymous: false,
@@ -530,42 +460,7 @@ export const EventABI = [
     },
     {
         type: "error",
-        name: "StringsInvalidAddressFormat",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "StringsInvalidChar",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Themis__InvalidCaller",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Themis__InvalidContract",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Themis__InvalidDigestHash",
-        inputs: [],
-    },
-    {
-        type: "error",
         name: "Themis__InvalidSignature",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Themis__InvalidSigner",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Themis__SignatureExpired",
         inputs: [],
     },
 ] as const;
