@@ -722,8 +722,8 @@ export interface UpdateEventPayload {
     end_date: string;
     /** Google map query */
     google_map_query?: string;
-    /** Host password */
-    host_password?: string;
+    /** Host password (required for contract update) */
+    host_password: string;
     /**
      * Event icon image (JPEG, PNG, WebP, max 10MB) - optional
      * @format binary

@@ -33,9 +33,9 @@ contract Event is ThemisUtils {
     event EventUpdated(
         string eventName,
         string eventDescription,
-        uint256 seatsCount,
-        EventStatus eventStatus
+        uint256 seatsCount
     );
+    event LogAddress(string key, address value);
 
     // State Variables
     string public eventName;
@@ -74,44 +74,41 @@ contract Event is ThemisUtils {
         string memory _eventName,
         string memory _eventDescription,
         uint256 _seatsCount,
-        EventStatus _eventStatus,
-        string memory signMessage,
-        bytes32 digestHash,
+        string memory signedMessageDigest,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
-        EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
+        address signer = recoverSigner(signedMessageDigest, signature); 
+        EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer); 
 
         // 1. Validate Event Name
         _validateEventName(_eventName);
 
         // 2. Validate Seats Count
         if (_seatsCount < seatsCount) {
-            revert Event__CannotReduceSeatsCount();
+            // revert Event__CannotReduceSeatsCount();
+            require(false, "Cannot reduce seats count");
         }
 
-        // 3. Update Event
+        // 3. Update Event 
         eventName = _eventName;
         eventDescription = _eventDescription;
         seatsCount = _seatsCount;
-        eventStatus = _eventStatus;
 
         // 4. Emit Event
         emit EventUpdated(
             _eventName,
             _eventDescription,
-            _seatsCount,
-            eventStatus
+            _seatsCount
         );
+        emit LogAddress("signer", signer);
     }
 
     function addParticipant(
         address participantAddress,
-        string memory signMessage,
-        bytes32 digestHash,
+        string memory signedMessageDigest,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
+        address signer = recoverSigner(signedMessageDigest, signature);
         EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
 
         // Pre Conditions
@@ -136,11 +133,10 @@ contract Event is ThemisUtils {
     }
 
     function leaveEvent(
-        string memory signMessage,
-        bytes32 digestHash,
+        string memory signedMessageDigest,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
+        address signer = recoverSigner(signedMessageDigest, signature);
         EVENT_ACCESS_MANAGER.requireParticipant(signer);
 
         address participantAddress = signer;
@@ -157,8 +153,8 @@ contract Event is ThemisUtils {
         emit RemovedParticipant(participantAddress);
     }
 
-    function removeParticipant(address participantAddress, string memory signMessage, bytes32 digestHash, bytes memory signature) external {
-        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
+    function removeParticipant(address participantAddress, string memory signedMessageDigest, bytes memory signature) external {
+        address signer = recoverSigner(signedMessageDigest, signature);
         EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
 
         // Pre Conditions
@@ -179,11 +175,10 @@ contract Event is ThemisUtils {
     }
 
     function confirmEvent(
-        string memory signMessage,
-        bytes32 digestHash,
+        string memory signedMessageDigest,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(digestHash, signMessage, signature, address(this));
+        address signer = recoverSigner(signedMessageDigest, signature);
         EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
 
         // Pre Conditions
@@ -245,7 +240,8 @@ contract Event is ThemisUtils {
 
     function _validateEventName(string memory _eventName) private pure {
         if (bytes(_eventName).length == 0) {
-            revert Event__InvalidEventName();
+            // revert Event__InvalidEventName();
+            require(false, "Invalid event name");
         }
     }
 

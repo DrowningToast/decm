@@ -151,7 +151,8 @@ contract EventAccessManager is AccessControl, ThemisUtils {
 
     function requireHostOrAdmin(address addr) public view {
         if (!checkIsHostOrAdmin(addr) && !checkIsAllowedMsgSender()) {
-            revert EventAccessManager__NotHostOrAdmin();
+            // revert EventAccessManager__NotHostOrAdmin();
+            require(false, "Not host or admin");
         }
     }
 

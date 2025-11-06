@@ -2,7 +2,9 @@ package event
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 	"mime/multipart"
 	"time"
@@ -13,7 +15,9 @@ import (
 	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 	"apps/backend/services/auth"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 
 	eventContract "apps/backend/contracts/event"
@@ -36,7 +40,7 @@ type UpdateEventParameters struct {
 }
 
 func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params UpdateEventParameters, currentUser *auth.JwtClaims) (*entity.Event, error) {
-	credential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, currentUser.UserId)
+	credential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx, currentUser.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -161,23 +165,38 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		return nil, err
 	}
 
-	signature, err := cyptoutils.Sign(signMessage, privateKey)
+	// Hash the message with Ethereum prefix for signing
+	prefixedMessage := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(signMessage), signMessage)
+	messageHash := crypto.Keccak256Hash([]byte(prefixedMessage))
+
+	signature, err := crypto.Sign(messageHash.Bytes(), privateKey)
 	if err != nil {
 		return nil, err
 	}
 
-	digestHash := cyptoutils.HashEthereumMessage(signMessage)
+	// Adjust the recovery ID (v) to be compatible with Solidity's ECDSA.recover
+	// Go-ethereum returns 0/1, but Solidity expects 27/28
+	if signature[64] == 0 || signature[64] == 1 {
+		signature[64] += 27
+	}
 
-	_, err = instance.UpdateEvent(
+	uc.logger.Info("Signature", "signature", hex.EncodeToString(signature[:]))
+	uc.logger.Info("Message Hash", "messageHash", messageHash.String())
+	uc.logger.Info("Host Address", "hostAddress", *hostAddress)
+
+	tx, err := instance.UpdateEvent(
 		auth,
 		*params.Name,
 		*params.Description,
 		big.NewInt(int64(*params.SeatsCount)),
-		1,
-		signMessage,
-		[32]byte(digestHash),
+		signMessage, // Pass the original message, not the hash
 		signature,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = bind.WaitMined(ctx, client, tx)
 	if err != nil {
 		return nil, err
 	}

@@ -459,9 +459,10 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Host password",
+                        "description": "Host password (required for contract update)",
                         "name": "host_password",
-                        "in": "formData"
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {

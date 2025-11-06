@@ -283,34 +283,10 @@ export const EventAccessManagerABI = [
     },
     {
         type: "function",
-        name: "hashEthereumMessage",
-        inputs: [
-            {
-                name: "rawMessage",
-                type: "string",
-                internalType: "string",
-            },
-        ],
-        outputs: [
-            {
-                name: "",
-                type: "bytes32",
-                internalType: "bytes32",
-            },
-        ],
-        stateMutability: "pure",
-    },
-    {
-        type: "function",
         name: "recoverSigner",
         inputs: [
             {
-                name: "digestHash",
-                type: "bytes32",
-                internalType: "bytes32",
-            },
-            {
-                name: "message",
+                name: "signedMessageDigest",
                 type: "string",
                 internalType: "string",
             },
@@ -319,11 +295,6 @@ export const EventAccessManagerABI = [
                 type: "bytes",
                 internalType: "bytes",
             },
-            {
-                name: "contractAddress",
-                type: "address",
-                internalType: "address",
-            },
         ],
         outputs: [
             {
@@ -332,31 +303,7 @@ export const EventAccessManagerABI = [
                 internalType: "address",
             },
         ],
-        stateMutability: "view",
-    },
-    {
-        type: "function",
-        name: "recoverSigner",
-        inputs: [
-            {
-                name: "messageHash",
-                type: "bytes32",
-                internalType: "bytes32",
-            },
-            {
-                name: "signature",
-                type: "bytes",
-                internalType: "bytes",
-            },
-        ],
-        outputs: [
-            {
-                name: "",
-                type: "address",
-                internalType: "address",
-            },
-        ],
-        stateMutability: "pure",
+        stateMutability: "nonpayable",
     },
     {
         type: "function",
@@ -814,42 +761,7 @@ export const EventAccessManagerABI = [
     },
     {
         type: "error",
-        name: "StringsInvalidAddressFormat",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "StringsInvalidChar",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Themis__InvalidCaller",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Themis__InvalidContract",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Themis__InvalidDigestHash",
-        inputs: [],
-    },
-    {
-        type: "error",
         name: "Themis__InvalidSignature",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Themis__InvalidSigner",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Themis__SignatureExpired",
         inputs: [],
     },
 ] as const;
