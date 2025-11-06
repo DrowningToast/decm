@@ -5,7 +5,7 @@ import { useSignMessage, useWalletClient } from "wagmi";
 import { ErrorPage } from "../../Error";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
-import { LogoutButton } from "@/components/LogoutButton";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 import { Typography } from "@/components/typography/typography";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";

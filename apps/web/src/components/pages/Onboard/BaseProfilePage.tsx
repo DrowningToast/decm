@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormField, FormItem, FormControl, FormMessage, Form } from "@/components/ui/form";
-import { LogoutButton } from "@/components/LogoutButton";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 import { OnboardRegistrationMethod } from "@decm/api";
 import { OnboardPageContext } from "@/pages/onboard/[method]";
 import { useContext } from "react";
