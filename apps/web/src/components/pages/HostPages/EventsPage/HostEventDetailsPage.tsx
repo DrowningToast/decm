@@ -32,6 +32,7 @@ import type {
 } from "@decm/api";
 import { toEventRegistrationConfigStatus } from "@/lib/events/event.utils";
 import { formatEthereumAddress } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface HostEventDetailsPageProps {
     eventId: string;
@@ -154,7 +155,12 @@ export default function HostEventDetailsPage({
                         </div>
                     </div>
 
-                    <WrappedButton href={`/host/events/${eventId}/edit`}>Edit Event</WrappedButton>
+                    <div className="flex items-center gap-4">
+                        <WrappedButton variant={"secondaryWhite"}>Confirm Event</WrappedButton>
+                        <WrappedButton href={`/host/events/${eventId}/edit`}>
+                            Edit Event
+                        </WrappedButton>
+                    </div>
                 </div>
             </SectionContainer>
 
@@ -258,7 +264,10 @@ export default function HostEventDetailsPage({
                                     }
                                 />
 
-                                <div className="flex items-center justify-end">
+                                <div className="flex items-center justify-end gap-4">
+                                    <Button variant="secondary-dark" className="h-full">
+                                        Import Participants
+                                    </Button>
                                     <WrappedButton
                                         href={`/host/events/${eventId}/settings/participant`}
                                     >
