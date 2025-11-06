@@ -34,10 +34,10 @@ export const MainPage = () => {
         label: t(service.translationKey),
     }));
 
-    const generalServicesWithLabels = generalServices.map((service) => ({
-        ...service,
-        label: t(service.translationKey),
-    }));
+    // const generalServicesWithLabels = generalServices.map((service) => ({
+    //     ...service,
+    //     label: t(service.translationKey),
+    // }));
 
     return (
         <div className="relative min-h-screen w-full overflow-hidden">
@@ -87,7 +87,7 @@ export const MainPage = () => {
                 </section>
 
                 {/* General Services Section */}
-                <section className="flex flex-col gap-y-2">
+                {/* <section className="flex flex-col gap-y-2">
                     <Typography
                         variant="text"
                         tag="h2"
@@ -98,7 +98,7 @@ export const MainPage = () => {
                     </Typography>
 
                     <ServiceList services={generalServicesWithLabels} layout="single" />
-                </section>
+                </section> */}
             </div>
         </div>
     );

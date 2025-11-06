@@ -38,7 +38,15 @@
         "profile": "Profile",
         "signIn": "Sign In",
         "signUp": "Sign Up",
-        "signOut": "Sign Out"
+        "signOut": "Sign Out",
+        "account": "Account",
+        "security": "Security",
+        "settings": "Settings",
+        "other": "Other",
+        "preference": "Preference",
+        "readDocs": "Read our docs",
+        "socials": "Socials",
+        "noItems": "No items"
     },
     "auth": {
         "signIn": "Sign In",

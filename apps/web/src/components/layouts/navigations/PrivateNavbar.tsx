@@ -1,23 +1,6 @@
 import type React from "react";
-import { StaggeredMenu, type StaggeredMenuItem } from "@/components/bits/StaggeredMenu";
-
-const items: StaggeredMenuItem[] = [
-    {
-        label: "Home",
-        ariaLabel: "Home",
-        link: "/",
-    },
-    {
-        label: "About",
-        ariaLabel: "About",
-        link: "/about",
-    },
-    {
-        label: "Contact",
-        ariaLabel: "Contact",
-        link: "/contact",
-    },
-] as const;
+import { StaggeredMenu, type StaggeredMenuSection } from "@/components/bits/StaggeredMenu";
+import { useTranslation } from "react-i18next";
 
 interface PrivateNavbarProps {
     className?: string;
@@ -25,9 +8,40 @@ interface PrivateNavbarProps {
 }
 
 export const PrivateNavbar: React.FC<PrivateNavbarProps> = () => {
-    return (
-        <div className="max-w-screen overflowh-x-hidden">
-            <StaggeredMenu isFixed={true} items={items} position="right" />
-        </div>
-    );
+    const { t } = useTranslation();
+
+    const sections: StaggeredMenuSection[] = [
+        {
+            title: t("nav.account"),
+            items: [
+                {
+                    label: t("nav.settings"),
+                    ariaLabel: t("nav.settings"),
+                    link: "/app/settings",
+                },
+                {
+                    label: t("nav.signOut"),
+                    ariaLabel: t("nav.signOut"),
+                    link: "/signout",
+                },
+            ],
+        },
+        {
+            title: t("nav.other"),
+            items: [
+                {
+                    label: t("nav.preference"),
+                    ariaLabel: t("nav.preference"),
+                    link: "/app/preference",
+                },
+                {
+                    label: t("nav.readDocs"),
+                    ariaLabel: t("nav.readDocs"),
+                    link: "/docs",
+                },
+            ],
+        },
+    ];
+
+    return <StaggeredMenu isFixed={true} sections={sections} position="right" />;
 };

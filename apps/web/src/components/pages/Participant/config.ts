@@ -24,16 +24,18 @@ export const participantServices: ServiceConfig[] = [
         href: "/app/inbox",
         translationKey: "participant.home.services.inbox",
     },
+    // TODO: Add identities and profile services
     // {
     //     key: "identities",
     //     href: "/app/identities",
     //     translationKey: "participant.home.services.identities",
     // },
-    {
-        key: "profile",
-        href: "/app/profile",
-        translationKey: "participant.home.services.profile",
-    },
+    // @deprecated Moved to navbar
+    // {
+    //     key: "profile",
+    //     href: "/app/profile",
+    //     translationKey: "participant.home.services.profile",
+    // },
 ] as const;
 
 /**
@@ -41,9 +43,10 @@ export const participantServices: ServiceConfig[] = [
  * Public services available to all users
  */
 export const generalServices: ServiceConfig[] = [
-    {
-        key: "verify-certificates",
-        href: "/verify",
-        translationKey: "participant.home.services.verifyCertificates",
-    },
+    // TODO: Add verify certificates service
+    // {
+    //     key: "verify-certificates",
+    //     href: "/verify",
+    //     translationKey: "participant.home.services.verifyCertificates",
+    // },
 ] as const;

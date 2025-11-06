@@ -7,8 +7,8 @@ const AppLayout = () => {
     return (
         <ProtectedRoute>
             <BaseLayout>
-                <PrivateNavbar />
                 <Outlet />
+                <PrivateNavbar />
             </BaseLayout>
         </ProtectedRoute>
     );
