@@ -342,7 +342,6 @@ definitions:
       participants:
         items:
           $ref: '#/definitions/event_registration_invitation.ParticipantRequestItem'
-        maxItems: 100
         minItems: 1
         type: array
     required:
