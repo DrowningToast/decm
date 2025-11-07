@@ -11,7 +11,8 @@ export type Path =
     | `/host/events`
     | `/host/events/:eventId`
     | `/host/events/:eventId/edit`
-    | `/host/events/:eventId/imports`
+    | `/host/events/:eventId/imports/certificates`
+    | `/host/events/:eventId/imports/participants`
     | `/host/events/:eventId/settings/certificate`
     | `/host/events/:eventId/settings/participant`
     | `/host/events/create`
@@ -27,7 +28,8 @@ export type Path =
 export type Params = {
     "/host/events/:eventId": { eventId: string };
     "/host/events/:eventId/edit": { eventId: string };
-    "/host/events/:eventId/imports": { eventId: string };
+    "/host/events/:eventId/imports/certificates": { eventId: string };
+    "/host/events/:eventId/imports/participants": { eventId: string };
     "/host/events/:eventId/settings/certificate": { eventId: string };
     "/host/events/:eventId/settings/participant": { eventId: string };
     "/onboard/:method": { method: string };
