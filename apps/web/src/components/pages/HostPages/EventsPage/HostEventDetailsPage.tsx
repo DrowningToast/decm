@@ -29,6 +29,7 @@ import type {
     GetEventCertificateConfigData,
     GetEventContractByEventIdData,
     GetEventIssuersByEventIdData,
+    GetEventRegistrationInvitationsByEventIdData,
 } from "@decm/api";
 import { toEventRegistrationConfigStatus } from "@/lib/events/event.utils";
 import { formatEthereumAddress } from "@/lib/utils";
@@ -41,6 +42,7 @@ interface HostEventDetailsPageProps {
     eventCertificateConfig?: GetEventCertificateConfigData;
     eventIssuers?: GetEventIssuersByEventIdData;
     eventContract?: GetEventContractByEventIdData;
+    eventInvitations?: GetEventRegistrationInvitationsByEventIdData;
 }
 
 // Mock API function - replace with actual API call
@@ -111,8 +113,11 @@ export default function HostEventDetailsPage({
     eventCertificateConfig,
     eventIssuers,
     eventContract,
+    eventInvitations,
 }: HostEventDetailsPageProps) {
     const { t } = useTranslation();
+
+    console.log(eventInvitations);
 
     // Certificate state logic
     const hasCertificateConfig = !!eventCertificateConfig;

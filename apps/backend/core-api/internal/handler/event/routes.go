@@ -62,4 +62,6 @@ func (h *Handler) Mount(r fiber.Router) {
 	eventGroup.Delete("/:event_id/contracts", h.DeleteEventContract)
 	eventGroup.Delete("/:event_id", h.DeleteEvent)
 	eventGroup.Delete("/:event_id/issuers/:issuer_id", h.DeleteEventIssuer)
+
+	eventGroup.Get("/:event_id/registration/invitations", h.GetEventRegistrationInvitationsByEventID)
 }

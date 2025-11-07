@@ -103,6 +103,17 @@ CREATE TABLE event_registration_invitations (
     -- ASCI Case Insensitive 
     code TEXT, 
 
+    -- PII: First name (encrypted with AES-GCM at repository layer)
+    first_name TEXT,
+    -- PII: Last name (encrypted with AES-GCM at repository layer)
+    last_name TEXT,
+    -- PII: Email (encrypted with AES-GCM at repository layer)
+    email TEXT,
+    -- PII: Phone number (encrypted with AES-GCM at repository layer)
+    phone_number TEXT,
+    -- PII: Academic institution (encrypted with AES-GCM at repository layer)
+    academic_institution TEXT,
+
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     cancelled_at TIMESTAMPTZ
