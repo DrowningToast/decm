@@ -61,8 +61,6 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
     const [mode, setMode] = useState<"pin" | "password">("pin");
     const [showPassword, setShowPassword] = useState(false);
     const [pinValues, setPinValues] = useState<string[]>(["", "", "", "", "", ""]);
-    // const [isVerifying, setIsVerifying] = useState(false);
-    // const [apiError, setApiError] = useState<string | null>(null);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
     const { user } = useAuth();
