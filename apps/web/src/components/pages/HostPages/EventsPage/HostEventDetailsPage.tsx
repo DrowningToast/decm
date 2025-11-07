@@ -20,7 +20,6 @@ import WrappedButton from "@/components/wrapper/WrappedButton";
 import { CheckCircle2Icon, ExternalLinkIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
-import { participantColumns, type Participant } from "./columns/participant-columns";
 import { issuerColumns } from "./columns/issuer-columns";
 import type {
     EventconfigEventRegistrationConfigResponse,
@@ -35,6 +34,7 @@ import { formatEthereumAddress } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type { SortingState } from "@tanstack/react-table";
+import { ParticipantColumns, type Participant } from "./columns/ParticipantColumns";
 
 interface HostEventDetailsPageProps {
     eventId: string;
@@ -56,8 +56,6 @@ export default function HostEventDetailsPage({
     eventInvitations,
 }: HostEventDetailsPageProps) {
     const { t } = useTranslation();
-
-    console.log(eventInvitations);
 
     // State for client-side data management
     const [searchValue, setSearchValue] = useState("");
@@ -376,7 +374,7 @@ export default function HostEventDetailsPage({
                             </Accordion>
 
                             <DataTable
-                                columns={participantColumns}
+                                columns={ParticipantColumns()}
                                 data={paginatedData as Participant[]}
                                 totalItems={processedData.length}
                                 currentPage={currentPage}
