@@ -23,6 +23,8 @@ type Querier interface {
 	CreateEventContract(ctx context.Context, arg CreateEventContractParams) (EventContract, error)
 	CreateEventIssuer(ctx context.Context, arg CreateEventIssuerParams) (EventIssuer, error)
 	CreateEventRegistrationConfig(ctx context.Context, arg CreateEventRegistrationConfigParams) (EventRegistrationConfig, error)
+	CreateEventRegistrationInvitation(ctx context.Context, arg CreateEventRegistrationInvitationParams) (EventRegistrationInvitation, error)
+	CreateInboxMessage(ctx context.Context, arg CreateInboxMessageParams) (InboxMessage, error)
 	// Profiles CRUD queries
 	// Note: PII encryption is handled at the repository layer using AES-GCM
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
@@ -32,6 +34,7 @@ type Querier interface {
 	DeleteEventContract(ctx context.Context, eventID uuid.UUID) error
 	DeleteEventIssuer(ctx context.Context, id uuid.UUID) error
 	DeleteEventRegistrationConfig(ctx context.Context, eventID uuid.UUID) error
+	DeleteEventRegistrationInvitation(ctx context.Context, id uuid.UUID) error
 	DeleteProfile(ctx context.Context, id uuid.UUID) error
 	DeleteProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) error
 	GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef pgtype.Text) (AuthenticationCredential, error)
@@ -46,6 +49,10 @@ type Querier interface {
 	GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIssuer, error)
 	GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUID) ([]EventIssuer, error)
 	GetEventRegistrationConfigByEventID(ctx context.Context, eventID uuid.UUID) (EventRegistrationConfig, error)
+	GetEventRegistrationInvitationByID(ctx context.Context, id uuid.UUID) (EventRegistrationInvitation, error)
+	GetEventRegistrationInvitationsByEventID(ctx context.Context, eventID uuid.UUID) ([]EventRegistrationInvitation, error)
+	GetInboxMessageByID(ctx context.Context, id uuid.UUID) (InboxMessage, error)
+	GetInboxMessagesByReceiverEmail(ctx context.Context, receiverEmail pgtype.Text) ([]InboxMessage, error)
 	GetProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) (Profile, error)
 	// Note: Searches encrypted email field directly (linear scan)
 	GetProfileByEmail(ctx context.Context, email pgtype.Text) (Profile, error)
@@ -71,6 +78,8 @@ type Querier interface {
 	UpdateEventContract(ctx context.Context, arg UpdateEventContractParams) (EventContract, error)
 	UpdateEventIssuer(ctx context.Context, arg UpdateEventIssuerParams) (EventIssuer, error)
 	UpdateEventRegistrationConfig(ctx context.Context, arg UpdateEventRegistrationConfigParams) (EventRegistrationConfig, error)
+	UpdateEventRegistrationInvitation(ctx context.Context, arg UpdateEventRegistrationInvitationParams) (EventRegistrationInvitation, error)
+	UpdateInboxMessageReadStatus(ctx context.Context, arg UpdateInboxMessageReadStatusParams) (InboxMessage, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateProfileByAuthenticationCredentialId(ctx context.Context, arg UpdateProfileByAuthenticationCredentialIdParams) (Profile, error)
 	UpdateVerificationStatus(ctx context.Context, arg UpdateVerificationStatusParams) (AuthenticationCredential, error)

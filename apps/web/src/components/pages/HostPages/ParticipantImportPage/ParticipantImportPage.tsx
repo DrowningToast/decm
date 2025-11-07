@@ -5,7 +5,13 @@ import { useTranslation } from "react-i18next";
 import { ExcelUpload } from "./ExcelUpload";
 import { ExcelPreview } from "./ExcelPreview";
 import PageContainer from "@/components/container/PageContainer";
-import type { EventEventResponse } from "@decm/api";
+import type {
+    EventEventResponse,
+    EventRegistrationInvitationImportEventParticipantsRequest,
+    EventRegistrationInvitationParticipantRequestItem,
+} from "@decm/api";
+import * as XLSX from "xlsx";
+import { useImportParticipants } from "@/hooks/events/useImportParticipants";
 
 interface ParticipantImportPageProps {
     eventId: string;
@@ -16,7 +22,8 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
     const { t } = useTranslation();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [showPreview, setShowPreview] = useState(false);
-    const [isImporting, setIsImporting] = useState(false);
+
+    const { importParticipants, isImportingParticipants } = useImportParticipants(eventId);
 
     const handleFileSelect = (file: File) => {
         setSelectedFile(file);
@@ -28,17 +35,13 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
         setShowPreview(false);
     };
 
-    const handleImport = () => {
-        if (!selectedFile) return;
+    const handleImport = (participantData: EventRegistrationInvitationParticipantRequestItem[]) => {
+        const request: EventRegistrationInvitationImportEventParticipantsRequest = {
+            event_id: eventId,
+            participants: participantData,
+        };
 
-        setIsImporting(true);
-        // TODO: Implement actual import logic with fixed column names
-        setTimeout(() => {
-            setIsImporting(false);
-            // TODO: Show success message
-            setSelectedFile(null);
-            setShowPreview(false);
-        }, 2000);
+        importParticipants(request);
     };
 
     const downloadTemplate = () => {
@@ -59,7 +62,6 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
         ];
 
         // Create a new workbook and worksheet
-        const XLSX = require("xlsx");
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(templateData);
         XLSX.utils.book_append_sheet(wb, ws, t("participantImport.templateSheetName"));
@@ -141,8 +143,8 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
                                 color="background-alt"
                                 className="font-medium"
                             >
-                                {new Date(event.start_date).toLocaleDateString()} -{" "}
-                                {new Date(event.end_date).toLocaleDateString()}
+                                {new Date(event.start_date ?? "").toLocaleDateString()} -{" "}
+                                {new Date(event.end_date ?? "").toLocaleDateString()}
                             </Typography>
                         </div>
                         <div>
@@ -224,7 +226,7 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
                         <ExcelUpload
                             onFileSelect={handleFileSelect}
                             selectedFile={selectedFile}
-                            disabled={isImporting}
+                            disabled={isImportingParticipants}
                         />
                     </div>
                 ) : (
@@ -232,7 +234,7 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
                         file={selectedFile!}
                         onConfirm={handleImport}
                         onCancel={handleCancel}
-                        disabled={isImporting}
+                        disabled={isImportingParticipants}
                     />
                 )}
             </div>

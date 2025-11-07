@@ -6,6 +6,7 @@ CREATE TABLE event_registration_configs (
 
     final_call_for_registration TIMESTAMPTZ,
     registration_password TEXT,
+    is_identity_verification_required INTEGER DEFAULT 0,
 
     -- 0: Not Required, 1: Required, 2: Optional
     first_name_requirement_status INTEGER DEFAULT 0 ,
@@ -16,6 +17,7 @@ CREATE TABLE event_registration_configs (
     address_requirement_status INTEGER DEFAULT 0, 
     academic_institution_requirement_status INTEGER DEFAULT 0,
     academic_email_requirement_status INTEGER DEFAULT 0,
+    
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()

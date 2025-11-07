@@ -185,6 +185,17 @@ export interface EntityEvent {
     updated_at?: string;
 }
 
+export interface EntityEventRegistrationInvitation {
+    cancelled_at?: string;
+    code?: string;
+    created_at?: string;
+    event_id?: string;
+    id?: string;
+    inbox_message_id?: string;
+    updated_at?: string;
+    valid_until?: string;
+}
+
 export enum EntityEventStatus {
     EventStatusActive = "active",
     EventStatusInactive = "inactive",
@@ -287,6 +298,22 @@ export interface EventEventResponse {
     start_date?: string;
     title?: string;
     updated_at?: string;
+}
+
+export interface EventRegistrationInvitationImportEventParticipantsRequest {
+    event_id: string;
+    /**
+     * @maxItems 100
+     * @minItems 1
+     */
+    participants: EventRegistrationInvitationParticipantRequestItem[];
+}
+
+export interface EventRegistrationInvitationParticipantRequestItem {
+    academic_institution_name?: string;
+    email: string;
+    name: string;
+    phone_number?: string;
 }
 
 export interface EventUpdateEventContractRequest {
@@ -438,6 +465,14 @@ export interface GetVerifiedIssuersParams {
     limit?: number;
     /** Offset */
     offset?: number;
+}
+
+export type ImportEventParticipantsData = EntityEventRegistrationInvitation[];
+
+export type ImportEventParticipantsError = CustomerrorErrResponse;
+
+export interface ImportEventParticipantsParams {
+    eventId: string;
 }
 
 export type LogoutData = Record<string, string>;
@@ -1032,6 +1067,28 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/events/owner-credentials/${ownerCredentialId}`,
                 method: "GET",
                 query: query,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Import a list of participants for an event, creating inbox messages and event registration invitations
+         *
+         * @tags Event Registration Invitation
+         * @name ImportEventParticipants
+         * @summary Import event participants
+         * @request POST:/api/v1/events/{eventId}/participants/import
+         */
+        importEventParticipants: (
+            { eventId, ...query }: ImportEventParticipantsParams,
+            request: EventRegistrationInvitationImportEventParticipantsRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<ImportEventParticipantsData, ImportEventParticipantsError>({
+                path: `/api/v1/events/${eventId}/participants/import`,
+                method: "POST",
+                body: request,
                 type: ContentType.Json,
                 format: "json",
                 ...params,

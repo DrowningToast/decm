@@ -1,0 +1,22 @@
+package entity
+
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type InboxMessage struct {
+	ID                     uuid.UUID  `json:"id"`
+	SenderCredentialID     *uuid.UUID `json:"sender_credential_id"`
+	ReceiverCredentialID   *uuid.UUID `json:"receiver_credential_id"`
+	ReceiverEmail          string     `json:"receiver_email"`
+	MessageType            int        `json:"message_type"`
+	MessageContent         string     `json:"message_content"`
+	FallbackMessageContent *string    `json:"fallback_message_content"`
+	IsRead                 int        `json:"is_read"`
+	CreatedAt              time.Time  `json:"created_at"`
+	UpdatedAt              time.Time  `json:"updated_at"`
+	HiddenAt               *time.Time `json:"hidden_at"`
+	DeletedAt              *time.Time `json:"deleted_at"`
+}
