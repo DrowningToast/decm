@@ -116,7 +116,7 @@ func (q *Queries) GetEventRegistrationInvitationByID(ctx context.Context, id uui
 
 const GetEventRegistrationInvitationsByEventID = `-- name: GetEventRegistrationInvitationsByEventID :many
 SELECT id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at FROM event_registration_invitations 
-WHERE event_id = $1
+WHERE event_id = $1 AND cancelled_at IS NULL
 ORDER BY created_at DESC
 `
 

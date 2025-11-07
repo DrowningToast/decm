@@ -27,7 +27,7 @@ SELECT * FROM event_registration_invitations WHERE id = sqlc.arg(id);
 
 -- name: GetEventRegistrationInvitationsByEventID :many
 SELECT * FROM event_registration_invitations 
-WHERE event_id = sqlc.arg(event_id)
+WHERE event_id = sqlc.arg(event_id) AND cancelled_at IS NULL
 ORDER BY created_at DESC;
 
 -- name: UpdateEventRegistrationInvitation :one

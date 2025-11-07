@@ -20,7 +20,6 @@ import WrappedButton from "@/components/wrapper/WrappedButton";
 import { CheckCircle2Icon, ExternalLinkIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
-import { useDataTable } from "@/hooks/use-data-table";
 import { participantColumns, type Participant } from "./columns/participant-columns";
 import { issuerColumns } from "./columns/issuer-columns";
 import type {
@@ -34,7 +33,8 @@ import type {
 import { toEventRegistrationConfigStatus } from "@/lib/events/event.utils";
 import { formatEthereumAddress } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import type { SortingState } from "@tanstack/react-table";
 
 interface HostEventDetailsPageProps {
     eventId: string;
@@ -59,7 +59,86 @@ export default function HostEventDetailsPage({
 
     console.log(eventInvitations);
 
+    // State for client-side data management
     const [searchValue, setSearchValue] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+
+    // Debounce search value
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchValue);
+            setCurrentPage(1); // Reset to first page when search changes
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchValue]);
+
+    // Memoized filtered and sorted data
+    const processedData = useMemo(() => {
+        if (!eventInvitations) return [];
+
+        let filtered = [...eventInvitations];
+
+        // Filter by search value
+        if (debouncedSearch) {
+            const searchLower = debouncedSearch.toLowerCase();
+            filtered = filtered.filter(
+                (item) =>
+                    item.first_name?.toLowerCase().includes(searchLower) ||
+                    item.last_name?.toLowerCase().includes(searchLower) ||
+                    item.email?.toLowerCase().includes(searchLower) ||
+                    item.academic_institution?.toLowerCase().includes(searchLower) ||
+                    item.phone_number?.toLowerCase().includes(searchLower),
+            );
+        }
+
+        // Apply sorting
+        if (sorting.length > 0) {
+            const sort = sorting[0];
+            filtered.sort((a, b) => {
+                const aValue = a[sort.id as keyof typeof a];
+                const bValue = b[sort.id as keyof typeof b];
+
+                if (aValue === undefined || bValue === undefined) return 0;
+
+                let comparison = 0;
+                if (aValue < bValue) comparison = -1;
+                if (aValue > bValue) comparison = 1;
+
+                return sort.desc ? comparison * -1 : comparison;
+            });
+        }
+
+        return filtered;
+    }, [eventInvitations, debouncedSearch, sorting]);
+
+    // Calculate pagination
+    const paginatedData = useMemo(() => {
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        return processedData.slice(startIndex, endIndex);
+    }, [processedData, currentPage, pageSize]);
+
+    // Callbacks for DataTable
+    const handlePageChange = useCallback((page: number) => {
+        setCurrentPage(page);
+    }, []);
+
+    const handlePageSizeChange = useCallback((newPageSize: number) => {
+        setPageSize(newPageSize);
+        setCurrentPage(1); // Reset to first page when page size changes
+    }, []);
+
+    const handleSearchChange = useCallback((value: string) => {
+        setSearchValue(value);
+    }, []);
+
+    const handleSortingChange = useCallback((newSorting: SortingState) => {
+        setSorting(newSorting);
+    }, []);
 
     // Certificate state logic
     const hasCertificateConfig = !!eventCertificateConfig;
@@ -298,17 +377,19 @@ export default function HostEventDetailsPage({
 
                             <DataTable
                                 columns={participantColumns}
-                                data={eventInvitations ?? []}
-                                totalItems={eventInvitations?.length ?? 0}
-                                currentPage={1}
-                                pageSize={10}
-                                onPageChange={() => {}}
-                                onPageSizeChange={() => {}}
-                                searchValue={searchValue ?? ""}
-                                onSearchChange={(value) => setSearchValue(value)}
+                                data={paginatedData as Participant[]}
+                                totalItems={processedData.length}
+                                currentPage={currentPage}
+                                pageSize={pageSize}
+                                onPageChange={handlePageChange}
+                                onPageSizeChange={handlePageSizeChange}
+                                searchValue={searchValue}
+                                onSearchChange={handleSearchChange}
                                 searchPlaceholder="Search participants..."
-                                sorting={[]}
-                                onSortingChange={() => {}}
+                                sorting={sorting}
+                                onSortingChange={(value) =>
+                                    handleSortingChange(value as SortingState)
+                                }
                                 isLoading={false}
                             />
                         </div>
