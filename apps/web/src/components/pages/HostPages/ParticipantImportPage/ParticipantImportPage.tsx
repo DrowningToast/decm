@@ -145,8 +145,8 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
                                 color="background-alt"
                                 className="font-medium"
                             >
-                                {new Date(event.start_date ?? "").toLocaleDateString()} -{" "}
-                                {new Date(event.end_date ?? "").toLocaleDateString()}
+                                {event.start_date ? new Date(event.start_date).toLocaleDateString() : "N/A"} -{" "}
+                                {event.end_date ? new Date(event.end_date).toLocaleDateString() : "N/A"}
                             </Typography>
                         </div>
                         <div>
