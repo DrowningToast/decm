@@ -236,18 +236,13 @@
                 "register": "ลงทะเบียนกับเรา",
                 "signIn": "เข้าสู่ระบบ",
                 "eventManagement": "การจัดการกิจกรรม"
-            },
-            "issuer": {
-                "title": "ผู้ออกใบรับรอง",
-                "signInIAM": "เข้าสู่ระบบด้วย IAM",
-                "register": "ลงทะเบียนกับเรา"
-            },
-            "developer": {
-                "title": "นักพัฒนา",
-                "manageIntegration": "จัดการระบบอัตโนมัติและการเชื่อมต่อ",
-                "apiDocuments": "เอกสาร API",
-                "readDocs": "อ่านเอกสาร"
             }
+        },
+        "developer": {
+            "title": "นักพัฒนา",
+            "manageIntegration": "จัดการระบบอัตโนมัติและการเชื่อมต่อ",
+            "apiDocuments": "เอกสาร API",
+            "readDocs": "อ่านเอกสาร"
         }
     },
     "profile": {
