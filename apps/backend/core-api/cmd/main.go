@@ -16,6 +16,7 @@ import (
 	"apps/backend/core-api/config"
 	auth_handler "apps/backend/core-api/internal/handler/auth"
 	"apps/backend/core-api/internal/handler/event"
+	"apps/backend/core-api/internal/handler/event_registration_invitation"
 	eventconfig_handler "apps/backend/core-api/internal/handler/eventconfig"
 	"apps/backend/core-api/internal/handler/issuer"
 	"apps/backend/core-api/internal/handler/onboard"
@@ -24,6 +25,7 @@ import (
 	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
 	"apps/backend/core-api/internal/repositories/postgres"
 	event_usecase "apps/backend/core-api/internal/usecase/event"
+	event_registration_invitation_usecase "apps/backend/core-api/internal/usecase/event_registration_invitation"
 	eventconfig_usecase "apps/backend/core-api/internal/usecase/eventconfig"
 	issuer_usecase "apps/backend/core-api/internal/usecase/issuer"
 	oauth_usecase "apps/backend/core-api/internal/usecase/oauth"
@@ -102,10 +104,11 @@ func main() {
 
 	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo, authService, googleOAuthService)
 	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
-	profileUc := profile_usecase.NewProfileUsecase(pgRepo)
-	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService)
+	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo)
+	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService)
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, logger)
 	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)
+	eventRegistrationInvitationUc := event_registration_invitation_usecase.NewEventRegistrationInvitationUsecase(pgRepo, pgRepo, pgRepo)
 
 	// Setup HTTP server
 	app := fiber.New(fiber.Config{
@@ -178,7 +181,7 @@ func main() {
 	profileHandler := profile.NewHandler(profileUc, authService, authenticationGuardMiddleware)
 	profileHandler.Mount(apiV1)
 
-	eventHandler := event.NewHandler(eventUc, eventConfigUc, profileUc, authService, authenticationGuardMiddleware, logger)
+	eventHandler := event.NewHandler(eventUc, eventConfigUc, profileUc, eventRegistrationInvitationUc, authService, authenticationGuardMiddleware, logger)
 	eventHandler.Mount(apiV1)
 
 	eventConfigHandler := eventconfig_handler.NewHandler(eventConfigUc, eventUc, authService, authenticationGuardMiddleware)
@@ -186,6 +189,9 @@ func main() {
 
 	issuerHandler := issuer.NewHandler(issuerUc, authService, authenticationGuardMiddleware)
 	issuerHandler.Mount(apiV1)
+
+	eventRegistrationInvitationHandler := event_registration_invitation.NewHandler(*authService, eventRegistrationInvitationUc)
+	eventRegistrationInvitationHandler.RegisterRoutes(apiV1)
 
 	// Start HTTP Server
 	go func() {

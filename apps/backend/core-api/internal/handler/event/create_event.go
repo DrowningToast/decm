@@ -26,6 +26,7 @@ type CreateEventRequest struct {
 	ContactAddress   string `form:"contact_address"`
 	Location         string `form:"location"`
 	GoogleMapQuery   string `form:"google_map_query"`
+	HostPassword     string `form:"host_password"`
 }
 
 // @Summary Create a new event
@@ -46,6 +47,7 @@ type CreateEventRequest struct {
 // @Param google_map_query formData string true "Google map query"
 // @Param banner formData file true "Event banner image (JPEG, PNG, WebP, max 10MB)"
 // @Param icon formData file true "Event icon image (JPEG, PNG, WebP, max 10MB)"
+// @Param host_password formData string true "Host password"
 // @Success 201 {object} entity.Event
 // @Failure 400 {object} customerror.ErrResponse
 // @Router /api/v1/events [post]
@@ -110,6 +112,7 @@ func (h *Handler) CreateEvent(ctx *fiber.Ctx) error {
 		GoogleMapQuery:   requestBody.GoogleMapQuery,
 		EventBanner:      bannerFile,
 		EventIcon:        iconFile,
+		HostPassword:     requestBody.HostPassword,
 	}
 
 	currentUser, err := h.AuthenticationService.GetUserContext(ctx)
@@ -118,7 +121,7 @@ func (h *Handler) CreateEvent(ctx *fiber.Ctx) error {
 	}
 
 	// 6. Call usecase
-	event, err := h.EventUc.CreateEvent(ctx.UserContext(), params, currentUser)
+	event, eventAccessManagerAddress, eventContractAddress, _, err := h.EventUc.CreateEvent(ctx.UserContext(), params, currentUser)
 	if err != nil {
 		return err
 	}
@@ -135,6 +138,16 @@ func (h *Handler) CreateEvent(ctx *fiber.Ctx) error {
 	}
 
 	_, err = h.EventConfigUc.CreateEventRegistrationConfig(ctx.UserContext(), event.ID, eventConfigParams)
+	if err != nil {
+		return err
+	}
+
+	createEventContractParams := eventUc.CreateEventContractParams{
+		EventContractAddress:         eventContractAddress.Hex(),
+		AccessManagerContractAddress: eventAccessManagerAddress.Hex(),
+	}
+
+	_, err = h.EventUc.CreateEventContract(ctx.UserContext(), event.ID, createEventContractParams)
 	if err != nil {
 		return err
 	}

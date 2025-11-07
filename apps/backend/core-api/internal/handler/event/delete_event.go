@@ -10,6 +10,10 @@ import (
 	"github.com/google/uuid"
 )
 
+type DeleteEventRequest struct {
+	HostPassword string `json:"host_password"`
+}
+
 // DeleteEvent godoc
 // @Summary Delete event by ID
 // @Description Delete event by ID
@@ -18,6 +22,7 @@ import (
 // @Accept json
 // @Produce json
 // @Param event_id path string true "Event ID"
+// @Param delete_event_request body DeleteEventRequest true "Delete Event Request"
 // @Success 200 {object} EventResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 400 {object} customerror.ErrResponse
@@ -38,7 +43,12 @@ func (h *Handler) DeleteEvent(ctx *fiber.Ctx) error {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx.UserContext(), 30*time.Second)
 	defer cancel()
 
-	event, err := h.EventUc.DeleteEvent(ctxWithTimeout, eventID, currentUser)
+	request := DeleteEventRequest{}
+	if err := ctx.BodyParser(&request); err != nil {
+		return customerror.Parse(&customerror.ErrInvalidArgument, err)
+	}
+
+	event, err := h.EventUc.DeleteEvent(ctxWithTimeout, eventID, currentUser, request.HostPassword)
 	if err != nil {
 		return err
 	}

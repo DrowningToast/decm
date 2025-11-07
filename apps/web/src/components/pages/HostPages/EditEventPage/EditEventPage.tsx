@@ -3,18 +3,23 @@ import type { EventFormData } from "@/lib/schemas/eventFormSchema";
 import PageContainer from "@/components/container/PageContainer";
 import SectionContainer from "@/components/container/SectionContainer";
 import TitleSubtitle from "@/components/TitleSubtitle";
-import type { EventEventResponse, UpdateEventPayload } from "@decm/api";
+import type {
+    EventEventResponse,
+    GetEventContractByEventIdData,
+    UpdateEventPayload,
+} from "@decm/api";
 import { useEditEvent } from "./useEditEvent";
 import { useDeleteEvent } from "./useDeleteEvent";
 
 interface EditEventPageProps {
     event: EventEventResponse;
+    eventContract?: GetEventContractByEventIdData;
 }
-export const EditEventPage = ({ event }: EditEventPageProps) => {
+export const EditEventPage = ({ event, eventContract }: EditEventPageProps) => {
     const { editEvent, isEditingEvent } = useEditEvent(event.id ?? "");
     const { deleteEvent, isDeletingEvent } = useDeleteEvent(event.id ?? "");
 
-    const handleEditEvent = async (data: EventFormData) => {
+    const handleEditEvent = async (data: EventFormData, hostPassword: string) => {
         const req: UpdateEventPayload = {
             name: data.name,
             short_description: data.shortDescription,
@@ -26,6 +31,7 @@ export const EditEventPage = ({ event }: EditEventPageProps) => {
             seats_count: data.seatsCount,
             contact_address: data.contactAddress,
             contact_number: data.contactNumber,
+            host_password: hostPassword,
         };
 
         if (data.eventBanner) {
@@ -38,8 +44,8 @@ export const EditEventPage = ({ event }: EditEventPageProps) => {
         await editEvent(req);
     };
 
-    const handleDeleteEvent = async () => {
-        await deleteEvent();
+    const handleDeleteEvent = async (hostPassword: string) => {
+        await deleteEvent(hostPassword);
     };
 
     return (
@@ -72,6 +78,7 @@ export const EditEventPage = ({ event }: EditEventPageProps) => {
                     }}
                     previewBannerUrl={event?.banner_presigned_url ?? ""}
                     previewIconUrl={event?.icon_presigned_url ?? ""}
+                    eventContract={eventContract}
                 />
             </SectionContainer>
         </PageContainer>

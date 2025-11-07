@@ -75,5 +75,6 @@ func (h *Handler) GetEventById(ctx *fiber.Ctx) error {
 		IsTicketTransferable:     event.IsTicketTransferable,
 		CreatedAt:                event.CreatedAt,
 		UpdatedAt:                event.UpdatedAt,
+		EventStatus:              event.EventStatus,
 	})
 }

@@ -5,6 +5,7 @@ import (
 
 	"apps/backend/common/encryptutils"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -100,6 +101,24 @@ func Int32ToPgInt4(value int32) pgtype.Int4 {
 		Int32: value,
 		Valid: true,
 	}
+}
+
+func UUIDToPgUUID(value *uuid.UUID) pgtype.UUID {
+	if value == nil {
+		return pgtype.UUID{}
+	}
+	return pgtype.UUID{
+		Bytes: *value,
+		Valid: true,
+	}
+}
+
+func PgUUIDToUUIDPtr(value pgtype.UUID) *uuid.UUID {
+	if !value.Valid {
+		return nil
+	}
+	result := uuid.UUID(value.Bytes)
+	return &result
 }
 
 // ========== PII Encryption Functions ==========

@@ -2,7 +2,6 @@ package cyptoutils
 
 import (
 	"crypto/ecdsa"
-	"encoding/hex"
 	"fmt"
 
 	customerror "apps/backend/common/customerror"
@@ -13,21 +12,29 @@ import (
 	"github.com/pkg/errors"
 )
 
-func HashEthereumMessage(message string) []byte {
+func HashEthereumMessage(message string) ethCommon.Hash {
 	message = fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(message), message)
+	return crypto.Keccak256Hash([]byte(message))
+}
+
+func HashMessage(message string) []byte {
 	return crypto.Keccak256([]byte(message))
 }
 
-func Sign(message string, privateKey *ecdsa.PrivateKey) (string, error) {
-	hashedMessage := HashEthereumMessage(message)
-
-	signature, err := crypto.Sign(hashedMessage, privateKey)
+func Sign(digest []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+	signature, err := crypto.Sign(digest, privateKey)
 	if err != nil {
-		return "", customerror.Parse(&customerror.ErrInvalidArgument, err)
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
-	signature[crypto.RecoveryIDOffset] += 27
 
-	return hex.EncodeToString(signature), nil
+	// Adjust the recovery ID (v) to be compatible with Solidity's ECDSA.recover
+	// Go-ethereum returns 0/1, but Solidity expects 27/28
+	// https://github.com/ethereum/go-ethereum/issues/19751#issuecomment-50490073
+	if signature[64] == 0 || signature[64] == 1 {
+		signature[64] += 27
+	}
+
+	return signature, nil
 }
 
 func GetAddressFromSignature(message string, signature string) (ethCommon.Address, error) {
@@ -47,7 +54,7 @@ func GetAddressFromSignature(message string, signature string) (ethCommon.Addres
 	// Adjust recovery ID from Ethereum format (27/28) to go-ethereum format (0/1)
 	sig[crypto.RecoveryIDOffset] -= 27
 
-	usedPublicKey, err := crypto.SigToPub(hashedMessage, sig)
+	usedPublicKey, err := crypto.SigToPub(hashedMessage.Bytes(), sig)
 	if err != nil {
 		return ethCommon.Address{}, errors.Wrap(customerror.Parse(&customerror.ErrInvalidArgument, err), "failed to recover public key")
 	}
@@ -66,7 +73,7 @@ func VerifySignedMessageByAddress(walletAddress ethCommon.Address, message strin
 
 	sig[crypto.RecoveryIDOffset] -= 27
 
-	usedPublicKey, err := crypto.SigToPub(hashedMessage, sig)
+	usedPublicKey, err := crypto.SigToPub(hashedMessage.Bytes(), sig)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to recover public key")
 	}
@@ -80,4 +87,9 @@ func VerifySignedMessageByPublicKey(publicKey *ecdsa.PublicKey, message string, 
 	recoveredAddress := crypto.PubkeyToAddress(*publicKey)
 
 	return VerifySignedMessageByAddress(recoveredAddress, message, signature)
+}
+
+func GetSignMessage(signerAddress ethCommon.Address, contractAddress ethCommon.Address, deadlineBlock uint64) (string, error) {
+	rawSignMessage := fmt.Sprintf("%s,%s,%d", signerAddress.Hex(), contractAddress.Hex(), deadlineBlock)
+	return rawSignMessage, nil
 }

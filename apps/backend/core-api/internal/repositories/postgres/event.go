@@ -42,6 +42,7 @@ func (r *Repository) CreateEvent(ctx context.Context, params datagateway.CreateE
 		IsBookingRequestRequired: isBookingRequestRequired,
 		IsVerified:               isVerified,
 		IsTicketTransferable:     isTicketTransferable,
+		EventStatus:              generated.EventStatus(params.EventStatus),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
@@ -69,6 +70,7 @@ func (r *Repository) CreateEvent(ctx context.Context, params datagateway.CreateE
 		IsTicketTransferable:     result.IsTicketTransferable.Int32 == 1,
 		CreatedAt:                result.CreatedAt.Time,
 		UpdatedAt:                result.UpdatedAt.Time,
+		EventStatus:              entity.EventStatus(result.EventStatus),
 	}, nil
 }
 
@@ -100,6 +102,7 @@ func (r *Repository) GetEventById(ctx context.Context, id uuid.UUID) (*entity.Ev
 		IsTicketTransferable:     result.IsTicketTransferable.Int32 == 1,
 		CreatedAt:                result.CreatedAt.Time,
 		UpdatedAt:                result.UpdatedAt.Time,
+		EventStatus:              entity.EventStatus(result.EventStatus),
 	}, nil
 }
 
@@ -137,6 +140,7 @@ func (r *Repository) ListEventsByOwnerCredentialID(ctx context.Context, ownerCre
 			IsTicketTransferable:     event.IsTicketTransferable.Int32 == 1,
 			CreatedAt:                event.CreatedAt.Time,
 			UpdatedAt:                event.UpdatedAt.Time,
+			EventStatus:              entity.EventStatus(event.EventStatus),
 		}
 	}
 
@@ -172,6 +176,7 @@ func (r *Repository) DeleteEvent(ctx context.Context, id uuid.UUID) (*entity.Eve
 		IsTicketTransferable:     result.IsTicketTransferable.Int32 == 1,
 		CreatedAt:                result.CreatedAt.Time,
 		UpdatedAt:                result.UpdatedAt.Time,
+		EventStatus:              entity.EventStatus(result.EventStatus),
 	}, nil
 }
 
@@ -210,6 +215,9 @@ func (r *Repository) UpdateEvent(ctx context.Context, id uuid.UUID, params datag
 	if params.EventType != nil {
 		eventType = generated.EventType(*params.EventType)
 	}
+
+	// Use event status from current event (not updatable through this endpoint)
+	eventStatus := currentEvent.EventStatus
 
 	// Only update fields that are provided in params
 	// For fields that are not provided, use current values
@@ -295,6 +303,7 @@ func (r *Repository) UpdateEvent(ctx context.Context, id uuid.UUID, params datag
 		IsVerified:               isVerified,
 		IsTicketTransferable:     isTicketTransferable,
 		EventType:                eventType,
+		EventStatus:              eventStatus,
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
@@ -323,5 +332,6 @@ func (r *Repository) UpdateEvent(ctx context.Context, id uuid.UUID, params datag
 		IsTicketTransferable:     result.IsTicketTransferable.Int32 == 1,
 		CreatedAt:                result.CreatedAt.Time,
 		UpdatedAt:                result.UpdatedAt.Time,
+		EventStatus:              entity.EventStatus(result.EventStatus),
 	}, nil
 }

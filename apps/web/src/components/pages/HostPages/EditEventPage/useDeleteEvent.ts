@@ -12,19 +12,24 @@ export function useDeleteEvent(eventId: string) {
 
     const { mutateAsync: _deleteEvent, isPending: isDeletingEvent } = useMutation({
         mutationKey: ["deleteEvent", eventId],
-        mutationFn: async () => {
-            return await coreApiClient.v1.deleteEventById({
-                eventId,
-            });
+        mutationFn: async (hostPassword: string) => {
+            return await coreApiClient.v1.deleteEventById(
+                {
+                    eventId,
+                },
+                {
+                    host_password: hostPassword,
+                },
+            );
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: QUERY_KEY.hostEvents.all });
         },
     });
 
-    async function deleteEvent() {
+    async function deleteEvent(hostPassword: string) {
         try {
-            await _deleteEvent();
+            await _deleteEvent(hostPassword);
             toast.success(t("deleteEvent.success"));
 
             navigate("/host/events");

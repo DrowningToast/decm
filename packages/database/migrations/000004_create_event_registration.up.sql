@@ -14,7 +14,8 @@ INSERT INTO inbox_message_types (id, name) VALUES (1, 'event_registration_invita
 CREATE TABLE inbox_messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sender_credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
-    receiver_credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
+    receiver_credential_id UUID REFERENCES authentication_credentials(id) ON DELETE CASCADE,
+    receiver_email TEXT NOT NULL,
     message_type INTEGER NOT NULL REFERENCES inbox_message_types(id) ON DELETE CASCADE,
     -- message_content is a JSONB object that contains translations of the message content
     message_content JSONB,
@@ -99,10 +100,23 @@ CREATE TABLE event_registration_invitations (
 
     inbox_message_id UUID NOT NULL REFERENCES inbox_messages(id) ON DELETE CASCADE,
     valid_until TIMESTAMPTZ,
-    code TEXT,
+    -- ASCI Case Insensitive 
+    code TEXT, 
+
+    -- PII: First name (encrypted with AES-GCM at repository layer)
+    first_name TEXT,
+    -- PII: Last name (encrypted with AES-GCM at repository layer)
+    last_name TEXT,
+    -- PII: Email (encrypted with AES-GCM at repository layer)
+    email TEXT,
+    -- PII: Phone number (encrypted with AES-GCM at repository layer)
+    phone_number TEXT,
+    -- PII: Academic institution (encrypted with AES-GCM at repository layer)
+    academic_institution TEXT,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    cancelled_at TIMESTAMPTZ
 );
 
 CREATE INDEX idx_event_registration_invitations_event_id ON event_registration_invitations(event_id);

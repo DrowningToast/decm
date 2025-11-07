@@ -15,15 +15,18 @@ import {
     WrappedInputFile,
 } from "@/components/forms/wrapped-inputs";
 import ConfirmModal from "@/components/ConfirmModal";
+import { PasswordPinModal } from "@/components/ui/password-pin-modal";
+import type { GetEventContractByEventIdData } from "@decm/api";
 
 interface EventFormProps {
     defaultValues?: Partial<EventFormData>;
-    onSubmit: (data: EventFormData) => void | Promise<void>;
-    onDelete?: () => void | Promise<void>;
+    onSubmit: (data: EventFormData, hostPassword: string) => void | Promise<void>;
+    onDelete?: (hostPassword: string) => void | Promise<void>;
     isLoading?: boolean;
     mode?: "create" | "edit";
     previewBannerUrl?: string;
     previewIconUrl?: string;
+    eventContract?: GetEventContractByEventIdData;
 }
 
 export const EventForm = ({
@@ -34,15 +37,18 @@ export const EventForm = ({
     mode = "create",
     previewBannerUrl,
     previewIconUrl,
+    eventContract,
 }: EventFormProps) => {
     const { t } = useTranslation();
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
     const totalSteps = 2;
 
     // Create schema based on mode
     const schema = createEventFormSchema(mode);
 
-    const { handleSubmit, control, trigger, watch } = useForm<EventFormData>({
+    const { handleSubmit, control, trigger, watch, getValues } = useForm<EventFormData>({
         resolver: zodResolver(schema),
         defaultValues: {
             name: defaultValues?.name || "",
@@ -62,15 +68,26 @@ export const EventForm = ({
 
     const googleMapQuery = watch("googleMapQuery");
 
-    const handleFormSubmit = async (data: EventFormData) => {
+    const handleFormSubmit = async () => {
+        setShowPasswordModal(true);
+    };
+
+    const onPasswordVerificationSuccess = async (result: {
+        type: "pin" | "password";
+        value: string;
+    }) => {
+        const data = getValues();
         const eventBanner = data.eventBanner ?? null;
         const eventIcon = data.eventIcon ?? null;
 
-        await onSubmit({
-            ...data,
-            eventBanner: eventBanner,
-            eventIcon: eventIcon,
-        });
+        await onSubmit(
+            {
+                ...data,
+                eventBanner: eventBanner,
+                eventIcon: eventIcon,
+            },
+            result.value,
+        );
     };
 
     const handleNext = async (e?: React.MouseEvent<HTMLButtonElement>) => {
@@ -118,12 +135,13 @@ export const EventForm = ({
                 return (
                     <div key={step} className="flex items-center">
                         <div
-                            className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors ${currentStep === step
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : currentStep > step
-                                    ? "border-primary bg-primary/20 text-primary"
-                                    : "border-muted-foreground text-muted-foreground"
-                                }`}
+                            className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors ${
+                                currentStep === step
+                                    ? "border-primary bg-primary text-primary-foreground"
+                                    : currentStep > step
+                                      ? "border-primary bg-primary/20 text-primary"
+                                      : "border-muted-foreground text-muted-foreground"
+                            }`}
                         >
                             <Typography variant="text" tag="span" className="font-semibold">
                                 {step}
@@ -131,8 +149,9 @@ export const EventForm = ({
                         </div>
                         {step < totalSteps && (
                             <div
-                                className={`w-16 h-1 mx-2 ${currentStep > step ? "bg-primary" : "bg-muted"
-                                    }`}
+                                className={`w-16 h-1 mx-2 ${
+                                    currentStep > step ? "bg-primary" : "bg-muted"
+                                }`}
                             />
                         )}
                     </div>
@@ -356,8 +375,8 @@ export const EventForm = ({
                     <ConfirmModal
                         title={t("events.form.deleteEvent")}
                         message={t("events.form.deleteEventMessage")}
-                        onConfirm={() => onDelete?.()}
-                        onCancel={() => { }}
+                        onConfirm={() => setShowDeleteModal(true)}
+                        onCancel={() => {}}
                         cancelText={t("events.form.cancel")}
                         confirmText={t("events.form.delete")}
                     >
@@ -365,7 +384,7 @@ export const EventForm = ({
                             type="button"
                             variant="ghost"
                             size="lg"
-                            onClick={() => { }}
+                            onClick={() => {}}
                             disabled={isLoading}
                             className="min-w-[150px]"
                         >
@@ -404,12 +423,39 @@ export const EventForm = ({
                             {isLoading
                                 ? t("common.loading")
                                 : mode === "create"
-                                    ? t("events.form.submitCreate")
-                                    : t("events.form.submitUpdate")}
+                                  ? t("events.form.submitCreate")
+                                  : t("events.form.submitUpdate")}
                         </Typography>
                     </Button>
                 )}
             </div>
+
+            <PasswordPinModal
+                isOpen={showPasswordModal}
+                onClose={() => setShowPasswordModal(false)}
+                onSuccess={onPasswordVerificationSuccess}
+                showSigningDetails
+                signingDetails={{
+                    details:
+                        mode === "create"
+                            ? "You're about to create a new event. Please confirm to proceed."
+                            : "You're about to update the event. Please confirm to proceed.",
+                    contractAddress: eventContract?.event_contract_address ?? undefined,
+                    transactionType: mode === "create" ? "Create Event" : "Update Event",
+                }}
+            />
+
+            <PasswordPinModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onSuccess={(result) => onDelete?.(result.value)}
+                showSigningDetails
+                signingDetails={{
+                    details: "You're about to delete the event. Please confirm to proceed.",
+                    transactionType: "Delete Event",
+                    contractAddress: eventContract?.event_contract_address ?? undefined,
+                }}
+            />
         </form>
     );
 };

@@ -1,0 +1,52 @@
+package event
+
+import (
+	"fmt"
+
+	customerror "apps/backend/common/customerror"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+
+	eventUc "apps/backend/core-api/internal/usecase/event"
+)
+
+// @Summary Get event registration invitations by event ID
+// @Description Get all event registration invitations for a specific event
+// @ID get-event-registration-invitations-by-event-id
+// @Tags Event Registration Invitation
+// @Accept json
+// @Produce json
+// @Success 200 {array} entity.EventRegistrationInvitation
+// @Failure 400 {object} customerror.ErrResponse
+// @Failure 401 {object} customerror.ErrResponse
+// @Failure 404 {object} customerror.ErrResponse
+// @Failure 500 {object} customerror.ErrResponse
+// @Router /api/v1/events/{eventId}/registration/invitations [get]
+func (h *Handler) GetEventRegistrationInvitationsByEventID(ctx *fiber.Ctx) error {
+	// 1. Get current user
+	currentUser, err := h.AuthenticationService.GetUserContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	// 2. Convert event_id from string to UUID
+	eventID, err := uuid.Parse(ctx.Params("event_id"))
+	if err != nil {
+		return customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("invalid event_id: %w", err))
+	}
+
+	// 4. Prepare parameters for usecase
+	params := eventUc.GetEventRegistrationInvitationsByEventIDParameters{
+		EventID: eventID,
+	}
+
+	// 5. Call usecase
+	invitations, err := h.EventUc.GetEventRegistrationInvitationsByEventID(ctx.UserContext(), params, currentUser)
+	if err != nil {
+		return err
+	}
+
+	// 6. Return response
+	return ctx.JSON(invitations)
+}

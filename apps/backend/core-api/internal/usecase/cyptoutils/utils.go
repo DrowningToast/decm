@@ -1,9 +1,11 @@
 package cyptoutils
 
 import (
+	"apps/backend/common/encryptutils"
 	"crypto/ecdsa"
 	"encoding/hex"
 
+	"github.com/ethereum/go-ethereum/common"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/pkg/errors"
@@ -43,4 +45,28 @@ func ParseAddress(address string) (*ethCommon.Address, error) {
 
 	parsedAddress := ethCommon.HexToAddress(address)
 	return &parsedAddress, nil
+}
+
+func DecryptPrivateKey(ciphertext string, password string) (*ecdsa.PrivateKey, *common.Address, error) {
+	hostDecryptedPk, err := encryptutils.DecryptAESGCM(ciphertext, password)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	hostParsedPk, err := ParsePrivateKey(hostDecryptedPk)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	hostAddress, err := GetAddressFromPrivateKey(hostParsedPk)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	parsedAddress, err := ParseAddress(hostAddress.Hex())
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return hostParsedPk, parsedAddress, nil
 }

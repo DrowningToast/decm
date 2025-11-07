@@ -1,4 +1,5 @@
 // Generouted, changes to this file will be overridden
+/* eslint-disable */
 
 import { components, hooks, utils } from "@generouted/react-router/client";
 
@@ -10,6 +11,7 @@ export type Path =
     | `/host/events`
     | `/host/events/:eventId`
     | `/host/events/:eventId/edit`
+    | `/host/events/:eventId/imports`
     | `/host/events/:eventId/settings/certificate`
     | `/host/events/:eventId/settings/participant`
     | `/host/events/create`
@@ -24,6 +26,7 @@ export type Path =
 export type Params = {
     "/host/events/:eventId": { eventId: string };
     "/host/events/:eventId/edit": { eventId: string };
+    "/host/events/:eventId/imports": { eventId: string };
     "/host/events/:eventId/settings/certificate": { eventId: string };
     "/host/events/:eventId/settings/participant": { eventId: string };
     "/onboard/:method": { method: string };
