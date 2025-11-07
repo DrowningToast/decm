@@ -13,6 +13,67 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type EventStatus string
+
+const (
+	EventStatusActive   EventStatus = "active"
+	EventStatusInactive EventStatus = "inactive"
+	EventStatusClosed   EventStatus = "closed"
+)
+
+func (e *EventStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = EventStatus(s)
+	case string:
+		*e = EventStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for EventStatus: %T", src)
+	}
+	return nil
+}
+
+type NullEventStatus struct {
+	EventStatus EventStatus `json:"event_status"`
+	Valid       bool        `json:"valid"` // Valid is true if EventStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullEventStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.EventStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.EventStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullEventStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.EventStatus), nil
+}
+
+func (e EventStatus) Valid() bool {
+	switch e {
+	case EventStatusActive,
+		EventStatusInactive,
+		EventStatusClosed:
+		return true
+	}
+	return false
+}
+
+func AllEventStatusValues() []EventStatus {
+	return []EventStatus{
+		EventStatusActive,
+		EventStatusInactive,
+		EventStatusClosed,
+	}
+}
+
 type EventType string
 
 const (
@@ -92,6 +153,7 @@ type AuthenticationCredential struct {
 type Event struct {
 	ID                       uuid.UUID          `json:"id"`
 	EventType                EventType          `json:"event_type"`
+	EventStatus              EventStatus        `json:"event_status"`
 	ChainID                  int32              `json:"chain_id"`
 	ContactNumber            string             `json:"contact_number"`
 	ContactAddress           string             `json:"contact_address"`
@@ -174,6 +236,7 @@ type EventRegistrationConfig struct {
 	EventID                              uuid.UUID          `json:"event_id"`
 	FinalCallForRegistration             pgtype.Timestamptz `json:"final_call_for_registration"`
 	RegistrationPassword                 pgtype.Text        `json:"registration_password"`
+	IsIdentityVerificationRequired       pgtype.Int4        `json:"is_identity_verification_required"`
 	FirstNameRequirementStatus           pgtype.Int4        `json:"first_name_requirement_status"`
 	LastNameRequirementStatus            pgtype.Int4        `json:"last_name_requirement_status"`
 	EmailRequirementStatus               pgtype.Int4        `json:"email_requirement_status"`
@@ -204,13 +267,19 @@ type EventRegistrationEmailReferral struct {
 }
 
 type EventRegistrationInvitation struct {
-	ID             uuid.UUID          `json:"id"`
-	EventID        uuid.UUID          `json:"event_id"`
-	InboxMessageID uuid.UUID          `json:"inbox_message_id"`
-	ValidUntil     pgtype.Timestamptz `json:"valid_until"`
-	Code           pgtype.Text        `json:"code"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	ID                  uuid.UUID          `json:"id"`
+	EventID             uuid.UUID          `json:"event_id"`
+	InboxMessageID      uuid.UUID          `json:"inbox_message_id"`
+	ValidUntil          pgtype.Timestamptz `json:"valid_until"`
+	Code                pgtype.Text        `json:"code"`
+	FirstName           pgtype.Text        `json:"first_name"`
+	LastName            pgtype.Text        `json:"last_name"`
+	Email               pgtype.Text        `json:"email"`
+	PhoneNumber         pgtype.Text        `json:"phone_number"`
+	AcademicInstitution pgtype.Text        `json:"academic_institution"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	CancelledAt         pgtype.Timestamptz `json:"cancelled_at"`
 }
 
 type EventRegistrationRequirement struct {
@@ -243,7 +312,8 @@ type EventRegistrationRequirementsTrustedIdentity struct {
 type InboxMessage struct {
 	ID                     uuid.UUID          `json:"id"`
 	SenderCredentialID     uuid.UUID          `json:"sender_credential_id"`
-	ReceiverCredentialID   uuid.UUID          `json:"receiver_credential_id"`
+	ReceiverCredentialID   pgtype.UUID        `json:"receiver_credential_id"`
+	ReceiverEmail          pgtype.Text        `json:"receiver_email"`
 	MessageType            int32              `json:"message_type"`
 	MessageContent         []byte             `json:"message_content"`
 	FallbackMessageContent pgtype.Text        `json:"fallback_message_content"`

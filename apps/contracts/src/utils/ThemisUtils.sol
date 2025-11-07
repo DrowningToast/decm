@@ -6,20 +6,33 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 
 contract ThemisUtils {
     error Themis__InvalidSignature();
+    error Themis__SignatureAlreadyUsed();
+    
+    mapping(bytes => bool) public usedSignatures;
 
-    function recoverSigner(string memory message, bytes memory signature) public pure returns (address) {
-        bytes32 messageHash = keccak256(abi.encodePacked(message));
-        return recoverSigner(messageHash, signature);
-    }
-
-    function recoverSigner(bytes32 messageHash, bytes memory signature) public pure returns (address) {
-        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(messageHash);
+    /**
+     * @dev Recovers the signer address from a message digest and signature
+     * @param signedMessageDigest The message digest that was signed (as a string)
+     * @param signature The signature bytes
+     * @return The address of the signer
+     */
+    function recoverSigner(string memory signedMessageDigest, bytes memory signature) public returns (address) {
+        // Hash the message with the Ethereum signed message prefix
+        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(bytes(signedMessageDigest));
+        
+        // Recover the signer address
         address signer = ECDSA.recover(ethSignedMessageHash, signature);
         
         if (signer == address(0)) {
             revert Themis__InvalidSignature();
         }
         
+        if (usedSignatures[signature]) {
+            revert Themis__SignatureAlreadyUsed();
+        }
+
+        usedSignatures[signature] = true;
+
         return signer;
     }
 }

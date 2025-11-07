@@ -14,6 +14,17 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
     EventAccessManager public immutable EVENT_ACCESS_MANAGER;
     Event public immutable EVENT;
 
+    // Events
+     event SignatureUsed(
+        address indexed transactor,
+        address indexed signer,
+        address contractAddress,
+        string functionName,
+        string signedMessageDigest,
+        bytes signature,
+        uint256 timestamp
+    );
+
     // Enums
     enum CertificateStatus {
         VALID,
@@ -48,7 +59,9 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
     mapping(uint256 => address) private tokenIdToParticipantSignedAddress;
 
     function requireHostOrAdmin(address signer) private view {
-        if (!EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(signer)) {
+        bool isAllowedMsgSender = EVENT_ACCESS_MANAGER.checkIsAllowedMsgSender();
+        bool isHostOrAdmin = EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(signer);
+        if (!isHostOrAdmin && !isAllowedMsgSender) {
             revert EventCertificate__NotHostOrAdmin();
         }
     }
@@ -74,10 +87,11 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string memory issuerId,
         string memory encryptedUserData,
         string memory backendEncryptedUserData,
-        string memory signMessage,
+        address[] memory issuerAddresses,
+        string memory signedMessageDigest,
         bytes memory signature
     ) external nonReentrant {
-        address signer = recoverSigner(signMessage, signature);
+        address signer = recoverSigner(signedMessageDigest, signature);
         requireHostOrAdmin(signer);
 
         uint256 tokenId = tokenCounter;
@@ -89,7 +103,9 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                 certificateId,
                 issuerId,
                 encryptedUserData,
-                backendEncryptedUserData
+                backendEncryptedUserData,
+                issuerAddresses,
+                block.timestamp
             );
 
         _safeMint(receiverAddress, tokenId);
@@ -102,6 +118,16 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
             certificateId,
             userId,
             issuerId
+        );
+
+        emit SignatureUsed(
+            msg.sender,
+            signer,
+            address(this),
+            "mintNft",
+            signedMessageDigest,
+            signature,
+            block.timestamp
         );
 
         tokenCounter++;
@@ -133,14 +159,15 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string issuerId;
         string encryptedUserData;
         string backendEncryptedUserData;
+        address[] issuerAddresses;
     }
 
     function bulkMintParticipantCertificates(
         BulkMintParticipantCertificatesParams[] memory params,
-        string memory signMessage,
+        string memory signedMessageDigest,
         bytes memory signature
     ) external nonReentrant {
-        address signer = recoverSigner(signMessage, signature);
+        address signer = recoverSigner(signedMessageDigest, signature);
         requireHostOrAdmin(signer);
 
         for (uint256 i = 0; i < params.length; i++) {
@@ -155,7 +182,9 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                     params[i].certificateId,
                     params[i].issuerId,
                     params[i].encryptedUserData,
-                    params[i].backendEncryptedUserData
+                    params[i].backendEncryptedUserData,
+                    params[i].issuerAddresses,
+                    block.timestamp
                 );
 
             tokenIdToData[tokenId] = newTokenData;
@@ -170,6 +199,16 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
 
             _safeMint(params[i].receiverAddress, tokenId);
         }
+
+         emit SignatureUsed(
+                msg.sender,
+                signer,
+                address(this),
+                "bulkMintParticipantCertificates",
+                signedMessageDigest,
+                signature,
+                block.timestamp
+            );
     }
 
     function getTokenData(
@@ -203,7 +242,7 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                         '"userId": "', vc.userId, '",',
                         '"issuerId": "', vc.issuerId, '",',
                         '"issuedAt": "', vc.issuedAt, '",',
-                        '"issuerAddress": "', vc.issuerAddress, '",',
+                        '"issuerAddresses": "', vc.issuerAddresses, '",',
                         '"receiverAddress": "', vc.receiverAddress, '",',
                         '"status": "', status, '",',
                         '"encryptedUserData": "', vc.encryptedUserData, '",',
@@ -217,12 +256,22 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         return string(abi.encodePacked("data:application/json;utf8,", json));
     }
 
-    function revokeCertificate(uint256 tokenId, string memory signMessage, bytes memory signature) external nonReentrant {
-        address signer = recoverSigner(signMessage, signature);
+    function revokeCertificate(uint256 tokenId, string memory signedMessageDigest, bytes memory signature) external nonReentrant {
+        address signer = recoverSigner(signedMessageDigest, signature);
         requireHostOrAdmin(signer);
 
         tokenIdToStatus[tokenId] = CertificateStatus.REVOKED;
         emit CertificateRevoked(tokenId);
+
+        emit SignatureUsed(
+            msg.sender,
+            signer,
+            address(this),
+            "revokeCertificate",
+            signedMessageDigest,
+            signature,
+            block.timestamp
+        );
     }
 
 
@@ -243,7 +292,9 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string memory certificateId,
         string memory issuerId,
         string memory encryptedUserData,
-        string memory backendEncryptedUserData
+        string memory backendEncryptedUserData,
+        address[] memory issuerAddresses,
+        uint256 issuedAt
     ) private view returns (CertificateVCStructs.CertificateVcData memory) {
         return
             CertificateVCStructs.CertificateVcData({
@@ -253,8 +304,8 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                 certificateId: certificateId,
                 userId: userId,
                 issuerId: issuerId,
-                issuedAt: block.timestamp,
-                issuerAddress: msg.sender,
+                issuedAt: issuedAt, 
+                issuerAddresses: issuerAddresses,
                 receiverAddress: receiverAddress,
                 encryptedUserData: encryptedUserData,
                 backendEncryptedUserData: backendEncryptedUserData

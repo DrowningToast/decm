@@ -3,15 +3,21 @@ package event
 import (
 	"context"
 	"errors"
+	"math/big"
 	"mime/multipart"
 	"time"
 
 	"apps/backend/common/customerror"
 	datagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
+	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 	"apps/backend/services/auth"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
+
+	eventContract "apps/backend/contracts/event"
 )
 
 type UpdateEventParameters struct {
@@ -27,10 +33,11 @@ type UpdateEventParameters struct {
 	GoogleMapQuery   *string
 	EventBanner      *multipart.FileHeader
 	EventIcon        *multipart.FileHeader
+	HostPassword     string
 }
 
 func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params UpdateEventParameters, currentUser *auth.JwtClaims) (*entity.Event, error) {
-	credential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, currentUser.UserId)
+	credential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx, currentUser.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +114,74 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		IconStorageKey:   &newEventIconStorageKey,
 	}
 
+	dbEventContracts, err := uc.EventContractDataGateway.GetEventContractByEventID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	eventContractAddress := common.HexToAddress(dbEventContracts.EventContractAddress)
+	if eventContractAddress == (common.Address{}) {
+		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("event contract not found"))
+	}
+
 	event, err := uc.EventDataGateway.UpdateEvent(ctx, id, updateEventParams)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := cyptoutils.GetEthereumClient()
+	if err != nil {
+		return nil, err
+	}
+
+	auth, err := cyptoutils.GetKeyedTransactor()
+	if err != nil {
+		return nil, err
+	}
+
+	privateKey, hostAddress, err := cyptoutils.DecryptPrivateKey(
+		*credential.EncryptedPrivateKey,
+		params.HostPassword,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	instance, err := eventContract.NewEvent(eventContractAddress, client)
+	if err != nil {
+		return nil, err
+	}
+
+	calculatedDeadlineBlock, err := cyptoutils.GetCalculatedDeadlineBlock(client)
+	if err != nil {
+		return nil, err
+	}
+
+	signMessage, err := cyptoutils.GetSignMessage(*hostAddress, eventContractAddress, calculatedDeadlineBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	messageHash := cyptoutils.HashEthereumMessage(signMessage)
+	signature, err := cyptoutils.Sign(messageHash.Bytes(), privateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	tx, err := instance.UpdateEvent(
+		auth,
+		*params.Name,
+		*params.Description,
+		big.NewInt(int64(*params.SeatsCount)),
+		0,
+		signMessage,
+		signature,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = bind.WaitMined(ctx, client, tx)
 	if err != nil {
 		return nil, err
 	}

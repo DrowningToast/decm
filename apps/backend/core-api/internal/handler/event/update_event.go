@@ -24,6 +24,7 @@ type UpdateEventRequest struct {
 	ContactAddress   *string
 	Location         *string
 	GoogleMapQuery   *string
+	HostPassword     *string
 }
 
 // @Summary Update an event
@@ -44,6 +45,7 @@ type UpdateEventRequest struct {
 // @Param google_map_query formData string false "Google map query"
 // @Param banner formData file false "Event banner image (JPEG, PNG, WebP, max 10MB) - optional"
 // @Param icon formData file false "Event icon image (JPEG, PNG, WebP, max 10MB) - optional"
+// @Param host_password formData string true "Host password (required for contract update)"
 // @Success 200 {object} entity.Event
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 401 {object} customerror.ErrResponse
@@ -103,6 +105,11 @@ func (h *Handler) UpdateEvent(ctx *fiber.Ctx) error {
 		return err
 	}
 
+	// HostPassword is required for decrypting the private key to sign the contract update
+	if params.HostPassword == nil {
+		return customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("host_password is required"))
+	}
+
 	updateEventParams := eventUc.UpdateEventParameters{
 		Name:             params.Name,
 		ShortDescription: params.ShortDescription,
@@ -114,6 +121,7 @@ func (h *Handler) UpdateEvent(ctx *fiber.Ctx) error {
 		ContactAddress:   params.ContactAddress,
 		Location:         params.Location,
 		GoogleMapQuery:   params.GoogleMapQuery,
+		HostPassword:     *params.HostPassword,
 	}
 
 	bannerFile, _ := ctx.FormFile("banner") // Optional field
@@ -177,6 +185,9 @@ func (r *UpdateEventRequest) Parse(ctx *fiber.Ctx) error {
 	}
 	if googleMapQuery := ctx.FormValue("google_map_query"); googleMapQuery != "" {
 		r.GoogleMapQuery = &googleMapQuery
+	}
+	if hostPassword := ctx.FormValue("host_password"); hostPassword != "" {
+		r.HostPassword = &hostPassword
 	}
 
 	return nil

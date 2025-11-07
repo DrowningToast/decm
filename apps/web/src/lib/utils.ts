@@ -6,3 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export function formatEthereumAddress(address: string) {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}

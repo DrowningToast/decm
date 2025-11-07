@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import {Script} from "forge-std/Script.sol";
 import {Event} from "../src/contracts/event/Event.sol";
+import {EventAccessManager} from "../src/contracts/event/EventAccessManager.sol";
 
 contract DeployEvent is Script {
     // Errors
@@ -21,12 +22,13 @@ contract DeployEvent is Script {
         }
  
         vm.startBroadcast();
+        EventAccessManager eventAccessManager = new EventAccessManager(decmAccessManagerAddress, hostAddress);
+        address eventAccessManagerAddress = address(eventAccessManager);
         Event eventContract = new Event(
-            decmAccessManagerAddress,
+            eventAccessManagerAddress,
             eventName,
             eventDescription,
-            seatsCount,
-            hostAddress
+            seatsCount
         );
         vm.stopBroadcast();
 

@@ -20,16 +20,21 @@ import WrappedButton from "@/components/wrapper/WrappedButton";
 import { CheckCircle2Icon, ExternalLinkIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
-import { useDataTable } from "@/hooks/use-data-table";
-import { participantColumns, type Participant } from "./columns/participant-columns";
 import { issuerColumns } from "./columns/issuer-columns";
 import type {
     EventconfigEventRegistrationConfigResponse,
     EventEventResponse,
     GetEventCertificateConfigData,
+    GetEventContractByEventIdData,
     GetEventIssuersByEventIdData,
+    GetEventRegistrationInvitationsByEventIdData,
 } from "@decm/api";
 import { toEventRegistrationConfigStatus } from "@/lib/events/event.utils";
+import { formatEthereumAddress } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import type { SortingState } from "@tanstack/react-table";
+import { ParticipantColumns, type Participant } from "./columns/ParticipantColumns";
 
 interface HostEventDetailsPageProps {
     eventId: string;
@@ -37,67 +42,9 @@ interface HostEventDetailsPageProps {
     eventRegistrationConfig: EventconfigEventRegistrationConfigResponse;
     eventCertificateConfig?: GetEventCertificateConfigData;
     eventIssuers?: GetEventIssuersByEventIdData;
+    eventContract?: GetEventContractByEventIdData;
+    eventInvitations?: GetEventRegistrationInvitationsByEventIdData;
 }
-
-// Mock API function - replace with actual API call
-const mockFetchParticipants = async ({
-    page,
-    pageSize,
-    search,
-    sortBy,
-    sortOrder,
-}: {
-    page: number;
-    pageSize: number;
-    search: string;
-    sortBy?: string;
-    sortOrder?: "asc" | "desc";
-}): Promise<{ data: Participant[]; total: number }> => {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    // Mock data - replace with actual API call
-    const allParticipants: Participant[] = Array.from({ length: 45 }, (_, i) => ({
-        id: `participant-${i + 1}`,
-        name: `${["John", "Jane", "Bob", "Alice", "Charlie", "David", "Emma", "Frank"][i % 8]} ${["Doe", "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller"][i % 8]
-            }`,
-        email: `user${i + 1}@email.com`,
-        phoneNumber: `+1 ${Math.floor(100 + Math.random() * 900)} ${Math.floor(100 + Math.random() * 900)} ${Math.floor(1000 + Math.random() * 9000)}`,
-        walletAddress: `0x${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
-        status: ["confirmed", "pending", "rejected"][i % 3] as "confirmed" | "pending" | "rejected",
-    }));
-
-    // Filter by search
-    let filteredData = allParticipants;
-    if (search) {
-        filteredData = allParticipants.filter(
-            (p) =>
-                p.name.toLowerCase().includes(search.toLowerCase()) ||
-                p.email.toLowerCase().includes(search.toLowerCase()),
-        );
-    }
-
-    // Sort
-    if (sortBy) {
-        filteredData.sort((a, b) => {
-            const aValue = a[sortBy as keyof Participant];
-            const bValue = b[sortBy as keyof Participant];
-
-            if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
-            if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
-            return 0;
-        });
-    }
-
-    // Paginate
-    const startIndex = (page - 1) * pageSize;
-    const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
-
-    return {
-        data: paginatedData,
-        total: filteredData.length,
-    };
-};
 
 export default function HostEventDetailsPage({
     eventId,
@@ -105,8 +52,91 @@ export default function HostEventDetailsPage({
     eventRegistrationConfig,
     eventCertificateConfig,
     eventIssuers,
+    eventContract,
+    eventInvitations,
 }: HostEventDetailsPageProps) {
     const { t } = useTranslation();
+
+    // State for client-side data management
+    const [searchValue, setSearchValue] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+
+    // Debounce search value
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchValue);
+            setCurrentPage(1); // Reset to first page when search changes
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchValue]);
+
+    // Memoized filtered and sorted data
+    const processedData = useMemo(() => {
+        if (!eventInvitations) return [];
+
+        let filtered = [...eventInvitations];
+
+        // Filter by search value
+        if (debouncedSearch) {
+            const searchLower = debouncedSearch.toLowerCase();
+            filtered = filtered.filter(
+                (item) =>
+                    item.first_name?.toLowerCase().includes(searchLower) ||
+                    item.last_name?.toLowerCase().includes(searchLower) ||
+                    item.email?.toLowerCase().includes(searchLower) ||
+                    item.academic_institution?.toLowerCase().includes(searchLower) ||
+                    item.phone_number?.toLowerCase().includes(searchLower),
+            );
+        }
+
+        // Apply sorting
+        if (sorting.length > 0) {
+            const sort = sorting[0];
+            filtered.sort((a, b) => {
+                const aValue = a[sort.id as keyof typeof a];
+                const bValue = b[sort.id as keyof typeof b];
+
+                if (aValue === undefined || bValue === undefined) return 0;
+
+                let comparison = 0;
+                if (aValue < bValue) comparison = -1;
+                if (aValue > bValue) comparison = 1;
+
+                return sort.desc ? comparison * -1 : comparison;
+            });
+        }
+
+        return filtered;
+    }, [eventInvitations, debouncedSearch, sorting]);
+
+    // Calculate pagination
+    const paginatedData = useMemo(() => {
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        return processedData.slice(startIndex, endIndex);
+    }, [processedData, currentPage, pageSize]);
+
+    // Callbacks for DataTable
+    const handlePageChange = useCallback((page: number) => {
+        setCurrentPage(page);
+    }, []);
+
+    const handlePageSizeChange = useCallback((newPageSize: number) => {
+        setPageSize(newPageSize);
+        setCurrentPage(1); // Reset to first page when page size changes
+    }, []);
+
+    const handleSearchChange = useCallback((value: string) => {
+        setSearchValue(value);
+    }, []);
+
+    const handleSortingChange = useCallback((newSorting: SortingState) => {
+        setSorting(newSorting);
+    }, []);
 
     // Certificate state logic
     const hasCertificateConfig = !!eventCertificateConfig;
@@ -123,12 +153,6 @@ export default function HostEventDetailsPage({
     //     academicInstitution: "required",
     //     academicEmail: "required",
     // };
-
-    // Use the data table hook
-    const participantsTable = useDataTable<Participant>({
-        fetchData: mockFetchParticipants,
-        initialPageSize: 10,
-    });
 
     return (
         <PageContainer title="Events Details">
@@ -149,7 +173,12 @@ export default function HostEventDetailsPage({
                         </div>
                     </div>
 
-                    <WrappedButton href={`/host/events/${eventId}/edit`}>Edit Event</WrappedButton>
+                    <div className="flex items-center gap-4">
+                        <WrappedButton variant={"secondaryWhite"}>Confirm Event</WrappedButton>
+                        <WrappedButton href={`/host/events/${eventId}/edit`}>
+                            Edit Event
+                        </WrappedButton>
+                    </div>
                 </div>
             </SectionContainer>
 
@@ -171,7 +200,10 @@ export default function HostEventDetailsPage({
                 </div>
 
                 <div className="flex flex-col gap-4 mt-6 lg:mt-0">
-                    <TextLabelValue label="Status" value="NA" />
+                    <TextLabelValue
+                        label="Status"
+                        value={event.event_status?.toUpperCase() ?? "NA"}
+                    />
                     <TextLabelValue label="Final call for request" value={"NA"} />
                     <TextLabelValue
                         label="Participation request"
@@ -180,10 +212,14 @@ export default function HostEventDetailsPage({
                     <TextLabelValue label="Seats count" value={`${0} / ${event.max_attendees}`} />
                     <TextLabelValue
                         label="Event Contract Address"
-                        value="NA"
+                        value={
+                            eventContract?.event_contract_address
+                                ? formatEthereumAddress(eventContract.event_contract_address)
+                                : "NA"
+                        }
                         endIcon={<ExternalLinkIcon size={16} />}
                         valueClassName="cursor-pointer underline"
-                        href="https://www.etherscan.io/address/0x0000000000000000000000000000000000000000"
+                        href={`https://www.etherscan.io/address/${eventContract?.event_contract_address}`}
                     />
                 </div>
             </SectionContainer>
@@ -246,7 +282,12 @@ export default function HostEventDetailsPage({
                                     }
                                 />
 
-                                <div className="flex items-center justify-end">
+                                <div className="flex items-center justify-end gap-4">
+                                    <Button variant="secondary-dark" className="h-full">
+                                        <a href={`/host/events/${eventId}/imports`}>
+                                            Import Participants
+                                        </a>
+                                    </Button>
                                     <WrappedButton
                                         href={`/host/events/${eventId}/settings/participant`}
                                     >
@@ -333,19 +374,21 @@ export default function HostEventDetailsPage({
                             </Accordion>
 
                             <DataTable
-                                columns={participantColumns}
-                                data={participantsTable.data}
-                                totalItems={participantsTable.totalItems}
-                                currentPage={participantsTable.currentPage}
-                                pageSize={participantsTable.pageSize}
-                                onPageChange={participantsTable.setCurrentPage}
-                                onPageSizeChange={participantsTable.setPageSize}
-                                searchValue={participantsTable.searchValue}
-                                onSearchChange={participantsTable.setSearchValue}
+                                columns={ParticipantColumns()}
+                                data={paginatedData as Participant[]}
+                                totalItems={processedData.length}
+                                currentPage={currentPage}
+                                pageSize={pageSize}
+                                onPageChange={handlePageChange}
+                                onPageSizeChange={handlePageSizeChange}
+                                searchValue={searchValue}
+                                onSearchChange={handleSearchChange}
                                 searchPlaceholder="Search participants..."
-                                sorting={participantsTable.sorting}
-                                onSortingChange={participantsTable.setSorting}
-                                isLoading={participantsTable.isLoading}
+                                sorting={sorting}
+                                onSortingChange={(value) =>
+                                    handleSortingChange(value as SortingState)
+                                }
+                                isLoading={false}
                             />
                         </div>
                     </StyledTabsContent>
@@ -406,13 +449,13 @@ export default function HostEventDetailsPage({
                                             totalItems={eventIssuers.length}
                                             currentPage={1}
                                             pageSize={10}
-                                            onPageChange={() => { }}
-                                            onPageSizeChange={() => { }}
+                                            onPageChange={() => {}}
+                                            onPageSizeChange={() => {}}
                                             searchValue=""
-                                            onSearchChange={() => { }}
+                                            onSearchChange={() => {}}
                                             searchPlaceholder="Search issuers..."
                                             sorting={[]}
-                                            onSortingChange={() => { }}
+                                            onSortingChange={() => {}}
                                             isLoading={false}
                                             disablePagination
                                         />
@@ -427,7 +470,7 @@ export default function HostEventDetailsPage({
                                             className="text-muted-foreground"
                                         >
                                             No issuers configured for this event. Please add issuers
-                                            in the certificate settings.
+                                            in certificate settings.
                                         </Typography>
                                     </div>
                                 )}
@@ -438,7 +481,7 @@ export default function HostEventDetailsPage({
                                     Add event's certificate configuration
                                 </p>
                                 <p className="text-muted-foreground text-base mt-1 text-center max-w-xl">
-                                    Set up the certificate template and rules for this event.
+                                    Set up a certificate template and rules for this event.
                                     Participants will receive certificates based on your
                                     configuration.
                                 </p>

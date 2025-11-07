@@ -127,6 +127,63 @@
                 }
             }
         },
+        "/api/v1/event-registration-invitations/{eventRegistrationInvitationId}": {
+            "delete": {
+                "description": "Cancel an event registration invitation by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Registration Invitation"
+                ],
+                "summary": "Cancel event registration invitation",
+                "operationId": "cancel-event-registration-invitation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event Registration Invitation ID",
+                        "name": "eventRegistrationInvitationID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events": {
             "post": {
                 "description": "Create a new event with banner image upload",
@@ -225,6 +282,13 @@
                         "name": "icon",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Host password",
+                        "name": "host_password",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -292,6 +356,113 @@
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{eventId}/participants/import": {
+            "post": {
+                "description": "Import a list of participants for an event, creating inbox messages and event registration invitations",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Registration Invitation"
+                ],
+                "summary": "Import event participants",
+                "operationId": "import-event-participants",
+                "parameters": [
+                    {
+                        "description": "Import participants request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event_registration_invitation.ImportEventParticipantsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{eventId}/registration/invitations": {
+            "get": {
+                "description": "Get all event registration invitations for a specific event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Registration Invitation"
+                ],
+                "summary": "Get event registration invitations by event ID",
+                "operationId": "get-event-registration-invitations-by-event-id",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
@@ -443,6 +614,13 @@
                         "description": "Event icon image (JPEG, PNG, WebP, max 10MB) - optional",
                         "name": "icon",
                         "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Host password (required for contract update)",
+                        "name": "host_password",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -498,6 +676,15 @@
                         "name": "event_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Delete Event Request",
+                        "name": "delete_event_request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event.DeleteEventRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -1997,6 +2184,47 @@
                     }
                 }
             }
+        },
+        "/api/v1/profile/password/verify": {
+            "post": {
+                "description": "Verify password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Verify password",
+                "operationId": "verify-password",
+                "parameters": [
+                    {
+                        "description": "Verify Password Request",
+                        "name": "verifyPasswordRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/profile.VerifyPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/profile.VerifyPasswordResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -2092,6 +2320,9 @@
                 "end_date": {
                     "type": "string"
                 },
+                "event_status": {
+                    "$ref": "#/definitions/entity.EventStatus"
+                },
                 "event_type": {
                     "$ref": "#/definitions/entity.EventType"
                 },
@@ -2141,6 +2372,63 @@
                     "type": "string"
                 }
             }
+        },
+        "entity.EventRegistrationInvitation": {
+            "type": "object",
+            "properties": {
+                "academic_institution": {
+                    "type": "string"
+                },
+                "cancelled_at": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inbox_message_id": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "valid_until": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.EventStatus": {
+            "type": "string",
+            "enum": [
+                "active",
+                "inactive",
+                "closed"
+            ],
+            "x-enum-varnames": [
+                "EventStatusActive",
+                "EventStatusInactive",
+                "EventStatusClosed"
+            ]
         },
         "entity.EventType": {
             "type": "string",
@@ -2272,6 +2560,14 @@
                 }
             }
         },
+        "event.DeleteEventRequest": {
+            "type": "object",
+            "properties": {
+                "host_password": {
+                    "type": "string"
+                }
+            }
+        },
         "event.EventContractResponse": {
             "type": "object",
             "properties": {
@@ -2354,6 +2650,9 @@
                 "end_date": {
                     "type": "string"
                 },
+                "event_status": {
+                    "$ref": "#/definitions/entity.EventStatus"
+                },
                 "google_map_query": {
                     "type": "string"
                 },
@@ -2428,6 +2727,50 @@
                     "type": "string"
                 },
                 "issuer_credential_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "event_registration_invitation.ImportEventParticipantsRequest": {
+            "type": "object",
+            "required": [
+                "event_id",
+                "participants"
+            ],
+            "properties": {
+                "event_id": {
+                    "type": "string"
+                },
+                "participants": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/event_registration_invitation.ParticipantRequestItem"
+                    }
+                }
+            }
+        },
+        "event_registration_invitation.ParticipantRequestItem": {
+            "type": "object",
+            "required": [
+                "email",
+                "first_name",
+                "last_name"
+            ],
+            "properties": {
+                "academic_institution": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
                     "type": "string"
                 }
             }
@@ -2939,6 +3282,28 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "profile.VerifyPasswordRequest": {
+            "type": "object",
+            "properties": {
+                "authentication_credential_id": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "profile.VerifyPasswordResponse": {
+            "type": "object",
+            "properties": {
+                "is_success": {
+                    "type": "boolean"
+                },
+                "message": {
                     "type": "string"
                 }
             }

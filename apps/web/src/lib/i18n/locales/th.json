@@ -8,6 +8,7 @@
         "success": "สำเร็จ",
         "cancel": "ยกเลิก",
         "confirm": "ยืนยัน",
+        "verifying": "กำลังตรวจสอบ...",
         "save": "บันทึก",
         "delete": "ลบ",
         "edit": "แก้ไข",
@@ -76,6 +77,14 @@
         "subtitle": "กรุณาลงนามในข้อความต่อไปนี้เพื่อพิสูจน์ความเป็นเจ้าของกระเป๋าเงินของคุณ",
         "requestButton": "ขอข้อความสำหรับลงนาม",
         "disconnectLink": "ยกเลิกการเชื่อมต่อกระเป๋าเงิน"
+    },
+    "signing": {
+        "details": {
+            "title": "รายละเอียดการลงนาม",
+            "contractAddress": "ที่อยู่สัญญา",
+            "transactionType": "ประเภทธุรกรรม",
+            "details": "รายละเอียด"
+        }
     },
     "oauth": {
         "google": {
@@ -315,64 +324,101 @@
         }
     },
     "participantSettings": {
-        "pageTitle": "ตั้งค่าผู้เข้าร่วม",
-        "pageDescription": "กำหนดค่าข้อกำหนดการลงทะเบียนและฟิลด์ข้อมูลผู้เข้าร่วมสำหรับกิจกรรมของคุณ",
+        "pageTitle": "การตั้งค่าผู้เข้าร่วม",
+        "pageDescription": "กำหนดความต้องการและฟิลด์ข้อมูลผู้เข้าร่วมสำหรับกิจกรรมของคุณ",
         "registrationSettings": "การตั้งค่าการลงทะเบียน",
-        "registrationSettingsDescription": "กำหนดค่าวิธีการที่ผู้เข้าร่วมสามารถลงทะเบียนสำหรับกิจกรรมของคุณ",
+        "registrationSettingsDescription": "กำหนดวิธีการที่ผู้เข้าร่วมสามารถลงทะเบียนสำหรับกิจกรรมของคุณ",
         "participantRequirements": "ข้อกำหนดผู้เข้าร่วม",
-        "participantRequirementsDescription": "ระบุฟิลด์ข้อมูลที่ผู้เข้าร่วมต้องให้ในระหว่างการลงทะเบียน",
+        "participantRequirementsDescription": "ระบุฟิลด์ข้อมูลที่ผู้เข้าร่วมต้องกรอกในระหว่างการลงทะเบียน",
         "basicInformation": "ข้อมูลพื้นฐาน",
         "additionalInformation": "ข้อมูลเพิ่มเติม",
-        "academicInformation": "ข้อมูลทางวิชาการ",
+        "academicInformation": "ข้อมูลการศึกษา",
         "eventType": "ประเภทกิจกรรม",
         "eventTypePublic": "สาธารณะ",
         "eventTypePrivate": "ส่วนตัว",
         "eventTypeInviteOnly": "เฉพาะผู้ที่ได้รับเชิญ",
-        "eventTypeDescription": "กิจกรรมสาธารณะจะมองเห็นได้สำหรับทุกคน กิจกรรมส่วนตัวต้องได้รับการอนุมัติหรือคำเชิญ กิจกรรมเฉพาะผู้ที่ได้รับเชิญสามารถเข้าร่วมได้เฉพาะผู้ที่ได้รับเชิญเท่านั้น",
-        "bookingRequired": "ต้องการการอนุมัติการจอง",
+        "eventTypeDescription": "กิจกรรมสาธารณะมองเห็นได้สำหรับทุกคน กิจกรรมส่วนตัวต้องการอนุมัติหรือได้รับเชิญ และกิจกรรมเฉพาะผู้ที่ได้รับเชิญเท่านั้นสามารถเข้าร่วมได้",
+        "bookingRequired": "ต้องการอนุมัติการจอง",
         "bookingRequiredDescription": "ผู้เข้าร่วมต้องรอการอนุมัติก่อนที่การลงทะเบียนจะได้รับการยืนยัน",
-        "ticketTransferable": "อนุญาตให้โอนตั๋ว",
-        "ticketTransferableDescription": "อนุญาตให้ผู้เข้าร่วมโอนตั๋วของพวกเขาให้ผู้อื่น",
-        "finalCallRegistrationDate": "วันสุดท้ายของการลงทะเบียน",
-        "finalCallRegistrationDatePlaceholder": "เลือกวันสุดท้ายของการลงทะเบียน",
-        "finalCallRegistrationDateDescription": "หลังจากวันนี้ จะไม่รับการลงทะเบียนเพิ่มเติมสำหรับกิจกรรม",
+        "ticketTransferable": "อนุญาตโอนบัตร",
+        "ticketTransferableDescription": "อนุญาตให้ผู้เข้าร่วมโอนย้ายบัตรของพวกไปยังคนอื่น",
+        "finalCallRegistrationDate": "วันสุดท้ายการลงทะเบียน",
+        "finalCallRegistrationDatePlaceholder": "เลือกวันสุดท้ายการลงทะเบียน",
+        "finalCallRegistrationDateDescription": "หลังจากวันนี้ จะไม่รับการลงทะเบียนใหม่สำหรับกิจกรรม",
         "fieldRequirement": {
-            "notRequired": "ไม่ต้องการ",
-            "optional": "ไม่บังคับ",
-            "required": "จำเป็น"
+            "notRequired": "ไม่จำเป็นต้องกรอก",
+            "optional": "ไม่จำเป็น",
+            "required": "จำเป็นต้องกรอก"
         },
         "fields": {
-            "firstName": "ชื่อจริง",
+            "firstName": "ชื่อ",
             "lastName": "นามสกุล",
             "email": "อีเมล",
-            "bio": "ประวัติย่อ",
-            "phoneNumber": "หมายเลขโทรศัพท์",
+            "bio": "ประวัติ",
+            "phoneNumber": "เบอร์โทรศัพท์",
             "address": "ที่อยู่",
-            "academicInstitution": "สถาบันการศึกษา",
-            "academicEmail": "อีเมลสถาบัน"
+            "academicInstitution": "สถาบันศึกษา",
+            "academicEmail": "อีเมลสถาบันศึกษา"
         },
-        "requireRegistrationPassword": "ต้องการรหัสรหัสผ่าน",
-        "requireRegistrationPasswordDescription": "กำหนดให้ผู้เข้าร่วมตั้งรหัสผ่านระหว่างการลงทะเบียน",
-        "registrationPassword": "รหัสผ่าน",
-        "registrationPasswordPlaceholder": "กรอกรหัสผ่าน",
-        "registrationPasswordDescription": "รหัสผ่านต้องมีความอย่างน้อย 8 ตัวอักษร",
+        "requireRegistrationPassword": "ต้องการรหัสผ่านการลงทะเบียน",
+        "requireRegistrationPasswordDescription": "กำหนดให้ผู้เข้าร่วมตั้งรหัสผ่านในระหว่างการลงทะเบียน",
+        "registrationPassword": "รหัสผ่านการลงทะเบียน",
+        "registrationPasswordPlaceholder": "กรอกรหัสผ่านการลงทะเบียน",
+        "registrationPasswordDescription": "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร",
         "saveSettings": "บันทึกการตั้งค่า",
-        "saveSuccess": "บันทึกการตั้งค่าผู้เข้าร่วมเรียบร้อยแล้ว",
         "saveError": "ไม่สามารถบันทึกการตั้งค่าผู้เข้าร่วม กรุณาลองอีกครั้ง",
-        "tabs": {
-            "settings": "ตั้งค่า",
-            "preview": "ตัวอย่าง"
+        "saveSuccess": "บันทึกการตั้งค่าผู้เข้าร่วมเรียบร้อยแล้ว",
+        "formPreview": {
+            "description": "นี่คือวิธีที่แบบฟอร์มการลงทะเบียนจะปรากฏต่อผู้เข้าร่วม",
+            "title": "ตัวอย่างแบบฟอร์มการลงทะเบียน"
+        }
+    },
+    "participantImport": {
+        "title": "นำเข้าผู้เข้าร่วม",
+        "description": "นำเข้าผู้เข้าร่วมจำนวนหนึ่งสำหรับกิจกรรมของคุณจากไฟล์ Excel",
+        "eventDetails": "รายละเอียดกิจกรรม",
+        "eventName": "ชื่อกิจกรรม",
+        "eventDate": "วันที่จัดกิจกรรม",
+        "eventLocation": "สถานที่จัดกิจกรรม",
+        "maxAttendees": "จำนวนผู้เข้าร่วมสูงสุด",
+        "uploadFile": "อัปโหลดไฟล์ Excel",
+        "selectFile": "คลิกเพื่อเลือกไฟล์ Excel",
+        "fileFormats": "รูปแบบที่รองรับ: .xlsx, .xls (สูงสุด 10MB)",
+        "fileSize": "ขนาดไฟล์",
+        "previewData": "ดูตัวอย่างข้อมูล",
+        "columnMapping": "การจับคู่คอลัมน์",
+        "columnMappingDescription": "เราได้จับคู่คอลัมน์จากไฟล์ Excel ของคุณโดยอัตโน ✓ หมายถูกต้องตาม ~ หมายถูกตามบางส่วน",
+        "selectColumn": "เลือกคอลัมน์",
+        "previewTable": "ตารางตัวอย่าง",
+        "rows": "แถว",
+        "parsingFile": "กำลังอ่านไฟล์ Excel...",
+        "fields": {
+            "name": "ชื่อ",
+            "email": "อีเมล",
+            "phoneNumber": "เบอร์โทรศัพท์",
+            "academicInstitution": "ชื่อสถาบันศึกษา"
         },
-        "preview": {
-            "title": "ตัวอย่างฟอร์มลงทะเบียน",
-            "description": "นี่คือวิธีที่ฟอร์มลงทะเบียนจะปรากฏต่อผู้เข้าร่วม",
-            "enter": "กรอก",
-            "optional": "ไม่บังคับ",
-            "bookingRequired": "ต้องการการอนุมัติ",
-            "transferable": "โอนได้",
-            "register": "ลงทะเบียนกิจกรรม",
-            "note": "นี่เป็นเพียงตัวอย่าง ฟอร์มถูกปิดใช้งาน",
-            "comingSoon": "ฟีเจอร์แสดงตัวอย่างเร็วม"
+        "confirmImport": "ยืนยันการนำเข้า",
+        "importing": "กำลังนำเข้า...",
+        "importSuccess": "นำเข้าผู้เข้าร่วมสำเร็จ",
+        "importError": "ไม่สามารถนำเข้าผู้เข้าร่วม กรุณาลองใหม่",
+        "invalidFileType": "ประเภทไฟล์ไม่ถูกต้อง กรุณาเลือกไฟล์ Excel",
+        "fileTooLarge": "ขนาดไฟล์เกินขีดจำกัด 10MB",
+        "missingColumns": "ขาดคอลัมน์ที่ขาดหาย: {{columns}}. กรุณาตรวจสอบให้ไฟล์ Excel ของคุณมีคอลัมน์เหล่านี้",
+        "emptyFile": "ไฟล์ Excel ดูเห็นว่างหรือไม่มีข้อมูล",
+        "parseError": "ไม่สามารถอ่านไฟล์ Excel กรุณาตรวจสอบรูปแบบไฟล์",
+        "requiredFormat": "รูปแบบ Excel ที่กำหนด",
+        "requiredFormatDescription": "ไฟล์ Excel ของคุณต้องมีคอลัมน์หัวตองเหล่านี้:",
+        "columnHeader": "หัวคอลัมน์",
+        "downloadTemplate": "ดาวน์โหลดเทมเพลต",
+        "downloadTemplateDescription": "ดาวน์โหลดเทมเพลต Excel ที่มีรูปแบบที่ถูกต้อง",
+        "templateSheetName": "ผู้เข้าร่วม",
+        "templateFileName": "participant_import_template",
+        "templateColumns": {
+            "name": "name",
+            "email": "email",
+            "phoneNumber": "phone_number",
+            "academicInstitution": "academic_institution_name"
         }
     },
     "certificateSettings": {
@@ -525,8 +571,6 @@
         "logout": "ออกจากระบบ",
         "enterPin": "กรอกรหัส PIN 6 หลัก",
         "confirmPin": "ยืนยันรหัส PIN",
-        "enterPassword": "กรอกรหัสผ่าน",
-        "confirmPassword": "ยืนยันรหัสผ่าน",
         "pinMismatch": "รหัส PIN ไม่ตรงกัน",
         "pinTooShort": "รหัส PIN ต้องมี 6 หลัก",
         "profile": {

@@ -2,8 +2,12 @@
 pragma solidity ^0.8.20;
 
 import {EventAccessManager} from "./EventAccessManager.sol";
+import {ThemisUtils} from "../../utils/ThemisUtils.sol";
 
-contract Event is EventAccessManager {
+contract Event is ThemisUtils {
+    // Contracts
+        EventAccessManager public immutable EVENT_ACCESS_MANAGER;
+
     // Enums
     enum EventStatus {
         ACTIVE,
@@ -20,6 +24,7 @@ contract Event is EventAccessManager {
     error Event__AddressCannotBeZero();
     error Event__CantConfirmEvent(string message);
     error Event__InvalidSignature();
+    error Event__AccessManagerCannotBeZeroAddress();
 
     event RemovedParticipant(address indexed participant);
     event AddedParticipant(address indexed participant);
@@ -30,6 +35,15 @@ contract Event is EventAccessManager {
         string eventDescription,
         uint256 seatsCount,
         EventStatus eventStatus
+    );
+    event SignatureUsed(
+        address transactor,
+        address signer,
+        address contractAddress,
+        string functionName,
+        string signedMessageDigest,
+        bytes signature,
+        uint256 timestamp
     );
 
     // State Variables
@@ -45,12 +59,17 @@ contract Event is EventAccessManager {
     address[] private participants;
 
     constructor(
-        address decmAccessManagerAddr,
+        address eventAccessManagerAddr,
         string memory _eventName,
         string memory _eventDescription,
-        uint256 _seatsCount,
-        address hostAddress
-    ) EventAccessManager(decmAccessManagerAddr, hostAddress) {
+        uint256 _seatsCount
+    ) {
+        if (eventAccessManagerAddr == address(0)) {
+            revert Event__AccessManagerCannotBeZeroAddress();
+        }
+
+        EVENT_ACCESS_MANAGER = EventAccessManager(eventAccessManagerAddr);
+
         _validateEventName(_eventName);
 
         eventName = _eventName;
@@ -65,11 +84,11 @@ contract Event is EventAccessManager {
         string memory _eventDescription,
         uint256 _seatsCount,
         EventStatus _eventStatus,
-        string memory signMessage,
+        string memory signedMessageDigest,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(signMessage, signature);
-        requireHostOrAdmin(signer);
+        address signer = recoverSigner(signedMessageDigest, signature); 
+        EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer); 
 
         // 1. Validate Event Name
         _validateEventName(_eventName);
@@ -79,7 +98,7 @@ contract Event is EventAccessManager {
             revert Event__CannotReduceSeatsCount();
         }
 
-        // 3. Update Event
+        // 3. Update Event 
         eventName = _eventName;
         eventDescription = _eventDescription;
         seatsCount = _seatsCount;
@@ -90,25 +109,31 @@ contract Event is EventAccessManager {
             _eventName,
             _eventDescription,
             _seatsCount,
-            eventStatus
+            _eventStatus
+        );
+
+        emit SignatureUsed(
+            msg.sender,
+            signer,
+            address(this),
+            "updateEvent",
+            signedMessageDigest,
+            signature,
+            block.timestamp
         );
     }
 
     function addParticipant(
         address participantAddress,
-        string memory signMessage,
+        string memory signedMessageDigest,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(signMessage, signature);
-        requireHostOrAdmin(signer);
+        address signer = recoverSigner(signedMessageDigest, signature);
+        EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
 
         // Pre Conditions
         if (participantAddress == address(0)) {
             revert Event__AddressCannotBeZero();
-        }
-
-        if (isParticipant[participantAddress]) {
-            revert Event__ParticipantIsAlreadyJoined();
         }
 
         if (currentSeatsCount >= seatsCount) {
@@ -125,14 +150,24 @@ contract Event is EventAccessManager {
 
         // 3. Emit Event
         emit AddedParticipant(participantAddress);
+
+        emit SignatureUsed(
+            msg.sender,
+            signer,
+            address(this),
+            "addParticipant",
+            signedMessageDigest,
+            signature,
+            block.timestamp
+        );
     }
 
     function leaveEvent(
-        string memory signMessage,
+        string memory signedMessageDigest,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(signMessage, signature);
-        requireParticipant(signer);
+        address signer = recoverSigner(signedMessageDigest, signature);
+        EVENT_ACCESS_MANAGER.requireParticipant(signer);
 
         address participantAddress = signer;
 
@@ -146,11 +181,21 @@ contract Event is EventAccessManager {
 
         // 3. Emit Event
         emit RemovedParticipant(participantAddress);
+
+        emit SignatureUsed(
+            msg.sender,
+            signer,
+            address(this),
+            "leaveEvent",
+            signedMessageDigest,
+            signature,
+            block.timestamp
+        );
     }
 
-    function removeParticipant(address participantAddress, string memory signMessage, bytes memory signature) external {
-        address signer = recoverSigner(signMessage, signature);
-        requireHostOrAdmin(signer);
+    function removeParticipant(address participantAddress, string memory signedMessageDigest, bytes memory signature) external {
+        address signer = recoverSigner(signedMessageDigest, signature);
+        EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
 
         // Pre Conditions
         if (participantAddress == address(0)) {
@@ -170,11 +215,11 @@ contract Event is EventAccessManager {
     }
 
     function confirmEvent(
-        string memory signMessage,
+        string memory signedMessageDigest,
         bytes memory signature
     ) external {
-        address signer = recoverSigner(signMessage, signature);
-        requireHostOrAdmin(signer);
+        address signer = recoverSigner(signedMessageDigest, signature);
+        EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
 
         // Pre Conditions
         if (eventStatus == EventStatus.CLOSED) {
@@ -190,6 +235,16 @@ contract Event is EventAccessManager {
 
         // 2. Emit Event
         emit EventConfirmed();
+
+        emit SignatureUsed(
+            msg.sender,
+            signer,
+            address(this),
+            "confirmEvent",
+            signedMessageDigest,
+            signature,
+            block.timestamp
+        );
     }
 
     function _addParticipant(address participantAddress, address signer) private {
@@ -199,7 +254,7 @@ contract Event is EventAccessManager {
         isParticipant[participantAddress] = true;
 
         // 2. Grant Participant Role
-        grantParticipantRole(participantAddress, signer);
+        EVENT_ACCESS_MANAGER.grantParticipantRole(participantAddress, signer);
 
         // 3. Current SeatsCount Increment
         currentSeatsCount++;
@@ -210,7 +265,7 @@ contract Event is EventAccessManager {
         _removeParticipantFromList(participantAddress);
 
         // 2. Revoke Participant Role
-        revokeParticipantRole(participantAddress, signer);
+        EVENT_ACCESS_MANAGER.revokeParticipantRole(participantAddress, signer);
 
         // 3. Current SeatsCount Decrement
         currentSeatsCount--;
@@ -235,7 +290,8 @@ contract Event is EventAccessManager {
 
     function _validateEventName(string memory _eventName) private pure {
         if (bytes(_eventName).length == 0) {
-            revert Event__InvalidEventName();
+            // revert Event__InvalidEventName();
+            require(false, "Invalid event name");
         }
     }
 
