@@ -16,10 +16,12 @@ import (
 )
 
 type Participant struct {
-	Name                    string `json:"name"`
-	Email                   string `json:"email"`
-	PhoneNumber             string `json:"phone_number"`
-	AcademicInstitutionName string `json:"academic_institution_name"`
+	Name                string `json:"name"`
+	FirstName           string `json:"first_name"`
+	LastName            string `json:"last_name"`
+	Email               string `json:"email"`
+	PhoneNumber         string `json:"phone_number"`
+	AcademicInstitution string `json:"academic_institution"`
 }
 
 type ImportEventParticipantsParameters struct {
@@ -111,10 +113,15 @@ func (uc *EventRegistrationInvitationUsecase) ImportEventParticipants(ctx contex
 
 		// Create event registration invitation
 		invitationParams := datagateway.CreateEventRegistrationInvitationParameters{
-			EventID:        params.EventID,
-			InboxMessageID: inboxMessage.ID,
-			ValidUntil:     nil, // No expiration by default
-			Code:           &code,
+			EventID:             params.EventID,
+			InboxMessageID:      inboxMessage.ID,
+			ValidUntil:          nil, // No expiration by default
+			Code:                &code,
+			FirstName:           stringPtr(participant.FirstName),
+			LastName:            stringPtr(participant.LastName),
+			Email:               stringPtr(participant.Email),
+			PhoneNumber:         stringPtr(participant.PhoneNumber),
+			AcademicInstitution: stringPtr(participant.AcademicInstitution),
 		}
 
 		invitation, err := uc.EventRegistrationInvitationDg.CreateEventRegistrationInvitation(ctx, invitationParams)

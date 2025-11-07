@@ -3,12 +3,22 @@ INSERT INTO event_registration_invitations (
     event_id,
     inbox_message_id,
     valid_until,
-    code
+    code,
+    first_name,
+    last_name,
+    email,
+    phone_number,
+    academic_institution
 ) VALUES (
     sqlc.arg(event_id),
     sqlc.arg(inbox_message_id),
     sqlc.narg(valid_until),
-    sqlc.narg(code)
+    sqlc.narg(code),
+    sqlc.narg(first_name),
+    sqlc.narg(last_name),
+    sqlc.narg(email),
+    sqlc.narg(phone_number),
+    sqlc.narg(academic_institution)
 )
 RETURNING *;
 
@@ -26,6 +36,11 @@ SET
     valid_until = sqlc.narg(valid_until),
     code = sqlc.narg(code),
     cancelled_at = sqlc.narg(cancelled_at),
+    first_name = sqlc.narg(first_name),
+    last_name = sqlc.narg(last_name),
+    email = sqlc.narg(email),
+    phone_number = sqlc.narg(phone_number),
+    academic_institution = sqlc.narg(academic_institution),
     updated_at = NOW()
 WHERE id = sqlc.arg(id)
 RETURNING *;

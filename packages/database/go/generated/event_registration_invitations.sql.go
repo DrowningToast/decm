@@ -17,21 +17,36 @@ INSERT INTO event_registration_invitations (
     event_id,
     inbox_message_id,
     valid_until,
-    code
+    code,
+    first_name,
+    last_name,
+    email,
+    phone_number,
+    academic_institution
 ) VALUES (
     $1,
     $2,
     $3,
-    $4
+    $4,
+    $5,
+    $6,
+    $7,
+    $8,
+    $9
 )
-RETURNING id, event_id, inbox_message_id, valid_until, code, created_at, updated_at, cancelled_at
+RETURNING id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at
 `
 
 type CreateEventRegistrationInvitationParams struct {
-	EventID        uuid.UUID          `json:"event_id"`
-	InboxMessageID uuid.UUID          `json:"inbox_message_id"`
-	ValidUntil     pgtype.Timestamptz `json:"valid_until"`
-	Code           pgtype.Text        `json:"code"`
+	EventID             uuid.UUID          `json:"event_id"`
+	InboxMessageID      uuid.UUID          `json:"inbox_message_id"`
+	ValidUntil          pgtype.Timestamptz `json:"valid_until"`
+	Code                pgtype.Text        `json:"code"`
+	FirstName           pgtype.Text        `json:"first_name"`
+	LastName            pgtype.Text        `json:"last_name"`
+	Email               pgtype.Text        `json:"email"`
+	PhoneNumber         pgtype.Text        `json:"phone_number"`
+	AcademicInstitution pgtype.Text        `json:"academic_institution"`
 }
 
 func (q *Queries) CreateEventRegistrationInvitation(ctx context.Context, arg CreateEventRegistrationInvitationParams) (EventRegistrationInvitation, error) {
@@ -40,6 +55,11 @@ func (q *Queries) CreateEventRegistrationInvitation(ctx context.Context, arg Cre
 		arg.InboxMessageID,
 		arg.ValidUntil,
 		arg.Code,
+		arg.FirstName,
+		arg.LastName,
+		arg.Email,
+		arg.PhoneNumber,
+		arg.AcademicInstitution,
 	)
 	var i EventRegistrationInvitation
 	err := row.Scan(
@@ -48,6 +68,11 @@ func (q *Queries) CreateEventRegistrationInvitation(ctx context.Context, arg Cre
 		&i.InboxMessageID,
 		&i.ValidUntil,
 		&i.Code,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.AcademicInstitution,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.CancelledAt,
@@ -65,7 +90,7 @@ func (q *Queries) DeleteEventRegistrationInvitation(ctx context.Context, id uuid
 }
 
 const GetEventRegistrationInvitationByID = `-- name: GetEventRegistrationInvitationByID :one
-SELECT id, event_id, inbox_message_id, valid_until, code, created_at, updated_at, cancelled_at FROM event_registration_invitations WHERE id = $1
+SELECT id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at FROM event_registration_invitations WHERE id = $1
 `
 
 func (q *Queries) GetEventRegistrationInvitationByID(ctx context.Context, id uuid.UUID) (EventRegistrationInvitation, error) {
@@ -77,6 +102,11 @@ func (q *Queries) GetEventRegistrationInvitationByID(ctx context.Context, id uui
 		&i.InboxMessageID,
 		&i.ValidUntil,
 		&i.Code,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.AcademicInstitution,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.CancelledAt,
@@ -85,7 +115,7 @@ func (q *Queries) GetEventRegistrationInvitationByID(ctx context.Context, id uui
 }
 
 const GetEventRegistrationInvitationsByEventID = `-- name: GetEventRegistrationInvitationsByEventID :many
-SELECT id, event_id, inbox_message_id, valid_until, code, created_at, updated_at, cancelled_at FROM event_registration_invitations 
+SELECT id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at FROM event_registration_invitations 
 WHERE event_id = $1
 ORDER BY created_at DESC
 `
@@ -105,6 +135,11 @@ func (q *Queries) GetEventRegistrationInvitationsByEventID(ctx context.Context, 
 			&i.InboxMessageID,
 			&i.ValidUntil,
 			&i.Code,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.PhoneNumber,
+			&i.AcademicInstitution,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.CancelledAt,
@@ -125,16 +160,26 @@ SET
     valid_until = $1,
     code = $2,
     cancelled_at = $3,
+    first_name = $4,
+    last_name = $5,
+    email = $6,
+    phone_number = $7,
+    academic_institution = $8,
     updated_at = NOW()
-WHERE id = $4
-RETURNING id, event_id, inbox_message_id, valid_until, code, created_at, updated_at, cancelled_at
+WHERE id = $9
+RETURNING id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at
 `
 
 type UpdateEventRegistrationInvitationParams struct {
-	ValidUntil  pgtype.Timestamptz `json:"valid_until"`
-	Code        pgtype.Text        `json:"code"`
-	CancelledAt pgtype.Timestamptz `json:"cancelled_at"`
-	ID          uuid.UUID          `json:"id"`
+	ValidUntil          pgtype.Timestamptz `json:"valid_until"`
+	Code                pgtype.Text        `json:"code"`
+	CancelledAt         pgtype.Timestamptz `json:"cancelled_at"`
+	FirstName           pgtype.Text        `json:"first_name"`
+	LastName            pgtype.Text        `json:"last_name"`
+	Email               pgtype.Text        `json:"email"`
+	PhoneNumber         pgtype.Text        `json:"phone_number"`
+	AcademicInstitution pgtype.Text        `json:"academic_institution"`
+	ID                  uuid.UUID          `json:"id"`
 }
 
 func (q *Queries) UpdateEventRegistrationInvitation(ctx context.Context, arg UpdateEventRegistrationInvitationParams) (EventRegistrationInvitation, error) {
@@ -142,6 +187,11 @@ func (q *Queries) UpdateEventRegistrationInvitation(ctx context.Context, arg Upd
 		arg.ValidUntil,
 		arg.Code,
 		arg.CancelledAt,
+		arg.FirstName,
+		arg.LastName,
+		arg.Email,
+		arg.PhoneNumber,
+		arg.AcademicInstitution,
 		arg.ID,
 	)
 	var i EventRegistrationInvitation
@@ -151,6 +201,11 @@ func (q *Queries) UpdateEventRegistrationInvitation(ctx context.Context, arg Upd
 		&i.InboxMessageID,
 		&i.ValidUntil,
 		&i.Code,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.AcademicInstitution,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.CancelledAt,

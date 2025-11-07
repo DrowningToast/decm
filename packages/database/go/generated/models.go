@@ -267,14 +267,19 @@ type EventRegistrationEmailReferral struct {
 }
 
 type EventRegistrationInvitation struct {
-	ID             uuid.UUID          `json:"id"`
-	EventID        uuid.UUID          `json:"event_id"`
-	InboxMessageID uuid.UUID          `json:"inbox_message_id"`
-	ValidUntil     pgtype.Timestamptz `json:"valid_until"`
-	Code           pgtype.Text        `json:"code"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
-	CancelledAt    pgtype.Timestamptz `json:"cancelled_at"`
+	ID                  uuid.UUID          `json:"id"`
+	EventID             uuid.UUID          `json:"event_id"`
+	InboxMessageID      uuid.UUID          `json:"inbox_message_id"`
+	ValidUntil          pgtype.Timestamptz `json:"valid_until"`
+	Code                pgtype.Text        `json:"code"`
+	FirstName           pgtype.Text        `json:"first_name"`
+	LastName            pgtype.Text        `json:"last_name"`
+	Email               pgtype.Text        `json:"email"`
+	PhoneNumber         pgtype.Text        `json:"phone_number"`
+	AcademicInstitution pgtype.Text        `json:"academic_institution"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	CancelledAt         pgtype.Timestamptz `json:"cancelled_at"`
 }
 
 type EventRegistrationRequirement struct {

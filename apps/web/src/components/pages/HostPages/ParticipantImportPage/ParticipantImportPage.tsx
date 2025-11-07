@@ -48,13 +48,15 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
         // Create a simple Excel template with the required columns
         const templateData = [
             {
-                [t("participantImport.templateColumns.name")]: "",
+                [t("participantImport.templateColumns.firstName")]: "",
+                [t("participantImport.templateColumns.lastName")]: "",
                 [t("participantImport.templateColumns.email")]: "",
                 [t("participantImport.templateColumns.phoneNumber")]: "",
                 [t("participantImport.templateColumns.academicInstitution")]: "",
             },
             {
-                [t("participantImport.templateColumns.name")]: "John Doe",
+                [t("participantImport.templateColumns.firstName")]: "John",
+                [t("participantImport.templateColumns.lastName")]: "Doe",
                 [t("participantImport.templateColumns.email")]: "john.doe@example.com",
                 [t("participantImport.templateColumns.phoneNumber")]: "+1234567890",
                 [t("participantImport.templateColumns.academicInstitution")]: "Example University",

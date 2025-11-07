@@ -17,10 +17,11 @@ type ImportEventParticipantsRequest struct {
 }
 
 type ParticipantRequestItem struct {
-	Name                    string `json:"name" validate:"required"`
-	Email                   string `json:"email" validate:"required,email"`
-	PhoneNumber             string `json:"phone_number"`
-	AcademicInstitutionName string `json:"academic_institution_name"`
+	FirstName           string `json:"first_name" validate:"required"`
+	LastName            string `json:"last_name" validate:"required"`
+	Email               string `json:"email" validate:"required,email"`
+	PhoneNumber         string `json:"phone_number"`
+	AcademicInstitution string `json:"academic_institution"`
 }
 
 // @Summary Import event participants
@@ -61,10 +62,12 @@ func (h *Handler) ImportEventParticipants(ctx *fiber.Ctx) error {
 	participants := make([]eventRegistrationInvitationUc.Participant, len(requestBody.Participants))
 	for i, participant := range requestBody.Participants {
 		participants[i] = eventRegistrationInvitationUc.Participant{
-			Name:                    participant.Name,
-			Email:                   participant.Email,
-			PhoneNumber:             participant.PhoneNumber,
-			AcademicInstitutionName: participant.AcademicInstitutionName,
+			Name:                fmt.Sprintf("%s %s", participant.FirstName, participant.LastName),
+			FirstName:           participant.FirstName,
+			LastName:            participant.LastName,
+			Email:               participant.Email,
+			PhoneNumber:         participant.PhoneNumber,
+			AcademicInstitution: participant.AcademicInstitution,
 		}
 	}
 

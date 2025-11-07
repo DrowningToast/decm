@@ -2382,6 +2382,9 @@ const docTemplate = `{
         "entity.EventRegistrationInvitation": {
             "type": "object",
             "properties": {
+                "academic_institution": {
+                    "type": "string"
+                },
                 "cancelled_at": {
                     "type": "string"
                 },
@@ -2391,13 +2394,25 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "email": {
+                    "type": "string"
+                },
                 "event_id": {
+                    "type": "string"
+                },
+                "first_name": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
                 "inbox_message_id": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -2746,16 +2761,20 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
-                "name"
+                "first_name",
+                "last_name"
             ],
             "properties": {
-                "academic_institution_name": {
+                "academic_institution": {
                     "type": "string"
                 },
                 "email": {
                     "type": "string"
                 },
-                "name": {
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
                     "type": "string"
                 },
                 "phone_number": {
