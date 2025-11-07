@@ -2749,7 +2749,6 @@ const docTemplate = `{
                 },
                 "participants": {
                     "type": "array",
-                    "maxItems": 100,
                     "minItems": 1,
                     "items": {
                         "$ref": "#/definitions/event_registration_invitation.ParticipantRequestItem"

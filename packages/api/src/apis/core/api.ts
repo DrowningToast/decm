@@ -316,10 +316,7 @@ export interface EventEventResponse {
 
 export interface EventRegistrationInvitationImportEventParticipantsRequest {
     event_id: string;
-    /**
-     * @maxItems 100
-     * @minItems 1
-     */
+    /** @minItems 1 */
     participants: EventRegistrationInvitationParticipantRequestItem[];
 }
 
