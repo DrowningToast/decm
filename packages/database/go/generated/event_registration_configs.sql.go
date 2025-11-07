@@ -37,7 +37,7 @@ INSERT INTO event_registration_configs (
     $9,
     $10,
     $11
-) RETURNING id, event_id, final_call_for_registration, registration_password, first_name_requirement_status, last_name_requirement_status, email_requirement_status, bio_requirement_status, phone_number_requirement_status, address_requirement_status, academic_institution_requirement_status, academic_email_requirement_status, created_at, updated_at
+) RETURNING id, event_id, final_call_for_registration, registration_password, is_identity_verification_required, first_name_requirement_status, last_name_requirement_status, email_requirement_status, bio_requirement_status, phone_number_requirement_status, address_requirement_status, academic_institution_requirement_status, academic_email_requirement_status, created_at, updated_at
 `
 
 type CreateEventRegistrationConfigParams struct {
@@ -74,6 +74,7 @@ func (q *Queries) CreateEventRegistrationConfig(ctx context.Context, arg CreateE
 		&i.EventID,
 		&i.FinalCallForRegistration,
 		&i.RegistrationPassword,
+		&i.IsIdentityVerificationRequired,
 		&i.FirstNameRequirementStatus,
 		&i.LastNameRequirementStatus,
 		&i.EmailRequirementStatus,
@@ -98,7 +99,7 @@ func (q *Queries) DeleteEventRegistrationConfig(ctx context.Context, eventID uui
 }
 
 const GetEventRegistrationConfigByEventID = `-- name: GetEventRegistrationConfigByEventID :one
-SELECT id, event_id, final_call_for_registration, registration_password, first_name_requirement_status, last_name_requirement_status, email_requirement_status, bio_requirement_status, phone_number_requirement_status, address_requirement_status, academic_institution_requirement_status, academic_email_requirement_status, created_at, updated_at FROM event_registration_configs WHERE event_id = $1
+SELECT id, event_id, final_call_for_registration, registration_password, is_identity_verification_required, first_name_requirement_status, last_name_requirement_status, email_requirement_status, bio_requirement_status, phone_number_requirement_status, address_requirement_status, academic_institution_requirement_status, academic_email_requirement_status, created_at, updated_at FROM event_registration_configs WHERE event_id = $1
 `
 
 func (q *Queries) GetEventRegistrationConfigByEventID(ctx context.Context, eventID uuid.UUID) (EventRegistrationConfig, error) {
@@ -109,6 +110,7 @@ func (q *Queries) GetEventRegistrationConfigByEventID(ctx context.Context, event
 		&i.EventID,
 		&i.FinalCallForRegistration,
 		&i.RegistrationPassword,
+		&i.IsIdentityVerificationRequired,
 		&i.FirstNameRequirementStatus,
 		&i.LastNameRequirementStatus,
 		&i.EmailRequirementStatus,
@@ -138,7 +140,7 @@ SET
     academic_email_requirement_status = $10,
     updated_at = NOW()
 WHERE event_id = $11
-RETURNING id, event_id, final_call_for_registration, registration_password, first_name_requirement_status, last_name_requirement_status, email_requirement_status, bio_requirement_status, phone_number_requirement_status, address_requirement_status, academic_institution_requirement_status, academic_email_requirement_status, created_at, updated_at
+RETURNING id, event_id, final_call_for_registration, registration_password, is_identity_verification_required, first_name_requirement_status, last_name_requirement_status, email_requirement_status, bio_requirement_status, phone_number_requirement_status, address_requirement_status, academic_institution_requirement_status, academic_email_requirement_status, created_at, updated_at
 `
 
 type UpdateEventRegistrationConfigParams struct {
@@ -175,6 +177,7 @@ func (q *Queries) UpdateEventRegistrationConfig(ctx context.Context, arg UpdateE
 		&i.EventID,
 		&i.FinalCallForRegistration,
 		&i.RegistrationPassword,
+		&i.IsIdentityVerificationRequired,
 		&i.FirstNameRequirementStatus,
 		&i.LastNameRequirementStatus,
 		&i.EmailRequirementStatus,

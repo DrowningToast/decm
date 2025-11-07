@@ -96,6 +96,25 @@ definitions:
       updated_at:
         type: string
     type: object
+  entity.EventRegistrationInvitation:
+    properties:
+      cancelled_at:
+        type: string
+      code:
+        type: string
+      created_at:
+        type: string
+      event_id:
+        type: string
+      id:
+        type: string
+      inbox_message_id:
+        type: string
+      updated_at:
+        type: string
+      valid_until:
+        type: string
+    type: object
   entity.EventStatus:
     enum:
     - active
@@ -305,6 +324,34 @@ definitions:
         type: string
       issuer_credential_id:
         type: string
+    type: object
+  event_registration_invitation.ImportEventParticipantsRequest:
+    properties:
+      event_id:
+        type: string
+      participants:
+        items:
+          $ref: '#/definitions/event_registration_invitation.ParticipantRequestItem'
+        maxItems: 100
+        minItems: 1
+        type: array
+    required:
+    - event_id
+    - participants
+    type: object
+  event_registration_invitation.ParticipantRequestItem:
+    properties:
+      academic_institution_name:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone_number:
+        type: string
+    required:
+    - email
+    - name
     type: object
   eventconfig.CreateEventRegistrationConfigRequest:
     properties:
@@ -1627,6 +1674,44 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Create event registration config
+  /api/v1/events/{eventId}/participants/import:
+    post:
+      consumes:
+      - application/json
+      description: Import a list of participants for an event, creating inbox messages
+        and event registration invitations
+      operationId: import-event-participants
+      parameters:
+      - description: Import participants request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/event_registration_invitation.ImportEventParticipantsRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/entity.EventRegistrationInvitation'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Import event participants
+      tags:
+      - Event Registration Invitation
   /api/v1/events/owner-credentials/{owner_credential_id}:
     get:
       consumes:

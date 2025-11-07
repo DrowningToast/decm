@@ -318,6 +318,62 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/events/{eventId}/participants/import": {
+            "post": {
+                "description": "Import a list of participants for an event, creating inbox messages and event registration invitations",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Registration Invitation"
+                ],
+                "summary": "Import event participants",
+                "operationId": "import-event-participants",
+                "parameters": [
+                    {
+                        "description": "Import participants request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event_registration_invitation.ImportEventParticipantsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}": {
             "get": {
                 "description": "Get event by ID",
@@ -2215,6 +2271,35 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.EventRegistrationInvitation": {
+            "type": "object",
+            "properties": {
+                "cancelled_at": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inbox_message_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "valid_until": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.EventStatus": {
             "type": "string",
             "enum": [
@@ -2525,6 +2610,47 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "issuer_credential_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "event_registration_invitation.ImportEventParticipantsRequest": {
+            "type": "object",
+            "required": [
+                "event_id",
+                "participants"
+            ],
+            "properties": {
+                "event_id": {
+                    "type": "string"
+                },
+                "participants": {
+                    "type": "array",
+                    "maxItems": 100,
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/event_registration_invitation.ParticipantRequestItem"
+                    }
+                }
+            }
+        },
+        "event_registration_invitation.ParticipantRequestItem": {
+            "type": "object",
+            "required": [
+                "email",
+                "name"
+            ],
+            "properties": {
+                "academic_institution_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone_number": {
                     "type": "string"
                 }
             }

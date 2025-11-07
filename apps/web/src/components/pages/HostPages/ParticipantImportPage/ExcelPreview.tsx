@@ -4,10 +4,11 @@ import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTranslation } from "react-i18next";
+import type { EventRegistrationInvitationParticipantRequestItem } from "@decm/api";
 
 interface ExcelPreviewProps {
     file: File;
-    onConfirm: () => void;
+    onConfirm: (participants: EventRegistrationInvitationParticipantRequestItem[]) => void;
     onCancel: () => void;
     disabled?: boolean;
 }
@@ -32,7 +33,6 @@ export const ExcelPreview = ({
 }: ExcelPreviewProps) => {
     const { t } = useTranslation();
     const [previewData, setPreviewData] = useState<PreviewData[]>([]);
-    const [columns, setColumns] = useState<string[]>([]);
     const [validationError, setValidationError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -52,7 +52,6 @@ export const ExcelPreview = ({
 
                     if (jsonData.length > 0) {
                         const excelColumns = Object.keys(jsonData[0]);
-                        setColumns(excelColumns);
 
                         // Validate that all required columns exist
                         const missingColumns = Object.values(REQUIRED_COLUMNS).filter(
@@ -88,7 +87,15 @@ export const ExcelPreview = ({
 
     const handleConfirm = () => {
         if (validationError) return;
-        onConfirm();
+
+        const request = previewData.map((row) => ({
+            name: row.name,
+            email: row.email,
+            phone_number: row.phone_number,
+            academic_institution_name: row.academic_institution_name,
+        }));
+
+        onConfirm(request);
     };
 
     if (isLoading) {
