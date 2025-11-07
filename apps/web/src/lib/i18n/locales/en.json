@@ -197,11 +197,6 @@
                 "signIn": "Sign in",
                 "eventManagement": "Event management"
             },
-            "issuer": {
-                "title": "Issuer",
-                "signInIAM": "Sign in with IAM",
-                "register": "Register with us"
-            },
             "developer": {
                 "title": "Developer",
                 "manageIntegration": "Manage automation & integration",
@@ -771,6 +766,36 @@
         "api": {
             "error": {
                 "authentication_credential_id_already_exists": "Authentication credential ID already exists"
+            }
+        }
+    },
+    "issuer": {
+        "title": "Issuer",
+        "signInIAM": "Sign in with IAM",
+        "register": "Register with us",
+        "sign": {
+            "pageTitle": "Sign Event Certificates",
+            "pageDescription": "Review and sign pending certificate batches for events you are assigned to.",
+            "pendingTab": "Pending Signature",
+            "signedTab": "Signed",
+            "table": {
+                "eventName": "Event Name",
+                "host": "Host",
+                "hostPlaceholder": "Event Host",
+                "certificates": "Certificates",
+                "status": "Status",
+                "action": "Action"
+            },
+            "status": {
+                "waiting": "Waiting for Signature",
+                "signed": "Signed"
+            },
+            "action": {
+                "review": "Review & Sign",
+                "view": "View"
+            },
+            "pagination": {
+                "rowsPerPage": "Rows per page:"
             }
         }
     }

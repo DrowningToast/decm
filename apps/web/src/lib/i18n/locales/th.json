@@ -196,18 +196,13 @@
                 "register": "ลงทะเบียนกับเรา",
                 "signIn": "เข้าสู่ระบบ",
                 "eventManagement": "การจัดการกิจกรรม"
-            },
-            "issuer": {
-                "title": "ผู้ออกใบรับรอง",
-                "signInIAM": "เข้าสู่ระบบด้วย IAM",
-                "register": "ลงทะเบียนกับเรา"
-            },
-            "developer": {
-                "title": "นักพัฒนา",
-                "manageIntegration": "จัดการระบบอัตโนมัติและการเชื่อมต่อ",
-                "apiDocuments": "เอกสาร API",
-                "readDocs": "อ่านเอกสาร"
             }
+        },
+        "developer": {
+            "title": "นักพัฒนา",
+            "manageIntegration": "จัดการระบบอัตโนมัติและการเชื่อมต่อ",
+            "apiDocuments": "เอกสาร API",
+            "readDocs": "อ่านเอกสาร"
         }
     },
     "profile": {
@@ -604,5 +599,35 @@
     },
     "createEvent": {
         "success": "สร้างกิจกรรมสำเร็จ"
+    },
+    "issuer": {
+        "title": "ผู้ออกใบรับรอง",
+        "signInIAM": "เข้าสู่ระบบด้วย IAM",
+        "register": "ลงทะเบียนกับเรา",
+        "sign": {
+            "pageTitle": "ลงนามใบรับรองกิจกรรม",
+            "pageDescription": "ตรวจสอบและลงนามใบรับรองที่รอการลงนามสำหรับกิจกรรมที่คุณได้รับมอบหมา",
+            "pendingTab": "รอการลงนาม",
+            "signedTab": "ลงนามแล้ว",
+            "table": {
+                "eventName": "ชื่อกิจกรรม",
+                "host": "ผู้จัดการ",
+                "hostPlaceholder": "ผู้จัดการกิจกรรม",
+                "certificates": "ใบรับรอง",
+                "status": "สถานะ",
+                "action": "การกระทำ"
+            },
+            "status": {
+                "waiting": "รอการลงนาม",
+                "signed": "ลงนามแล้ว"
+            },
+            "action": {
+                "review": "ตรวจสอบและลงนาม",
+                "view": "ดู"
+            }
+        },
+        "pagination": {
+            "rowsPerPage": "แถวต่อหน้า:"
+        }
     }
 }

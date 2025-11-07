@@ -8,6 +8,8 @@ import (
 	"apps/backend/common/pgmapper"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
+
+	"github.com/google/uuid"
 )
 
 var _ datagateway.IssuerDataGateway = (*Repository)(nil)
@@ -87,4 +89,17 @@ func (r *Repository) ListVerifiedIssuerProfiles(ctx context.Context, limitCount 
 	}
 
 	return profiles, nil
+}
+
+func (r *Repository) GetEventsByIssuerCredentialID(ctx context.Context, issuerCredentialID string, limitCount int32, offsetCount int32) ([]generated.GetEventIssuersByCredentialIDRow, error) {
+	query, err := r.queries.GetEventIssuersByCredentialID(ctx, generated.GetEventIssuersByCredentialIDParams{
+		IssuerCredentialID: uuid.MustParse(issuerCredentialID),
+		LimitCount:         limitCount,
+		OffsetCount:        offsetCount,
+	})
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	return query, nil
 }

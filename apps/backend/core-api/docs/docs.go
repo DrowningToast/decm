@@ -1707,6 +1707,73 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/issuers/events": {
+            "get": {
+                "description": "Get events assigned to the authenticated issuer for signing",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Issuer"
+                ],
+                "summary": "Get events for issuer signing",
+                "operationId": "get-issuer-events",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Issuer credential ID",
+                        "name": "issuer_credential_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/issuer.IssuerEventResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/onboard/check-onboard-status": {
             "post": {
                 "description": "Check onboard status",
@@ -2903,6 +2970,53 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "registration_password": {
+                    "type": "string"
+                }
+            }
+        },
+        "issuer.IssuerEventResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "event_end_date": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "event_location": {
+                    "type": "string"
+                },
+                "event_owner_credential_id": {
+                    "type": "string"
+                },
+                "event_short_description": {
+                    "type": "string"
+                },
+                "event_start_date": {
+                    "type": "string"
+                },
+                "event_title": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_signed": {
+                    "type": "integer"
+                },
+                "issuer_credential_id": {
+                    "type": "string"
+                },
+                "sign_message": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }
