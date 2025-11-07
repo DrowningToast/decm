@@ -10,6 +10,15 @@
  * ---------------------------------------------------------------
  */
 
+export type CancelEventRegistrationInvitationData = EntityEventRegistrationInvitation;
+
+export type CancelEventRegistrationInvitationError = CustomerrorErrResponse;
+
+export interface CancelEventRegistrationInvitationParams {
+    /** Event Registration Invitation ID */
+    eventRegistrationInvitationId: string;
+}
+
 export type CheckOnboardStatusData = OnboardCheckOnboardStatusResponse;
 
 export type CheckOnboardStatusError = CustomerrorErrResponse;
@@ -428,6 +437,14 @@ export type GetEventRegistrationConfigError = CustomerrorErrResponse;
 
 export interface GetEventRegistrationConfigParams {
     /** Event ID */
+    eventId: string;
+}
+
+export type GetEventRegistrationInvitationsByEventIdData = EntityEventRegistrationInvitation[];
+
+export type GetEventRegistrationInvitationsByEventIdError = CustomerrorErrResponse;
+
+export interface GetEventRegistrationInvitationsByEventIdParams {
     eventId: string;
 }
 
@@ -1032,6 +1049,29 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Cancel an event registration invitation by ID
+         *
+         * @tags Event Registration Invitation
+         * @name CancelEventRegistrationInvitation
+         * @summary Cancel event registration invitation
+         * @request DELETE:/api/v1/event-registration-invitations/{eventRegistrationInvitationId}
+         */
+        cancelEventRegistrationInvitation: (
+            { eventRegistrationInvitationId, ...query }: CancelEventRegistrationInvitationParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                CancelEventRegistrationInvitationData,
+                CancelEventRegistrationInvitationError
+            >({
+                path: `/api/v1/event-registration-invitations/${eventRegistrationInvitationId}`,
+                method: "DELETE",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Create a new event with banner image upload
          *
          * @tags Event
@@ -1089,6 +1129,29 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/events/${eventId}/participants/import`,
                 method: "POST",
                 body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get all event registration invitations for a specific event
+         *
+         * @tags Event Registration Invitation
+         * @name GetEventRegistrationInvitationsByEventId
+         * @summary Get event registration invitations by event ID
+         * @request GET:/api/v1/events/{eventId}/registration/invitations
+         */
+        getEventRegistrationInvitationsByEventId: (
+            { eventId, ...query }: GetEventRegistrationInvitationsByEventIdParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                GetEventRegistrationInvitationsByEventIdData,
+                GetEventRegistrationInvitationsByEventIdError
+            >({
+                path: `/api/v1/events/${eventId}/registration/invitations`,
+                method: "GET",
                 type: ContentType.Json,
                 format: "json",
                 ...params,
