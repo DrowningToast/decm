@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
 import { Typography } from "@/components/typography/typography";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 export interface StaggeredMenuItem {
     label: string;
@@ -438,38 +439,40 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                     className="staggered-menu-header absolute top-0 left-0 w-full flex items-center justify-between px-3 md:px-6 py-1.5 pointer-events-auto z-20 transition-all backdrop-blur-[2px] shadow-[0px_4px_16px_0px_rgba(0,0,0,0.1)] overflow-hidden bg-[rgba(217,217,217,0.1)]"
                     aria-label="Main navigation header"
                 >
-                    <div className="sm-logo flex items-center select-none" aria-label="Logo">
-                        <div className="md:hidden">
-                            <AnimatePresence mode="wait">
-                                {!open ? (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 10 }}
-                                        transition={{ duration: 0.3 }}
-                                        layout
-                                        key="open"
-                                    >
-                                        <ThemisWhite className="size-9 md:size-12" />
-                                    </motion.div>
-                                ) : (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 10 }}
-                                        transition={{ duration: 0.3 }}
-                                        layout
-                                        key="closed"
-                                    >
-                                        <ThemisBlack className="size-9 md:size-12" />
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                    <Link to="/app">
+                        <div className="sm-logo flex items-center select-none" aria-label="Logo">
+                            <div className="md:hidden">
+                                <AnimatePresence mode="wait">
+                                    {!open ? (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 10 }}
+                                            transition={{ duration: 0.3 }}
+                                            layout
+                                            key="open"
+                                        >
+                                            <ThemisWhite className="size-9 md:size-12" />
+                                        </motion.div>
+                                    ) : (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 10 }}
+                                            transition={{ duration: 0.3 }}
+                                            layout
+                                            key="closed"
+                                        >
+                                            <ThemisBlack className="size-9 md:size-12" />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                            <div className="hidden md:block">
+                                <ThemisWhite className="size-9 md:size-12" />
+                            </div>
                         </div>
-                        <div className="hidden md:block">
-                            <ThemisWhite className="size-9 md:size-12" />
-                        </div>
-                    </div>
+                    </Link>
 
                     <button
                         ref={toggleBtnRef}

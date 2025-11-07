@@ -28,7 +28,12 @@
         "no": "No",
         "required": "Required",
         "optional": "Optional",
-        "notRequired": "Not Required"
+        "notRequired": "Not Required",
+        "about": "About",
+        "date": "Date",
+        "download": "Download",
+        "share": "Share",
+        "verify": "Verify"
     },
     "nav": {
         "home": "Home",
@@ -460,6 +465,46 @@
                 "profile": "Profile",
                 "verifyCertificates": "Verify certificates"
             }
+        },
+        "certificates": {
+            "title": "Certificates",
+            "description": "All of your certificates you've received",
+            "filters": {
+                "all": "All",
+                "completed": "Completed",
+                "pending": "Pending"
+            },
+            "sortBy": "Sort by",
+            "sort": {
+                "newest": "Newest",
+                "oldest": "Oldest"
+            },
+            "status": {
+                "completed": "Completed",
+                "pending": "Pending"
+            },
+            "empty": {
+                "title": "No certificates yet",
+                "description": "You don't have any certificates. Once you complete events or courses, they'll appear here."
+            },
+            "detail": {
+                "issuedBy": "Issued by",
+                "issued": "Issued",
+                "expires": "Expires",
+                "certificateId": "Certificate ID",
+                "skillsDemonstrated": "Skills Demonstrated",
+                "scanToVerify": "Scan to verify",
+                "useAnyQrScanner": "Use any QR scanner",
+                "expired": "Expired",
+                "expiredOn": "Expired on",
+                "certificateDescription": "Certificate description",
+                "youSignedCertificationOn": "You signed certification on",
+                "certificateContractAddress": "Certificate Contact Address",
+                "eventContractAddress": "Event Contact Address",
+                "verifiableCredentialAttributes": "Verifiable Credential Attributes",
+                "downloadAttributes": "download",
+                "copyShareableUrl": "Copy shareable URL"
+            }
         }
     },
     "createEvent": {
@@ -654,6 +699,7 @@
     },
     "errors": {
         "generic": "Something went wrong. Please try again.",
+        "genericDescription": "An unexpected error occurred. Please try again or contact support.",
         "network": "Network error. Please check your connection.",
         "unauthorized": "You are not authorized to perform this action.",
         "forbidden": "You are not authorized to perform this action.",

@@ -2,7 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Typography } from "@/components/typography/typography";
 import { useTranslation } from "react-i18next";
 import { ServiceList } from "./components/ServiceList";
-import { participantServices, generalServices } from "./config";
+import { participantServices } from "./config";
 
 export const MainPage = () => {
     const { user } = useAuth();

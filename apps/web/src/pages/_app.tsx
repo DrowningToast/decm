@@ -22,18 +22,18 @@ const Layout = () => {
     const isMobile = useMediaQuery("(max-width: 768px)");
 
     return (
-        <ErrorBoundary fallback={<ErrorPage />}>
-            <Toaster
-                richColors
-                position={isMobile ? "top-center" : "bottom-right"}
-                toastOptions={{
-                    duration: 3000,
-                }}
-            />
-            <AppKitProvider>
-                <main className="font-secondary bg-background text-foreground">
-                    <HelmetProvider>
-                        <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={queryClient}>
+            <ErrorBoundary fallback={<ErrorPage />}>
+                <Toaster
+                    richColors
+                    position={isMobile ? "top-center" : "bottom-right"}
+                    toastOptions={{
+                        duration: 3000,
+                    }}
+                />
+                <AppKitProvider>
+                    <main className="font-secondary bg-background text-foreground">
+                        <HelmetProvider>
                             <AuthProvider>
                                 <Outlet />
                                 {process.env.NODE_ENV === "development" && (
@@ -42,11 +42,11 @@ const Layout = () => {
                                     </Suspense>
                                 )}
                             </AuthProvider>
-                        </QueryClientProvider>
-                    </HelmetProvider>
-                </main>
-            </AppKitProvider>
-        </ErrorBoundary>
+                        </HelmetProvider>
+                    </main>
+                </AppKitProvider>
+            </ErrorBoundary>
+        </QueryClientProvider>
     );
 };
 

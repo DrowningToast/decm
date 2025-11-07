@@ -51,8 +51,9 @@ pnpm compose:down          # Stop PostgreSQL container
 ```bash
 pnpm dev                   # Start Vite dev server (Turbo)
 pnpm build                 # Production build
-pnpm lint                  # ESLint
-pnpm check-types          # TypeScript type checking
+pnpm lint                  # ESLint + TypeScript type checking (all workspaces)
+pnpm lint:web              # Frontend linting only
+pnpm lint:core             # Backend linting only
 ```
 
 ## Architecture Overview

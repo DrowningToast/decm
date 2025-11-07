@@ -6,6 +6,8 @@ import { components, hooks, utils } from "@generouted/react-router/client";
 export type Path =
     | `/`
     | `/app`
+    | `/app/certificates`
+    | `/app/certificates/:id`
     | `/auth/success`
     | `/error`
     | `/host/events`
@@ -23,6 +25,7 @@ export type Path =
     | `/signup`;
 
 export type Params = {
+    "/app/certificates/:id": { id: string };
     "/host/events/:eventId": { eventId: string };
     "/host/events/:eventId/edit": { eventId: string };
     "/host/events/:eventId/settings/certificate": { eventId: string };

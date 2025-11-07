@@ -1,4 +1,3 @@
-import { useSignout } from "@/components/useSignout";
 import { TOAST_USECASE_VIEWMODEL } from "@/constants/toast";
 import { USECASE_IDS } from "@/constants/usecase";
 import { coreApiClient } from "@/lib/api/api";
@@ -30,7 +29,7 @@ const VerifyOauthPage = () => {
 
             if (!status) {
                 console.error("Failed to check onboard status");
-                signout();
+                await authService.signOut({ showSuccessToast: false });
                 navigate("/signup");
                 return;
             }
