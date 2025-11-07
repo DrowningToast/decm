@@ -58,7 +58,7 @@ func TestHashEthereumMessage(t *testing.T) {
 
 			// Verify hash is deterministic
 			hash2 := HashEthereumMessage(tt.message)
-			if hexutil.Encode(hash) != hexutil.Encode(hash2) {
+			if hexutil.Encode(hash[:]) != hexutil.Encode(hash2[:]) {
 				t.Error("HashEthereumMessage() is not deterministic")
 			}
 		})
@@ -73,7 +73,7 @@ func TestHashEthereumMessage_Prefix(t *testing.T) {
 	// The hash should be different from a plain Keccak256 hash
 	plainHash := crypto.Keccak256([]byte(message))
 
-	if hexutil.Encode(hash) == hexutil.Encode(plainHash) {
+	if hexutil.Encode(hash[:]) == hexutil.Encode(plainHash) {
 		t.Error("HashEthereumMessage() should apply Ethereum signed message prefix")
 	}
 }
@@ -83,28 +83,29 @@ func TestSign(t *testing.T) {
 	message := "Test signing message"
 
 	t.Run("Sign valid message", func(t *testing.T) {
-		signature, err := Sign(message, privateKey)
+		hashedMessage := HashEthereumMessage(message)
+		signature, err := Sign(hashedMessage[:], privateKey)
 		if err != nil {
 			t.Errorf("Sign() error = %v, want nil", err)
 			return
 		}
 
-		// Signature should be hex encoded and 65 bytes when decoded (130 hex chars + 0x prefix)
-		decoded := hexutil.MustDecode("0x" + signature)
-		if len(decoded) != 65 {
-			t.Errorf("Sign() signature length = %v bytes, want 65 bytes", len(decoded))
+		// Signature should be 65 bytes
+		if len(signature) != 65 {
+			t.Errorf("Sign() signature length = %v bytes, want 65 bytes", len(signature))
 		}
 
 		// Recovery ID should be 27 or 28 (Ethereum standard)
-		recoveryID := decoded[crypto.RecoveryIDOffset]
+		recoveryID := signature[crypto.RecoveryIDOffset]
 		if recoveryID != 27 && recoveryID != 28 {
 			t.Errorf("Sign() recovery ID = %v, want 27 or 28", recoveryID)
 		}
 	})
 
 	t.Run("Sign produces consistent length", func(t *testing.T) {
-		sig1, err1 := Sign(message, privateKey)
-		sig2, err2 := Sign(message, privateKey)
+		hashedMessage := HashEthereumMessage(message)
+		sig1, err1 := Sign(hashedMessage[:], privateKey)
+		sig2, err2 := Sign(hashedMessage[:], privateKey)
 
 		if err1 != nil || err2 != nil {
 			t.Errorf("Sign() unexpected errors: %v, %v", err1, err2)
@@ -124,12 +125,13 @@ func TestGetAddressFromSignature(t *testing.T) {
 	message := "Authentication message"
 
 	t.Run("Recover address from valid signature", func(t *testing.T) {
-		signature, err := Sign(message, privateKey)
+		hashedMessage := HashEthereumMessage(message)
+		signature, err := Sign(hashedMessage[:], privateKey)
 		if err != nil {
 			t.Fatalf("Failed to sign message: %v", err)
 		}
 
-		recoveredAddress, err := GetAddressFromSignature(message, "0x"+signature)
+		recoveredAddress, err := GetAddressFromSignature(message, hexutil.Encode(signature))
 		if err != nil {
 			t.Errorf("GetAddressFromSignature() error = %v, want nil", err)
 			return
@@ -141,13 +143,15 @@ func TestGetAddressFromSignature(t *testing.T) {
 	})
 
 	t.Run("Reject invalid recovery ID", func(t *testing.T) {
-		signature, err := Sign(message, privateKey)
+		hashedMessage := HashEthereumMessage(message)
+		signature, err := Sign(hashedMessage[:], privateKey)
 		if err != nil {
 			t.Fatalf("Failed to sign message: %v", err)
 		}
 
 		// Manually corrupt the recovery ID
-		sigBytes := hexutil.MustDecode("0x" + signature)
+		sigBytes := make([]byte, len(signature))
+		copy(sigBytes, signature)
 		sigBytes[crypto.RecoveryIDOffset] = 30 // Invalid recovery ID
 		corruptedSig := hexutil.Encode(sigBytes)
 
@@ -176,13 +180,14 @@ func TestGetAddressFromSignature(t *testing.T) {
 	})
 
 	t.Run("Reject signature with wrong message", func(t *testing.T) {
-		signature, err := Sign(message, privateKey)
+		hashedMessage := HashEthereumMessage(message)
+		signature, err := Sign(hashedMessage[:], privateKey)
 		if err != nil {
 			t.Fatalf("Failed to sign message: %v", err)
 		}
 
 		wrongMessage := "Different message"
-		recoveredAddress, err := GetAddressFromSignature(wrongMessage, "0x"+signature)
+		recoveredAddress, err := GetAddressFromSignature(wrongMessage, hexutil.Encode(signature))
 		if err != nil {
 			// Some implementations may error, which is fine
 			return
@@ -204,12 +209,13 @@ func TestGetAddressFromSignature(t *testing.T) {
 		}
 
 		for _, msg := range testMessages {
-			signature, err := Sign(msg, privateKey)
+			hashedMessage := HashEthereumMessage(msg)
+			signature, err := Sign(hashedMessage[:], privateKey)
 			if err != nil {
 				t.Fatalf("Failed to sign message '%s': %v", msg, err)
 			}
 
-			recoveredAddress, err := GetAddressFromSignature(msg, "0x"+signature)
+			recoveredAddress, err := GetAddressFromSignature(msg, hexutil.Encode(signature))
 			if err != nil {
 				t.Errorf("GetAddressFromSignature() error for message '%s': %v", msg, err)
 				continue
@@ -228,12 +234,13 @@ func TestVerifySignedMessageByAddress(t *testing.T) {
 	message := "Verify this message"
 
 	t.Run("Verify valid signature", func(t *testing.T) {
-		signature, err := Sign(message, privateKey)
+		hashedMessage := HashEthereumMessage(message)
+		signature, err := Sign(hashedMessage[:], privateKey)
 		if err != nil {
 			t.Fatalf("Failed to sign message: %v", err)
 		}
 
-		valid, err := VerifySignedMessageByAddress(address, message, "0x"+signature)
+		valid, err := VerifySignedMessageByAddress(address, message, hexutil.Encode(signature))
 		if err != nil {
 			t.Errorf("VerifySignedMessageByAddress() error = %v, want nil", err)
 			return
@@ -245,7 +252,8 @@ func TestVerifySignedMessageByAddress(t *testing.T) {
 	})
 
 	t.Run("Reject signature from different address", func(t *testing.T) {
-		signature, err := Sign(message, privateKey)
+		hashedMessage := HashEthereumMessage(message)
+		signature, err := Sign(hashedMessage[:], privateKey)
 		if err != nil {
 			t.Fatalf("Failed to sign message: %v", err)
 		}
@@ -253,7 +261,7 @@ func TestVerifySignedMessageByAddress(t *testing.T) {
 		// Use a different address
 		_, wrongAddress := generateTestKeyPair()
 
-		valid, err := VerifySignedMessageByAddress(wrongAddress, message, "0x"+signature)
+		valid, err := VerifySignedMessageByAddress(wrongAddress, message, hexutil.Encode(signature))
 		if err != nil {
 			t.Errorf("VerifySignedMessageByAddress() error = %v, want nil", err)
 			return
@@ -265,13 +273,14 @@ func TestVerifySignedMessageByAddress(t *testing.T) {
 	})
 
 	t.Run("Reject signature with wrong message", func(t *testing.T) {
-		signature, err := Sign(message, privateKey)
+		hashedMessage := HashEthereumMessage(message)
+		signature, err := Sign(hashedMessage[:], privateKey)
 		if err != nil {
 			t.Fatalf("Failed to sign message: %v", err)
 		}
 
 		wrongMessage := "Different message"
-		valid, err := VerifySignedMessageByAddress(address, wrongMessage, "0x"+signature)
+		valid, err := VerifySignedMessageByAddress(address, wrongMessage, hexutil.Encode(signature))
 		if err != nil {
 			t.Errorf("VerifySignedMessageByAddress() error = %v, want nil", err)
 			return
@@ -283,13 +292,15 @@ func TestVerifySignedMessageByAddress(t *testing.T) {
 	})
 
 	t.Run("Reject invalid recovery ID", func(t *testing.T) {
-		signature, err := Sign(message, privateKey)
+		hashedMessage := HashEthereumMessage(message)
+		signature, err := Sign(hashedMessage[:], privateKey)
 		if err != nil {
 			t.Fatalf("Failed to sign message: %v", err)
 		}
 
 		// Corrupt recovery ID
-		sigBytes := hexutil.MustDecode("0x" + signature)
+		sigBytes := make([]byte, len(signature))
+		copy(sigBytes, signature)
 		sigBytes[crypto.RecoveryIDOffset] = 25 // Invalid
 		corruptedSig := hexutil.Encode(sigBytes)
 
@@ -330,12 +341,13 @@ func TestVerifySignedMessageByAddress(t *testing.T) {
 		}
 
 		for _, msg := range messages {
-			signature, err := Sign(msg, privateKey)
+			hashedMessage := HashEthereumMessage(msg)
+			signature, err := Sign(hashedMessage[:], privateKey)
 			if err != nil {
 				t.Fatalf("Failed to sign message '%s': %v", msg, err)
 			}
 
-			valid, err := VerifySignedMessageByAddress(address, msg, "0x"+signature)
+			valid, err := VerifySignedMessageByAddress(address, msg, hexutil.Encode(signature))
 			if err != nil {
 				t.Errorf("VerifySignedMessageByAddress() error for message '%s': %v", msg, err)
 				continue
@@ -354,12 +366,13 @@ func TestVerifySignedMessageByPublicKey(t *testing.T) {
 	message := "Verify with public key"
 
 	t.Run("Verify valid signature with public key", func(t *testing.T) {
-		signature, err := Sign(message, privateKey)
+		hashedMessage := HashEthereumMessage(message)
+		signature, err := Sign(hashedMessage[:], privateKey)
 		if err != nil {
 			t.Fatalf("Failed to sign message: %v", err)
 		}
 
-		valid, err := VerifySignedMessageByPublicKey(publicKey, message, "0x"+signature)
+		valid, err := VerifySignedMessageByPublicKey(publicKey, message, hexutil.Encode(signature))
 		if err != nil {
 			t.Errorf("VerifySignedMessageByPublicKey() error = %v, want nil", err)
 			return
@@ -371,7 +384,8 @@ func TestVerifySignedMessageByPublicKey(t *testing.T) {
 	})
 
 	t.Run("Reject signature from different public key", func(t *testing.T) {
-		signature, err := Sign(message, privateKey)
+		hashedMessage := HashEthereumMessage(message)
+		signature, err := Sign(hashedMessage[:], privateKey)
 		if err != nil {
 			t.Fatalf("Failed to sign message: %v", err)
 		}
@@ -380,7 +394,7 @@ func TestVerifySignedMessageByPublicKey(t *testing.T) {
 		wrongPrivateKey, _ := generateTestKeyPair()
 		wrongPublicKey := &wrongPrivateKey.PublicKey
 
-		valid, err := VerifySignedMessageByPublicKey(wrongPublicKey, message, "0x"+signature)
+		valid, err := VerifySignedMessageByPublicKey(wrongPublicKey, message, hexutil.Encode(signature))
 		if err != nil {
 			t.Errorf("VerifySignedMessageByPublicKey() error = %v, want nil", err)
 			return
@@ -393,7 +407,8 @@ func TestVerifySignedMessageByPublicKey(t *testing.T) {
 
 	t.Run("Verify public key derivation matches address", func(t *testing.T) {
 		// Ensure VerifySignedMessageByPublicKey uses correct address derivation
-		signature, err := Sign(message, privateKey)
+		hashedMessage := HashEthereumMessage(message)
+		signature, err := Sign(hashedMessage[:], privateKey)
 		if err != nil {
 			t.Fatalf("Failed to sign message: %v", err)
 		}
@@ -401,8 +416,8 @@ func TestVerifySignedMessageByPublicKey(t *testing.T) {
 		address := crypto.PubkeyToAddress(*publicKey)
 
 		// Both methods should return the same result
-		validByPubKey, err1 := VerifySignedMessageByPublicKey(publicKey, message, "0x"+signature)
-		validByAddress, err2 := VerifySignedMessageByAddress(address, message, "0x"+signature)
+		validByPubKey, err1 := VerifySignedMessageByPublicKey(publicKey, message, hexutil.Encode(signature))
+		validByAddress, err2 := VerifySignedMessageByAddress(address, message, hexutil.Encode(signature))
 
 		if err1 != nil || err2 != nil {
 			t.Fatalf("Verification errors: pubkey=%v, address=%v", err1, err2)
@@ -430,13 +445,14 @@ func TestSignAndVerifyRoundTrip(t *testing.T) {
 	for _, message := range testCases {
 		t.Run("Round trip: "+message, func(t *testing.T) {
 			// Sign the message
-			signature, err := Sign(message, privateKey)
+			hashedMessage := HashEthereumMessage(message)
+			signature, err := Sign(hashedMessage[:], privateKey)
 			if err != nil {
 				t.Fatalf("Sign() error = %v", err)
 			}
 
 			// Recover address from signature
-			recoveredAddress, err := GetAddressFromSignature(message, "0x"+signature)
+			recoveredAddress, err := GetAddressFromSignature(message, hexutil.Encode(signature))
 			if err != nil {
 				t.Fatalf("GetAddressFromSignature() error = %v", err)
 			}
@@ -446,7 +462,7 @@ func TestSignAndVerifyRoundTrip(t *testing.T) {
 			}
 
 			// Verify signature by address
-			valid, err := VerifySignedMessageByAddress(address, message, "0x"+signature)
+			valid, err := VerifySignedMessageByAddress(address, message, hexutil.Encode(signature))
 			if err != nil {
 				t.Fatalf("VerifySignedMessageByAddress() error = %v", err)
 			}
@@ -456,7 +472,7 @@ func TestSignAndVerifyRoundTrip(t *testing.T) {
 			}
 
 			// Verify signature by public key
-			valid, err = VerifySignedMessageByPublicKey(&privateKey.PublicKey, message, "0x"+signature)
+			valid, err = VerifySignedMessageByPublicKey(&privateKey.PublicKey, message, hexutil.Encode(signature))
 			if err != nil {
 				t.Fatalf("VerifySignedMessageByPublicKey() error = %v", err)
 			}
@@ -473,12 +489,13 @@ func TestRecoveryIDConversion(t *testing.T) {
 	privateKey, address := generateTestKeyPair()
 	message := "Test recovery ID"
 
-	signature, err := Sign(message, privateKey)
+	hashedMessage := HashEthereumMessage(message)
+	signature, err := Sign(hashedMessage[:], privateKey)
 	if err != nil {
 		t.Fatalf("Sign() error = %v", err)
 	}
 
-	sigBytes := hexutil.MustDecode("0x" + signature)
+	sigBytes := signature
 
 	t.Run("Sign produces recovery ID 27 or 28", func(t *testing.T) {
 		recoveryID := sigBytes[crypto.RecoveryIDOffset]
@@ -488,7 +505,7 @@ func TestRecoveryIDConversion(t *testing.T) {
 	})
 
 	t.Run("GetAddressFromSignature handles recovery ID conversion", func(t *testing.T) {
-		recoveredAddress, err := GetAddressFromSignature(message, "0x"+signature)
+		recoveredAddress, err := GetAddressFromSignature(message, hexutil.Encode(signature))
 		if err != nil {
 			t.Fatalf("GetAddressFromSignature() error = %v", err)
 		}
@@ -499,7 +516,7 @@ func TestRecoveryIDConversion(t *testing.T) {
 	})
 
 	t.Run("VerifySignedMessageByAddress handles recovery ID conversion", func(t *testing.T) {
-		valid, err := VerifySignedMessageByAddress(address, message, "0x"+signature)
+		valid, err := VerifySignedMessageByAddress(address, message, hexutil.Encode(signature))
 		if err != nil {
 			t.Fatalf("VerifySignedMessageByAddress() error = %v", err)
 		}
