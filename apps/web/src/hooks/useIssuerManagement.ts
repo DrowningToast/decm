@@ -116,13 +116,7 @@ export const useIssuerManagement = ({
     const handleConfirmSelection = useCallback(
         (newIssuers: Issuer[]) => {
             // Merge with existing selections (avoid duplicates)
-            const merged = [...selectedIssuers];
-            newIssuers.forEach((issuer) => {
-                if (!merged.some((existing) => existing.id === issuer.id)) {
-                    merged.push(issuer);
-                }
-            });
-
+            const merged = [...selectedIssuers, ...newIssuers];
             setSelectedIssuers(merged);
             handleCloseModal();
         },

@@ -417,14 +417,43 @@ export default function HostEventDetailsPage({
 
                                 {/* Issuers Table */}
                                 {eventIssuers && eventIssuers.length > 0 && (
-                                    <div className="space-y-4">
+                                    <div className="space-y-6">
+                                        <div className="flex flex-col gap-4">
+                                            <div className="flex items-center justify-between">
+                                                <Typography
+                                                    variant="text"
+                                                    tag="h3"
+                                                    className="text-lg font-semibold"
+                                                >
+                                                    Event Issuers ({eventIssuers.length})
+                                                </Typography>
+                                            </div>
+
+                                            <DataTable
+                                                columns={issuerColumns}
+                                                data={eventIssuers}
+                                                totalItems={eventIssuers.length}
+                                                currentPage={1}
+                                                pageSize={10}
+                                                onPageChange={() => {}}
+                                                onPageSizeChange={() => {}}
+                                                searchValue=""
+                                                onSearchChange={() => {}}
+                                                searchPlaceholder="Search issuers..."
+                                                sorting={[]}
+                                                onSortingChange={() => {}}
+                                                isLoading={false}
+                                                disablePagination
+                                            />
+                                        </div>
+
                                         <div className="flex items-center justify-between">
                                             <Typography
                                                 variant="text"
                                                 tag="h3"
                                                 className="text-lg font-semibold"
                                             >
-                                                Event Issuers ({eventIssuers.length})
+                                                Event Certificates ({eventIssuers.length})
                                             </Typography>
                                             <WrappedButton
                                                 className="px-4 py-2 rounded-md bg-green-600 text-white font-medium hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -442,23 +471,6 @@ export default function HostEventDetailsPage({
                                                     : "Waiting for All Signatures"}
                                             </WrappedButton>
                                         </div>
-
-                                        <DataTable
-                                            columns={issuerColumns}
-                                            data={eventIssuers}
-                                            totalItems={eventIssuers.length}
-                                            currentPage={1}
-                                            pageSize={10}
-                                            onPageChange={() => {}}
-                                            onPageSizeChange={() => {}}
-                                            searchValue=""
-                                            onSearchChange={() => {}}
-                                            searchPlaceholder="Search issuers..."
-                                            sorting={[]}
-                                            onSortingChange={() => {}}
-                                            isLoading={false}
-                                            disablePagination
-                                        />
                                     </div>
                                 )}
 
