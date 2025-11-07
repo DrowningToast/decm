@@ -1,6 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { useEventInvitedParticipants } from "@/hooks/events/useEventInvitedParticipants";
 import { useCancelEventInvitation } from "@/hooks/events/useCancelEventInvitation";
 import ConfirmModal from "@/components/ConfirmModal";
 

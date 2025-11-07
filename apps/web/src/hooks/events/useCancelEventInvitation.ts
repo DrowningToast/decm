@@ -4,7 +4,7 @@ import { QUERY_KEY } from "@/lib/queryKeys";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export function useCancelEventInvitation(eventId: string) {
+export function useCancelEventInvitation() {
     const {
         mutate: cancelEventInvitation,
         isPending: isCancelling,
