@@ -448,6 +448,37 @@ definitions:
       registration_password:
         type: string
     type: object
+  issuer.IssuerEventResponse:
+    properties:
+      created_at:
+        type: string
+      event_end_date:
+        type: string
+      event_id:
+        type: string
+      event_location:
+        type: string
+      event_owner_credential_id:
+        type: string
+      event_short_description:
+        type: string
+      event_start_date:
+        type: string
+      event_title:
+        type: string
+      id:
+        type: string
+      is_signed:
+        type: integer
+      issuer_credential_id:
+        type: string
+      sign_message:
+        type: string
+      signature:
+        type: string
+      updated_at:
+        type: string
+    type: object
   onboard.CheckOnboardStatusRequest:
     properties:
       access_token:
@@ -1871,6 +1902,51 @@ paths:
           schema:
             $ref: '#/definitions/customerror.Err'
       summary: Get verified issuers
+      tags:
+      - Issuer
+  /api/v1/issuers/events:
+    get:
+      consumes:
+      - application/json
+      description: Get events assigned to the authenticated issuer for signing
+      operationId: get-issuer-events
+      parameters:
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Issuer credential ID
+        in: query
+        name: issuer_credential_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/issuer.IssuerEventResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get events for issuer signing
       tags:
       - Issuer
   /api/v1/onboard/check-onboard-status:

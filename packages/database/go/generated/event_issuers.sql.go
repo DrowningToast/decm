@@ -7,6 +7,7 @@ package generated
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -111,6 +112,90 @@ func (q *Queries) GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIs
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const GetEventIssuersByCredentialID = `-- name: GetEventIssuersByCredentialID :many
+SELECT 
+    ei.id,
+    ei.event_id,
+    ei.issuer_credential_id,
+    ei.is_signed,
+    ei.signature,
+    ei.sign_message,
+    ei.created_at,
+    ei.updated_at,
+    e.id as event_id,
+    e.title as event_title,
+    e.short_description as event_short_description,
+    e.start_date as event_start_date,
+    e.end_date as event_end_date,
+    e.location as event_location,
+    e.owner_credential_id as event_owner_credential_id
+FROM event_issuers ei
+INNER JOIN events e ON ei.event_id = e.id
+WHERE ei.issuer_credential_id = $1
+ORDER BY e.created_at DESC
+LIMIT $3 OFFSET $2
+`
+
+type GetEventIssuersByCredentialIDParams struct {
+	IssuerCredentialID uuid.UUID `json:"issuer_credential_id"`
+	OffsetCount        int32     `json:"offset_count"`
+	LimitCount         int32     `json:"limit_count"`
+}
+
+type GetEventIssuersByCredentialIDRow struct {
+	ID                     uuid.UUID          `json:"id"`
+	EventID                uuid.UUID          `json:"event_id"`
+	IssuerCredentialID     uuid.UUID          `json:"issuer_credential_id"`
+	IsSigned               int32              `json:"is_signed"`
+	Signature              pgtype.Text        `json:"signature"`
+	SignMessage            pgtype.Text        `json:"sign_message"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
+	EventID_2              uuid.UUID          `json:"event_id_2"`
+	EventTitle             string             `json:"event_title"`
+	EventShortDescription  string             `json:"event_short_description"`
+	EventStartDate         time.Time          `json:"event_start_date"`
+	EventEndDate           time.Time          `json:"event_end_date"`
+	EventLocation          string             `json:"event_location"`
+	EventOwnerCredentialID uuid.UUID          `json:"event_owner_credential_id"`
+}
+
+func (q *Queries) GetEventIssuersByCredentialID(ctx context.Context, arg GetEventIssuersByCredentialIDParams) ([]GetEventIssuersByCredentialIDRow, error) {
+	rows, err := q.db.Query(ctx, GetEventIssuersByCredentialID, arg.IssuerCredentialID, arg.OffsetCount, arg.LimitCount)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetEventIssuersByCredentialIDRow{}
+	for rows.Next() {
+		var i GetEventIssuersByCredentialIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.EventID,
+			&i.IssuerCredentialID,
+			&i.IsSigned,
+			&i.Signature,
+			&i.SignMessage,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.EventID_2,
+			&i.EventTitle,
+			&i.EventShortDescription,
+			&i.EventStartDate,
+			&i.EventEndDate,
+			&i.EventLocation,
+			&i.EventOwnerCredentialID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const GetEventIssuersByEventID = `-- name: GetEventIssuersByEventID :many
