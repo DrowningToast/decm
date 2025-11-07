@@ -13,7 +13,7 @@ import (
 
 type ImportEventParticipantsRequest struct {
 	EventID      string                   `json:"event_id" validate:"required,uuid"`
-	Participants []ParticipantRequestItem `json:"participants" validate:"required,min=1,max=100,dive"`
+	Participants []ParticipantRequestItem `json:"participants" validate:"required,min=1,dive"`
 }
 
 type ParticipantRequestItem struct {

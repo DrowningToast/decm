@@ -1,6 +1,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { Typography } from "@/components/typography/typography";
+import { useEventInvitedParticipants } from "@/hooks/events/useEventInvitedParticipants";
+import { useCancelEventInvitation } from "@/hooks/events/useCancelEventInvitation";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export interface Participant {
     id: string;
@@ -84,17 +86,23 @@ export const participantColumns: ColumnDef<Participant>[] = [
         header: "Action",
         enableSorting: false,
         cell: ({ row }) => {
+            const eventInvitationId = row.original.id;
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            const { cancelEventInvitation } = useCancelEventInvitation();
+
             return (
-                <Button
-                    size="sm"
-                    onClick={() => {
-                        // TODO: Implement view participant details
-                        console.log("View participant:", row.original.id);
-                    }}
-                    className="bg-red-400 text-sm text-white"
+                <ConfirmModal
+                    title="Cancel Invitation"
+                    message="Are you sure you want to cancel this invitation?"
+                    onConfirm={() => cancelEventInvitation(eventInvitationId)}
+                    onCancel={() => {}}
+                    cancelText="Cancel"
+                    confirmText="Confirm"
                 >
-                    Cancel
-                </Button>
+                    <Button size="sm" className="bg-red-400 text-sm text-white">
+                        Cancel
+                    </Button>
+                </ConfirmModal>
             );
         },
     },

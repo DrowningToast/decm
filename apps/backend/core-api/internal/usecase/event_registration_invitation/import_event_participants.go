@@ -69,10 +69,6 @@ func (uc *EventRegistrationInvitationUsecase) ImportEventParticipants(ctx contex
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("participants array is empty"))
 	}
 
-	if len(params.Participants) > 100 {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("maximum 100 participants allowed per import"))
-	}
-
 	invitations := make([]*entity.EventRegistrationInvitation, 0, len(params.Participants))
 
 	// Process each participant
