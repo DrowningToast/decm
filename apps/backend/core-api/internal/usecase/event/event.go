@@ -5,7 +5,8 @@ import (
 	"log/slog"
 
 	authDg "apps/backend/core-api/internal/datagateway"
-	datagateway "apps/backend/core-api/internal/datagateway/event"
+	datagateway "apps/backend/core-api/internal/datagateway"
+	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"apps/backend/services/s3"
@@ -14,25 +15,26 @@ import (
 )
 
 type EventUsecase struct {
-	EventDataGateway           datagateway.EventDataGateway
-	EventContractDataGateway   datagateway.EventContractDataGateway
-	EventIssuerDataGateway     datagateway.EventIssuerDataGateway
-	AuthenticationCredentialDg authDg.AuthenticationCredentialDataGateway
-
-	S3Service   *s3.S3Service
-	logger      *slog.Logger
-	authService *auth.AuthService
+	EventDataGateway              eventdatagateway.EventDataGateway
+	EventContractDataGateway      eventdatagateway.EventContractDataGateway
+	EventIssuerDataGateway        eventdatagateway.EventIssuerDataGateway
+	AuthenticationCredentialDg    authDg.AuthenticationCredentialDataGateway
+	EventRegistrationInvitationDg datagateway.EventRegistrationInvitationDataGateway
+	S3Service                     *s3.S3Service
+	logger                        *slog.Logger
+	authService                   *auth.AuthService
 }
 
-func NewEventUsecase(eventDataGateway datagateway.EventDataGateway, eventContractDataGateway datagateway.EventContractDataGateway, eventIssuerDataGateway datagateway.EventIssuerDataGateway, authenticationCredentialDg authDg.AuthenticationCredentialDataGateway, s3Service *s3.S3Service, logger *slog.Logger, authService *auth.AuthService) *EventUsecase {
+func NewEventUsecase(eventDataGateway eventdatagateway.EventDataGateway, eventContractDataGateway eventdatagateway.EventContractDataGateway, eventIssuerDataGateway eventdatagateway.EventIssuerDataGateway, authenticationCredentialDg authDg.AuthenticationCredentialDataGateway, eventRegistrationInvitationDg datagateway.EventRegistrationInvitationDataGateway, s3Service *s3.S3Service, logger *slog.Logger, authService *auth.AuthService) *EventUsecase {
 	return &EventUsecase{
-		EventDataGateway:           eventDataGateway,
-		EventContractDataGateway:   eventContractDataGateway,
-		EventIssuerDataGateway:     eventIssuerDataGateway,
-		AuthenticationCredentialDg: authenticationCredentialDg,
-		S3Service:                  s3Service,
-		logger:                     logger,
-		authService:                authService,
+		EventDataGateway:              eventDataGateway,
+		EventContractDataGateway:      eventContractDataGateway,
+		EventIssuerDataGateway:        eventIssuerDataGateway,
+		AuthenticationCredentialDg:    authenticationCredentialDg,
+		EventRegistrationInvitationDg: eventRegistrationInvitationDg,
+		S3Service:                     s3Service,
+		logger:                        logger,
+		authService:                   authService,
 	}
 }
 
