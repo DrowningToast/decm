@@ -98,7 +98,7 @@ export const ImportEventCertificatesPage = ({
 
     return (
         <PageContainer title="Certificate Import">
-            <div className="container mx-auto p-6">
+            <div className="mx-auto p-6">
                 <div className="mb-8">
                     <Typography
                         variant="header"
