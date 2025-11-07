@@ -98,17 +98,27 @@ definitions:
     type: object
   entity.EventRegistrationInvitation:
     properties:
+      academic_institution:
+        type: string
       cancelled_at:
         type: string
       code:
         type: string
       created_at:
         type: string
+      email:
+        type: string
       event_id:
+        type: string
+      first_name:
         type: string
       id:
         type: string
       inbox_message_id:
+        type: string
+      last_name:
+        type: string
+      phone_number:
         type: string
       updated_at:
         type: string
@@ -341,17 +351,20 @@ definitions:
     type: object
   event_registration_invitation.ParticipantRequestItem:
     properties:
-      academic_institution_name:
+      academic_institution:
         type: string
       email:
         type: string
-      name:
+      first_name:
+        type: string
+      last_name:
         type: string
       phone_number:
         type: string
     required:
     - email
-    - name
+    - first_name
+    - last_name
     type: object
   eventconfig.CreateEventRegistrationConfigRequest:
     properties:

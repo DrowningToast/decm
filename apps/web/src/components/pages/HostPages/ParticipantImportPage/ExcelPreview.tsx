@@ -19,10 +19,11 @@ interface PreviewData {
 
 // Fixed column names that Excel files must have
 const REQUIRED_COLUMNS = {
-    name: "name",
+    firstName: "first_name",
+    lastName: "last_name",
     email: "email",
-    phone_number: "phone_number",
-    academic_institution_name: "academic_institution_name",
+    phoneNumber: "phone_number",
+    academicInstitution: "academic_institution",
 };
 
 export const ExcelPreview = ({
@@ -89,10 +90,11 @@ export const ExcelPreview = ({
         if (validationError) return;
 
         const request = previewData.map((row) => ({
-            name: row.name,
+            first_name: row.first_name,
+            last_name: row.last_name,
             email: row.email,
             phone_number: row.phone_number,
-            academic_institution_name: row.academic_institution_name,
+            academic_institution: row.academic_institution,
         }));
 
         onConfirm(request);
@@ -202,10 +204,7 @@ export const ExcelPreview = ({
                         </thead>
                         <tbody>
                             {previewData.map((row, index) => (
-                                <tr
-                                    key={index}
-                                    className={index % 2 === 0 ? "bg-background" : "bg-muted/30"}
-                                >
+                                <tr key={index} className="bg-background">
                                     {Object.values(REQUIRED_COLUMNS).map((column) => (
                                         <td
                                             key={column}

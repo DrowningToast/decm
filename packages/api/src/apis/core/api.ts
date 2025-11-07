@@ -195,12 +195,17 @@ export interface EntityEvent {
 }
 
 export interface EntityEventRegistrationInvitation {
+    academic_institution?: string;
     cancelled_at?: string;
     code?: string;
     created_at?: string;
+    email?: string;
     event_id?: string;
+    first_name?: string;
     id?: string;
     inbox_message_id?: string;
+    last_name?: string;
+    phone_number?: string;
     updated_at?: string;
     valid_until?: string;
 }
@@ -319,9 +324,10 @@ export interface EventRegistrationInvitationImportEventParticipantsRequest {
 }
 
 export interface EventRegistrationInvitationParticipantRequestItem {
-    academic_institution_name?: string;
+    academic_institution?: string;
     email: string;
-    name: string;
+    first_name: string;
+    last_name: string;
     phone_number?: string;
 }
 

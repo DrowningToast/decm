@@ -10,10 +10,15 @@ import (
 )
 
 type CreateEventRegistrationInvitationParameters struct {
-	EventID        uuid.UUID
-	InboxMessageID uuid.UUID
-	ValidUntil     *time.Time
-	Code           *string
+	EventID             uuid.UUID
+	InboxMessageID      uuid.UUID
+	ValidUntil          *time.Time
+	Code                *string
+	FirstName           *string
+	LastName            *string
+	Email               *string
+	PhoneNumber         *string
+	AcademicInstitution *string
 }
 
 type EventRegistrationInvitationDataGateway interface {
@@ -25,7 +30,12 @@ type EventRegistrationInvitationDataGateway interface {
 }
 
 type UpdateEventRegistrationInvitationParameters struct {
-	ValidUntil  *time.Time
-	Code        *string
-	CancelledAt *time.Time
+	ValidUntil          *time.Time
+	Code                *string
+	CancelledAt         *time.Time
+	FirstName           *string
+	LastName            *string
+	Email               *string
+	PhoneNumber         *string
+	AcademicInstitution *string
 }
