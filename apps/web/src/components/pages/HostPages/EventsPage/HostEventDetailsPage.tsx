@@ -34,6 +34,7 @@ import type {
 import { toEventRegistrationConfigStatus } from "@/lib/events/event.utils";
 import { formatEthereumAddress } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface HostEventDetailsPageProps {
     eventId: string;
@@ -44,67 +45,6 @@ interface HostEventDetailsPageProps {
     eventContract?: GetEventContractByEventIdData;
     eventInvitations?: GetEventRegistrationInvitationsByEventIdData;
 }
-
-// Mock API function - replace with actual API call
-const mockFetchParticipants = async ({
-    page,
-    pageSize,
-    search,
-    sortBy,
-    sortOrder,
-}: {
-    page: number;
-    pageSize: number;
-    search: string;
-    sortBy?: string;
-    sortOrder?: "asc" | "desc";
-}): Promise<{ data: Participant[]; total: number }> => {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    // Mock data - replace with actual API call
-    const allParticipants: Participant[] = Array.from({ length: 45 }, (_, i) => ({
-        id: `participant-${i + 1}`,
-        name: `${["John", "Jane", "Bob", "Alice", "Charlie", "David", "Emma", "Frank"][i % 8]} ${
-            ["Doe", "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller"][i % 8]
-        }`,
-        email: `user${i + 1}@email.com`,
-        phoneNumber: `+1 ${Math.floor(100 + Math.random() * 900)} ${Math.floor(100 + Math.random() * 900)} ${Math.floor(1000 + Math.random() * 9000)}`,
-        walletAddress: `0x${Math.random().toString(16).substring(2, 6)}...${Math.random().toString(16).substring(2, 6)}`,
-        status: ["confirmed", "pending", "rejected"][i % 3] as "confirmed" | "pending" | "rejected",
-    }));
-
-    // Filter by search
-    let filteredData = allParticipants;
-    if (search) {
-        filteredData = allParticipants.filter(
-            (p) =>
-                p.name.toLowerCase().includes(search.toLowerCase()) ||
-                p.email.toLowerCase().includes(search.toLowerCase()),
-        );
-    }
-
-    // Sort
-    if (sortBy) {
-        filteredData.sort((a, b) => {
-            const aValue = a[sortBy as keyof Participant];
-            const bValue = b[sortBy as keyof Participant];
-
-            if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
-            if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
-            return 0;
-        });
-    }
-
-    // Paginate
-    const startIndex = (page - 1) * pageSize;
-    const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
-
-    return {
-        data: paginatedData,
-        total: filteredData.length,
-    };
-};
 
 export default function HostEventDetailsPage({
     eventId,
@@ -118,6 +58,8 @@ export default function HostEventDetailsPage({
     const { t } = useTranslation();
 
     console.log(eventInvitations);
+
+    const [searchValue, setSearchValue] = useState("");
 
     // Certificate state logic
     const hasCertificateConfig = !!eventCertificateConfig;
@@ -134,12 +76,6 @@ export default function HostEventDetailsPage({
     //     academicInstitution: "required",
     //     academicEmail: "required",
     // };
-
-    // Use the data table hook
-    const participantsTable = useDataTable<Participant>({
-        fetchData: mockFetchParticipants,
-        initialPageSize: 10,
-    });
 
     return (
         <PageContainer title="Events Details">
@@ -362,18 +298,18 @@ export default function HostEventDetailsPage({
 
                             <DataTable
                                 columns={participantColumns}
-                                data={participantsTable.data}
-                                totalItems={participantsTable.totalItems}
-                                currentPage={participantsTable.currentPage}
-                                pageSize={participantsTable.pageSize}
-                                onPageChange={participantsTable.setCurrentPage}
-                                onPageSizeChange={participantsTable.setPageSize}
-                                searchValue={participantsTable.searchValue}
-                                onSearchChange={participantsTable.setSearchValue}
+                                data={eventInvitations ?? []}
+                                totalItems={eventInvitations?.length ?? 0}
+                                currentPage={1}
+                                pageSize={10}
+                                onPageChange={() => {}}
+                                onPageSizeChange={() => {}}
+                                searchValue={searchValue ?? ""}
+                                onSearchChange={(value) => setSearchValue(value)}
                                 searchPlaceholder="Search participants..."
-                                sorting={participantsTable.sorting}
-                                onSortingChange={participantsTable.setSorting}
-                                isLoading={participantsTable.isLoading}
+                                sorting={[]}
+                                onSortingChange={() => {}}
+                                isLoading={false}
                             />
                         </div>
                     </StyledTabsContent>
@@ -455,7 +391,7 @@ export default function HostEventDetailsPage({
                                             className="text-muted-foreground"
                                         >
                                             No issuers configured for this event. Please add issuers
-                                            in the certificate settings.
+                                            in certificate settings.
                                         </Typography>
                                     </div>
                                 )}
@@ -466,7 +402,7 @@ export default function HostEventDetailsPage({
                                     Add event's certificate configuration
                                 </p>
                                 <p className="text-muted-foreground text-base mt-1 text-center max-w-xl">
-                                    Set up the certificate template and rules for this event.
+                                    Set up a certificate template and rules for this event.
                                     Participants will receive certificates based on your
                                     configuration.
                                 </p>

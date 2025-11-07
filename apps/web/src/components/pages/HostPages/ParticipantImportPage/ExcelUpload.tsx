@@ -1,6 +1,5 @@
 import { useRef } from "react";
 import { Typography } from "@/components/typography/typography";
-import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 
 interface ExcelUploadProps {
@@ -28,7 +27,7 @@ export const ExcelUpload = ({ onFileSelect, selectedFile, disabled = false }: Ex
             }
 
             // Validate file size (max 10MB)
-            const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+            const maxSize = 10 * 1024 * 1024; //10MB in bytes
             if (file.size > maxSize) {
                 // TODO: Show error message
                 return;
