@@ -886,6 +886,40 @@ info:
   title: DECM Core
   version: "1.0"
 paths:
+  /api/v1/auth/check-role:
+    get:
+      consumes:
+      - application/json
+      description: Check if the current user has specific roles (authenticated, host,
+        issuer). Only returns requested fields.
+      operationId: check-role
+      parameters:
+      - description: Check if user is authenticated
+        in: query
+        name: is_authenticated
+        type: boolean
+      - description: Check if user is a verified host/organizer
+        in: query
+        name: is_host
+        type: boolean
+      - description: Check if user is a verified issuer
+        in: query
+        name: is_issuer
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CheckRoleResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Check user roles
+      tags:
+      - Auth
   /api/v1/auth/logout:
     post:
       consumes:

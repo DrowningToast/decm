@@ -5,14 +5,95 @@ description: "Go backend architecture patterns - handler, usecase, repository la
 # Go Backend Architecture
 
 ## Overview
-DECM backend follows a clean architecture pattern with clear separation of concerns across three main layers.
+
+DECM backend follows a **clean architecture pattern** with clear separation of concerns across three main layers.
+
+## ⚠️ CRITICAL: Clean Architecture Principle
+
+**Handlers MUST NOT call repositories directly. All data access MUST go through the UseCase layer.**
+
+```
+✅ CORRECT:   Handler → UseCase → Repository → Database
+❌ INCORRECT: Handler → Repository → Database
+```
+
+This ensures:
+
+- Business logic is centralized in usecases
+- Handlers remain thin and focused on HTTP concerns
+- Testability and maintainability
+- Proper separation of concerns
+
+### Example: Correct vs Incorrect
+
+**❌ INCORRECT - Handler calling repository directly:**
+
+```go
+// handler_check_role.go
+func (h Handler) CheckRole(ctx *fiber.Ctx) error {
+    user, _ := h.AuthService.GetUserContext(ctx)
+
+    // ❌ BAD: Handler calling repository directly
+    credential, err := h.AuthCredentialRepo.GetAuthenticationCredentialById(ctx.UserContext(), user.UserId)
+    if err != nil {
+        return err
+    }
+
+    // ❌ BAD: Business logic in handler
+    isHost := credential.IsVerifiedOrganizer
+    return ctx.JSON(fiber.Map{"is_host": isHost})
+}
+```
+
+**✅ CORRECT - Handler calling usecase:**
+
+```go
+// handler_check_role.go
+func (h Handler) CheckRole(ctx *fiber.Ctx) error {
+    // 1. Parse query parameters
+    checkHost := ctx.Query("is_host") == "true"
+
+    // 2. Get user context
+    user, _ := h.AuthService.GetUserContext(ctx)
+
+    // 3. Call usecase (business logic lives here)
+    result, err := h.AuthUc.CheckRole(ctx.UserContext(), auth_usecase.CheckRoleParams{
+        UserId:    &user.UserId,
+        CheckHost: checkHost,
+    })
+    if err != nil {
+        return customerror.Parse(&customerror.ErrInternalServer, err)
+    }
+
+    // 4. Return response
+    return ctx.Status(fiber.StatusOK).JSON(result)
+}
+
+// usecase/auth/auth.go
+func (u *AuthUsecase) CheckRole(ctx context.Context, params CheckRoleParams) (*CheckRoleResult, error) {
+    // ✅ GOOD: Business logic in usecase
+    if params.UserId == nil {
+        return &CheckRoleResult{IsHost: boolPtr(false)}, nil
+    }
+
+    // ✅ GOOD: Usecase calls repository
+    credential, err := u.AuthCredentialDg.GetAuthenticationCredentialById(ctx, *params.UserId)
+    if err != nil {
+        return nil, err
+    }
+
+    return &CheckRoleResult{IsHost: &credential.IsVerifiedOrganizer}, nil
+}
+```
 
 ## Architecture Layers
 
 ### 1. Handler Layer (`internal/handler/`)
+
 **Responsibility**: HTTP request/response handling, input validation, error mapping
 
 **Structure**:
+
 ```
 internal/handler/
 ├── onboard/
@@ -26,13 +107,15 @@ internal/handler/
 ```
 
 **Pattern**:
+
 ```go
 type Handler struct {
-    UseCase UseCase
+    UseCase     *featureusecase.FeatureUsecase
+    AuthService *auth.AuthService
 }
 
-func NewHandler(useCase UseCase) *Handler {
-    return &Handler{UseCase: useCase}
+func NewHandler(useCase *featureusecase.FeatureUsecase, authService *auth.AuthService) *Handler {
+    return &Handler{UseCase: useCase, AuthService: authService}
 }
 
 // @Summary Brief description
@@ -74,6 +157,7 @@ func (h *Handler) HandleAction(ctx *fiber.Ctx) error {
 ```
 
 **Routes Pattern** (`routes.go`):
+
 ```go
 func (h *Handler) RegisterRoutes(router fiber.Router) {
     router.Post("/action", h.HandleAction)
@@ -83,9 +167,11 @@ func (h *Handler) RegisterRoutes(router fiber.Router) {
 ```
 
 ### 2. UseCase Layer (`internal/usecase/`)
+
 **Responsibility**: Business logic, orchestration, transaction management
 
 **Structure**:
+
 ```
 internal/usecase/
 └── [feature]/
@@ -94,6 +180,7 @@ internal/usecase/
 ```
 
 **Pattern**:
+
 ```go
 type UseCase struct {
     Repo       Repository
@@ -147,9 +234,11 @@ func (uc *UseCase) validateBusinessRules(input InputDTO) error {
 ```
 
 ### 3. Repository Layer (`internal/repository/`)
+
 **Responsibility**: Database operations, data access, query execution
 
 **Structure**:
+
 ```
 internal/repository/
 └── [feature]/
@@ -158,6 +247,7 @@ internal/repository/
 ```
 
 **Pattern**:
+
 ```go
 type Repository struct {
     Queries *database.Queries
@@ -217,6 +307,7 @@ func (r *Repository) mapToEntity(db database.Entity) *Entity {
 ## Dependency Injection Pattern
 
 ### Main Setup (`cmd/main.go`):
+
 ```go
 func main() {
     // 1. Load config
@@ -245,6 +336,7 @@ func main() {
 ## Entity/DTO Pattern
 
 ### Domain Entity (internal/entity/):
+
 ```go
 type User struct {
     ID        uuid.UUID
@@ -261,6 +353,7 @@ func (u *User) FullName() string {
 ```
 
 ### Request DTO (handler):
+
 ```go
 type RegisterRequest struct {
     GoogleCode string `json:"google_code" validate:"required"`
@@ -269,6 +362,7 @@ type RegisterRequest struct {
 ```
 
 ### Response DTO (handler):
+
 ```go
 type RegisterResponse struct {
     UserID    uuid.UUID `json:"user_id"`
@@ -281,6 +375,7 @@ type RegisterResponse struct {
 ## PII Encryption Pattern
 
 ### Repository Level:
+
 ```go
 // Writing encrypted data
 func (r *Repository) CreateUser(ctx context.Context, user *User) error {
@@ -311,6 +406,7 @@ func (r *Repository) GetUser(ctx context.Context, id uuid.UUID) (*User, error) {
 ## Error Handling
 
 ### At Handler Level:
+
 ```go
 // Return customerror instances
 return customerror.New(
@@ -321,6 +417,7 @@ return customerror.New(
 ```
 
 ### At UseCase Level:
+
 ```go
 // Wrap domain-specific errors
 if !user.IsActive() {
@@ -333,6 +430,7 @@ if !user.IsActive() {
 ```
 
 ### At Repository Level:
+
 ```go
 // Handle database errors
 if errors.Is(err, pgx.ErrNoRows) {
@@ -387,6 +485,7 @@ func (uc *UseCase) ComplexOperation(ctx context.Context, input InputDTO) error {
 ## Best Practices
 
 ### ✅ DO:
+
 - Separate concerns: handler → usecase → repository
 - Use dependency injection
 - Return customerror instances from all layers
@@ -399,8 +498,10 @@ func (uc *UseCase) ComplexOperation(ctx context.Context, input InputDTO) error {
 - Use context.Context for cancellation
 
 ### ❌ DON'T:
-- Put business logic in handlers
-- Access database directly from handlers
+
+- **Put business logic in handlers** - All business logic belongs in usecases
+- **Access database directly from handlers** - Always go through usecase layer
+- **Call repositories from handlers** - This violates clean architecture
 - Skip input validation
 - Return raw errors to clients
 - Store PII unencrypted
@@ -413,6 +514,7 @@ func (uc *UseCase) ComplexOperation(ctx context.Context, input InputDTO) error {
 ## Common Utilities
 
 ### Customer Error:
+
 ```go
 import "decm-backend/common/customerror"
 
@@ -421,6 +523,7 @@ customerror.NewValidationErr(err)
 ```
 
 ### Validation:
+
 ```go
 import "decm-backend/common/validatorutils"
 
@@ -428,6 +531,7 @@ validatorutils.Validate(&struct)
 ```
 
 ### PG Error Handling:
+
 ```go
 import "decm-backend/common/pgerrutils"
 
@@ -435,6 +539,7 @@ pgerrutils.HandlePostgresError(err)
 ```
 
 ### Encryption:
+
 ```go
 import "decm-backend/common/encryptutils"
 
@@ -451,6 +556,7 @@ encryptutils.Decrypt(encrypted, key)
 - Main struct: `handler.go`, `usecase.go`, `repository.go`
 
 ## Related Documentation
+
 - Error handling: See [error-handling.mdc](mdc:error-handling.mdc)
 - Database security: See workspace rule `database-security`
 - Authentication: See workspace rule `authentication-security`
