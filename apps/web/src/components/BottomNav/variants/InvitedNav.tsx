@@ -41,7 +41,7 @@ export const InvitedNav = () => {
                     color="background-alt"
                     className="text-xs font-normal leading-normal tracking-[0.06px] text-center whitespace-nowrap"
                 >
-                    {t("participant.events.invited") || "You're invited! Click here to continue."}
+                    {t("participant.events.invited")}
                 </Typography>
             </button>
         </div>
