@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "dotenv -e ../../.env.client -- vite",
-        "build": "dotenv -e ../../.env.client -- tsc -b && vite build",
+        "build": "dotenv -e ../../.env.client -- tsc --project tsconfig.app.json --noEmit && vite build",
         "lint": "eslint .",
         "preview": "dotenv -e ../../.env.client -- vite preview",
         "test": "vitest",

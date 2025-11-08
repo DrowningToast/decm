@@ -10,7 +10,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ title, href }) => {
     return (
         <Link
             to={href}
-            className="bg-[rgba(217,217,217,0.02)] border border-[rgba(217,217,217,0.1)] rounded-lg px-6 py-5 transition-all hover:bg-[rgba(217,217,217,0.05)] hover:border-[rgba(217,217,217,0.2)] cursor-pointer w-auto md:w-full inline-block"
+            className="bg-muted border border-border rounded-lg px-6 py-5 transition-all hover:bg-muted/50 hover:border-border/20 cursor-pointer w-auto md:w-full inline-block"
         >
             <Typography
                 variant="header"

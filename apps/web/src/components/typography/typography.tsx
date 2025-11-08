@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
-import type React from "react";
+import React, { forwardRef } from "react";
 
 // eslint-disable-next-line
 export const typographyVariants = cva("text-wrap", {
@@ -41,15 +41,14 @@ type TypographyProps<T extends (typeof TAGS)[number] = "span"> = React.HTMLAttri
         tag: T;
     };
 
-export const Typography = <T extends (typeof TAGS)[number] = "span">({
-    className,
-    color,
-    size,
-    variant: level,
-    tag,
-    children,
-    ...props
-}: TypographyProps<T>) => {
+type TypographyBaseProps = TypographyProps<(typeof TAGS)[number]>;
+
+export const Typography = forwardRef<HTMLElement, TypographyBaseProps>(function Typography<
+    T extends (typeof TAGS)[number] = "span",
+>(
+    { className, color, size, variant: level, tag, children, ...props }: TypographyProps<T>,
+    ref: React.ForwardedRef<HTMLElement>,
+) {
     const _className = cn(
         typographyVariants({
             size,
@@ -62,65 +61,66 @@ export const Typography = <T extends (typeof TAGS)[number] = "span">({
     switch (tag) {
         case "h1":
             return (
-                <h1 className={_className} {...props}>
+                <h1 ref={ref as React.Ref<HTMLHeadingElement>} className={_className} {...props}>
                     {children}
                 </h1>
             );
         case "h2":
             return (
-                <h2 className={_className} {...props}>
+                <h2 ref={ref as React.Ref<HTMLHeadingElement>} className={_className} {...props}>
                     {children}
                 </h2>
             );
         case "h3":
             return (
-                <h3 className={_className} {...props}>
+                <h3 ref={ref as React.Ref<HTMLHeadingElement>} className={_className} {...props}>
                     {children}
                 </h3>
             );
         case "h4":
             return (
-                <h4 className={_className} {...props}>
+                <h4 ref={ref as React.Ref<HTMLHeadingElement>} className={_className} {...props}>
                     {children}
                 </h4>
             );
         case "h5":
             return (
-                <h5 className={_className} {...props}>
+                <h5 ref={ref as React.Ref<HTMLHeadingElement>} className={_className} {...props}>
                     {children}
                 </h5>
             );
         case "h6":
             return (
-                <h6 className={_className} {...props}>
+                <h6 ref={ref as React.Ref<HTMLHeadingElement>} className={_className} {...props}>
                     {children}
                 </h6>
             );
         case "span":
             return (
-                <span className={_className} {...props}>
+                <span ref={ref as React.Ref<HTMLSpanElement>} className={_className} {...props}>
                     {children}
                 </span>
             );
         case "p":
             return (
-                <p className={_className} {...props}>
+                <p ref={ref as React.Ref<HTMLParagraphElement>} className={_className} {...props}>
                     {children}
                 </p>
             );
         case "div":
             return (
-                <div className={_className} {...props}>
+                <div ref={ref as React.Ref<HTMLDivElement>} className={_className} {...props}>
                     {children}
                 </div>
             );
         case "label":
             return (
-                <label className={_className} {...props}>
+                <label ref={ref as React.Ref<HTMLLabelElement>} className={_className} {...props}>
                     {children}
                 </label>
             );
         default:
             break;
     }
-};
+    return null;
+});

@@ -12,7 +12,7 @@ import { OnboardMethods } from "@/pages/onboard/[method]";
 export const useSignUpPageRedirect = () => {
     const navigate = useNavigate();
     const { onboardStatus, isLoading: isOnboardStatusLoading } = useCheckOnboardStatus();
-    const { address, isReconnecting, isDisconnected, isConnecting } = useAccount();
+    const { address, isReconnecting, isConnecting } = useAccount();
     const [authSignSignature] = useLocalStorage<string | undefined>(
         LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE,
         undefined,

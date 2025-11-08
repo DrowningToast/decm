@@ -4,10 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormField, FormItem, FormControl, FormMessage, Form } from "@/components/ui/form";
-import { LogoutButton } from "@/components/auth/LogoutButton";
 import { OnboardRegistrationMethod } from "@decm/api";
 import { OnboardPageContext } from "@/pages/onboard/[method]";
 import { useContext } from "react";
+import { Link } from "@/router";
+import { useDisconnect } from "wagmi";
 
 type BaseProfilePageProps = {
     t: (key: string) => string;
@@ -25,6 +26,7 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
     method,
 }) => {
     const { profileForm: form } = useContext(OnboardPageContext);
+    const { disconnect } = useDisconnect();
 
     return (
         <Form {...form}>
@@ -275,13 +277,33 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
                             </Button>
                         )}
 
-                        <LogoutButton
-                            type={
-                                method === OnboardRegistrationMethod.RegistrationMethodWallet
-                                    ? "disconnect"
-                                    : "signout"
-                            }
-                        />
+                        {method === OnboardRegistrationMethod.RegistrationMethodWallet ? (
+                            <button
+                                type="button"
+                                onClick={() => disconnect()}
+                                className="text-start h-[14.5px] inline-block"
+                            >
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="background-alt"
+                                    className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
+                                >
+                                    {t("verify.disconnectLink")}
+                                </Typography>
+                            </button>
+                        ) : (
+                            <Link to="/signout" className="text-start h-[14.5px] inline-block">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="background-alt"
+                                    className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
+                                >
+                                    {t("onboard.logout")}
+                                </Typography>
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>

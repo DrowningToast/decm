@@ -168,15 +168,15 @@ export class AuthService {
 
     public async signOut({ showSuccessToast: showToast = true }: SignOutParams | undefined = {}) {
         try {
-            const account = await getAccount(this._wagmiConfig);
+            await this._coreApi.v1.logout();
             removeLocalStorageItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
             removeLocalStorageItem(LOCAL_STORAGE_KEYS.EXPIRES_IN);
             removeLocalStorageItem(LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE);
             // if wallet is connected, disconnect it
+            const account = getAccount(this._wagmiConfig);
             if (account?.isConnected) {
                 await disconnect(this._wagmiConfig);
             }
-            await this._coreApi.v1.logout();
             if (showToast) {
                 toast.info(TOAST_USECASE_VIEWMODEL[USECASE_IDS.GENERIC].SIGN_OUT_SUCCESS);
             }

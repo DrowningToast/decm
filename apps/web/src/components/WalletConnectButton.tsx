@@ -20,8 +20,13 @@ export const WalletConnectButton = ({ className, onClick, children, isLoading = 
     };
 
     return (
-        <div className={cn(className)} onClick={handleClick}>
+        <button
+            type="button"
+            className={cn("border-0 bg-transparent p-0 font-inherit text-inherit", className)}
+            onClick={handleClick}
+            disabled={isLoading}
+        >
             {children}
-        </div>
+        </button>
     );
 };

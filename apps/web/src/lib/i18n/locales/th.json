@@ -54,7 +54,30 @@
         "preference": "การตั้งค่าส่วนตัว",
         "readDocs": "อ่านเอกสาร",
         "socials": "โซเชียล",
-        "noItems": "ไม่มีรายการ"
+        "noItems": "ไม่มีรายการ",
+        "menu": "เมนู",
+        "close": "ปิด"
+    },
+    "walletDebug": {
+        "noWallet": "ยังไม่ได้เชื่อมต่อวอลเล็ต",
+        "initializingWallet": "⏸️ กำลังเริ่มต้นวอลเล็ต...",
+        "addressDetected": "ตรวจพบที่อยู่: {{addressStart}}...{{addressEnd}}",
+        "title": "💼 ข้อมูลดีบักวอลเล็ต",
+        "statusLabel": "สถานะ:",
+        "initializing": "⏸️ กำลังเริ่มต้น...",
+        "connecting": "⏳ กำลังเชื่อมต่อ...",
+        "ready": "✅ พร้อมใช้งาน",
+        "connectedWaiting": "🟡 เชื่อมต่อแล้ว (รอสาธารณะไคลเอนต์)",
+        "addressLabel": "ที่อยู่:",
+        "copyTitle": "คัดลอกที่อยู่",
+        "chainIdLabel": "รหัสเชน:",
+        "publicClientTitle": "รายละเอียด Public Client:",
+        "publicClientKey": "คีย์:",
+        "publicClientChainLabel": "เชน:",
+        "publicClientChainValue": "{{name}} (ID: {{id}})",
+        "transportLabel": "ทรานสปอร์ต:",
+        "transportUnknown": "ไม่ทราบ",
+        "viewRawSummary": "ดูข้อมูล Public Client แบบดิบ"
     },
     "auth": {
         "signIn": "เข้าสู่ระบบ",
@@ -918,6 +941,7 @@
                 "accepted": "ยอมรับแล้ว",
                 "seatsCount": "จำนวนที่นั่ง",
                 "eventContactAddress": "ที่อยู่联系กิจกรรม",
+                "noAddress": "ไม่มีที่อยู่ติดต่อ",
                 "passwordPlaceholder": "กรอกรหัสผ่านที่นี่"
             },
             "invited": "คุณได้รับเชิญแล้ว! คลิกที่นี่เพื่อดำเนินการต่อ",

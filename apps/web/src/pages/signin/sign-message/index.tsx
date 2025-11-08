@@ -2,7 +2,7 @@ import { FaviconHelmet } from "@/components/providers/helmets/FaviconHelmet";
 import { VerifySignMessagePage } from "@/components/pages/Auth/VerifySignMessagePage";
 import { useTranslation } from "react-i18next";
 import { useAccount } from "wagmi";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "@/router";
 import { toast } from "sonner";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";

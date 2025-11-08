@@ -3,8 +3,10 @@ import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSignup } from "./useSignup";
-import { LogoutButton } from "../../auth/LogoutButton";
 import { OnboardPageContext } from "../../../pages/onboard/[method]";
+import { Link } from "@/router";
+import { useDisconnect } from "wagmi";
+import { useTranslation } from "react-i18next";
 
 export interface ConfirmationItem {
     id: string;
@@ -40,6 +42,8 @@ export const BaseConfirmPage: React.FC<BaseConfirmPageProps> = ({
 }) => {
     const { method } = useContext(OnboardPageContext);
     const { isLoading } = useSignup();
+    const { disconnect } = useDisconnect();
+    const { t } = useTranslation();
 
     const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>(
         requiredConfirmations.reduce((acc, item) => ({ ...acc, [item.id]: false }), {}),
@@ -48,8 +52,6 @@ export const BaseConfirmPage: React.FC<BaseConfirmPageProps> = ({
     const handleCheckChange = (id: string, checked: boolean) => {
         setCheckedItems((prev) => ({ ...prev, [id]: checked }));
     };
-
-    const logoutButtonType = method === "wallet" ? "disconnect" : "signout";
 
     const allChecked = Object.values(checkedItems).every((checked) => checked);
     const isConfirmDisabled = requireAllChecked && !allChecked;
@@ -130,7 +132,33 @@ export const BaseConfirmPage: React.FC<BaseConfirmPageProps> = ({
                         {backButtonText}
                     </Button>
 
-                    <LogoutButton type={logoutButtonType} />
+                    {method === "wallet" ? (
+                        <button
+                            type="button"
+                            onClick={() => disconnect()}
+                            className="text-start h-[14.5px] inline-block"
+                        >
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                color="background-alt"
+                                className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
+                            >
+                                {t("verify.disconnectLink")}
+                            </Typography>
+                        </button>
+                    ) : (
+                        <Link to="/signout" className="text-start h-[14.5px] inline-block">
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                color="background-alt"
+                                className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
+                            >
+                                {t("onboard.logout")}
+                            </Typography>
+                        </Link>
+                    )}
                 </div>
             </div>
         </div>
