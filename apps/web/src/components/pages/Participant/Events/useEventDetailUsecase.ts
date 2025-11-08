@@ -19,6 +19,7 @@ const mockEventDetails: Record<string, EventDetail> = {
         description:
             "This is a password-protected event. You need to enter the correct password to join.",
         eventName: "ToBelT69",
+        contactAddress: "0x1234...abcd",
         dateTime: "2024-09-24",
         finalCallDate: "2024-09-24",
         status: "accepting",
@@ -35,6 +36,7 @@ const mockEventDetails: Record<string, EventDetail> = {
         description:
             "This is an invitation-only event. You can only join if you have been invited.",
         eventName: "ToBelT69",
+        contactAddress: "0x9876...4321",
         dateTime: "2024-09-25",
         finalCallDate: "2024-09-25",
         status: "accepting",
@@ -48,6 +50,7 @@ const mockEventDetails: Record<string, EventDetail> = {
         name: "ToBelT69 - Closed Event",
         description: "This event is now closed and no longer accepting participants.",
         eventName: "ToBelT69",
+        contactAddress: "0xa1b2...c3d4",
         dateTime: "2024-09-20",
         finalCallDate: "2024-09-20",
         status: "closed",

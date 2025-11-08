@@ -227,7 +227,8 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                                     tag="p"
                                     className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                                 >
-                                    0x0000...0000
+                                    {event.contactAddress ||
+                                        t("participant.events.detail.noAddress")}
                                 </Typography>
                                 <ExternalLink className="w-4 h-4 text-foreground-alt" />
                             </div>

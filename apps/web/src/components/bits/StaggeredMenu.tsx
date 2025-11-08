@@ -336,42 +336,47 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         }
     }, [changeMenuColorOnOpen, menuButtonColor, openMenuButtonColor]);
 
-    const animateText = useCallback((opening: boolean) => {
-        const inner = textInnerRef.current;
-        if (!inner) return;
+    const animateText = useCallback(
+        (opening: boolean) => {
+            const inner = textInnerRef.current;
+            if (!inner) return;
 
-        textCycleAnimRef.current?.kill();
+            textCycleAnimRef.current?.kill();
 
-        const currentLabel = opening ? "Menu" : "Close";
-        const targetLabel = opening ? "Close" : "Menu";
-        const cycles = 3;
+            const menuLabel = t("nav.menu");
+            const closeLabel = t("nav.close");
+            const currentLabel = opening ? menuLabel : closeLabel;
+            const targetLabel = opening ? closeLabel : menuLabel;
+            const cycles = 3;
 
-        const seq: string[] = [currentLabel];
-        let last = currentLabel;
-        for (let i = 0; i < cycles; i++) {
-            last = last === "Menu" ? "Close" : "Menu";
-            seq.push(last);
-        }
-        if (last !== targetLabel) seq.push(targetLabel);
-        seq.push(targetLabel);
+            const seq: string[] = [currentLabel];
+            let last = currentLabel;
+            for (let i = 0; i < cycles; i++) {
+                last = last === menuLabel ? closeLabel : menuLabel;
+                seq.push(last);
+            }
+            if (last !== targetLabel) seq.push(targetLabel);
+            seq.push(targetLabel);
 
-        // Render text lines dynamically
-        if (inner) {
-            inner.innerHTML = seq
-                .map((line) => `<span class="sm-toggle-line">${line}</span>`)
-                .join("");
-        }
-        gsap.set(inner, { yPercent: 0 });
+            // Render text lines dynamically
+            if (inner) {
+                inner.innerHTML = seq
+                    .map((line) => `<span class="sm-toggle-line">${line}</span>`)
+                    .join("");
+            }
+            gsap.set(inner, { yPercent: 0 });
 
-        const lineCount = seq.length;
-        const finalShift = ((lineCount - 1) / lineCount) * 100;
+            const lineCount = seq.length;
+            const finalShift = ((lineCount - 1) / lineCount) * 100;
 
-        textCycleAnimRef.current = gsap.to(inner, {
-            yPercent: -finalShift,
-            duration: 0.5 + lineCount * 0.07,
-            ease: "power4.out",
-        });
-    }, []);
+            textCycleAnimRef.current = gsap.to(inner, {
+                yPercent: -finalShift,
+                duration: 0.5 + lineCount * 0.07,
+                ease: "power4.out",
+            });
+        },
+        [t],
+    );
 
     const toggleMenu = useCallback(() => {
         const target = !openRef.current;

@@ -28,7 +28,7 @@ export const ShortlistedNav = () => {
                 color="foreground"
                 className="flex-1 text-xs font-normal italic leading-normal tracking-[0.06px] text-center"
             >
-                {t("participant.events.shortlisted") || "Your name is shortlisted!"}
+                {t("participant.events.shortlisted")}
             </Typography>
         </div>
     );

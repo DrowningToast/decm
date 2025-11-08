@@ -47,10 +47,11 @@ export const StyledTabs = ({
 /**
  * Styled TabsList with consistent background and height
  */
-export const StyledTabsList = ({ children, className }: StyledTabsListProps) => {
-    return (
-        <TabsList className={cn("w-full h-10 bg-[#E9DEDE] py-1.5", className)}>{children}</TabsList>
-    );
+export const StyledTabsList = ({
+    children,
+    className,
+}: StyledTabsListProps): React.ReactElement => {
+    return <TabsList className={cn("w-full h-10 bg-muted py-1.5", className)}>{children}</TabsList>;
 };
 
 /**

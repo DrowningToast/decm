@@ -3,6 +3,7 @@ import { QUERY_KEY } from "@/lib/queryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import type { EntityProfile } from "@decm/api";
 
 // Mock type for ProfileUpdateProfileRequest until API is regenerated
 export interface ProfileUpdateProfileRequest {
@@ -32,8 +33,16 @@ export const useUpdateProfile = () => {
 
     const mutation = useMutation({
         mutationFn: async (profile: ProfileUpdateProfileRequest) => {
+            // Get the current profile from cache to extract credential_id
+            const currentProfile = queryClient.getQueryData<EntityProfile>(QUERY_KEY.user.profile);
+            const credentialId = currentProfile?.authentication_credential_id;
+
+            if (!credentialId) {
+                throw new Error("No credential ID found. Please ensure you're logged in.");
+            }
+
             const response = await coreApiClient.v1.updateProfileByCredentialId(
-                { credentialId: undefined }, // The backend will use the session credential
+                { credentialId },
                 profile,
             );
             return response;
