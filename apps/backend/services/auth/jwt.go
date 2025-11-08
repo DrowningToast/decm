@@ -15,19 +15,31 @@ import (
 type JwtPayload struct {
 	UserId         uuid.UUID             `json:"id"`
 	WalletAddress  string                `json:"wallet_address"`
+	Email          *string               `json:"email,omitempty"`
 	SolutionStatus common.SolutionStatus `json:"solution_status"`
+
+	IsVerifiedOrganizer *bool `json:"is_verified_organizer,omitempty"`
+	IsVerifiedIssuer    *bool `json:"is_verified_issuer,omitempty"`
 }
 
 type JwtClaims struct {
 	UserId        uuid.UUID `json:"id"`
 	WalletAddress string    `json:"wallet_address"`
+	Email         *string   `json:"email,omitempty"`
+
+	IsVerifiedOrganizer *bool `json:"is_verified_organizer,omitempty"`
+	IsVerifiedIssuer    *bool `json:"is_verified_issuer,omitempty"`
+
 	jwt.RegisteredClaims
 }
 
 func (s *AuthService) CreateToken(payload JwtPayload) (string, error) {
 	claims := JwtClaims{
-		UserId:        payload.UserId,
-		WalletAddress: payload.WalletAddress,
+		UserId:              payload.UserId,
+		WalletAddress:       payload.WalletAddress,
+		Email:               payload.Email,
+		IsVerifiedOrganizer: payload.IsVerifiedOrganizer,
+		IsVerifiedIssuer:    payload.IsVerifiedIssuer,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    s.Issuer,
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(s.Expiration)),

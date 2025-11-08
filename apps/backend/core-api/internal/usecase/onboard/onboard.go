@@ -104,8 +104,10 @@ func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMs
 	}
 
 	sessionToken, err := u.authService.CreateToken(auth.JwtPayload{
-		UserId:        credential.Id,
-		WalletAddress: credential.WalletAddress,
+		UserId:              credential.Id,
+		WalletAddress:       credential.WalletAddress,
+		IsVerifiedOrganizer: &credential.IsVerifiedOrganizer,
+		IsVerifiedIssuer:    &credential.IsVerifiedIssuer,
 	})
 	if err != nil {
 		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
@@ -221,8 +223,11 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 	}
 
 	sessionToken, err := u.authService.CreateToken(auth.JwtPayload{
-		UserId:        credential.Id,
-		WalletAddress: credential.WalletAddress,
+		UserId:              credential.Id,
+		WalletAddress:       credential.WalletAddress,
+		Email:               &userInfo.Email,
+		IsVerifiedOrganizer: &credential.IsVerifiedOrganizer,
+		IsVerifiedIssuer:    &credential.IsVerifiedIssuer,
 	})
 	if err != nil {
 		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
@@ -276,8 +281,11 @@ func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Co
 		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to check for existing google connector ref")
 	}
 	jwt := &auth.JwtPayload{
-		UserId:        credential.Id,
-		WalletAddress: credential.WalletAddress,
+		UserId:              credential.Id,
+		WalletAddress:       credential.WalletAddress,
+		Email:               &userInfo.Email,
+		IsVerifiedOrganizer: &credential.IsVerifiedOrganizer,
+		IsVerifiedIssuer:    &credential.IsVerifiedIssuer,
 	}
 
 	profile, err := u.ProfileDg.GetProfileByAuthenticationCredentialId(ctx, credential.Id)
@@ -319,8 +327,10 @@ func (u *OnboardUsecase) CheckOnboardStatusWithWalletAddress(ctx context.Context
 		}
 	}
 	jwt := &auth.JwtPayload{
-		UserId:        credential.Id,
-		WalletAddress: credential.WalletAddress,
+		UserId:              credential.Id,
+		WalletAddress:       credential.WalletAddress,
+		IsVerifiedOrganizer: &credential.IsVerifiedOrganizer,
+		IsVerifiedIssuer:    &credential.IsVerifiedIssuer,
 	}
 	if profile == nil {
 		return jwt, nil, nil

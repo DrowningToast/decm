@@ -20,6 +20,56 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/auth/check-role": {
+            "get": {
+                "description": "Check if the current user has specific roles (authenticated, host, issuer). Only returns requested fields.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Check user roles",
+                "operationId": "check-role",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Check if user is authenticated",
+                        "name": "is_authenticated",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Check if user is a verified host/organizer",
+                        "name": "is_host",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Check if user is a verified issuer",
+                        "name": "is_issuer",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/CheckRoleResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/logout": {
             "post": {
                 "description": "Logout user by clearing session and OAuth cookies",

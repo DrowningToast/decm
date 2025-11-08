@@ -24,6 +24,7 @@ import (
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
 	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
 	"apps/backend/core-api/internal/repositories/postgres"
+	auth_usecase "apps/backend/core-api/internal/usecase/auth"
 	event_usecase "apps/backend/core-api/internal/usecase/event"
 	event_registration_invitation_usecase "apps/backend/core-api/internal/usecase/event_registration_invitation"
 	eventconfig_usecase "apps/backend/core-api/internal/usecase/eventconfig"
@@ -104,6 +105,7 @@ func main() {
 
 	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo, authService, googleOAuthService)
 	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
+	authUc := auth_usecase.NewAuthUsecase() // No database dependency - reads from JWT claims
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo)
 	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService)
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, logger)
@@ -175,7 +177,7 @@ func main() {
 	}
 	onboardHandler.Mount(apiV1)
 
-	authHandler := auth_handler.NewHandler(oauthUc, googleOAuthService, authService)
+	authHandler := auth_handler.NewHandler(oauthUc, authUc, googleOAuthService, authService)
 	authHandler.Mount(apiV1)
 
 	profileHandler := profile.NewHandler(profileUc, authService, authenticationGuardMiddleware)
