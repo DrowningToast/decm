@@ -53,4 +53,10 @@ var (
 		HttpStatus:     http.StatusConflict,
 		LoggerLevel:    slog.LevelWarn,
 	}
+	ErrForbidden ErrSignature = ErrSignature{
+		Code:           "FORBIDDEN",
+		DefaultMessage: "Forbidden. You are not allowed to access this resource.",
+		HttpStatus:     http.StatusForbidden,
+		LoggerLevel:    slog.LevelWarn,
+	}
 )

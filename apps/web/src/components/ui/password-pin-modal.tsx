@@ -138,8 +138,11 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
 
     const handleConfirm = async (data: { type: "pin" | "password"; value: string }) => {
         try {
+            if (!user?.authenticationCredentialId) {
+                throw new Error("Authentication credential ID is required");
+            }
             const apiResponse = await _verifyPassword({
-                authentication_credential_id: user?.authentication_credential_id,
+                authentication_credential_id: user.authenticationCredentialId,
                 password: data.value,
             });
 

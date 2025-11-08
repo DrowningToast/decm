@@ -36,8 +36,8 @@ type GoogleUser struct {
 
 // OAuthResult contains both token and user information
 type OAuthResult struct {
-	Token *oauth2.Token `json:"token"`
-	User  *GoogleUser   `json:"user"`
+	Token *oauth2.Token `json:"token,omitempty"`
+	User  *GoogleUser   `json:"user,omitempty"`
 }
 
 type GoogleOAuthService struct {

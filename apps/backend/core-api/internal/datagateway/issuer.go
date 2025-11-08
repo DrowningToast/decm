@@ -2,9 +2,9 @@ package datagateway
 
 import (
 	"context"
+	"decm-database/go/generated"
 
 	"apps/backend/core-api/internal/entity"
-	"decm-database/go/generated"
 )
 
 type IssuerDataGateway interface {

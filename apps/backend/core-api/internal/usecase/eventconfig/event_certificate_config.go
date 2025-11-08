@@ -8,6 +8,7 @@ import (
 
 	"apps/backend/services/s3"
 
+	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -22,8 +23,8 @@ type EventCertificateConfigResponse struct {
 	EventNamePosY               float64   `json:"event_name_pos_y"`
 	NamePosX                    float64   `json:"name_pos_x"`
 	NamePosY                    float64   `json:"name_pos_y"`
-	AcademicInstitutionPosX     *float64  `json:"academic_institution_pos_x"`
-	AcademicInstitutionPosY     *float64  `json:"academic_institution_pos_y"`
+	AcademicInstitutionPosX     *float64  `json:"academic_institution_pos_x,omitempty"`
+	AcademicInstitutionPosY     *float64  `json:"academic_institution_pos_y,omitempty"`
 	CreatedAt                   string    `json:"created_at"`
 	UpdatedAt                   string    `json:"updated_at"`
 }
@@ -138,7 +139,7 @@ func (uc *EventConfigUsecase) UpdateEventCertificateConfig(ctx context.Context, 
 func (uc *EventConfigUsecase) GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (*EventCertificateConfigResponse, error) {
 	eventCertConfig, err := uc.EventCertificateDg.GetEventCertificateConfigByEventID(ctx, eventID)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get event certificate config")
 	}
 
 	baseConfigPresignedURL, err := uc.S3Service.GetPresignedURL(ctx, eventCertConfig.BaseCertificateStorageKey)

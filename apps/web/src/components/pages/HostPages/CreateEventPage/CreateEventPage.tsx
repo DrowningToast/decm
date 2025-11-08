@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next";
 import { EventForm } from "@/components/forms/EventForm";
 import type { EventFormData } from "@/lib/schemas/eventFormSchema";
 import { toast } from "sonner";
-import PageContainer from "@/components/container/PageContainer";
 import SectionContainer from "@/components/container/SectionContainer";
 import TitleSubtitle from "@/components/TitleSubtitle";
 import { useCreateEvent } from "./useCreateEvent";
@@ -38,7 +37,7 @@ export const CreateEventPage = () => {
     };
 
     return (
-        <PageContainer title="Create Event" className="space-y-6">
+        <div className="space-y-6">
             {/* Page Header */}
             <SectionContainer>
                 <TitleSubtitle
@@ -50,6 +49,6 @@ export const CreateEventPage = () => {
             <SectionContainer>
                 <EventForm onSubmit={handleCreateEvent} mode="create" isLoading={isCreatingEvent} />
             </SectionContainer>
-        </PageContainer>
+        </div>
     );
 };

@@ -6,9 +6,7 @@ const SignInLayout = () => {
     return (
         <BaseLayout className="max-h-screen w-full overflow-hidden" variant="dark">
             <PublicNavbar variant="dark" />
-            <div className="pt-[15px] md:pt-14">
-                <Outlet />
-            </div>
+            <Outlet />
         </BaseLayout>
     );
 };

@@ -218,7 +218,6 @@ func (_EventCertificate *EventCertificateTransactorRaw) Transact(opts *bind.Tran
 func (_EventCertificate *EventCertificateCaller) EVENT(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
 	err := _EventCertificate.contract.Call(opts, &out, "EVENT")
-
 	if err != nil {
 		return *new(common.Address), err
 	}
@@ -226,7 +225,6 @@ func (_EventCertificate *EventCertificateCaller) EVENT(opts *bind.CallOpts) (com
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
-
 }
 
 // EVENT is a free data retrieval call binding the contract method 0xbfa96e22.
@@ -249,7 +247,6 @@ func (_EventCertificate *EventCertificateCallerSession) EVENT() (common.Address,
 func (_EventCertificate *EventCertificateCaller) EVENTACCESSMANAGER(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
 	err := _EventCertificate.contract.Call(opts, &out, "EVENT_ACCESS_MANAGER")
-
 	if err != nil {
 		return *new(common.Address), err
 	}
@@ -257,7 +254,6 @@ func (_EventCertificate *EventCertificateCaller) EVENTACCESSMANAGER(opts *bind.C
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
-
 }
 
 // EVENTACCESSMANAGER is a free data retrieval call binding the contract method 0x76ab2ddb.
@@ -280,7 +276,6 @@ func (_EventCertificate *EventCertificateCallerSession) EVENTACCESSMANAGER() (co
 func (_EventCertificate *EventCertificateCaller) BalanceOf(opts *bind.CallOpts, owner common.Address) (*big.Int, error) {
 	var out []interface{}
 	err := _EventCertificate.contract.Call(opts, &out, "balanceOf", owner)
-
 	if err != nil {
 		return *new(*big.Int), err
 	}
@@ -288,7 +283,6 @@ func (_EventCertificate *EventCertificateCaller) BalanceOf(opts *bind.CallOpts, 
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
 	return out0, err
-
 }
 
 // BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
@@ -311,7 +305,6 @@ func (_EventCertificate *EventCertificateCallerSession) BalanceOf(owner common.A
 func (_EventCertificate *EventCertificateCaller) GetApproved(opts *bind.CallOpts, tokenId *big.Int) (common.Address, error) {
 	var out []interface{}
 	err := _EventCertificate.contract.Call(opts, &out, "getApproved", tokenId)
-
 	if err != nil {
 		return *new(common.Address), err
 	}
@@ -319,7 +312,6 @@ func (_EventCertificate *EventCertificateCaller) GetApproved(opts *bind.CallOpts
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
-
 }
 
 // GetApproved is a free data retrieval call binding the contract method 0x081812fc.
@@ -342,7 +334,6 @@ func (_EventCertificate *EventCertificateCallerSession) GetApproved(tokenId *big
 func (_EventCertificate *EventCertificateCaller) GetTokenData(opts *bind.CallOpts, tokenId *big.Int) (string, error) {
 	var out []interface{}
 	err := _EventCertificate.contract.Call(opts, &out, "getTokenData", tokenId)
-
 	if err != nil {
 		return *new(string), err
 	}
@@ -350,7 +341,6 @@ func (_EventCertificate *EventCertificateCaller) GetTokenData(opts *bind.CallOpt
 	out0 := *abi.ConvertType(out[0], new(string)).(*string)
 
 	return out0, err
-
 }
 
 // GetTokenData is a free data retrieval call binding the contract method 0xb09afec1.
@@ -373,7 +363,6 @@ func (_EventCertificate *EventCertificateCallerSession) GetTokenData(tokenId *bi
 func (_EventCertificate *EventCertificateCaller) IsApprovedForAll(opts *bind.CallOpts, owner common.Address, operator common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventCertificate.contract.Call(opts, &out, "isApprovedForAll", owner, operator)
-
 	if err != nil {
 		return *new(bool), err
 	}
@@ -381,7 +370,6 @@ func (_EventCertificate *EventCertificateCaller) IsApprovedForAll(opts *bind.Cal
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
-
 }
 
 // IsApprovedForAll is a free data retrieval call binding the contract method 0xe985e9c5.
@@ -404,7 +392,6 @@ func (_EventCertificate *EventCertificateCallerSession) IsApprovedForAll(owner c
 func (_EventCertificate *EventCertificateCaller) Name(opts *bind.CallOpts) (string, error) {
 	var out []interface{}
 	err := _EventCertificate.contract.Call(opts, &out, "name")
-
 	if err != nil {
 		return *new(string), err
 	}
@@ -412,7 +399,6 @@ func (_EventCertificate *EventCertificateCaller) Name(opts *bind.CallOpts) (stri
 	out0 := *abi.ConvertType(out[0], new(string)).(*string)
 
 	return out0, err
-
 }
 
 // Name is a free data retrieval call binding the contract method 0x06fdde03.
@@ -435,7 +421,6 @@ func (_EventCertificate *EventCertificateCallerSession) Name() (string, error) {
 func (_EventCertificate *EventCertificateCaller) OwnerOf(opts *bind.CallOpts, tokenId *big.Int) (common.Address, error) {
 	var out []interface{}
 	err := _EventCertificate.contract.Call(opts, &out, "ownerOf", tokenId)
-
 	if err != nil {
 		return *new(common.Address), err
 	}
@@ -443,7 +428,6 @@ func (_EventCertificate *EventCertificateCaller) OwnerOf(opts *bind.CallOpts, to
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
-
 }
 
 // OwnerOf is a free data retrieval call binding the contract method 0x6352211e.
@@ -466,7 +450,6 @@ func (_EventCertificate *EventCertificateCallerSession) OwnerOf(tokenId *big.Int
 func (_EventCertificate *EventCertificateCaller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
 	var out []interface{}
 	err := _EventCertificate.contract.Call(opts, &out, "supportsInterface", interfaceId)
-
 	if err != nil {
 		return *new(bool), err
 	}
@@ -474,7 +457,6 @@ func (_EventCertificate *EventCertificateCaller) SupportsInterface(opts *bind.Ca
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
-
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
@@ -497,7 +479,6 @@ func (_EventCertificate *EventCertificateCallerSession) SupportsInterface(interf
 func (_EventCertificate *EventCertificateCaller) Symbol(opts *bind.CallOpts) (string, error) {
 	var out []interface{}
 	err := _EventCertificate.contract.Call(opts, &out, "symbol")
-
 	if err != nil {
 		return *new(string), err
 	}
@@ -505,7 +486,6 @@ func (_EventCertificate *EventCertificateCaller) Symbol(opts *bind.CallOpts) (st
 	out0 := *abi.ConvertType(out[0], new(string)).(*string)
 
 	return out0, err
-
 }
 
 // Symbol is a free data retrieval call binding the contract method 0x95d89b41.
@@ -528,7 +508,6 @@ func (_EventCertificate *EventCertificateCallerSession) Symbol() (string, error)
 func (_EventCertificate *EventCertificateCaller) TokenURI(opts *bind.CallOpts, tokenId *big.Int) (string, error) {
 	var out []interface{}
 	err := _EventCertificate.contract.Call(opts, &out, "tokenURI", tokenId)
-
 	if err != nil {
 		return *new(string), err
 	}
@@ -536,7 +515,6 @@ func (_EventCertificate *EventCertificateCaller) TokenURI(opts *bind.CallOpts, t
 	out0 := *abi.ConvertType(out[0], new(string)).(*string)
 
 	return out0, err
-
 }
 
 // TokenURI is a free data retrieval call binding the contract method 0xc87b56dd.
@@ -559,7 +537,6 @@ func (_EventCertificate *EventCertificateCallerSession) TokenURI(tokenId *big.In
 func (_EventCertificate *EventCertificateCaller) UsedSignatures(opts *bind.CallOpts, arg0 []byte) (bool, error) {
 	var out []interface{}
 	err := _EventCertificate.contract.Call(opts, &out, "usedSignatures", arg0)
-
 	if err != nil {
 		return *new(bool), err
 	}
@@ -567,7 +544,6 @@ func (_EventCertificate *EventCertificateCaller) UsedSignatures(opts *bind.CallO
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
-
 }
 
 // UsedSignatures is a free data retrieval call binding the contract method 0xe949580e.
@@ -852,7 +828,6 @@ type EventCertificateApproval struct {
 //
 // Solidity: event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)
 func (_EventCertificate *EventCertificateFilterer) FilterApproval(opts *bind.FilterOpts, owner []common.Address, approved []common.Address, tokenId []*big.Int) (*EventCertificateApprovalIterator, error) {
-
 	var ownerRule []interface{}
 	for _, ownerItem := range owner {
 		ownerRule = append(ownerRule, ownerItem)
@@ -877,7 +852,6 @@ func (_EventCertificate *EventCertificateFilterer) FilterApproval(opts *bind.Fil
 //
 // Solidity: event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)
 func (_EventCertificate *EventCertificateFilterer) WatchApproval(opts *bind.WatchOpts, sink chan<- *EventCertificateApproval, owner []common.Address, approved []common.Address, tokenId []*big.Int) (event.Subscription, error) {
-
 	var ownerRule []interface{}
 	for _, ownerItem := range owner {
 		ownerRule = append(ownerRule, ownerItem)
@@ -1014,7 +988,6 @@ type EventCertificateApprovalForAll struct {
 //
 // Solidity: event ApprovalForAll(address indexed owner, address indexed operator, bool approved)
 func (_EventCertificate *EventCertificateFilterer) FilterApprovalForAll(opts *bind.FilterOpts, owner []common.Address, operator []common.Address) (*EventCertificateApprovalForAllIterator, error) {
-
 	var ownerRule []interface{}
 	for _, ownerItem := range owner {
 		ownerRule = append(ownerRule, ownerItem)
@@ -1035,7 +1008,6 @@ func (_EventCertificate *EventCertificateFilterer) FilterApprovalForAll(opts *bi
 //
 // Solidity: event ApprovalForAll(address indexed owner, address indexed operator, bool approved)
 func (_EventCertificate *EventCertificateFilterer) WatchApprovalForAll(opts *bind.WatchOpts, sink chan<- *EventCertificateApprovalForAll, owner []common.Address, operator []common.Address) (event.Subscription, error) {
-
 	var ownerRule []interface{}
 	for _, ownerItem := range owner {
 		ownerRule = append(ownerRule, ownerItem)
@@ -1170,7 +1142,6 @@ type EventCertificateCertificateMinted struct {
 //
 // Solidity: event CertificateMinted(uint256 indexed tokenId, address indexed receiverAddress, string certificateId, string userId, string issuerId)
 func (_EventCertificate *EventCertificateFilterer) FilterCertificateMinted(opts *bind.FilterOpts, tokenId []*big.Int, receiverAddress []common.Address) (*EventCertificateCertificateMintedIterator, error) {
-
 	var tokenIdRule []interface{}
 	for _, tokenIdItem := range tokenId {
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
@@ -1191,7 +1162,6 @@ func (_EventCertificate *EventCertificateFilterer) FilterCertificateMinted(opts 
 //
 // Solidity: event CertificateMinted(uint256 indexed tokenId, address indexed receiverAddress, string certificateId, string userId, string issuerId)
 func (_EventCertificate *EventCertificateFilterer) WatchCertificateMinted(opts *bind.WatchOpts, sink chan<- *EventCertificateCertificateMinted, tokenId []*big.Int, receiverAddress []common.Address) (event.Subscription, error) {
-
 	var tokenIdRule []interface{}
 	for _, tokenIdItem := range tokenId {
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
@@ -1322,7 +1292,6 @@ type EventCertificateCertificateRevoked struct {
 //
 // Solidity: event CertificateRevoked(uint256 indexed tokenId)
 func (_EventCertificate *EventCertificateFilterer) FilterCertificateRevoked(opts *bind.FilterOpts, tokenId []*big.Int) (*EventCertificateCertificateRevokedIterator, error) {
-
 	var tokenIdRule []interface{}
 	for _, tokenIdItem := range tokenId {
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
@@ -1339,7 +1308,6 @@ func (_EventCertificate *EventCertificateFilterer) FilterCertificateRevoked(opts
 //
 // Solidity: event CertificateRevoked(uint256 indexed tokenId)
 func (_EventCertificate *EventCertificateFilterer) WatchCertificateRevoked(opts *bind.WatchOpts, sink chan<- *EventCertificateCertificateRevoked, tokenId []*big.Int) (event.Subscription, error) {
-
 	var tokenIdRule []interface{}
 	for _, tokenIdItem := range tokenId {
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
@@ -1467,7 +1435,6 @@ type EventCertificateParticipantSignedCertificate struct {
 //
 // Solidity: event ParticipantSignedCertificate(uint256 indexed tokenId, address indexed receiverAddress)
 func (_EventCertificate *EventCertificateFilterer) FilterParticipantSignedCertificate(opts *bind.FilterOpts, tokenId []*big.Int, receiverAddress []common.Address) (*EventCertificateParticipantSignedCertificateIterator, error) {
-
 	var tokenIdRule []interface{}
 	for _, tokenIdItem := range tokenId {
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
@@ -1488,7 +1455,6 @@ func (_EventCertificate *EventCertificateFilterer) FilterParticipantSignedCertif
 //
 // Solidity: event ParticipantSignedCertificate(uint256 indexed tokenId, address indexed receiverAddress)
 func (_EventCertificate *EventCertificateFilterer) WatchParticipantSignedCertificate(opts *bind.WatchOpts, sink chan<- *EventCertificateParticipantSignedCertificate, tokenId []*big.Int, receiverAddress []common.Address) (event.Subscription, error) {
-
 	var tokenIdRule []interface{}
 	for _, tokenIdItem := range tokenId {
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
@@ -1625,7 +1591,6 @@ type EventCertificateSignatureUsed struct {
 //
 // Solidity: event SignatureUsed(address indexed transactor, address indexed signer, address contractAddress, string functionName, string signedMessageDigest, bytes signature, uint256 timestamp)
 func (_EventCertificate *EventCertificateFilterer) FilterSignatureUsed(opts *bind.FilterOpts, transactor []common.Address, signer []common.Address) (*EventCertificateSignatureUsedIterator, error) {
-
 	var transactorRule []interface{}
 	for _, transactorItem := range transactor {
 		transactorRule = append(transactorRule, transactorItem)
@@ -1646,7 +1611,6 @@ func (_EventCertificate *EventCertificateFilterer) FilterSignatureUsed(opts *bin
 //
 // Solidity: event SignatureUsed(address indexed transactor, address indexed signer, address contractAddress, string functionName, string signedMessageDigest, bytes signature, uint256 timestamp)
 func (_EventCertificate *EventCertificateFilterer) WatchSignatureUsed(opts *bind.WatchOpts, sink chan<- *EventCertificateSignatureUsed, transactor []common.Address, signer []common.Address) (event.Subscription, error) {
-
 	var transactorRule []interface{}
 	for _, transactorItem := range transactor {
 		transactorRule = append(transactorRule, transactorItem)
@@ -1779,7 +1743,6 @@ type EventCertificateTransfer struct {
 //
 // Solidity: event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
 func (_EventCertificate *EventCertificateFilterer) FilterTransfer(opts *bind.FilterOpts, from []common.Address, to []common.Address, tokenId []*big.Int) (*EventCertificateTransferIterator, error) {
-
 	var fromRule []interface{}
 	for _, fromItem := range from {
 		fromRule = append(fromRule, fromItem)
@@ -1804,7 +1767,6 @@ func (_EventCertificate *EventCertificateFilterer) FilterTransfer(opts *bind.Fil
 //
 // Solidity: event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
 func (_EventCertificate *EventCertificateFilterer) WatchTransfer(opts *bind.WatchOpts, sink chan<- *EventCertificateTransfer, from []common.Address, to []common.Address, tokenId []*big.Int) (event.Subscription, error) {
-
 	var fromRule []interface{}
 	for _, fromItem := range from {
 		fromRule = append(fromRule, fromItem)

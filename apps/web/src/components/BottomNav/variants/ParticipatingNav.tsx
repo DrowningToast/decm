@@ -4,13 +4,21 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Typography } from "@/components/typography/typography";
 
-export const ParticipatingNav = () => {
-    const { onBack, className } = useBottomContainerContext();
+interface ParticipatingNavProps {
+    className?: string;
+}
+
+export const ParticipatingNav = ({ className: propClassName }: ParticipatingNavProps) => {
+    const { onBack, className: contextClassName } = useBottomContainerContext();
     const { t } = useTranslation();
 
     return (
         <div
-            className={cn(className, "flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5")}
+            className={cn(
+                contextClassName,
+                propClassName,
+                "flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5",
+            )}
         >
             {/* Back Button */}
             <button

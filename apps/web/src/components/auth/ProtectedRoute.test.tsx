@@ -1,9 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { ProtectedRoute } from "./ProtectedRoute";
 import * as AuthContextModule from "@/context/AuthContext";
 import { BrowserRouter } from "react-router-dom";
 import { toast } from "sonner";
+import * as UseCheckRolesModule from "@/hooks/useCheckRoles";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Mock dependencies
 vi.mock("sonner", () => ({
@@ -26,20 +28,43 @@ vi.mock("react-router-dom", async () => {
     };
 });
 
+vi.mock("@/hooks/useCheckRoles", () => ({
+    useCheckRoles: vi.fn(),
+}));
+
 describe("ProtectedRoute", () => {
+    let queryClient: QueryClient;
+
     beforeEach(() => {
+        queryClient = new QueryClient({
+            defaultOptions: {
+                queries: {
+                    retry: false,
+                },
+            },
+        });
         vi.clearAllMocks();
+
+        // Default mock for useCheckRoles - returns a valid object
+        vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
+            hasRequiredRoles: true,
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
     });
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <BrowserRouter>{children}</BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+            <BrowserRouter>{children}</BrowserRouter>
+        </QueryClientProvider>
     );
 
     describe("Loading State", () => {
-        it("should show default loading state when isPending is true", () => {
+        it("should show default loading state when isFetching is true", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: false,
-                isPending: true,
+                isFetching: true,
                 refetch: vi.fn(),
                 user: null,
             });
@@ -55,10 +80,10 @@ describe("ProtectedRoute", () => {
             expect(screen.queryByText("Protected Content")).not.toBeInTheDocument();
         });
 
-        it("should show custom fallback when isPending is true and fallback is provided", () => {
+        it("should show custom fallback when isFetching is true and fallback is provided", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: false,
-                isPending: true,
+                isFetching: true,
                 refetch: vi.fn(),
                 user: null,
             });
@@ -81,7 +106,7 @@ describe("ProtectedRoute", () => {
         it("should display spinner in default loading state", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: false,
-                isPending: true,
+                isFetching: true,
                 refetch: vi.fn(),
                 user: null,
             });
@@ -102,7 +127,7 @@ describe("ProtectedRoute", () => {
         it("should redirect to default signup page when not authenticated", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: false,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: null,
             });
@@ -123,7 +148,7 @@ describe("ProtectedRoute", () => {
         it("should redirect to custom path when redirectTo is provided", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: false,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: null,
             });
@@ -143,7 +168,7 @@ describe("ProtectedRoute", () => {
         it("should show toast error when not authenticated", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: false,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: null,
             });
@@ -162,7 +187,7 @@ describe("ProtectedRoute", () => {
         it("should not render children when not authenticated", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: false,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: null,
             });
@@ -182,7 +207,7 @@ describe("ProtectedRoute", () => {
         it("should render children when authenticated", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: true,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: { id: "user-123", first_name: "Test" },
             });
@@ -201,7 +226,7 @@ describe("ProtectedRoute", () => {
         it("should not redirect when authenticated", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: true,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: { id: "user-123", first_name: "Test" },
             });
@@ -220,7 +245,7 @@ describe("ProtectedRoute", () => {
         it("should not show toast when authenticated", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: true,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: { id: "user-123", first_name: "Test" },
             });
@@ -238,7 +263,7 @@ describe("ProtectedRoute", () => {
         it("should not show loading state when authenticated", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: true,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: { id: "user-123", first_name: "Test" },
             });
@@ -259,7 +284,7 @@ describe("ProtectedRoute", () => {
         it("should render complex component tree when authenticated", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: true,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: { id: "user-123", first_name: "Test" },
             });
@@ -285,7 +310,7 @@ describe("ProtectedRoute", () => {
         it("should render multiple children when authenticated", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: true,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: { id: "user-123", first_name: "Test" },
             });
@@ -319,7 +344,7 @@ describe("ProtectedRoute", () => {
             // Initially pending
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: false,
-                isPending: true,
+                isFetching: true,
                 refetch: vi.fn(),
                 user: null,
             });
@@ -335,7 +360,7 @@ describe("ProtectedRoute", () => {
             // Then authenticated
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: true,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: { id: "user-123", first_name: "Test" },
             });
@@ -361,7 +386,7 @@ describe("ProtectedRoute", () => {
             // Initially pending
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: false,
-                isPending: true,
+                isFetching: true,
                 refetch: vi.fn(),
                 user: null,
             });
@@ -377,7 +402,7 @@ describe("ProtectedRoute", () => {
             // Then unauthenticated
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: false,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: null,
             });
@@ -395,7 +420,7 @@ describe("ProtectedRoute", () => {
         it("should handle null children gracefully", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: true,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: { id: "user-123", first_name: "Test" },
             });
@@ -409,7 +434,7 @@ describe("ProtectedRoute", () => {
         it("should handle undefined children gracefully", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: true,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: { id: "user-123", first_name: "Test" },
             });
@@ -428,7 +453,7 @@ describe("ProtectedRoute", () => {
         it("should use default redirectTo when not provided", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: false,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: null,
             });
@@ -447,7 +472,7 @@ describe("ProtectedRoute", () => {
         it("should accept valid path as redirectTo", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: false,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: null,
             });
@@ -466,7 +491,7 @@ describe("ProtectedRoute", () => {
         it("should render custom fallback component", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: false,
-                isPending: true,
+                isFetching: true,
                 refetch: vi.fn(),
                 user: null,
             });
@@ -493,7 +518,7 @@ describe("ProtectedRoute", () => {
         it("should render Typography component in loading state", () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: false,
-                isPending: true,
+                isFetching: true,
                 refetch: vi.fn(),
                 user: null,
             });
@@ -512,16 +537,22 @@ describe("ProtectedRoute", () => {
         });
     });
 
-    describe("Role-Based Protection (TODO)", () => {
-        it("should render children when role-based protection is not implemented", () => {
+    describe("Role-Based Protection", () => {
+        it("should render children when no roles are required", async () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: true,
-                isPending: false,
+                isFetching: false,
                 refetch: vi.fn(),
                 user: { id: "user-123", first_name: "Test" },
             });
 
-            // Note: requiredRoles prop is commented out in component
+            vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
+                hasRequiredRoles: true,
+                isLoading: false,
+                isError: false,
+                error: null,
+            });
+
             render(
                 <ProtectedRoute>
                     <div data-testid="protected-content">Protected Content</div>
@@ -529,7 +560,409 @@ describe("ProtectedRoute", () => {
                 { wrapper },
             );
 
-            expect(screen.getByTestId("protected-content")).toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.getByTestId("protected-content")).toBeInTheDocument();
+            });
+            // useCheckRoles is always called (it's a hook), but with enabled: false
+            expect(UseCheckRolesModule.useCheckRoles).toHaveBeenCalledWith({
+                requireHost: false,
+                requireIssuer: false,
+                enabled: false,
+            });
+        });
+
+        it("should check host role when requireHost is true", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isFetching: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
+                hasRequiredRoles: true,
+                isHost: true,
+                isLoading: false,
+                isError: false,
+                error: null,
+            });
+
+            render(
+                <ProtectedRoute requireHost={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                expect(UseCheckRolesModule.useCheckRoles).toHaveBeenCalledWith({
+                    requireHost: true,
+                    requireIssuer: false,
+                    enabled: true,
+                });
+            });
+
+            await waitFor(() => {
+                expect(screen.getByTestId("protected-content")).toBeInTheDocument();
+            });
+        });
+
+        it("should check issuer role when requireIssuer is true", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isFetching: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
+                hasRequiredRoles: true,
+                isIssuer: true,
+                isLoading: false,
+                isError: false,
+                error: null,
+            });
+
+            render(
+                <ProtectedRoute requireIssuer={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                expect(UseCheckRolesModule.useCheckRoles).toHaveBeenCalledWith({
+                    requireHost: false,
+                    requireIssuer: true,
+                    enabled: true,
+                });
+            });
+
+            await waitFor(() => {
+                expect(screen.getByTestId("protected-content")).toBeInTheDocument();
+            });
+        });
+
+        it("should check both roles when requireHost and requireIssuer are true", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isFetching: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
+                hasRequiredRoles: true,
+                isHost: true,
+                isIssuer: true,
+                isLoading: false,
+                isError: false,
+                error: null,
+            });
+
+            render(
+                <ProtectedRoute requireHost={true} requireIssuer={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                expect(UseCheckRolesModule.useCheckRoles).toHaveBeenCalledWith({
+                    requireHost: true,
+                    requireIssuer: true,
+                    enabled: true,
+                });
+            });
+
+            await waitFor(() => {
+                expect(screen.getByTestId("protected-content")).toBeInTheDocument();
+            });
+        });
+
+        it("should redirect to unauthorized when host role check fails", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isFetching: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
+                hasRequiredRoles: false,
+                isHost: false,
+                isLoading: false,
+                isError: false,
+                error: null,
+            });
+
+            render(
+                <ProtectedRoute requireHost={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                const navigate = screen.getByTestId("navigate");
+                expect(navigate).toBeInTheDocument();
+                expect(navigate).toHaveTextContent("/unauthorized");
+            });
+
+            expect(toast.error).toHaveBeenCalledWith("flow.generic.unauthorized_response");
+            expect(screen.queryByTestId("protected-content")).not.toBeInTheDocument();
+        });
+
+        it("should redirect to unauthorized when issuer role check fails", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isFetching: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
+                hasRequiredRoles: false,
+                isIssuer: false,
+                isLoading: false,
+                isError: false,
+                error: null,
+            });
+
+            render(
+                <ProtectedRoute requireIssuer={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                const navigate = screen.getByTestId("navigate");
+                expect(navigate).toBeInTheDocument();
+                expect(navigate).toHaveTextContent("/unauthorized");
+            });
+
+            expect(toast.error).toHaveBeenCalledWith("flow.generic.unauthorized_response");
+            expect(screen.queryByTestId("protected-content")).not.toBeInTheDocument();
+        });
+
+        it("should redirect to custom unauthorized path when provided", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isFetching: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
+                hasRequiredRoles: false,
+                isHost: false,
+                isLoading: false,
+                isError: false,
+                error: null,
+            });
+
+            render(
+                <ProtectedRoute requireHost={true} unauthorizedRedirectTo="/error">
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                const navigate = screen.getByTestId("navigate");
+                expect(navigate).toBeInTheDocument();
+                expect(navigate).toHaveTextContent("/error");
+            });
+        });
+
+        it("should show loading state during role check", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isFetching: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
+                hasRequiredRoles: false,
+                isLoading: true,
+                isError: false,
+                error: null,
+            });
+
+            render(
+                <ProtectedRoute requireHost={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            // Should show loading during role check
+            expect(screen.getByText("common.loading")).toBeInTheDocument();
+
+            // After role check completes, update mock to return success
+            vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
+                hasRequiredRoles: true,
+                isHost: true,
+                isLoading: false,
+                isError: false,
+                error: null,
+            });
+
+            // Since we can't easily re-render with different hook results in this test structure,
+            // we verify the loading state is shown during role check
+            expect(screen.queryByTestId("protected-content")).not.toBeInTheDocument();
+        });
+
+        it("should handle role check error", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isFetching: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
+                hasRequiredRoles: false,
+                isLoading: false,
+                isError: true,
+                error: new Error("Role check failed"),
+            });
+
+            render(
+                <ProtectedRoute requireHost={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                const navigate = screen.getByTestId("navigate");
+                expect(navigate).toBeInTheDocument();
+                expect(navigate).toHaveTextContent("/unauthorized");
+            });
+
+            expect(toast.error).toHaveBeenCalledWith("flow.generic.unauthorized_response");
+        });
+
+        it("should not call useCheckRoles when user is not authenticated", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: false,
+                isFetching: false,
+                refetch: vi.fn(),
+                user: null,
+            });
+
+            render(
+                <ProtectedRoute requireHost={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                const navigate = screen.getByTestId("navigate");
+                expect(navigate).toBeInTheDocument();
+                expect(navigate).toHaveTextContent("/signup");
+            });
+
+            // useCheckRoles is called but with enabled: false because user is not authenticated
+            expect(UseCheckRolesModule.useCheckRoles).toHaveBeenCalledWith({
+                requireHost: true,
+                requireIssuer: false,
+                enabled: false,
+            });
+        });
+
+        it("should render custom fallback during role check", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isFetching: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
+                hasRequiredRoles: false,
+                isLoading: true,
+                isError: false,
+                error: null,
+            });
+
+            const customFallback = <div data-testid="custom-fallback">Checking roles...</div>;
+
+            render(
+                <ProtectedRoute requireHost={true} fallback={customFallback}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            // Should show custom fallback during role check
+            expect(screen.getByTestId("custom-fallback")).toBeInTheDocument();
+            expect(screen.queryByTestId("protected-content")).not.toBeInTheDocument();
+        });
+
+        it("should handle partial role satisfaction (host but not issuer)", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isFetching: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
+                hasRequiredRoles: false,
+                isHost: true,
+                isIssuer: false,
+                isLoading: false,
+                isError: false,
+                error: null,
+            });
+
+            render(
+                <ProtectedRoute requireHost={true} requireIssuer={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                const navigate = screen.getByTestId("navigate");
+                expect(navigate).toBeInTheDocument();
+                expect(navigate).toHaveTextContent("/unauthorized");
+            });
+
+            expect(toast.error).toHaveBeenCalledWith("flow.generic.unauthorized_response");
+        });
+
+        it("should allow requireAuthenticated to be set to false", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: false,
+                isFetching: false,
+                refetch: vi.fn(),
+                user: null,
+            });
+
+            render(
+                <ProtectedRoute requireAuthenticated={false}>
+                    <div data-testid="protected-content">Public Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                expect(screen.getByTestId("protected-content")).toBeInTheDocument();
+            });
+
+            expect(toast.error).not.toHaveBeenCalled();
+            // useCheckRoles is always called (it's a hook), but with enabled: false
+            expect(UseCheckRolesModule.useCheckRoles).toHaveBeenCalledWith({
+                requireHost: false,
+                requireIssuer: false,
+                enabled: false,
+            });
         });
     });
 });

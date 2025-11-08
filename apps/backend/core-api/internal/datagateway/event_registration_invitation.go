@@ -25,6 +25,9 @@ type EventRegistrationInvitationDataGateway interface {
 	CreateEventRegistrationInvitation(ctx context.Context, params CreateEventRegistrationInvitationParameters) (*entity.EventRegistrationInvitation, error)
 	GetEventRegistrationInvitationByID(ctx context.Context, id uuid.UUID) (*entity.EventRegistrationInvitation, error)
 	GetEventRegistrationInvitationsByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventRegistrationInvitation, error)
+	GetEventRegistrationInvitationByInboxMessageID(ctx context.Context, inboxMessageID uuid.UUID) (*entity.EventRegistrationInvitation, error)
+	// Search with event ID and credential ID, (also search through email and wallet address if possible)
+	GetEventRegistrationInvitationByEventIDAndCredential(ctx context.Context, eventId uuid.UUID, credentialId uuid.UUID, email *string, walletAddress *string) (*entity.EventRegistrationInvitation, *entity.InboxMessage, error)
 	UpdateEventRegistrationInvitation(ctx context.Context, id uuid.UUID, params UpdateEventRegistrationInvitationParameters) (*entity.EventRegistrationInvitation, error)
 	DeleteEventRegistrationInvitation(ctx context.Context, id uuid.UUID) error
 }

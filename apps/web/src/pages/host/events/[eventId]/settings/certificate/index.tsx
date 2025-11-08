@@ -1,4 +1,3 @@
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { CertificateSettingsPage } from "@/components/pages/HostPages/EventPages/CertificateSettingsPage";
 import { useEventCertificateConfig } from "@/components/pages/HostPages/EventPages/useEventCertificateConfig";
 import { useEventIssuers } from "@/components/pages/HostPages/EventPages/useEventIssuers";
@@ -19,13 +18,11 @@ export default function Page() {
     }
 
     return (
-        <ProtectedRoute>
-            <CertificateSettingsPage
-                eventId={eventId!}
-                eventCertificateConfig={eventCertificateConfig}
-                verifiedIssuers={verifiedIssuers}
-                eventIssuers={eventIssuers}
-            />
-        </ProtectedRoute>
+        <CertificateSettingsPage
+            eventId={eventId!}
+            eventCertificateConfig={eventCertificateConfig}
+            verifiedIssuers={verifiedIssuers}
+            eventIssuers={eventIssuers}
+        />
     );
 }

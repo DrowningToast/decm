@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
+	roleguard "apps/backend/core-api/internal/middleware/role_guard"
 	"apps/backend/core-api/internal/usecase/event"
 	"apps/backend/core-api/internal/usecase/event_registration_invitation"
 	eventconfig "apps/backend/core-api/internal/usecase/eventconfig"
@@ -18,6 +19,7 @@ type Handler struct {
 	EventRegistrationInvitationUc *event_registration_invitation.EventRegistrationInvitationUsecase
 	AuthenticationService         *auth.AuthService
 	AuthenticationGuardMiddleware *authenticationguard.AuthenticationGuardMiddleware
+	RoleGuardMiddleware           *roleguard.RoleGuardMiddleware
 	Logger                        *slog.Logger
 }
 

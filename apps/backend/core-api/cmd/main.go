@@ -22,8 +22,10 @@ import (
 	"apps/backend/core-api/internal/handler/onboard"
 	"apps/backend/core-api/internal/handler/profile"
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
+	roleguard "apps/backend/core-api/internal/middleware/role_guard"
 	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
 	"apps/backend/core-api/internal/repositories/postgres"
+	auth_usecase "apps/backend/core-api/internal/usecase/auth"
 	event_usecase "apps/backend/core-api/internal/usecase/event"
 	event_registration_invitation_usecase "apps/backend/core-api/internal/usecase/event_registration_invitation"
 	eventconfig_usecase "apps/backend/core-api/internal/usecase/eventconfig"
@@ -104,8 +106,9 @@ func main() {
 
 	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo, authService, googleOAuthService)
 	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
-	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo)
-	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService)
+	authUc := auth_usecase.NewAuthUsecase() // No database dependency - reads from JWT claims
+	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo, authService)
+	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService, &cfg)
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, logger)
 	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)
 	eventRegistrationInvitationUc := event_registration_invitation_usecase.NewEventRegistrationInvitationUsecase(pgRepo, pgRepo, pgRepo)
@@ -166,6 +169,7 @@ func main() {
 
 	authenticationGuardMiddleware := authenticationguard.New(authService)
 	verifyJwtMiddleware := verifyjwt.New(authService)
+	roleGuardMiddleware := roleguard.New(authService)
 
 	// Onboard handler
 	onboardHandler, err := onboard.NewHandler(onboardUc, profileUc, authService, googleOAuthService, verifyJwtMiddleware)
@@ -175,7 +179,7 @@ func main() {
 	}
 	onboardHandler.Mount(apiV1)
 
-	authHandler := auth_handler.NewHandler(oauthUc, googleOAuthService, authService)
+	authHandler := auth_handler.NewHandler(oauthUc, authUc, googleOAuthService, authService, authenticationGuardMiddleware)
 	authHandler.Mount(apiV1)
 
 	profileHandler := profile.NewHandler(profileUc, authService, authenticationGuardMiddleware)
@@ -184,13 +188,13 @@ func main() {
 	eventHandler := event.NewHandler(eventUc, eventConfigUc, profileUc, eventRegistrationInvitationUc, authService, authenticationGuardMiddleware, logger)
 	eventHandler.Mount(apiV1)
 
-	eventConfigHandler := eventconfig_handler.NewHandler(eventConfigUc, eventUc, authService, authenticationGuardMiddleware)
+	eventConfigHandler := eventconfig_handler.NewHandler(eventConfigUc, eventUc, authService, authenticationGuardMiddleware, roleGuardMiddleware)
 	eventConfigHandler.Mount(apiV1)
 
 	issuerHandler := issuer.NewHandler(issuerUc, authService, authenticationGuardMiddleware)
 	issuerHandler.Mount(apiV1)
 
-	eventRegistrationInvitationHandler := event_registration_invitation.NewHandler(*authService, eventRegistrationInvitationUc)
+	eventRegistrationInvitationHandler := event_registration_invitation.NewHandler(*authService, eventRegistrationInvitationUc, authenticationGuardMiddleware, roleGuardMiddleware)
 	eventRegistrationInvitationHandler.RegisterRoutes(apiV1)
 
 	// Start HTTP Server

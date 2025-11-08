@@ -1,0 +1,49 @@
+sequenceDiagram
+    participant User
+    participant ProtectedRoute
+    participant AuthContext
+    participant CheckRoleAPI as /check-role API
+    participant Backend
+
+    User->>ProtectedRoute: Access Protected Page
+    
+    alt isPending (AuthContext loading)
+        ProtectedRoute->>User: Show Loading Spinner
+        AuthContext->>ProtectedRoute: Auth State Ready
+    end
+
+    ProtectedRoute->>AuthContext: Check isAuthenticated
+    
+    alt Not Authenticated
+        ProtectedRoute->>User: Redirect to /signup
+        ProtectedRoute->>User: Show Toast Error
+    else Authenticated
+        alt No Role Requirements
+            ProtectedRoute->>User: Render Protected Content
+        else Role Requirements (requireHost/requireIssuer)
+            ProtectedRoute->>User: Show Loading Spinner
+            ProtectedRoute->>CheckRoleAPI: Call authCheckRole({isHost, isIssuer})
+            CheckRoleAPI->>Backend: GET /check-role?is_host=true&is_issuer=true
+            Backend->>Backend: Validate JWT & Check Roles
+            
+            alt Roles Satisfied
+                Backend->>CheckRoleAPI: {is_host: true, is_issuer: true}
+                CheckRoleAPI->>ProtectedRoute: Success Response
+                ProtectedRoute->>User: Render Protected Content
+            else Roles Not Satisfied
+                Backend->>CheckRoleAPI: {is_host: false, is_issuer: false}
+                CheckRoleAPI->>ProtectedRoute: Failure Response
+                ProtectedRoute->>User: Redirect to /unauthorized
+                ProtectedRoute->>User: Show Toast Error
+            end
+            
+            alt API Error
+                CheckRoleAPI->>ProtectedRoute: Error Response
+                ProtectedRoute->>ProtectedRoute: Log Error to Console
+                ProtectedRoute->>User: Redirect to /unauthorized
+                ProtectedRoute->>User: Show Toast Error
+            end
+        end
+    end
+
+

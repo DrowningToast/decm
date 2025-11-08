@@ -1,5 +1,6 @@
 import { getIssuerStateText, getIssuerStateColor, getIssuerStateBgColor } from "./issuerStateUtils";
 import { useTranslation } from "react-i18next";
+import { Typography } from "@/components/typography/typography";
 
 interface IssuerStatusBadgeProps {
     isSigned: number;
@@ -13,10 +14,12 @@ export function IssuerStatusBadge({ isSigned, className = "" }: IssuerStatusBadg
     const bgColor = getIssuerStateBgColor(isSigned);
 
     return (
-        <span
+        <Typography
+            variant="text"
+            tag="span"
             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bgColor} ${textColor} ${className}`}
         >
             {statusText}
-        </span>
+        </Typography>
     );
 }

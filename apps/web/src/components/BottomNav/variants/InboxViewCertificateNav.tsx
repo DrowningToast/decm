@@ -5,8 +5,14 @@ import { cn } from "@/lib/utils";
 import { Typography } from "@/components/typography/typography";
 import { useInboxNavStore } from "../stores/inbox";
 
-export const InboxViewCertificateNav = () => {
-    const { onBack, className } = useBottomContainerContext();
+interface InboxViewCertificateNavProps {
+    className?: string;
+}
+
+export const InboxViewCertificateNav = ({
+    className: propClassName,
+}: InboxViewCertificateNavProps) => {
+    const { onBack, className: contextClassName } = useBottomContainerContext();
     const { t } = useTranslation();
     const { onViewCertificateCallback } = useInboxNavStore();
 
@@ -18,7 +24,11 @@ export const InboxViewCertificateNav = () => {
 
     return (
         <div
-            className={cn(className, "flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5")}
+            className={cn(
+                contextClassName,
+                propClassName,
+                "flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5",
+            )}
         >
             {/* Back Button */}
             <button

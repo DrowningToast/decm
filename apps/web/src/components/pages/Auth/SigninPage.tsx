@@ -45,21 +45,19 @@ export const SigninPage: React.FC<SigninPageProps> = ({
                     {/* Buttons Section */}
                     <div className="flex flex-col gap-2.5">
                         {/* Web3 Wallet Button */}
-                        <WalletConnectButton isLoading={isLoading}>
-                            <Button
-                                className="w-full h-12 bg-primary hover:bg-primary/90 rounded-[12px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
-                                size="lg"
-                                loading={isLoading}
+                        <WalletConnectButton
+                            className="w-full h-12 bg-primary hover:bg-primary/90 rounded-[12px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                            size="lg"
+                            isLoading={isLoading}
+                        >
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                color="foreground-alt"
+                                className="text-base"
                             >
-                                <Typography
-                                    variant="text"
-                                    tag="span"
-                                    color="foreground-alt"
-                                    className="text-base"
-                                >
-                                    {t("signin.walletButton")}
-                                </Typography>
-                            </Button>
+                                {t("signin.walletButton")}
+                            </Typography>
                         </WalletConnectButton>
 
                         {/* Divider Line */}
