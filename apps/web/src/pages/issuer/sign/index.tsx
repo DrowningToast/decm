@@ -12,10 +12,11 @@ import {
 import { EventTable } from "@/components/pages/IssuerSign/EventTable";
 import { PaginationControls } from "@/components/pages/IssuerSign/PaginationControls";
 import PageContainer from "@/components/container/PageContainer";
+import { useNavigate } from "@/router";
 
 const IssuerSignPage = () => {
     const { t } = useTranslation();
-
+    const navigate = useNavigate();
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -103,9 +104,11 @@ const IssuerSignPage = () => {
                             events={pendingEvents}
                             type="pending"
                             onActionClick={(eventId) => {
-                                // Navigate to event signing page
-                                console.log("Review and sign event:", eventId);
-                                // TODO: Implement navigation to signing page
+                                navigate("/issuer/sign/:eventId", {
+                                    params: {
+                                        eventId,
+                                    },
+                                });
                             }}
                         />
                         <PaginationControls
@@ -121,8 +124,11 @@ const IssuerSignPage = () => {
                             events={signedEvents}
                             type="signed"
                             onActionClick={(eventId) => {
-                                console.log("View signed event:", eventId);
-                                // TODO: Implement navigation to event details page
+                                navigate("/issuer/sign/:eventId", {
+                                    params: {
+                                        eventId,
+                                    },
+                                });
                             }}
                         />
                         <PaginationControls
