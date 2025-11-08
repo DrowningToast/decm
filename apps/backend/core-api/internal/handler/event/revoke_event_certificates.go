@@ -65,9 +65,26 @@ func (h Handler) RevokeEventCertificates(ctx *fiber.Ctx) error {
 }
 
 func (r *RevokeEventCertificatesRequest) Parse(ctx *fiber.Ctx) error {
-	if err := ctx.BodyParser(r); err != nil {
+	// Define a temporary struct to parse JSON with string UUIDs
+	type tempRequest struct {
+		CertificateIDs []string `json:"certificate_ids"`
+	}
+
+	var temp tempRequest
+	if err := ctx.BodyParser(&temp); err != nil {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
+
+	// Convert string UUIDs to uuid.UUID type
+	r.CertificateIDs = make([]uuid.UUID, len(temp.CertificateIDs))
+	for i, certIDStr := range temp.CertificateIDs {
+		certID, err := uuid.Parse(certIDStr)
+		if err != nil {
+			return customerror.Parse(&customerror.ErrInvalidArgument, err)
+		}
+		r.CertificateIDs[i] = certID
+	}
+
 	return nil
 }
 

@@ -23,6 +23,11 @@ export type CheckOnboardStatusData = OnboardCheckOnboardStatusResponse;
 
 export type CheckOnboardStatusError = CustomerrorErrResponse;
 
+export interface CoreApiInternalHandlerEventCertificateSignature {
+    certificate?: EntityEventCertificate;
+    signature?: string;
+}
+
 export interface CoreApiInternalHandlerEventImportCertificateReceiversRequest {
     event_id: string;
     host_pin: string;
@@ -39,7 +44,6 @@ export interface CoreApiInternalHandlerEventImportCertificateReceiversResponse {
 export interface CoreApiInternalHandlerEventRevokeEventCertificatesRequest {
     /** @minItems 1 */
     certificate_ids: string[];
-    host_pin: string;
 }
 
 export interface CoreApiInternalHandlerEventRevokeEventCertificatesResponse {
@@ -47,13 +51,11 @@ export interface CoreApiInternalHandlerEventRevokeEventCertificatesResponse {
 }
 
 export interface CoreApiInternalHandlerEventSignEventCertificatesRequest {
-    certificate_id: string;
     issuer_pin: string;
 }
 
 export interface CoreApiInternalHandlerEventSignEventCertificatesResponse {
-    certificate?: EntityEventCertificate;
-    signature?: string;
+    certificates?: CoreApiInternalHandlerEventCertificateSignature[];
 }
 
 export interface CoreApiInternalHandlerEventconfigEventCertificateConfigResponse {
@@ -363,6 +365,10 @@ export interface EventEventResponse {
     updated_at?: string;
 }
 
+export interface EventGetEventCertificatesResponse {
+    certificates?: EntityEventCertificate[];
+}
+
 export interface EventImportCertificateReceiverRequest {
     academic_institution: string;
     certificate_subtitle: string;
@@ -458,6 +464,15 @@ export type GetEventCertificateConfigData =
 export type GetEventCertificateConfigError = CustomerrorErrResponse;
 
 export interface GetEventCertificateConfigParams {
+    /** Event ID */
+    eventId: string;
+}
+
+export type GetEventCertificatesData = EventGetEventCertificatesResponse;
+
+export type GetEventCertificatesError = CustomerrorErrResponse;
+
+export interface GetEventCertificatesParams {
     /** Event ID */
     eventId: string;
 }
@@ -1363,6 +1378,26 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Get all certificates for an event
+         *
+         * @tags Event Certificates
+         * @name GetEventCertificates
+         * @summary Get event certificates
+         * @request GET:/api/v1/events/{event_id}/certificates
+         */
+        getEventCertificates: (
+            { eventId, ...query }: GetEventCertificatesParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetEventCertificatesData, GetEventCertificatesError>({
+                path: `/api/v1/events/${eventId}/certificates`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Import certificate receivers for an event, deploys event certificate contract, and creates certificate records
          *
          * @tags Event Certificates
@@ -1407,7 +1442,7 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Sign event certificates by issuer
+         * @description Sign all event certificates for an event by issuer
          *
          * @tags Event Certificates
          * @name SignEventCertificates
