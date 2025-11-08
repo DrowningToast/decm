@@ -24,7 +24,6 @@ func (u *EventUsecase) CreateEventIssuer(ctx context.Context, params CreateEvent
 		IssuerCredentialID: params.IssuerCredentialID,
 		IsSigned:           params.IsSigned,
 		Signature:          params.Signature,
-		SignMessage:        params.SignMessage,
 	}
 
 	issuer, err := u.EventIssuerDataGateway.CreateEventIssuer(ctx, createParams)

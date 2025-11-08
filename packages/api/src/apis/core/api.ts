@@ -24,6 +24,39 @@ export type CheckOnboardStatusData = OnboardCheckOnboardStatusResponse;
 
 export type CheckOnboardStatusError = CustomerrorErrResponse;
 
+export interface CoreApiInternalHandlerEventImportCertificateReceiversRequest {
+    event_id: string;
+    host_pin: string;
+    /** @minItems 1 */
+    receivers: EventImportCertificateReceiverRequest[];
+}
+
+export interface CoreApiInternalHandlerEventImportCertificateReceiversResponse {
+    certificates?: EntityEventCertificate[];
+    event_certificate_address?: string;
+    event_id?: string;
+}
+
+export interface CoreApiInternalHandlerEventRevokeEventCertificatesRequest {
+    /** @minItems 1 */
+    certificate_ids: string[];
+    host_pin: string;
+}
+
+export interface CoreApiInternalHandlerEventRevokeEventCertificatesResponse {
+    revoked_certificates?: EntityEventCertificate[];
+}
+
+export interface CoreApiInternalHandlerEventSignEventCertificatesRequest {
+    certificate_id: string;
+    issuer_pin: string;
+}
+
+export interface CoreApiInternalHandlerEventSignEventCertificatesResponse {
+    certificate?: EntityEventCertificate;
+    signature?: string;
+}
+
 export interface CoreApiInternalHandlerEventconfigEventCertificateConfigResponse {
   academic_institution_pos_x?: number;
   academic_institution_pos_y?: number;
@@ -196,6 +229,22 @@ export interface EntityEvent {
   updated_at?: string;
 }
 
+export interface EntityEventCertificate {
+    academic_institution?: string;
+    certificate_subtitle?: string;
+    certificate_title?: string;
+    certificate_token_id?: string;
+    created_at?: string;
+    event_certificate_address?: string;
+    event_contract_address?: string;
+    event_id?: string;
+    id?: string;
+    name?: string;
+    receiver_credential_id?: string;
+    receiver_email?: string;
+    revoked_at?: string;
+}
+
 export interface EntityEventRegistrationInvitation {
   academic_institution?: string;
   cancelled_at?: string;
@@ -314,6 +363,14 @@ export interface EventEventResponse {
   start_date?: string;
   title?: string;
   updated_at?: string;
+}
+
+export interface EventImportCertificateReceiverRequest {
+    academic_institution: string;
+    certificate_subtitle: string;
+    certificate_title: string;
+    first_name: string;
+    last_name: string;
 }
 
 export interface EventRegistrationInvitationImportEventParticipantsRequest {
@@ -509,6 +566,15 @@ export interface GetVerifiedIssuersParams {
   limit?: number;
   /** Offset */
   offset?: number;
+}
+
+export type ImportCertificateReceiversData =
+    CoreApiInternalHandlerEventImportCertificateReceiversResponse;
+
+export type ImportCertificateReceiversError = CustomerrorErrResponse;
+
+export interface ImportCertificateReceiversParams {
+    eventId: string;
 }
 
 export type ImportEventParticipantsData = EntityEventRegistrationInvitation[];
@@ -731,6 +797,25 @@ export type RegisterWithWalletData = OnboardRegisterResponse;
 export type RegisterWithWalletError = CustomerrorErrResponse;
 
 export type RequestGoogleOauthError = CustomerrorErrResponse;
+
+export type RevokeEventCertificatesData =
+    CoreApiInternalHandlerEventRevokeEventCertificatesResponse;
+
+export type RevokeEventCertificatesError = CustomerrorErrResponse;
+
+export interface RevokeEventCertificatesParams {
+    /** Event ID */
+    eventId: string;
+}
+
+export type SignEventCertificatesData = CoreApiInternalHandlerEventSignEventCertificatesResponse;
+
+export type SignEventCertificatesError = CustomerrorErrResponse;
+
+export interface SignEventCertificatesParams {
+    /** Event ID */
+    eventId: string;
+}
 
 export type UpdateEventCertificateConfigData =
   CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
@@ -1320,27 +1405,90 @@ export class Api<SecurityDataType extends unknown> {
         ...params,
       }),
 
-    /**
-     * @description Get the event certificate configuration for an event
-     *
-     * @name GetEventCertificateConfig
-     * @summary Get event certificate config
-     * @request GET:/api/v1/events/{event_id}/config/certificate
-     */
-    getEventCertificateConfig: (
-      { eventId, ...query }: GetEventCertificateConfigParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        GetEventCertificateConfigData,
-        GetEventCertificateConfigError
-      >({
-        path: `/api/v1/events/${eventId}/config/certificate`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
+        /**
+         * @description Import certificate receivers for an event, deploys event certificate contract, and creates certificate records
+         *
+         * @tags Event Certificates
+         * @name ImportCertificateReceivers
+         * @summary Import certificate receivers for an event
+         * @request POST:/api/v1/events/{event_id}/certificates/import
+         */
+        importCertificateReceivers: (
+            { eventId, ...query }: ImportCertificateReceiversParams,
+            request: CoreApiInternalHandlerEventImportCertificateReceiversRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<ImportCertificateReceiversData, ImportCertificateReceiversError>({
+                path: `/api/v1/events/${eventId}/certificates/import`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Revoke event certificates by certificate IDs
+         *
+         * @tags Event Certificates
+         * @name RevokeEventCertificates
+         * @summary Revoke event certificates
+         * @request POST:/api/v1/events/{event_id}/certificates/revoke
+         */
+        revokeEventCertificates: (
+            { eventId, ...query }: RevokeEventCertificatesParams,
+            request: CoreApiInternalHandlerEventRevokeEventCertificatesRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<RevokeEventCertificatesData, RevokeEventCertificatesError>({
+                path: `/api/v1/events/${eventId}/certificates/revoke`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Sign event certificates by issuer
+         *
+         * @tags Event Certificates
+         * @name SignEventCertificates
+         * @summary Sign event certificates
+         * @request POST:/api/v1/events/{event_id}/certificates/sign
+         */
+        signEventCertificates: (
+            { eventId, ...query }: SignEventCertificatesParams,
+            request: CoreApiInternalHandlerEventSignEventCertificatesRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<SignEventCertificatesData, SignEventCertificatesError>({
+                path: `/api/v1/events/${eventId}/certificates/sign`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get the event certificate configuration for an event
+         *
+         * @name GetEventCertificateConfig
+         * @summary Get event certificate config
+         * @request GET:/api/v1/events/{event_id}/config/certificate
+         */
+        getEventCertificateConfig: (
+            { eventId, ...query }: GetEventCertificateConfigParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetEventCertificateConfigData, GetEventCertificateConfigError>({
+                path: `/api/v1/events/${eventId}/config/certificate`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
 
     /**
      * @description Update the event certificate configuration for an event
