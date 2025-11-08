@@ -142,7 +142,11 @@ export const useIssuerManagement = ({
     }, []);
 
     const getSelectedIssuerIds = useCallback(() => {
-        return new Set(selectedIssuers.map((issuer) => issuer.authentication_credential_id ?? ""));
+        const issuerIds = selectedIssuers
+            .map((issuer) => issuer.authentication_credential_id)
+            .filter((id): id is string => typeof id === "string" && id.length > 0);
+
+        return new Set(issuerIds);
     }, [selectedIssuers]);
 
     return {

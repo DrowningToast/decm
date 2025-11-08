@@ -453,7 +453,7 @@ describe("ProtectedRoute", () => {
             });
 
             render(
-                <ProtectedRoute>
+                <ProtectedRoute redirectTo="/signin">
                     <div>Protected Content</div>
                 </ProtectedRoute>,
                 { wrapper },

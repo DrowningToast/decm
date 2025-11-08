@@ -336,42 +336,47 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         }
     }, [changeMenuColorOnOpen, menuButtonColor, openMenuButtonColor]);
 
-    const animateText = useCallback((opening: boolean) => {
-        const inner = textInnerRef.current;
-        if (!inner) return;
+    const animateText = useCallback(
+        (opening: boolean) => {
+            const inner = textInnerRef.current;
+            if (!inner) return;
 
-        textCycleAnimRef.current?.kill();
+            textCycleAnimRef.current?.kill();
 
-        const currentLabel = opening ? "Menu" : "Close";
-        const targetLabel = opening ? "Close" : "Menu";
-        const cycles = 3;
+            const menuLabel = t("nav.menu");
+            const closeLabel = t("nav.close");
+            const currentLabel = opening ? menuLabel : closeLabel;
+            const targetLabel = opening ? closeLabel : menuLabel;
+            const cycles = 3;
 
-        const seq: string[] = [currentLabel];
-        let last = currentLabel;
-        for (let i = 0; i < cycles; i++) {
-            last = last === "Menu" ? "Close" : "Menu";
-            seq.push(last);
-        }
-        if (last !== targetLabel) seq.push(targetLabel);
-        seq.push(targetLabel);
+            const seq: string[] = [currentLabel];
+            let last = currentLabel;
+            for (let i = 0; i < cycles; i++) {
+                last = last === menuLabel ? closeLabel : menuLabel;
+                seq.push(last);
+            }
+            if (last !== targetLabel) seq.push(targetLabel);
+            seq.push(targetLabel);
 
-        // Render text lines dynamically
-        if (inner) {
-            inner.innerHTML = seq
-                .map((line) => `<span class="sm-toggle-line">${line}</span>`)
-                .join("");
-        }
-        gsap.set(inner, { yPercent: 0 });
+            // Render text lines dynamically
+            if (inner) {
+                inner.innerHTML = seq
+                    .map((line) => `<span class="sm-toggle-line">${line}</span>`)
+                    .join("");
+            }
+            gsap.set(inner, { yPercent: 0 });
 
-        const lineCount = seq.length;
-        const finalShift = ((lineCount - 1) / lineCount) * 100;
+            const lineCount = seq.length;
+            const finalShift = ((lineCount - 1) / lineCount) * 100;
 
-        textCycleAnimRef.current = gsap.to(inner, {
-            yPercent: -finalShift,
-            duration: 0.5 + lineCount * 0.07,
-            ease: "power4.out",
-        });
-    }, []);
+            textCycleAnimRef.current = gsap.to(inner, {
+                yPercent: -finalShift,
+                duration: 0.5 + lineCount * 0.07,
+                ease: "power4.out",
+            });
+        },
+        [t],
+    );
 
     const toggleMenu = useCallback(() => {
         const target = !openRef.current;
@@ -487,7 +492,15 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                             ref={textWrapRef}
                             className="sm-toggle-textWrap relative inline-block h-[1em] overflow-hidden whitespace-nowrap w-[var(--sm-toggle-width,auto)] min-w-[var(--sm-toggle-width,auto)]"
                             aria-hidden="true"
-                        ></span>
+                        >
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                ref={textInnerRef}
+                                aria-hidden="true"
+                                className="sm-toggle-textInner flex flex-col leading-none"
+                            ></Typography>
+                        </span>
                         <motion.span
                             layout
                             ref={iconRef}
@@ -579,9 +592,13 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                                                 aria-label={it.ariaLabel}
                                                 data-index={idx + 1}
                                             >
-                                                <span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">
+                                                <Typography
+                                                    variant="text"
+                                                    tag="span"
+                                                    className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform"
+                                                >
                                                     {it.label}
-                                                </span>
+                                                </Typography>
                                             </a>
                                         </li>
                                     ))
@@ -591,9 +608,13 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                                         aria-hidden="true"
                                     >
                                         <span className="sm-panel-item relative text-black font-semibold text-[4rem] cursor-pointer leading-none tracking-[-2px] uppercase transition-colors duration-150 ease-linear inline-block no-underline pr-[1.4em]">
-                                            <span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">
+                                            <Typography
+                                                variant="text"
+                                                tag="span"
+                                                className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform"
+                                            >
                                                 {t("nav.noItems")}
-                                            </span>
+                                            </Typography>
                                         </span>
                                     </li>
                                 )}
@@ -624,7 +645,9 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                                                 rel="noopener noreferrer"
                                                 className="sm-socials-link text-[1.2rem] font-medium text-[#111] no-underline relative inline-block py-[2px] transition-[color,opacity] duration-300 ease-linear hover:text-[var(--sm-accent,#ff0000)] focus-visible:outline-2 focus-visible:outline-[var(--sm-accent,#ff0000)] focus-visible:outline-offset-[3px]"
                                             >
-                                                {s.label}
+                                                <Typography tag="span" className="inline-block">
+                                                    {s.label}
+                                                </Typography>
                                             </a>
                                         </li>
                                     ))}

@@ -2,21 +2,26 @@ import clsx, { type ClassValue } from "clsx";
 import { createContext, useContext } from "react";
 
 interface BottomContainerContextType {
-    children?: React.ReactNode;
+    className?: string;
+    onBack?: () => void;
+}
+
+interface BottomContainerProviderProps {
+    children: React.ReactNode;
     className?: ClassValue;
     onBack?: () => void;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const BottomContainerContext = createContext<BottomContainerContextType>(
-    {} as BottomContainerContextType,
+export const BottomContainerContext = createContext<BottomContainerContextType | undefined>(
+    undefined,
 );
 
 export const BottomContainerProvider = ({
     children,
     className,
     onBack,
-}: BottomContainerContextType) => {
+}: BottomContainerProviderProps) => {
     const cn = clsx(className);
 
     return (

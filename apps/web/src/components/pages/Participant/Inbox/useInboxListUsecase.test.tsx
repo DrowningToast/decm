@@ -3,6 +3,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useInboxListUsecase } from "./useInboxListUsecase";
 import type { ReactNode } from "react";
+import { useSearchNotificationNavStore } from "@/components/BottomNav/stores/notifications";
 
 // Mock the zustand store
 vi.mock("@/components/BottomNav/stores/notifications", () => ({
@@ -23,6 +24,10 @@ describe("useInboxListUsecase", () => {
             },
         });
         vi.clearAllMocks();
+        vi.mocked(useSearchNotificationNavStore).mockReturnValue({
+            searchQuery: "",
+            setSearchQuery: vi.fn(),
+        });
     });
 
     const wrapper = ({ children }: { children: ReactNode }) => (

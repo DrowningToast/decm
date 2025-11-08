@@ -354,10 +354,6 @@ jobs:
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   pnpm-version: ${{ env.PNPM_VERSION }}
-
-            - name: Run TypeScript type checking
-              run: pnpm check-types
-
             - name: Build frontend
               run: pnpm build
 

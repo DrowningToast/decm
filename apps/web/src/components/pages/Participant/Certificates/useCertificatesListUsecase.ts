@@ -59,7 +59,7 @@ export const useCertificatesListUsecase = () => {
         caseSensitive: false,
     });
 
-    const filteredCertificaes = searcher.search(searchQuery);
+    const filteredCertificates = searcher.search(searchQuery);
 
-    return { certificates: filteredCertificaes, isLoading };
+    return { certificates: filteredCertificates, isLoading };
 };

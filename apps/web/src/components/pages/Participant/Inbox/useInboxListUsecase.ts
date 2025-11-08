@@ -73,7 +73,9 @@ export const useInboxListUsecase = () => {
     const searcher = new FuzzySearch(inboxItems, ["title", "sender"], {
         caseSensitive: false,
     });
-    const filteredItems = searcher.search(searchQuery);
+    const normalizedQuery = searchQuery?.trim() ?? "";
+    const filteredItems =
+        normalizedQuery.length === 0 ? inboxItems : searcher.search(normalizedQuery);
 
     return { inboxItems: filteredItems, isLoading, error };
 };

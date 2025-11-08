@@ -13,15 +13,131 @@ import { useTranslation } from "react-i18next";
 import { useMyProfile } from "@/hooks/useMyProfile";
 import { useUpdateProfile } from "@/hooks/profile/useUpdateProfile";
 import { useNavigate } from "@/router";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import { PrivateNavbar } from "@/components/layouts/navigations/PrivateNavbar";
+import { AxiosError, isAxiosError } from "axios";
+import { toast } from "sonner";
+
+type ApiErrorResponse = {
+    message?: string;
+    error?: string;
+    detail?: string;
+    errors?:
+        | Array<{ field?: string; message?: string } | string | null | undefined>
+        | Record<string, string | string[] | null | undefined>;
+};
+
+const formatValidationDetails = (
+    validationErrors: ApiErrorResponse["errors"],
+): string | undefined => {
+    if (!validationErrors) {
+        return undefined;
+    }
+
+    if (Array.isArray(validationErrors)) {
+        const messages: string[] = [];
+
+        validationErrors.forEach((entry) => {
+            if (!entry) {
+                return;
+            }
+
+            if (typeof entry === "string") {
+                const trimmed = entry.trim();
+                if (trimmed.length > 0) {
+                    messages.push(trimmed);
+                }
+                return;
+            }
+
+            const field = entry.field?.trim();
+            const message = entry.message?.trim();
+            if (field && message) {
+                messages.push(`${field}: ${message}`);
+                return;
+            }
+            if (message) {
+                messages.push(message);
+            }
+        });
+
+        return messages.length > 0 ? messages.join("\n") : undefined;
+    }
+
+    const messages: string[] = [];
+    Object.entries(validationErrors).forEach(([field, value]) => {
+        if (!value) {
+            return;
+        }
+
+        if (Array.isArray(value)) {
+            const filtered = value
+                .filter((item): item is string => typeof item === "string")
+                .map((item) => item.trim())
+                .filter((item) => item.length > 0);
+
+            if (filtered.length > 0) {
+                const prefix = field ? `${field}: ` : "";
+                messages.push(`${prefix}${filtered.join(", ")}`);
+            }
+            return;
+        }
+
+        if (typeof value === "string") {
+            const trimmed = value.trim();
+            if (trimmed.length > 0) {
+                messages.push(field ? `${field}: ${trimmed}` : trimmed);
+            }
+        }
+    });
+
+    return messages.length > 0 ? messages.join("\n") : undefined;
+};
 
 export const EditProfilePage: React.FC = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { data: profile, isLoading: isLoadingProfile } = useMyProfile();
     const { updateProfile, isLoading: isUpdating } = useUpdateProfile();
+
+    const statusMap = useMemo<
+        Record<
+            number,
+            {
+                title: string;
+                description: string;
+            }
+        >
+    >(
+        () => ({
+            400: {
+                title: t("errors.invalidInput"),
+                description: t("errors.invalidInputDescription"),
+            },
+            401: {
+                title: t("errors.unauthorized"),
+                description: t("errors.unauthorizedDescription"),
+            },
+            403: {
+                title: t("errors.forbidden"),
+                description: t("errors.forbiddenDescription"),
+            },
+            404: {
+                title: t("errors.notFound"),
+                description: t("errors.notFoundDescription"),
+            },
+            409: {
+                title: t("errors.conflict"),
+                description: t("errors.duplicateEntryDescription"),
+            },
+            500: {
+                title: t("errors.serverError"),
+                description: t("errors.internalServerErrorDescription"),
+            },
+        }),
+        [t],
+    );
 
     const EditProfileFormSchema = createEditProfileSchema(t);
     const form = useForm<EditProfileSchema>({
@@ -97,8 +213,53 @@ export const EditProfilePage: React.FC = () => {
                 profile_picture_url: data.profile_picture_url || undefined,
                 is_profile_picture_public: data.is_profile_picture_public,
             });
+            toast.success(t("profile.updateSuccess"));
         } catch (error) {
             console.error("Failed to update profile:", error);
+            if (isAxiosError(error)) {
+                const axiosError = error as AxiosError<ApiErrorResponse | string | undefined>;
+                const responseData = axiosError.response?.data;
+                const status = axiosError.response?.status;
+                const preset = status ? statusMap[status] : undefined;
+
+                const fallbackTitle = t("errors.generic");
+                const fallbackDescription = t("errors.genericDescription");
+
+                const messageFromResponse =
+                    typeof responseData === "string"
+                        ? responseData
+                        : (responseData?.message ??
+                          responseData?.error ??
+                          responseData?.detail ??
+                          undefined);
+
+                const validationDetails =
+                    typeof responseData === "string"
+                        ? undefined
+                        : formatValidationDetails(responseData?.errors);
+
+                const descriptionParts = [
+                    preset?.description ?? fallbackDescription,
+                    messageFromResponse && messageFromResponse.trim().length > 0
+                        ? messageFromResponse
+                        : undefined,
+                    validationDetails,
+                ].filter((part): part is string => typeof part === "string");
+
+                const description =
+                    descriptionParts.length > 0
+                        ? Array.from(new Set(descriptionParts)).join("\n")
+                        : undefined;
+
+                toast.error(preset?.title ?? fallbackTitle, {
+                    description,
+                });
+                return;
+            }
+
+            toast.error(t("errors.generic"), {
+                description: t("errors.genericDescription"),
+            });
         }
     };
 
@@ -167,12 +328,16 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.firstName")}
                                                             </Label>
                                                             <Input
                                                                 {...field}
                                                                 type="text"
+                                                                id={field.name}
                                                                 className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                             />
                                                         </div>
@@ -214,12 +379,16 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.lastName")}
                                                             </Label>
                                                             <Input
                                                                 {...field}
                                                                 type="text"
+                                                                id={field.name}
                                                                 className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                             />
                                                         </div>
@@ -261,11 +430,15 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.bio")}
                                                             </Label>
                                                             <Textarea
                                                                 {...field}
+                                                                id={field.name}
                                                                 className="w-full min-h-24 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                                 placeholder={t(
                                                                     "profile.bioPlaceholder",
@@ -324,12 +497,16 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.email")}
                                                             </Label>
                                                             <Input
                                                                 {...field}
                                                                 type="email"
+                                                                id={field.name}
                                                                 className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                             />
                                                         </div>
@@ -371,12 +548,16 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.phoneNumber")}
                                                             </Label>
                                                             <Input
                                                                 {...field}
                                                                 type="tel"
+                                                                id={field.name}
                                                                 className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                             />
                                                         </div>
@@ -418,11 +599,15 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.address")}
                                                             </Label>
                                                             <Textarea
                                                                 {...field}
+                                                                id={field.name}
                                                                 className="w-full min-h-20 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                                 placeholder={t(
                                                                     "profile.addressPlaceholder",
@@ -481,12 +666,16 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.academicEmail")}
                                                             </Label>
                                                             <Input
                                                                 {...field}
                                                                 type="email"
+                                                                id={field.name}
                                                                 className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                             />
                                                         </div>
@@ -528,12 +717,16 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.academicInstitution")}
                                                             </Label>
                                                             <Input
                                                                 {...field}
                                                                 type="text"
+                                                                id={field.name}
                                                                 className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                             />
                                                         </div>
@@ -589,12 +782,16 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.profilePictureUrl")}
                                                             </Label>
                                                             <Input
                                                                 {...field}
                                                                 type="url"
+                                                                id={field.name}
                                                                 placeholder={t(
                                                                     "profile.profilePictureUrlPlaceholder",
                                                                 )}
