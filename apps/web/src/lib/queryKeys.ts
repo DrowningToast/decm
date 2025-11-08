@@ -19,6 +19,8 @@ export const QUERY_KEY = {
     // User & Authentication
     user: {
         profile: ["user", "profile"] as const,
+        roles: (requireHost?: boolean, requireIssuer?: boolean) =>
+            ["user", "roles", requireHost, requireIssuer] as const,
     },
 
     // Onboarding

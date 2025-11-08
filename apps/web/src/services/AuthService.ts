@@ -52,6 +52,12 @@ export interface SignOutParams {
     showSuccessToast?: boolean;
 }
 
+interface CheckRolesParams {
+    isAuthenticated?: boolean;
+    requireHost?: boolean;
+    requireIssuer?: boolean;
+}
+
 export class AuthService {
     private _coreApi: CoreApiType;
     private _onboardService: OnboardService;
@@ -185,6 +191,15 @@ export class AuthService {
             throw error;
         }
         await this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
+    }
+
+    public async checkRoles(params: CheckRolesParams) {
+        const response = await this._coreApi.v1.checkRole({
+            is_authenticated: params.isAuthenticated || undefined,
+            is_host: params.requireHost || undefined,
+            is_issuer: params.requireIssuer || undefined,
+        });
+        return response;
     }
 }
 
