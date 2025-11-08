@@ -489,6 +489,11 @@
                     "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
                     "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
                     "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
+                },
+                "generic": {
+                    "unauthenticated_response": "You must be logged in to access this page. Please sign in.",
+                    "unauthorized_response": "You don't have permission to access this page. Please contact an administrator.",
+                    "sign_out_success": "You have been signed out successfully."
                 }
             },
             "api": {

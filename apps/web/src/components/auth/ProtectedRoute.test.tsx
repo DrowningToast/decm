@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { ProtectedRoute } from "./ProtectedRoute";
 import * as AuthContextModule from "@/context/AuthContext";
 import { BrowserRouter } from "react-router-dom";
 import { toast } from "sonner";
+import * as ApiModule from "@/services/api";
 
 // Mock dependencies
 vi.mock("sonner", () => ({
@@ -25,6 +26,12 @@ vi.mock("react-router-dom", async () => {
         Navigate: ({ to }: { to: string }) => <div data-testid="navigate">{to}</div>,
     };
 });
+
+vi.mock("@/services/api", () => ({
+    coreApi: {
+        authCheckRole: vi.fn(),
+    },
+}));
 
 describe("ProtectedRoute", () => {
     beforeEach(() => {
@@ -512,8 +519,8 @@ describe("ProtectedRoute", () => {
         });
     });
 
-    describe("Role-Based Protection (TODO)", () => {
-        it("should render children when role-based protection is not implemented", () => {
+    describe("Role-Based Protection", () => {
+        it("should render children when no roles are required", async () => {
             vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
                 isAuthenticated: true,
                 isPending: false,
@@ -521,7 +528,6 @@ describe("ProtectedRoute", () => {
                 user: { id: "user-123", first_name: "Test" },
             });
 
-            // Note: requiredRoles prop is commented out in component
             render(
                 <ProtectedRoute>
                     <div data-testid="protected-content">Protected Content</div>
@@ -529,7 +535,369 @@ describe("ProtectedRoute", () => {
                 { wrapper },
             );
 
-            expect(screen.getByTestId("protected-content")).toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.getByTestId("protected-content")).toBeInTheDocument();
+            });
+            expect(ApiModule.coreApi.authCheckRole).not.toHaveBeenCalled();
+        });
+
+        it("should check host role when requireHost is true", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isPending: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.mocked(ApiModule.coreApi.authCheckRole).mockResolvedValue({
+                data: { is_host: true },
+            } as never);
+
+            render(
+                <ProtectedRoute requireHost={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                expect(ApiModule.coreApi.authCheckRole).toHaveBeenCalledWith({
+                    isHost: true,
+                    isIssuer: undefined,
+                });
+            });
+
+            await waitFor(() => {
+                expect(screen.getByTestId("protected-content")).toBeInTheDocument();
+            });
+        });
+
+        it("should check issuer role when requireIssuer is true", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isPending: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.mocked(ApiModule.coreApi.authCheckRole).mockResolvedValue({
+                data: { is_issuer: true },
+            } as never);
+
+            render(
+                <ProtectedRoute requireIssuer={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                expect(ApiModule.coreApi.authCheckRole).toHaveBeenCalledWith({
+                    isHost: undefined,
+                    isIssuer: true,
+                });
+            });
+
+            await waitFor(() => {
+                expect(screen.getByTestId("protected-content")).toBeInTheDocument();
+            });
+        });
+
+        it("should check both roles when requireHost and requireIssuer are true", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isPending: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.mocked(ApiModule.coreApi.authCheckRole).mockResolvedValue({
+                data: { is_host: true, is_issuer: true },
+            } as never);
+
+            render(
+                <ProtectedRoute requireHost={true} requireIssuer={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                expect(ApiModule.coreApi.authCheckRole).toHaveBeenCalledWith({
+                    isHost: true,
+                    isIssuer: true,
+                });
+            });
+
+            await waitFor(() => {
+                expect(screen.getByTestId("protected-content")).toBeInTheDocument();
+            });
+        });
+
+        it("should redirect to unauthorized when host role check fails", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isPending: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.mocked(ApiModule.coreApi.authCheckRole).mockResolvedValue({
+                data: { is_host: false },
+            } as never);
+
+            render(
+                <ProtectedRoute requireHost={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                const navigate = screen.getByTestId("navigate");
+                expect(navigate).toBeInTheDocument();
+                expect(navigate).toHaveTextContent("/unauthorized");
+            });
+
+            expect(toast.error).toHaveBeenCalledWith("flow.generic.unauthorized_response");
+            expect(screen.queryByTestId("protected-content")).not.toBeInTheDocument();
+        });
+
+        it("should redirect to unauthorized when issuer role check fails", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isPending: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.mocked(ApiModule.coreApi.authCheckRole).mockResolvedValue({
+                data: { is_issuer: false },
+            } as never);
+
+            render(
+                <ProtectedRoute requireIssuer={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                const navigate = screen.getByTestId("navigate");
+                expect(navigate).toBeInTheDocument();
+                expect(navigate).toHaveTextContent("/unauthorized");
+            });
+
+            expect(toast.error).toHaveBeenCalledWith("flow.generic.unauthorized_response");
+            expect(screen.queryByTestId("protected-content")).not.toBeInTheDocument();
+        });
+
+        it("should redirect to custom unauthorized path when provided", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isPending: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.mocked(ApiModule.coreApi.authCheckRole).mockResolvedValue({
+                data: { is_host: false },
+            } as never);
+
+            render(
+                <ProtectedRoute requireHost={true} unauthorizedRedirectTo="/403">
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                const navigate = screen.getByTestId("navigate");
+                expect(navigate).toBeInTheDocument();
+                expect(navigate).toHaveTextContent("/403");
+            });
+        });
+
+        it("should show loading state during role check", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isPending: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.mocked(ApiModule.coreApi.authCheckRole).mockImplementation(
+                () =>
+                    new Promise((resolve) => {
+                        setTimeout(
+                            () =>
+                                resolve({
+                                    data: { is_host: true },
+                                } as never),
+                            100,
+                        );
+                    }),
+            );
+
+            render(
+                <ProtectedRoute requireHost={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            // Should show loading during role check
+            expect(screen.getByText("common.loading")).toBeInTheDocument();
+
+            // After role check completes, should render content
+            await waitFor(() => {
+                expect(screen.getByTestId("protected-content")).toBeInTheDocument();
+            });
+        });
+
+        it("should handle role check API error", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isPending: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+            vi.mocked(ApiModule.coreApi.authCheckRole).mockRejectedValue(new Error("API Error"));
+
+            render(
+                <ProtectedRoute requireHost={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                const navigate = screen.getByTestId("navigate");
+                expect(navigate).toBeInTheDocument();
+                expect(navigate).toHaveTextContent("/unauthorized");
+            });
+
+            expect(consoleErrorSpy).toHaveBeenCalledWith("Role check failed:", expect.any(Error));
+            expect(toast.error).toHaveBeenCalledWith("flow.generic.unauthorized_response");
+
+            consoleErrorSpy.mockRestore();
+        });
+
+        it("should not check roles when user is not authenticated", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: false,
+                isPending: false,
+                refetch: vi.fn(),
+                user: null,
+            });
+
+            render(
+                <ProtectedRoute requireHost={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                const navigate = screen.getByTestId("navigate");
+                expect(navigate).toBeInTheDocument();
+                expect(navigate).toHaveTextContent("/signup");
+            });
+
+            expect(ApiModule.coreApi.authCheckRole).not.toHaveBeenCalled();
+        });
+
+        it("should render custom fallback during role check", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isPending: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.mocked(ApiModule.coreApi.authCheckRole).mockImplementation(
+                () =>
+                    new Promise((resolve) => {
+                        setTimeout(
+                            () =>
+                                resolve({
+                                    data: { is_host: true },
+                                } as never),
+                            100,
+                        );
+                    }),
+            );
+
+            const customFallback = <div data-testid="custom-fallback">Checking roles...</div>;
+
+            render(
+                <ProtectedRoute requireHost={true} fallback={customFallback}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            // Should show custom fallback during role check
+            expect(screen.getByTestId("custom-fallback")).toBeInTheDocument();
+
+            // After role check completes, should render content
+            await waitFor(() => {
+                expect(screen.getByTestId("protected-content")).toBeInTheDocument();
+            });
+        });
+
+        it("should handle partial role satisfaction (host but not issuer)", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: true,
+                isPending: false,
+                refetch: vi.fn(),
+                user: { id: "user-123", first_name: "Test" },
+            });
+
+            vi.mocked(ApiModule.coreApi.authCheckRole).mockResolvedValue({
+                data: { is_host: true, is_issuer: false },
+            } as never);
+
+            render(
+                <ProtectedRoute requireHost={true} requireIssuer={true}>
+                    <div data-testid="protected-content">Protected Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                const navigate = screen.getByTestId("navigate");
+                expect(navigate).toBeInTheDocument();
+                expect(navigate).toHaveTextContent("/unauthorized");
+            });
+
+            expect(toast.error).toHaveBeenCalledWith("flow.generic.unauthorized_response");
+        });
+
+        it("should allow requireAuthenticated to be set to false", async () => {
+            vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+                isAuthenticated: false,
+                isPending: false,
+                refetch: vi.fn(),
+                user: null,
+            });
+
+            render(
+                <ProtectedRoute requireAuthenticated={false}>
+                    <div data-testid="protected-content">Public Content</div>
+                </ProtectedRoute>,
+                { wrapper },
+            );
+
+            await waitFor(() => {
+                expect(screen.getByTestId("protected-content")).toBeInTheDocument();
+            });
+
+            expect(toast.error).not.toHaveBeenCalled();
+            expect(ApiModule.coreApi.authCheckRole).not.toHaveBeenCalled();
         });
     });
 });
