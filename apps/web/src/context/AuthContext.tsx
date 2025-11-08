@@ -5,12 +5,13 @@ import { AxiosError } from "axios";
 import { useTranslation } from "react-i18next";
 import { useSignout } from "@/components/useSignout";
 import { useMyProfile } from "@/hooks/useMyProfile";
-import { handleAxiosError } from "@/common/Err";
+import { useNavigate } from "@/router";
 interface AuthContextType {
     user: EntityProfile | null;
-    isPending: boolean;
+    isFetching: boolean;
     isAuthenticated: boolean;
     refetch: () => Promise<unknown>;
+    error?: AxiosError;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,30 +23,31 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { t } = useTranslation();
     const { signout } = useSignout();
-    const {
-        data: user,
-        error,
-        isPending,
-        refetch,
-    } = useMyProfile();
+    const navigate = useNavigate();
+    const { data: user, error, isFetching, refetch } = useMyProfile();
 
     useEffect(() => {
         if (!error) {
             return;
         }
 
-        console.error(error);
-        if (error instanceof AxiosError) {
-            handleAxiosError(t, error);
-            void signout();
-        }
-    }, [error, signout, t]);
+        const init = async () => {
+            if (error instanceof AxiosError) {
+                if (error.response?.status === 404) {
+                    await signout({ showSuccessToast: false });
+                }
+            }
+        };
+
+        init();
+    }, [error, navigate, signout, t]);
 
     const contextValue: AuthContextType = {
         user: user || null,
-        isPending,
+        isFetching,
         isAuthenticated: !!user,
         refetch,
+        error: error instanceof AxiosError ? error : undefined,
     };
 
     return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;

@@ -11,11 +11,13 @@ import { useSignup } from "../useSignup";
 import { onboardService } from "@/services/OnboardService";
 import { authService } from "@/services/AuthService";
 import type { Profile } from "../ProfilePage";
+import { useMyProfile } from "@/hooks/useMyProfile";
 
 export const useWalletOnboardUsecase = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { upsertProfile } = useSignup();
+    const { refetch: refetchMyProfile } = useMyProfile();
 
     const usecaseAsync = async (signSignature: string, profile: Profile) => {
         let onboardStatus: OnboardCheckOnboardStatusResponse | null = null;
@@ -80,10 +82,9 @@ export const useWalletOnboardUsecase = () => {
 
         // Only show success and navigate if profile was successfully created/updated
         toast.success(t("flow.wallet.create_profile_success"));
-        navigate("/app");
+        await refetchMyProfile();
+        await navigate("/app");
     };
 
-    return {
-        usecaseAsync,
-    };
+    return { usecaseAsync };
 };

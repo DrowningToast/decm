@@ -1,19 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { useCallback, useContext } from "react";
 import { WalletOnboardContext } from "./WalletOnboardContext";
-import { useSignMessage, useWalletClient, useDisconnect } from "wagmi";
+import { useSignMessage, useWalletClient } from "wagmi";
 import { ErrorPage } from "../../Error";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
 import { Typography } from "@/components/typography/typography";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { Link } from "@/router";
 
 export const WalletOnboardSignPage = () => {
     const { t } = useTranslation();
     const { data: walletClient } = useWalletClient();
     const { signMessageAsync } = useSignMessage();
-    const { disconnect } = useDisconnect();
     const { signMessage, isPending } = useContext(WalletOnboardContext);
     const [, setSignSignature] = useLocalStorage<string | undefined>(
         LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE,
@@ -93,11 +93,7 @@ export const WalletOnboardSignPage = () => {
                         {t("verify.requestButton")}
                     </Button>
 
-                    <button
-                        type="button"
-                        onClick={() => disconnect()}
-                        className="text-start h-[14.5px] inline-block"
-                    >
+                    <Link to="/signout" className="text-start h-[14.5px] inline-block">
                         <Typography
                             variant="text"
                             tag="span"
@@ -106,7 +102,7 @@ export const WalletOnboardSignPage = () => {
                         >
                             {t("verify.disconnectLink")}
                         </Typography>
-                    </button>
+                    </Link>
                 </div>
             </div>
         </div>
