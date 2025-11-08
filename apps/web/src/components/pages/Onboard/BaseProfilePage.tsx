@@ -4,18 +4,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormField, FormItem, FormControl, FormMessage, Form } from "@/components/ui/form";
-import { LogoutButton } from "@/components/LogoutButton";
 import { OnboardRegistrationMethod } from "@decm/api";
 import { OnboardPageContext } from "@/pages/onboard/[method]";
 import { useContext } from "react";
+import { Link } from "@/router";
+import { useDisconnect } from "wagmi";
 
 type BaseProfilePageProps = {
     t: (key: string) => string;
     onConfirm: () => void;
     onBack: () => void;
-    hasAccount: boolean
+    hasAccount: boolean;
     method: OnboardRegistrationMethod;
-}
+};
 
 export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
     t,
@@ -24,8 +25,8 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
     hasAccount,
     method,
 }) => {
-
-    const { profileForm: form } = useContext(OnboardPageContext)
+    const { profileForm: form } = useContext(OnboardPageContext);
+    const { disconnect } = useDisconnect();
 
     return (
         <Form {...form}>
@@ -92,12 +93,16 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
                                     <FormItem className="flex flex-row gap-x-1 ">
                                         <FormControl>
                                             <Checkbox
+                                                id="isFirstNamePublic"
                                                 checked={field.value}
                                                 onCheckedChange={field.onChange}
                                                 className="mt-0.5"
                                             />
                                         </FormControl>
-                                        <Label className="text-xs        font-medium leading-normal text-background-alt cursor-pointer opacity-50">
+                                        <Label
+                                            htmlFor="isFirstNamePublic"
+                                            className="text-xs font-medium leading-normal text-background-alt cursor-pointer opacity-50"
+                                        >
                                             {t("onboard.profile.makePublic")}
                                         </Label>
                                     </FormItem>
@@ -134,12 +139,16 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
                                     <FormItem className="flex flex-row items-start gap-x-1 ">
                                         <FormControl>
                                             <Checkbox
+                                                id="isLastNamePublic"
                                                 checked={field.value}
                                                 onCheckedChange={field.onChange}
                                                 className="mt-0.5"
                                             />
                                         </FormControl>
-                                        <Label className="text-xs font-medium leading-normal text-background-alt cursor-pointer opacity-50">
+                                        <Label
+                                            htmlFor="isLastNamePublic"
+                                            className="text-xs font-medium leading-normal text-background-alt cursor-pointer opacity-50"
+                                        >
                                             {t("onboard.profile.makePublic")}
                                         </Label>
                                     </FormItem>
@@ -177,12 +186,16 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
                                     <FormItem className="flex flex-row items-start gap-x-1 ">
                                         <FormControl>
                                             <Checkbox
+                                                id="isEmailPublic"
                                                 checked={field.value}
                                                 onCheckedChange={field.onChange}
                                                 className="mt-0.5"
                                             />
                                         </FormControl>
-                                        <Label className="text-xs font-medium leading-normal text-background-alt cursor-pointer opacity-50">
+                                        <Label
+                                            htmlFor="isEmailPublic"
+                                            className="text-xs font-medium leading-normal text-background-alt cursor-pointer opacity-50"
+                                        >
                                             {t("onboard.profile.makePublic")}
                                         </Label>
                                     </FormItem>
@@ -220,12 +233,16 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
                                     <FormItem className="flex flex-row items-start gap-x-1 ">
                                         <FormControl>
                                             <Checkbox
+                                                id="isPhoneNumberPublic"
                                                 checked={field.value}
                                                 onCheckedChange={field.onChange}
                                                 className="mt-0.5"
                                             />
                                         </FormControl>
-                                        <Label className="text-xs font-medium leading-normal text-background-alt cursor-pointer opacity-50">
+                                        <Label
+                                            htmlFor="isPhoneNumberPublic"
+                                            className="text-xs font-medium leading-normal text-background-alt cursor-pointer opacity-50"
+                                        >
                                             {t("onboard.profile.makePublic")}
                                         </Label>
                                     </FormItem>
@@ -260,12 +277,36 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
                             </Button>
                         )}
 
-                        <LogoutButton
-                            type={method === OnboardRegistrationMethod.RegistrationMethodWallet ? "disconnect" : "signout"}
-                        />
+                        {method === OnboardRegistrationMethod.RegistrationMethodWallet ? (
+                            <button
+                                type="button"
+                                onClick={() => disconnect()}
+                                className="text-start h-[14.5px] inline-block"
+                            >
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="background-alt"
+                                    className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
+                                >
+                                    {t("verify.disconnectLink")}
+                                </Typography>
+                            </button>
+                        ) : (
+                            <Link to="/signout" className="text-start h-[14.5px] inline-block">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="background-alt"
+                                    className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
+                                >
+                                    {t("onboard.logout")}
+                                </Typography>
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>
         </Form>
     );
-}
+};

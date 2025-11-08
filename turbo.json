@@ -10,9 +10,6 @@
         "lint": {
             "dependsOn": ["^lint"]
         },
-        "check-types": {
-            "dependsOn": ["^check-types"]
-        },
         "test": {
             "cache": true,
             "inputs": ["$TURBO_DEFAULT$", "src/**/*.{ts,tsx}", "**/*_test.go"],

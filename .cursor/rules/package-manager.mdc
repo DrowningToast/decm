@@ -47,8 +47,7 @@ All scripts in [package.json](mdc:package.json) must be run with `pnpm`:
 # Frontend
 pnpm dev              # React development (Turbo)
 pnpm build           # Production build (Turbo)
-pnpm lint            # Code linting (Turbo)
-pnpm check-types     # TypeScript checking (Turbo)
+pnpm lint            # Code linting + TypeScript checking (Turbo)
 
 # Backend (Core API)
 pnpm dev:core        # Go Fiber server

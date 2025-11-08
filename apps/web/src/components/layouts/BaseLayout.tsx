@@ -3,11 +3,15 @@ import { cn } from "@/lib/utils";
 
 interface BaseLayoutProps extends React.PropsWithChildren {
     children: React.ReactNode;
-    className: ClassValue;
-    variant: "light" | "dark";
+    className?: ClassValue;
+    variant?: "light" | "dark";
 }
 
-export const BaseLayout = ({ children, className, variant = "dark" }: BaseLayoutProps) => {
+export const BaseLayout: React.FC<BaseLayoutProps> = ({
+    children,
+    className,
+    variant = "dark",
+}) => {
     return (
         <div
             className={cn("pt-12 md:pt-[60px]", className, {

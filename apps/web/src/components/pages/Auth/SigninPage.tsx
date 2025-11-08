@@ -8,9 +8,13 @@ import { ThemisWithScale } from "@/components/assets/ThemisWithScale";
 
 interface SigninPageProps {
     onGoogleOAuthClick?: () => void;
+    isLoading?: boolean;
 }
 
-export const SigninPage: React.FC<SigninPageProps> = ({ onGoogleOAuthClick }) => {
+export const SigninPage: React.FC<SigninPageProps> = ({
+    onGoogleOAuthClick,
+    isLoading = false,
+}) => {
     const { t } = useTranslation();
 
     return (
@@ -41,10 +45,11 @@ export const SigninPage: React.FC<SigninPageProps> = ({ onGoogleOAuthClick }) =>
                     {/* Buttons Section */}
                     <div className="flex flex-col gap-2.5">
                         {/* Web3 Wallet Button */}
-                        <WalletConnectButton>
+                        <WalletConnectButton isLoading={isLoading}>
                             <Button
                                 className="w-full h-12 bg-primary hover:bg-primary/90 rounded-[12px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                                 size="lg"
+                                loading={isLoading}
                             >
                                 <Typography
                                     variant="text"
@@ -66,11 +71,12 @@ export const SigninPage: React.FC<SigninPageProps> = ({ onGoogleOAuthClick }) =>
                             className="w-full h-12 bg-background-alt hover:bg-background-alt/90 rounded-[12px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                             size="lg"
                             onClick={onGoogleOAuthClick}
+                            loading={isLoading}
                         >
                             <Typography
                                 variant="text"
                                 tag="span"
-                                color="background-alt"
+                                color="foreground-alt"
                                 className="text-base"
                             >
                                 {t("signin.googleButton")}

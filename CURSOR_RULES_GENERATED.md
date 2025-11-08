@@ -61,10 +61,9 @@ Comprehensive guide to ESLint rules, configurations, and best practices for the 
 ### Commands Reference
 
 ```bash
-pnpm lint                          # Run linting
+pnpm lint                          # Run linting + TypeScript checking
 pnpm lint -- --fix                 # Auto-fix issues
 pnpm format                        # Format with Prettier
-pnpm check-types                   # TypeScript checking
 ```
 
 ---
@@ -196,7 +195,7 @@ fetch_rules(rule_names: ["coderabbit", "eslint-configuration", "testing-setup"])
 - ✅ Follow explicit return types and props interfaces
 - ✅ Write tests for components and hooks
 - ✅ Mock APIs with MSW in tests
-- ✅ Run `pnpm check-types` for TypeScript validation
+- ✅ TypeScript validation is included in `pnpm lint`
 
 ### For PR Reviews
 

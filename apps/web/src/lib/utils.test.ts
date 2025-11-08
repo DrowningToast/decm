@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cn, delay } from "./utils";
+import { cn, delay, until } from "./utils";
 
 describe("cn utility", () => {
     it("should merge class names correctly", () => {
@@ -111,5 +111,63 @@ describe("delay utility", () => {
 
         expect(callback).toHaveBeenCalledWith("end");
         expect(callback).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe("until utility", () => {
+    it("should return success when callback succeeds on first attempt", async () => {
+        const callback = vi.fn().mockResolvedValueOnce({ data: "success" });
+
+        const result = await until(callback, { maxDurationMs: 5000, delayMs: 100 });
+
+        expect(result.isSuccess).toBe(true);
+        expect(result.isFailed).toBe(false);
+        expect(result.response).toEqual({ data: "success" });
+        expect(result.error).toBeUndefined();
+        expect(callback).toHaveBeenCalledTimes(1);
+    });
+
+    it("should support synchronous callbacks", async () => {
+        const callback = vi.fn().mockReturnValueOnce("sync success");
+
+        const result = await until(callback, { maxDurationMs: 5000, delayMs: 100 });
+
+        expect(result.isSuccess).toBe(true);
+        expect(result.response).toBe("sync success");
+        expect(callback).toHaveBeenCalledTimes(1);
+    });
+
+    it("should handle zero max duration", async () => {
+        const callback = vi.fn().mockResolvedValueOnce("success");
+
+        const result = await until(callback, { maxDurationMs: 0, delayMs: 100 });
+
+        expect(result.isSuccess).toBe(false);
+        expect(result.isFailed).toBe(true);
+        expect(result.error?.message).toBe("Timeout: max duration reached");
+    });
+
+    it("should handle return correct types on success", async () => {
+        const callback = vi.fn().mockResolvedValueOnce({ success: true, value: 42 });
+
+        const result = await until(callback, { maxDurationMs: 5000, delayMs: 100 });
+
+        expect(result).toHaveProperty("isSuccess");
+        expect(result).toHaveProperty("isFailed");
+        expect(result).toHaveProperty("response");
+        expect(result.isSuccess).toBe(true);
+        expect(result.response?.success).toBe(true);
+    });
+
+    it("should pass through response without error property on success", async () => {
+        const callback = vi.fn().mockResolvedValueOnce({ data: "test" });
+
+        const result = await until(callback, { maxDurationMs: 5000, delayMs: 100 });
+
+        expect(result.isSuccess).toBe(true);
+        expect(result.isFailed).toBe(false);
+        expect(result.response).toEqual({ data: "test" });
+        // On success, error is undefined (not included in the object)
+        expect(result.error).toBeUndefined();
     });
 });

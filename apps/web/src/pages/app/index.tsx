@@ -1,12 +1,10 @@
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { LogoutButton } from "@/components/LogoutButton";
+import { MainPage } from "@/components/pages/Participant/MainPage";
 
 const AppPage = () => {
     return (
-        <ProtectedRoute>
-            {/* PH */}
-            <LogoutButton type="signout" />
-        </ProtectedRoute>
+        <section className="relative z-10">
+            <MainPage />
+        </section>
     );
 };
 

@@ -26,6 +26,7 @@ export const TOAST_USECASE_VIEWMODEL = {
     },
     [USECASE_IDS.GENERIC]: {
         UNAUTHENTICATED_RESPONSE: "flow.generic.unauthenticated_response",
+        SIGN_OUT_SUCCESS: "flow.generic.sign_out_success",
     },
     [USECASE_IDS.OAUTH_GOOGLE_CREATE_PROFILE]: {
         SUCCESS: "flow.oauth_google.create_profile_success",

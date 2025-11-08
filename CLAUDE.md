@@ -51,8 +51,9 @@ pnpm compose:down          # Stop PostgreSQL container
 ```bash
 pnpm dev                   # Start Vite dev server (Turbo)
 pnpm build                 # Production build
-pnpm lint                  # ESLint
-pnpm check-types          # TypeScript type checking
+pnpm lint                  # ESLint + TypeScript type checking (all workspaces)
+pnpm lint:web              # Frontend linting only
+pnpm lint:core             # Backend linting only
 ```
 
 ## Architecture Overview
@@ -474,49 +475,63 @@ decm/
     └── db-env.js                         # Database config loader
 ```
 
-## Key Cursor Rules
+## Code Quality Standards
 
-The `.cursorules` file contains detailed patterns (summarized here):
+### Naming Conventions
 
-**Encryption - CRITICAL**:
+- Backend scripts use 'core' naming: `dev:core`, `build:core`, `gen-api:core`
+- Go files: `snake_case.go`; Functions: `camelCase()`
+- Never use 'backend' in script names - always 'core'
 
-- **All PII MUST be encrypted at application layer in repository** (see `.cursorules` section 2 and `documentations/pii-encryption.md`)
-- Use `pgmapper.EncryptStringPtrToPgText()` before INSERT/UPDATE in Go code
-- Use `pgmapper.DecryptPgTextToStringPtr()` after SELECT in Go code
-- Search by encrypting search term with `pgmapper.EncryptPII()` in Go code
-- Use AES-256-GCM algorithm with environment variable key
-- NO database-level encryption (pgcrypto) - all encryption in application layer
+### Go Patterns
 
-**go-backend-architecture.mdc**: Three-layer architecture, dependency injection, error handling
+**Import Organization**:
 
-**repository-patterns.mdc**: Database operations with encryption (CREATE/READ/UPDATE/DELETE patterns)
+```go
+import (
+    "standard/library"
 
-**api-generation.mdc**: OpenAPI → TypeScript workflow
+    "third/party"
 
-**form-patterns.mdc**: React Hook Form + Zod validation patterns
+    "local/package"
+)
+```
 
-**error-handling.mdc**: Unified error handling across Go backend and React frontend
+**Frontend Patterns**:
 
-**authentication-security.mdc**: Wallet-based auth, OAuth, JWT sessions
+- React Hook Form + Zod for form validation
+- Always use Typography component for text
+- NEVER use `dangerouslySetInnerHTML`
+- i18n: all user text must use `t()` translation function
+- Validate on BOTH frontend (Zod) and backend (struct tags)
 
-**environment-config.mdc**: Configuration management, .env patterns
+## Critical Rules (Prohibited Patterns)
 
-**development-workflow.mdc**: Development commands, troubleshooting
+❌ **Never**:
 
-**testing-conventions.mdc**: Testing patterns for Go and React
+- Use npm/yarn/bun - ONLY pnpm
+- Hardcode encryption keys - use environment variables
+- Skip PII encryption for any field
+- Use database-level encryption (pgcrypto) - encrypt in application layer
+- Write raw SQL in Go - use sqlc generated code
+- Access repositories directly from handlers
+- Return raw errors to clients - use `customerror` package
+- Skip Swagger annotations on endpoints
+- Use `dangerouslySetInnerHTML` in React
+- Skip database migrations - always use migration files
 
 ## Important Development Notes
 
-1. **Package Manager**: Use `pnpm` exclusively - the project won't work with npm/yarn/bun
-2. **PII Encryption**: ALWAYS encrypt PII at repository layer - this is non-negotiable for security
-3. **Swagger Docs**: ALL endpoints MUST have Swagger annotations
-4. **API Generation**: Run `pnpm gen-api:core` after backend changes to sync TypeScript client
-5. **Database Queries**: Use sqlc - never write raw SQL in Go code
-6. **Error Handling**: Always use `customerror` package, never return raw errors to clients
-7. **Typography**: Use Typography component for ALL text in frontend
-8. **i18n**: All user-facing text MUST use `t()` translation function
-9. **Form Validation**: Validate on BOTH frontend (Zod) and backend (struct tags)
-10. **Migrations**: Auto-run in dev mode, but test manually in production scenarios
+1. **PII Encryption**: ALWAYS encrypt at repository layer - non-negotiable
+2. **Swagger Docs**: ALL endpoints MUST have Swagger annotations
+3. **API Generation**: Run `pnpm gen-api:core` after backend changes
+4. **Database Queries**: Use sqlc only - never raw SQL in Go
+5. **Error Handling**: Always use `customerror`, never raw errors
+6. **Typography**: Use Typography component for ALL text
+7. **i18n**: All user-facing text uses `t()` translation function
+8. **Form Validation**: Validate on BOTH frontend and backend
+9. **Migrations**: Auto-run in dev mode, test manually in production
+10. **Package Manager**: Use `pnpm` exclusively
 
 ## Testing
 

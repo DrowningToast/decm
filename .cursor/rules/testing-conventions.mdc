@@ -599,6 +599,44 @@ test.describe('Authentication Flow', () => {
 });
 ```
 
+## Excluding Third-Party Components from Testing
+
+### shadcn/ui Components and Hooks
+
+**Do NOT test shadcn/ui components or hooks**. These are well-maintained third-party components that come with their own testing and should not be tested in your application.
+
+**How to Identify shadcn Components/Hooks**:
+1. **Hyphenated names**: File/function names with hyphens (e.g., `use-data-table`, `use-toast`, `data-table`)
+2. **Location**: Typically in `components/ui/` or `hooks/` directories
+3. **Minimal modifications**: Components installed via CLI with little to no customization
+4. **Examples to skip**:
+   - `use-data-table.ts` - shadcn hook
+   - `use-toast.ts` - shadcn hook
+   - `data-table.tsx` - shadcn component
+   - `dialog.tsx` - shadcn component (in ui folder)
+   - `button.tsx` - shadcn component (in ui folder)
+
+**What to Test Instead**:
+- ✅ Your custom business logic that uses shadcn components
+- ✅ Custom hooks you created (without hyphens in names)
+- ✅ Page components that compose shadcn components
+- ✅ Custom wrappers around shadcn components with added functionality
+
+**Example**:
+```typescript
+// ❌ DON'T test this - it's a shadcn hook
+// use-data-table.test.ts
+describe('useDataTable', () => { ... });
+
+// ✅ DO test this - it's your custom component using shadcn
+// IssuerTable.test.tsx
+describe('IssuerTable', () => {
+  it('displays issuers correctly', () => {
+    // Test your business logic
+  });
+});
+```
+
 ## Test Command Conventions
 
 ### ❌ NEVER Create Combined Test Commands
@@ -652,7 +690,8 @@ test.describe('Authentication Flow', () => {
 - Skip error case tests
 - Write flaky tests
 - Use sleep/timeouts instead of waitFor
-- Test third-party libraries
+- Test third-party libraries (including shadcn components/hooks)
+- Test shadcn components or hooks (identified by hyphens in their names like `use-data-table`)
 - Skip cleanup in tests
 - Ignore warnings in test output
 - Write tests that depend on execution order

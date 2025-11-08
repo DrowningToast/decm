@@ -6,7 +6,7 @@
         "lib": ["ES2022", "DOM", "DOM.Iterable"],
         "module": "ESNext",
         "skipLibCheck": true,
-        "types": [],
+        "types": ["vite/client"],
 
         /* Bundler mode */
         "moduleResolution": "bundler",
@@ -32,13 +32,13 @@
             "@decm/api": ["../../packages/api/src"]
         }
     },
-    "include": ["src/**/*.ts", "src/**/*.tsx"],
+    "include": ["src/**/*.ts", "src/**/*.tsx", "src/vite-env.d.ts"],
     "exclude": [
         "src/test/**",
-        "src/**/*.test.ts",
-        "src/**/*.test.tsx",
         "src/**/*.spec.ts",
         "src/**/*.spec.tsx",
+        "src/**/*.test.ts",
+        "src/**/*.test.tsx",
         "dist",
         "node_modules"
     ]

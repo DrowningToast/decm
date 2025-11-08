@@ -3,14 +3,18 @@ import { Button } from "@/components/ui/button";
 import type React from "react";
 import { Typography } from "@/components/typography/typography";
 import { ThemisWithScale } from "@/components/assets/ThemisWithScale";
-import { Link } from "@/router";
+import { Link, useNavigate } from "@/router";
 import { useGetSignMessage } from "../Onboard/useGetSignMessage";
 import { useMemo } from "react";
 import { useSignMessage } from "wagmi";
 import { toast } from "sonner";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
+import { onboardService } from "@/services/OnboardService";
+import { OnboardRegistrationMethod } from "@decm/api";
+import { handleUniversalError } from "@/common/Err";
 
+import { OnboardMethods } from "@/pages/onboard/[method]";
 interface VerifySignMessagePageProps {
     onDisconnectWallet?: () => void;
     isLoading?: boolean;
@@ -20,6 +24,7 @@ export const VerifySignMessagePage: React.FC<VerifySignMessagePageProps> = ({
     onDisconnectWallet,
     isLoading = false,
 }) => {
+    const navigate = useNavigate();
     const { t } = useTranslation();
     const [, setSignSignature] = useLocalStorage<string | undefined>(
         LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE,
@@ -38,13 +43,33 @@ export const VerifySignMessagePage: React.FC<VerifySignMessagePageProps> = ({
             return;
         }
 
+        const loadingToastId = toast.loading(t("verify.signMessageLoading"));
         try {
             const signature = await signMessageAsync({ message: signMessage });
+            const response = await onboardService.checkOnboardStatus({
+                method: OnboardRegistrationMethod.RegistrationMethodWallet,
+                signSignature: signature,
+            });
+            if (response?.profile_id) {
+                await navigate("/app");
+                return;
+            }
+            if (response?.authentication_credential_id) {
+                await navigate("/onboard/:method", {
+                    params: {
+                        method: OnboardMethods.WALLET,
+                    },
+                });
+                return;
+            }
             setSignSignature(signature);
-            toast.loading(t("verify.signMessageLoading"));
+            toast.dismiss(loadingToastId);
         } catch (error) {
+            toast.dismiss(loadingToastId);
             console.error(error);
-            toast.error(t("verify.signMessageError"));
+            if (error instanceof Error) {
+                handleUniversalError(t, error);
+            }
         }
     };
 

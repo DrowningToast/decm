@@ -1,8 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { AuthService, CreateAccountParams, type CreateProfileParams } from "./AuthService";
 import { OnboardRegistrationMethod } from "@decm/api";
 import type { CoreApiType } from "@/lib/api/api";
 import type { OnboardService } from "./OnboardService";
+import type { QueryClient } from "@tanstack/react-query";
+import type { Config } from "wagmi";
+const wagmiMock = vi.hoisted(() => ({
+    disconnect: vi.fn(),
+    getAccount: vi.fn(),
+}));
+
+vi.mock("@wagmi/core", () => wagmiMock);
+
+import { disconnect, getAccount } from "@wagmi/core";
+
+const mockDisconnect = wagmiMock.disconnect;
+const mockGetAccount = wagmiMock.getAccount;
 
 // Mock i18next
 vi.mock("i18next", () => ({
@@ -25,14 +37,20 @@ vi.mock("@/lib/api/api", () => ({
 // Import the actual mocked coreApiClient after vi.mock
 import { coreApiClient } from "@/lib/api/api";
 
+import { AuthService, type CreateAccountParams, type CreateProfileParams } from "./AuthService";
+
 describe("AuthService", () => {
     let mockCoreApi: CoreApiType;
     let mockOnboardService: OnboardService;
-    let mockQueryClient: { invalidateQueries: ReturnType<typeof vi.fn> };
+    let mockQueryClient: QueryClient;
+    let mockWagmiConfig: Config;
     let authService: AuthService;
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mockDisconnect.mockReset();
+        mockGetAccount.mockReset();
+        mockGetAccount.mockImplementation(() => ({ isConnected: false }));
 
         mockCoreApi = coreApiClient as unknown as CoreApiType;
 
@@ -42,10 +60,17 @@ describe("AuthService", () => {
 
         mockQueryClient = {
             invalidateQueries: vi.fn().mockResolvedValue(undefined),
-        };
+        } as unknown as QueryClient;
 
-        // Constructor order: coreApi, queryClient, onboardService
-        authService = new AuthService(mockCoreApi, mockQueryClient, mockOnboardService);
+        mockWagmiConfig = {} as unknown as Config;
+
+        // Constructor order: coreApi, queryClient, onboardService, wagmiConfig
+        authService = new AuthService(
+            mockCoreApi,
+            mockQueryClient,
+            mockOnboardService,
+            mockWagmiConfig,
+        );
     });
 
     describe("createAccount", () => {
@@ -278,13 +303,27 @@ describe("AuthService", () => {
     describe("signOut", () => {
         it("should sign out successfully", async () => {
             const mockResponse = { success: true };
-            (mockCoreApi.v1.logout as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+            (coreApiClient.v1.logout as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
 
-            const result = await authService.signOut();
+            await authService.signOut();
 
-            expect(mockCoreApi.v1.logout).toHaveBeenCalled();
-            expect(result).toBe(true); // signOut returns boolean true
+            expect(coreApiClient.v1.logout).toHaveBeenCalled();
             expect(mockQueryClient.invalidateQueries).toHaveBeenCalled();
+            expect(getAccount).toHaveBeenCalledWith(mockWagmiConfig);
+            expect(disconnect).not.toHaveBeenCalled();
+        });
+
+        it("should disconnect wallet when connected", async () => {
+            mockGetAccount.mockReturnValueOnce({ isConnected: true });
+            const mockResponse = { success: true };
+            (coreApiClient.v1.logout as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
+
+            await authService.signOut();
+
+            expect(coreApiClient.v1.logout).toHaveBeenCalled();
+            expect(mockQueryClient.invalidateQueries).toHaveBeenCalled();
+            expect(getAccount).toHaveBeenCalledWith(mockWagmiConfig);
+            expect(disconnect).toHaveBeenCalledWith(mockWagmiConfig);
         });
     });
 });
