@@ -657,19 +657,19 @@
         "success": "สร้างกิจกรรมสำเร็จ"
     },
     "issuer": {
-        "title": "ผู้ออกใบรับรอง",
-        "signInIAM": "เข้าสู่ระบบด้วย IAM",
+        "title": "ผู้ออกใบรับรองรับ",
+        "signInIAM": "เข้าระบบ IAM",
         "register": "ลงทะเบียนกับเรา",
         "sign": {
-            "pageTitle": "ลงนามใบรับรองกิจกรรม",
-            "pageDescription": "ตรวจสอบและลงนามใบรับรองที่รอการลงนามสำหรับกิจกรรมที่คุณได้รับมอบหมา",
+            "pageTitle": "ลงนามใบรับรองรับ",
+            "pageDescription": "ตรวจรายการะและลงนามใบรับรองรับที่รอดำเนินการสำหรับกิจกรรมที่คุณได้รับมอบหมาย",
             "pendingTab": "รอการลงนาม",
             "signedTab": "ลงนามแล้ว",
             "table": {
                 "eventName": "ชื่อกิจกรรม",
-                "host": "ผู้จัดการ",
-                "hostPlaceholder": "ผู้จัดการกิจกรรม",
-                "certificates": "ใบรับรอง",
+                "host": "ผู้จัดงาน",
+                "hostPlaceholder": "ผู้จัดงานกิจกรรม",
+                "certificates": "ใบรับรองรับ",
                 "status": "สถานะ",
                 "action": "การกระทำ"
             },
@@ -678,12 +678,30 @@
                 "signed": "ลงนามแล้ว"
             },
             "action": {
-                "review": "ตรวจสอบและลงนาม",
+                "review": "ตรวจรายการะและลงนาม",
                 "view": "ดู"
-            }
-        },
-        "pagination": {
-            "rowsPerPage": "แถวต่อหน้า:"
+            },
+            "pagination": {
+                "rowsPerPage": "แถวต่อหน้า:"
+            },
+            "pinRequired": "จำเป็นต้องกรอก PIN",
+            "pinMinLength": "PIN ต้องมีอย่าง 4 ตัวอักษร",
+            "signingSuccess": "ลงนามใบรับรองรับ {{count}} รายการะสำเร็จ",
+            "signingError": "ไม่สามารถลงนามใบรับรองรับ กรุณาตรวจสอบ PIN และลองใหม่",
+            "signing": "กำลังลงนาม...",
+            "signAndApprove": "ลงนามและอนุมัติ ({{count}} ใบรับรองรับ)",
+            "reject": "ปฏิเสธ",
+            "confirmSign": "การลงนามหมายถือคุณยอมรับการออกใบรับรองรับ {{count}} ใบสำหรับกิจกรรม \"{{eventName}}\" การกระทำนี้ไม่สามารถยกเลิกและจะถูกบันทึกไว้",
+            "backToDashboard": "กลับไปยังหน้าควบคุม",
+            "eventDetails": "รายละเอียดกิจกรรม",
+            "certificatesToSign": "ผู้เข้าร่วมที่จะลงนาม ({{count}})",
+            "certificatePreview": "ตัวอย่างแม่แบบใบรับรองรับ",
+            "templateNotAvailable": "ไม่มีแม่แบบใบรับรองรับ",
+            "signCertificateBatch": "ลงนามชุดใบรับรองรับ",
+            "signCertificateBatchDescription": "ตรวจสอบแม่แบบใบรับรองรับและยืนยันเพื่อลงนามใบรับรองรับที่รอดำเนินการทั้งหมดสำหรับกิจกรรมนี้",
+            "signatureRequest": "คำขอลงนาม",
+            "signatureRequestDescription": "ตรวจสอบรายละเอียดคำขอก่อนยืนยัน",
+            "yourStatus": "สถานะของคุณ"
         }
     }
 }
