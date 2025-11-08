@@ -173,7 +173,7 @@ export class AuthService {
             removeLocalStorageItem(LOCAL_STORAGE_KEYS.EXPIRES_IN);
             removeLocalStorageItem(LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE);
             // if wallet is connected, disconnect it
-            const account = await getAccount(this._wagmiConfig);
+            const account = getAccount(this._wagmiConfig);
             if (account?.isConnected) {
                 await disconnect(this._wagmiConfig);
             }

@@ -2,6 +2,7 @@ import { useWallet } from "@/hooks/useWallet";
 import { Typography } from "@/components/typography/typography";
 import { Copy, Check } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * WalletDebugPanel Component
@@ -13,6 +14,7 @@ import { useState } from "react";
  * <WalletDebugPanel />
  */
 export const WalletDebugPanel = () => {
+    const { t } = useTranslation("walletDebug");
     const {
         address,
         isConnected,
@@ -40,7 +42,7 @@ export const WalletDebugPanel = () => {
         return (
             <div className="p-4 bg-background border border-border rounded-lg">
                 <Typography variant="text" tag="p" color="muted">
-                    No wallet connected
+                    {t("noWallet")}
                 </Typography>
             </div>
         );
@@ -50,11 +52,14 @@ export const WalletDebugPanel = () => {
         return (
             <div className="p-4 bg-background border border-border rounded-lg">
                 <Typography variant="text" tag="p" color="muted">
-                    ⏸️ Initializing wallet...
+                    {t("initializingWallet")}
                 </Typography>
                 {address && (
                     <Typography variant="text" tag="p" color="muted" className="text-xs mt-2">
-                        Address detected: {address.slice(0, 6)}...{address.slice(-4)}
+                        {t("addressDetected", {
+                            addressStart: address.slice(0, 6),
+                            addressEnd: address.slice(-4),
+                        })}
                     </Typography>
                 )}
             </div>
@@ -64,22 +69,22 @@ export const WalletDebugPanel = () => {
     return (
         <div className="p-4 bg-background border border-border rounded-lg space-y-3">
             <Typography variant="text" tag="h3" color="foreground" className="font-semibold">
-                💼 Wallet Debug Info
+                {t("title")}
             </Typography>
 
             {/* Connection Status */}
             <div className="flex items-center gap-2">
                 <Typography variant="text" tag="span" color="muted" className="text-sm">
-                    Status:
+                    {t("statusLabel")}
                 </Typography>
                 {isLoading && !isReady && (
                     <Typography variant="text" tag="span" color="muted" className="text-sm">
-                        ⏸️ Initializing...
+                        {t("initializing")}
                     </Typography>
                 )}
                 {isConnecting && (
                     <Typography variant="text" tag="span" color="muted" className="text-sm">
-                        ⏳ Connecting...
+                        {t("connecting")}
                     </Typography>
                 )}
                 {isReady && isConnected && (
@@ -89,12 +94,12 @@ export const WalletDebugPanel = () => {
                         color="primary"
                         className="text-sm font-medium"
                     >
-                        ✅ Ready
+                        {t("ready")}
                     </Typography>
                 )}
                 {isConnected && !isReady && (
                     <Typography variant="text" tag="span" color="muted" className="text-sm">
-                        🟡 Connected (waiting for public client)
+                        {t("connectedWaiting")}
                     </Typography>
                 )}
             </div>
@@ -103,7 +108,7 @@ export const WalletDebugPanel = () => {
             {address && (
                 <div className="space-y-1">
                     <Typography variant="text" tag="p" color="muted" className="text-xs">
-                        Address:
+                        {t("addressLabel")}
                     </Typography>
                     <div className="flex items-center gap-2 p-2 bg-foreground/5 rounded border border-border">
                         <Typography
@@ -116,7 +121,7 @@ export const WalletDebugPanel = () => {
                         <button
                             onClick={() => copyToClipboard(address, "address")}
                             className="p-1.5 hover:bg-foreground/10 rounded transition-colors flex-shrink-0"
-                            title="Copy address"
+                            title={t("copyTitle")}
                         >
                             {copiedField === "address" ? (
                                 <Check className="w-4 h-4 text-green-500" />
@@ -132,7 +137,7 @@ export const WalletDebugPanel = () => {
             {chainId && (
                 <div>
                     <Typography variant="text" tag="p" color="muted" className="text-xs">
-                        Chain ID: <span className="text-foreground">{chainId}</span>
+                        {t("chainIdLabel")} <span className="text-foreground">{chainId}</span>
                     </Typography>
                 </div>
             )}
@@ -146,7 +151,7 @@ export const WalletDebugPanel = () => {
                         color="muted"
                         className="text-xs font-semibold"
                     >
-                        Public Client Details:
+                        {t("publicClientTitle")}
                     </Typography>
 
                     <div className="space-y-1 text-xs">
@@ -154,7 +159,7 @@ export const WalletDebugPanel = () => {
 
                         <div className="flex justify-between items-center">
                             <Typography variant="text" tag="span" color="muted">
-                                Key:
+                                {t("publicClientKey")}
                             </Typography>
                             <Typography variant="text" tag="span" className="font-mono">
                                 {publicClient.key}
@@ -165,10 +170,13 @@ export const WalletDebugPanel = () => {
                             <>
                                 <div className="flex justify-between items-center">
                                     <Typography variant="text" tag="span" color="muted">
-                                        Chain:
+                                        {t("publicClientChainLabel")}
                                     </Typography>
                                     <Typography variant="text" tag="span">
-                                        {publicClient.chain.name} (ID: {publicClient.chain.id})
+                                        {t("publicClientChainValue", {
+                                            name: publicClient.chain.name,
+                                            id: publicClient.chain.id,
+                                        })}
                                     </Typography>
                                 </div>
                             </>
@@ -177,10 +185,10 @@ export const WalletDebugPanel = () => {
                         {publicClient.transport && (
                             <div className="flex justify-between items-center">
                                 <Typography variant="text" tag="span" color="muted">
-                                    Transport:
+                                    {t("transportLabel")}
                                 </Typography>
                                 <Typography variant="text" tag="span" className="font-mono">
-                                    {publicClient.transport.type || "unknown"}
+                                    {publicClient.transport.type || t("transportUnknown")}
                                 </Typography>
                             </div>
                         )}
@@ -191,7 +199,7 @@ export const WalletDebugPanel = () => {
             {/* Raw Public Client */}
             <details className="pt-2 border-t border-border">
                 <summary className="cursor-pointer text-xs text-muted-foreground hover:text-muted">
-                    View Raw Public Client
+                    {t("viewRawSummary")}
                 </summary>
                 <pre className="mt-2 p-2 bg-foreground/5 rounded border border-border overflow-auto max-h-40 text-xs">
                     {JSON.stringify(

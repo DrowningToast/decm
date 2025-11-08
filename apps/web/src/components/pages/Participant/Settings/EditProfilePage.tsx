@@ -167,12 +167,16 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.firstName")}
                                                             </Label>
                                                             <Input
                                                                 {...field}
                                                                 type="text"
+                                                                id={field.name}
                                                                 className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                             />
                                                         </div>
@@ -214,12 +218,16 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.lastName")}
                                                             </Label>
                                                             <Input
                                                                 {...field}
                                                                 type="text"
+                                                                id={field.name}
                                                                 className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                             />
                                                         </div>
@@ -261,11 +269,15 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.bio")}
                                                             </Label>
                                                             <Textarea
                                                                 {...field}
+                                                                id={field.name}
                                                                 className="w-full min-h-24 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                                 placeholder={t(
                                                                     "profile.bioPlaceholder",
@@ -324,12 +336,16 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.email")}
                                                             </Label>
                                                             <Input
                                                                 {...field}
                                                                 type="email"
+                                                                id={field.name}
                                                                 className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                             />
                                                         </div>
@@ -371,12 +387,16 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.phoneNumber")}
                                                             </Label>
                                                             <Input
                                                                 {...field}
                                                                 type="tel"
+                                                                id={field.name}
                                                                 className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                             />
                                                         </div>
@@ -418,11 +438,15 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.address")}
                                                             </Label>
                                                             <Textarea
                                                                 {...field}
+                                                                id={field.name}
                                                                 className="w-full min-h-20 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                                 placeholder={t(
                                                                     "profile.addressPlaceholder",
@@ -481,12 +505,16 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.academicEmail")}
                                                             </Label>
                                                             <Input
                                                                 {...field}
                                                                 type="email"
+                                                                id={field.name}
                                                                 className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                             />
                                                         </div>
@@ -528,12 +556,16 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.academicInstitution")}
                                                             </Label>
                                                             <Input
                                                                 {...field}
                                                                 type="text"
+                                                                id={field.name}
                                                                 className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.5)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background placeholder:text-background/50"
                                                             />
                                                         </div>
@@ -589,12 +621,16 @@ export const EditProfilePage: React.FC = () => {
                                                 <FormItem>
                                                     <FormControl>
                                                         <div className="space-y-1">
-                                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                            <Label
+                                                                htmlFor={field.name}
+                                                                className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background"
+                                                            >
                                                                 {t("profile.profilePictureUrl")}
                                                             </Label>
                                                             <Input
                                                                 {...field}
                                                                 type="url"
+                                                                id={field.name}
                                                                 placeholder={t(
                                                                     "profile.profilePictureUrlPlaceholder",
                                                                 )}

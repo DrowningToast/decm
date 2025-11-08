@@ -58,6 +58,27 @@
         "menu": "Menu",
         "close": "Close"
     },
+    "walletDebug": {
+        "noWallet": "No wallet connected",
+        "initializingWallet": "⏸️ Initializing wallet...",
+        "addressDetected": "Address detected: {{addressStart}}...{{addressEnd}}",
+        "title": "💼 Wallet Debug Info",
+        "statusLabel": "Status:",
+        "initializing": "⏸️ Initializing...",
+        "connecting": "⏳ Connecting...",
+        "ready": "✅ Ready",
+        "connectedWaiting": "🟡 Connected (waiting for public client)",
+        "addressLabel": "Address:",
+        "copyTitle": "Copy address",
+        "chainIdLabel": "Chain ID:",
+        "publicClientTitle": "Public Client Details:",
+        "publicClientKey": "Key:",
+        "publicClientChainLabel": "Chain:",
+        "publicClientChainValue": "{{name}} (ID: {{id}})",
+        "transportLabel": "Transport:",
+        "transportUnknown": "unknown",
+        "viewRawSummary": "View Raw Public Client"
+    },
     "auth": {
         "signIn": "Sign In",
         "signUp": "Sign Up",
