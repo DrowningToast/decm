@@ -775,6 +775,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/events/{event_id}/certificates": {
+            "get": {
+                "description": "Get all certificates for an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Certificates"
+                ],
+                "summary": "Get event certificates",
+                "operationId": "get-event-certificates",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/event.GetEventCertificatesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}/certificates/import": {
             "post": {
                 "description": "Import certificate receivers for an event, deploys event certificate contract, and creates certificate records",
@@ -902,7 +953,7 @@ const docTemplate = `{
         },
         "/api/v1/events/{event_id}/certificates/sign": {
             "post": {
-                "description": "Sign event certificates by issuer",
+                "description": "Sign all event certificates for an event by issuer",
                 "consumes": [
                     "application/json"
                 ],
@@ -2492,6 +2543,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "core-api_internal_handler_event.CertificateSignature": {
+            "type": "object",
+            "properties": {
+                "certificate": {
+                    "$ref": "#/definitions/entity.EventCertificate"
+                },
+                "signature": {
+                    "type": "string"
+                }
+            }
+        },
         "core-api_internal_handler_event.ImportCertificateReceiversRequest": {
             "type": "object",
             "required": [
@@ -2535,8 +2597,7 @@ const docTemplate = `{
         "core-api_internal_handler_event.RevokeEventCertificatesRequest": {
             "type": "object",
             "required": [
-                "certificate_ids",
-                "host_pin"
+                "certificate_ids"
             ],
             "properties": {
                 "certificate_ids": {
@@ -2545,9 +2606,6 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
-                },
-                "host_pin": {
-                    "type": "string"
                 }
             }
         },
@@ -2565,13 +2623,9 @@ const docTemplate = `{
         "core-api_internal_handler_event.SignEventCertificatesRequest": {
             "type": "object",
             "required": [
-                "certificate_id",
                 "issuer_pin"
             ],
             "properties": {
-                "certificate_id": {
-                    "type": "string"
-                },
                 "issuer_pin": {
                     "type": "string"
                 }
@@ -2580,11 +2634,11 @@ const docTemplate = `{
         "core-api_internal_handler_event.SignEventCertificatesResponse": {
             "type": "object",
             "properties": {
-                "certificate": {
-                    "$ref": "#/definitions/entity.EventCertificate"
-                },
-                "signature": {
-                    "type": "string"
+                "certificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/core-api_internal_handler_event.CertificateSignature"
+                    }
                 }
             }
         },
@@ -3104,6 +3158,17 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "event.GetEventCertificatesResponse": {
+            "type": "object",
+            "properties": {
+                "certificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.EventCertificate"
+                    }
                 }
             }
         },
