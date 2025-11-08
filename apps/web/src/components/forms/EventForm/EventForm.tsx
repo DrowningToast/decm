@@ -143,7 +143,11 @@ export const EventForm = ({
                                       : "border-muted-foreground text-muted-foreground"
                             }`}
                         >
-                            <Typography variant="text" tag="span" className="font-semibold">
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                className="font-semibold text-foreground"
+                            >
                                 {step}
                             </Typography>
                         </div>

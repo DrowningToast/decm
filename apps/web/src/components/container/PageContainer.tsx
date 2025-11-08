@@ -1,9 +1,6 @@
 import type { ReactNode } from "react";
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { PublicNavbar } from "../layouts/navigations/PublicNavbar";
-import { ChevronLeft } from "lucide-react";
-import { useNavigate } from "@/router";
 
 const pageContainerVariants = cva("py-10 min-h-dvh lg:py-16", {
     variants: {
@@ -44,19 +41,7 @@ export default function PageContainer({
 
     return (
         <div className={_className}>
-            {/* <CustomHelmet title={`${title} | ${PAGE_TITLE_SUBFIX}`} description={description} />
-      <FaviconHelmet title={`${title} | ${PAGE_TITLE_SUBFIX}`} description={description} /> */}
-            <PublicNavbar />
-
-            <div
-                className="flex items-center gap-2 ml-14 mt-7 cursor-pointer"
-                onClick={() => navigate(-1)}
-            >
-                <ChevronLeft />
-                <p>Go Back</p>
-            </div>
-
-            <div className="max-w-[1440px] mx-auto space-y-8 mt-14 lg:mt-10">{children}</div>
+            <div className="max-w-[1440px] mx-auto space-y-8">{children}</div>
         </div>
     );
 }

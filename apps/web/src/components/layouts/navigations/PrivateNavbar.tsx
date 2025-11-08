@@ -5,9 +5,10 @@ import { useTranslation } from "react-i18next";
 interface PrivateNavbarProps {
     className?: string;
     variant?: "light" | "dark";
+    currentRole?: "Verified Organizer" | "Issuer";
 }
 
-export const PrivateNavbar: React.FC<PrivateNavbarProps> = () => {
+export const PrivateNavbar: React.FC<PrivateNavbarProps> = ({ currentRole }) => {
     const { t } = useTranslation();
 
     const sections: StaggeredMenuSection[] = [
@@ -43,5 +44,24 @@ export const PrivateNavbar: React.FC<PrivateNavbarProps> = () => {
         },
     ];
 
-    return <StaggeredMenu isFixed={true} sections={sections} position="right" />;
+    // Determine logo link based on role
+    const getLogoLink = (): string => {
+        if (currentRole === "Verified Organizer") {
+            return "/host/home";
+        }
+        if (currentRole === "Issuer") {
+            return "/issuer/home";
+        }
+        return "/app";
+    };
+
+    return (
+        <StaggeredMenu
+            isFixed={true}
+            sections={sections}
+            position="right"
+            roleLabel={currentRole ? `You're currently signed in as a ${currentRole}` : undefined}
+            logoLink={getLogoLink()}
+        />
+    );
 };

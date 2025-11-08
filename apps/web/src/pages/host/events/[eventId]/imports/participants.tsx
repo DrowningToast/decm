@@ -1,6 +1,5 @@
 import { FaviconHelmet } from "@/components/providers/helmets/FaviconHelmet";
 import { ParticipantImportPage } from "@/components/pages/HostPages/ParticipantImportPage/ParticipantImportPage";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useParams } from "@/router";
 import { useEvent } from "@/hooks/events/useEvent";
 
@@ -17,12 +16,12 @@ export default function Page() {
     }
 
     return (
-        <ProtectedRoute>
+        <>
             <FaviconHelmet
                 title={`Import Participants | ${event.title} | DECM`}
                 description={`Import participants for ${event.title} event`}
             />
             <ParticipantImportPage eventId={eventId} event={event} />
-        </ProtectedRoute>
+        </>
     );
 }

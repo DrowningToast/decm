@@ -3,6 +3,7 @@ package eventconfig
 import (
 	"net/http"
 
+	"github.com/cockroachdb/errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 
@@ -29,11 +30,7 @@ func (h *Handler) GetEventCertificateConfig(ctx *fiber.Ctx) error {
 
 	config, err := h.EventConfigUc.GetEventCertificateConfigByEventID(ctx.UserContext(), eventID)
 	if err != nil {
-		// Check if this is a "not found" error
-		if err.Error() == "sql: no rows in result set" {
-			return customerror.Parse(&customerror.ErrNotFound, err)
-		}
-		return customerror.Parse(&customerror.ErrInternalServer, err)
+		return errors.Wrap(err, "failed to get event certificate config")
 	}
 
 	return ctx.Status(http.StatusOK).JSON(EventCertificateConfigResponse{

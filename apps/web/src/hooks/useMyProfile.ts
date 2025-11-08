@@ -7,10 +7,9 @@ export const useMyProfile = () => {
         queryKey: QUERY_KEY.user.profile,
         queryFn: () => coreApiClient.v1.getMyProfile(),
 
-        retry: 2,
+        retry: false,
         refetchOnWindowFocus: false,
         staleTime: 5 * 60 * 1000,
-        retryDelay: 750,
     });
 
     return query;
