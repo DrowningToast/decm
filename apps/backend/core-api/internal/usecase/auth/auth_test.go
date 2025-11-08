@@ -18,7 +18,7 @@ func TestAuthUsecase_CheckRole_Authentication(t *testing.T) {
 		// Arrange
 		uc := NewAuthUsecase()
 		ctx := context.Background()
-		
+
 		validClaims := &auth.JwtClaims{
 			UserId:        uuid.New(),
 			WalletAddress: "0x1234567890",
@@ -48,7 +48,7 @@ func TestAuthUsecase_CheckRole_Authentication(t *testing.T) {
 		// Arrange
 		uc := NewAuthUsecase()
 		ctx := context.Background()
-		
+
 		expiredClaims := &auth.JwtClaims{
 			UserId:        uuid.New(),
 			WalletAddress: "0x1234567890",
@@ -98,7 +98,7 @@ func TestAuthUsecase_CheckRole_HostRole(t *testing.T) {
 		// Arrange
 		uc := NewAuthUsecase()
 		ctx := context.Background()
-		
+
 		isVerifiedOrganizer := true
 		validClaims := &auth.JwtClaims{
 			UserId:              uuid.New(),
@@ -130,7 +130,7 @@ func TestAuthUsecase_CheckRole_HostRole(t *testing.T) {
 		// Arrange
 		uc := NewAuthUsecase()
 		ctx := context.Background()
-		
+
 		isVerifiedOrganizer := false
 		validClaims := &auth.JwtClaims{
 			UserId:              uuid.New(),
@@ -160,7 +160,7 @@ func TestAuthUsecase_CheckRole_HostRole(t *testing.T) {
 		// Arrange
 		uc := NewAuthUsecase()
 		ctx := context.Background()
-		
+
 		validClaims := &auth.JwtClaims{
 			UserId:              uuid.New(),
 			WalletAddress:       "0x1234567890",
@@ -189,7 +189,7 @@ func TestAuthUsecase_CheckRole_HostRole(t *testing.T) {
 		// Arrange
 		uc := NewAuthUsecase()
 		ctx := context.Background()
-		
+
 		isVerifiedOrganizer := true
 		expiredClaims := &auth.JwtClaims{
 			UserId:              uuid.New(),
@@ -241,7 +241,7 @@ func TestAuthUsecase_CheckRole_IssuerRole(t *testing.T) {
 		// Arrange
 		uc := NewAuthUsecase()
 		ctx := context.Background()
-		
+
 		isVerifiedIssuer := true
 		validClaims := &auth.JwtClaims{
 			UserId:           uuid.New(),
@@ -273,7 +273,7 @@ func TestAuthUsecase_CheckRole_IssuerRole(t *testing.T) {
 		// Arrange
 		uc := NewAuthUsecase()
 		ctx := context.Background()
-		
+
 		isVerifiedIssuer := false
 		validClaims := &auth.JwtClaims{
 			UserId:           uuid.New(),
@@ -303,7 +303,7 @@ func TestAuthUsecase_CheckRole_IssuerRole(t *testing.T) {
 		// Arrange
 		uc := NewAuthUsecase()
 		ctx := context.Background()
-		
+
 		validClaims := &auth.JwtClaims{
 			UserId:           uuid.New(),
 			WalletAddress:    "0x1234567890",
@@ -334,7 +334,7 @@ func TestAuthUsecase_CheckRole_MultipleRoles(t *testing.T) {
 		// Arrange
 		uc := NewAuthUsecase()
 		ctx := context.Background()
-		
+
 		isVerifiedOrganizer := true
 		isVerifiedIssuer := false
 		validClaims := &auth.JwtClaims{
@@ -360,12 +360,12 @@ func TestAuthUsecase_CheckRole_MultipleRoles(t *testing.T) {
 		// Assert
 		require.NoError(t, err)
 		require.NotNil(t, result)
-		
+
 		// All three checks should be present
 		require.NotNil(t, result.IsAuthenticated)
 		require.NotNil(t, result.IsHost)
 		require.NotNil(t, result.IsIssuer)
-		
+
 		// Verify values
 		assert.True(t, *result.IsAuthenticated)
 		assert.True(t, *result.IsHost)
@@ -376,7 +376,7 @@ func TestAuthUsecase_CheckRole_MultipleRoles(t *testing.T) {
 		// Arrange
 		uc := NewAuthUsecase()
 		ctx := context.Background()
-		
+
 		isVerifiedOrganizer := true
 		isVerifiedIssuer := true
 		validClaims := &auth.JwtClaims{
@@ -402,12 +402,12 @@ func TestAuthUsecase_CheckRole_MultipleRoles(t *testing.T) {
 		// Assert
 		require.NoError(t, err)
 		require.NotNil(t, result)
-		
+
 		// Only IsHost should be set
 		assert.Nil(t, result.IsAuthenticated)
 		require.NotNil(t, result.IsHost)
 		assert.Nil(t, result.IsIssuer)
-		
+
 		assert.True(t, *result.IsHost)
 	})
 
@@ -415,7 +415,7 @@ func TestAuthUsecase_CheckRole_MultipleRoles(t *testing.T) {
 		// Arrange
 		uc := NewAuthUsecase()
 		ctx := context.Background()
-		
+
 		isVerifiedOrganizer := true
 		isVerifiedIssuer := true
 		expiredClaims := &auth.JwtClaims{
@@ -441,12 +441,12 @@ func TestAuthUsecase_CheckRole_MultipleRoles(t *testing.T) {
 		// Assert
 		require.NoError(t, err)
 		require.NotNil(t, result)
-		
+
 		// All should be false due to expired token
 		require.NotNil(t, result.IsAuthenticated)
 		require.NotNil(t, result.IsHost)
 		require.NotNil(t, result.IsIssuer)
-		
+
 		assert.False(t, *result.IsAuthenticated)
 		assert.False(t, *result.IsHost)
 		assert.False(t, *result.IsIssuer)
@@ -458,7 +458,7 @@ func TestAuthUsecase_CheckRole_EdgeCases(t *testing.T) {
 		// Arrange
 		uc := NewAuthUsecase()
 		ctx := context.Background()
-		
+
 		validClaims := &auth.JwtClaims{
 			UserId:        uuid.New(),
 			WalletAddress: "0x1234567890",
@@ -480,7 +480,7 @@ func TestAuthUsecase_CheckRole_EdgeCases(t *testing.T) {
 		// Assert
 		require.NoError(t, err)
 		require.NotNil(t, result)
-		
+
 		// Nothing should be set
 		assert.Nil(t, result.IsAuthenticated)
 		assert.Nil(t, result.IsHost)
@@ -491,10 +491,10 @@ func TestAuthUsecase_CheckRole_EdgeCases(t *testing.T) {
 		// Arrange
 		uc := NewAuthUsecase()
 		ctx := context.Background()
-		
+
 		claimsNoExpiry := &auth.JwtClaims{
-			UserId:           uuid.New(),
-			WalletAddress:    "0x1234567890",
+			UserId:        uuid.New(),
+			WalletAddress: "0x1234567890",
 			RegisteredClaims: jwt.RegisteredClaims{
 				ExpiresAt: nil, // No expiration set
 			},
@@ -512,7 +512,7 @@ func TestAuthUsecase_CheckRole_EdgeCases(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, result)
 		require.NotNil(t, result.IsAuthenticated)
-		
+
 		// Should be valid since no expiration means it doesn't expire
 		assert.True(t, *result.IsAuthenticated)
 	})
@@ -552,4 +552,3 @@ func TestAuthUsecase_isTokenValid(t *testing.T) {
 		assert.True(t, uc.isTokenValid(claims))
 	})
 }
-
