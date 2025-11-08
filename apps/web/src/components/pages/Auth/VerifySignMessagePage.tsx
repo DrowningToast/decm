@@ -52,6 +52,7 @@ export const VerifySignMessagePage: React.FC<VerifySignMessagePageProps> = ({
             });
             if (response?.profile_id) {
                 await navigate("/app");
+                return;
             }
             if (response?.authentication_credential_id) {
                 await navigate("/onboard/:method", {
@@ -59,6 +60,7 @@ export const VerifySignMessagePage: React.FC<VerifySignMessagePageProps> = ({
                         method: OnboardMethods.WALLET,
                     },
                 });
+                return;
             }
             setSignSignature(signature);
             toast.dismiss(loadingToastId);
