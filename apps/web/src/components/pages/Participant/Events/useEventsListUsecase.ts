@@ -7,6 +7,7 @@ export interface Event {
     name: string;
     description: string;
     eventName: string;
+    contactAddress?: string;
     dateTime?: string;
     finalCallDate?: string;
     status: "accepting" | "closed";
@@ -25,6 +26,7 @@ const mockEvents: Event[] = [
         name: "ToBelT69",
         description: "Description 1",
         eventName: "ToBelT69",
+        contactAddress: "0x1234...abcd",
         dateTime: "2024-09-24",
         finalCallDate: "2024-09-24",
         status: "accepting",
@@ -36,6 +38,7 @@ const mockEvents: Event[] = [
         name: "ToBelT69",
         description: "Description 2",
         eventName: "ToBelT69",
+        contactAddress: "0x9876...4321",
         dateTime: "2024-09-25",
         finalCallDate: "2024-09-25",
         status: "accepting",
@@ -46,6 +49,7 @@ const mockEvents: Event[] = [
         name: "ToBelT69",
         description: "Description 3",
         eventName: "ToBelT69",
+        contactAddress: "0xa1b2...c3d4",
         dateTime: "2024-09-20",
         finalCallDate: "2024-09-20",
         status: "closed",

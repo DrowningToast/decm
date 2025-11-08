@@ -6,7 +6,7 @@
         "lib": ["ES2022", "DOM", "DOM.Iterable"],
         "module": "ESNext",
         "skipLibCheck": true,
-        "types": [],
+        "types": ["vite/client"],
 
         /* Bundler mode */
         "moduleResolution": "bundler",
@@ -33,5 +33,13 @@
         }
     },
     "include": ["src/**/*.ts", "src/**/*.tsx"],
-    "exclude": ["src/test/**", "src/**/*.spec.ts", "src/**/*.spec.tsx", "dist", "node_modules"]
+    "exclude": [
+        "src/test/**",
+        "src/**/*.spec.ts",
+        "src/**/*.spec.tsx",
+        "src/**/*.test.ts",
+        "src/**/*.test.tsx",
+        "dist",
+        "node_modules"
+    ]
 }
