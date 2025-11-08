@@ -59,3 +59,13 @@ func (u *EventUsecase) GetEventById(ctx context.Context, eventId uuid.UUID) (*en
 
 	return event, nil
 }
+
+func (u *EventUsecase) GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID, currentUser *auth.JwtClaims) ([]*entity.EventCertificate, error) {
+	// Get certificates for the event
+	certificates, err := u.EventCertificateDataGateway.GetEventCertificatesByEventID(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
+
+	return certificates, nil
+}
