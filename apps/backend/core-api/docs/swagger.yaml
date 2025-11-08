@@ -1,5 +1,69 @@
 basePath: /
 definitions:
+  core-api_internal_handler_event.ImportCertificateReceiversRequest:
+    properties:
+      event_id:
+        type: string
+      host_pin:
+        type: string
+      receivers:
+        items:
+          $ref: '#/definitions/event.ImportCertificateReceiverRequest'
+        minItems: 1
+        type: array
+    required:
+    - event_id
+    - host_pin
+    - receivers
+    type: object
+  core-api_internal_handler_event.ImportCertificateReceiversResponse:
+    properties:
+      certificates:
+        items:
+          $ref: '#/definitions/entity.EventCertificate'
+        type: array
+      event_certificate_address:
+        type: string
+      event_id:
+        type: string
+    type: object
+  core-api_internal_handler_event.RevokeEventCertificatesRequest:
+    properties:
+      certificate_ids:
+        items:
+          type: string
+        minItems: 1
+        type: array
+      host_pin:
+        type: string
+    required:
+    - certificate_ids
+    - host_pin
+    type: object
+  core-api_internal_handler_event.RevokeEventCertificatesResponse:
+    properties:
+      revoked_certificates:
+        items:
+          $ref: '#/definitions/entity.EventCertificate'
+        type: array
+    type: object
+  core-api_internal_handler_event.SignEventCertificatesRequest:
+    properties:
+      certificate_id:
+        type: string
+      issuer_pin:
+        type: string
+    required:
+    - certificate_id
+    - issuer_pin
+    type: object
+  core-api_internal_handler_event.SignEventCertificatesResponse:
+    properties:
+      certificate:
+        $ref: '#/definitions/entity.EventCertificate'
+      signature:
+        type: string
+    type: object
   core-api_internal_handler_eventconfig.EventCertificateConfigResponse:
     properties:
       academic_institution_pos_x:
@@ -94,6 +158,35 @@ definitions:
       title:
         type: string
       updated_at:
+        type: string
+    type: object
+  entity.EventCertificate:
+    properties:
+      academic_institution:
+        type: string
+      certificate_subtitle:
+        type: string
+      certificate_title:
+        type: string
+      certificate_token_id:
+        type: string
+      created_at:
+        type: string
+      event_certificate_address:
+        type: string
+      event_contract_address:
+        type: string
+      event_id:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      receiver_credential_id:
+        type: string
+      receiver_email:
+        type: string
+      revoked_at:
         type: string
     type: object
   entity.EventRegistrationInvitation:
@@ -316,6 +409,25 @@ definitions:
         type: string
       updated_at:
         type: string
+    type: object
+  event.ImportCertificateReceiverRequest:
+    properties:
+      academic_institution:
+        type: string
+      certificate_subtitle:
+        type: string
+      certificate_title:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+    required:
+    - academic_institution
+    - certificate_subtitle
+    - certificate_title
+    - first_name
+    - last_name
     type: object
   event.UpdateEventContractRequest:
     properties:
@@ -1162,6 +1274,134 @@ paths:
       summary: Delete event certificate config
       tags:
       - EventConfig
+  /api/v1/events/{event_id}/certificates/import:
+    post:
+      consumes:
+      - application/json
+      description: Import certificate receivers for an event, deploys event certificate
+        contract, and creates certificate records
+      operationId: import-certificate-receivers
+      parameters:
+      - description: Import certificate receivers request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/core-api_internal_handler_event.ImportCertificateReceiversRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/core-api_internal_handler_event.ImportCertificateReceiversResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Import certificate receivers for an event
+      tags:
+      - Event Certificates
+  /api/v1/events/{event_id}/certificates/revoke:
+    post:
+      consumes:
+      - application/json
+      description: Revoke event certificates by certificate IDs
+      operationId: revoke-event-certificates
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Revoke certificates request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/core-api_internal_handler_event.RevokeEventCertificatesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core-api_internal_handler_event.RevokeEventCertificatesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Revoke event certificates
+      tags:
+      - Event Certificates
+  /api/v1/events/{event_id}/certificates/sign:
+    post:
+      consumes:
+      - application/json
+      description: Sign event certificates by issuer
+      operationId: sign-event-certificates
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Sign certificates request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/core-api_internal_handler_event.SignEventCertificatesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core-api_internal_handler_event.SignEventCertificatesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Sign event certificates
+      tags:
+      - Event Certificates
   /api/v1/events/{event_id}/config/certificate:
     get:
       consumes:

@@ -78,7 +78,7 @@ func (h *Handler) CreateEventIssuer(ctx *fiber.Ctx) error {
 		IssuerCredentialID: issuer.IssuerCredentialID,
 		IsSigned:           issuer.IsSigned,
 		Signature:          issuer.Signature.String,
-		SignMessage:        issuer.SignMessage.String,
+		SignMessage:        "",
 		CreatedAt:          issuer.CreatedAt.Time.Format(time.RFC3339),
 		UpdatedAt:          issuer.UpdatedAt.Time.Format(time.RFC3339),
 	})
