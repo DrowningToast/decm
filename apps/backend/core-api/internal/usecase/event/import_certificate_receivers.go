@@ -75,39 +75,45 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 		return nil, customerror.Parse(&customerror.ErrNotFound, fmt.Errorf("event contract not found"))
 	}
 
-	// 4. Deploy event certificate contract
-	client, err := cyptoutils.GetEthereumClient()
-	if err != nil {
-		return nil, err
-	}
-
-	auth, err := cyptoutils.GetKeyedTransactor()
-	if err != nil {
-		return nil, err
-	}
-
 	privateKey, _, err := cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, requests[0].HostPin)
 	if err != nil {
 		return nil, err
 	}
 
-	eventCertificateAddress, tx, _, err := eventCertificateContract.DeployEventCertificate(
-		auth,
-		client,
-		common.HexToAddress(eventContract.EventContractAddress),
-		common.HexToAddress(eventContract.EventContractAddress),
-	)
-	if err != nil {
-		return nil, err
-	}
+	eventCertificateAddressStr := ""
 
-	// Wait for transaction to be mined
-	_, err = bind.WaitMined(ctx, client, tx)
-	if err != nil {
-		return nil, err
-	}
+	if eventContract.CertificateContractAddress.String == "" {
+		// 4. Deploy event certificate contract
+		client, err := cyptoutils.GetEthereumClient()
+		if err != nil {
+			return nil, err
+		}
 
-	eventCertificateAddressStr := eventCertificateAddress.Hex()
+		auth, err := cyptoutils.GetKeyedTransactor()
+		if err != nil {
+			return nil, err
+		}
+
+		eventCertificateAddress, tx, _, err := eventCertificateContract.DeployEventCertificate(
+			auth,
+			client,
+			common.HexToAddress(eventContract.EventContractAddress),
+			common.HexToAddress(eventContract.EventContractAddress),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Wait for transaction to be mined
+		_, err = bind.WaitMined(ctx, client, tx)
+		if err != nil {
+			return nil, err
+		}
+
+		eventCertificateAddressStr = eventCertificateAddress.Hex()
+	} else {
+		eventCertificateAddressStr = eventContract.CertificateContractAddress.String
+	}
 
 	// 5. Update eventContract.certificate_contract_address
 	_, err = uc.EventContractDataGateway.UpdateEventContract(ctx, generated.UpdateEventContractParams{
@@ -174,7 +180,7 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 	}
 
 	signMessage := SignMessage{
-		EventContractAddress: eventCertificateAddress.Hex(),
+		EventContractAddress: eventCertificateAddressStr,
 		Receivers:            receivers,
 	}
 
@@ -222,7 +228,7 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 
 	return &ImportCertificateReceiversResponse{
 		EventID:                 eventID,
-		EventCertificateAddress: eventCertificateAddress.Hex(),
+		EventCertificateAddress: eventCertificateAddressStr,
 		Certificates:            certificates,
 	}, nil
 }
