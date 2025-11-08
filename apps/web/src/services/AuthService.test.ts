@@ -315,9 +315,14 @@ describe("AuthService", () => {
 
         it("should disconnect wallet when connected", async () => {
             mockGetAccount.mockReturnValueOnce({ isConnected: true });
+            const mockResponse = { success: true };
+            (coreApiClient.v1.logout as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
 
             await authService.signOut();
 
+            expect(coreApiClient.v1.logout).toHaveBeenCalled();
+            expect(mockQueryClient.invalidateQueries).toHaveBeenCalled();
+            expect(getAccount).toHaveBeenCalledWith(mockWagmiConfig);
             expect(disconnect).toHaveBeenCalledWith(mockWagmiConfig);
         });
     });
