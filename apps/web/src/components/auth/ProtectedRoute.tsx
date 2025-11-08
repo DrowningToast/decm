@@ -3,7 +3,7 @@ import { type Path } from "@/router";
 import { useAuth } from "@/context/AuthContext";
 import { Typography } from "@/components/typography/typography";
 import { useTranslation } from "react-i18next";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { TOAST_USECASE_VIEWMODEL } from "@/constants/toast";
 import { USECASE_IDS } from "@/constants/usecase";
@@ -38,8 +38,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     requireIssuer = false,
     fallback,
 }) => {
-    const { isAuthenticated, isFetching } = useAuth();
+    const { isAuthenticated, isFetching, error: authError } = useAuth();
     const { t } = useTranslation();
+    const navigate = useNavigate();
 
     // Determine if role checking should be enabled
     const shouldCheckRoles = isAuthenticated && (requireHost || requireIssuer);
@@ -54,6 +55,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         requireIssuer,
         enabled: shouldCheckRoles,
     });
+
+    useEffect(() => {
+        if (authError) {
+            alert(authError.message);
+            // toast.error(t(TOAST_USECASE_VIEWMODEL[USECASE_IDS.GENERIC].UNAUTHORIZED_RESPONSE));
+            // navigate("/signin");
+        }
+    }, [authError, navigate, t]);
 
     // Show toast error when role check fails
     useEffect(() => {

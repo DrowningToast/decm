@@ -8,6 +8,7 @@ import (
 
 	"apps/backend/services/s3"
 
+	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -138,7 +139,7 @@ func (uc *EventConfigUsecase) UpdateEventCertificateConfig(ctx context.Context, 
 func (uc *EventConfigUsecase) GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (*EventCertificateConfigResponse, error) {
 	eventCertConfig, err := uc.EventCertificateDg.GetEventCertificateConfigByEventID(ctx, eventID)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get event certificate config")
 	}
 
 	baseConfigPresignedURL, err := uc.S3Service.GetPresignedURL(ctx, eventCertConfig.BaseCertificateStorageKey)
