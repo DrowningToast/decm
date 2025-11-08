@@ -54,7 +54,7 @@ func (h Handler) SignEventCertificates(ctx *fiber.Ctx) error {
 	}
 
 	// Get current user from JWT
-	currentUser := ctx.Locals("currentUser").(*auth.JwtClaims)
+	currentUser := ctx.Locals("user").(*auth.JwtClaims)
 
 	response, err := h.EventUc.SignEventCertificates(ctx.UserContext(), eventID, event.SignEventCertificatesRequest{
 		IssuerPin: requestBody.IssuerPin,

@@ -23,7 +23,8 @@ INSERT INTO event_certificates (
     certificate_subtitle,
     event_contract_address,
     event_certificate_address,
-    certificate_token_id
+    certificate_token_id,
+    certificate_digest
 ) VALUES (
     $1,
     $2,
@@ -34,8 +35,9 @@ INSERT INTO event_certificates (
     $7,
     $8,
     $9,
-    $10
-) RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, created_at, revoked_at
+    $10,
+    $11
+) RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at
 `
 
 type CreateEventCertificateParams struct {
@@ -49,6 +51,7 @@ type CreateEventCertificateParams struct {
 	EventContractAddress    pgtype.Text `json:"event_contract_address"`
 	EventCertificateAddress pgtype.Text `json:"event_certificate_address"`
 	CertificateTokenID      pgtype.Text `json:"certificate_token_id"`
+	CertificateDigest       pgtype.Text `json:"certificate_digest"`
 }
 
 func (q *Queries) CreateEventCertificate(ctx context.Context, arg CreateEventCertificateParams) (EventCertificate, error) {
@@ -63,6 +66,7 @@ func (q *Queries) CreateEventCertificate(ctx context.Context, arg CreateEventCer
 		arg.EventContractAddress,
 		arg.EventCertificateAddress,
 		arg.CertificateTokenID,
+		arg.CertificateDigest,
 	)
 	var i EventCertificate
 	err := row.Scan(
@@ -77,6 +81,7 @@ func (q *Queries) CreateEventCertificate(ctx context.Context, arg CreateEventCer
 		&i.EventContractAddress,
 		&i.EventCertificateAddress,
 		&i.CertificateTokenID,
+		&i.CertificateDigest,
 		&i.CreatedAt,
 		&i.RevokedAt,
 	)
@@ -93,7 +98,7 @@ func (q *Queries) DeleteEventCertificate(ctx context.Context, id uuid.UUID) erro
 }
 
 const GetEventCertificateByID = `-- name: GetEventCertificateByID :one
-SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, created_at, revoked_at FROM event_certificates WHERE id = $1
+SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at FROM event_certificates WHERE id = $1
 `
 
 func (q *Queries) GetEventCertificateByID(ctx context.Context, id uuid.UUID) (EventCertificate, error) {
@@ -111,6 +116,7 @@ func (q *Queries) GetEventCertificateByID(ctx context.Context, id uuid.UUID) (Ev
 		&i.EventContractAddress,
 		&i.EventCertificateAddress,
 		&i.CertificateTokenID,
+		&i.CertificateDigest,
 		&i.CreatedAt,
 		&i.RevokedAt,
 	)
@@ -118,7 +124,7 @@ func (q *Queries) GetEventCertificateByID(ctx context.Context, id uuid.UUID) (Ev
 }
 
 const GetEventCertificatesByEventID = `-- name: GetEventCertificatesByEventID :many
-SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, created_at, revoked_at FROM event_certificates WHERE event_id = $1
+SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at FROM event_certificates WHERE event_id = $1
 `
 
 func (q *Queries) GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error) {
@@ -142,6 +148,7 @@ func (q *Queries) GetEventCertificatesByEventID(ctx context.Context, eventID uui
 			&i.EventContractAddress,
 			&i.EventCertificateAddress,
 			&i.CertificateTokenID,
+			&i.CertificateDigest,
 			&i.CreatedAt,
 			&i.RevokedAt,
 		); err != nil {
@@ -170,7 +177,7 @@ SET
     revoked_at = $10,
     updated_at = NOW()
 WHERE id = $11
-RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, created_at, revoked_at
+RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at
 `
 
 type UpdateEventCertificateParams struct {
@@ -214,6 +221,7 @@ func (q *Queries) UpdateEventCertificate(ctx context.Context, arg UpdateEventCer
 		&i.EventContractAddress,
 		&i.EventCertificateAddress,
 		&i.CertificateTokenID,
+		&i.CertificateDigest,
 		&i.CreatedAt,
 		&i.RevokedAt,
 	)

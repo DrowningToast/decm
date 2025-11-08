@@ -1,9 +1,9 @@
 -- Add position columns to event_certificate_configs table
 ALTER TABLE event_certificate_configs
-ADD COLUMN certificate_title_pos_x FLOAT NOT NULL,
-ADD COLUMN certificate_title_pos_y FLOAT NOT NULL,
-ADD COLUMN certificate_subtitle_pos_x FLOAT NOT NULL,
-ADD COLUMN certificate_subtitle_pos_y FLOAT NOT NULL;
+ADD COLUMN certificate_title_pos_x FLOAT,
+ADD COLUMN certificate_title_pos_y FLOAT,
+ADD COLUMN certificate_subtitle_pos_x FLOAT,
+ADD COLUMN certificate_subtitle_pos_y FLOAT;
 
 ALTER TABLE event_issuers
 RENAME sign_message TO sign_message_digest;
@@ -28,6 +28,8 @@ CREATE TABLE event_certificates (
     event_contract_address TEXT NOT NULL,
     event_certificate_address TEXT,
     certificate_token_id TEXT,
+
+    certificate_digest TEXT,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     revoked_at TIMESTAMPTZ
