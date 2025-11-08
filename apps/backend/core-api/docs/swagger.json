@@ -769,6 +769,197 @@
                 }
             }
         },
+        "/api/v1/events/{event_id}/certificates/import": {
+            "post": {
+                "description": "Import certificate receivers for an event, deploys event certificate contract, and creates certificate records",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Certificates"
+                ],
+                "summary": "Import certificate receivers for an event",
+                "operationId": "import-certificate-receivers",
+                "parameters": [
+                    {
+                        "description": "Import certificate receivers request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_event.ImportCertificateReceiversRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_event.ImportCertificateReceiversResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{event_id}/certificates/revoke": {
+            "post": {
+                "description": "Revoke event certificates by certificate IDs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Certificates"
+                ],
+                "summary": "Revoke event certificates",
+                "operationId": "revoke-event-certificates",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Revoke certificates request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_event.RevokeEventCertificatesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_event.RevokeEventCertificatesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{event_id}/certificates/sign": {
+            "post": {
+                "description": "Sign event certificates by issuer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Certificates"
+                ],
+                "summary": "Sign event certificates",
+                "operationId": "sign-event-certificates",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Sign certificates request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_event.SignEventCertificatesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_event.SignEventCertificatesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}/config/certificate": {
             "get": {
                 "description": "Get the event certificate configuration for an event",
@@ -2295,6 +2486,102 @@
         }
     },
     "definitions": {
+        "core-api_internal_handler_event.ImportCertificateReceiversRequest": {
+            "type": "object",
+            "required": [
+                "event_id",
+                "host_pin",
+                "receivers"
+            ],
+            "properties": {
+                "event_id": {
+                    "type": "string"
+                },
+                "host_pin": {
+                    "type": "string"
+                },
+                "receivers": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/event.ImportCertificateReceiverRequest"
+                    }
+                }
+            }
+        },
+        "core-api_internal_handler_event.ImportCertificateReceiversResponse": {
+            "type": "object",
+            "properties": {
+                "certificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.EventCertificate"
+                    }
+                },
+                "event_certificate_address": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "core-api_internal_handler_event.RevokeEventCertificatesRequest": {
+            "type": "object",
+            "required": [
+                "certificate_ids",
+                "host_pin"
+            ],
+            "properties": {
+                "certificate_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "host_pin": {
+                    "type": "string"
+                }
+            }
+        },
+        "core-api_internal_handler_event.RevokeEventCertificatesResponse": {
+            "type": "object",
+            "properties": {
+                "revoked_certificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.EventCertificate"
+                    }
+                }
+            }
+        },
+        "core-api_internal_handler_event.SignEventCertificatesRequest": {
+            "type": "object",
+            "required": [
+                "certificate_id",
+                "issuer_pin"
+            ],
+            "properties": {
+                "certificate_id": {
+                    "type": "string"
+                },
+                "issuer_pin": {
+                    "type": "string"
+                }
+            }
+        },
+        "core-api_internal_handler_event.SignEventCertificatesResponse": {
+            "type": "object",
+            "properties": {
+                "certificate": {
+                    "$ref": "#/definitions/entity.EventCertificate"
+                },
+                "signature": {
+                    "type": "string"
+                }
+            }
+        },
         "core-api_internal_handler_eventconfig.EventCertificateConfigResponse": {
             "type": "object",
             "properties": {
@@ -2436,6 +2723,50 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.EventCertificate": {
+            "type": "object",
+            "properties": {
+                "academic_institution": {
+                    "type": "string"
+                },
+                "certificate_subtitle": {
+                    "type": "string"
+                },
+                "certificate_title": {
+                    "type": "string"
+                },
+                "certificate_token_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_certificate_address": {
+                    "type": "string"
+                },
+                "event_contract_address": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "receiver_credential_id": {
+                    "type": "string"
+                },
+                "receiver_email": {
+                    "type": "string"
+                },
+                "revoked_at": {
                     "type": "string"
                 }
             }
@@ -2766,6 +3097,33 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.ImportCertificateReceiverRequest": {
+            "type": "object",
+            "required": [
+                "academic_institution",
+                "certificate_subtitle",
+                "certificate_title",
+                "first_name",
+                "last_name"
+            ],
+            "properties": {
+                "academic_institution": {
+                    "type": "string"
+                },
+                "certificate_subtitle": {
+                    "type": "string"
+                },
+                "certificate_title": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
                     "type": "string"
                 }
             }

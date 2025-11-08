@@ -19,14 +19,14 @@ INSERT INTO event_issuers (
     issuer_credential_id,
     is_signed,
     signature,
-    sign_message
+    sign_message_digest
 ) VALUES (
     $1,
     $2,
     $3,
     $4,
     $5
-) RETURNING id, event_id, issuer_credential_id, is_signed, signature, sign_message, created_at, updated_at
+) RETURNING id, event_id, issuer_credential_id, is_signed, signature, sign_message_digest, created_at, updated_at, deleted_at
 `
 
 type CreateEventIssuerParams struct {
@@ -34,7 +34,7 @@ type CreateEventIssuerParams struct {
 	IssuerCredentialID uuid.UUID   `json:"issuer_credential_id"`
 	IsSigned           int32       `json:"is_signed"`
 	Signature          pgtype.Text `json:"signature"`
-	SignMessage        pgtype.Text `json:"sign_message"`
+	SignMessageDigest  pgtype.Text `json:"sign_message_digest"`
 }
 
 func (q *Queries) CreateEventIssuer(ctx context.Context, arg CreateEventIssuerParams) (EventIssuer, error) {
@@ -43,7 +43,7 @@ func (q *Queries) CreateEventIssuer(ctx context.Context, arg CreateEventIssuerPa
 		arg.IssuerCredentialID,
 		arg.IsSigned,
 		arg.Signature,
-		arg.SignMessage,
+		arg.SignMessageDigest,
 	)
 	var i EventIssuer
 	err := row.Scan(
@@ -52,9 +52,10 @@ func (q *Queries) CreateEventIssuer(ctx context.Context, arg CreateEventIssuerPa
 		&i.IssuerCredentialID,
 		&i.IsSigned,
 		&i.Signature,
-		&i.SignMessage,
+		&i.SignMessageDigest,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
@@ -69,7 +70,7 @@ func (q *Queries) DeleteEventIssuer(ctx context.Context, id uuid.UUID) error {
 }
 
 const GetEventIssuerByEventIDAndIssuerCredentialID = `-- name: GetEventIssuerByEventIDAndIssuerCredentialID :one
-SELECT id, event_id, issuer_credential_id, is_signed, signature, sign_message, created_at, updated_at FROM event_issuers 
+SELECT id, event_id, issuer_credential_id, is_signed, signature, sign_message_digest, created_at, updated_at, deleted_at FROM event_issuers 
 WHERE event_id = $1 AND issuer_credential_id = $2
 `
 
@@ -87,15 +88,16 @@ func (q *Queries) GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Conte
 		&i.IssuerCredentialID,
 		&i.IsSigned,
 		&i.Signature,
-		&i.SignMessage,
+		&i.SignMessageDigest,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const GetEventIssuerByID = `-- name: GetEventIssuerByID :one
-SELECT id, event_id, issuer_credential_id, is_signed, signature, sign_message, created_at, updated_at FROM event_issuers WHERE id = $1
+SELECT id, event_id, issuer_credential_id, is_signed, signature, sign_message_digest, created_at, updated_at, deleted_at FROM event_issuers WHERE id = $1
 `
 
 func (q *Queries) GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIssuer, error) {
@@ -107,9 +109,10 @@ func (q *Queries) GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIs
 		&i.IssuerCredentialID,
 		&i.IsSigned,
 		&i.Signature,
-		&i.SignMessage,
+		&i.SignMessageDigest,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
@@ -121,7 +124,7 @@ SELECT
     ei.issuer_credential_id,
     ei.is_signed,
     ei.signature,
-    ei.sign_message,
+    ei.sign_message_digest,
     ei.created_at,
     ei.updated_at,
     e.id as event_id,
@@ -150,7 +153,7 @@ type GetEventIssuersByCredentialIDRow struct {
 	IssuerCredentialID     uuid.UUID          `json:"issuer_credential_id"`
 	IsSigned               int32              `json:"is_signed"`
 	Signature              pgtype.Text        `json:"signature"`
-	SignMessage            pgtype.Text        `json:"sign_message"`
+	SignMessageDigest      pgtype.Text        `json:"sign_message_digest"`
 	CreatedAt              pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
 	EventID_2              uuid.UUID          `json:"event_id_2"`
@@ -177,7 +180,7 @@ func (q *Queries) GetEventIssuersByCredentialID(ctx context.Context, arg GetEven
 			&i.IssuerCredentialID,
 			&i.IsSigned,
 			&i.Signature,
-			&i.SignMessage,
+			&i.SignMessageDigest,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.EventID_2,
@@ -199,7 +202,7 @@ func (q *Queries) GetEventIssuersByCredentialID(ctx context.Context, arg GetEven
 }
 
 const GetEventIssuersByEventID = `-- name: GetEventIssuersByEventID :many
-SELECT id, event_id, issuer_credential_id, is_signed, signature, sign_message, created_at, updated_at FROM event_issuers WHERE event_id = $1
+SELECT id, event_id, issuer_credential_id, is_signed, signature, sign_message_digest, created_at, updated_at, deleted_at FROM event_issuers WHERE event_id = $1
 `
 
 func (q *Queries) GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUID) ([]EventIssuer, error) {
@@ -217,9 +220,10 @@ func (q *Queries) GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUI
 			&i.IssuerCredentialID,
 			&i.IsSigned,
 			&i.Signature,
-			&i.SignMessage,
+			&i.SignMessageDigest,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -236,24 +240,24 @@ UPDATE event_issuers
 SET 
     is_signed = $1,
     signature = $2,
-    sign_message = $3,
+    sign_message_digest = $3,
     updated_at = NOW()
 WHERE id = $4
-RETURNING id, event_id, issuer_credential_id, is_signed, signature, sign_message, created_at, updated_at
+RETURNING id, event_id, issuer_credential_id, is_signed, signature, sign_message_digest, created_at, updated_at, deleted_at
 `
 
 type UpdateEventIssuerParams struct {
-	IsSigned    int32       `json:"is_signed"`
-	Signature   pgtype.Text `json:"signature"`
-	SignMessage pgtype.Text `json:"sign_message"`
-	ID          uuid.UUID   `json:"id"`
+	IsSigned          int32       `json:"is_signed"`
+	Signature         pgtype.Text `json:"signature"`
+	SignMessageDigest pgtype.Text `json:"sign_message_digest"`
+	ID                uuid.UUID   `json:"id"`
 }
 
 func (q *Queries) UpdateEventIssuer(ctx context.Context, arg UpdateEventIssuerParams) (EventIssuer, error) {
 	row := q.db.QueryRow(ctx, UpdateEventIssuer,
 		arg.IsSigned,
 		arg.Signature,
-		arg.SignMessage,
+		arg.SignMessageDigest,
 		arg.ID,
 	)
 	var i EventIssuer
@@ -263,9 +267,10 @@ func (q *Queries) UpdateEventIssuer(ctx context.Context, arg UpdateEventIssuerPa
 		&i.IssuerCredentialID,
 		&i.IsSigned,
 		&i.Signature,
-		&i.SignMessage,
+		&i.SignMessageDigest,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }

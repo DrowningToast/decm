@@ -1,0 +1,74 @@
+package event
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"apps/backend/common/customerror"
+	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
+
+	"github.com/google/uuid"
+)
+
+type RevokeEventCertificatesRequest struct {
+	CertificateIDs []uuid.UUID `json:"certificate_ids"`
+}
+
+type RevokeEventCertificatesResponse struct {
+	RevokedCertificates []*entity.EventCertificate `json:"revoked_certificates"`
+}
+
+func (uc *EventUsecase) RevokeEventCertificates(ctx context.Context, eventID uuid.UUID, request RevokeEventCertificatesRequest, currentUser *auth.JwtClaims) (*RevokeEventCertificatesResponse, error) {
+	// 1. Check if current user is authorized
+	credential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx, currentUser.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	if !credential.IsVerifiedOrganizer {
+		return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("user is not a verified organizer"))
+	}
+
+	// 2. Check if event exists
+	event, err := uc.EventDataGateway.GetEventById(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
+
+	if event == nil {
+		return nil, customerror.Parse(&customerror.ErrNotFound, fmt.Errorf("event not found"))
+	}
+
+	// 3. Revoke each certificate in the database
+	revokedCertificates := make([]*entity.EventCertificate, 0, len(request.CertificateIDs))
+	now := time.Now()
+
+	for _, certificateID := range request.CertificateIDs {
+		// Get certificate details
+		certificate, err := uc.EventCertificateDataGateway.GetEventCertificateByID(ctx, certificateID)
+		if err != nil {
+			return nil, err
+		}
+
+		if certificate == nil {
+			return nil, customerror.Parse(&customerror.ErrNotFound, fmt.Errorf("certificate not found"))
+		}
+
+		// Update certificate in database to mark as revoked
+		updatedCertificate, err := uc.EventCertificateDataGateway.UpdateEventCertificate(ctx, certificateID, eventdatagateway.UpdateEventCertificateParameters{
+			RevokedAt: &now,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		revokedCertificates = append(revokedCertificates, updatedCertificate)
+	}
+
+	return &RevokeEventCertificatesResponse{
+		RevokedCertificates: revokedCertificates,
+	}, nil
+}

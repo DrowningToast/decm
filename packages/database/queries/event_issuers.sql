@@ -4,13 +4,13 @@ INSERT INTO event_issuers (
     issuer_credential_id,
     is_signed,
     signature,
-    sign_message
+    sign_message_digest
 ) VALUES (
     sqlc.arg('event_id'),
     sqlc.arg('issuer_credential_id'),
     sqlc.arg('is_signed'),
     sqlc.arg('signature'),
-    sqlc.arg('sign_message')
+    sqlc.arg('sign_message_digest')
 ) RETURNING *;
 
 -- name: GetEventIssuersByEventID :many
@@ -24,7 +24,7 @@ UPDATE event_issuers
 SET 
     is_signed = sqlc.arg('is_signed'),
     signature = sqlc.arg('signature'),
-    sign_message = sqlc.arg('sign_message'),
+    sign_message_digest = sqlc.arg('sign_message_digest'),
     updated_at = NOW()
 WHERE id = sqlc.arg('id')
 RETURNING *;
@@ -43,7 +43,7 @@ SELECT
     ei.issuer_credential_id,
     ei.is_signed,
     ei.signature,
-    ei.sign_message,
+    ei.sign_message_digest,
     ei.created_at,
     ei.updated_at,
     e.id as event_id,
