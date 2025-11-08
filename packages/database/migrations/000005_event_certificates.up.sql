@@ -1,15 +1,15 @@
--- ALTER TABLE event_certificate_configs
+-- Add position columns to event_certificate_configs table
 ALTER TABLE event_certificate_configs
-ADD COLUMN certificate_title_pos_x FLOAT NOT NULL
-ADD COLUMN certificate_title_pos_y FLOAT NOT NULL
-ADD COLUMN certificate_subtitle_pos_x FLOAT NOT NULL
+ADD COLUMN certificate_title_pos_x FLOAT NOT NULL,
+ADD COLUMN certificate_title_pos_y FLOAT NOT NULL,
+ADD COLUMN certificate_subtitle_pos_x FLOAT NOT NULL,
 ADD COLUMN certificate_subtitle_pos_y FLOAT NOT NULL;
 
 ALTER TABLE event_issuers
-RENAME COLUMN sign_message TO sign_message_digest;
+RENAME sign_message TO sign_message_digest;
 ALTER TABLE event_issuers
 ADD COLUMN deleted_at TIMESTAMPTZ;
-
+ 
 -- Create after issuer issued and host confirmed again.
 CREATE TABLE event_certificates (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -31,7 +31,7 @@ CREATE TABLE event_certificates (
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     revoked_at TIMESTAMPTZ
-)
+);
 
 -- Create at the same time of "event_certificates" row
 CREATE TABLE event_certificate_signatures (
@@ -42,5 +42,6 @@ CREATE TABLE event_certificate_signatures (
     issuer_signature TEXT,
     -- signature that host has signed (of all participants) (same for all participants)
     host_signature TEXT NOT NULL,
-    sign_message_digest TEXT,
-)
+    sign_message TEXT,
+    sign_message_digest TEXT
+);
