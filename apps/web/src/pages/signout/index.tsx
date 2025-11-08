@@ -1,6 +1,5 @@
 import { useSignout } from "@/components/useSignout";
 import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Typography } from "@/components/typography/typography";
@@ -8,7 +7,6 @@ import { delay } from "@/lib/utils";
 
 const SignoutPage = () => {
     const { signout, isPending, error } = useSignout();
-    const navigate = useNavigate();
     const { t } = useTranslation();
     const hasSignedOut = useRef(false);
 
