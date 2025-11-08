@@ -26,9 +26,14 @@ export const WalletDebugPanel = () => {
     const [copiedField, setCopiedField] = useState<string | null>(null);
 
     const copyToClipboard = (text: string, field: string) => {
-        navigator.clipboard.writeText(text);
-        setCopiedField(field);
-        setTimeout(() => setCopiedField(null), 2000);
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                setCopiedField(field);
+                setTimeout(() => setCopiedField(null), 2000);
+            })
+            .catch((err) => {
+                console.error('Failed to copy to clipboard:', err);
+            });
     };
 
     if (isDisconnected) {
