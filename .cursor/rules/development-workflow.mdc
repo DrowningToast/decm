@@ -173,8 +173,7 @@ pnpm test --coverage # With coverage report
 ### Local Pre-commit Checks
 ```bash
 # Run these before committing
-pnpm lint            # Check code quality
-pnpm check-types     # TypeScript validation
+pnpm lint            # Check code quality + TypeScript validation
 pnpm test            # Run tests
 pnpm build           # Verify builds
 ```

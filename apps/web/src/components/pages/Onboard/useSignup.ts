@@ -49,7 +49,6 @@ export const useSignup = () => {
                     profile,
                 );
             }
-
             return await authService.createProfile(status.authentication_credential_id, profile);
         },
     });

@@ -29,7 +29,14 @@
         "no": "ไม่ใช่",
         "required": "จำเป็น",
         "optional": "ไม่บังคับ",
-        "notRequired": "ไม่ต้องการ"
+        "saving": "กำลังบันทึก...",
+        "notRequired": "ไม่ต้องการ",
+        "about": "เกี่ยวกับ",
+        "date": "วันที่",
+        "download": "ดาวน์โหลด",
+        "share": "แชร์",
+        "verify": "ตรวจสอบ",
+        "to": "ถึง"
     },
     "nav": {
         "home": "หน้าหลัก",
@@ -39,7 +46,38 @@
         "profile": "โปรไฟล์",
         "signIn": "เข้าสู่ระบบ",
         "signUp": "สมัครสมาชิก",
-        "signOut": "ออกจากระบบ"
+        "signOut": "ออกจากระบบ",
+        "account": "บัญชี",
+        "security": "ความปลอดภัย",
+        "settings": "การตั้งค่า",
+        "other": "อื่นๆ",
+        "preference": "การตั้งค่าส่วนตัว",
+        "readDocs": "อ่านเอกสาร",
+        "socials": "โซเชียล",
+        "noItems": "ไม่มีรายการ",
+        "menu": "เมนู",
+        "close": "ปิด"
+    },
+    "walletDebug": {
+        "noWallet": "ยังไม่ได้เชื่อมต่อวอลเล็ต",
+        "initializingWallet": "⏸️ กำลังเริ่มต้นวอลเล็ต...",
+        "addressDetected": "ตรวจพบที่อยู่: {{addressStart}}...{{addressEnd}}",
+        "title": "💼 ข้อมูลดีบักวอลเล็ต",
+        "statusLabel": "สถานะ:",
+        "initializing": "⏸️ กำลังเริ่มต้น...",
+        "connecting": "⏳ กำลังเชื่อมต่อ...",
+        "ready": "✅ พร้อมใช้งาน",
+        "connectedWaiting": "🟡 เชื่อมต่อแล้ว (รอสาธารณะไคลเอนต์)",
+        "addressLabel": "ที่อยู่:",
+        "copyTitle": "คัดลอกที่อยู่",
+        "chainIdLabel": "รหัสเชน:",
+        "publicClientTitle": "รายละเอียด Public Client:",
+        "publicClientKey": "คีย์:",
+        "publicClientChainLabel": "เชน:",
+        "publicClientChainValue": "{{name}} (ID: {{id}})",
+        "transportLabel": "ทรานสปอร์ต:",
+        "transportUnknown": "ไม่ทราบ",
+        "viewRawSummary": "ดูข้อมูล Public Client แบบดิบ"
     },
     "auth": {
         "signIn": "เข้าสู่ระบบ",
@@ -76,7 +114,9 @@
         "title": "ยืนยันตัวตน",
         "subtitle": "กรุณาลงนามในข้อความต่อไปนี้เพื่อพิสูจน์ความเป็นเจ้าของกระเป๋าเงินของคุณ",
         "requestButton": "ขอข้อความสำหรับลงนาม",
-        "disconnectLink": "ยกเลิกการเชื่อมต่อกระเป๋าเงิน"
+        "disconnectLink": "ยกเลิกการเชื่อมต่อกระเป๋าเงิน",
+        "signMessageLoading": "กำลังลงนามข้อความ...",
+        "signMessageError": "ลงนามข้อความล้มเหลว กรุณาลองอีกครั้ง"
     },
     "signing": {
         "details": {
@@ -213,14 +253,31 @@
     "profile": {
         "title": "โปรไฟล์",
         "editProfile": "แก้ไขโปรไฟล์",
+        "editSubtitle": "อัปเดตข้อมูลส่วนตัวและข้อมูลทางวิชาการของคุณ",
         "personalInfo": "ข้อมูลส่วนตัว",
+        "contactInfo": "ข้อมูลติดต่อ",
+        "academicInfo": "ข้อมูลทางวิชาการ",
+        "profilePicture": "รูปโปรไฟล์",
         "wallet": "ที่อยู่กระเป๋าเงิน",
         "email": "อีเมล",
         "name": "ชื่อ",
+        "firstName": "ชื่อ",
+        "lastName": "นามสกุล",
         "bio": "ประวัติย่อ",
+        "bioPlaceholder": "เล่าเกี่ยวกับตัวคุณ...",
+        "phoneNumber": "หมายเลขโทรศัพท์",
+        "address": "ที่อยู่",
+        "addressPlaceholder": "ระบุที่อยู่ของคุณ",
+        "academicEmail": "อีเมลทางวิชาการ",
+        "academicInstitution": "สถาบันการศึกษา",
+        "profilePictureUrl": "URL รูปโปรไฟล์",
+        "profilePictureUrlPlaceholder": "https://example.com/image.jpg",
+        "makePublic": "เผยแพร่ข้อมูลนี้ต่อสาธารณะ",
         "verifiedIdentity": "ตัวตนที่ยืนยันแล้ว",
         "academicVerification": "การยืนยันทางวิชาการ",
-        "verifyNow": "ยืนยันตอนนี้"
+        "verifyNow": "ยืนยันตอนนี้",
+        "updateSuccess": "อัปเดตโปรไฟล์สำเร็จ",
+        "updateError": "ไม่สามารถอัปเดตโปรไฟล์ได้ กรุณาลองอีกครั้ง"
     },
     "events": {
         "title": "กิจกรรม",
@@ -321,6 +378,125 @@
             "bookingRequired": "ต้องขอเข้าร่วม",
             "tokenTransferable": "โอน Token ได้",
             "participantSettings": "ตั้งค่าผู้เข้าร่วม"
+        },
+        "errors": {
+            "generic": "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",
+            "network": "ข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อของคุณ",
+            "unauthorized": "คุณไม่ได้รับอนุญาตให้ทำการกระทำนี้",
+            "forbidden": "คุณไม่ได้รับอนุญาตให้ทำการกระทำนี้",
+            "notFound": "ไม่พบทรัพยากรที่ร้องขอ",
+            "conflict": "ข้อมูลที่ป้อนมีอยู่แล้ว",
+            "serverError": "เกิดข้อผิดพลาด กรุณาลองอีกครั้งในภายหลัง",
+            "invalidInput": "ข้อมูลที่ป้อนไม่ถูกต้อง",
+            "invalidInputDescription": "กรุณาตรวจสอบข้อมูลของคุณและลองอีกครั้ง",
+            "networkDescription": "ข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อของคุณ",
+            "unauthorizedDescription": "คุณไม่ได้รับอนุญาตให้ทำการกระทำนี้",
+            "notFoundDescription": "ไม่พบทรัพยากรที่ร้องขอ",
+            "duplicateEntryDescription": "ข้อมูลที่ป้อนมีอยู่แล้ว",
+            "internalServerErrorDescription": "เกิดข้อผิดพลาด กรุณาลองอีกครั้งในภายหลัง",
+            "internalClientErrorDescription": "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",
+            "forbiddenDescription": "คุณไม่ได้รับอนุญาตให้ทำการกระทำนี้"
+        },
+        "notFound": {
+            "title": "404 - ไม่พบหน้าที่ต้องการ",
+            "heading": "อ๊ะ! ไม่พบหน้านี้",
+            "description": "หน้าที่คุณกำลังมองหาไม่มีอยู่หรือถูกย้ายไปแล้ว",
+            "backHome": "กลับสู่หน้าหลัก",
+            "suggestions": {
+                "title": "ลองหน้าเหล่านี้แทน:",
+                "home": "ไปหน้าหลัก",
+                "events": "เรียกดูกิจกรรม",
+                "credentials": "ดูประกาศนียบัตร",
+                "signup": "สมัครสมาชิก"
+            }
+        },
+        "error": {
+            "title": "ข้อผิดพลาด - เกิดข้อผิดพลาดบางอย่าง",
+            "heading": "อ๊ะ! เกิดข้อผิดพลาดบางอย่าง",
+            "description": "เราพบข้อผิดพลาดที่ไม่คาดคิด กรุณาลองอีกครั้งหรือติดต่อฝ่ายสนับสนุนหากปัญหายังคงอยู่",
+            "backHome": "กลับสู่หน้าหลัก",
+            "tryAgain": "ลองอีกครั้ง",
+            "suggestions": {
+                "title": "สิ่งที่คุณสามารถทำได้:",
+                "home": "ไปหน้าหลัก",
+                "refresh": "รีเฟรชหน้า",
+                "support": "ติดต่อฝ่ายสนับสนุน",
+                "signup": "สมัครสมาชิก"
+            }
+        },
+        "onboard": {
+            "title": "การตั้งค่าบัญชี",
+            "subtitle": "กรุณาตั้งค่ารหัส PIN/รหัสผ่าน จะใช้เพื่อเข้ารหัสข้อมูลของคุณ",
+            "pinTitle": "ตั้งค่ารหัส PIN",
+            "passwordTitle": "ตั้งค่ารหัสผ่าน",
+            "preferPassword": "ฉันต้องการใช้รหัสผ่าน",
+            "preferPin": "ฉันต้องการใช้รหัส PIN",
+            "logout": "ออกจากระบบ",
+            "enterPin": "กรอกรหัส PIN 6 หลัก",
+            "confirmPin": "ยืนยันรหัส PIN",
+            "enterPassword": "กรอกรหัสผ่าน",
+            "confirmPassword": "ยืนยันรหัสผ่าน",
+            "pinMismatch": "รหัส PIN ไม่ตรงกัน",
+            "pinTooShort": "รหัส PIN ต้องมี 6 หลัก",
+            "profile": {
+                "title": "โปรไฟล์ (ไม่บังคับ)",
+                "subtitle": "เราใช้ข้อมูลส่วนตัวของคุณเพื่อกรอกรายละเอียดที่จำเป็นสำหรับกิจกรรม/ใบรับรองโดยอัตโนมัติ ข้อมูลของคุณถูกเข้ารหัสเสมอและสามารถแก้ไขและลบได้โดยคุณในทุกเวลา ข้อมูลนี้ไม่สามารถกู้คืนได้ โปรดระมัดระวัง",
+                "firstName": "ชื่อจริง",
+                "lastName": "นามสกุล",
+                "email": "อีเมลติดต่อ",
+                "phoneNumber": "หมายเลขโทรศัพท์",
+                "makePublic": "เผยแพร่ข้อมูลนี้เป็นสาธารณะ"
+            },
+            "confirm": {
+                "title": "โปรดทราบ",
+                "oauth": {
+                    "description": {
+                        "part1": "ใบรับรองใช้เทคโนโลยีบล็อกเชนเป็นแหล่งความจริง บัญชีของคุณถูกผูกกับ EVM wallet ของคุณอย่างถาวร",
+                        "part2": "Private key ของคุณถูกเข้ารหัสด้วยรหัส PIN/รหัสผ่านที่คุณกรอก หากคุณไม่ตั้งค่าวิธีการยืนยันตัวตนสำหรับการกู้คืน เราไม่ทำได้"
+                    },
+                    "checkboxes": {
+                        "acceptRisk": "ฉันตกลง",
+                        "acknowledgePasswordLoss": "ฉันรับทราบว่าการสูญเสียรหัส PIN/รหัสผ่านของฉันจะส่งผลให้สูญเสียบัญชีทั้งหมด"
+                    }
+                },
+                "wallet": {
+                    "description": {
+                        "part1": "ใบรับรองใช้เทคโนโลยีบล็อกเชนเป็นแหล่งความจริง บัญชีของคุณถูกผูกกับ EVM wallet ของคุณอย่างถาวร",
+                        "part2": "หากคุณสูญเสีย wallet ของคุณ คุณจะไม่สามารถเข้าถึงพอร์ตโฟลิโอของคุณได้อีก"
+                    },
+                    "checkboxes": {
+                        "acceptRisk": "ฉันตกลง",
+                        "acknowledgeWalletLoss": "ฉันรับทราบว่าการสูญเสีย wallet ของฉันจะส่งผลให้สูญเสียบัญชีทั้งหมด"
+                    }
+                }
+            },
+            "flow": {
+                "check_onboard_status": {
+                    "unauthenticated_response": "คุณไม่ได้รับอนุญาตให้เข้าถึงทรัพยากรนี้ กรุณาเข้าสู่ระบบอีกครั้ง",
+                    "expired_token": "ลิงก์การอนุญาตหมดอายุแล้ว คุณได้ออกจากระบบ กรุณาเข้าสู่ระบบอีกครั้งผ่านผู้ให้บริการ OAuth ที่คุณเลือก",
+                    "internal_error_response": "เซิร์ฟเวอร์ของเราพบข้อผิดพลาด กรุณาลองอีกครั้งในภายหลัง หากปัญหายังคงอยู่ โปรดติดต่อฝ่ายสนับสนุน"
+                },
+                "oauth_google": {
+                    "create_account_pending": "กำลังยืนยันตัวตนด้วย Google...",
+                    "create_account_success": "ยืนยันตัวตนด้วย Google สำเร็จ",
+                    "create_account_error": "ไม่สามารถยืนยันตัวตนด้วย Google ได้",
+                    "create_account_error_duplicate": "บัญชีที่มีอีเมลนี้มีอยู่แล้ว",
+                    "create_account_error_expired_token": "ลิงก์การอนุญาตหมดอายุแล้ว คุณได้ออกจากระบบ กรุณาเข้าสู่ระบบอีกครั้งผ่านผู้ให้บริการ OAuth",
+                    "create_account_error_generic": "ไม่สามารถสร้างบัญชีด้วย Google ได้ กรุณาลองอีกครั้งในภายหลัง",
+                    "create_profile_pending": "กำลังอัปเดตโปรไฟล์...",
+                    "create_profile_success": "อัปเดตโปรไฟล์สำเร็จ",
+                    "create_profile_error_duplicate": "โปรไฟล์ที่มีอีเมลนี้มีอยู่แล้ว",
+                    "create_profile_error": "ไม่สามารถอัปเดตโปรไฟล์ได้ กรุณาลองอีกครั้งในภายหลัง",
+                    "unauthenticated_response": "คุณไม่ได้รับอนุญาตให้เข้าถึงทรัพยากรนี้ กรุณาเข้าสู่ระบบอีกครั้ง",
+                    "expired_token": "ลิงก์การอนุญาตหมดอายุแล้ว คุณได้ออกจากระบบ กรุณาเข้าสู่ระบบอีกครั้งผ่านผู้ให้บริการ OAuth ที่คุณเลือก",
+                    "internal_error_response": "เซิร์ฟเวอร์ของเราพบข้อผิดพลาด กรุณาลองอีกครั้งในภายหลัง หากปัญหายังคงอยู่ โปรดติดต่อฝ่ายสนับสนุน"
+                }
+            },
+            "api": {
+                "error": {
+                    "authentication_credential_id_already_exists": "ไอดีข้อมูลรับรองการยืนยันตัวตนมีอยู่แล้ว"
+                }
+            }
         }
     },
     "participantSettings": {
@@ -487,6 +663,25 @@
                     "yPosition": "ตำแหน่ง Y",
                     "count": "จำนวน"
                 }
+            },
+            "keywordStatus": {
+                "title": "สถานะการตรวจพบคำสำคัญ",
+                "table": {
+                    "status": "สถานะ",
+                    "keyword": "คำสำคัญ",
+                    "type": "ประเภท",
+                    "count": "นับการตรวจพบ"
+                },
+                "required": "จำเป็น",
+                "optional": "ไม่บังคับ",
+                "detected": "ครั้ง",
+                "detectedPlural": "ครั้ง",
+                "notDetected": "ไม่พบ"
+            },
+            "missingRequired": {
+                "title": "คำสำคัญที่จำเป็นที่ขาดหายไป",
+                "description": "ไม่พบคำสำคัญที่จำเป็นต่อไปนี้ในเทมเพลต SVG ของคุณ:",
+                "instruction": "กรุณาอัปเดตเทมเพลต SVG ของคุณเพื่อรวมคำสำคัญที่จำเป็นเหล่านี้ก่อนดำเนินการต่อ"
             }
         },
         "confirmButton": "ยืนยันการตั้งค่า",
@@ -525,14 +720,46 @@
         "passwordMismatch": "รหัสผ่านไม่ตรงกัน",
         "invalidWallet": "ที่อยู่กระเป๋าเงินไม่ถูกต้อง",
         "accessTokenAndSignedTokenRequired": "Access token หรือ signed token จำเป็น",
-        "finalCallRegistrationDateFuture": "วันสุดท้ายของการลงทะเบียนต้องเป็นวันในอนาคต"
+        "finalCallRegistrationDateFuture": "วันสุดท้ายของการลงทะเบียนต้องเป็นวันในอนาคต",
+        "invalidUrl": "รูปแบบ URL ไม่ถูกต้อง",
+        "firstNameMin3": "ชื่อต้องมีอย่างน้อย 3 ตัวอักษร",
+        "firstNameMax32": "ชื่อต้องมีไม่เกิน 32 ตัวอักษร",
+        "firstNameMax64": "ชื่อต้องมีไม่เกิน 64 ตัวอักษร",
+        "lastNameMin3": "นามสกุลต้องมีอย่างน้อย 3 ตัวอักษร",
+        "lastNameMax32": "นามสกุลต้องมีไม่เกิน 32 ตัวอักษร",
+        "lastNameMax64": "นามสกุลต้องมีไม่เกิน 64 ตัวอักษร",
+        "emailMax64": "อีเมลต้องมีไม่เกิน 64 ตัวอักษร",
+        "phoneNumberMax10": "หมายเลขโทรศัพท์ต้องมีไม่เกิน 10 ตัวอักษร",
+        "phoneNumberMax20": "หมายเลขโทรศัพท์ต้องมีไม่เกิน 20 ตัวอักษร",
+        "bioMin10": "ประวัติย่อต้องมีอย่างน้อย 10 ตัวอักษร",
+        "bioMax255": "ประวัติย่อต้องมีไม่เกิน 255 ตัวอักษร",
+        "addressMin10": "ที่อยู่ต้องมีอย่างน้อย 10 ตัวอักษร",
+        "addressMax255": "ที่อยู่ต้องมีไม่เกิน 255 ตัวอักษร",
+        "academicInstitutionMin3": "สถาบันการศึกษาต้องมีอย่างน้อย 3 ตัวอักษร",
+        "academicInstitutionMax255": "สถาบันการศึกษาต้องมีไม่เกิน 255 ตัวอักษร"
     },
     "errors": {
         "generic": "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",
+        "genericDescription": "เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองอีกครั้งหรือติดต่อฝ่ายสนับสนุน",
         "network": "ข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อของคุณ",
         "unauthorized": "คุณไม่ได้รับอนุญาตให้ทำการกระทำนี้",
+        "forbidden": "คุณไม่ได้รับอนุญาตให้ทำการกระทำนี้",
         "notFound": "ไม่พบทรัพยากรที่ร้องขอ",
-        "serverError": "ข้อผิดพลาดเซิร์ฟเวอร์ กรุณาลองอีกครั้งในภายหลัง"
+        "conflict": "ข้อมูลที่ป้อนมีอยู่แล้ว",
+        "serverError": "ข้อผิดพลาดเซิร์ฟเวอร์ กรุณาลองอีกครั้งในภายหลัง",
+        "invalidInput": "ข้อมูลที่ป้อนไม่ถูกต้อง",
+        "invalidInputDescription": "กรุณาตรวจสอบข้อมูลของคุณและลองอีกครั้ง",
+        "networkDescription": "ข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อของคุณ",
+        "unauthorizedDescription": "คุณไม่ได้รับอนุญาตให้ทำการกระทำนี้",
+        "notFoundDescription": "ไม่พบทรัพยากรที่ร้องขอ",
+        "duplicateEntryDescription": "ข้อมูลที่ป้อนมีอยู่แล้ว",
+        "internalServerErrorDescription": "เกิดข้อผิดพลาด กรุณาลองอีกครั้งในภายหลัง",
+        "internalClientErrorDescription": "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",
+        "forbiddenDescription": "คุณไม่ได้รับอนุญาตให้ทำการกระทำนี้",
+        "inbox": {
+            "title": "เกิดข้อผิดพลาด",
+            "description": "เราไม่สามารถโหลดข้อความนี้ได้ กรุณาลองอีกครั้งในภายหลัง"
+        }
     },
     "notFound": {
         "title": "404 - ไม่พบหน้าที่ต้องการ",
@@ -604,5 +831,148 @@
     },
     "createEvent": {
         "success": "สร้างกิจกรรมสำเร็จ"
+    },
+    "preference": {
+        "title": "การตั้งค่าส่วนตัว",
+        "description": "จัดการการตั้งค่าแอปพลิเคชันและการตั้งค่าของคุณ",
+        "language": {
+            "title": "ภาษา",
+            "description": "เลือกภาษาที่คุณชอบสำหรับแอปพลิเคชัน",
+            "select": "เลือก"
+        },
+        "moreComingSoon": "การตั้งค่าเพิ่มเติมจะมาเร็วๆ นี้"
+    },
+    "participant": {
+        "home": {
+            "greeting": {
+                "morning": "สวัสดีตอนเช้า",
+                "afternoon": "สวัสดีตอนบ่าย",
+                "evening": "สวัสดีตอนเย็น"
+            },
+            "actionRequired": "คุณมี {{count}} รายการที่ต้องดำเนินการ",
+            "actionRequired_plural": "คุณมี {{count}} รายการที่ต้องดำเนินการ",
+            "participantServices": "บริการสำหรับผู้เข้าร่วม",
+            "generalServices": "บริการทั่วไป",
+            "services": {
+                "certificates": "ประกาศนียบัตร",
+                "events": "กิจกรรม",
+                "inbox": "กล่องข้อความ",
+                "identities": "ตัวตน",
+                "profile": "โปรไฟล์",
+                "verifyCertificates": "ตรวจสอบใบรับรอง"
+            }
+        },
+        "certificates": {
+            "title": "ประกาศนียบัตร",
+            "description": "ประกาศนียบัตรทั้งหมดที่คุณได้รับ",
+            "filters": {
+                "all": "ทั้งหมด",
+                "completed": "เสร็จสิ้น",
+                "pending": "รอดำเนินการ"
+            },
+            "sortBy": "เรียงตาม",
+            "sort": {
+                "newest": "ใหม่สุด",
+                "oldest": "เก่าสุด"
+            },
+            "status": {
+                "completed": "เสร็จสิ้น",
+                "pending": "รอดำเนินการ"
+            },
+            "empty": {
+                "title": "ยังไม่มีประกาศนียบัตร",
+                "description": "คุณยังไม่มีประกาศนียบัตร เมื่อคุณสำเร็จการอบรม ประกาศนียบัตรจะปรากฏที่นี่"
+            },
+            "noResults": {
+                "title": "ไม่พบประกาศนียบัตร",
+                "description": "ลองปรับการค้นหาของคุณ"
+            },
+            "detail": {
+                "issuedBy": "ออกโดย",
+                "issued": "ออกเมื่อ",
+                "expires": "หมดอายุ",
+                "certificateId": "ID ประกาศนียบัตร",
+                "skillsDemonstrated": "ทักษะที่แสดง",
+                "scanToVerify": "สแกนเพื่อตรวจสอบ",
+                "useAnyQrScanner": "ใช้สแกนเนอร์ QR ใดก็ได้",
+                "expired": "หมดอายุ",
+                "expiredOn": "หมดอายุเมื่อ",
+                "certificateDescription": "รายละเอียดใบประกาศนียบัตร",
+                "youSignedCertificationOn": "คุณลงนามในใบประกาศนียบัตรเมื่อ",
+                "certificateContractAddress": "ที่อยู่สัญญาใบประกาศนียบัตร",
+                "eventContractAddress": "ที่อยู่สัญญากิจกรรม",
+                "verifiableCredentialAttributes": "คุณสมบัติข้อมูลรับรองที่ตรวจสอบได้",
+                "downloadAttributes": "ดาวน์โหลด",
+                "copyShareableUrl": "คัดลอก URL แชร์"
+            }
+        },
+        "events": {
+            "title": "กิจกรรม",
+            "description": "ค้นหาโอกาสที่นี่",
+            "name": "ชื่อ",
+            "finalCall": "เรียกครั้งสุดท้าย",
+            "searchPlaceholder": "ค้นหากิจกรรม",
+            "passwordRequired": "ต้องใช้รหัสผ่าน",
+            "inviteOnly": "เฉพาะผู้ได้รับเชิญ",
+            "nolongerAccepting": "ไม่รับสมัครอีกต่อไป",
+            "filters": {
+                "seatsCount": "ที่นั่งที่มีอยู่",
+                "allEvents": "กิจกรรมทั้งหมด",
+                "myEvents": "กิจกรรมที่ฉันเข้าร่วม"
+            },
+            "empty": {
+                "title": "ยังไม่มีกิจกรรม",
+                "description": "กิจกรรมที่คุณเข้าร่วมจะปรากฏที่นี่"
+            },
+            "noResults": {
+                "title": "ไม่พบกิจกรรม",
+                "description": "ลองปรับการค้นหาหรือตัวกรองของคุณ"
+            },
+            "detail": {
+                "status": "สถานะ",
+                "acceptingRequests": "รับสมัครแล้ว",
+                "closed": "ไม่รับสมัครอีกต่อไป",
+                "finalCallForRequest": "เรียกครั้งสุดท้ายสำหรับคำขอ",
+                "participationRequest": "คำขอเข้าร่วม",
+                "passwordRequired": "ต้องใช้รหัสผ่าน",
+                "inviteOnly": "เฉพาะผู้ได้รับเชิญ",
+                "open": "เปิด",
+                "joined": "เข้าร่วมแล้ว",
+                "accepted": "ยอมรับแล้ว",
+                "seatsCount": "จำนวนที่นั่ง",
+                "eventContactAddress": "ที่อยู่联系กิจกรรม",
+                "noAddress": "ไม่มีที่อยู่ติดต่อ",
+                "passwordPlaceholder": "กรอกรหัสผ่านที่นี่"
+            },
+            "invited": "คุณได้รับเชิญแล้ว! คลิกที่นี่เพื่อดำเนินการต่อ",
+            "invitationRequired": "ต้องการคำเชิญ"
+        },
+        "inbox": {
+            "title": "กล่องข้อความ",
+            "subtitle": "เชิญชวนหรือใบรับรองที่รอดำเนินการจะปรากฏที่นี่",
+            "table": {
+                "actions": "การกระทำ",
+                "dateTime": "วันที่และเวลา"
+            },
+            "status": {
+                "pending": "รอดำเนินการ",
+                "available": "พร้อม",
+                "expired": "หมดอายุ",
+                "actionRequired": "ต้องดำเนินการ"
+            },
+            "empty": {
+                "title": "กล่องข้อความว่างเปล่า",
+                "description": "คำเชิญและประกาศนียบัตรจะปรากฏที่นี่เมื่อมาถึง"
+            },
+            "noResults": "ไม่มีรายการที่ตรงกับการค้นหาของคุณ",
+            "from": "จาก",
+            "date": "วันที่",
+            "statusLabel": "สถานะ",
+            "viewEvent": "ดูกิจกรรม",
+            "viewCertificate": "ดูใบรับรอง",
+            "mustBeInEvent": "ต้องอยู่ในกิจกรรมก่อน",
+            "loadingDetails": "กำลังโหลดรายละเอียดกล่องข้อความ...",
+            "failedToLoadDetails": "ไม่สามารถโหลดรายละเอียดกล่องข้อความ"
+        }
     }
 }

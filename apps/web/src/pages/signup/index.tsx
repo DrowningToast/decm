@@ -1,11 +1,12 @@
 import { env } from "@/config/env";
 import { LOCAL_STORAGE_KEYS, setLocalStorageItem } from "@/lib/constants/localStorage";
 import { OnboardMethods } from "../onboard/[method]";
-import { useAuthRedirect } from "@/components/pages/Auth/useAuthRedirect";
 import { SignupPage } from "@/components/pages/Auth/SignupPage";
+import { useSignUpPageRedirect } from "@/components/pages/Auth/useSignUpPageRedirect";
 
 const SignUpPage = () => {
-    useAuthRedirect();
+    useSignUpPageRedirect();
+
     const handleRequestGoogleOAuthUrl = async () => {
         // open new tab with the url
         setLocalStorageItem(

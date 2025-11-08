@@ -219,10 +219,10 @@ All query keys are typed as `const` arrays, providing:
 
 ```tsx
 // ✅ Good - Type-safe and autocomplete works
-QUERY_KEY.event.byId(eventId)
-
-// ❌ Bad - No type safety, prone to typos
-["event", eventId]
+QUERY_KEY.event.byId(eventId)[
+    // ❌ Bad - No type safety, prone to typos
+    ("event", eventId)
+];
 ```
 
 ## Examples from the Codebase

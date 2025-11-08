@@ -1,8 +1,16 @@
 import * as React from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+import type { ClassValue } from "clsx";
 
 interface StyledTabsProps {
     defaultValue: string;
+    children: React.ReactNode;
+    className?: string;
+    onValueChange?: (value: string) => void;
+}
+
+interface StyledTabsListProps {
     children: React.ReactNode;
     className?: string;
 }
@@ -10,11 +18,12 @@ interface StyledTabsProps {
 interface StyledTabsTriggerProps {
     value: string;
     children: React.ReactNode;
+    className?: ClassValue;
 }
 
 interface StyledTabsContentProps {
     value: string;
-    children: React.ReactNode;
+    children?: React.ReactNode;
     className?: string;
 }
 
@@ -22,9 +31,14 @@ interface StyledTabsContentProps {
  * Styled Tabs component with consistent DECM styling
  * Uses Cormorant Garamond font and primary color scheme
  */
-export const StyledTabs = ({ defaultValue, children, className }: StyledTabsProps) => {
+export const StyledTabs = ({
+    defaultValue,
+    children,
+    className,
+    onValueChange,
+}: StyledTabsProps) => {
     return (
-        <Tabs defaultValue={defaultValue} className={className}>
+        <Tabs defaultValue={defaultValue} className={className} onValueChange={onValueChange}>
             {children}
         </Tabs>
     );
@@ -33,18 +47,24 @@ export const StyledTabs = ({ defaultValue, children, className }: StyledTabsProp
 /**
  * Styled TabsList with consistent background and height
  */
-export const StyledTabsList = ({ children }: { children: React.ReactNode }) => {
-    return <TabsList className="w-full h-10 bg-[#E9DEDE]">{children}</TabsList>;
+export const StyledTabsList = ({
+    children,
+    className,
+}: StyledTabsListProps): React.ReactElement => {
+    return <TabsList className={cn("w-full h-10 bg-muted py-1.5", className)}>{children}</TabsList>;
 };
 
 /**
  * Styled TabsTrigger with Cormorant Garamond font and primary color active state
  */
-export const StyledTabsTrigger = ({ value, children }: StyledTabsTriggerProps) => {
+export const StyledTabsTrigger = ({ value, children, className }: StyledTabsTriggerProps) => {
     return (
         <TabsTrigger
             value={value}
-            className="data-[state=active]:bg-primary text-gray-900 data-[state=active]:text-white"
+            className={cn(
+                "data-[state=active]:bg-primary text-gray-900 data-[state=active]:text-white",
+                className,
+            )}
             style={{
                 fontFamily: "Cormorant Garamond",
                 fontSize: "16px",

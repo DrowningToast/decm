@@ -1,18 +1,31 @@
-import { Typography } from '@/components/typography/typography';
-import { Button } from '@/components/ui/button';
-import { Link } from '@/router';
-import { useTranslation } from 'react-i18next';
+import { Typography } from "@/components/typography/typography";
+import { Button } from "@/components/ui/button";
+import { Link, useNavigate } from "@/router";
+import { useTranslation } from "react-i18next";
+import { useSignout } from "@/components/useSignout";
 
 interface ErrorProps {
-    title?: string
-    description?: string
+    title?: string;
+    description?: string;
 }
 
 export const ErrorPage: React.FC<ErrorProps> = ({ title, description }) => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
+    const { signout, isPending } = useSignout();
 
     const handleRefresh = () => {
         window.location.reload();
+    };
+
+    const handleLogout = async () => {
+        try {
+            await signout();
+            navigate("/");
+            window.location.reload();
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
     };
 
     return (
@@ -37,7 +50,7 @@ export const ErrorPage: React.FC<ErrorProps> = ({ title, description }) => {
                         tag="h1"
                         className="text-3xl md:text-5xl font-bold text-foreground"
                     >
-                        {title || t('error.heading')}
+                        {title || t("error.heading")}
                     </Typography>
 
                     <Typography
@@ -45,7 +58,7 @@ export const ErrorPage: React.FC<ErrorProps> = ({ title, description }) => {
                         tag="p"
                         className="text-lg text-muted-foreground max-w-md mx-auto"
                     >
-                        {description || t('error.description')}
+                        {description || t("error.description")}
                     </Typography>
                 </div>
 
@@ -53,8 +66,12 @@ export const ErrorPage: React.FC<ErrorProps> = ({ title, description }) => {
                 <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <Link to="/">
                         <Button size="lg" variant="primary" className="min-w-[180px]">
-                            <Typography variant="text" tag="span" className="font-medium text-secondary">
-                                {t('error.backHome')}
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                className="font-medium text-secondary"
+                            >
+                                {t("error.backHome")}
                             </Typography>
                         </Button>
                     </Link>
@@ -65,8 +82,28 @@ export const ErrorPage: React.FC<ErrorProps> = ({ title, description }) => {
                         className="min-w-[180px]"
                         onClick={handleRefresh}
                     >
-                        <Typography variant="text" tag="span" className="font-medium text-secondary-foreground">
-                            {t('error.tryAgain')}
+                        <Typography
+                            variant="text"
+                            tag="span"
+                            className="font-medium text-secondary-foreground"
+                        >
+                            {t("error.tryAgain")}
+                        </Typography>
+                    </Button>
+
+                    <Button
+                        size="lg"
+                        variant="secondary-light"
+                        className="min-w-[180px]"
+                        onClick={handleLogout}
+                        disabled={isPending}
+                    >
+                        <Typography
+                            variant="text"
+                            tag="span"
+                            className="font-medium text-secondary-foreground"
+                        >
+                            {isPending ? t("onboard.logout") + "..." : t("onboard.logout")}
                         </Typography>
                     </Button>
                 </div>
@@ -78,32 +115,40 @@ export const ErrorPage: React.FC<ErrorProps> = ({ title, description }) => {
                         tag="p"
                         className="text-sm text-muted-foreground font-medium"
                     >
-                        {t('error.suggestions.title')}
+                        {t("error.suggestions.title")}
                     </Typography>
 
                     <div className="flex flex-wrap justify-center gap-3">
                         <Link to="/">
                             <Button variant="secondary-light" size="sm">
-                                <Typography variant="text" tag="span" className="text-secondary-foreground">
-                                    {t('error.suggestions.home')}
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    className="text-secondary-foreground"
+                                >
+                                    {t("error.suggestions.home")}
                                 </Typography>
                             </Button>
                         </Link>
 
-                        <Button
-                            variant="secondary-light"
-                            size="sm"
-                            onClick={handleRefresh}
-                        >
-                            <Typography variant="text" tag="span" className="text-secondary-foreground">
-                                {t('error.suggestions.refresh')}
+                        <Button variant="secondary-light" size="sm" onClick={handleRefresh}>
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                className="text-secondary-foreground"
+                            >
+                                {t("error.suggestions.refresh")}
                             </Typography>
                         </Button>
 
                         <Link to="/signup">
                             <Button variant="secondary-light" size="sm">
-                                <Typography variant="text" tag="span" className="text-secondary-foreground">
-                                    {t('error.suggestions.signup')}
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    className="text-secondary-foreground"
+                                >
+                                    {t("error.suggestions.signup")}
                                 </Typography>
                             </Button>
                         </Link>
@@ -113,4 +158,3 @@ export const ErrorPage: React.FC<ErrorProps> = ({ title, description }) => {
         </div>
     );
 };
-

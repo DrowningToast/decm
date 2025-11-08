@@ -63,6 +63,7 @@ const OAuthOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) =
         if (!accessToken || !expiresIn) {
             return;
         }
+
         if (!onboardStatus?.authentication_credential_id) {
             if (!data.password) {
                 toast.error(t("flow.oauth_google.create_account_error_password"));

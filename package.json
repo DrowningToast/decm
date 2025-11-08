@@ -7,7 +7,6 @@
         "lint": "turbo run lint",
         "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md,yaml,yml}\"",
         "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,scss,md,yaml,yml}\"",
-        "check-types": "turbo run check-types",
         "dev:web": "pnpm dev --filter @decm/web",
         "dev:core": "cd apps/backend && go run core-api/cmd/main.go",
         "build:core": "cd apps/backend && go build -o bin/decm-backend core-api/cmd/main.go",

@@ -142,8 +142,7 @@ Brief explanation of changes
 ## Checklist
 - [ ] Code follows project conventions
 - [ ] Tests added/updated
-- [ ] No linting errors (`pnpm lint`)
-- [ ] TypeScript types verified (`pnpm check-types`)
+- [ ] No linting errors + TypeScript types verified (`pnpm lint`)
 ```
 
 ## Running Pre-PR Checks
@@ -153,8 +152,7 @@ Before creating a PR, ensure:
 ```bash
 pnpm install
 pnpm format
-pnpm lint
-pnpm check-types
+pnpm lint              # Includes TypeScript type checking
 pnpm test:core
 pnpm test:core:coverage
 pnpm build
