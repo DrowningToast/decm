@@ -174,8 +174,7 @@ SET
     event_contract_address = $7,
     event_certificate_address = $8,
     certificate_token_id = $9,
-    revoked_at = $10,
-    updated_at = NOW()
+    revoked_at = $10
 WHERE id = $11
 RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at
 `

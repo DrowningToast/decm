@@ -43,8 +43,7 @@ SET
     event_contract_address = sqlc.arg('event_contract_address'),
     event_certificate_address = sqlc.arg('event_certificate_address'),
     certificate_token_id = sqlc.arg('certificate_token_id'),
-    revoked_at = sqlc.arg('revoked_at'),
-    updated_at = NOW()
+    revoked_at = sqlc.arg('revoked_at')
 WHERE id = sqlc.arg('id')
 RETURNING *;
 

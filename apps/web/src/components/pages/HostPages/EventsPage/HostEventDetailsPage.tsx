@@ -35,23 +35,9 @@ import { Button } from "@/components/ui/button";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type { SortingState } from "@tanstack/react-table";
 import { ParticipantColumns, type Participant } from "./columns/ParticipantColumns";
-import { CertificateColumns, type CertificateRow } from "./columns/CertificateColumns";
+import { CertificateColumns } from "./columns/CertificateColumns";
 import { Separator } from "@/components/ui/separator";
-
-// Define EventCertificate type locally since it's not exported from API yet
-interface EventCertificate {
-    id: string;
-    event_id: string;
-    recipient_name: string;
-    recipient_email: string;
-    certificate_title: string;
-    certificate_subtitle: string;
-    academic_institution: string;
-    issuer_name: string;
-    issue_date: string;
-    is_published: boolean;
-    certificate_url: string;
-}
+import { useEventCertificates } from "@/hooks/useEventCertificates";
 
 interface HostEventDetailsPageProps {
     eventId: string;
@@ -159,35 +145,9 @@ export default function HostEventDetailsPage({
     const hasCertificateConfig = !!eventCertificateConfig;
     const allIssuersSigned = eventIssuers?.every((issuer) => issuer.is_signed === 1) ?? false;
 
-    // Mock event certificates data for testing
-    const mockEventCertificates: EventCertificate[] = [
-        {
-            id: "1",
-            event_id: eventId,
-            recipient_name: "John Doe",
-            recipient_email: "john.doe@example.com",
-            certificate_title: "Certificate of Achievement",
-            certificate_subtitle: "For outstanding performance in event",
-            academic_institution: "Example University",
-            issuer_name: "Example University",
-            issue_date: "2023-12-01T00:00:00Z",
-            is_published: true,
-            certificate_url: "https://example.com/certificates/1",
-        },
-        {
-            id: "2",
-            event_id: eventId,
-            recipient_name: "Jane Smith",
-            recipient_email: "jane.smith@example.com",
-            certificate_title: "Certificate of Participation",
-            certificate_subtitle: "For active participation in event",
-            issuer_name: "Example University",
-            academic_institution: "Example University",
-            issue_date: "2023-12-02T00:00:00Z",
-            is_published: true,
-            certificate_url: "https://example.com/certificates/2",
-        },
-    ];
+    // Fetch event certificates using the hook
+    const { certificates: eventCertificates, isLoading: certificatesLoading } =
+        useEventCertificates(eventId);
 
     // Mock participant requirements data - replace with actual data
     // const participantRequirements: Record<string, RequirementStatus> = {
@@ -535,21 +495,41 @@ export default function HostEventDetailsPage({
                                             tag="h3"
                                             className="text-lg font-semibold"
                                         >
-                                            Event Certificates ({eventIssuers.length})
+                                            Event Certificates ({eventCertificates?.length || 0})
                                         </Typography>
 
                                         <DataTable
-                                            columns={CertificateColumns()}
-                                            data={mockEventCertificates.map((cert) => ({
-                                                id: cert.id,
-                                                firstName: cert.recipient_name.split(" ")[0],
-                                                lastName: cert.recipient_name.split(" ")[1],
-                                                email: cert.recipient_email,
-                                                academicInstitution: cert.academic_institution,
-                                                issuedAt: cert.issue_date,
-                                                status: cert.is_published ? "published" : "draft",
-                                            }))}
-                                            totalItems={eventIssuers.length}
+                                            columns={CertificateColumns(eventId)}
+                                            data={
+                                                eventCertificates
+                                                    ?.filter(
+                                                        (cert) =>
+                                                            cert.id && cert.revoked_at === null,
+                                                    )
+                                                    .map((cert) => {
+                                                        const firstName =
+                                                            cert.name?.split(" ")[0] || "";
+                                                        const lastName =
+                                                            cert.name
+                                                                ?.split(" ")
+                                                                .slice(1)
+                                                                .join(" ") || "";
+
+                                                        return {
+                                                            id: cert.id, // Remove fallback to empty string
+                                                            firstName,
+                                                            lastName,
+                                                            email: cert.receiver_email || "",
+                                                            academicInstitution:
+                                                                cert.academic_institution || "",
+                                                            issuedAt: cert.created_at || "",
+                                                            status: cert.revoked_at
+                                                                ? "rejected"
+                                                                : "received",
+                                                        };
+                                                    }) || []
+                                            }
+                                            totalItems={eventCertificates?.length || 0}
                                             currentPage={1}
                                             pageSize={10}
                                             onPageChange={() => {}}
@@ -559,7 +539,7 @@ export default function HostEventDetailsPage({
                                             searchPlaceholder="Search certificates..."
                                             sorting={[]}
                                             onSortingChange={() => {}}
-                                            isLoading={false}
+                                            isLoading={certificatesLoading}
                                             disablePagination
                                         />
 

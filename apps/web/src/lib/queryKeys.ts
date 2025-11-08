@@ -49,6 +49,7 @@ export const QUERY_KEY = {
         certificate: {
             config: (eventId: string) => ["event", eventId, "certificate", "config"] as const,
         },
+        certificates: (eventId: string) => ["event", eventId, "certificates"] as const,
         invitations: (eventId: string) => ["event", eventId, "invitations"] as const,
     },
 

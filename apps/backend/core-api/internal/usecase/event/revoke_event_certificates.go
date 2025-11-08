@@ -59,7 +59,16 @@ func (uc *EventUsecase) RevokeEventCertificates(ctx context.Context, eventID uui
 
 		// Update certificate in database to mark as revoked
 		updatedCertificate, err := uc.EventCertificateDataGateway.UpdateEventCertificate(ctx, certificateID, eventdatagateway.UpdateEventCertificateParameters{
-			RevokedAt: &now,
+			RevokedAt:               &now,
+			ReceiverCredentialID:    certificate.ReceiverCredentialID,
+			ReceiverEmail:           certificate.ReceiverEmail,
+			Name:                    certificate.Name,
+			AcademicInstitution:     certificate.AcademicInstitution,
+			CertificateTitle:        certificate.CertificateTitle,
+			CertificateSubtitle:     certificate.CertificateSubtitle,
+			EventContractAddress:    &certificate.EventContractAddress,
+			EventCertificateAddress: certificate.EventCertificateAddress,
+			CertificateTokenID:      certificate.CertificateTokenID,
 		})
 		if err != nil {
 			return nil, err
