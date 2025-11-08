@@ -20,6 +20,7 @@ type CreateEventCertificateParameters struct {
 	EventContractAddress    string
 	EventCertificateAddress *string
 	CertificateTokenID      *string
+	Digest                  *string
 }
 
 type UpdateEventCertificateParameters struct {
@@ -33,6 +34,7 @@ type UpdateEventCertificateParameters struct {
 	EventCertificateAddress *string
 	CertificateTokenID      *string
 	RevokedAt               *time.Time
+	Digest                  *string
 }
 
 type EventCertificateDataGateway interface {

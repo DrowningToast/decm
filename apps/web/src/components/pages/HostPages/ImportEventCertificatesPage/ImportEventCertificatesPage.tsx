@@ -5,14 +5,10 @@ import { useTranslation } from "react-i18next";
 import { ExcelUpload } from "./ExcelUpload";
 import { ExcelPreview } from "./ExcelPreview";
 import PageContainer from "@/components/container/PageContainer";
-// import type {
-//     EventEventResponse,
-//     EventCertificateImportRequest,
-//     EventCertificateImportRequestItem,
-// } from "@decm/api";
+import type { EventImportCertificateReceiverRequest } from "@decm/api";
+import { useImportCertificates } from "@/hooks/events/useImportCertificates";
 import * as XLSX from "xlsx";
 import type { EventEventResponse } from "@decm/api";
-// import { useImportCertificates } from "@/hooks/events/useImportCertificates";
 
 interface ImportEventCertificatesPageProps {
     eventId: string;
@@ -27,7 +23,7 @@ export const ImportEventCertificatesPage = ({
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [showPreview, setShowPreview] = useState(false);
 
-    // const { importCertificates, isImportingCertificates } = useImportCertificates(eventId);
+    const { importCertificates, isImportingCertificates } = useImportCertificates(eventId);
 
     const handleFileSelect = (file: File) => {
         setSelectedFile(file);
@@ -39,17 +35,14 @@ export const ImportEventCertificatesPage = ({
         setShowPreview(false);
     };
 
-    // const handleImport = (certificateData: EventCertificateImportRequestItem[]) => {
-    //     const request: EventCertificateImportRequest = {
-    //         event_id: eventId,
-    //         certificates: certificateData,
-    //     };
-
-    //     importCertificates(request);
-    // };
-
-    const handleImport = () => {
-        console.log("handleImport");
+    const handleImport = (
+        certificateData: EventImportCertificateReceiverRequest[],
+        hostPin: string,
+    ) => {
+        importCertificates({
+            hostPin,
+            receivers: certificateData,
+        });
     };
 
     const downloadTemplate = () => {
@@ -58,7 +51,6 @@ export const ImportEventCertificatesPage = ({
             {
                 [t("certificateImport.templateColumns.firstName")]: "",
                 [t("certificateImport.templateColumns.lastName")]: "",
-                [t("certificateImport.templateColumns.email")]: "",
                 [t("certificateImport.templateColumns.academicInstitution")]: "",
                 [t("certificateImport.templateColumns.certificateTitle")]: "",
                 [t("certificateImport.templateColumns.certificateSubtitle")]: "",
@@ -66,7 +58,6 @@ export const ImportEventCertificatesPage = ({
             {
                 [t("certificateImport.templateColumns.firstName")]: "John",
                 [t("certificateImport.templateColumns.lastName")]: "Doe",
-                [t("certificateImport.templateColumns.email")]: "john.doe@example.com",
                 [t("certificateImport.templateColumns.academicInstitution")]: "Example University",
                 [t("certificateImport.templateColumns.certificateTitle")]:
                     "Certificate of Achievement",
@@ -245,7 +236,7 @@ export const ImportEventCertificatesPage = ({
                         <ExcelUpload
                             onFileSelect={handleFileSelect}
                             selectedFile={selectedFile}
-                            disabled={false}
+                            disabled={isImportingCertificates}
                         />
                     </div>
                 ) : (
@@ -253,7 +244,7 @@ export const ImportEventCertificatesPage = ({
                         file={selectedFile!}
                         onConfirm={handleImport}
                         onCancel={handleCancel}
-                        disabled={false}
+                        disabled={isImportingCertificates}
                     />
                 )}
             </div>

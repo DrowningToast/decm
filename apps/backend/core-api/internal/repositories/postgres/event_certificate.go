@@ -37,6 +37,7 @@ func (r *Repository) CreateEventCertificate(ctx context.Context, params datagate
 		EventContractAddress:    pgmapper.StringPtrToPgText(&params.EventContractAddress),
 		EventCertificateAddress: pgmapper.StringPtrToPgText(params.EventCertificateAddress),
 		CertificateTokenID:      pgmapper.StringPtrToPgText(params.CertificateTokenID),
+		CertificateDigest:       pgmapper.StringPtrToPgText(params.Digest),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
