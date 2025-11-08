@@ -29,7 +29,8 @@
         "no": "ไม่ใช่",
         "required": "จำเป็น",
         "optional": "ไม่บังคับ",
-        "notRequired": "ไม่ต้องการ"
+        "notRequired": "ไม่ต้องการ",
+        "networkError": "ข้อผิดพลาดเคือข่าย กรุณาตรวจสอบการเชื่อมต่อของคุณ"
     },
     "nav": {
         "home": "หน้าหลัก",
@@ -701,7 +702,12 @@
             "signCertificateBatchDescription": "ตรวจสอบแม่แบบใบรับรองรับและยืนยันเพื่อลงนามใบรับรองรับที่รอดำเนินการทั้งหมดสำหรับกิจกรรมนี้",
             "signatureRequest": "คำขอลงนาม",
             "signatureRequestDescription": "ตรวจสอบรายละเอียดคำขอก่อนยืนยัน",
-            "yourStatus": "สถานะของคุณ"
+            "yourStatus": "สถานะของคุณ",
+            "signingStatus": "สถานะการลงนาม",
+            "contractAddress": "ที่อยู่สัญญา",
+            "certificatesCount": "ใบรับรองรับ",
+            "certificates": "ใบรับรองรับ",
+            "eventCertificates": "ใบรับรองรับกิจกรรม"
         }
     }
 }

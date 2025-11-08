@@ -157,6 +157,23 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                     label={t("issuer.sign.certificatesCount")}
                                     value={`${certificatesToSign.length} ${t("issuer.sign.certificates")}`}
                                 />
+
+                                <TextLabelValue
+                                    label="Event"
+                                    value={event.title ?? ""}
+                                    endIcon={<ExternalLinkIcon size={16} />}
+                                    valueClassName="cursor-pointer underline"
+                                    href={`/events/${eventId}`}
+                                />
+
+                                <TextLabelValue
+                                    label="Start Date"
+                                    value={new Date(event.start_date ?? "").toLocaleDateString()}
+                                />
+                                <TextLabelValue
+                                    label="End Date"
+                                    value={new Date(event.end_date ?? "").toLocaleDateString()}
+                                />
                             </div>
                         </div>
 
@@ -265,7 +282,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                         >
                                             {isSigning
                                                 ? t("issuer.sign.signing")
-                                                : `${t("issuer.sign.signAndApprove")} (${certificatesToSign.length} ${t("issuer.sign.certificates")})`}
+                                                : `${t("issuer.sign.signAndApprove")}`}
                                         </Button>
                                     </div>
                                 </div>
@@ -282,7 +299,10 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                             tag="h2"
                             className="text-xl font-semibold text-white mb-4"
                         >
-                            {t("issuer.sign.eventCertificates")} ({eventCertificates?.length || 0})
+                            {t("issuer.sign.eventCertificates")} (
+                            {eventCertificates?.filter((cert) => cert.revoked_at === null).length ||
+                                0}
+                            )
                         </Typography>
 
                         <DataTable
