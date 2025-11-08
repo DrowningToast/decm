@@ -466,7 +466,11 @@
             "academicInstitution": "academic_institution",
             "certificateTitle": "certificate_title",
             "certificateSubtitle": "certificate_subtitle"
-        }
+        },
+        "hostPin": "PIN ของโฮสต์",
+        "hostPinDescription": "ป้อน PIN ของโฮสต์เพื่ออนุญาตให้นำเข้าใบรับรอง PIN นี้ใช้สำหรับลงนามบนข้อมูลใบรับรองบนบล็อกเชน",
+        "hostPinPlaceholder": "ป้อน PIN ของโฮสต์",
+        "hostPinRequired": "จำเป็นต้องมี PIN ของโฮสต์เพื่อนำเข้าใบรับรอง"
     },
     "certificateSettings": {
         "pageTitle": "ตั้งค่าใบประกาศนียบัตร",

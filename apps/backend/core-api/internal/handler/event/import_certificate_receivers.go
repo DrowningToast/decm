@@ -55,7 +55,7 @@ func (h Handler) ImportCertificateReceivers(ctx *fiber.Ctx) error {
 	}
 
 	// Get current user from JWT
-	currentUser := ctx.Locals("currentUser").(*auth.JwtClaims)
+	currentUser := ctx.Locals("user").(*auth.JwtClaims)
 
 	// Convert request to usecase format
 	requests := make([]event.ImportCertificateReceiversRequest, 0, len(requestBody.Receivers))

@@ -9,7 +9,8 @@ INSERT INTO event_certificates (
     certificate_subtitle,
     event_contract_address,
     event_certificate_address,
-    certificate_token_id
+    certificate_token_id,
+    certificate_digest
 ) VALUES (
     sqlc.arg('event_id'),
     sqlc.arg('receiver_credential_id'),
@@ -20,7 +21,8 @@ INSERT INTO event_certificates (
     sqlc.arg('certificate_subtitle'),
     sqlc.arg('event_contract_address'),
     sqlc.arg('event_certificate_address'),
-    sqlc.arg('certificate_token_id')
+    sqlc.arg('certificate_token_id'),
+    sqlc.arg('certificate_digest')
 ) RETURNING *;
 
 -- name: GetEventCertificateByID :one

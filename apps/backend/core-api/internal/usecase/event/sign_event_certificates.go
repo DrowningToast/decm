@@ -11,6 +11,7 @@ import (
 
 	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/google/uuid"
 )
 
@@ -111,7 +112,7 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 		}
 
 		// Convert signature to string for database storage
-		signatureStr := string(signature)
+		signatureStr := hexutil.Encode(signature)
 
 		// Update certificate signature in database
 		_, err = uc.EventCertificateSignatureDataGateway.UpdateEventCertificateSignature(ctx, targetSignature.ID, datagateway.UpdateEventCertificateSignatureParameters{

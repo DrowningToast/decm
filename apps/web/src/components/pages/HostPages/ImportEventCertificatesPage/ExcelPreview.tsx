@@ -4,11 +4,12 @@ import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTranslation } from "react-i18next";
-import type { EventCertificateImportRequestItem } from "@decm/api";
+import type { EventImportCertificateReceiverRequest } from "@decm/api";
+import { PasswordPinModal } from "@/components/ui/password-pin-modal";
 
 interface ExcelPreviewProps {
     file: File;
-    onConfirm: (certificates: EventCertificateImportRequestItem[]) => void;
+    onConfirm: (certificates: EventImportCertificateReceiverRequest[], pin: string) => void;
     onCancel: () => void;
     disabled?: boolean;
 }
@@ -21,7 +22,6 @@ interface PreviewData {
 const REQUIRED_COLUMNS = {
     firstName: "first_name",
     lastName: "last_name",
-    email: "email",
     academicInstitution: "academic_institution",
     certificateTitle: "certificate_title",
     certificateSubtitle: "certificate_subtitle",
@@ -37,6 +37,8 @@ export const ExcelPreview = ({
     const [previewData, setPreviewData] = useState<PreviewData[]>([]);
     const [validationError, setValidationError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+
+    const [showHostPinModal, setShowHostPinModal] = useState(false);
 
     useEffect(() => {
         if (file) {
@@ -87,19 +89,18 @@ export const ExcelPreview = ({
         }
     }, [file, t]);
 
-    const handleConfirm = () => {
+    const handleConfirm = (pin: string) => {
         if (validationError) return;
 
         const request = previewData.map((row) => ({
             first_name: row.first_name,
             last_name: row.last_name,
-            email: row.email,
             academic_institution: row.academic_institution,
             certificate_title: row.certificate_title,
             certificate_subtitle: row.certificate_subtitle,
         }));
 
-        onConfirm(request);
+        onConfirm(request, pin);
     };
 
     if (isLoading) {
@@ -234,7 +235,10 @@ export const ExcelPreview = ({
                         {t("common.cancel")}
                     </Typography>
                 </Button>
-                <Button onClick={handleConfirm} disabled={disabled || !!validationError}>
+                <Button
+                    onClick={() => setShowHostPinModal(true)}
+                    disabled={disabled || !!validationError}
+                >
                     <Typography
                         variant="text"
                         tag="span"
@@ -245,6 +249,20 @@ export const ExcelPreview = ({
                     </Typography>
                 </Button>
             </div>
+
+            <PasswordPinModal
+                isOpen={showHostPinModal}
+                onClose={() => setShowHostPinModal(false)}
+                onSuccess={(result) => {
+                    handleConfirm(result.value);
+                }}
+                showSigningDetails
+                signingDetails={{
+                    details:
+                        "You're about to import the event certificates receivers. Please confirm to proceed.",
+                    transactionType: "Import Event Certificates Receivers",
+                }}
+            />
         </div>
     );
 };
