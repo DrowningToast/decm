@@ -1,8 +1,6 @@
 import { coreApiClient } from "@/lib/api/api";
 import { QUERY_KEY } from "@/lib/queryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
 import type { EntityProfile } from "@decm/api";
 
 // Mock type for ProfileUpdateProfileRequest until API is regenerated
@@ -28,7 +26,6 @@ export interface ProfileUpdateProfileRequest {
 }
 
 export const useUpdateProfile = () => {
-    const { t } = useTranslation();
     const queryClient = useQueryClient();
 
     const mutation = useMutation({
@@ -50,11 +47,9 @@ export const useUpdateProfile = () => {
         onSuccess: () => {
             // Invalidate and refetch profile
             queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
-            toast.success(t("profile.updateSuccess"));
         },
         onError: (error) => {
             console.error("Profile update error:", error);
-            toast.error(t("profile.updateError"));
         },
     });
 

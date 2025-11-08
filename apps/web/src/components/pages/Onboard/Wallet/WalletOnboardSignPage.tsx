@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { useCallback, useContext } from "react";
 import { WalletOnboardContext } from "./WalletOnboardContext";
-import { useSignMessage, useWalletClient } from "wagmi";
+import { useSignMessage, useWalletClient, useDisconnect } from "wagmi";
 import { ErrorPage } from "../../Error";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
-import { LogoutButton } from "@/components/auth/LogoutButton";
 import { Typography } from "@/components/typography/typography";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -14,6 +13,7 @@ export const WalletOnboardSignPage = () => {
     const { t } = useTranslation();
     const { data: walletClient } = useWalletClient();
     const { signMessageAsync } = useSignMessage();
+    const { disconnect } = useDisconnect();
     const { signMessage, isPending } = useContext(WalletOnboardContext);
     const [, setSignSignature] = useLocalStorage<string | undefined>(
         LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE,
@@ -93,7 +93,20 @@ export const WalletOnboardSignPage = () => {
                         {t("verify.requestButton")}
                     </Button>
 
-                    <LogoutButton type="disconnect" />
+                    <button
+                        type="button"
+                        onClick={() => disconnect()}
+                        className="text-start h-[14.5px] inline-block"
+                    >
+                        <Typography
+                            variant="text"
+                            tag="span"
+                            color="background-alt"
+                            className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors"
+                        >
+                            {t("verify.disconnectLink")}
+                        </Typography>
+                    </button>
                 </div>
             </div>
         </div>

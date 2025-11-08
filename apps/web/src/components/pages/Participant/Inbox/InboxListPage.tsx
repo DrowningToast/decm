@@ -1,8 +1,9 @@
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { useInboxListUsecase, type InboxItem } from "./useInboxListUsecase";
-import { Link } from "@/router";
+import { Link, useNavigate } from "@/router";
 import { Inbox } from "lucide-react";
 
 const getStatusColor = (status: InboxItem["status"]) => {
@@ -38,6 +39,21 @@ const getStatusLabel = (status: InboxItem["status"], t: ReturnType<typeof useTra
 export const InboxListPage = () => {
     const { t } = useTranslation();
     const { inboxItems } = useInboxListUsecase();
+    const navigate = useNavigate();
+
+    const handleBack = useCallback(() => {
+        const hasWindow = typeof window !== "undefined";
+        const hasDocument = typeof document !== "undefined";
+        const hasHistory = hasWindow && window.history.length > 1;
+        const hasReferrer = hasDocument && document.referrer !== "";
+
+        if (hasHistory || hasReferrer) {
+            navigate(-1);
+            return;
+        }
+
+        navigate("/app");
+    }, [navigate]);
 
     const hasItems = inboxItems.length > 0;
 
@@ -145,7 +161,7 @@ export const InboxListPage = () => {
             </div>
 
             {/* Bottom Navigation */}
-            <BottomNav variant="search-notification" onBack={() => window.history.back()} />
+            <BottomNav variant="search-notification" onBack={handleBack} />
         </section>
     );
 };

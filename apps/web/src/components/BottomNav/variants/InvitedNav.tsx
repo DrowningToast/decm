@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+import type { JSX as ReactJSX } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useBottomContainerContext } from "../context";
 import { useTranslation } from "react-i18next";
@@ -5,16 +7,16 @@ import { cn } from "@/lib/utils";
 import { Typography } from "@/components/typography/typography";
 import { useEventInvitationNavStore } from "../stores/event-invitation";
 
-export const InvitedNav = () => {
+export const InvitedNav = (): ReactJSX.Element => {
     const { onBack, className } = useBottomContainerContext();
     const { t } = useTranslation();
     const { onAcceptCallback } = useEventInvitationNavStore();
 
-    const handleAccept = () => {
+    const handleAccept = useCallback(() => {
         if (onAcceptCallback) {
             onAcceptCallback();
         }
-    };
+    }, [onAcceptCallback]);
 
     return (
         <div

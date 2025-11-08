@@ -492,7 +492,15 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                             ref={textWrapRef}
                             className="sm-toggle-textWrap relative inline-block h-[1em] overflow-hidden whitespace-nowrap w-[var(--sm-toggle-width,auto)] min-w-[var(--sm-toggle-width,auto)]"
                             aria-hidden="true"
-                        ></span>
+                        >
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                ref={textInnerRef}
+                                aria-hidden="true"
+                                className="sm-toggle-textInner flex flex-col leading-none"
+                            ></Typography>
+                        </span>
                         <motion.span
                             layout
                             ref={iconRef}
