@@ -126,6 +126,23 @@ export const EventCertificateABI = [
                         type: "address[]",
                         internalType: "address[]",
                     },
+                    {
+                        name: "issuerProofs",
+                        type: "tuple[]",
+                        internalType: "struct CertificateVCStructs.IssuerProof[]",
+                        components: [
+                            {
+                                name: "issuerSignature",
+                                type: "string",
+                                internalType: "string",
+                            },
+                            {
+                                name: "issuerPublicKey",
+                                type: "string",
+                                internalType: "string",
+                            },
+                        ],
+                    },
                 ],
             },
             {
@@ -137,6 +154,16 @@ export const EventCertificateABI = [
                 name: "signature",
                 type: "bytes",
                 internalType: "bytes",
+            },
+            {
+                name: "hostSignature",
+                type: "string",
+                internalType: "string",
+            },
+            {
+                name: "hostPublicKey",
+                type: "string",
+                internalType: "string",
             },
         ],
         outputs: [],
@@ -252,6 +279,33 @@ export const EventCertificateABI = [
                 name: "signature",
                 type: "bytes",
                 internalType: "bytes",
+            },
+            {
+                name: "hostSignature",
+                type: "string",
+                internalType: "string",
+            },
+            {
+                name: "hostPublicKey",
+                type: "string",
+                internalType: "string",
+            },
+            {
+                name: "issuerProofs",
+                type: "tuple[]",
+                internalType: "struct CertificateVCStructs.IssuerProof[]",
+                components: [
+                    {
+                        name: "issuerSignature",
+                        type: "string",
+                        internalType: "string",
+                    },
+                    {
+                        name: "issuerPublicKey",
+                        type: "string",
+                        internalType: "string",
+                    },
+                ],
             },
         ],
         outputs: [],
