@@ -31,7 +31,7 @@ type CreateEventRegistrationConfigParams struct {
 	AcademicEmailRequirementStatus       pgtype.Int4
 }
 
-func (uc *EventConfigUsecase) CreateEventRegistrationConfig(ctx context.Context, eventID uuid.UUID, params CreateEventRegistrationConfigParams) (*generated.EventRegistrationConfig, error) {
+func (uc *EventConfigUsecase) CreateEventRegistrationConfig(ctx context.Context, eventID uuid.UUID, params CreateEventRegistrationConfigParams) (*entity.EventRegistrationConfig, error) {
 	// Check if config already exists for this event
 	existingConfig, err := uc.EventRegistrationDg.GetEventRegistrationConfigByEventID(ctx, eventID)
 	if err == nil && existingConfig != nil {
@@ -56,7 +56,7 @@ func (uc *EventConfigUsecase) CreateEventRegistrationConfig(ctx context.Context,
 	return uc.EventRegistrationDg.CreateEventRegistrationConfig(ctx, createParams)
 }
 
-func (uc *EventConfigUsecase) GetEventRegistrationConfigByEventID(ctx context.Context, eventID uuid.UUID) (*generated.EventRegistrationConfig, error) {
+func (uc *EventConfigUsecase) GetEventRegistrationConfigByEventID(ctx context.Context, eventID uuid.UUID) (*entity.EventRegistrationConfig, error) {
 	return uc.EventRegistrationDg.GetEventRegistrationConfigByEventID(ctx, eventID)
 }
 
@@ -76,7 +76,7 @@ type UpdateEventRegistrationConfigParams struct {
 	EventType                            *entity.EventType
 }
 
-func (uc *EventConfigUsecase) UpdateEventRegistrationConfig(ctx context.Context, eventID uuid.UUID, params UpdateEventRegistrationConfigParams, currentUser *auth.JwtClaims) (*generated.EventRegistrationConfig, error) {
+func (uc *EventConfigUsecase) UpdateEventRegistrationConfig(ctx context.Context, eventID uuid.UUID, params UpdateEventRegistrationConfigParams, currentUser *auth.JwtClaims) (*entity.EventRegistrationConfig, error) {
 	if currentUser == nil {
 		return nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("user not authenticated"))
 	}
@@ -96,7 +96,7 @@ func (uc *EventConfigUsecase) UpdateEventRegistrationConfig(ctx context.Context,
 		return nil, err
 	}
 
-	if event.OwnerCredentialID != credential.Id {
+	if event.OwnerCredentialId != credential.Id {
 		return nil, customerror.Parse(&customerror.ErrUnauthorized, err)
 	}
 
@@ -113,7 +113,7 @@ func (uc *EventConfigUsecase) UpdateEventRegistrationConfig(ctx context.Context,
 		AcademicEmailRequirementStatus:       params.AcademicEmailRequirementStatus,
 	}
 
-	if params.RegistrationPassword.Valid && params.RegistrationPassword.String != eventRegistrationConfig.RegistrationPassword.String {
+	if params.RegistrationPassword.Valid && (eventRegistrationConfig.RegistrationPassword == nil || params.RegistrationPassword.String != *eventRegistrationConfig.RegistrationPassword) {
 		// If registration password is provided, hash it
 		hashPwd, err := hashutils.HashPassword(params.RegistrationPassword.String)
 		if err != nil {
@@ -122,7 +122,7 @@ func (uc *EventConfigUsecase) UpdateEventRegistrationConfig(ctx context.Context,
 		updateParams.RegistrationPassword = pgmapper.StringPtrToPgText(&hashPwd)
 	} else {
 		// If registration password is not provided, use the existing registration password
-		updateParams.RegistrationPassword = eventRegistrationConfig.RegistrationPassword
+		updateParams.RegistrationPassword = pgmapper.StringPtrToPgText(eventRegistrationConfig.RegistrationPassword)
 	}
 
 	_, err = uc.EventRegistrationDg.UpdateEventRegistrationConfig(ctx, updateParams)

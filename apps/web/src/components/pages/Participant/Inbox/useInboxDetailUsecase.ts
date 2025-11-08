@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInboxMessage } from "@/hooks/inbox/useInboxMessage";
+import { EntityInboxMessageType } from "@decm/api";
 
 export type InboxContentType = "event-invitation" | "certificate";
 
@@ -15,91 +16,66 @@ export interface InboxDetail {
     isUserInEvent?: boolean;
 }
 
-const MOCK_INBOX_DETAILS: Record<string, InboxDetail> = {
-    "1": {
-        id: "1",
-        title: "Event Invitation",
-        sender: "ToBeIT69",
-        date: "24 Sep 2025",
-        status: "pending",
-        contentType: "event-invitation",
-        eventId: "evt-001",
-        description:
-            "You have been invited to join the ToBeIT69 event. This is a great opportunity to learn and network with other professionals in the tech community.",
-        isUserInEvent: false,
-    },
-    "2": {
-        id: "2",
-        title: "Event Invitation",
-        sender: "ToBeIT69",
-        date: "24 Sep 2025",
-        status: "available",
-        contentType: "event-invitation",
-        eventId: "evt-002",
-        description:
-            "You have accepted the invitation to join the ToBeIT69 event. We look forward to seeing you there!",
-        isUserInEvent: true,
-    },
-    "3": {
-        id: "3",
-        title: "Event Invitation",
-        sender: "ToBeIT69",
-        date: "24 Sep 2025",
-        status: "expired",
-        contentType: "event-invitation",
-        eventId: "evt-003",
-        description: "This event invitation has expired. You can no longer accept this invitation.",
-        isUserInEvent: false,
-    },
-    "4": {
-        id: "4",
-        title: "New certificate",
-        sender: "ToBeIT69",
-        date: "24 Sep 2025",
-        status: "action-required",
-        contentType: "certificate",
-        certificateId: "cert-001",
-        description:
-            "Congratulations! You have earned a new certificate from the ToBeIT69 event. Click below to view your certificate.",
-        isUserInEvent: true,
-    },
-    "5": {
-        id: "5",
-        title: "New certificate",
-        sender: "ToBeIT69",
-        date: "24 Sep 2025",
-        status: "available",
-        contentType: "certificate",
-        certificateId: "cert-002",
-        description:
-            "Your certificate is ready! You can now view and download it from your certificates page.",
-        isUserInEvent: false,
-    },
-};
-
 interface UseInboxDetailOptions {
     inboxId: string;
 }
 
+const deriveStatus = (message: {
+    is_read?: number;
+    cancelled_at?: string;
+    deleted_at?: string;
+    hidden_at?: string;
+    valid_until?: string;
+}): "pending" | "available" | "expired" | "action-required" => {
+    if (message.cancelled_at) return "expired";
+    if (message.valid_until && new Date(message.valid_until) < new Date()) return "expired";
+    if (message.is_read === 0) return "action-required";
+    return "available";
+};
+
+const deriveContentType = (messageType?: EntityInboxMessageType): InboxContentType => {
+    if (messageType === EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation) {
+        return "event-invitation";
+    }
+    if (messageType === EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation) {
+        return "certificate";
+    }
+    return "event-invitation";
+};
+
 export const useInboxDetailUsecase = (options: UseInboxDetailOptions) => {
-    // const api = useApi();
+    // Fetch inbox message from API
     const {
-        data: inboxDetail = null,
+        data: apiMessage,
         isLoading,
         error,
-    } = useQuery({
-        queryKey: ["participant-inbox-detail", options.inboxId],
-        queryFn: async () => {
-            try {
-                // TODO: Replace with actual API call once endpoint is available
-                // const response = await api.getInboxDetail(options.inboxId);
-                return MOCK_INBOX_DETAILS[options.inboxId] || null;
-            } catch (error) {
-                console.error("Failed to fetch inbox detail:", error);
-                return null;
-            }
-        },
+    } = useInboxMessage({
+        messageId: options.inboxId,
     });
+
+    // Transform API response to match InboxDetail interface
+    const inboxDetail: InboxDetail | null = apiMessage
+        ? {
+              id: apiMessage.id ?? "",
+              title:
+                  apiMessage.message_type ===
+                  EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation
+                      ? "Event Registration Invitation"
+                      : apiMessage.message_type ===
+                          EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation
+                        ? "Certificate Invitation"
+                        : "Message",
+              sender:
+                  apiMessage.sender_credential_email ??
+                  apiMessage.sender_credential_wallet_address ??
+                  "Unknown",
+              date: apiMessage.created_at ?? "",
+              status: deriveStatus(apiMessage),
+              contentType: deriveContentType(apiMessage.message_type),
+              eventId: apiMessage.event_id,
+              description: apiMessage.message_content,
+          }
+        : null;
 
     return { inboxDetail, isLoading, error };
 };

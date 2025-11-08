@@ -20,7 +20,7 @@ INSERT INTO events (
     is_ticket_transferable,
     event_status
 ) VALUES (
-    1, -- Default chain_id, should be parameterized in production
+    sqlc.arg(chain_id),
     sqlc.arg(contact_number),
     sqlc.arg(contact_address),
     sqlc.arg(owner_credential_id),
@@ -68,6 +68,25 @@ SELECT
     event_status
 FROM events
 WHERE id = sqlc.arg(id);
+
+-- name: GetEventViewModelById :one
+SELECT 
+    events.*,
+    event_registration_configs.*,
+    event_contracts.*,
+    COALESCE(
+        (SELECT COUNT(event_attendees.id) 
+         FROM event_attendees 
+         WHERE event_attendees.event_id = events.id 
+           AND event_attendees.is_attendee_accepted = 1
+        ), 
+    0)::INTEGER AS attendees_count
+FROM events
+INNER JOIN event_registration_configs 
+    ON events.id = event_registration_configs.event_id
+INNER JOIN event_contracts 
+    ON events.id = event_contracts.event_id
+WHERE events.id = sqlc.arg(id);
 
 -- name: UpdateEvent :one
 UPDATE events
@@ -161,4 +180,22 @@ SELECT *
 FROM events 
 WHERE owner_credential_id = sqlc.arg(owner_credential_id) AND deleted_at IS NULL
 ORDER BY created_at DESC
+LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);
+
+-- name: ListEvents :many
+SELECT * 
+FROM events 
+WHERE deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);
+
+-- name: ListEventsByEventAttendeeCredentialID :many
+SELECT * 
+FROM events 
+INNER JOIN event_attendees ON events.id = event_attendees.event_id
+WHERE event_attendees.attendee_credential_id = sqlc.arg(event_attendee_credential_id)
+AND events.deleted_at IS NULL
+AND event_attendees.is_attendee_accepted = 1
+AND events.event_status = 'active'
+ORDER BY events.created_at DESC
 LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);

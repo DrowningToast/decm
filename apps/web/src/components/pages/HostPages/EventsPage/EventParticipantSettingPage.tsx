@@ -1,7 +1,6 @@
-import { useTranslation } from "react-i18next";
 import { ParticipantSettingsForm } from "@/components/forms/ParticipantSettingsForm";
 import { type ParticipantSettingsData } from "@/lib/schemas/participantSettingsSchema";
-import PageContainer from "@/components/container/PageContainer";
+
 import SectionContainer from "@/components/container/SectionContainer";
 import { useUpdateParticipantSetting } from "@/components/forms/ParticipantSettingsForm/useUpdateParticipantSetting";
 import type {
@@ -25,8 +24,6 @@ export const EventParticipantSettingPage = ({
     eventRegistrationConfig,
     event,
 }: EventParticipantSettingPageProps) => {
-    const { t } = useTranslation();
-
     const { updateParticipantSetting, isUpdatingParticipantSetting } =
         useUpdateParticipantSetting(eventId);
 
@@ -62,10 +59,7 @@ export const EventParticipantSettingPage = ({
     };
 
     return (
-        <PageContainer
-            title={t("participantSettings.pageTitle")}
-            description={t("participantSettings.pageDescription")}
-        >
+        <div>
             <SectionContainer>
                 <ParticipantSettingsForm
                     onSubmit={onSubmit}
@@ -113,6 +107,6 @@ export const EventParticipantSettingPage = ({
                     showPreview={true}
                 />
             </SectionContainer>
-        </PageContainer>
+        </div>
     );
 };

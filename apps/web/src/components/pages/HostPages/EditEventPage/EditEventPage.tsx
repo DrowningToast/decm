@@ -1,6 +1,6 @@
 import { EventForm } from "@/components/forms/EventForm";
 import type { EventFormData } from "@/lib/schemas/eventFormSchema";
-import PageContainer from "@/components/container/PageContainer";
+
 import SectionContainer from "@/components/container/SectionContainer";
 import TitleSubtitle from "@/components/TitleSubtitle";
 import type {
@@ -49,7 +49,7 @@ export const EditEventPage = ({ event, eventContract }: EditEventPageProps) => {
     };
 
     return (
-        <PageContainer title="Edit Event" className="space-y-6">
+        <div className="flex flex-col gap-y-6">
             {/* Page Header */}
             <SectionContainer>
                 <TitleSubtitle
@@ -57,7 +57,6 @@ export const EditEventPage = ({ event, eventContract }: EditEventPageProps) => {
                     subtitle="Fill in the details below to edit the event"
                 />
             </SectionContainer>
-
             <SectionContainer>
                 <EventForm
                     onSubmit={handleEditEvent}
@@ -81,6 +80,6 @@ export const EditEventPage = ({ event, eventContract }: EditEventPageProps) => {
                     eventContract={eventContract}
                 />
             </SectionContainer>
-        </PageContainer>
+        </div>
     );
 };

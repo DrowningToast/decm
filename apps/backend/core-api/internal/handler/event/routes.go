@@ -1,40 +1,10 @@
 package event
 
 import (
-	"time"
-
 	"apps/backend/common/log"
-	"apps/backend/core-api/internal/entity"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 )
-
-type EventResponse struct {
-	ID                       uuid.UUID          `json:"id"`
-	ChainID                  int32              `json:"chain_id"`
-	ContactNumber            string             `json:"contact_number"`
-	OwnerCredentialID        uuid.UUID          `json:"owner_credential_id"`
-	BannerStorageKey         string             `json:"banner_storage_key"`
-	IconStorageKey           string             `json:"icon_storage_key"`
-	BannerPresignedURL       string             `json:"banner_presigned_url"`
-	IconPresignedURL         string             `json:"icon_presigned_url"`
-	Title                    string             `json:"title"`
-	ShortDescription         string             `json:"short_description"`
-	LongDescription          string             `json:"long_description"`
-	StartDate                time.Time          `json:"start_date"`
-	EndDate                  time.Time          `json:"end_date"`
-	Location                 string             `json:"location"`
-	GoogleMapQuery           string             `json:"google_map_query"`
-	MaxAttendees             int32              `json:"max_attendees"`
-	IsPublic                 bool               `json:"is_public"`
-	IsBookingRequestRequired bool               `json:"is_booking_request_required"`
-	IsVerified               bool               `json:"is_verified"`
-	IsTicketTransferable     bool               `json:"is_ticket_transferable"`
-	CreatedAt                time.Time          `json:"created_at"`
-	UpdatedAt                time.Time          `json:"updated_at"`
-	EventStatus              entity.EventStatus `json:"event_status"`
-}
 
 func (h *Handler) Mount(r fiber.Router) {
 	logger := log.LoadLogger()
@@ -44,18 +14,21 @@ func (h *Handler) Mount(r fiber.Router) {
 		h.AuthenticationGuardMiddleware.Middleware,
 	)
 
+	// PARTICIPANT
+	eventGroup.Get("/", h.GetEventsList)
+	eventGroup.Get("/:event_id", h.GetEventById)
+	eventGroup.Get("/:event_id/viewmodel", h.GetEventViewModel)
+
+	// HOST
 	eventGroup.Post("/", h.CreateEvent)
-	// eventGroup.Post("/:event_id/contracts", h.CreateEventContract)
 	eventGroup.Post("/:event_id/issuers", h.CreateEventIssuer)
 	eventGroup.Post("/:event_id/certificates/import", h.ImportCertificateReceivers)
 	eventGroup.Post("/:event_id/certificates/revoke", h.RevokeEventCertificates)
 	eventGroup.Post("/:event_id/certificates/sign", h.SignEventCertificates)
 	eventGroup.Get("/:event_id/certificates", h.GetEventCertificates)
 
-	eventGroup.Get("/:event_id", h.GetEventById)
 	eventGroup.Get("/:event_id/contracts", h.GetEventContractByEventID)
 	eventGroup.Get("/:event_id/issuers", h.GetEventIssuersByEventID)
-	eventGroup.Get("/:event_id/issuers/:issuer_id", h.GetEventIssuerByID)
 
 	eventGroup.Get("/owner-credentials/:owner_credential_id", h.GetEventsByOwnerCredentialsId)
 
@@ -66,6 +39,4 @@ func (h *Handler) Mount(r fiber.Router) {
 	eventGroup.Delete("/:event_id/contracts", h.DeleteEventContract)
 	eventGroup.Delete("/:event_id", h.DeleteEvent)
 	eventGroup.Delete("/:event_id/issuers/:issuer_id", h.DeleteEventIssuer)
-
-	eventGroup.Get("/:event_id/registration/invitations", h.GetEventRegistrationInvitationsByEventID)
 }

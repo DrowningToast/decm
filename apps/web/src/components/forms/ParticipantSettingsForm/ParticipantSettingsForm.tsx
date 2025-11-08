@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { WrappedSelect } from "@/components/forms/WrappedSelect";
-import { WrappedDateSelect } from "@/components/forms/wrapped-inputs";
+import { WrappedDateSelect } from "@/components/forms/styled-inputs";
 import { Controller } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { RegistrationFormPreview } from "./RegistrationFormPreview";
@@ -51,7 +51,7 @@ export const ParticipantSettingsForm = ({
     const form = useForm<ParticipantSettingsData>({
         resolver: zodResolver(participantSettingsSchema) as Resolver<ParticipantSettingsData>,
         defaultValues: {
-            eventType: defaultValues?.eventType || "public",
+            eventType: defaultValues?.eventType || "private",
             isBookingRequired: defaultValues?.isBookingRequired ?? false,
             isTicketTransferable: defaultValues?.isTicketTransferable ?? true,
             requireRegistrationPassword: defaultValues?.requireRegistrationPassword ?? false,
@@ -116,7 +116,6 @@ export const ParticipantSettingsForm = ({
                         description={t("participantSettings.eventTypeDescription")}
                         htmlFor="eventType"
                         options={[
-                            { value: "public", label: t("participantSettings.eventTypePublic") },
                             { value: "private", label: t("participantSettings.eventTypePrivate") },
                             {
                                 value: "invite",
@@ -198,94 +197,100 @@ export const ParticipantSettingsForm = ({
                         </div>
                     </div>
 
-                    {/* Registration Password Required */}
-                    <div className="flex items-center justify-between space-x-2">
-                        <div className="space-y-1 flex-1">
-                            <Label htmlFor="requireRegistrationPassword">
-                                <Typography
-                                    variant="text"
-                                    tag="span"
-                                    className="text-sm font-medium"
-                                >
-                                    {t("participantSettings.requireRegistrationPassword")}
-                                </Typography>
-                            </Label>
-                            <Typography
-                                variant="text"
-                                tag="p"
-                                className="text-xs text-muted-foreground"
-                            >
-                                {t("participantSettings.requireRegistrationPasswordDescription")}
-                            </Typography>
-                        </div>
-                        <Controller
-                            name="requireRegistrationPassword"
-                            control={control}
-                            render={({ field }) => (
-                                <Switch
-                                    id="requireRegistrationPassword"
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    disabled={isLoading}
-                                />
-                            )}
-                        />
-                    </div>
-
-                    {/* Registration Password (conditional) */}
-                    {requireRegistrationPassword && (
-                        <div className="space-y-2 pt-2 border-t pb-6">
-                            <Label htmlFor="registrationPassword" className="pt-6">
-                                <Typography
-                                    variant="text"
-                                    tag="span"
-                                    className="text-sm font-medium"
-                                >
-                                    {t("participantSettings.registrationPassword")}
-                                </Typography>
-                            </Label>
-                            <Controller
-                                name="registrationPassword"
-                                control={control}
-                                render={({ field, fieldState: { error } }) => (
-                                    <div className="space-y-2">
-                                        <Input
-                                            {...field}
-                                            id="registrationPassword"
-                                            type="password"
-                                            placeholder={t(
-                                                "participantSettings.registrationPasswordPlaceholder",
-                                            )}
-                                            disabled={isLoading}
-                                            className={`!border !border-[#D9D9D91A] ${error ? "border-destructive" : ""}`}
-                                            value={field.value || ""}
-                                            onChange={(e) => field.onChange(e.target.value)}
-                                        />
-                                        {error && (
-                                            <Typography
-                                                variant="text"
-                                                tag="p"
-                                                className="text-sm text-destructive"
-                                                role="alert"
-                                            >
-                                                {t(error.message as string)}
-                                            </Typography>
+                    {/* Registration Password Required - Hide when event type is invite only */}
+                    {eventType !== "invite" && (
+                        <>
+                            <div className="flex items-center justify-between space-x-2">
+                                <div className="space-y-1 flex-1">
+                                    <Label htmlFor="requireRegistrationPassword">
+                                        <Typography
+                                            variant="text"
+                                            tag="span"
+                                            className="text-sm font-medium"
+                                        >
+                                            {t("participantSettings.requireRegistrationPassword")}
+                                        </Typography>
+                                    </Label>
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        className="text-xs text-muted-foreground"
+                                    >
+                                        {t(
+                                            "participantSettings.requireRegistrationPasswordDescription",
                                         )}
-                                    </div>
-                                )}
-                            />
-                            <Typography
-                                variant="text"
-                                tag="p"
-                                className="text-xs text-muted-foreground"
-                            >
-                                {t("participantSettings.registrationPasswordDescription")}
-                            </Typography>
-                        </div>
+                                    </Typography>
+                                </div>
+                                <Controller
+                                    name="requireRegistrationPassword"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Switch
+                                            id="requireRegistrationPassword"
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                            disabled={isLoading}
+                                        />
+                                    )}
+                                />
+                            </div>
+
+                            {/* Registration Password (conditional) */}
+                            {requireRegistrationPassword && (
+                                <div className="space-y-2 pt-2 border-t pb-6">
+                                    <Label htmlFor="registrationPassword" className="pt-6">
+                                        <Typography
+                                            variant="text"
+                                            tag="span"
+                                            className="text-sm font-medium"
+                                        >
+                                            {t("participantSettings.registrationPassword")}
+                                        </Typography>
+                                    </Label>
+                                    <Controller
+                                        name="registrationPassword"
+                                        control={control}
+                                        render={({ field, fieldState: { error } }) => (
+                                            <div className="space-y-2">
+                                                <Input
+                                                    {...field}
+                                                    id="registrationPassword"
+                                                    type="password"
+                                                    placeholder={t(
+                                                        "participantSettings.registrationPasswordPlaceholder",
+                                                    )}
+                                                    disabled={isLoading}
+                                                    className={`!border !border-primary ${error ? "border-destructive" : ""}`}
+                                                    value={field.value || ""}
+                                                    onChange={(e) => field.onChange(e.target.value)}
+                                                />
+                                                {error && (
+                                                    <Typography
+                                                        variant="text"
+                                                        tag="p"
+                                                        className="text-sm text-destructive"
+                                                        role="alert"
+                                                    >
+                                                        {t(error.message as string)}
+                                                    </Typography>
+                                                )}
+                                            </div>
+                                        )}
+                                    />
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        className="text-xs text-muted-foreground"
+                                    >
+                                        {t("participantSettings.registrationPasswordDescription")}
+                                    </Typography>
+                                </div>
+                            )}
+                        </>
                     )}
 
                     {/* Final Call Registration Date (conditional) */}
-                    {(eventType === "public" || eventType === "private") && isBookingRequired && (
+                    {eventType === "private" && isBookingRequired && (
                         <div className="space-y-2 pt-2 pb-4">
                             <WrappedDateSelect
                                 control={control}

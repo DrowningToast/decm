@@ -9,8 +9,8 @@ import (
 // @name Err
 // @description Custom error type
 type Err struct {
-	HttpStatus  *int              `json:"http_status"`
-	Code        *ErrCode          `json:"code"`
+	HttpStatus  *int              `json:"http_status,omitempty"`
+	Code        *ErrCode          `json:"code,omitempty"`
 	LoggerLevel slog.Level        `json:"-"`
 	Message     string            `json:"message,omitempty"`
 	Reasons     map[string]string `json:"reasons,omitempty"`
@@ -50,6 +50,26 @@ func (err *Err) Extend(msg string) *Err {
 		Message:     errors.Wrap(err, msg).Error(),
 		Inner:       err,
 		LoggerLevel: err.LoggerLevel,
+	}
+}
+
+func New(httpStatus int, code ErrCode, message string, inner error) *Err {
+	return &Err{
+		HttpStatus:  &httpStatus,
+		Code:        &code,
+		Message:     message,
+		Inner:       inner,
+		LoggerLevel: slog.LevelError,
+	}
+}
+
+func NewWithPreset(preset *ErrSignature, err error) *Err {
+	return &Err{
+		HttpStatus:  &preset.HttpStatus,
+		Code:        &preset.Code,
+		Message:     preset.DefaultMessage,
+		Inner:       err,
+		LoggerLevel: preset.LoggerLevel,
 	}
 }
 

@@ -1,8 +1,9 @@
 package profile
 
 import (
-	"apps/backend/common/customerror"
 	"errors"
+
+	"apps/backend/common/customerror"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"

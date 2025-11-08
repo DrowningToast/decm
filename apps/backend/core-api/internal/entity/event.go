@@ -8,6 +8,12 @@ import (
 
 type EventType string
 
+const (
+	// EventTypePublic  EventType = "public"
+	EventTypePrivate EventType = "private"
+	EventTypeInvite  EventType = "invite"
+)
+
 type EventStatus string
 
 const (
@@ -16,19 +22,13 @@ const (
 	EventStatusClosed   EventStatus = "closed"
 )
 
-const (
-	EventTypePublic  EventType = "public"
-	EventTypePrivate EventType = "private"
-	EventTypeInvite  EventType = "invite"
-)
-
 type Event struct {
 	ID                       uuid.UUID   `json:"id"`
 	EventType                EventType   `json:"event_type"`
-	ChainID                  int         `json:"chain_id"`
+	ChainId                  int         `json:"chain_id"`
 	ContactNumber            string      `json:"contact_number"`
 	ContactAddress           string      `json:"contact_address"`
-	OwnerCredentialID        uuid.UUID   `json:"owner_credential_id"`
+	OwnerCredentialId        uuid.UUID   `json:"owner_credential_id"`
 	BannerStorageKey         string      `json:"banner_storage_key"`
 	IconStorageKey           string      `json:"icon_storage_key"`
 	Title                    string      `json:"title"`
@@ -39,6 +39,7 @@ type Event struct {
 	Location                 string      `json:"location"`
 	GoogleMapQuery           string      `json:"google_map_query"`
 	MaxAttendees             int         `json:"max_attendees"`
+	AttendeesCount           int         `json:"attendees_count"`
 	IsPublic                 bool        `json:"is_public"`
 	IsBookingRequestRequired bool        `json:"is_booking_request_required"`
 	IsVerified               bool        `json:"is_verified"`

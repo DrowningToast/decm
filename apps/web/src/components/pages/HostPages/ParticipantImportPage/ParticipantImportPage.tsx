@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { ExcelUpload } from "./ExcelUpload";
 import { ExcelPreview } from "./ExcelPreview";
-import PageContainer from "@/components/container/PageContainer";
+
 import type {
     EventEventResponse,
     EventRegistrationInvitationImportEventParticipantsRequest,
@@ -85,7 +85,7 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
     };
 
     return (
-        <PageContainer title="Participant Import">
+        <div title="Participant Import">
             <div className=" mx-auto p-6">
                 <div className="mb-8">
                     <Typography
@@ -245,6 +245,6 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
                     />
                 )}
             </div>
-        </PageContainer>
+        </div>
     );
 };

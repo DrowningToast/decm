@@ -8,7 +8,7 @@ export function useEventInvitedParticipants(eventId: string) {
         isLoading,
         error,
     } = useQuery({
-        queryKey: [QUERY_KEY.event.invitations(eventId)],
+        queryKey: QUERY_KEY.event.invitations.byEventId(eventId),
         queryFn: () => coreApiClient.v1.getEventRegistrationInvitationsByEventId({ eventId }),
         enabled: !!eventId,
     });

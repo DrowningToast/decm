@@ -16,6 +16,7 @@ export type Path =
     | `/app/settings`
     | `/auth/success`
     | `/error`
+    | `/host`
     | `/host/events`
     | `/host/events/:eventId`
     | `/host/events/:eventId/edit`
@@ -25,6 +26,7 @@ export type Path =
     | `/host/events/:eventId/settings/participant`
     | `/host/events/create`
     | `/host/home`
+    | `/issuer/home`
     | `/issuer/sign`
     | `/issuer/sign/:eventId`
     | `/onboard/:method`

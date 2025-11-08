@@ -28,9 +28,9 @@ func (r *Repository) CreateEventCertificateSignature(ctx context.Context, params
 	}
 
 	return &entity.EventCertificateSignature{
-		ID:                 result.ID,
-		EventCertificateID: result.EventCertificateID,
-		IssuerCredentialID: result.IssuerCredentialID,
+		Id:                 result.ID,
+		EventCertificateId: result.EventCertificateID,
+		IssuerCredentialId: result.IssuerCredentialID,
 		IssuerSignature:    pgmapper.PgTextToStringPtr(result.IssuerSignature),
 		HostSignature:      *pgmapper.PgTextToStringPtr(result.HostSignature),
 		SignMessage:        pgmapper.PgTextToStringPtr(result.SignMessage),
@@ -45,9 +45,9 @@ func (r *Repository) GetEventCertificateSignatureByID(ctx context.Context, id uu
 	}
 
 	return &entity.EventCertificateSignature{
-		ID:                 result.ID,
-		EventCertificateID: result.EventCertificateID,
-		IssuerCredentialID: result.IssuerCredentialID,
+		Id:                 result.ID,
+		EventCertificateId: result.EventCertificateID,
+		IssuerCredentialId: result.IssuerCredentialID,
 		IssuerSignature:    pgmapper.PgTextToStringPtr(result.IssuerSignature),
 		HostSignature:      *pgmapper.PgTextToStringPtr(result.HostSignature),
 		SignMessage:        pgmapper.PgTextToStringPtr(result.SignMessage),
@@ -64,9 +64,9 @@ func (r *Repository) GetEventCertificateSignaturesByEventCertificateID(ctx conte
 	signatures := make([]*entity.EventCertificateSignature, len(results))
 	for i, result := range results {
 		signatures[i] = &entity.EventCertificateSignature{
-			ID:                 result.ID,
-			EventCertificateID: result.EventCertificateID,
-			IssuerCredentialID: result.IssuerCredentialID,
+			Id:                 result.ID,
+			EventCertificateId: result.EventCertificateID,
+			IssuerCredentialId: result.IssuerCredentialID,
 			IssuerSignature:    pgmapper.PgTextToStringPtr(result.IssuerSignature),
 			HostSignature:      *pgmapper.PgTextToStringPtr(result.HostSignature),
 			SignMessage:        pgmapper.PgTextToStringPtr(result.SignMessage),
@@ -90,9 +90,9 @@ func (r *Repository) UpdateEventCertificateSignature(ctx context.Context, id uui
 	}
 
 	return &entity.EventCertificateSignature{
-		ID:                 result.ID,
-		EventCertificateID: result.EventCertificateID,
-		IssuerCredentialID: result.IssuerCredentialID,
+		Id:                 result.ID,
+		EventCertificateId: result.EventCertificateID,
+		IssuerCredentialId: result.IssuerCredentialID,
 		IssuerSignature:    pgmapper.PgTextToStringPtr(result.IssuerSignature),
 		HostSignature:      *pgmapper.PgTextToStringPtr(result.HostSignature),
 		SignMessage:        pgmapper.PgTextToStringPtr(result.SignMessage),
@@ -110,9 +110,9 @@ func (r *Repository) UpdateEventCertificateIssuerSignature(ctx context.Context, 
 	}
 
 	return &entity.EventCertificateSignature{
-		ID:                 result.ID,
-		EventCertificateID: result.EventCertificateID,
-		IssuerCredentialID: result.IssuerCredentialID,
+		Id:                 result.ID,
+		EventCertificateId: result.EventCertificateID,
+		IssuerCredentialId: result.IssuerCredentialID,
 		IssuerSignature:    pgmapper.PgTextToStringPtr(result.IssuerSignature),
 		HostSignature:      *pgmapper.PgTextToStringPtr(result.HostSignature),
 		SignMessage:        pgmapper.PgTextToStringPtr(result.SignMessage),

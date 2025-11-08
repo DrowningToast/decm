@@ -169,24 +169,24 @@ export const EditProfilePage: React.FC = () => {
     useEffect(() => {
         if (profile) {
             form.reset({
-                first_name: profile.first_name || "",
-                is_first_name_public: profile.is_first_name_public || false,
-                last_name: profile.last_name || "",
-                is_last_name_public: profile.is_last_name_public || false,
+                first_name: profile.firstName || "",
+                is_first_name_public: profile.isFirstNamePublic || false,
+                last_name: profile.lastName || "",
+                is_last_name_public: profile.isLastNamePublic || false,
                 bio: profile.bio || "",
-                is_bio_public: profile.is_bio_public || false,
+                is_bio_public: profile.isBioPublic || false,
                 email: profile.email || "",
-                is_email_public: profile.is_email_public || false,
-                phone_number: profile.phone_number || "",
-                is_phone_number_public: profile.is_phone_number_public || false,
+                is_email_public: profile.isEmailPublic || false,
+                phone_number: profile.phoneNumber || "",
+                is_phone_number_public: profile.isPhoneNumberPublic || false,
                 address: profile.address || "",
-                is_address_public: profile.is_address_public || false,
-                academic_email: profile.academic_email || "",
-                is_academic_email_public: profile.is_academic_email_public || false,
-                academic_institution: profile.academic_institution || "",
-                is_academic_institution_public: profile.is_academic_institution_public || false,
-                profile_picture_url: profile.profile_picture_url || "",
-                is_profile_picture_public: profile.is_profile_picture_public || false,
+                is_address_public: profile.isAddressPublic || false,
+                academic_email: profile.academicEmail || "",
+                is_academic_email_public: profile.isAcademicEmailPublic || false,
+                academic_institution: profile.academicInstitution || "",
+                is_academic_institution_public: profile.isAcademicInstitutionPublic || false,
+                profile_picture_url: profile.profilePictureUrl || "",
+                is_profile_picture_public: profile.isProfilePicturePublic || false,
             });
         }
     }, [profile, form]);
@@ -307,6 +307,59 @@ export const EditProfilePage: React.FC = () => {
                         </div>
 
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                            {/* Account Information Section (Read-only) */}
+                            <div className="space-y-4">
+                                <Typography
+                                    variant="header"
+                                    tag="h2"
+                                    color="primary"
+                                    className="text-[24px] leading-[28px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
+                                >
+                                    {t("profile.accountInfo")}
+                                </Typography>
+
+                                <div className="space-y-2.5">
+                                    {/* Wallet Address */}
+                                    <div className="space-y-1">
+                                        <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                            {t("profile.wallet")}
+                                        </Label>
+                                        <Input
+                                            value={profile?.walletAddress || ""}
+                                            readOnly
+                                            disabled
+                                            className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.3)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background/70 cursor-not-allowed"
+                                        />
+                                    </div>
+
+                                    {/* Google OAuth Email (if exists) */}
+                                    {profile?.googleConnectorRef && (
+                                        <div className="space-y-1">
+                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                {t("profile.googleEmail")}
+                                            </Label>
+                                            <Input
+                                                value={profile.googleConnectorRef}
+                                                readOnly
+                                                disabled
+                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.3)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background/70 cursor-not-allowed"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Expose Private Key Button */}
+                                <Button
+                                    type="button"
+                                    variant="secondary-light"
+                                    size="lg"
+                                    className="w-full mt-4"
+                                    disabled
+                                >
+                                    {t("profile.exposePrivateKey")} - {t("common.comingSoon")}
+                                </Button>
+                            </div>
+
                             {/* Personal Information Section */}
                             <div className="space-y-4">
                                 <Typography

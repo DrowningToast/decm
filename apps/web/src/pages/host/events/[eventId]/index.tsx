@@ -1,6 +1,5 @@
 import HostEventDetailsPage from "@/components/pages/HostPages/EventsPage/HostEventDetailsPage";
 import { useParams } from "@/router";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useEvent } from "@/hooks/events/useEvent";
 import { useEventRegistrationConfig } from "@/hooks/events/useEventRegistrationConfig";
 import { useEventCertificateConfig } from "@/components/pages/HostPages/EventPages/useEventCertificateConfig";
@@ -52,16 +51,14 @@ export default function Page() {
     }
 
     return (
-        <ProtectedRoute>
-            <HostEventDetailsPage
-                eventId={eventId}
-                event={event}
-                eventRegistrationConfig={eventRegistrationConfig}
-                eventCertificateConfig={eventCertificateConfig}
-                eventIssuers={eventIssuers}
-                eventContract={eventContract}
-                eventInvitations={invitations}
-            />
-        </ProtectedRoute>
+        <HostEventDetailsPage
+            eventId={eventId}
+            event={event}
+            eventRegistrationConfig={eventRegistrationConfig}
+            eventCertificateConfig={eventCertificateConfig}
+            eventIssuers={eventIssuers}
+            eventContract={eventContract}
+            eventInvitations={invitations}
+        />
     );
 }

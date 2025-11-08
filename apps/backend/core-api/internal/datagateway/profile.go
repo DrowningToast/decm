@@ -33,6 +33,7 @@ type ProfileDataGateway interface {
 	GetProfileById(ctx context.Context, id uuid.UUID) (*entity.Profile, error)
 	GetProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID) (*entity.Profile, error)
 	GetProfileByEmail(ctx context.Context, email string) (*entity.Profile, error)
+	GetProfileAndCredentialWithCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID) (*entity.Profile, *entity.AuthenticationCredential, error)
 	CreateProfile(ctx context.Context, profile entity.Profile) (*entity.Profile, error)
 	UpdateProfile(ctx context.Context, id uuid.UUID, profile UpdateProfileParameters) (*entity.Profile, error)
 	UpdateProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID, profile UpdateProfileParameters) (*entity.Profile, error)

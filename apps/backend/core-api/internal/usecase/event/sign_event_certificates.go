@@ -19,7 +19,7 @@ type SignEventCertificatesRequest struct {
 }
 
 type CertificateSignature struct {
-	Certificate *entity.EventCertificate `json:"certificate"`
+	Certificate *entity.EventCertificate `json:"certificate,omitempty"`
 	Signature   string                   `json:"signature"`
 }
 
@@ -79,7 +79,7 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 
 	for _, certificate := range certificates {
 		// Get certificate signatures for this certificate
-		signatures, err := uc.EventCertificateSignatureDataGateway.GetEventCertificateSignaturesByEventCertificateID(ctx, certificate.ID)
+		signatures, err := uc.EventCertificateSignatureDataGateway.GetEventCertificateSignaturesByEventCertificateID(ctx, certificate.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -87,7 +87,7 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 		// Find the signature for this issuer
 		var targetSignature *entity.EventCertificateSignature
 		for _, sig := range signatures {
-			if sig.IssuerCredentialID == currentUser.UserId {
+			if sig.IssuerCredentialId == currentUser.UserId {
 				targetSignature = sig
 				break
 			}
@@ -100,7 +100,7 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 
 		// Sign the message
 		if targetSignature.SignMessage == nil {
-			return nil, customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("sign message not found for certificate %s", certificate.ID))
+			return nil, customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("sign message not found for certificate %s", certificate.Id))
 		}
 
 		signMessageDigest := cyptoutils.HashMessage(*targetSignature.SignMessage)
@@ -119,7 +119,7 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 		// uc.logger.Debug("digest", "digest", fmt.Sprintf("%x", signMessageDigest))
 
 		// Update certificate signature in database
-		_, err = uc.EventCertificateSignatureDataGateway.UpdateEventCertificateIssuerSignature(ctx, targetSignature.ID, &signatureStr)
+		_, err = uc.EventCertificateSignatureDataGateway.UpdateEventCertificateIssuerSignature(ctx, targetSignature.Id, &signatureStr)
 		if err != nil {
 			return nil, err
 		}

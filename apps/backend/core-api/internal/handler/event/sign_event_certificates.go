@@ -17,7 +17,7 @@ type SignEventCertificatesRequest struct {
 }
 
 type CertificateSignature struct {
-	Certificate *entity.EventCertificate `json:"certificate"`
+	Certificate *entity.EventCertificate `json:"certificate,omitempty"`
 	Signature   string                   `json:"signature"`
 }
 

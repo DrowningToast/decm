@@ -1,4 +1,3 @@
-import PageContainer from "@/components/container/PageContainer";
 import SectionContainer from "@/components/container/SectionContainer";
 import TitleSubtitle from "@/components/TitleSubtitle";
 import WrappedButton from "@/components/wrapper/WrappedButton";
@@ -21,7 +20,7 @@ export default function HostEventPage() {
     } = useHostEvents();
 
     return (
-        <PageContainer title="Events">
+        <div title="Events">
             <SectionContainer className="flex items-center justify-between">
                 <TitleSubtitle title="Events" subtitle="Create or manage your events" />
                 <div className="flex justify-end">
@@ -102,6 +101,6 @@ export default function HostEventPage() {
                     </>
                 )}
             </SectionContainer>
-        </PageContainer>
+        </div>
     );
 }

@@ -1,12 +1,13 @@
-import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { languages, type Language } from '@/lib/i18n';
+} from "@/components/ui/dropdown-menu";
+import { languages, type Language } from "@/lib/i18n";
+import { Typography } from "@/components/typography/typography";
 
 export function LanguageSwitcher() {
     const { i18n } = useTranslation();
@@ -15,15 +16,19 @@ export function LanguageSwitcher() {
         i18n.changeLanguage(lng);
     };
 
-    const currentLanguage = (i18n.language as Language) || 'en';
+    const currentLanguage = (i18n.language as Language) || "en";
     const currentLangData = languages[currentLanguage] || languages.en;
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button size="sm" className="gap-2">
-                    <span>{currentLangData.flag}</span>
-                    <span className="hidden sm:inline-block">{currentLangData.label}</span>
+                    <Typography variant="text" tag="span">
+                        {currentLangData.flag}
+                    </Typography>
+                    <Typography variant="text" tag="span" className="hidden sm:inline-block">
+                        {currentLangData.label}
+                    </Typography>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -33,10 +38,16 @@ export function LanguageSwitcher() {
                         onClick={() => changeLanguage(code as Language)}
                         className="gap-2 cursor-pointer"
                     >
-                        <span>{flag}</span>
-                        <span>{label}</span>
+                        <Typography variant="text" tag="span">
+                            {flag}
+                        </Typography>
+                        <Typography variant="text" tag="span">
+                            {label}
+                        </Typography>
                         {code === currentLanguage && (
-                            <span className="ml-auto text-xs">✓</span>
+                            <Typography variant="text" tag="span" className="ml-auto text-xs">
+                                ✓
+                            </Typography>
                         )}
                     </DropdownMenuItem>
                 ))}
@@ -44,4 +55,3 @@ export function LanguageSwitcher() {
         </DropdownMenu>
     );
 }
-

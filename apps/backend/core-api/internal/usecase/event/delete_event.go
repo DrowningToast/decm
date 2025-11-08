@@ -27,7 +27,7 @@ func (uc *EventUsecase) DeleteEvent(ctx context.Context, id uuid.UUID, currentUs
 		return nil, err
 	}
 
-	if credential.Id != dbEvent.OwnerCredentialID {
+	if credential.Id != dbEvent.OwnerCredentialId {
 		return nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("user is not owner of the event"))
 	}
 

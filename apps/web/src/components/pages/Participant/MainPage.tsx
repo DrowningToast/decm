@@ -40,18 +40,9 @@ export const MainPage = () => {
     // }));
 
     return (
-        <div className="relative min-h-screen w-full overflow-hidden">
-            {/* Background image - positioned at bottom right, visible on both mobile and desktop */}
-            <div className="absolute bottom-0 right-0 w-[424px] h-[424px] md:w-[500px] md:h-[500px] opacity-20 md:opacity-20 pointer-events-none">
-                <img
-                    src="/assets/scale.webp"
-                    alt=""
-                    className="w-full h-full object-cover object-center"
-                />
-            </div>
-
+        <div className="relative w-full overflow-hidden">
             {/* Main content */}
-            <div className="relative z-10 w-full max-w-[1384px] mx-auto px-4 md:px-16 py-4 md:py-16 flex flex-col gap-y-8">
+            <div className="relative z-10 w-full max-w-[1384px] mx-auto px-4 md:px-16 flex flex-col gap-y-8">
                 {/* Greeting section */}
                 <div className="flex flex-col gap-1">
                     <Typography
@@ -65,7 +56,7 @@ export const MainPage = () => {
                     <Typography
                         variant="text"
                         tag="p"
-                        color="muted"
+                        color="foreground-alt"
                         className="text-base md:text-lg [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                     >
                         {t("participant.home.actionRequired", { count: actionCount })}
@@ -77,8 +68,8 @@ export const MainPage = () => {
                     <Typography
                         variant="text"
                         tag="h2"
-                        color="muted"
-                        className="text-base md:text-sm text-muted [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                        color="foreground-alt"
+                        className="text-base md:text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                     >
                         {t("participant.home.participantServices")}
                     </Typography>
