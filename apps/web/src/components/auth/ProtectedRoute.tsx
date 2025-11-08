@@ -38,7 +38,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     requireIssuer = false,
     fallback,
 }) => {
-    const { isAuthenticated, isPending } = useAuth();
+    const { isAuthenticated, isFetching } = useAuth();
     const { t } = useTranslation();
 
     // Determine if role checking should be enabled
@@ -70,7 +70,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }, [roleCheckError, t]);
 
     // Show loading state during auth check
-    if (isPending) {
+    if (isFetching) {
         return (
             fallback || (
                 <div className="flex items-center justify-center min-h-screen">

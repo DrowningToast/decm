@@ -87,9 +87,11 @@ const VerifyMessagePage = () => {
                 });
                 return;
             }
-            toast.error(t(TOAST_USECASE_VIEWMODEL[USECASE_IDS.SIGN_IN].NOTFOUND));
-            navigate("/signup");
-            return;
+            if (authSignSignature) {
+                toast.error(t(TOAST_USECASE_VIEWMODEL[USECASE_IDS.SIGN_IN].NOTFOUND));
+                navigate("/signup");
+                return;
+            }
         };
         init();
     }, [

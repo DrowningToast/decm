@@ -5,7 +5,7 @@ import { SignupPage } from "@/components/pages/Auth/SignupPage";
 import { useSignUpPageRedirect } from "@/components/pages/Auth/useSignUpPageRedirect";
 
 const SignUpPage = () => {
-    useSignUpPageRedirect();
+    const { isLoading } = useSignUpPageRedirect();
 
     const handleRequestGoogleOAuthUrl = async () => {
         // open new tab with the url
@@ -16,7 +16,7 @@ const SignUpPage = () => {
         window.location.href = `${env.VITE_CORE_BACKEND_API}/api/v1/auth/request-google-oauth`;
     };
 
-    return <SignupPage onGoogleOAuthClick={handleRequestGoogleOAuthUrl} />;
+    return <SignupPage onGoogleOAuthClick={handleRequestGoogleOAuthUrl} isLoading={isLoading} />;
 };
 
 export default SignUpPage;
