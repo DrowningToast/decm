@@ -38,7 +38,9 @@
         "profile": "Profile",
         "signIn": "Sign In",
         "signUp": "Sign Up",
-        "signOut": "Sign Out"
+        "signOut": "Sign Out",
+        "menu": "Menu",
+        "close": "Close"
     },
     "auth": {
         "signIn": "Sign In",
@@ -434,6 +436,12 @@
     "createEvent": {
         "success": "Event created successfully",
         "error": "Failed to create event. Please try again."
+    },
+    "editEvent": {
+        "success": "Event updated successfully"
+    },
+    "deleteEvent": {
+        "success": "Event deleted successfully"
     },
     "participantSettings": {
         "pageTitle": "Participant Settings",
