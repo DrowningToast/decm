@@ -637,7 +637,9 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                                                 rel="noopener noreferrer"
                                                 className="sm-socials-link text-[1.2rem] font-medium text-[#111] no-underline relative inline-block py-[2px] transition-[color,opacity] duration-300 ease-linear hover:text-[var(--sm-accent,#ff0000)] focus-visible:outline-2 focus-visible:outline-[var(--sm-accent,#ff0000)] focus-visible:outline-offset-[3px]"
                                             >
-                                                {s.label}
+                                                <Typography tag="span" className="inline-block">
+                                                    {s.label}
+                                                </Typography>
                                             </a>
                                         </li>
                                     ))}
