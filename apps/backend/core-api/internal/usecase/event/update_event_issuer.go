@@ -41,7 +41,6 @@ func (u *EventUsecase) UpdateEventIssuer(ctx context.Context, eventID uuid.UUID,
 					IssuerCredentialID: issuerCredentialID,
 					IsSigned:           0,
 					Signature:          pgtype.Text{},
-					SignMessage:        pgtype.Text{},
 				})
 				if err != nil {
 					return nil, err
