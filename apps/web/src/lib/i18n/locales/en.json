@@ -577,7 +577,7 @@
         "requiredFormatDescription": "Your Excel file must contain these exact column headers:",
         "columnHeader": "Column Header",
         "downloadTemplate": "Download Template",
-        "downloadTemplateDescription": "Download a template Excel file with the correct format.",
+        "downloadTemplateDescription": "Download a template Excel file with correct format.",
         "templateSheetName": "Certificates",
         "templateFileName": "certificate_import_template",
         "templateColumns": {
@@ -587,7 +587,11 @@
             "academicInstitution": "academic_institution",
             "certificateTitle": "certificate_title",
             "certificateSubtitle": "certificate_subtitle"
-        }
+        },
+        "hostPin": "Host PIN",
+        "hostPinDescription": "Enter your host PIN to authorize certificate import. This PIN is used to sign the certificate data on the blockchain.",
+        "hostPinPlaceholder": "Enter your host PIN",
+        "hostPinRequired": "Host PIN is required to import certificates"
     },
     "certificateSettings": {
         "pageTitle": "Certificate Settings",

@@ -207,6 +207,7 @@ type EventCertificate struct {
 	EventContractAddress    pgtype.Text        `json:"event_contract_address"`
 	EventCertificateAddress pgtype.Text        `json:"event_certificate_address"`
 	CertificateTokenID      pgtype.Text        `json:"certificate_token_id"`
+	CertificateDigest       pgtype.Text        `json:"certificate_digest"`
 	CreatedAt               pgtype.Timestamptz `json:"created_at"`
 	RevokedAt               pgtype.Timestamptz `json:"revoked_at"`
 }
@@ -223,10 +224,10 @@ type EventCertificateConfig struct {
 	AcademicInstitutionPosY   pgtype.Float8      `json:"academic_institution_pos_y"`
 	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
-	CertificateTitlePosX      float64            `json:"certificate_title_pos_x"`
-	CertificateTitlePosY      float64            `json:"certificate_title_pos_y"`
-	CertificateSubtitlePosX   float64            `json:"certificate_subtitle_pos_x"`
-	CertificateSubtitlePosY   float64            `json:"certificate_subtitle_pos_y"`
+	CertificateTitlePosX      pgtype.Float8      `json:"certificate_title_pos_x"`
+	CertificateTitlePosY      pgtype.Float8      `json:"certificate_title_pos_y"`
+	CertificateSubtitlePosX   pgtype.Float8      `json:"certificate_subtitle_pos_x"`
+	CertificateSubtitlePosY   pgtype.Float8      `json:"certificate_subtitle_pos_y"`
 }
 
 type EventCertificateSignature struct {

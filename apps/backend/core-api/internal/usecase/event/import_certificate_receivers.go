@@ -2,9 +2,9 @@ package event
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"apps/backend/common/customerror"
 	"apps/backend/common/pgmapper"
@@ -20,6 +20,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/google/uuid"
 )
 
@@ -128,6 +129,13 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 		// Combine first and last name
 		name := fmt.Sprintf("%s %s", req.FirstName, req.LastName)
 
+		// Create CSV value
+		csvValue := fmt.Sprintf("%s,%s,%s,%s", name, req.AcademicInstitution, req.CertificateTitle, req.CertificateSubtitle)
+
+		// Hash the CSV value
+		hash := cyptoutils.HashMessage(csvValue)
+		replacedHash := strings.ReplaceAll(hexutil.Encode(hash), "0x", "")
+
 		// Create certificate
 		certificate, err := uc.EventCertificateDataGateway.CreateEventCertificate(ctx, eventdatagateway.CreateEventCertificateParameters{
 			EventID:                 eventID,
@@ -139,7 +147,8 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 			CertificateSubtitle:     &req.CertificateSubtitle,
 			EventContractAddress:    eventContract.EventContractAddress,
 			EventCertificateAddress: &eventCertificateAddressStr,
-			CertificateTokenID:      nil, // Will be set when minted
+			CertificateTokenID:      nil, // Will be set when minted,
+			Digest:                  &replacedHash,
 		})
 		if err != nil {
 			return nil, err
@@ -159,8 +168,9 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 		csvValue := fmt.Sprintf("%s,%s,%s,%s", name, req.AcademicInstitution, req.CertificateTitle, req.CertificateSubtitle)
 
 		// Hash the CSV value
-		hash := sha256.Sum256([]byte(csvValue))
-		receivers = append(receivers, fmt.Sprintf("0x%x", hash))
+		hash := cyptoutils.HashMessage(csvValue)
+		replacedHash := strings.ReplaceAll(hexutil.Encode(hash), "0x", "")
+		receivers = append(receivers, replacedHash)
 	}
 
 	signMessage := SignMessage{
@@ -176,7 +186,7 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 	signMessageJSON := string(signMessageJSONBytes)
 
 	// 8. Host signs the message
-	signMessageDigest := sha256.Sum256(signMessageJSONBytes)
+	signMessageDigest := cyptoutils.HashMessage(signMessageJSON)
 	signature, err := cyptoutils.Sign(signMessageDigest[:], privateKey)
 	if err != nil {
 		return nil, err
@@ -192,14 +202,17 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 
 		// Create signature for each issuer
 		for _, issuer := range eventIssuers {
-			signMessageDigestStr := fmt.Sprintf("0x%x", signMessageDigest)
+			signMessageDigestStr := hexutil.Encode(signMessageDigest[:])
+			replacedSignMessageDigestStr := strings.ReplaceAll(signMessageDigestStr, "0x", "")
+			replacedHostSignature := strings.ReplaceAll(hexutil.Encode(signature), "0x", "")
+
 			_, err := uc.EventCertificateSignatureDataGateway.CreateEventCertificateSignature(ctx, eventdatagateway.CreateEventCertificateSignatureParameters{
 				EventCertificateID: certificateID,
 				IssuerCredentialID: issuer.IssuerCredentialID,
 				IssuerSignature:    nil, // Will be set when issuer signs
-				HostSignature:      string(signature),
+				HostSignature:      replacedHostSignature,
 				SignMessage:        &signMessageJSON,
-				SignMessageDigest:  &signMessageDigestStr,
+				SignMessageDigest:  &replacedSignMessageDigestStr,
 			})
 			if err != nil {
 				return nil, err

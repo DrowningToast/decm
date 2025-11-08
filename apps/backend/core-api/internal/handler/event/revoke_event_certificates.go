@@ -49,7 +49,7 @@ func (h Handler) RevokeEventCertificates(ctx *fiber.Ctx) error {
 	}
 
 	// Get current user from JWT
-	currentUser := ctx.Locals("currentUser").(*auth.JwtClaims)
+	currentUser := ctx.Locals("user").(*auth.JwtClaims)
 
 	// Convert handler request to usecase request
 	usecaseRequest := event.RevokeEventCertificatesRequest{
