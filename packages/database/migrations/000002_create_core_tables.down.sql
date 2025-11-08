@@ -38,6 +38,9 @@ DROP TABLE IF EXISTS events;
 -- Drop enum type (must be dropped after tables that use it)
 DROP TYPE IF EXISTS event_type;
 
+-- Drop enum type (must be dropped after tables that use it)
+DROP TYPE IF EXISTS event_status;
+
 -- Drop profiles (depends on authentication_credentials)
 DROP TABLE IF EXISTS profiles;
 
