@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import ConfirmModal from "@/components/ConfirmModal";
 import { Typography } from "@/components/typography/typography";
 import type { EntityEventCertificate } from "@decm/api";
-import { useRevokeEventCertificate } from "@/hooks/events/useRevokeEventCertificate";
 
 export interface CertificateRow {
     id: string;
@@ -15,10 +14,10 @@ export interface CertificateRow {
     status: "received" | "pending" | "rejected";
 }
 
-export function CertificateColumns(eventId: string): ColumnDef<EntityEventCertificate>[] {
-    // const { cancelEventInvitation } = useCancelEventInvitation();
-    const { revokeEventCertificate } = useRevokeEventCertificate();
-
+export function CertificateColumns(
+    eventId: string,
+    onClickRevoke?: (eventCertificateId: string) => void,
+): ColumnDef<EntityEventCertificate>[] {
     const certificateColumns: ColumnDef<EntityEventCertificate>[] = [
         {
             accessorKey: "firstName",
@@ -75,7 +74,10 @@ export function CertificateColumns(eventId: string): ColumnDef<EntityEventCertif
                 }
             },
         },
-        {
+    ];
+
+    if (onClickRevoke) {
+        certificateColumns.push({
             id: "actions",
             header: "Action",
             enableSorting: false,
@@ -92,10 +94,7 @@ export function CertificateColumns(eventId: string): ColumnDef<EntityEventCertif
                         message="Are you sure you want to revoke this certificate?"
                         onConfirm={() => {
                             if (eventCertificateId) {
-                                revokeEventCertificate({
-                                    certificateIds: [eventCertificateId],
-                                    eventId,
-                                });
+                                onClickRevoke(eventCertificateId);
                             }
                         }}
                         onCancel={() => {}}
@@ -112,8 +111,8 @@ export function CertificateColumns(eventId: string): ColumnDef<EntityEventCertif
                     </ConfirmModal>
                 );
             },
-        },
-    ];
+        });
+    }
 
     return certificateColumns as ColumnDef<EntityEventCertificate>[];
 }

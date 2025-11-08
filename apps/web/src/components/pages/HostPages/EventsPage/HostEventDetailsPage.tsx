@@ -38,6 +38,7 @@ import { ParticipantColumns, type Participant } from "./columns/ParticipantColum
 import { CertificateColumns } from "./columns/CertificateColumns";
 import { Separator } from "@/components/ui/separator";
 import { useEventCertificates } from "@/hooks/useEventCertificates";
+import { useRevokeEventCertificate } from "@/hooks/events/useRevokeEventCertificate";
 
 interface HostEventDetailsPageProps {
     eventId: string;
@@ -59,6 +60,8 @@ export default function HostEventDetailsPage({
     eventInvitations,
 }: HostEventDetailsPageProps) {
     const { t } = useTranslation();
+
+    const { revokeEventCertificate } = useRevokeEventCertificate();
 
     // State for client-side data management
     const [searchValue, setSearchValue] = useState("");
@@ -499,7 +502,15 @@ export default function HostEventDetailsPage({
                                         </Typography>
 
                                         <DataTable
-                                            columns={CertificateColumns(eventId)}
+                                            columns={CertificateColumns(
+                                                eventId,
+                                                (eventCertificateId: string) => {
+                                                    revokeEventCertificate({
+                                                        certificateIds: [eventCertificateId],
+                                                        eventId,
+                                                    });
+                                                },
+                                            )}
                                             data={
                                                 eventCertificates
                                                     ?.filter(
