@@ -954,7 +954,12 @@
             "signCertificateBatchDescription": "ตรวจสอบแม่แบบใบรับรองรับและยืนยันเพื่อลงนามใบรับรองรับที่รอดำเนินการทั้งหมดสำหรับกิจกรรมนี้",
             "signatureRequest": "คำขอลงนาม",
             "signatureRequestDescription": "ตรวจสอบรายละเอียดคำขอก่อนยืนยัน",
-            "yourStatus": "สถานะของคุณ"
+            "yourStatus": "สถานะของคุณ",
+            "signingStatus": "สถานะการลงนาม",
+            "contractAddress": "ที่อยู่สัญญา",
+            "certificatesCount": "ใบรับรองรับ",
+            "certificates": "ใบรับรองรับ",
+            "eventCertificates": "ใบรับรองรับกิจกรรม"
         }
     }
 }
