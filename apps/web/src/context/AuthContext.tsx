@@ -22,25 +22,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { t } = useTranslation();
-    const { signout } = useSignout();
-    const navigate = useNavigate();
     const { data: user, error, isFetching, refetch } = useMyProfile();
-
-    useEffect(() => {
-        if (!error) {
-            return;
-        }
-
-        const init = async () => {
-            if (error instanceof AxiosError) {
-                if (error.response?.status === 404) {
-                    await signout({ showSuccessToast: false });
-                }
-            }
-        };
-
-        init();
-    }, [error, navigate, signout, t]);
 
     const contextValue: AuthContextType = {
         user: user || null,

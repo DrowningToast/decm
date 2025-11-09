@@ -114,9 +114,38 @@ func (q *Queries) GetEventRegistrationInvitationByID(ctx context.Context, id uui
 	return i, err
 }
 
+const GetEventRegistrationInvitationByInboxMessageID = `-- name: GetEventRegistrationInvitationByInboxMessageID :one
+SELECT id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at FROM event_registration_invitations 
+WHERE inbox_message_id = $1
+AND cancelled_at IS NULL
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetEventRegistrationInvitationByInboxMessageID(ctx context.Context, inboxMessageID uuid.UUID) (EventRegistrationInvitation, error) {
+	row := q.db.QueryRow(ctx, GetEventRegistrationInvitationByInboxMessageID, inboxMessageID)
+	var i EventRegistrationInvitation
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.InboxMessageID,
+		&i.ValidUntil,
+		&i.Code,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.AcademicInstitution,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.CancelledAt,
+	)
+	return i, err
+}
+
 const GetEventRegistrationInvitationsByEventID = `-- name: GetEventRegistrationInvitationsByEventID :many
 SELECT id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at FROM event_registration_invitations 
-WHERE event_id = $1 AND cancelled_at IS NULL
+WHERE event_id = $1 
+AND cancelled_at IS NULL
 ORDER BY created_at DESC
 `
 

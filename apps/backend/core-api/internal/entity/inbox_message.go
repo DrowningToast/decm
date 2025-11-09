@@ -6,11 +6,24 @@ import (
 	"github.com/google/uuid"
 )
 
+type InboxMessageType int
+
+const (
+	InboxMessageTypeGeneral                     InboxMessageType = 0
+	InboxMessageTypeEventRegistrationInvitation InboxMessageType = 1
+	InboxMessageTypeEventCertificateInvitation  InboxMessageType = 2
+)
+
+func (t InboxMessageType) String() string {
+	return []string{"event_registration_invitation", "event_certificate_invitation"}[t]
+}
+
 type InboxMessage struct {
 	ID                     uuid.UUID  `json:"id"`
 	SenderCredentialID     *uuid.UUID `json:"sender_credential_id"`
 	ReceiverCredentialID   *uuid.UUID `json:"receiver_credential_id"`
-	ReceiverEmail          string     `json:"receiver_email"`
+	ReceiverWalletAddress  *string    `json:"receiver_wallet_address"`
+	ReceiverEmail          *string    `json:"receiver_email"`
 	MessageType            int        `json:"message_type"`
 	MessageContent         string     `json:"message_content"`
 	FallbackMessageContent *string    `json:"fallback_message_content"`

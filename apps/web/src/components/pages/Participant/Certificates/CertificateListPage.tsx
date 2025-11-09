@@ -1,12 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
-import { CertificateList } from "./CertificateList";
-import { useCertificatesListUsecase } from "./useCertificatesListUsecase";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 
 export const CertificateListPage = () => {
     const { t } = useTranslation();
-    const { certificates, isLoading } = useCertificatesListUsecase();
+    // const { certificates, isLoading } = useCertificatesListUsecase();
 
     return (
         <section className="relative z-10 w-full">
@@ -43,7 +41,7 @@ export const CertificateListPage = () => {
                     </div>
 
                     {/* Certificate List */}
-                    <CertificateList certificates={certificates} isLoading={isLoading} />
+                    {/* <CertificateList certificates={certificates} isLoading={isLoading} /> */}
                 </div>
 
                 {/* Bottom Navigation */}

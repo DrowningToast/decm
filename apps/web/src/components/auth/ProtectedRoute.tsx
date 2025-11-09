@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { TOAST_USECASE_VIEWMODEL } from "@/constants/toast";
 import { USECASE_IDS } from "@/constants/usecase";
 import { useCheckRoles } from "@/hooks/useCheckRoles";
+import { AxiosError } from "axios";
+import { useSignout } from "../useSignout";
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -38,9 +40,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     requireIssuer = false,
     fallback,
 }) => {
-    const { isAuthenticated, isFetching, error: authError } = useAuth();
+    const { isAuthenticated, isFetching, error: authError, user } = useAuth();
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { signout } = useSignout();
 
     // Determine if role checking should be enabled
     const shouldCheckRoles = isAuthenticated && (requireHost || requireIssuer);
@@ -58,9 +61,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
     useEffect(() => {
         if (authError) {
-            alert(authError.message);
-            // toast.error(t(TOAST_USECASE_VIEWMODEL[USECASE_IDS.GENERIC].UNAUTHORIZED_RESPONSE));
-            // navigate("/signin");
+            toast.error(t(TOAST_USECASE_VIEWMODEL[USECASE_IDS.GENERIC].UNAUTHORIZED_RESPONSE));
+            navigate("/signin");
         }
     }, [authError, navigate, t]);
 
@@ -77,6 +79,22 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
             toast.error(t(TOAST_USECASE_VIEWMODEL[USECASE_IDS.GENERIC].UNAUTHORIZED_RESPONSE));
         }
     }, [roleCheckError, t]);
+
+    useEffect(() => {
+        if (!authError) {
+            return;
+        }
+
+        const init = async () => {
+            if (authError instanceof AxiosError) {
+                if (authError.response?.status === 404) {
+                    await signout({ showSuccessToast: false });
+                }
+            }
+        };
+
+        init();
+    }, [authError, navigate, signout, t]);
 
     // Show loading state during auth check
     if (isFetching) {

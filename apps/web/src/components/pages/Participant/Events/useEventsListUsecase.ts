@@ -1,6 +1,7 @@
 import { useSearchEventNavStore } from "@/components/BottomNav/stores/events";
-import { useQuery } from "@tanstack/react-query";
 import FuzzySearch from "fuzzy-search";
+import { useGetEventList } from "@/hooks/events/useGetEventList";
+import { useMemo } from "react";
 
 export interface Event {
     id: string;
@@ -20,43 +21,6 @@ export interface Event {
     image?: string;
 }
 
-const mockEvents: Event[] = [
-    {
-        id: "1",
-        name: "ToBelT69",
-        description: "Description 1",
-        eventName: "ToBelT69",
-        contactAddress: "0x1234...abcd",
-        dateTime: "2024-09-24",
-        finalCallDate: "2024-09-24",
-        status: "accepting",
-        accessType: "password",
-        requiresPassword: true,
-    },
-    {
-        id: "2",
-        name: "ToBelT69",
-        description: "Description 2",
-        eventName: "ToBelT69",
-        contactAddress: "0x9876...4321",
-        dateTime: "2024-09-25",
-        finalCallDate: "2024-09-25",
-        status: "accepting",
-        accessType: "invite-only",
-    },
-    {
-        id: "3",
-        name: "ToBelT69",
-        description: "Description 3",
-        eventName: "ToBelT69",
-        contactAddress: "0xa1b2...c3d4",
-        dateTime: "2024-09-20",
-        finalCallDate: "2024-09-20",
-        status: "closed",
-        accessType: "public",
-    },
-];
-
 type EventFilterType = "all" | "my-events";
 
 interface UseEventsListOptions {
@@ -64,38 +28,50 @@ interface UseEventsListOptions {
 }
 
 export const useEventsListUsecase = (options?: UseEventsListOptions) => {
-    // const api = useApi();
     const { searchQuery } = useSearchEventNavStore();
+
+    // Use the API hook with appropriate filters
     const {
-        data: events = [],
+        data: apiEvents,
         isLoading,
         error,
-    } = useQuery({
-        queryKey: ["participant-events"],
-        queryFn: async () => {
-            try {
-                // TODO: Replace with actual API call once endpoint is available
-                // const response = await api.getParticipantEvents();
-                return mockEvents;
-            } catch (error) {
-                console.error("Failed to fetch events:", error);
-                return [] as Event[];
-            }
-        },
+    } = useGetEventList({
+        includeActiveEvents: true,
+        includeInactiveEvents: true,
+        includeClosedEvents: true,
+        onlyUserJoinedEvents: options?.filterType === "my-events",
     });
 
+    // Transform API response to match Event interface
+    const events = useMemo(() => {
+        if (!apiEvents?.data) return [];
+
+        return apiEvents.data.map((event) => ({
+            id: event.event_id,
+            name: event.event_name,
+            description: event.short_description || "",
+            eventName: event.event_name,
+            contactAddress: event.contact_address,
+            dateTime: event.start_date,
+            finalCallDate: event.final_call_registration_date,
+            status: event.event_status === "active" ? ("accepting" as const) : ("closed" as const),
+            accessType: event.is_public
+                ? ("public" as const)
+                : event.require_registration_password
+                  ? ("password" as const)
+                  : ("invite-only" as const),
+            seatsAvailable: event.seats_count,
+            totalSeats: event.seats_count,
+            requiresPassword: event.require_registration_password,
+            image: event.event_banner_url,
+        }));
+    }, [apiEvents]);
+
+    // Apply fuzzy search filter
     const searcher = new FuzzySearch(events, ["name"], {
         caseSensitive: false,
     });
-    let filteredEvents = searcher.search(searchQuery);
-
-    // Apply filter based on filter type
-    if (options?.filterType === "my-events") {
-        filteredEvents = filteredEvents.filter((event) => {
-            // Filter events that the user has joined (has participation status)
-            return event.participationStatus !== undefined;
-        });
-    }
+    const filteredEvents = searchQuery ? searcher.search(searchQuery) : events;
 
     return { events: filteredEvents, isLoading, error };
 };

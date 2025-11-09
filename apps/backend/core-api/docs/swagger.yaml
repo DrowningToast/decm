@@ -1,5 +1,15 @@
 basePath: /
 definitions:
+  CheckRoleResponse:
+    description: Role verification response
+    properties:
+      is_authenticated:
+        type: boolean
+      is_host:
+        type: boolean
+      is_issuer:
+        type: boolean
+    type: object
   core-api_internal_handler_event.CertificateSignature:
     properties:
       certificate:
@@ -239,6 +249,16 @@ definitions:
     - EventTypePublic
     - EventTypePrivate
     - EventTypeInvite
+  entity.InboxMessageType:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - InboxMessageTypeGeneral
+    - InboxMessageTypeEventRegistrationInvitation
+    - InboxMessageTypeEventCertificateInvitation
   entity.Profile:
     properties:
       academic_email:
@@ -567,6 +587,114 @@ definitions:
         type: integer
       registration_password:
         type: string
+    type: object
+  inbox.InboxMessagesEventRegistrationInvitationViewModel:
+    properties:
+      academic_institution:
+        type: string
+      cancelled_at:
+        type: string
+      code:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      email:
+        type: string
+      event_id:
+        type: string
+      first_name:
+        type: string
+      hidden_at:
+        type: string
+      id:
+        type: string
+      is_read:
+        type: integer
+      last_name:
+        type: string
+      message_content:
+        type: string
+      message_type:
+        $ref: '#/definitions/entity.InboxMessageType'
+      phone_number:
+        type: string
+      receiver_email:
+        type: string
+      receiver_wallet_address:
+        type: string
+      sender_credential_email:
+        type: string
+      sender_credential_wallet_address:
+        type: string
+      updated_at:
+        type: string
+      valid_until:
+        type: string
+    type: object
+  inbox.InboxMessagesViewModel:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      hidden_at:
+        type: string
+      id:
+        type: string
+      is_read:
+        type: integer
+      message_content:
+        type: string
+      message_type:
+        $ref: '#/definitions/entity.InboxMessageType'
+      receiver_email:
+        type: string
+      receiver_wallet_address:
+        type: string
+      sender_credential_email:
+        type: string
+      sender_credential_wallet_address:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  inboxmessages.GetInboxMessageEventRegistrationInvitationResponse:
+    properties:
+      inbox_message:
+        $ref: '#/definitions/inbox.InboxMessagesEventRegistrationInvitationViewModel'
+    type: object
+  inboxmessages.GetInboxMessageResponse:
+    properties:
+      inbox_message:
+        $ref: '#/definitions/inbox.InboxMessagesViewModel'
+    type: object
+  inboxmessages.GetInboxMessagesResponse:
+    properties:
+      inbox_messages:
+        items:
+          $ref: '#/definitions/inbox.InboxMessagesViewModel'
+        type: array
+    type: object
+  inboxmessages.MarkAllMessagesAsReadResponse:
+    properties:
+      inbox_messages:
+        items:
+          $ref: '#/definitions/inbox.InboxMessagesViewModel'
+        type: array
+    type: object
+  inboxmessages.MarkMessageAsReadRequest:
+    properties:
+      message_id:
+        type: string
+    required:
+    - message_id
+    type: object
+  inboxmessages.MarkMessageAsReadResponse:
+    properties:
+      inbox_message:
+        $ref: '#/definitions/inbox.InboxMessagesViewModel'
     type: object
   issuer.IssuerEventResponse:
     properties:
@@ -1034,6 +1162,56 @@ paths:
       tags:
       - Event Registration Invitation
   /api/v1/events:
+    get:
+      description: Get events list
+      operationId: get-events-list
+      parameters:
+      - default: true
+        description: Include active events
+        in: query
+        name: include_active_events
+        type: boolean
+      - default: true
+        description: Include inactive events
+        in: query
+        name: include_inactive_events
+        type: boolean
+      - default: false
+        description: Include closed events
+        in: query
+        name: include_closed_events
+        type: boolean
+      - default: false
+        description: Only user joined events
+        in: query
+        name: only_user_joined_events
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/event.EventResponse'
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get events list
+      tags:
+      - Event
     post:
       consumes:
       - multipart/form-data
@@ -2612,4 +2790,80 @@ paths:
       summary: Verify password
       tags:
       - Profile
+  /inbox-messages:
+    get:
+      consumes:
+      - application/json
+      description: Get my inbox messages
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/inboxmessages.GetInboxMessagesResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get my inbox messages
+      tags:
+      - Inbox Messages
+  /inbox-messages/{inbox_message_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get inbox message
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/inboxmessages.GetInboxMessageEventRegistrationInvitationResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get inbox message
+      tags:
+      - Inbox Messages
+  /inbox-messages/read:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Message ID
+        in: path
+        name: message_id
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/inboxmessages.MarkMessageAsReadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/inboxmessages.MarkMessageAsReadResponse'
+      security:
+      - ApiKeyAuth: []
+      tags:
+      - Inbox Messages
+  /inbox-messages/read-all:
+    put:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/inboxmessages.MarkAllMessagesAsReadResponse'
+      security:
+      - ApiKeyAuth: []
+      tags:
+      - Inbox Messages
 swagger: "2.0"

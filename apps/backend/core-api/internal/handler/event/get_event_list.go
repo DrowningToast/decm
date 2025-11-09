@@ -21,7 +21,11 @@ type GetEventListQuery struct {
 // @Summary Get events list
 // @Description Get events list
 // @ID get-events-list
-// @
+// @Tags Event
+// @Param include_active_events query bool false "Include active events" default(true)
+// @Param include_inactive_events query bool false "Include inactive events" default(true)
+// @Param include_closed_events query bool false "Include closed events" default(false)
+// @Param only_user_joined_events query bool false "Only user joined events" default(false)
 // @Produce json
 // @Success 200 {array} []EventResponse
 // @Failure 400 {object} customerror.ErrResponse

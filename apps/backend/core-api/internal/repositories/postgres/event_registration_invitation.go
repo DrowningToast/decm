@@ -136,6 +136,50 @@ func (r *Repository) GetEventRegistrationInvitationByID(ctx context.Context, id 
 	}, nil
 }
 
+func (r *Repository) GetEventRegistrationInvitationByInboxMessageID(ctx context.Context, inboxMessageID uuid.UUID) (*entity.EventRegistrationInvitation, error) {
+	result, err := r.queries.GetEventRegistrationInvitationByInboxMessageID(ctx, inboxMessageID)
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	// Decrypt PII fields using pgmapper
+	firstNameDec, err := pgmapper.DecryptPgTextToStringPtr(result.FirstName, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	lastNameDec, err := pgmapper.DecryptPgTextToStringPtr(result.LastName, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	emailDec, err := pgmapper.DecryptPgTextToStringPtr(result.Email, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	phoneNumberDec, err := pgmapper.DecryptPgTextToStringPtr(result.PhoneNumber, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	academicInstitutionDec, err := pgmapper.DecryptPgTextToStringPtr(result.AcademicInstitution, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	return &entity.EventRegistrationInvitation{
+		ID:                  result.ID,
+		EventID:             result.EventID,
+		InboxMessageID:      result.InboxMessageID,
+		ValidUntil:          pgmapper.PgTimestampzToTimePtr(result.ValidUntil),
+		Code:                pgmapper.PgTextToStringPtr(result.Code),
+		FirstName:           firstNameDec,
+		LastName:            lastNameDec,
+		Email:               emailDec,
+		PhoneNumber:         phoneNumberDec,
+		AcademicInstitution: academicInstitutionDec,
+		CreatedAt:           *pgmapper.PgTimestampzToTimePtr(result.CreatedAt),
+		UpdatedAt:           *pgmapper.PgTimestampzToTimePtr(result.UpdatedAt),
+		CancelledAt:         pgmapper.PgTimestampzToTimePtr(result.CancelledAt),
+	}, nil
+}
+
 func (r *Repository) GetEventRegistrationInvitationsByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventRegistrationInvitation, error) {
 	results, err := r.queries.GetEventRegistrationInvitationsByEventID(ctx, eventID)
 	if err != nil {

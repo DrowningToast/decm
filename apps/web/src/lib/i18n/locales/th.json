@@ -37,7 +37,8 @@
         "share": "แชร์",
         "verify": "ตรวจสอบ",
         "to": "ถึง",
-        "signOut": "ออกจากระบบ"
+        "signOut": "ออกจากระบบ",
+        "signingOut": "กำลังออกจากระบบ..."
     },
     "nav": {
         "home": "หน้าหลัก",
@@ -477,15 +478,23 @@
                     "create_account_success": "ยืนยันตัวตนด้วย Google สำเร็จ",
                     "create_account_error": "ไม่สามารถยืนยันตัวตนด้วย Google ได้",
                     "create_account_error_duplicate": "บัญชีที่มีอีเมลนี้มีอยู่แล้ว",
+                    "create_account_error_password": "จำเป็นต้องมีรหัสผ่านในการสร้างบัญชี",
                     "create_account_error_expired_token": "ลิงก์การอนุญาตหมดอายุแล้ว คุณได้ออกจากระบบ กรุณาเข้าสู่ระบบอีกครั้งผ่านผู้ให้บริการ OAuth",
                     "create_account_error_generic": "ไม่สามารถสร้างบัญชีด้วย Google ได้ กรุณาลองอีกครั้งในภายหลัง",
                     "create_profile_pending": "กำลังอัปเดตโปรไฟล์...",
                     "create_profile_success": "อัปเดตโปรไฟล์สำเร็จ",
                     "create_profile_error_duplicate": "โปรไฟล์ที่มีอีเมลนี้มีอยู่แล้ว",
                     "create_profile_error": "ไม่สามารถอัปเดตโปรไฟล์ได้ กรุณาลองอีกครั้งในภายหลัง",
+                    "missing_access_token": "ไม่พบ Access Token",
+                    "missing_access_token_description": "ไม่พบ OAuth access token กรุณาลองเข้าสู่ระบบผ่าน Google อีกครั้ง",
+                    "missing_expires_in": "ไม่พบข้อมูลระยะเวลาของ Token",
+                    "missing_expires_in_description": "ไม่พบข้อมูลระยะเวลาหมดอายุของ token กรุณาลองเข้าสู่ระบบผ่าน Google อีกครั้ง",
                     "unauthenticated_response": "คุณไม่ได้รับอนุญาตให้เข้าถึงทรัพยากรนี้ กรุณาเข้าสู่ระบบอีกครั้ง",
                     "expired_token": "ลิงก์การอนุญาตหมดอายุแล้ว คุณได้ออกจากระบบ กรุณาเข้าสู่ระบบอีกครั้งผ่านผู้ให้บริการ OAuth ที่คุณเลือก",
                     "internal_error_response": "เซิร์ฟเวอร์ของเราพบข้อผิดพลาด กรุณาลองอีกครั้งในภายหลัง หากปัญหายังคงอยู่ โปรดติดต่อฝ่ายสนับสนุน"
+                },
+                "wallet": {
+                    "create_profile_success": "สร้างโปรไฟล์สำเร็จ"
                 },
                 "generic": {
                     "unauthenticated_response": "คุณต้องเข้าสู่ระบบเพื่อเข้าถึงหน้านี้ กรุณาเข้าสู่ระบบ",
