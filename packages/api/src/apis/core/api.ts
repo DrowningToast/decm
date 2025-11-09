@@ -477,15 +477,6 @@ export interface GetEventCertificatesParams {
     eventId: string;
 }
 
-export type GetEventCertificatesData = EventGetEventCertificatesResponse;
-
-export type GetEventCertificatesError = CustomerrorErrResponse;
-
-export interface GetEventCertificatesParams {
-    /** Event ID */
-    eventId: string;
-}
-
 export type GetEventContractByEventIdData = EventEventContractResponse;
 
 export type GetEventContractByEventIdError = CustomerrorErrResponse;
@@ -549,25 +540,6 @@ export interface GetEventsByOwnerCredentialsIdParams {
     offset?: number;
     /** Owner Credentials ID */
     ownerCredentialId: string;
-}
-
-export type GetIssuerEventsData = IssuerIssuerEventResponse[];
-
-export type GetIssuerEventsError = CustomerrorErrResponse;
-
-export interface GetIssuerEventsParams {
-    /** Issuer credential ID */
-    issuer_credential_id?: string;
-    /**
-     * Limit
-     * @default 10
-     */
-    limit?: number;
-    /**
-     * Offset
-     * @default 0
-     */
-    offset?: number;
 }
 
 export type GetIssuerEventsData = IssuerIssuerEventResponse[];
@@ -1816,6 +1788,24 @@ export class Api<SecurityDataType extends unknown> {
         getVerifiedIssuers: (query: GetVerifiedIssuersParams, params: RequestParams = {}) =>
             this.http.request<GetVerifiedIssuersData, GetVerifiedIssuersError>({
                 path: `/api/v1/issuers`,
+                method: "GET",
+                query: query,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get events assigned to the authenticated issuer for signing
+         *
+         * @tags Issuer
+         * @name GetIssuerEvents
+         * @summary Get events for issuer signing
+         * @request GET:/api/v1/issuers/events
+         */
+        getIssuerEvents: (query: GetIssuerEventsParams, params: RequestParams = {}) =>
+            this.http.request<GetIssuerEventsData, GetIssuerEventsError>({
+                path: `/api/v1/issuers/events`,
                 method: "GET",
                 query: query,
                 type: ContentType.Json,
