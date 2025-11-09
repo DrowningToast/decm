@@ -29,5 +29,6 @@ type EventCertificateSignatureDataGateway interface {
 	GetEventCertificateSignatureByID(ctx context.Context, id uuid.UUID) (*entity.EventCertificateSignature, error)
 	GetEventCertificateSignaturesByEventCertificateID(ctx context.Context, eventCertificateID uuid.UUID) ([]*entity.EventCertificateSignature, error)
 	UpdateEventCertificateSignature(ctx context.Context, id uuid.UUID, params UpdateEventCertificateSignatureParameters) (*entity.EventCertificateSignature, error)
+	UpdateEventCertificateIssuerSignature(ctx context.Context, id uuid.UUID, issuerSignature *string) (*entity.EventCertificateSignature, error)
 	DeleteEventCertificateSignature(ctx context.Context, id uuid.UUID) error
 }

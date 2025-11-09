@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"apps/backend/common/customerror"
 	"apps/backend/common/pgmapper"
@@ -140,7 +139,7 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 
 		// Hash the CSV value
 		hash := cyptoutils.HashMessage(csvValue)
-		replacedHash := strings.ReplaceAll(hexutil.Encode(hash), "0x", "")
+		encodedHash := hexutil.Encode(hash)
 
 		// Create certificate
 		certificate, err := uc.EventCertificateDataGateway.CreateEventCertificate(ctx, eventdatagateway.CreateEventCertificateParameters{
@@ -154,7 +153,7 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 			EventContractAddress:    eventContract.EventContractAddress,
 			EventCertificateAddress: &eventCertificateAddressStr,
 			CertificateTokenID:      nil, // Will be set when minted,
-			Digest:                  &replacedHash,
+			Digest:                  &encodedHash,
 		})
 		if err != nil {
 			return nil, err
@@ -175,8 +174,8 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 
 		// Hash the CSV value
 		hash := cyptoutils.HashMessage(csvValue)
-		replacedHash := strings.ReplaceAll(hexutil.Encode(hash), "0x", "")
-		receivers = append(receivers, replacedHash)
+		encodedHash := hexutil.Encode(hash)
+		receivers = append(receivers, encodedHash)
 	}
 
 	signMessage := SignMessage{
@@ -208,17 +207,16 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 
 		// Create signature for each issuer
 		for _, issuer := range eventIssuers {
-			signMessageDigestStr := hexutil.Encode(signMessageDigest[:])
-			replacedSignMessageDigestStr := strings.ReplaceAll(signMessageDigestStr, "0x", "")
-			replacedHostSignature := strings.ReplaceAll(hexutil.Encode(signature), "0x", "")
+			encodedSignMessageDigestStr := hexutil.Encode(signMessageDigest[:])
+			encodedHostSignature := hexutil.Encode(signature)
 
 			_, err := uc.EventCertificateSignatureDataGateway.CreateEventCertificateSignature(ctx, eventdatagateway.CreateEventCertificateSignatureParameters{
 				EventCertificateID: certificateID,
 				IssuerCredentialID: issuer.IssuerCredentialID,
 				IssuerSignature:    nil, // Will be set when issuer signs
-				HostSignature:      replacedHostSignature,
+				HostSignature:      encodedHostSignature,
 				SignMessage:        &signMessageJSON,
-				SignMessageDigest:  &replacedSignMessageDigestStr,
+				SignMessageDigest:  &encodedSignMessageDigestStr,
 			})
 			if err != nil {
 				return nil, err

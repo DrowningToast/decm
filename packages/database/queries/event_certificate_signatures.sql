@@ -27,8 +27,13 @@ SET
     issuer_signature = sqlc.arg('issuer_signature'),
     host_signature = sqlc.arg('host_signature'),
     sign_message = sqlc.arg('sign_message'),
-    sign_message_digest = sqlc.arg('sign_message_digest'),
-    updated_at = NOW()
+    sign_message_digest = sqlc.arg('sign_message_digest')
+WHERE id = sqlc.arg('id')
+RETURNING *;
+
+-- name: UpdateEventCertificateIssuerSignature :one
+UPDATE event_certificate_signatures
+SET issuer_signature = sqlc.arg('issuer_signature')
 WHERE id = sqlc.arg('id')
 RETURNING *;
 
