@@ -235,6 +235,17 @@ func (q *Queries) GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUI
 	return items, nil
 }
 
+const ResetAllEventIssuersSigningStatus = `-- name: ResetAllEventIssuersSigningStatus :exec
+UPDATE event_issuers 
+SET is_signed = 0, updated_at = NOW()
+WHERE event_id = $1
+`
+
+func (q *Queries) ResetAllEventIssuersSigningStatus(ctx context.Context, eventID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, ResetAllEventIssuersSigningStatus, eventID)
+	return err
+}
+
 const UpdateEventIssuer = `-- name: UpdateEventIssuer :one
 UPDATE event_issuers
 SET 

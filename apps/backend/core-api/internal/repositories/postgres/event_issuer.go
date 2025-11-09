@@ -46,9 +46,9 @@ func (r *Repository) GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Co
 	})
 }
 
-// UpdateEventIssuerSigningStatus updates the is_signed field for an event issuer
+// UpdateEventIssuerSigningStatus updates is_signed field for an event issuer
 func (r *Repository) UpdateEventIssuerSigningStatus(ctx context.Context, eventID uuid.UUID, issuerCredentialID uuid.UUID, isSigned int32) error {
-	// First get the issuer record
+	// First get issuer record
 	issuer, err := r.queries.GetEventIssuerByEventIDAndIssuerCredentialID(ctx, generated.GetEventIssuerByEventIDAndIssuerCredentialIDParams{
 		EventID:            eventID,
 		IssuerCredentialID: issuerCredentialID,
@@ -57,7 +57,7 @@ func (r *Repository) UpdateEventIssuerSigningStatus(ctx context.Context, eventID
 		return err
 	}
 
-	// Update the is_signed field
+	// Update is_signed field
 	_, err = r.queries.UpdateEventIssuer(ctx, generated.UpdateEventIssuerParams{
 		ID:                issuer.ID,
 		IsSigned:          isSigned,
@@ -66,4 +66,9 @@ func (r *Repository) UpdateEventIssuerSigningStatus(ctx context.Context, eventID
 	})
 
 	return err
+}
+
+// ResetAllEventIssuersSigningStatus resets is_signed to 0 for all issuers of an event
+func (r *Repository) ResetAllEventIssuersSigningStatus(ctx context.Context, eventID uuid.UUID) error {
+	return r.queries.ResetAllEventIssuersSigningStatus(ctx, eventID)
 }
