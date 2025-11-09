@@ -250,7 +250,6 @@ export const EventForm = ({
                             placeholder={t("events.form.startDatePlaceholder")}
                             required
                             disabled={isLoading}
-                            disablePastDates
                         />
                         <WrappedDateSelect
                             name="endDate"
@@ -259,7 +258,6 @@ export const EventForm = ({
                             placeholder={t("events.form.endDatePlaceholder")}
                             required
                             disabled={isLoading}
-                            disablePastDates
                         />
                     </div>
 
