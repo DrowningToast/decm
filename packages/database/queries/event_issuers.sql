@@ -39,7 +39,7 @@ WHERE event_id = sqlc.arg('event_id') AND issuer_credential_id = sqlc.arg('issue
 -- name: GetEventIssuersByCredentialID :many
 SELECT 
     ei.id,
-    ei.event_id as event_id,,
+    ei.event_id as event_id,
     ei.issuer_credential_id,
     ei.is_signed,
     ei.signature,

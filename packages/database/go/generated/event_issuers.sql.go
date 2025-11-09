@@ -120,14 +120,13 @@ func (q *Queries) GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIs
 const GetEventIssuersByCredentialID = `-- name: GetEventIssuersByCredentialID :many
 SELECT 
     ei.id,
-    ei.event_id,
+    ei.event_id as event_id,
     ei.issuer_credential_id,
     ei.is_signed,
     ei.signature,
     ei.sign_message_digest,
     ei.created_at,
     ei.updated_at,
-    e.id as event_id,
     e.title as event_title,
     e.short_description as event_short_description,
     e.start_date as event_start_date,
@@ -156,7 +155,6 @@ type GetEventIssuersByCredentialIDRow struct {
 	SignMessageDigest      pgtype.Text        `json:"sign_message_digest"`
 	CreatedAt              pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
-	EventID_2              uuid.UUID          `json:"event_id_2"`
 	EventTitle             string             `json:"event_title"`
 	EventShortDescription  string             `json:"event_short_description"`
 	EventStartDate         time.Time          `json:"event_start_date"`
@@ -183,7 +181,6 @@ func (q *Queries) GetEventIssuersByCredentialID(ctx context.Context, arg GetEven
 			&i.SignMessageDigest,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.EventID_2,
 			&i.EventTitle,
 			&i.EventShortDescription,
 			&i.EventStartDate,
