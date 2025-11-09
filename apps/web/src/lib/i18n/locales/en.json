@@ -1109,7 +1109,16 @@
             "certificatesCount": "Certificates",
             "certificates": "Certificates",
             "eventCertificates": "Event Certificates",
-            "signingDetails": "Signing Details"
+            "signingDetails": "Signing Details",
+            "issuersStatus": "Issuers Status",
+            "noIssuersFound": "No issuers found for this event.",
+            "signingProgress": "Signing Progress",
+            "ofSigned": "of {{count}} signed",
+            "you": "You",
+            "issuer": "Issuer #",
+            "completed": "Completed",
+            "alreadySigned": "Already Signed",
+            "notAnIssuer": "Not an Issuer"
         },
         "pagination": {
             "rowsPerPage": "Rows per page:"

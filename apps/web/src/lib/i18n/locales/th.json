@@ -959,7 +959,20 @@
             "contractAddress": "ที่อยู่สัญญา",
             "certificatesCount": "ใบรับรองรับ",
             "certificates": "ใบรับรองรับ",
-            "eventCertificates": "ใบรับรองรับกิจกรรม"
+            "eventCertificates": "ใบรับรองรับกิจกรรม",
+            "signingDetails": "รายละเอียดการลงนาม",
+            "issuersStatus": "สถานะผู้ออกใบรับรองรับ",
+            "noIssuersFound": "ไม่พบผู้ออกใบรับรองรับสำหรับกิจกรรมนี้",
+            "signingProgress": "ความคืบหน้าการลงนาม",
+            "ofSigned": "จากทั้งหมด {{count}} รายการ",
+            "you": "คุณ",
+            "issuer": "ผู้ออกใบรับรองรับ #",
+            "completed": "เสร็จสิ้น",
+            "alreadySigned": "ลงนามแล้ว",
+            "notAnIssuer": "ไม่ใช่ผู้ออกใบรับรองรับ"
+        },
+        "pagination": {
+            "rowsPerPage": "แถวต่อหน้า:"
         }
     }
 }
