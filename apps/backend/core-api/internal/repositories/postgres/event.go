@@ -335,3 +335,103 @@ func (r *Repository) UpdateEvent(ctx context.Context, id uuid.UUID, params datag
 		EventStatus:              entity.EventStatus(result.EventStatus),
 	}, nil
 }
+
+func (r *Repository) ListEvents(ctx context.Context, limitCount *int32, offsetCount *int32) ([]*entity.Event, error) {
+	limit := int32(10)
+	offset := int32(0)
+	if limitCount != nil {
+		limit = *limitCount
+	}
+	if offsetCount != nil {
+		offset = *offsetCount
+	}
+
+	events, err := r.queries.ListEvents(ctx, generated.ListEventsParams{
+		LimitCount:  limit,
+		OffsetCount: offset,
+	})
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	eventsEntity := make([]*entity.Event, len(events))
+	for i, event := range events {
+		eventsEntity[i] = &entity.Event{
+			ID:                       event.ID,
+			EventType:                entity.EventType(event.EventType),
+			ChainID:                  int(event.ChainID),
+			ContactNumber:            event.ContactNumber,
+			ContactAddress:           event.ContactAddress,
+			OwnerCredentialID:        event.OwnerCredentialID,
+			BannerStorageKey:         event.BannerStorageKey,
+			IconStorageKey:           event.IconStorageKey,
+			Title:                    event.Title,
+			ShortDescription:         event.ShortDescription,
+			LongDescription:          event.LongDescription.String,
+			StartDate:                event.StartDate,
+			EndDate:                  event.EndDate,
+			Location:                 event.Location,
+			GoogleMapQuery:           event.GoogleMapQuery,
+			MaxAttendees:             int(event.MaxAttendees),
+			IsPublic:                 event.IsPublic.Int32 == 1,
+			IsBookingRequestRequired: event.IsBookingRequestRequired.Int32 == 1,
+			IsVerified:               event.IsVerified.Int32 == 1,
+			IsTicketTransferable:     event.IsTicketTransferable.Int32 == 1,
+			CreatedAt:                event.CreatedAt.Time,
+			UpdatedAt:                event.UpdatedAt.Time,
+			EventStatus:              entity.EventStatus(event.EventStatus),
+		}
+	}
+
+	return eventsEntity, nil
+}
+
+func (r *Repository) ListEventsByEventAttendeeCredentialID(ctx context.Context, eventAttendeeCredentialID uuid.UUID, limitCount *int32, offsetCount *int32) ([]*entity.Event, error) {
+	limit := int32(10)
+	offset := int32(0)
+	if limitCount != nil {
+		limit = *limitCount
+	}
+	if offsetCount != nil {
+		offset = *offsetCount
+	}
+	events, err := r.queries.ListEventsByEventAttendeeCredentialID(ctx, generated.ListEventsByEventAttendeeCredentialIDParams{
+		EventAttendeeCredentialID: eventAttendeeCredentialID,
+		LimitCount:                limit,
+		OffsetCount:               offset,
+	})
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	eventsEntity := make([]*entity.Event, len(events))
+	for i, event := range events {
+		eventsEntity[i] = &entity.Event{
+			ID:                       event.ID,
+			EventType:                entity.EventType(event.EventType),
+			ChainID:                  int(event.ChainID),
+			ContactNumber:            event.ContactNumber,
+			ContactAddress:           event.ContactAddress,
+			OwnerCredentialID:        event.OwnerCredentialID,
+			BannerStorageKey:         event.BannerStorageKey,
+			IconStorageKey:           event.IconStorageKey,
+			Title:                    event.Title,
+			ShortDescription:         event.ShortDescription,
+			LongDescription:          event.LongDescription.String,
+			StartDate:                event.StartDate,
+			EndDate:                  event.EndDate,
+			Location:                 event.Location,
+			GoogleMapQuery:           event.GoogleMapQuery,
+			MaxAttendees:             int(event.MaxAttendees),
+			IsPublic:                 event.IsPublic.Int32 == 1,
+			IsBookingRequestRequired: event.IsBookingRequestRequired.Int32 == 1,
+			IsVerified:               event.IsVerified.Int32 == 1,
+			IsTicketTransferable:     event.IsTicketTransferable.Int32 == 1,
+			CreatedAt:                event.CreatedAt.Time,
+			UpdatedAt:                event.UpdatedAt.Time,
+			EventStatus:              entity.EventStatus(event.EventStatus),
+		}
+	}
+
+	return eventsEntity, nil
+}

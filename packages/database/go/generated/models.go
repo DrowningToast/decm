@@ -181,7 +181,7 @@ type EventAttendee struct {
 	ID                   uuid.UUID          `json:"id"`
 	EventID              uuid.UUID          `json:"event_id"`
 	AttendeeCredentialID uuid.UUID          `json:"attendee_credential_id"`
-	ContactAddress       string             `json:"contact_address"`
+	ContractAddress      string             `json:"contract_address"`
 	IsAttendeeAccepted   int32              `json:"is_attendee_accepted"`
 	FirstName            pgtype.Text        `json:"first_name"`
 	LastName             pgtype.Text        `json:"last_name"`

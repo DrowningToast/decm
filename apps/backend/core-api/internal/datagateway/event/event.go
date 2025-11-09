@@ -48,10 +48,14 @@ type UpdateEventParameters struct {
 	IsBookingRequestRequired *bool
 	IsTicketTransferable     *bool
 }
+
 type EventDataGateway interface {
 	CreateEvent(ctx context.Context, params CreateEventParameters) (*entity.Event, error)
 	GetEventById(ctx context.Context, id uuid.UUID) (*entity.Event, error)
 	ListEventsByOwnerCredentialID(ctx context.Context, ownerCredentialID uuid.UUID, limitCount int32, offsetCount int32) ([]*entity.Event, error)
 	UpdateEvent(ctx context.Context, id uuid.UUID, params UpdateEventParameters) (*entity.Event, error)
 	DeleteEvent(ctx context.Context, id uuid.UUID) (*entity.Event, error)
+
+	ListEvents(ctx context.Context, limitCount *int32, offsetCount *int32) ([]*entity.Event, error)
+	ListEventsByEventAttendeeCredentialID(ctx context.Context, eventAttendeeCredentialID uuid.UUID, limitCount *int32, offsetCount *int32) ([]*entity.Event, error)
 }

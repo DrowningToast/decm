@@ -121,7 +121,7 @@ CREATE TABLE event_attendees (
     event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     attendee_credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
     
-    contact_address VARCHAR(255) NOT NULL,
+    contract_address VARCHAR(255) NOT NULL,
 
     is_attendee_accepted INTEGER NOT NULL,
     

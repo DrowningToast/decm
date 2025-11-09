@@ -65,7 +65,7 @@ export const MainPage = () => {
                     <Typography
                         variant="text"
                         tag="p"
-                        color="muted"
+                        color="foreground-alt"
                         className="text-base md:text-lg [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                     >
                         {t("participant.home.actionRequired", { count: actionCount })}
@@ -77,8 +77,8 @@ export const MainPage = () => {
                     <Typography
                         variant="text"
                         tag="h2"
-                        color="muted"
-                        className="text-base md:text-sm text-muted [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                        color="foreground-alt"
+                        className="text-base md:text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                     >
                         {t("participant.home.participantServices")}
                     </Typography>

@@ -70,6 +70,8 @@ export const SignupPage: React.FC<SignupPageProps> = ({
                             className="w-full h-12 bg-background-alt hover:bg-background-alt/90 rounded-[12px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                             size="lg"
                             onClick={onGoogleOAuthClick}
+                            disabled={isLoading}
+                            loading={isLoading}
                         >
                             <Typography
                                 variant="text"

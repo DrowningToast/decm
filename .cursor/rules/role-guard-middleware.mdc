@@ -1,0 +1,419 @@
+---
+description: Role-based access control middleware for protecting routes by user roles
+---
+
+# Role Guard Middleware
+
+Role-based access control (RBAC) middleware for protecting backend routes based on user roles (verified organizer, verified issuer).
+
+## Location
+
+`apps/backend/core-api/internal/middleware/role_guard/`
+
+## Overview
+
+The role guard middleware checks if an authenticated user has required role(s) to access specific endpoints. This middleware must be used **after** the `authentication_guard` middleware, as it requires user claims in the context.
+
+## Available Roles
+
+```go
+import roleguard "apps/backend/core-api/internal/middleware/role_guard"
+
+const (
+    roleguard.RoleVerifiedOrganizer Role = "verified_organizer"
+    roleguard.RoleVerifiedIssuer    Role = "verified_issuer"
+)
+```
+
+## Core Function
+
+```go
+// Generic function - user must have ONE OR MORE of the specified roles
+func (m *RoleGuardMiddleware) RequireRole(roles ...Role) fiber.Handler
+```
+
+## Usage Patterns
+
+### Pattern 1: Generic RequireRole() - Recommended
+
+```go
+import roleguard "apps/backend/core-api/internal/middleware/role_guard"
+
+func (h *Handler) Mount(r fiber.Router) {
+    authGuard := h.AuthenticationGuardMiddleware
+    roleGuard := h.RoleGuardMiddleware
+    
+    eventGroup := r.Group("/events").Use(authGuard.Middleware)
+    
+    // Single role - organizer only
+    eventGroup.Post("/", 
+        roleGuard.RequireRole(roleguard.RoleVerifiedOrganizer),
+        h.CreateEvent,
+    )
+    
+    // Multiple roles - organizer OR issuer (user needs at least one)
+    eventGroup.Get("/admin/dashboard", 
+        roleGuard.RequireRole(
+            roleguard.RoleVerifiedOrganizer, 
+            roleguard.RoleVerifiedIssuer,
+        ),
+        h.GetAdminDashboard,
+    )
+}
+```
+
+### Pattern 2: Convenience Methods
+
+```go
+// Pre-configured shortcuts
+roleGuard.RequireVerifiedOrganizer()          // = RequireRole(RoleVerifiedOrganizer)
+roleGuard.RequireVerifiedIssuer()             // = RequireRole(RoleVerifiedIssuer)
+roleGuard.RequireVerifiedOrganizerOrIssuer()  // = RequireRole(RoleVerifiedOrganizer, RoleVerifiedIssuer)
+
+// Usage
+eventGroup.Post("/", 
+    roleGuard.RequireVerifiedOrganizer(),
+    h.CreateEvent,
+)
+```
+
+## Integration Steps
+
+### 1. Initialize in main.go
+
+```go
+import roleguard "apps/backend/core-api/internal/middleware/role_guard"
+
+func main() {
+    // After authService initialization
+    authenticationGuardMiddleware := authenticationguard.New(authService)
+    roleGuardMiddleware := roleguard.New(authService)  // Add this
+    
+    // Pass to handlers
+    eventHandler := event.NewHandler(
+        eventUc,
+        authService,
+        authenticationGuardMiddleware,
+        roleGuardMiddleware,  // Add this parameter
+        logger,
+    )
+}
+```
+
+### 2. Update Handler Struct
+
+```go
+type Handler struct {
+    AuthenticationGuardMiddleware *authenticationguard.AuthenticationGuardMiddleware
+    RoleGuardMiddleware           *roleguard.RoleGuardMiddleware  // Add this
+    // ... other fields
+}
+
+func NewHandler(
+    authGuard *authenticationguard.AuthenticationGuardMiddleware,
+    roleGuard *roleguard.RoleGuardMiddleware,  // Add this parameter
+    // ... other params
+) *Handler {
+    return &Handler{
+        AuthenticationGuardMiddleware: authGuard,
+        RoleGuardMiddleware:           roleGuard,  // Initialize
+        // ... other fields
+    }
+}
+```
+
+### 3. Apply to Routes
+
+```go
+func (h *Handler) Mount(r fiber.Router) {
+    // Base group - requires authentication
+    eventGroup := r.Group("/events").Use(
+        h.AuthenticationGuardMiddleware.Middleware,
+    )
+    
+    // Public routes (any authenticated user)
+    eventGroup.Get("/:event_id", h.GetEventById)
+    
+    // Protected routes (require specific role)
+    eventGroup.Post("/", 
+        h.RoleGuardMiddleware.RequireRole(roleguard.RoleVerifiedOrganizer),
+        h.CreateEvent,
+    )
+    
+    eventGroup.Put("/:event_id", 
+        h.RoleGuardMiddleware.RequireRole(roleguard.RoleVerifiedOrganizer),
+        h.UpdateEvent,
+    )
+}
+```
+
+## Middleware Order
+
+⚠️ **Critical**: Always use role guard **after** authentication guard:
+
+```go
+// ✅ Correct order
+eventGroup := r.Group("/events").Use(
+    authenticationGuard.Middleware,  // 1. Authenticate first
+)
+eventGroup.Post("/", 
+    roleGuard.RequireRole(roleguard.RoleVerifiedOrganizer),  // 2. Then check role
+    h.CreateEvent,
+)
+
+// ❌ Wrong - role guard before authentication
+eventGroup.Post("/", 
+    roleGuard.RequireRole(roleguard.RoleVerifiedOrganizer),  // Will fail!
+    authenticationGuard.Middleware,
+    h.CreateEvent,
+)
+```
+
+## Error Responses
+
+When user lacks required role:
+
+```json
+{
+  "error": {
+    "code": 403,
+    "message": "Forbidden",
+    "details": "user does not have required role. Required one of: verified_organizer, verified_issuer"
+  }
+}
+```
+
+## Migration from Usecase-Level Checks
+
+### Before (Usecase-level authorization)
+
+```go
+// In usecase/event/create_event.go
+func (u *EventUsecase) CreateEvent(...) {
+    // Role check in usecase (not ideal)
+    credential, err := u.AuthenticationCredentialsDg.GetAuthenticationCredentialById(ctx, user.UserId)
+    if err != nil {
+        return nil, err
+    }
+    
+    if !credential.IsVerifiedOrganizer {
+        return nil, customerror.Parse(&customerror.ErrForbidden, 
+            errors.New("user is not a verified organizer"))
+    }
+    
+    // Business logic...
+}
+```
+
+### After (Middleware-level authorization)
+
+```go
+// In handler/event/routes.go
+eventGroup.Post("/", 
+    h.RoleGuardMiddleware.RequireRole(roleguard.RoleVerifiedOrganizer),
+    h.CreateEvent,
+)
+
+// In usecase/event/create_event.go
+func (u *EventUsecase) CreateEvent(...) {
+    // Role already verified by middleware - focus on business logic only
+    // Business logic...
+}
+```
+
+## Best Practices
+
+### ✅ Do
+
+- Use `RequireRole()` for all role-based authorization
+- Apply role guards at route level, not in usecase
+- Use role constants (`roleguard.RoleVerifiedOrganizer`) to prevent typos
+- Group routes by authentication/authorization requirements
+- List required roles in OpenAPI documentation
+
+### ❌ Don't
+
+- Don't check roles in usecase layer (separation of concerns)
+- Don't apply role guard before authentication guard
+- Don't use string literals for roles (use constants)
+- Don't skip role checks for "admin" routes
+
+## Route Organization Pattern
+
+Organize routes by access level:
+
+```go
+func (h *Handler) Mount(r fiber.Router) {
+    // Base group - authentication required for all
+    eventGroup := r.Group("/events").Use(
+        h.AuthenticationGuardMiddleware.Middleware,
+    )
+    
+    // ====== PUBLIC ROUTES (any authenticated user) ======
+    eventGroup.Get("/:event_id", h.GetEventById)
+    eventGroup.Get("/", h.GetEventList)
+    
+    // ====== ORGANIZER-ONLY ROUTES ======
+    eventGroup.Post("/", 
+        h.RoleGuardMiddleware.RequireRole(roleguard.RoleVerifiedOrganizer),
+        h.CreateEvent,
+    )
+    eventGroup.Put("/:event_id", 
+        h.RoleGuardMiddleware.RequireRole(roleguard.RoleVerifiedOrganizer),
+        h.UpdateEvent,
+    )
+    eventGroup.Delete("/:event_id", 
+        h.RoleGuardMiddleware.RequireRole(roleguard.RoleVerifiedOrganizer),
+        h.DeleteEvent,
+    )
+    
+    // ====== ISSUER-ONLY ROUTES ======
+    certGroup := r.Group("/certificates").Use(
+        h.AuthenticationGuardMiddleware.Middleware,
+    )
+    certGroup.Post("/issue", 
+        h.RoleGuardMiddleware.RequireRole(roleguard.RoleVerifiedIssuer),
+        h.IssueCertificate,
+    )
+    
+    // ====== ORGANIZER OR ISSUER ROUTES ======
+    adminGroup := r.Group("/admin").Use(
+        h.AuthenticationGuardMiddleware.Middleware,
+    )
+    adminGroup.Get("/dashboard", 
+        h.RoleGuardMiddleware.RequireRole(
+            roleguard.RoleVerifiedOrganizer,
+            roleguard.RoleVerifiedIssuer,
+        ),
+        h.GetAdminDashboard,
+    )
+}
+```
+
+## Adding New Roles
+
+To add a new role (e.g., `RoleVerifiedStudent`):
+
+### 1. Add Role Constant
+
+```go
+// In apps/backend/core-api/internal/middleware/role_guard/role_guard.go
+const (
+    RoleVerifiedOrganizer Role = "verified_organizer"
+    RoleVerifiedIssuer    Role = "verified_issuer"
+    RoleVerifiedStudent   Role = "verified_student"  // New role
+)
+```
+
+### 2. Add Role Check Logic
+
+```go
+// In RequireRole() function
+case RoleVerifiedStudent:
+    if claims.IsVerifiedStudent != nil && *claims.IsVerifiedStudent {
+        hasRole = true
+    }
+```
+
+### 3. Use in Routes
+
+```go
+studentGroup.Post("/submit", 
+    roleGuard.RequireRole(roleguard.RoleVerifiedStudent),
+    h.SubmitAssignment,
+)
+```
+
+### 4. Add Convenience Method (Optional)
+
+```go
+func (m *RoleGuardMiddleware) RequireVerifiedStudent() fiber.Handler {
+    return m.RequireRole(RoleVerifiedStudent)
+}
+```
+
+## Common Use Cases
+
+### Event Management (Organizers)
+
+```go
+// Create, update, delete events
+eventGroup.Post("/", roleGuard.RequireRole(roleguard.RoleVerifiedOrganizer), h.CreateEvent)
+eventGroup.Put("/:id", roleGuard.RequireRole(roleguard.RoleVerifiedOrganizer), h.UpdateEvent)
+eventGroup.Delete("/:id", roleGuard.RequireRole(roleguard.RoleVerifiedOrganizer), h.DeleteEvent)
+```
+
+### Certificate Issuance (Issuers)
+
+```go
+// Issue and manage certificates
+certGroup.Post("/issue", roleGuard.RequireRole(roleguard.RoleVerifiedIssuer), h.IssueCertificate)
+certGroup.Put("/:id", roleGuard.RequireRole(roleguard.RoleVerifiedIssuer), h.UpdateCertificate)
+```
+
+### Admin Features (Organizers OR Issuers)
+
+```go
+// Dashboard, analytics, reports
+adminGroup.Get("/dashboard", 
+    roleGuard.RequireRole(roleguard.RoleVerifiedOrganizer, roleguard.RoleVerifiedIssuer),
+    h.GetDashboard,
+)
+```
+
+## Testing Role Guards
+
+```go
+func TestRequireRole_Success(t *testing.T) {
+    authService := auth.NewAuthService("test", "secret", time.Hour)
+    roleGuard := roleguard.New(authService)
+    
+    isVerified := true
+    claims := &auth.JwtClaims{
+        UserId:              uuid.New(),
+        IsVerifiedOrganizer: &isVerified,
+    }
+    
+    app := fiber.New()
+    app.Get("/test",
+        func(c *fiber.Ctx) error {
+            c.Locals("user", claims)
+            return c.Next()
+        },
+        roleGuard.RequireRole(roleguard.RoleVerifiedOrganizer),
+        func(c *fiber.Ctx) error {
+            return c.SendStatus(200)
+        },
+    )
+    
+    req := httptest.NewRequest("GET", "/test", nil)
+    resp, _ := app.Test(req)
+    assert.Equal(t, 200, resp.StatusCode)
+}
+```
+
+## Related Files
+
+- `apps/backend/core-api/internal/middleware/authentication_guard/` - Authentication middleware (use first)
+- `apps/backend/services/auth/jwt.go` - JWT claims with role flags
+- `apps/backend/core-api/internal/entity/authentication_credentials.go` - User roles in database
+- `packages/database/queries/authentication_credentials.sql` - Role queries
+
+## Benefits
+
+1. **Separation of Concerns** - Authorization logic separated from business logic
+2. **DRY Principle** - No repeated role checks across usecases
+3. **Type Safety** - Role constants prevent typos and errors
+4. **Flexibility** - Easy to require single or multiple roles
+5. **Clarity** - Route protection is explicit in route definitions
+6. **Maintainability** - Single place to manage role checks
+7. **Testability** - Middleware can be tested independently
+8. **Performance** - Early rejection before reaching usecase layer
+
+## Security Considerations
+
+- Role flags are stored in JWT claims and verified on every request
+- Roles are set during authentication and cannot be modified client-side
+- Always use HTTPS in production to protect JWT cookies
+- Regularly audit role assignments in the database
+- Log all authorization failures for security monitoring
