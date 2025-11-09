@@ -84,93 +84,6 @@ export const EventCertificateABI = [
     },
     {
         type: "function",
-        name: "bulkMintParticipantCertificates",
-        inputs: [
-            {
-                name: "params",
-                type: "tuple[]",
-                internalType: "struct EventCertificate.BulkMintParticipantCertificatesParams[]",
-                components: [
-                    {
-                        name: "receiverAddress",
-                        type: "address",
-                        internalType: "address",
-                    },
-                    {
-                        name: "userId",
-                        type: "string",
-                        internalType: "string",
-                    },
-                    {
-                        name: "certificateId",
-                        type: "string",
-                        internalType: "string",
-                    },
-                    {
-                        name: "issuerId",
-                        type: "string",
-                        internalType: "string",
-                    },
-                    {
-                        name: "encryptedUserData",
-                        type: "string",
-                        internalType: "string",
-                    },
-                    {
-                        name: "backendEncryptedUserData",
-                        type: "string",
-                        internalType: "string",
-                    },
-                    {
-                        name: "issuerAddresses",
-                        type: "address[]",
-                        internalType: "address[]",
-                    },
-                    {
-                        name: "issuerProofs",
-                        type: "tuple[]",
-                        internalType: "struct CertificateVCStructs.IssuerProof[]",
-                        components: [
-                            {
-                                name: "issuerSignature",
-                                type: "string",
-                                internalType: "string",
-                            },
-                            {
-                                name: "issuerPublicKey",
-                                type: "string",
-                                internalType: "string",
-                            },
-                        ],
-                    },
-                ],
-            },
-            {
-                name: "signedMessageDigest",
-                type: "string",
-                internalType: "string",
-            },
-            {
-                name: "signature",
-                type: "bytes",
-                internalType: "bytes",
-            },
-            {
-                name: "hostSignature",
-                type: "string",
-                internalType: "string",
-            },
-            {
-                name: "hostPublicKey",
-                type: "string",
-                internalType: "string",
-            },
-        ],
-        outputs: [],
-        stateMutability: "nonpayable",
-    },
-    {
-        type: "function",
         name: "getApproved",
         inputs: [
             {
@@ -287,6 +200,21 @@ export const EventCertificateABI = [
             },
             {
                 name: "hostPublicKey",
+                type: "string",
+                internalType: "string",
+            },
+            {
+                name: "signMessage",
+                type: "string",
+                internalType: "string",
+            },
+            {
+                name: "userEncryptedProof",
+                type: "string",
+                internalType: "string",
+            },
+            {
+                name: "backendEncryptedProof",
                 type: "string",
                 internalType: "string",
             },
