@@ -15,7 +15,6 @@ export interface CertificateRow {
 }
 
 export function CertificateColumns(
-    eventId: string,
     onClickRevoke?: (eventCertificateId: string) => void,
 ): ColumnDef<EntityEventCertificate>[] {
     const certificateColumns: ColumnDef<EntityEventCertificate>[] = [
@@ -83,11 +82,7 @@ export function CertificateColumns(
             enableSorting: false,
             cell: ({ row }) => {
                 const eventCertificateId = row.original.id;
-                console.log(eventCertificateId);
-
-                // Disable revoke button if certificate ID is not available
                 const isRevokeDisabled = !eventCertificateId;
-
                 return (
                     <ConfirmModal
                         title="Revoke Certificate"

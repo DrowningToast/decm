@@ -503,7 +503,6 @@ export default function HostEventDetailsPage({
 
                                         <DataTable
                                             columns={CertificateColumns(
-                                                eventId,
                                                 (eventCertificateId: string) => {
                                                     revokeEventCertificate({
                                                         certificateIds: [eventCertificateId],

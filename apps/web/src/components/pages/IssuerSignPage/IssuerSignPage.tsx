@@ -369,7 +369,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                         </Typography>
 
                         <DataTable
-                            columns={CertificateColumns(eventId)}
+                            columns={CertificateColumns()}
                             data={
                                 eventCertificates
                                     ?.filter((cert) => cert.id && cert.revoked_at === null)
