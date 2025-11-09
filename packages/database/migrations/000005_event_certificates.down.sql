@@ -6,12 +6,14 @@ DROP TABLE IF EXISTS event_certificate_signatures CASCADE;
 -- Drop parent table second
 DROP TABLE IF EXISTS event_certificates CASCADE;
 
--- Remove the column that was added to event_certificate_configs
-ALTER TABLE event_certificate_configs DROP COLUMN IF EXISTS event_name_pos_x;
+-- Remove the columns that were added to event_certificate_configs
 ALTER TABLE event_certificate_configs DROP COLUMN IF EXISTS certificate_title_pos_x;
 ALTER TABLE event_certificate_configs DROP COLUMN IF EXISTS certificate_title_pos_y;
 ALTER TABLE event_certificate_configs DROP COLUMN IF EXISTS certificate_subtitle_pos_x;
 ALTER TABLE event_certificate_configs DROP COLUMN IF EXISTS certificate_subtitle_pos_y;
 
-ALTER TABLE event_issuers DROP COLUMN IF EXISTS sign_message_digest;
+-- Remove the column that was added to event_issuers
 ALTER TABLE event_issuers DROP COLUMN IF EXISTS deleted_at;
+
+-- Rename the column back to its original name
+ALTER TABLE event_issuers RENAME sign_message_digest TO sign_message;
