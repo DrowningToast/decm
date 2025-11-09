@@ -135,6 +135,12 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 		return nil, customerror.Parse(&customerror.ErrNotFound, fmt.Errorf("no certificates found with signatures for this issuer"))
 	}
 
+	// Update issuer signing status to signed (1)
+	err = uc.EventIssuerDataGateway.UpdateEventIssuerSigningStatus(ctx, eventID, currentUser.UserId, 1)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update issuer signing status: %w", err)
+	}
+
 	return &SignEventCertificatesResponse{
 		Certificates: signedCertificates,
 	}, nil

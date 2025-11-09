@@ -45,3 +45,25 @@ func (r *Repository) GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Co
 		IssuerCredentialID: issuerCredentialID,
 	})
 }
+
+// UpdateEventIssuerSigningStatus updates the is_signed field for an event issuer
+func (r *Repository) UpdateEventIssuerSigningStatus(ctx context.Context, eventID uuid.UUID, issuerCredentialID uuid.UUID, isSigned int32) error {
+	// First get the issuer record
+	issuer, err := r.queries.GetEventIssuerByEventIDAndIssuerCredentialID(ctx, generated.GetEventIssuerByEventIDAndIssuerCredentialIDParams{
+		EventID:            eventID,
+		IssuerCredentialID: issuerCredentialID,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Update the is_signed field
+	_, err = r.queries.UpdateEventIssuer(ctx, generated.UpdateEventIssuerParams{
+		ID:                issuer.ID,
+		IsSigned:          isSigned,
+		Signature:         issuer.Signature,
+		SignMessageDigest: issuer.SignMessageDigest,
+	})
+
+	return err
+}
