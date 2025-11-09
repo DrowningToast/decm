@@ -7,15 +7,15 @@ export const ISSUER_STATES = {
 export type IssuerState = (typeof ISSUER_STATES)[keyof typeof ISSUER_STATES];
 
 // Helper functions to determine issuer state
-export const getIssuerStateText = (isSigned: number): string => {
-    switch (isSigned) {
-        case ISSUER_STATES.SIGNED:
-            return "Signed";
-        case ISSUER_STATES.PENDING:
-            return "Pending";
-        default:
-            return "Unknown";
-    }
+export const getIssuerStateText = (isSigned: number, t?: (key: string) => string): string => {
+    const translationKey =
+        isSigned === ISSUER_STATES.SIGNED
+            ? "issuer.sign.status.signed"
+            : isSigned === ISSUER_STATES.PENDING
+              ? "issuer.sign.status.waiting"
+              : "common.unknown";
+
+    return t ? t(translationKey) : translationKey;
 };
 
 export const getIssuerStateColor = (isSigned: number): string => {
