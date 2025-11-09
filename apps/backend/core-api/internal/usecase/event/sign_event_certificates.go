@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"apps/backend/common/customerror"
-	datagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 
@@ -105,7 +104,6 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 		}
 
 		signMessageDigest := cyptoutils.HashMessage(*targetSignature.SignMessage)
-
 		signature, err := cyptoutils.Sign(signMessageDigest, privateKey)
 		if err != nil {
 			return nil, err
@@ -114,10 +112,14 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 		// Convert signature to string for database storage
 		signatureStr := hexutil.Encode(signature)
 
+		// Log keys for debugging (remove in production)
+		// uc.logger.Debug("Private key", "private_key", fmt.Sprintf("%x", crypto.FromECDSA(privateKey)))
+		// uc.logger.Debug("Public key", "public_key", fmt.Sprintf("%x", crypto.FromECDSAPub(publicKey)))
+		// uc.logger.Debug("signatureStr", "signatureStr", signatureStr)
+		// uc.logger.Debug("digest", "digest", fmt.Sprintf("%x", signMessageDigest))
+
 		// Update certificate signature in database
-		_, err = uc.EventCertificateSignatureDataGateway.UpdateEventCertificateSignature(ctx, targetSignature.ID, datagateway.UpdateEventCertificateSignatureParameters{
-			IssuerSignature: &signatureStr,
-		})
+		_, err = uc.EventCertificateSignatureDataGateway.UpdateEventCertificateIssuerSignature(ctx, targetSignature.ID, &signatureStr)
 		if err != nil {
 			return nil, err
 		}

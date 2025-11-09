@@ -21,6 +21,7 @@ func HashMessage(message string) []byte {
 	return crypto.Keccak256([]byte(message))
 }
 
+// SignTransaction for sign a transaction with private key, which is compatible with Solidity's ECDSA.recover
 func Sign(digest []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	signature, err := crypto.Sign(digest, privateKey)
 	if err != nil {
@@ -36,6 +37,8 @@ func Sign(digest []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 
 	return signature, nil
 }
+
+// SignMessage for sign a message w/o Adjust the recovery ID (v)
 
 func GetAddressFromSignature(message string, signature string) (ethCommon.Address, error) {
 	hashedMessage := HashEthereumMessage(message)

@@ -85,6 +85,7 @@ type Querier interface {
 	UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event, error)
 	UpdateEventCertificate(ctx context.Context, arg UpdateEventCertificateParams) (EventCertificate, error)
 	UpdateEventCertificateConfig(ctx context.Context, arg UpdateEventCertificateConfigParams) (EventCertificateConfig, error)
+	UpdateEventCertificateIssuerSignature(ctx context.Context, arg UpdateEventCertificateIssuerSignatureParams) (EventCertificateSignature, error)
 	UpdateEventCertificateSignature(ctx context.Context, arg UpdateEventCertificateSignatureParams) (EventCertificateSignature, error)
 	UpdateEventContract(ctx context.Context, arg UpdateEventContractParams) (EventContract, error)
 	UpdateEventIssuer(ctx context.Context, arg UpdateEventIssuerParams) (EventIssuer, error)

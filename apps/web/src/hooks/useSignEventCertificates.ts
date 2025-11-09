@@ -16,7 +16,7 @@ interface SignEventCertificatesResponse {
     }>;
 }
 
-export function useSignEventCertificates() {
+export function useSignEventCertificates(eventId: string) {
     const queryClient = useQueryClient();
     const { t } = useTranslation();
 
