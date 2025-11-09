@@ -14,4 +14,5 @@ type EventIssuerDataGateway interface {
 	UpdateEventIssuer(ctx context.Context, params generated.UpdateEventIssuerParams) (*generated.EventIssuer, error)
 	DeleteEventIssuer(ctx context.Context, eventID uuid.UUID) error
 	GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Context, eventID uuid.UUID, issuerCredentialID uuid.UUID) (generated.EventIssuer, error)
+	UpdateEventIssuerSigningStatus(ctx context.Context, eventID uuid.UUID, issuerCredentialID uuid.UUID, isSigned int32) error
 }
