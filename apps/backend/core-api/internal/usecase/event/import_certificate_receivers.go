@@ -74,6 +74,12 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 		return nil, customerror.Parse(&customerror.ErrNotFound, fmt.Errorf("event contract not found"))
 	}
 
+	// Reset all event issuers' signing status
+	err = uc.EventIssuerDataGateway.ResetAllEventIssuersSigningStatus(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
+
 	privateKey, _, err := cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, requests[0].HostPin)
 	if err != nil {
 		return nil, err
