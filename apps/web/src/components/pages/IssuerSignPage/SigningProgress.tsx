@@ -1,5 +1,6 @@
 import { Typography } from "@/components/typography/typography";
 import { calculateSigningProgress } from "./issuerStateUtils";
+import { useTranslation } from "react-i18next";
 
 interface SigningProgressProps {
     issuers: Array<{ is_signed: number }>;
@@ -7,6 +8,7 @@ interface SigningProgressProps {
 }
 
 export function SigningProgress({ issuers, className = "" }: SigningProgressProps) {
+    const { t } = useTranslation();
     const progress = calculateSigningProgress(issuers);
     const signedCount = issuers?.filter((issuer) => issuer.is_signed === 1).length || 0;
     const totalCount = issuers?.length || 0;
@@ -15,10 +17,10 @@ export function SigningProgress({ issuers, className = "" }: SigningProgressProp
         <div className={`w-full ${className}`}>
             <div className="flex justify-between items-center mb-2">
                 <Typography variant="text" tag="span" className="text-sm font-medium">
-                    Signing Progress
+                    {t("issuer.sign.signingProgress")}
                 </Typography>
                 <Typography variant="text" tag="span" className="text-sm text-gray-500">
-                    {signedCount} of {totalCount} signed
+                    {t("issuer.sign.ofSigned", { count: totalCount })}
                 </Typography>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5">

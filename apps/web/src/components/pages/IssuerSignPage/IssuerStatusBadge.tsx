@@ -1,5 +1,6 @@
 import { Typography } from "@/components/typography/typography";
 import { getIssuerStateText, getIssuerStateColor, getIssuerStateBgColor } from "./issuerStateUtils";
+import { useTranslation } from "react-i18next";
 
 interface IssuerStatusBadgeProps {
     isSigned: number;
@@ -7,7 +8,8 @@ interface IssuerStatusBadgeProps {
 }
 
 export function IssuerStatusBadge({ isSigned, className = "" }: IssuerStatusBadgeProps) {
-    const statusText = getIssuerStateText(isSigned);
+    const { t } = useTranslation();
+    const statusText = getIssuerStateText(isSigned, t);
     const textColor = getIssuerStateColor(isSigned);
     const bgColor = getIssuerStateBgColor(isSigned);
 
