@@ -180,10 +180,10 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
                 {/* Header Section */}
                 <DialogHeader className="text-center ">
                     <DialogTitle className="text-2xl text-primary [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]">
-                        {title || "Signature Request"}
+                        {title || t("issuer.sign.signatureRequest")}
                     </DialogTitle>
                     <DialogDescription className="text-base text-background-alt [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]">
-                        {description || "Review request details before you confirm."}
+                        {description || t("issuer.sign.signatureRequestDescription")}
                     </DialogDescription>
                 </DialogHeader>
 

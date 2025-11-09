@@ -5,7 +5,7 @@ import { useParams } from "@/router";
 import { useEvent } from "@/hooks/events/useEvent";
 
 export default function Page() {
-    const { eventId } = useParams("/host/events/:eventId/imports");
+    const { eventId } = useParams("/host/events/:eventId/imports/participants");
     const { event, isLoadingEvent, isLoadingEventError } = useEvent(eventId);
 
     if (isLoadingEvent) {

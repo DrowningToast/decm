@@ -236,18 +236,13 @@
                 "register": "ลงทะเบียนกับเรา",
                 "signIn": "เข้าสู่ระบบ",
                 "eventManagement": "การจัดการกิจกรรม"
-            },
-            "issuer": {
-                "title": "ผู้ออกใบรับรอง",
-                "signInIAM": "เข้าสู่ระบบด้วย IAM",
-                "register": "ลงทะเบียนกับเรา"
-            },
-            "developer": {
-                "title": "นักพัฒนา",
-                "manageIntegration": "จัดการระบบอัตโนมัติและการเชื่อมต่อ",
-                "apiDocuments": "เอกสาร API",
-                "readDocs": "อ่านเอกสาร"
             }
+        },
+        "developer": {
+            "title": "นักพัฒนา",
+            "manageIntegration": "จัดการระบบอัตโนมัติและการเชื่อมต่อ",
+            "apiDocuments": "เอกสาร API",
+            "readDocs": "อ่านเอกสาร"
         }
     },
     "profile": {
@@ -597,6 +592,62 @@
             "academicInstitution": "academic_institution_name"
         }
     },
+    "certificateImport": {
+        "title": "นำเข้าใบรับรอง",
+        "description": "นำเข้าใบรับรองสำหรับกิจกรรมของคุณจากไฟล์ Excel",
+        "eventDetails": "รายละเอียดกิจกรรม",
+        "eventName": "ชื่อกิจกรรม",
+        "eventDate": "วันที่จัดกิจกรรม",
+        "eventLocation": "สถานที่จัดกิจกรรม",
+        "maxAttendees": "จำนวนผู้เข้าร่วมสูงสุด",
+        "uploadFile": "อัปโหลดไฟล์ Excel",
+        "selectFile": "คลิกเพื่อเลือกไฟล์ Excel",
+        "fileFormats": "รูปแบบที่รองรับ: .xlsx, .xls (สูงสุด 10MB)",
+        "fileSize": "ขนาดไฟล์",
+        "previewData": "ดูข้อมูลล่วงหน้า",
+        "columnMapping": "การจับคู่คอลัมน์",
+        "columnMappingDescription": "เราได้จับคู่คอลัมน์จากไฟล์ Excel ของคุณโดยอัตโนมัติ ✓ หมายถึงการจับคู่ตรงตัว ~ หมายถึงการจับคู่บางส่วน",
+        "selectColumn": "เลือกคอลัมน์",
+        "previewTable": "ตารางดูข้อมูลล่วงหน้า",
+        "rows": "แถว",
+        "parsingFile": "กำลังแยกวิเคราะห์ไฟล์ Excel...",
+        "fields": {
+            "firstName": "ชื่อ",
+            "lastName": "นามสกุล",
+            "email": "อีเมล",
+            "academicInstitution": "สถาบันการศึกษา",
+            "certificateTitle": "ชื่อใบรับรอง",
+            "certificateSubtitle": "คำอธิบายใบรับรอง"
+        },
+        "confirmImport": "ยืนยันการนำเข้า",
+        "importing": "กำลังนำเข้า...",
+        "importSuccess": "นำเข้าใบรับรองสำเร็จ",
+        "importError": "ไม่สามารถนำเข้าใบรับรองได้ กรุณาลองใหม่",
+        "invalidFileType": "ประเภทไฟล์ไม่ถูกต้อง กรุณาเลือกไฟล์ Excel",
+        "fileTooLarge": "ขนาดไฟล์เกินขีดจำกัด 10MB",
+        "missingColumns": "คอลัมน์ที่จำเป็นต้องมี: {{columns}} กรุณาตรวจสอบว่าไฟล์ Excel ของคุณมีคอลัมน์เหล่านี้",
+        "emptyFile": "ไฟล์ Excel ดูเหมือนจะว่างเปล่าหรือไม่มีข้อมูล",
+        "parseError": "ไม่สามารถแยกวิเคราะห์ไฟล์ Excel ได้ กรุณาตรวจสอบรูปแบบไฟล์",
+        "requiredFormat": "รูปแบบ Excel ที่จำเป็นต้องมี",
+        "requiredFormatDescription": "ไฟล์ Excel ของคุณต้องมีส่วนหัวคอลัมน์เหล่านี้:",
+        "columnHeader": "ส่วนหัวคอลัมน์",
+        "downloadTemplate": "ดาวน์โหลดเทมเพลต",
+        "downloadTemplateDescription": "ดาวน์โหลดไฟล์เทมเพลต Excel ที่มีรูปแบบที่ถูกต้อง",
+        "templateSheetName": "ใบรับรอง",
+        "templateFileName": "certificate_import_template",
+        "templateColumns": {
+            "firstName": "first_name",
+            "lastName": "last_name",
+            "email": "email",
+            "academicInstitution": "academic_institution",
+            "certificateTitle": "certificate_title",
+            "certificateSubtitle": "certificate_subtitle"
+        },
+        "hostPin": "PIN ของโฮสต์",
+        "hostPinDescription": "ป้อน PIN ของโฮสต์เพื่ออนุญาตให้นำเข้าใบรับรอง PIN นี้ใช้สำหรับลงนามบนข้อมูลใบรับรองบนบล็อกเชน",
+        "hostPinPlaceholder": "ป้อน PIN ของโฮสต์",
+        "hostPinRequired": "จำเป็นต้องมี PIN ของโฮสต์เพื่อนำเข้าใบรับรอง"
+    },
     "certificateSettings": {
         "pageTitle": "ตั้งค่าใบประกาศนียบัตร",
         "pageDescription": "กำหนดค่าผู้ออกใบประกาศนียบัตรและออกแบบเทมเพลตใบประกาศนียบัตร",
@@ -832,22 +883,22 @@
     "createEvent": {
         "success": "สร้างกิจกรรมสำเร็จ"
     },
-    "preference": {
-        "title": "การตั้งค่าส่วนตัว",
-        "description": "จัดการการตั้งค่าแอปพลิเคชันและการตั้งค่าของคุณ",
-        "language": {
-            "title": "ภาษา",
-            "description": "เลือกภาษาที่คุณชอบสำหรับแอปพลิเคชัน",
-            "select": "เลือก"
-        },
-        "moreComingSoon": "การตั้งค่าเพิ่มเติมจะมาเร็วๆ นี้"
-    },
-    "participant": {
-        "home": {
-            "greeting": {
-                "morning": "สวัสดีตอนเช้า",
-                "afternoon": "สวัสดีตอนบ่าย",
-                "evening": "สวัสดีตอนเย็น"
+    "issuer": {
+        "title": "ผู้ออกใบรับรอง",
+        "signInIAM": "เข้าระบบ IAM",
+        "register": "ลงทะเบียนกับเรา",
+        "sign": {
+            "pageTitle": "ลงนามใบรับรองรับ",
+            "pageDescription": "ตรวจรายการและลงนามใบรับรองรับที่รอดำเนินการสำหรับกิจกรรมที่คุณได้รับมอบหมาย",
+            "pendingTab": "รอการลงนาม",
+            "signedTab": "ลงนามแล้ว",
+            "table": {
+                "eventName": "ชื่อกิจกรรม",
+                "host": "ผู้จัดงาน",
+                "hostPlaceholder": "ผู้จัดงานกิจกรรม",
+                "certificates": "ใบรับรองรับ",
+                "status": "สถานะ",
+                "action": "การกระทำ"
             },
             "actionRequired": "คุณมี {{count}} รายการที่ต้องดำเนินการ",
             "actionRequired_plural": "คุณมี {{count}} รายการที่ต้องดำเนินการ",
@@ -879,100 +930,49 @@
                 "completed": "เสร็จสิ้น",
                 "pending": "รอดำเนินการ"
             },
-            "empty": {
-                "title": "ยังไม่มีประกาศนียบัตร",
-                "description": "คุณยังไม่มีประกาศนียบัตร เมื่อคุณสำเร็จการอบรม ประกาศนียบัตรจะปรากฏที่นี่"
+            "action": {
+                "review": "ตรวจรายการและลงนาม",
+                "view": "ดู"
             },
-            "noResults": {
-                "title": "ไม่พบประกาศนียบัตร",
-                "description": "ลองปรับการค้นหาของคุณ"
+            "pagination": {
+                "rowsPerPage": "แถวต่อหน้า:"
             },
-            "detail": {
-                "issuedBy": "ออกโดย",
-                "issued": "ออกเมื่อ",
-                "expires": "หมดอายุ",
-                "certificateId": "ID ประกาศนียบัตร",
-                "skillsDemonstrated": "ทักษะที่แสดง",
-                "scanToVerify": "สแกนเพื่อตรวจสอบ",
-                "useAnyQrScanner": "ใช้สแกนเนอร์ QR ใดก็ได้",
-                "expired": "หมดอายุ",
-                "expiredOn": "หมดอายุเมื่อ",
-                "certificateDescription": "รายละเอียดใบประกาศนียบัตร",
-                "youSignedCertificationOn": "คุณลงนามในใบประกาศนียบัตรเมื่อ",
-                "certificateContractAddress": "ที่อยู่สัญญาใบประกาศนียบัตร",
-                "eventContractAddress": "ที่อยู่สัญญากิจกรรม",
-                "verifiableCredentialAttributes": "คุณสมบัติข้อมูลรับรองที่ตรวจสอบได้",
-                "downloadAttributes": "ดาวน์โหลด",
-                "copyShareableUrl": "คัดลอก URL แชร์"
-            }
+            "pinRequired": "จำเป็นต้องกรอก PIN",
+            "pinMinLength": "PIN ต้องมีอย่าง 4 ตัวอักษร",
+            "signingSuccess": "ลงนามใบรับรองรับ {{count}} รายการสำเร็จ",
+            "signingError": "ไม่สามารถลงนามใบรับรองรับ กรุณาตรวจสอบ PIN และลองใหม่",
+            "signing": "กำลังลงนาม...",
+            "signAndApprove": "ลงนามและอนุมัติ ({{count}} ใบรับรองรับ)",
+            "reject": "ปฏิเสธ",
+            "confirmSign": "การลงนามหมายถึงคุณยอมรับการออกใบรับรองรับ {{count}} ใบสำหรับกิจกรรม \"{{eventName}}\" การกระทำนี้ไม่สามารถยกเลิกและจะถูกบันทึกไว้",
+            "backToDashboard": "กลับไปยังหน้าควบคุม",
+            "eventDetails": "รายละเอียดกิจกรรม",
+            "certificatesToSign": "ใบรับรองที่รอลงนาม",
+            "certificatePreview": "ตัวอย่างแม่แบบใบรับรองรับ",
+            "templateNotAvailable": "ไม่มีแม่แบบใบรับรองรับ",
+            "signCertificateBatch": "ลงนามชุดใบรับรองรับ",
+            "signCertificateBatchDescription": "ตรวจสอบแม่แบบใบรับรองรับและยืนยันเพื่อลงนามใบรับรองรับที่รอดำเนินการทั้งหมดสำหรับกิจกรรมนี้",
+            "signatureRequest": "คำขอลงนาม",
+            "signatureRequestDescription": "ตรวจสอบรายละเอียดคำขอก่อนยืนยัน",
+            "yourStatus": "สถานะของคุณ",
+            "signingStatus": "สถานะการลงนาม",
+            "contractAddress": "ที่อยู่สัญญา",
+            "certificatesCount": "ใบรับรองรับ",
+            "certificates": "ใบรับรองรับ",
+            "eventCertificates": "ใบรับรองรับกิจกรรม",
+            "signingDetails": "รายละเอียดการลงนาม",
+            "issuersStatus": "สถานะผู้ออกใบรับรอง",
+            "noIssuersFound": "ไม่พบผู้ออกใบรับรองสำหรับกิจกรรมนี้",
+            "signingProgress": "ความคืบหน้าการลงนาม",
+            "ofSigned": "จากทั้งหมด {{count}} รายการ",
+            "you": "คุณ",
+            "issuer": "ผู้ออกใบรับรอง #",
+            "completed": "เสร็จสิ้น",
+            "alreadySigned": "ลงนามแล้ว",
+            "notAnIssuer": "ไม่ใช่ผู้ออกใบรับรอง"
         },
-        "events": {
-            "title": "กิจกรรม",
-            "description": "ค้นหาโอกาสที่นี่",
-            "name": "ชื่อ",
-            "finalCall": "เรียกครั้งสุดท้าย",
-            "searchPlaceholder": "ค้นหากิจกรรม",
-            "passwordRequired": "ต้องใช้รหัสผ่าน",
-            "inviteOnly": "เฉพาะผู้ได้รับเชิญ",
-            "nolongerAccepting": "ไม่รับสมัครอีกต่อไป",
-            "filters": {
-                "seatsCount": "ที่นั่งที่มีอยู่",
-                "allEvents": "กิจกรรมทั้งหมด",
-                "myEvents": "กิจกรรมที่ฉันเข้าร่วม"
-            },
-            "empty": {
-                "title": "ยังไม่มีกิจกรรม",
-                "description": "กิจกรรมที่คุณเข้าร่วมจะปรากฏที่นี่"
-            },
-            "noResults": {
-                "title": "ไม่พบกิจกรรม",
-                "description": "ลองปรับการค้นหาหรือตัวกรองของคุณ"
-            },
-            "detail": {
-                "status": "สถานะ",
-                "acceptingRequests": "รับสมัครแล้ว",
-                "closed": "ไม่รับสมัครอีกต่อไป",
-                "finalCallForRequest": "เรียกครั้งสุดท้ายสำหรับคำขอ",
-                "participationRequest": "คำขอเข้าร่วม",
-                "passwordRequired": "ต้องใช้รหัสผ่าน",
-                "inviteOnly": "เฉพาะผู้ได้รับเชิญ",
-                "open": "เปิด",
-                "joined": "เข้าร่วมแล้ว",
-                "accepted": "ยอมรับแล้ว",
-                "seatsCount": "จำนวนที่นั่ง",
-                "eventContactAddress": "ที่อยู่联系กิจกรรม",
-                "noAddress": "ไม่มีที่อยู่ติดต่อ",
-                "passwordPlaceholder": "กรอกรหัสผ่านที่นี่"
-            },
-            "invited": "คุณได้รับเชิญแล้ว! คลิกที่นี่เพื่อดำเนินการต่อ",
-            "invitationRequired": "ต้องการคำเชิญ"
-        },
-        "inbox": {
-            "title": "กล่องข้อความ",
-            "subtitle": "เชิญชวนหรือใบรับรองที่รอดำเนินการจะปรากฏที่นี่",
-            "table": {
-                "actions": "การกระทำ",
-                "dateTime": "วันที่และเวลา"
-            },
-            "status": {
-                "pending": "รอดำเนินการ",
-                "available": "พร้อม",
-                "expired": "หมดอายุ",
-                "actionRequired": "ต้องดำเนินการ"
-            },
-            "empty": {
-                "title": "กล่องข้อความว่างเปล่า",
-                "description": "คำเชิญและประกาศนียบัตรจะปรากฏที่นี่เมื่อมาถึง"
-            },
-            "noResults": "ไม่มีรายการที่ตรงกับการค้นหาของคุณ",
-            "from": "จาก",
-            "date": "วันที่",
-            "statusLabel": "สถานะ",
-            "viewEvent": "ดูกิจกรรม",
-            "viewCertificate": "ดูใบรับรอง",
-            "mustBeInEvent": "ต้องอยู่ในกิจกรรมก่อน",
-            "loadingDetails": "กำลังโหลดรายละเอียดกล่องข้อความ...",
-            "failedToLoadDetails": "ไม่สามารถโหลดรายละเอียดกล่องข้อความ"
+        "pagination": {
+            "rowsPerPage": "แถวต่อหน้า:"
         }
     }
 }

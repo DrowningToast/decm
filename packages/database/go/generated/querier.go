@@ -19,7 +19,9 @@ type Querier interface {
 	// Note: Encryption is handled at the repository layer using AES-GCM
 	CreateAuthenticationCredential(ctx context.Context, arg CreateAuthenticationCredentialParams) (AuthenticationCredential, error)
 	CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error)
+	CreateEventCertificate(ctx context.Context, arg CreateEventCertificateParams) (EventCertificate, error)
 	CreateEventCertificateConfig(ctx context.Context, arg CreateEventCertificateConfigParams) (EventCertificateConfig, error)
+	CreateEventCertificateSignature(ctx context.Context, arg CreateEventCertificateSignatureParams) (EventCertificateSignature, error)
 	CreateEventContract(ctx context.Context, arg CreateEventContractParams) (EventContract, error)
 	CreateEventIssuer(ctx context.Context, arg CreateEventIssuerParams) (EventIssuer, error)
 	CreateEventRegistrationConfig(ctx context.Context, arg CreateEventRegistrationConfigParams) (EventRegistrationConfig, error)
@@ -30,7 +32,9 @@ type Querier interface {
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error
 	DeleteEvent(ctx context.Context, id uuid.UUID) (Event, error)
+	DeleteEventCertificate(ctx context.Context, id uuid.UUID) error
 	DeleteEventCertificateConfig(ctx context.Context, eventID uuid.UUID) error
+	DeleteEventCertificateSignature(ctx context.Context, id uuid.UUID) error
 	DeleteEventContract(ctx context.Context, eventID uuid.UUID) error
 	DeleteEventIssuer(ctx context.Context, id uuid.UUID) error
 	DeleteEventRegistrationConfig(ctx context.Context, eventID uuid.UUID) error
@@ -43,10 +47,15 @@ type Querier interface {
 	GetCredentialsBySolutionStatus(ctx context.Context, arg GetCredentialsBySolutionStatusParams) ([]AuthenticationCredential, error)
 	GetCredentialsByVerificationStatus(ctx context.Context, arg GetCredentialsByVerificationStatusParams) ([]AuthenticationCredential, error)
 	GetEventById(ctx context.Context, id uuid.UUID) (GetEventByIdRow, error)
+	GetEventCertificateByID(ctx context.Context, id uuid.UUID) (EventCertificate, error)
 	GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (EventCertificateConfig, error)
+	GetEventCertificateSignatureByID(ctx context.Context, id uuid.UUID) (EventCertificateSignature, error)
+	GetEventCertificateSignaturesByEventCertificateID(ctx context.Context, eventCertificateID uuid.UUID) ([]EventCertificateSignature, error)
+	GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error)
 	GetEventContractByEventID(ctx context.Context, eventID uuid.UUID) (EventContract, error)
 	GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Context, arg GetEventIssuerByEventIDAndIssuerCredentialIDParams) (EventIssuer, error)
 	GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIssuer, error)
+	GetEventIssuersByCredentialID(ctx context.Context, arg GetEventIssuersByCredentialIDParams) ([]GetEventIssuersByCredentialIDRow, error)
 	GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUID) ([]EventIssuer, error)
 	GetEventRegistrationConfigByEventID(ctx context.Context, eventID uuid.UUID) (EventRegistrationConfig, error)
 	GetEventRegistrationInvitationByID(ctx context.Context, id uuid.UUID) (EventRegistrationInvitation, error)
@@ -65,6 +74,7 @@ type Querier interface {
 	ListVerifiedIssuerProfiles(ctx context.Context, arg ListVerifiedIssuerProfilesParams) ([]ListVerifiedIssuerProfilesRow, error)
 	RemoveGithubConnector(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
 	RemoveGoogleConnector(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
+	ResetAllEventIssuersSigningStatus(ctx context.Context, eventID uuid.UUID) error
 	SetGithubConnector(ctx context.Context, arg SetGithubConnectorParams) (AuthenticationCredential, error)
 	SetGoogleConnector(ctx context.Context, arg SetGoogleConnectorParams) (AuthenticationCredential, error)
 	// Note: This would require adding a deleted_at column in future migration
@@ -74,7 +84,10 @@ type Querier interface {
 	UpdateAuthenticationCredentialKeys(ctx context.Context, arg UpdateAuthenticationCredentialKeysParams) (AuthenticationCredential, error)
 	UpdateAuthenticationCredentialPassword(ctx context.Context, arg UpdateAuthenticationCredentialPasswordParams) (AuthenticationCredential, error)
 	UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event, error)
+	UpdateEventCertificate(ctx context.Context, arg UpdateEventCertificateParams) (EventCertificate, error)
 	UpdateEventCertificateConfig(ctx context.Context, arg UpdateEventCertificateConfigParams) (EventCertificateConfig, error)
+	UpdateEventCertificateIssuerSignature(ctx context.Context, arg UpdateEventCertificateIssuerSignatureParams) (EventCertificateSignature, error)
+	UpdateEventCertificateSignature(ctx context.Context, arg UpdateEventCertificateSignatureParams) (EventCertificateSignature, error)
 	UpdateEventContract(ctx context.Context, arg UpdateEventContractParams) (EventContract, error)
 	UpdateEventIssuer(ctx context.Context, arg UpdateEventIssuerParams) (EventIssuer, error)
 	UpdateEventRegistrationConfig(ctx context.Context, arg UpdateEventRegistrationConfigParams) (EventRegistrationConfig, error)

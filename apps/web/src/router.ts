@@ -19,11 +19,14 @@ export type Path =
     | `/host/events`
     | `/host/events/:eventId`
     | `/host/events/:eventId/edit`
-    | `/host/events/:eventId/imports`
+    | `/host/events/:eventId/imports/certificates`
+    | `/host/events/:eventId/imports/participants`
     | `/host/events/:eventId/settings/certificate`
     | `/host/events/:eventId/settings/participant`
     | `/host/events/create`
     | `/host/home`
+    | `/issuer/sign`
+    | `/issuer/sign/:eventId`
     | `/onboard/:method`
     | `/signin`
     | `/signin/sign-message`
@@ -37,9 +40,11 @@ export type Params = {
     "/app/inbox/:id": { id: string };
     "/host/events/:eventId": { eventId: string };
     "/host/events/:eventId/edit": { eventId: string };
-    "/host/events/:eventId/imports": { eventId: string };
+    "/host/events/:eventId/imports/certificates": { eventId: string };
+    "/host/events/:eventId/imports/participants": { eventId: string };
     "/host/events/:eventId/settings/certificate": { eventId: string };
     "/host/events/:eventId/settings/participant": { eventId: string };
+    "/issuer/sign/:eventId": { eventId: string };
     "/onboard/:method": { method: string };
 };
 

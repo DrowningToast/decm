@@ -89,14 +89,21 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string memory backendEncryptedUserData,
         address[] memory issuerAddresses,
         string memory signedMessageDigest,
-        bytes memory signature
+        bytes memory signature,
+        string memory hostSignature,
+        string memory hostPublicKey,
+        string memory signMessage,
+        string memory userEncryptedProof,
+        string memory backendEncryptedProof,
+        CertificateVCStructs.IssuerProof[] memory issuerProofs
     ) external nonReentrant {
         address signer = recoverSigner(signedMessageDigest, signature);
         requireHostOrAdmin(signer);
 
         uint256 tokenId = tokenCounter;
+        
         CertificateVCStructs.CertificateVcData
-            memory newTokenData = _buildCertificateVcData(
+            memory newTokenData = _buildCertificateVcDataWithProof(
                 tokenId,
                 receiverAddress,
                 userId,
@@ -105,7 +112,13 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                 encryptedUserData,
                 backendEncryptedUserData,
                 issuerAddresses,
-                block.timestamp
+                block.timestamp,
+                hostSignature,
+                hostPublicKey,
+                signMessage,
+                userEncryptedProof,
+                backendEncryptedProof,
+                issuerProofs
             );
 
         _safeMint(receiverAddress, tokenId);
@@ -142,7 +155,7 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
 
         CertificateVCStructs.CertificateVcData memory vc = tokenIdToData[tokenId];
 
-        bool isAllowToSign = vc.receiverAddress == msg.sender;
+        bool isAllowToSign = vc.data.receiverAddress == msg.sender;
         if (!isAllowToSign) {
             revert EventCertificate__NotParticipant();
         }
@@ -160,55 +173,10 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string encryptedUserData;
         string backendEncryptedUserData;
         address[] issuerAddresses;
-    }
-
-    function bulkMintParticipantCertificates(
-        BulkMintParticipantCertificatesParams[] memory params,
-        string memory signedMessageDigest,
-        bytes memory signature
-    ) external nonReentrant {
-        address signer = recoverSigner(signedMessageDigest, signature);
-        requireHostOrAdmin(signer);
-
-        for (uint256 i = 0; i < params.length; i++) {
-            uint256 tokenId = tokenCounter++;
-            tokenIdToStatus[tokenId] = CertificateStatus.VALID;
-
-            CertificateVCStructs.CertificateVcData
-                memory newTokenData = _buildCertificateVcData(
-                    tokenId,
-                    params[i].receiverAddress,
-                    params[i].userId,
-                    params[i].certificateId,
-                    params[i].issuerId,
-                    params[i].encryptedUserData,
-                    params[i].backendEncryptedUserData,
-                    params[i].issuerAddresses,
-                    block.timestamp
-                );
-
-            tokenIdToData[tokenId] = newTokenData;
-
-            emit CertificateMinted(
-                tokenId,
-                params[i].receiverAddress,
-                params[i].certificateId,
-                params[i].userId,
-                params[i].issuerId
-            );
-
-            _safeMint(params[i].receiverAddress, tokenId);
-        }
-
-         emit SignatureUsed(
-                msg.sender,
-                signer,
-                address(this),
-                "bulkMintParticipantCertificates",
-                signedMessageDigest,
-                signature,
-                block.timestamp
-            );
+        CertificateVCStructs.IssuerProof[] issuerProofs;
+        string signMessage;
+        string userEncryptedProof;
+        string backendEncryptedProof;
     }
 
     function getTokenData(
@@ -226,28 +194,43 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
             ? "VALID"
             : "REVOKED";
 
+        // Build the VC in the new format
         string memory json = string(
             abi.encodePacked(
                 "{",
-                    '"@context": ["https://www.w3.org/2018/credentials/v1"],',
-                    '"id": "', vc.certificateId, '",',
-                    '"type": ["VerifiableCredential","EventCertificate"],',
-                    '"issuer": "', vc.issuerId, '",',
-                    '"issuanceDate": "', vc.issuedAt, '",',
-                    '"credentialSubject": {',
-                        '"eventName": "', vc.eventName, '",',
-                        '"eventDescription": "', vc.eventDescription, '",',
-                        '"certificateTokenId": "', vc.certificateTokenId, '",',
-                        '"certificateId": "', vc.certificateId, '",',
-                        '"userId": "', vc.userId, '",',
-                        '"issuerId": "', vc.issuerId, '",',
-                        '"issuedAt": "', vc.issuedAt, '",',
-                        '"issuerAddresses": "', vc.issuerAddresses, '",',
-                        '"receiverAddress": "', vc.receiverAddress, '",',
-                        '"status": "', status, '",',
-                        '"encryptedUserData": "', vc.encryptedUserData, '",',
-                        '"backendEncryptedUserData": "', vc.backendEncryptedUserData, '",',
+                    '"header": {',
+                        '"@context": ["https://www.w3.org/2018/credentials/v1"],',
+                        '"type": ["VerifiableCredential","EventCertificate"],',
+                        '"id": "', vc.header.id, '",',
+                        '"issuer": "', vc.header.issuer, '",',
+                        '"issuanceDate": "', vc.header.issuanceDate, '"',
+                    "},",
+                    '"data": {',
+                        '"eventName": "', vc.data.eventName, '",',
+                        '"eventDescription": "', vc.data.eventDescription, '",',
+                        '"certificateTokenId": "', vc.data.certificateTokenId, '",',
+                        '"certificateId": "', vc.data.certificateId, '",',
+                        '"userId": "', vc.data.userId, '",',
+                        '"issuerId": "', vc.data.issuerId, '",',
+                        '"issuedAt": "', vc.data.issuedAt, '",',
+                        '"issuerAddresses": "', _addressArrayToString(vc.data.issuerAddresses), '",',
+                        '"receiverAddress": "', _addressToString(vc.data.receiverAddress), '",',
+                        '"encryptedUserData": "', vc.data.encryptedUserData, '",',
+                        '"backendEncryptedUserData": "', vc.data.backendEncryptedUserData, '",',
                         '"status": "', statusString, '"',
+                    "},",
+                    '"proof": {',
+                        '"encryptedByUserRawData": "', vc.proof.encryptedByUserRawData, '",',
+                        '"encryptedByBackendRawData": "', vc.proof.encryptedByBackendRawData, '",',
+                        '"hash": "', vc.proof.hash, '",',
+                        '"signMessage": "', vc.proof.signMessage, '",',
+                        '"host": {',
+                            '"signature": "', vc.proof.host.signature, '",',
+                            '"publicKey": "', vc.proof.host.publicKey, '"',
+                        "},",
+                        '"issuers": [',
+                            _issuerProofsArrayToString(vc.proof.issuers),
+                        "]",
                     "}",
                 "}"
             )
@@ -296,20 +279,165 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         address[] memory issuerAddresses,
         uint256 issuedAt
     ) private view returns (CertificateVCStructs.CertificateVcData memory) {
+        // Create empty issuer proofs array for now
+        CertificateVCStructs.IssuerProof[] memory emptyIssuerProofs = new CertificateVCStructs.IssuerProof[](0);
+        
         return
             CertificateVCStructs.CertificateVcData({
-                eventName: EVENT.getEventName(),
-                eventDescription: EVENT.getEventDescription(),
-                certificateTokenId: tokenId,
-                certificateId: certificateId,
-                userId: userId,
-                issuerId: issuerId,
-                issuedAt: issuedAt, 
-                issuerAddresses: issuerAddresses,
-                receiverAddress: receiverAddress,
-                encryptedUserData: encryptedUserData,
-                backendEncryptedUserData: backendEncryptedUserData
+                header: CertificateVCStructs.Header({
+                    context: "https://www.w3.org/2018/credentials/v1",
+                    credentialType: "VerifiableCredential,EventCertificate",
+                    id: certificateId,
+                    issuer: issuerId,
+                    issuanceDate: _uint256ToString(issuedAt)
+                }),
+                data: CertificateVCStructs.Data({
+                    eventName: EVENT.getEventName(),
+                    eventDescription: EVENT.getEventDescription(),
+                    certificateTokenId: _uint256ToString(tokenId),
+                    certificateId: certificateId,
+                    userId: userId,
+                    issuerId: issuerId,
+                    issuedAt: _uint256ToString(issuedAt),
+                    issuerAddresses: issuerAddresses,
+                    receiverAddress: receiverAddress,
+                    encryptedUserData: encryptedUserData,
+                    backendEncryptedUserData: backendEncryptedUserData
+                }),
+                proof: CertificateVCStructs.Proof({
+                    encryptedByUserRawData: "",
+                    encryptedByBackendRawData: "",
+                    hash: "",
+                    signMessage: "",
+                    host: CertificateVCStructs.HostProof({
+                        signature: "",
+                        publicKey: ""
+                    }),
+                    issuers: emptyIssuerProofs
+                })
             });
     }
 
+    function _buildCertificateVcDataWithProof(
+        uint256 tokenId,
+        address receiverAddress,
+        string memory userId,
+        string memory certificateId,
+        string memory issuerId,
+        string memory encryptedUserData,
+        string memory backendEncryptedUserData,
+        address[] memory issuerAddresses,
+        uint256 issuedAt,
+        string memory hostSignature,
+        string memory hostPublicKey,
+        string memory signMessage,
+        string memory userEncryptedProof,
+        string memory backendEncryptedProof,
+        CertificateVCStructs.IssuerProof[] memory issuerProofs
+    ) private view returns (CertificateVCStructs.CertificateVcData memory) {
+        return
+            CertificateVCStructs.CertificateVcData({
+                header: CertificateVCStructs.Header({
+                    context: "https://www.w3.org/2018/credentials/v1",
+                    credentialType: "VerifiableCredential,EventCertificate",
+                    id: certificateId,
+                    issuer: issuerId,
+                    issuanceDate: _uint256ToString(issuedAt)
+                }),
+                data: CertificateVCStructs.Data({
+                    eventName: EVENT.getEventName(),
+                    eventDescription: EVENT.getEventDescription(),
+                    certificateTokenId: _uint256ToString(tokenId),
+                    certificateId: certificateId,
+                    userId: userId,
+                    issuerId: issuerId,
+                    issuedAt: _uint256ToString(issuedAt),
+                    issuerAddresses: issuerAddresses,
+                    receiverAddress: receiverAddress,
+                    encryptedUserData: encryptedUserData,
+                    backendEncryptedUserData: backendEncryptedUserData
+                }),
+                proof: CertificateVCStructs.Proof({
+                    encryptedByUserRawData: userEncryptedProof,
+                    encryptedByBackendRawData: backendEncryptedProof,
+                    hash: "",
+                    signMessage: signMessage,
+                    host: CertificateVCStructs.HostProof({
+                        signature: hostSignature,
+                        publicKey: hostPublicKey
+                    }),
+                    issuers: issuerProofs
+                })
+            });
+    }
+
+    function _addressToString(address addr) private pure returns (string memory) {
+        bytes memory data = abi.encodePacked(addr);
+        bytes memory alphabet = "0123456789abcdef";
+
+        bytes memory str = new bytes(2 + data.length * 2);
+        str[0] = "0";
+        str[1] = "x";
+        for (uint256 i = 0; i < data.length; i++) {
+            str[2 + i * 2] = alphabet[uint256(uint8(data[i] >> 4))];
+            str[3 + i * 2] = alphabet[uint256(uint8(data[i] & 0x0f))];
+        }
+        return string(str);
+    }
+
+    function _addressArrayToString(address[] memory addresses) private pure returns (string memory) {
+        if (addresses.length == 0) {
+            return "[]";
+        }
+
+        string memory result = "[";
+        for (uint256 i = 0; i < addresses.length; i++) {
+            result = string(abi.encodePacked(result, "\"", _addressToString(addresses[i]), "\""));
+            if (i < addresses.length - 1) {
+                result = string(abi.encodePacked(result, ","));
+            }
+        }
+        result = string(abi.encodePacked(result, "]"));
+        return result;
+    }
+
+    function _issuerProofsArrayToString(CertificateVCStructs.IssuerProof[] memory issuers) private pure returns (string memory) {
+        if (issuers.length == 0) {
+            return "[]";
+        }
+
+        string memory result = "";
+        for (uint256 i = 0; i < issuers.length; i++) {
+            result = string(abi.encodePacked(
+                result,
+                "{",
+                    '"issuerSignature": "', issuers[i].issuerSignature, '",',
+                    '"issuerPublicKey": "', issuers[i].issuerPublicKey, '"',
+                "}"
+            ));
+            if (i < issuers.length - 1) {
+                result = string(abi.encodePacked(result, ","));
+            }
+        }
+        return result;
+    }
+
+    function _uint256ToString(uint256 value) private pure returns (string memory) {
+        if (value == 0) {
+            return "0";
+        }
+        uint256 temp = value;
+        uint256 digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
+        return string(buffer);
+    }
 }

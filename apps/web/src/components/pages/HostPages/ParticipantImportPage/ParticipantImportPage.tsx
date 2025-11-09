@@ -86,7 +86,7 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
 
     return (
         <PageContainer title="Participant Import">
-            <div className="container mx-auto p-6">
+            <div className=" mx-auto p-6">
                 <div className="mb-8">
                     <Typography
                         variant="header"
@@ -145,8 +145,13 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
                                 color="background-alt"
                                 className="font-medium"
                             >
-                                {event.start_date ? new Date(event.start_date).toLocaleDateString() : "N/A"} -{" "}
-                                {event.end_date ? new Date(event.end_date).toLocaleDateString() : "N/A"}
+                                {event.start_date
+                                    ? new Date(event.start_date).toLocaleDateString()
+                                    : "N/A"}{" "}
+                                -{" "}
+                                {event.end_date
+                                    ? new Date(event.end_date).toLocaleDateString()
+                                    : "N/A"}
                             </Typography>
                         </div>
                         <div>

@@ -85,11 +85,6 @@ export const CertificateSettingsPage = ({
                 return;
             }
 
-            if (certificateTemplate.svgFile && !acedmicInstitutionName) {
-                toast.error(t("certificateSettings.svgFileNotFound"));
-                return;
-            }
-
             const req: UpdateEventCertificateConfigPayload = {
                 name_pos_x: name?.x ?? eventCertificateConfig?.name_pos_x ?? 0,
                 name_pos_y: name?.y ?? eventCertificateConfig?.name_pos_y ?? 0,
@@ -236,7 +231,7 @@ export const CertificateSettingsPage = ({
 
                             {/* Selected Issuers Table */}
                             <SelectedIssuersTable
-                                selectedIssuers={eventIssuers}
+                                selectedIssuers={issuerManagement.selectedIssuers}
                                 onRemoveIssuer={handleRemoveIssuer}
                             />
                         </div>
