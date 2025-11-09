@@ -58,3 +58,8 @@ INNER JOIN events e ON ei.event_id = e.id
 WHERE ei.issuer_credential_id = sqlc.arg('issuer_credential_id')
 ORDER BY e.created_at DESC
 LIMIT sqlc.arg('limit_count') OFFSET sqlc.arg('offset_count');
+
+-- name: ResetAllEventIssuersSigningStatus :exec
+UPDATE event_issuers 
+SET is_signed = 0, updated_at = NOW()
+WHERE event_id = sqlc.arg('event_id');

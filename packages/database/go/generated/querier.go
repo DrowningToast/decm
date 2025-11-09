@@ -74,6 +74,7 @@ type Querier interface {
 	ListVerifiedIssuerProfiles(ctx context.Context, arg ListVerifiedIssuerProfilesParams) ([]ListVerifiedIssuerProfilesRow, error)
 	RemoveGithubConnector(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
 	RemoveGoogleConnector(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
+	ResetAllEventIssuersSigningStatus(ctx context.Context, eventID uuid.UUID) error
 	SetGithubConnector(ctx context.Context, arg SetGithubConnectorParams) (AuthenticationCredential, error)
 	SetGoogleConnector(ctx context.Context, arg SetGoogleConnectorParams) (AuthenticationCredential, error)
 	// Note: This would require adding a deleted_at column in future migration
