@@ -1,4 +1,3 @@
-import { Typography } from "@/components/typography/typography";
 import { getIssuerStateText, getIssuerStateColor, getIssuerStateBgColor } from "./issuerStateUtils";
 import { useTranslation } from "react-i18next";
 

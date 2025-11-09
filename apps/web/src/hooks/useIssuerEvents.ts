@@ -18,7 +18,7 @@ export const useIssuerEvents = (options: UseIssuerEventsOptions = { issuer_crede
     const { limit = 10, offset = 0, issuer_credential_id } = options;
 
     return useQuery<GetIssuerEventsData>({
-        queryKey: ["issuer-events", limit, offset],
+        queryKey: ["issuer", "events", limit, offset],
         queryFn: () => getIssuerEvents(issuer_credential_id, limit || 10, offset || 0),
         enabled: !!issuer_credential_id,
         staleTime: 5 * 60 * 1000, // 5 minutes
@@ -36,7 +36,7 @@ export const usePendingEvents = (
     const { limit = 10, offset = 0, issuer_credential_id } = options;
 
     return useQuery<GetIssuerEventsData>({
-        queryKey: ["issuer-events-pending", limit, offset],
+        queryKey: ["issuer", "events", "pending", limit, offset],
         queryFn: () =>
             getIssuerEvents(issuer_credential_id, limit || 10, offset || 0).then((events) =>
                 events.filter((event) => event.is_signed === 0),
@@ -55,7 +55,7 @@ export const useSignedEvents = (options: UseIssuerEventsOptions = { issuer_crede
     const { limit = 10, offset = 0, issuer_credential_id } = options;
 
     return useQuery<GetIssuerEventsData>({
-        queryKey: ["issuer-events-signed", limit, offset],
+        queryKey: ["issuer", "events", "signed", limit, offset],
         queryFn: () =>
             getIssuerEvents(issuer_credential_id, limit || 10, offset || 0).then((events) =>
                 events.filter((event) => event.is_signed === 1),
