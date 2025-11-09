@@ -18,9 +18,7 @@ import { CertificateColumns } from "@/components/pages/HostPages/EventsPage/colu
 import { formatEthereumAddress } from "@/lib/utils";
 import SectionContainer from "@/components/container/SectionContainer";
 import { IssuerStatusBadge } from "./IssuerStatusBadge";
-import { SigningProgress } from "./SigningProgress";
 import { IssuersStatus } from "./IssuersStatus";
-import { isIssuerSigned, isIssuerPending } from "./issuerStateUtils";
 import { useAuth } from "@/context/AuthContext";
 
 interface IssuerSignPageProps {
@@ -39,7 +37,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
     const { certificates: eventCertificates } = useEventCertificates(eventId);
     const { data: eventCertificateConfig } = useEventCertificateConfig(eventId);
     const { data: eventContract } = useEventContract(eventId);
-    const { signEventCertificates, isSigning } = useSignEventCertificates(eventId);
+    const { signEventCertificates, isSigning } = useSignEventCertificates();
 
     // Get current issuer's information
     const currentIssuer = eventIssuers?.find(
