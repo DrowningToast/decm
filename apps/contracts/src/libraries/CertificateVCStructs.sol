@@ -38,6 +38,7 @@ library CertificateVCStructs {
         string encryptedByUserRawData;
         string encryptedByBackendRawData;
         string hash;
+        string signMessage;
         HostProof host;
         IssuerProof[] issuers;
     }

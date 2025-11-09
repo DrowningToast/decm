@@ -92,6 +92,9 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         bytes memory signature,
         string memory hostSignature,
         string memory hostPublicKey,
+        string memory signMessage,
+        string memory userEncryptedProof,
+        string memory backendEncryptedProof,
         CertificateVCStructs.IssuerProof[] memory issuerProofs
     ) external nonReentrant {
         address signer = recoverSigner(signedMessageDigest, signature);
@@ -112,6 +115,9 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                 block.timestamp,
                 hostSignature,
                 hostPublicKey,
+                signMessage,
+                userEncryptedProof,
+                backendEncryptedProof,
                 issuerProofs
             );
 
@@ -168,60 +174,9 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string backendEncryptedUserData;
         address[] issuerAddresses;
         CertificateVCStructs.IssuerProof[] issuerProofs;
-    }
-
-    function bulkMintParticipantCertificates(
-        BulkMintParticipantCertificatesParams[] memory params,
-        string memory signedMessageDigest,
-        bytes memory signature,
-        string memory hostSignature,
-        string memory hostPublicKey
-    ) external nonReentrant {
-        address signer = recoverSigner(signedMessageDigest, signature);
-        requireHostOrAdmin(signer);
-
-        for (uint256 i = 0; i < params.length; i++) {
-            uint256 tokenId = tokenCounter++;
-            tokenIdToStatus[tokenId] = CertificateStatus.VALID;
-
-            CertificateVCStructs.CertificateVcData
-                memory newTokenData = _buildCertificateVcDataWithProof(
-                    tokenId,
-                    params[i].receiverAddress,
-                    params[i].userId,
-                    params[i].certificateId,
-                    params[i].issuerId,
-                    params[i].encryptedUserData,
-                    params[i].backendEncryptedUserData,
-                    params[i].issuerAddresses,
-                    block.timestamp,
-                    hostSignature,
-                    hostPublicKey,
-                    params[i].issuerProofs
-                );
-
-            tokenIdToData[tokenId] = newTokenData;
-
-            emit CertificateMinted(
-                tokenId,
-                params[i].receiverAddress,
-                params[i].certificateId,
-                params[i].userId,
-                params[i].issuerId
-            );
-
-            _safeMint(params[i].receiverAddress, tokenId);
-        }
-
-         emit SignatureUsed(
-                msg.sender,
-                signer,
-                address(this),
-                "bulkMintParticipantCertificates",
-                signedMessageDigest,
-                signature,
-                block.timestamp
-            );
+        string signMessage;
+        string userEncryptedProof;
+        string backendEncryptedProof;
     }
 
     function getTokenData(
@@ -268,6 +223,7 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                         '"encryptedByUserRawData": "', vc.proof.encryptedByUserRawData, '",',
                         '"encryptedByBackendRawData": "', vc.proof.encryptedByBackendRawData, '",',
                         '"hash": "', vc.proof.hash, '",',
+                        '"signMessage": "', vc.proof.signMessage, '",',
                         '"host": {',
                             '"signature": "', vc.proof.host.signature, '",',
                             '"publicKey": "', vc.proof.host.publicKey, '"',
@@ -352,6 +308,7 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                     encryptedByUserRawData: "",
                     encryptedByBackendRawData: "",
                     hash: "",
+                    signMessage: "",
                     host: CertificateVCStructs.HostProof({
                         signature: "",
                         publicKey: ""
@@ -373,6 +330,9 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         uint256 issuedAt,
         string memory hostSignature,
         string memory hostPublicKey,
+        string memory signMessage,
+        string memory userEncryptedProof,
+        string memory backendEncryptedProof,
         CertificateVCStructs.IssuerProof[] memory issuerProofs
     ) private view returns (CertificateVCStructs.CertificateVcData memory) {
         return
@@ -398,9 +358,10 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                     backendEncryptedUserData: backendEncryptedUserData
                 }),
                 proof: CertificateVCStructs.Proof({
-                    encryptedByUserRawData: "",
-                    encryptedByBackendRawData: "",
+                    encryptedByUserRawData: userEncryptedProof,
+                    encryptedByBackendRawData: backendEncryptedProof,
                     hash: "",
+                    signMessage: signMessage,
                     host: CertificateVCStructs.HostProof({
                         signature: hostSignature,
                         publicKey: hostPublicKey
