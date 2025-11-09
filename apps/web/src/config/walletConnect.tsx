@@ -2,12 +2,11 @@ import { createAppKit } from "@reown/appkit/react";
 
 import { WagmiProvider } from "wagmi";
 import { mainnet, sepolia, type AppKitNetwork } from "@reown/appkit/networks";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { env } from "./env";
 
-// 0. Setup queryClient
-const queryClient = new QueryClient();
+// 0. Setup
 
 const projectId = env.VITE_WALLETCONNECT_PROJECT_ID;
 
@@ -52,9 +51,5 @@ createAppKit({
 export const wagmiConfig = wagmiAdapter.wagmiConfig;
 
 export function AppKitProvider({ children }: { children: React.ReactNode }) {
-    return (
-        <WagmiProvider config={wagmiAdapter.wagmiConfig}>
-            <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-        </WagmiProvider>
-    );
+    return <WagmiProvider config={wagmiAdapter.wagmiConfig}>{children}</WagmiProvider>;
 }

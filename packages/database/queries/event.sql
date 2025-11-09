@@ -162,3 +162,21 @@ FROM events
 WHERE owner_credential_id = sqlc.arg(owner_credential_id) AND deleted_at IS NULL
 ORDER BY created_at DESC
 LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);
+
+-- name: ListEvents :many
+SELECT * 
+FROM events 
+WHERE deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);
+
+-- name: ListEventsByEventAttendeeCredentialID :many
+SELECT * 
+FROM events 
+INNER JOIN event_attendees ON events.id = event_attendees.event_id
+WHERE event_attendees.attendee_credential_id = sqlc.arg(event_attendee_credential_id)
+AND events.deleted_at IS NULL
+AND event_attendee.is_attendee_accepted = 1
+AND events.event_status = 'active'
+ORDER BY events.created_at DESC
+LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);

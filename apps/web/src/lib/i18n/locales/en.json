@@ -36,7 +36,8 @@
         "download": "Download",
         "share": "Share",
         "verify": "Verify",
-        "to": "to"
+        "to": "to",
+        "signOut": "Sign Out"
     },
     "nav": {
         "home": "Home",
@@ -1144,6 +1145,11 @@
     },
     "editEvent": {
         "success": "Successfully edited activity"
+    },
+    "accountExists": {
+        "title": "Welcome Back!",
+        "description": "It looks like you already have an account with us. Please sign in to continue.",
+        "signInButton": "Sign In to Your Account"
     },
     "flow": {
         "check_onboard_status": {

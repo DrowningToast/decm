@@ -67,6 +67,8 @@ type Querier interface {
 	GetProfileByEmail(ctx context.Context, email pgtype.Text) (Profile, error)
 	GetProfileByID(ctx context.Context, id uuid.UUID) (Profile, error)
 	ListAuthenticationCredentials(ctx context.Context, arg ListAuthenticationCredentialsParams) ([]AuthenticationCredential, error)
+	ListEvents(ctx context.Context, arg ListEventsParams) ([]Event, error)
+	ListEventsByEventAttendeeCredentialID(ctx context.Context, arg ListEventsByEventAttendeeCredentialIDParams) ([]ListEventsByEventAttendeeCredentialIDRow, error)
 	ListEventsByOwner(ctx context.Context, ownerCredentialID uuid.UUID) ([]ListEventsByOwnerRow, error)
 	ListEventsByOwnerCredentialID(ctx context.Context, arg ListEventsByOwnerCredentialIDParams) ([]Event, error)
 	ListProfiles(ctx context.Context, arg ListProfilesParams) ([]Profile, error)

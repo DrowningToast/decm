@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
-import { CircleCheckBig, Loader, Loader2, SearchX } from "lucide-react";
+import { Loader2, SearchX } from "lucide-react";
 import { CertificateEmptyState } from "./CertificateEmptyState";
 import type { Certificate } from "./useCertificatesListUsecase";
 import { Link } from "@/router";
@@ -104,8 +104,6 @@ export const CertificateList = ({ certificates = [], isLoading }: CertificateLis
 };
 
 const CertificateItem = ({ certificate }: { certificate: Certificate }) => {
-    const isCompleted = certificate.status === "completed";
-
     const formattedDate = new Date(certificate.issuedDate).toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
@@ -118,16 +116,8 @@ const CertificateItem = ({ certificate }: { certificate: Certificate }) => {
             params={{ id: certificate.id }}
             className="w-full text-left flex flex-col gap-1 px-0 hover:opacity-80 transition-opacity cursor-pointer group"
         >
-            {/* Row with icon, name and date */}
+            {/* Row with name and date */}
             <div className="flex items-center gap-3 md:gap-4">
-                <div className="flex-shrink-0">
-                    {isCompleted ? (
-                        <CircleCheckBig className="w-5 h-5 text-green-500" />
-                    ) : (
-                        <Loader className="w-5 h-5 text-yellow-500 animate-spin" />
-                    )}
-                </div>
-
                 <div className="flex-1 min-w-0">
                     <Typography
                         variant="text"
@@ -150,7 +140,7 @@ const CertificateItem = ({ certificate }: { certificate: Certificate }) => {
             </div>
 
             {/* Issuer info - below name */}
-            <div className="pl-8 md:pl-9">
+            <div>
                 <Typography variant="text" tag="p" color="muted" className="text-xs md:text-sm">
                     {certificate.issuer}
                 </Typography>

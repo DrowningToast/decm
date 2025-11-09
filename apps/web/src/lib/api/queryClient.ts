@@ -9,7 +9,7 @@ export const queryClient = new QueryClient({
             staleTime: 1000 * 60 * 5, // 5 minutes
             retry: false,
             // Refetch on window focus in development, but not in production
-            refetchOnWindowFocus: process.env.NODE_ENV === "development",
+            refetchOnWindowFocus: false,
         },
         mutations: {
             // Retry failed mutations
