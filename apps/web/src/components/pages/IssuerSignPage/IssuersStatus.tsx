@@ -1,6 +1,7 @@
 import { Typography } from "@/components/typography/typography";
 import { IssuerStatusBadge } from "./IssuerStatusBadge";
 import { isIssuerSigned } from "./issuerStateUtils";
+import { useTranslation } from "react-i18next";
 
 interface IssuersStatusProps {
     issuers: Array<{
@@ -14,10 +15,12 @@ interface IssuersStatusProps {
 }
 
 export function IssuersStatus({ issuers, currentIssuerId, className = "" }: IssuersStatusProps) {
+    const { t } = useTranslation();
+
     return (
         <div className={`bg-[#1a1a1a] border border-[#333333] rounded-lg p-6 ${className}`}>
             <Typography variant="header" tag="h3" className="text-xl font-semibold text-white mb-4">
-                Issuers Status
+                {t("issuer.sign.issuersStatus")}
             </Typography>
 
             {issuers.length === 0 ? (
@@ -27,7 +30,7 @@ export function IssuersStatus({ issuers, currentIssuerId, className = "" }: Issu
                     color="muted-foreground"
                     className="text-center py-4"
                 >
-                    No issuers found for this event.
+                    {t("issuer.sign.noIssuersFound")}
                 </Typography>
             ) : (
                 <div className="space-y-3">
@@ -51,7 +54,8 @@ export function IssuersStatus({ issuers, currentIssuerId, className = "" }: Issu
                                         tag="p"
                                         className="font-medium text-white"
                                     >
-                                        Issuer #{issuer.id?.substring(0, 8) || "Unknown"}
+                                        {t("issuer.sign.issuer")}
+                                        {issuer.id?.substring(0, 8) || "Unknown"}
                                     </Typography>
                                     {issuer.issuer_credential_id === currentIssuerId && (
                                         <Typography
@@ -59,7 +63,7 @@ export function IssuersStatus({ issuers, currentIssuerId, className = "" }: Issu
                                             tag="p"
                                             className="text-sm text-[#ff6a39]"
                                         >
-                                            You
+                                            {t("issuer.sign.you")}
                                         </Typography>
                                     )}
                                 </div>
@@ -73,7 +77,7 @@ export function IssuersStatus({ issuers, currentIssuerId, className = "" }: Issu
                                         tag="p"
                                         className="text-xs text-green-500"
                                     >
-                                        Completed
+                                        {t("issuer.sign.completed")}
                                     </Typography>
                                 )}
                             </div>
