@@ -12,4 +12,5 @@ func (h *Handler) Mount(r fiber.Router) {
 
 	issuerGroup := r.Group("/issuers").Use(h.AuthenticationGuardMiddleware.Middleware)
 	issuerGroup.Get("/", h.GetVerifiedIssuers)
+	issuerGroup.Get("/events", h.GetIssuerEvents)
 }

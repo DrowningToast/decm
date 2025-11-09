@@ -31,7 +31,7 @@ INSERT INTO event_certificate_configs (
     $6,
     $7,
     $8
-) RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at
+) RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y
 `
 
 type CreateEventCertificateConfigParams struct {
@@ -69,6 +69,10 @@ func (q *Queries) CreateEventCertificateConfig(ctx context.Context, arg CreateEv
 		&i.AcademicInstitutionPosY,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CertificateTitlePosX,
+		&i.CertificateTitlePosY,
+		&i.CertificateSubtitlePosX,
+		&i.CertificateSubtitlePosY,
 	)
 	return i, err
 }
@@ -83,7 +87,7 @@ func (q *Queries) DeleteEventCertificateConfig(ctx context.Context, eventID uuid
 }
 
 const GetEventCertificateConfigByEventID = `-- name: GetEventCertificateConfigByEventID :one
-SELECT id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at FROM event_certificate_configs WHERE event_id = $1
+SELECT id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y FROM event_certificate_configs WHERE event_id = $1
 `
 
 func (q *Queries) GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (EventCertificateConfig, error) {
@@ -101,6 +105,10 @@ func (q *Queries) GetEventCertificateConfigByEventID(ctx context.Context, eventI
 		&i.AcademicInstitutionPosY,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CertificateTitlePosX,
+		&i.CertificateTitlePosY,
+		&i.CertificateSubtitlePosX,
+		&i.CertificateSubtitlePosY,
 	)
 	return i, err
 }
@@ -117,7 +125,7 @@ SET
     academic_institution_pos_y = $7,
     updated_at = NOW()
 WHERE event_id = $8
-RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at
+RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y
 `
 
 type UpdateEventCertificateConfigParams struct {
@@ -155,6 +163,10 @@ func (q *Queries) UpdateEventCertificateConfig(ctx context.Context, arg UpdateEv
 		&i.AcademicInstitutionPosY,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CertificateTitlePosX,
+		&i.CertificateTitlePosY,
+		&i.CertificateSubtitlePosX,
+		&i.CertificateSubtitlePosY,
 	)
 	return i, err
 }

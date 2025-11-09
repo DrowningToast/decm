@@ -237,17 +237,18 @@
                 "signIn": "Sign in",
                 "eventManagement": "Event management"
             },
-            "issuer": {
-                "title": "Issuer",
-                "signInIAM": "Sign in with IAM",
-                "register": "Register with us"
-            },
             "developer": {
                 "title": "Developer",
                 "manageIntegration": "Manage automation & integration",
                 "apiDocuments": "API documents",
                 "readDocs": "Read docs"
             }
+        },
+        "developer": {
+            "apiDocuments": "API documentation",
+            "manageIntegration": "Manage automation and connectivity",
+            "readDocs": "Read documents",
+            "title": "Developer"
         }
     },
     "profile": {
@@ -495,6 +496,12 @@
                     "authentication_credential_id_already_exists": "Authentication credential ID already exists"
                 }
             }
+        },
+        "details": {
+            "status": "Event Status",
+            "participationRequest": "Participation request",
+            "seatsCount": "Seats count",
+            "eventContractAddress": "Event Contract Address"
         }
     },
     "participant": {
@@ -741,6 +748,62 @@
             "phoneNumber": "phone_number",
             "academicInstitution": "academic_institution_name"
         }
+    },
+    "certificateImport": {
+        "title": "Import Certificates",
+        "description": "Bulk import certificates for your event from an Excel file",
+        "eventDetails": "Event Details",
+        "eventName": "Event Name",
+        "eventDate": "Event Date",
+        "eventLocation": "Event Location",
+        "maxAttendees": "Maximum Attendees",
+        "uploadFile": "Upload Excel File",
+        "selectFile": "Click to select Excel file",
+        "fileFormats": "Supported formats: .xlsx, .xls (Max 10MB)",
+        "fileSize": "File Size",
+        "previewData": "Preview Data",
+        "columnMapping": "Column Mapping",
+        "columnMappingDescription": "We've automatically matched columns from your Excel file. ✓ indicates exact match, ~ indicates partial match.",
+        "selectColumn": "Select column",
+        "previewTable": "Preview Table",
+        "rows": "rows",
+        "parsingFile": "Parsing Excel file...",
+        "fields": {
+            "firstName": "First Name",
+            "lastName": "Last Name",
+            "email": "Email",
+            "academicInstitution": "Academic Institution",
+            "certificateTitle": "Certificate Title",
+            "certificateSubtitle": "Certificate Subtitle"
+        },
+        "confirmImport": "Confirm Import",
+        "importing": "Importing...",
+        "importSuccess": "Certificates imported successfully",
+        "importError": "Failed to import certificates. Please try again.",
+        "invalidFileType": "Invalid file type. Please select an Excel file.",
+        "fileTooLarge": "File size exceeds 10MB limit.",
+        "missingColumns": "Missing required columns: {{columns}}. Please ensure your Excel file contains these columns.",
+        "emptyFile": "The Excel file appears to be empty or has no data.",
+        "parseError": "Failed to parse Excel file. Please check file format.",
+        "requiredFormat": "Required Excel Format",
+        "requiredFormatDescription": "Your Excel file must contain these exact column headers:",
+        "columnHeader": "Column Header",
+        "downloadTemplate": "Download Template",
+        "downloadTemplateDescription": "Download a template Excel file with correct format.",
+        "templateSheetName": "Certificates",
+        "templateFileName": "certificate_import_template",
+        "templateColumns": {
+            "firstName": "first_name",
+            "lastName": "last_name",
+            "email": "email",
+            "academicInstitution": "academic_institution",
+            "certificateTitle": "certificate_title",
+            "certificateSubtitle": "certificate_subtitle"
+        },
+        "hostPin": "Host PIN",
+        "hostPinDescription": "Enter your host PIN to authorize certificate import. This PIN is used to sign the certificate data on the blockchain.",
+        "hostPinPlaceholder": "Enter your host PIN",
+        "hostPinRequired": "Host PIN is required to import certificates"
     },
     "certificateSettings": {
         "pageTitle": "Certificate Settings",
@@ -994,5 +1057,77 @@
                 "authentication_credential_id_already_exists": "Authentication credential ID already exists"
             }
         }
+    },
+    "issuer": {
+        "title": "Issuer",
+        "signInIAM": "Sign in with IAM",
+        "register": "Register with us",
+        "sign": {
+            "pageTitle": "Sign Event Certificates",
+            "pageDescription": "Review and sign pending certificate batches for events you are assigned to.",
+            "pendingTab": "Pending Signature",
+            "signedTab": "Signed",
+            "table": {
+                "eventName": "Event Name",
+                "host": "Host",
+                "hostPlaceholder": "Event Host",
+                "certificates": "Certificates",
+                "status": "Status",
+                "action": "Action"
+            },
+            "status": {
+                "waiting": "Waiting for Signature",
+                "signed": "Signed"
+            },
+            "action": {
+                "review": "Review & Sign",
+                "view": "View"
+            },
+            "pagination": {
+                "rowsPerPage": "Rows per page:"
+            },
+            "pinRequired": "PIN is required",
+            "pinMinLength": "PIN must be at least 4 characters",
+            "signingSuccess": "Successfully signed {{count}} certificates",
+            "signingError": "Failed to sign certificates. Please check your PIN and try again.",
+            "signing": "Signing...",
+            "signAndApprove": "Sign and Approve",
+            "reject": "Reject",
+            "confirmSign": "By signing, you confirm that you approve issuance of {{count}} certificates for \"{{eventName}}\". This action is irreversible and will be recorded.",
+            "backToDashboard": "Back to Dashboard",
+            "eventDetails": "Event Details",
+            "certificatesToSign": "Participants to be Signed ({{count}})",
+            "certificatePreview": "Certificate Template Preview",
+            "templateNotAvailable": "Certificate template not available",
+            "signCertificateBatch": "Sign Certificate Batch",
+            "signCertificateBatchDescription": "Review certificate template and confirm to sign all pending certificates for this event.",
+            "signatureRequest": "Signature Request",
+            "signatureRequestDescription": "Review request details before you confirm.",
+            "yourStatus": "Your Status",
+            "signingStatus": "Signing Status",
+            "contractAddress": "Certificate Contract Address",
+            "certificatesCount": "Certificates",
+            "certificates": "Certificates",
+            "eventCertificates": "Event Certificates",
+            "signingDetails": "Signing Details",
+            "issuersStatus": "Issuers Status",
+            "noIssuersFound": "No issuers found for this event.",
+            "signingProgress": "Signing Progress",
+            "ofSigned": "of {{count}} signed",
+            "you": "You",
+            "issuer": "Issuer #",
+            "completed": "Completed",
+            "alreadySigned": "Already Signed",
+            "notAnIssuer": "Not an Issuer"
+        },
+        "pagination": {
+            "rowsPerPage": "Rows per page:"
+        }
+    },
+    "deleteEvent": {
+        "success": "Activity successfully deleted"
+    },
+    "editEvent": {
+        "success": "Successfully edited activity"
     }
 }

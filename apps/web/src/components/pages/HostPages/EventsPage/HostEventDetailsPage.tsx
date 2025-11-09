@@ -17,7 +17,7 @@ import {
 import { RequirementItem } from "@/components/ui/requirement-item";
 import { TextLabelValue } from "@/components/ui/text-label-value";
 import WrappedButton from "@/components/wrapper/WrappedButton";
-import { CheckCircle2Icon, ExternalLinkIcon } from "lucide-react";
+import { CheckCircle2Icon, CloudUploadIcon, ExternalLinkIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
 import { issuerColumns } from "./columns/issuer-columns";
@@ -35,6 +35,10 @@ import { Button } from "@/components/ui/button";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type { SortingState } from "@tanstack/react-table";
 import { ParticipantColumns, type Participant } from "./columns/ParticipantColumns";
+import { CertificateColumns } from "./columns/CertificateColumns";
+import { Separator } from "@/components/ui/separator";
+import { useEventCertificates } from "@/hooks/useEventCertificates";
+import { useRevokeEventCertificate } from "@/hooks/events/useRevokeEventCertificate";
 
 interface HostEventDetailsPageProps {
     eventId: string;
@@ -56,6 +60,8 @@ export default function HostEventDetailsPage({
     eventInvitations,
 }: HostEventDetailsPageProps) {
     const { t } = useTranslation();
+
+    const { revokeEventCertificate } = useRevokeEventCertificate();
 
     // State for client-side data management
     const [searchValue, setSearchValue] = useState("");
@@ -142,6 +148,10 @@ export default function HostEventDetailsPage({
     const hasCertificateConfig = !!eventCertificateConfig;
     const allIssuersSigned = eventIssuers?.every((issuer) => issuer.is_signed === 1) ?? false;
 
+    // Fetch event certificates using the hook
+    const { certificates: eventCertificates, isLoading: certificatesLoading } =
+        useEventCertificates(eventId);
+
     // Mock participant requirements data - replace with actual data
     // const participantRequirements: Record<string, RequirementStatus> = {
     //     firstName: "required",
@@ -195,11 +205,11 @@ export default function HostEventDetailsPage({
                     <img
                         src={event.banner_presigned_url ?? ""}
                         alt={event.title}
-                        className="w-full h-[250px] object-cover rounded-lg"
+                        className="w-full h-[350px] object-cover rounded-lg"
                     />
                 </div>
 
-                <div className="flex flex-col gap-4 mt-6 lg:mt-0">
+                <div className="flex flex-col gap-4 mt-6 lg:mt-0 border rounded-lg p-6 ">
                     <TextLabelValue
                         label="Status"
                         value={event.event_status?.toUpperCase() ?? "NA"}
@@ -284,7 +294,7 @@ export default function HostEventDetailsPage({
 
                                 <div className="flex items-center justify-end gap-4">
                                     <Button variant="secondary-dark" className="h-full">
-                                        <a href={`/host/events/${eventId}/imports`}>
+                                        <a href={`/host/events/${eventId}/imports/participants`}>
                                             Import Participants
                                         </a>
                                     </Button>
@@ -396,69 +406,159 @@ export default function HostEventDetailsPage({
                         {hasCertificateConfig ? (
                             <div className="space-y-6">
                                 {/* Certificate Settings Section */}
-                                <div className="w-full bg-primary/10 border border-primary/20 rounded-lg p-6 flex flex-row items-center justify-between">
+                                <div className="w-full bg-white border border-white/50 rounded-lg p-6 flex flex-row items-center justify-between">
                                     <div>
-                                        <p className="font-semibold text-lg text-primary">
+                                        <p className="font-semibold text-lg text-black">
                                             Certificate Settings
                                         </p>
-                                        <p className="text-muted-foreground text-base mt-1">
+                                        <p className="text-black/50 text-base mt-1">
                                             Certificate template and rules are configured for this
                                             event. Manage issuers and publish certificates when
                                             ready.
                                         </p>
                                     </div>
-                                    <WrappedButton
-                                        className="px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
-                                        href={`/host/events/${eventId}/settings/certificate`}
-                                    >
-                                        Certificate Settings
-                                    </WrappedButton>
+                                    <div className="flex gap-2">
+                                        <WrappedButton
+                                            className="px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
+                                            href={`/host/events/${eventId}/settings/certificate`}
+                                        >
+                                            Certificate Settings
+                                        </WrappedButton>
+                                    </div>
                                 </div>
 
                                 {/* Issuers Table */}
                                 {eventIssuers && eventIssuers.length > 0 && (
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <Typography
-                                                variant="text"
-                                                tag="h3"
-                                                className="text-lg font-semibold"
-                                            >
-                                                Event Issuers ({eventIssuers.length})
-                                            </Typography>
-                                            <WrappedButton
-                                                className="px-4 py-2 rounded-md bg-green-600 text-white font-medium hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                                disabled={!allIssuersSigned}
-                                                onClick={() => {
-                                                    // TODO: Implement publish certificates functionality
-                                                    console.log(
-                                                        "Publish certificates for event:",
-                                                        eventId,
-                                                    );
-                                                }}
-                                            >
-                                                {allIssuersSigned
-                                                    ? "Publish Certificates"
-                                                    : "Waiting for All Signatures"}
-                                            </WrappedButton>
+                                    <div className="space-y-6">
+                                        <div className="flex flex-col gap-4">
+                                            <div className="flex items-center justify-between">
+                                                <Typography
+                                                    variant="text"
+                                                    tag="h3"
+                                                    className="text-lg font-semibold"
+                                                >
+                                                    Event Issuers ({eventIssuers.length})
+                                                </Typography>
+                                            </div>
+
+                                            <DataTable
+                                                columns={issuerColumns}
+                                                data={eventIssuers}
+                                                totalItems={eventIssuers.length}
+                                                currentPage={1}
+                                                pageSize={10}
+                                                onPageChange={() => {}}
+                                                onPageSizeChange={() => {}}
+                                                searchValue=""
+                                                onSearchChange={() => {}}
+                                                searchPlaceholder="Search issuers..."
+                                                sorting={[]}
+                                                onSortingChange={() => {}}
+                                                isLoading={false}
+                                                disablePagination
+                                            />
                                         </div>
 
+                                        <Separator className="my-12" />
+
+                                        <div className="flex items-center justify-between">
+                                            {/* Publish Certificates Section */}
+                                            <div className="w-full bg-white border border-white/50 rounded-lg p-6 flex flex-row items-center justify-between">
+                                                <div>
+                                                    <p className="font-semibold text-lg text-black">
+                                                        Publish Certificates
+                                                    </p>
+                                                    <p className="text-black/50 text-base mt-1">
+                                                        Publish certificates to the blockchain when
+                                                        all issuers have signed the certificate.
+                                                    </p>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <WrappedButton
+                                                        className="px-4 py-2 rounded-md bg-green-600 text-white font-medium hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                                        disabled={!allIssuersSigned}
+                                                        onClick={() => {
+                                                            // TODO: Implement publish certificates functionality
+                                                            console.log(
+                                                                "Publish certificates for event:",
+                                                                eventId,
+                                                            );
+                                                        }}
+                                                    >
+                                                        {allIssuersSigned
+                                                            ? "Publish Certificates"
+                                                            : "Waiting for All Signatures"}
+                                                    </WrappedButton>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <Typography
+                                            variant="text"
+                                            tag="h3"
+                                            className="text-lg font-semibold"
+                                        >
+                                            Event Certificates ({eventCertificates?.length || 0})
+                                        </Typography>
+
                                         <DataTable
-                                            columns={issuerColumns}
-                                            data={eventIssuers}
-                                            totalItems={eventIssuers.length}
+                                            columns={CertificateColumns(
+                                                (eventCertificateId: string) => {
+                                                    revokeEventCertificate({
+                                                        certificateIds: [eventCertificateId],
+                                                        eventId,
+                                                    });
+                                                },
+                                            )}
+                                            data={
+                                                eventCertificates
+                                                    ?.filter(
+                                                        (cert) =>
+                                                            cert.id && cert.revoked_at === null,
+                                                    )
+                                                    .map((cert) => {
+                                                        const firstName =
+                                                            cert.name?.split(" ")[0] || "";
+                                                        const lastName =
+                                                            cert.name
+                                                                ?.split(" ")
+                                                                .slice(1)
+                                                                .join(" ") || "";
+
+                                                        return {
+                                                            id: cert.id, // Remove fallback to empty string
+                                                            firstName,
+                                                            lastName,
+                                                            email: cert.receiver_email || "",
+                                                            academicInstitution:
+                                                                cert.academic_institution || "",
+                                                            issuedAt: cert.created_at || "",
+                                                            status: cert.revoked_at
+                                                                ? "rejected"
+                                                                : "received",
+                                                        };
+                                                    }) || []
+                                            }
+                                            totalItems={eventCertificates?.length || 0}
                                             currentPage={1}
                                             pageSize={10}
                                             onPageChange={() => {}}
                                             onPageSizeChange={() => {}}
                                             searchValue=""
                                             onSearchChange={() => {}}
-                                            searchPlaceholder="Search issuers..."
+                                            searchPlaceholder="Search certificates..."
                                             sorting={[]}
                                             onSortingChange={() => {}}
-                                            isLoading={false}
+                                            isLoading={certificatesLoading}
                                             disablePagination
                                         />
+
+                                        <a
+                                            href={`/host/events/${eventId}/imports/certificates`}
+                                            className="flex items-center justify-center p-6 border-dashed rounded-xl border-2 border-white/50 gap-4 cursor-pointer"
+                                        >
+                                            <CloudUploadIcon /> <p>Import Certificate Receivers</p>
+                                        </a>
                                     </div>
                                 )}
 
@@ -485,12 +585,20 @@ export default function HostEventDetailsPage({
                                     Participants will receive certificates based on your
                                     configuration.
                                 </p>
-                                <WrappedButton
-                                    className="mt-4 px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
-                                    href={`/host/events/${eventId}/settings/certificate`}
-                                >
-                                    Certificates Settings
-                                </WrappedButton>
+                                <div className="flex gap-4 mt-6">
+                                    <WrappedButton
+                                        className="px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
+                                        href={`/host/events/${eventId}/settings/certificate`}
+                                    >
+                                        Certificate Settings
+                                    </WrappedButton>
+                                    <WrappedButton
+                                        className="px-5 py-2 rounded-md bg-secondary text-white font-medium hover:bg-secondary/90 transition"
+                                        href={`/event/certificate/import`}
+                                    >
+                                        Import Receivers
+                                    </WrappedButton>
+                                </div>
                             </div>
                         )}
                     </StyledTabsContent>

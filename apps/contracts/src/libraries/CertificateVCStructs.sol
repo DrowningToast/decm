@@ -2,17 +2,50 @@
 pragma solidity ^0.8.20;
 
 library CertificateVCStructs {
-    struct CertificateVcData {
+    struct Header {
+        string context;
+        string credentialType;
+        string id;
+        string issuer;
+        string issuanceDate;
+    }
+
+    struct Data {
         string eventName;
         string eventDescription;
-        uint256 certificateTokenId; // Onchain NFT Token ID.
-        string certificateId; // References to offchain.
-        string userId; // References to offchain.
-        string issuerId; // References to offchain.
-        address receiverAddress; // Participant's address.
-        uint256 issuedAt;
-        string encryptedUserData; // Decrypt using User PK.
-        string backendEncryptedUserData; // Decrypt using Backend PK.
-        address[] issuerAddresses; // Issuer addresses.
+        string certificateTokenId;
+        string certificateId;
+        string userId;
+        string issuerId;
+        string issuedAt;
+        address[] issuerAddresses;
+        address receiverAddress;
+        string encryptedUserData;
+        string backendEncryptedUserData;
+    }
+
+    struct HostProof {
+        string signature;
+        string publicKey;
+    }
+
+    struct IssuerProof {
+        string issuerSignature;
+        string issuerPublicKey;
+    }
+
+    struct Proof {
+        string encryptedByUserRawData;
+        string encryptedByBackendRawData;
+        string hash;
+        string signMessage;
+        HostProof host;
+        IssuerProof[] issuers;
+    }
+
+    struct CertificateVcData {
+        Header header;
+        Data data;
+        Proof proof;
     }
 }
