@@ -1,22 +1,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { coreApiClient } from "@/lib/api/api";
-import { QUERY_KEY } from "@/lib/queryKeys";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import type { CoreApiInternalHandlerEventSignEventCertificatesResponse } from "@decm/api";
 
 interface SignEventCertificatesParams {
     eventId: string;
     issuerPin: string;
 }
 
-interface SignEventCertificatesResponse {
-    certificates: Array<{
-        certificate: any;
-        signature: string;
-    }>;
-}
-
-export function useSignEventCertificates(eventId: string) {
+export function useSignEventCertificates() {
     const queryClient = useQueryClient();
     const { t } = useTranslation();
 
@@ -25,21 +18,14 @@ export function useSignEventCertificates(eventId: string) {
         isPending: isSigning,
         error: signingError,
     } = useMutation({
-        mutationFn: async ({ eventId, issuerPin }: SignEventCertificatesParams) => {
-            const response = await coreApiClient.v1.signEventCertificates(
-                { eventId },
-                { issuer_pin: issuerPin },
-            );
-            return response;
-        },
-        onSuccess: (data: SignEventCertificatesResponse) => {
-            toast.success(t("issuer.sign.signingSuccess", { count: data.certificates.length }));
+        mutationFn: ({ eventId, issuerPin }: SignEventCertificatesParams) =>
+            coreApiClient.v1.signEventCertificates({ eventId }, { issuer_pin: issuerPin }),
+        onSuccess: (data: CoreApiInternalHandlerEventSignEventCertificatesResponse) => {
+            const certificatesCount = data.certificates?.length || 0;
+            toast.success(t("issuer.sign.signingSuccess", { count: certificatesCount }));
             // Invalidate related queries to refresh data
             queryClient.invalidateQueries({
-                queryKey: QUERY_KEY.event.certificates(eventId),
-            });
-            queryClient.invalidateQueries({
-                queryKey: QUERY_KEY.event.issuers.byEventId(eventId),
+                queryKey: ["issuer", "events"],
             });
         },
         onError: (error) => {
