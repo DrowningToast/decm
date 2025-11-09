@@ -23,6 +23,26 @@ export type CheckOnboardStatusData = OnboardCheckOnboardStatusResponse;
 
 export type CheckOnboardStatusError = CustomerrorErrResponse;
 
+export type CheckRoleData = CheckRoleResponse;
+
+export type CheckRoleError = CustomerrorErrResponse;
+
+export interface CheckRoleParams {
+    /** Check if user is authenticated */
+    is_authenticated?: boolean;
+    /** Check if user is a verified host/organizer */
+    is_host?: boolean;
+    /** Check if user is a verified issuer */
+    is_issuer?: boolean;
+}
+
+/** Role verification response */
+export interface CheckRoleResponse {
+    is_authenticated?: boolean;
+    is_host?: boolean;
+    is_issuer?: boolean;
+}
+
 export interface CoreApiInternalHandlerEventCertificateSignature {
     certificate?: EntityEventCertificate;
     signature?: string;
@@ -271,6 +291,12 @@ export enum EntityEventType {
     EventTypePublic = "public",
     EventTypePrivate = "private",
     EventTypeInvite = "invite",
+}
+
+export enum EntityInboxMessageType {
+    InboxMessageTypeGeneral = 0,
+    InboxMessageTypeEventRegistrationInvitation = 1,
+    InboxMessageTypeEventCertificateInvitation = 2,
 }
 
 export interface EntityProfile {
@@ -542,6 +568,33 @@ export interface GetEventsByOwnerCredentialsIdParams {
     ownerCredentialId: string;
 }
 
+export type GetEventsListData = EventEventResponse[][];
+
+export type GetEventsListError = CustomerrorErrResponse;
+
+export interface GetEventsListParams {
+    /**
+     * Include active events
+     * @default true
+     */
+    include_active_events?: boolean;
+    /**
+     * Include closed events
+     * @default false
+     */
+    include_closed_events?: boolean;
+    /**
+     * Include inactive events
+     * @default true
+     */
+    include_inactive_events?: boolean;
+    /**
+     * Only user joined events
+     * @default false
+     */
+    only_user_joined_events?: boolean;
+}
+
 export type GetIssuerEventsData = IssuerIssuerEventResponse[];
 
 export type GetIssuerEventsError = CustomerrorErrResponse;
@@ -593,6 +646,78 @@ export type ImportEventParticipantsError = CustomerrorErrResponse;
 
 export interface ImportEventParticipantsParams {
     eventId: string;
+}
+
+export interface InboxInboxMessagesEventRegistrationInvitationViewModel {
+    academic_institution?: string;
+    cancelled_at?: string;
+    code?: string;
+    created_at?: string;
+    deleted_at?: string;
+    email?: string;
+    event_id?: string;
+    first_name?: string;
+    hidden_at?: string;
+    id?: string;
+    is_read?: number;
+    last_name?: string;
+    message_content?: string;
+    message_type?: EntityInboxMessageType;
+    phone_number?: string;
+    receiver_email?: string;
+    receiver_wallet_address?: string;
+    sender_credential_email?: string;
+    sender_credential_wallet_address?: string;
+    updated_at?: string;
+    valid_until?: string;
+}
+
+export interface InboxInboxMessagesViewModel {
+    created_at?: string;
+    deleted_at?: string;
+    hidden_at?: string;
+    id?: string;
+    is_read?: number;
+    message_content?: string;
+    message_type?: EntityInboxMessageType;
+    receiver_email?: string;
+    receiver_wallet_address?: string;
+    sender_credential_email?: string;
+    sender_credential_wallet_address?: string;
+    updated_at?: string;
+}
+
+export type InboxMessagesDetailData =
+    InboxmessagesGetInboxMessageEventRegistrationInvitationResponse;
+
+export interface InboxMessagesDetailParams {
+    inboxMessageId: string;
+}
+
+export type InboxMessagesListData = InboxmessagesGetInboxMessagesResponse;
+
+export interface InboxmessagesGetInboxMessageEventRegistrationInvitationResponse {
+    inbox_message?: InboxInboxMessagesEventRegistrationInvitationViewModel;
+}
+
+export interface InboxmessagesGetInboxMessageResponse {
+    inbox_message?: InboxInboxMessagesViewModel;
+}
+
+export interface InboxmessagesGetInboxMessagesResponse {
+    inbox_messages?: InboxInboxMessagesViewModel[];
+}
+
+export interface InboxmessagesMarkAllMessagesAsReadResponse {
+    inbox_messages?: InboxInboxMessagesViewModel[];
+}
+
+export interface InboxmessagesMarkMessageAsReadRequest {
+    message_id: string;
+}
+
+export interface InboxmessagesMarkMessageAsReadResponse {
+    inbox_message?: InboxInboxMessagesViewModel;
 }
 
 export interface IssuerIssuerEventResponse {
@@ -796,6 +921,15 @@ export interface ProfileVerifyPasswordRequest {
 export interface ProfileVerifyPasswordResponse {
     is_success?: boolean;
     message?: string;
+}
+
+export type ReadAllUpdateData = InboxmessagesMarkAllMessagesAsReadResponse;
+
+export type ReadUpdateData = InboxmessagesMarkMessageAsReadResponse;
+
+export interface ReadUpdateParams {
+    /** Message ID */
+    messageId: string;
 }
 
 export type RegisterWithGoogleOauthData = OnboardRegisterResponse;
@@ -1136,7 +1270,44 @@ export class Api<SecurityDataType extends unknown> {
         this.http = http;
     }
 
+    /**
+     * @description Get my inbox messages
+     *
+     * @tags Inbox Messages
+     * @name InboxMessagesList
+     * @summary Get my inbox messages
+     * @request GET:/inbox-messages
+     * @secure
+     */
+    inboxMessagesList = (params: RequestParams = {}) =>
+        this.http.request<InboxMessagesListData, any>({
+            path: `/inbox-messages`,
+            method: "GET",
+            secure: true,
+            type: ContentType.Json,
+            format: "json",
+            ...params,
+        });
+
     v1 = {
+        /**
+         * @description Check if the current user has specific roles (authenticated, host, issuer). Only returns requested fields.
+         *
+         * @tags Auth
+         * @name CheckRole
+         * @summary Check user roles
+         * @request GET:/api/v1/auth/check-role
+         */
+        checkRole: (query: CheckRoleParams, params: RequestParams = {}) =>
+            this.http.request<CheckRoleData, CheckRoleError>({
+                path: `/api/v1/auth/check-role`,
+                method: "GET",
+                query: query,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
         /**
          * @description Logout user by clearing session and OAuth cookies
          *
@@ -1206,6 +1377,23 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/event-registration-invitations/${eventRegistrationInvitationId}`,
                 method: "DELETE",
                 type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get events list
+         *
+         * @tags Event
+         * @name GetEventsList
+         * @summary Get events list
+         * @request GET:/api/v1/events
+         */
+        getEventsList: (query: GetEventsListParams, params: RequestParams = {}) =>
+            this.http.request<GetEventsListData, GetEventsListError>({
+                path: `/api/v1/events`,
+                method: "GET",
+                query: query,
                 format: "json",
                 ...params,
             }),
@@ -1965,6 +2153,72 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/profile/password/verify`,
                 method: "POST",
                 body: verifyPasswordRequest,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+    };
+    read = {
+        /**
+         * No description
+         *
+         * @tags Inbox Messages
+         * @name ReadUpdate
+         * @request PUT:/inbox-messages/read
+         * @secure
+         */
+        readUpdate: (
+            { messageId, ...query }: ReadUpdateParams,
+            request: InboxmessagesMarkMessageAsReadRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<ReadUpdateData, any>({
+                path: `/inbox-messages/read`,
+                method: "PUT",
+                body: request,
+                secure: true,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+    };
+    readAll = {
+        /**
+         * No description
+         *
+         * @tags Inbox Messages
+         * @name ReadAllUpdate
+         * @request PUT:/inbox-messages/read-all
+         * @secure
+         */
+        readAllUpdate: (params: RequestParams = {}) =>
+            this.http.request<ReadAllUpdateData, any>({
+                path: `/inbox-messages/read-all`,
+                method: "PUT",
+                secure: true,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+    };
+    inboxMessageId = {
+        /**
+         * @description Get inbox message
+         *
+         * @tags Inbox Messages
+         * @name InboxMessagesDetail
+         * @summary Get inbox message
+         * @request GET:/inbox-messages/{inbox_message_id}
+         * @secure
+         */
+        inboxMessagesDetail: (
+            { inboxMessageId, ...query }: InboxMessagesDetailParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<InboxMessagesDetailData, any>({
+                path: `/inbox-messages/${inboxMessageId}`,
+                method: "GET",
+                secure: true,
                 type: ContentType.Json,
                 format: "json",
                 ...params,

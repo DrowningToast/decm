@@ -241,6 +241,79 @@ const docTemplate = `{
             }
         },
         "/api/v1/events": {
+            "get": {
+                "description": "Get events list",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "summary": "Get events list",
+                "operationId": "get-events-list",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Include active events",
+                        "name": "include_active_events",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Include inactive events",
+                        "name": "include_inactive_events",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Include closed events",
+                        "name": "include_closed_events",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Only user joined events",
+                        "name": "only_user_joined_events",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/event.EventResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Create a new event with banner image upload",
                 "consumes": [
@@ -2590,9 +2663,150 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/inbox-messages": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get my inbox messages",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inbox Messages"
+                ],
+                "summary": "Get my inbox messages",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/inboxmessages.GetInboxMessagesResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/inbox-messages/read": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inbox Messages"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "message_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/inboxmessages.MarkMessageAsReadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/inboxmessages.MarkMessageAsReadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/inbox-messages/read-all": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inbox Messages"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/inboxmessages.MarkAllMessagesAsReadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/inbox-messages/{inbox_message_id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get inbox message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inbox Messages"
+                ],
+                "summary": "Get inbox message",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/inboxmessages.GetInboxMessageEventRegistrationInvitationResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "CheckRoleResponse": {
+            "description": "Role verification response",
+            "type": "object",
+            "properties": {
+                "is_authenticated": {
+                    "type": "boolean"
+                },
+                "is_host": {
+                    "type": "boolean"
+                },
+                "is_issuer": {
+                    "type": "boolean"
+                }
+            }
+        },
         "core-api_internal_handler_event.CertificateSignature": {
             "type": "object",
             "properties": {
@@ -2949,6 +3163,19 @@ const docTemplate = `{
                 "EventTypePublic",
                 "EventTypePrivate",
                 "EventTypeInvite"
+            ]
+        },
+        "entity.InboxMessageType": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "InboxMessageTypeGeneral",
+                "InboxMessageTypeEventRegistrationInvitation",
+                "InboxMessageTypeEventCertificateInvitation"
             ]
         },
         "entity.Profile": {
@@ -3444,6 +3671,172 @@ const docTemplate = `{
                 },
                 "registration_password": {
                     "type": "string"
+                }
+            }
+        },
+        "inbox.InboxMessagesEventRegistrationInvitationViewModel": {
+            "type": "object",
+            "properties": {
+                "academic_institution": {
+                    "type": "string"
+                },
+                "cancelled_at": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "hidden_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_read": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "message_content": {
+                    "type": "string"
+                },
+                "message_type": {
+                    "$ref": "#/definitions/entity.InboxMessageType"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "receiver_email": {
+                    "type": "string"
+                },
+                "receiver_wallet_address": {
+                    "type": "string"
+                },
+                "sender_credential_email": {
+                    "type": "string"
+                },
+                "sender_credential_wallet_address": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "valid_until": {
+                    "type": "string"
+                }
+            }
+        },
+        "inbox.InboxMessagesViewModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "hidden_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_read": {
+                    "type": "integer"
+                },
+                "message_content": {
+                    "type": "string"
+                },
+                "message_type": {
+                    "$ref": "#/definitions/entity.InboxMessageType"
+                },
+                "receiver_email": {
+                    "type": "string"
+                },
+                "receiver_wallet_address": {
+                    "type": "string"
+                },
+                "sender_credential_email": {
+                    "type": "string"
+                },
+                "sender_credential_wallet_address": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "inboxmessages.GetInboxMessageEventRegistrationInvitationResponse": {
+            "type": "object",
+            "properties": {
+                "inbox_message": {
+                    "$ref": "#/definitions/inbox.InboxMessagesEventRegistrationInvitationViewModel"
+                }
+            }
+        },
+        "inboxmessages.GetInboxMessageResponse": {
+            "type": "object",
+            "properties": {
+                "inbox_message": {
+                    "$ref": "#/definitions/inbox.InboxMessagesViewModel"
+                }
+            }
+        },
+        "inboxmessages.GetInboxMessagesResponse": {
+            "type": "object",
+            "properties": {
+                "inbox_messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/inbox.InboxMessagesViewModel"
+                    }
+                }
+            }
+        },
+        "inboxmessages.MarkAllMessagesAsReadResponse": {
+            "type": "object",
+            "properties": {
+                "inbox_messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/inbox.InboxMessagesViewModel"
+                    }
+                }
+            }
+        },
+        "inboxmessages.MarkMessageAsReadRequest": {
+            "type": "object",
+            "required": [
+                "message_id"
+            ],
+            "properties": {
+                "message_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "inboxmessages.MarkMessageAsReadResponse": {
+            "type": "object",
+            "properties": {
+                "inbox_message": {
+                    "$ref": "#/definitions/inbox.InboxMessagesViewModel"
                 }
             }
         },

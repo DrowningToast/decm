@@ -1,5 +1,8 @@
 import { coreApiClient, type CoreApiType } from "@/lib/api/api";
+import { queryClient } from "@/lib/api/queryClient";
+import { QUERY_KEY } from "@/lib/queryKeys";
 import { OnboardRegistrationMethod } from "@decm/api";
+import { QueryClient } from "@tanstack/react-query";
 
 export type CheckOnboardParams =
     | {
@@ -14,8 +17,10 @@ export type CheckOnboardParams =
 
 export class OnboardService {
     private _coreApi: CoreApiType;
+    private _queryClient: QueryClient;
 
-    constructor(coreApi: CoreApiType) {
+    constructor(coreApi: CoreApiType, queryClient: QueryClient) {
+        this._queryClient = queryClient;
         this._coreApi = coreApi;
     }
 
@@ -25,23 +30,32 @@ export class OnboardService {
                 console.error("Invalid access token or expires in");
                 return null;
             }
-            return this._coreApi.v1.checkOnboardStatus({
+            const response = await this._coreApi.v1.checkOnboardStatus({
                 method: params.method,
                 access_token: params.accessToken,
                 expires_in: params.expiresIn,
             });
+            await this._queryClient.setQueryData(QUERY_KEY.onboard.status.all, response);
+            return response;
         } else if (params?.method === OnboardRegistrationMethod.RegistrationMethodWallet) {
             if (!params?.signSignature) {
                 console.error("Invalid sign signature");
                 return null;
             }
-            return this._coreApi.v1.checkOnboardStatus({
+            const response = await this._coreApi.v1.checkOnboardStatus({
                 method: params.method,
                 message_signature: params.signSignature,
             });
+            await this._queryClient.setQueryData(
+                QUERY_KEY.onboard.status.wallet(params.signSignature),
+                response,
+            );
+            return response;
         } else if (!params) {
             // check via jwt cookie
-            return this._coreApi.v1.checkOnboardStatus({});
+            const response = await this._coreApi.v1.checkOnboardStatus({});
+            await this._queryClient.setQueryData(QUERY_KEY.onboard.status.all, response);
+            return response;
         }
         throw new Error("Invalid method");
     }
@@ -58,5 +72,5 @@ export class OnboardService {
     }
 }
 
-const DefaultOnboardService = new OnboardService(coreApiClient);
+const DefaultOnboardService = new OnboardService(coreApiClient, queryClient);
 export { DefaultOnboardService as onboardService };

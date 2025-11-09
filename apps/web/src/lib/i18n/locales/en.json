@@ -37,7 +37,8 @@
         "share": "Share",
         "verify": "Verify",
         "to": "to",
-        "signOut": "Sign Out"
+        "signOut": "Sign Out",
+        "signingOut": "Signing out..."
     },
     "nav": {
         "home": "Home",
@@ -1059,10 +1060,15 @@
                 "create_account_success": "Authenticated with Google successfully",
                 "create_account_error": "Failed to authenticate with Google",
                 "create_account_error_duplicate": "The account with this email already exists.",
+                "create_account_error_password": "Password is required to create an account.",
                 "create_profile_pending": "Updating profile...",
                 "create_profile_success": "Profile updated successfully",
                 "create_profile_error_duplicate": "The profile with this email already exists.",
                 "create_profile_error": "Failed to update profile. Please try again later.",
+                "missing_access_token": "Missing Access Token",
+                "missing_access_token_description": "The OAuth access token is missing. Please try signing in again through Google.",
+                "missing_expires_in": "Missing Token Expiration",
+                "missing_expires_in_description": "The token expiration information is missing. Please try signing in again through Google.",
                 "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
                 "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
                 "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
@@ -1164,11 +1170,19 @@
             "create_profile_success": "Profile updated successfully",
             "create_account_error": "Failed to authenticate with Google",
             "create_account_error_duplicate": "The account with this email already exists.",
+            "create_account_error_password": "Password is required to create an account.",
             "create_profile_error_duplicate": "The profile with this email already exists.",
             "create_profile_error": "Failed to update profile. Please try again later.",
+            "missing_access_token": "Missing Access Token",
+            "missing_access_token_description": "The OAuth access token is missing. Please try signing in again through Google.",
+            "missing_expires_in": "Missing Token Expiration",
+            "missing_expires_in_description": "The token expiration information is missing. Please try signing in again through Google.",
             "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
             "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
             "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
+        },
+        "wallet": {
+            "create_profile_success": "Profile created successfully"
         },
         "generic": {
             "unauthenticated_response": "You must be logged in to access this page. Please sign in.",

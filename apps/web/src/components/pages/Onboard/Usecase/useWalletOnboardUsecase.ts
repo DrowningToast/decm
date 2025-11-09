@@ -39,6 +39,10 @@ export const useWalletOnboardUsecase = () => {
                     method: OnboardRegistrationMethod.RegistrationMethodWallet,
                     signSignature: signSignature,
                 });
+                await onboardService.checkOnboardStatus({
+                    method: OnboardRegistrationMethod.RegistrationMethodWallet,
+                    signSignature: signSignature,
+                });
             }
         } catch (error) {
             if (error instanceof Error) {

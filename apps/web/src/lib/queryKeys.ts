@@ -42,6 +42,12 @@ export const QUERY_KEY = {
     // Events
     event: {
         all: ["event"] as const,
+        list: (params?: {
+            includeActiveEvents?: boolean;
+            includeInactiveEvents?: boolean;
+            includeClosedEvents?: boolean;
+            onlyUserJoinedEvents?: boolean;
+        }) => ["event", "list", params] as const,
         byId: (eventId: string) => ["event", eventId] as const,
         registrationConfig: (eventId: string) => ["event-registration-config", eventId] as const,
         contract: (eventId: string) => ["event", eventId, "contract"] as const,
@@ -65,5 +71,21 @@ export const QUERY_KEY = {
     // Issuers
     issuers: {
         verified: ["issuers"] as const,
+    },
+
+    // Inbox
+    inbox: {
+        all: ["inbox"] as const,
+        list: (limit: number, offset: number) => ["inbox", "list", limit, offset] as const,
+        byId: (messageId: string) => ["inbox", messageId] as const,
+    },
+
+    // Certificates
+    certificate: {
+        all: ["certificate"] as const,
+        list: (limit: number, offset: number, status?: "completed" | "pending") =>
+            ["certificate", "list", limit, offset, status] as const,
+        byId: (certificateId: string) => ["certificate", certificateId] as const,
+        byEventId: (eventId: string) => ["certificate", "event", eventId] as const,
     },
 } as const;

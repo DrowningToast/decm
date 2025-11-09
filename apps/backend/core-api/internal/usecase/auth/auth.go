@@ -4,11 +4,15 @@ import (
 	"context"
 	"time"
 
+	"apps/backend/core-api/internal/datagateway"
+	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+
+	"github.com/google/uuid"
 )
 
 type AuthUsecase struct {
-	// No dependencies needed - all data comes from JWT claims
+	AuthenticationCredentialDg datagateway.AuthenticationCredentialDataGateway
 }
 
 func NewAuthUsecase() *AuthUsecase {
@@ -108,4 +112,8 @@ func (u *AuthUsecase) isTokenValid(claims *auth.JwtClaims) bool {
 	}
 
 	return true
+}
+
+func (u *AuthUsecase) GetAuthenticationCredentialId(ctx context.Context, id uuid.UUID) (*entity.AuthenticationCredential, error) {
+	return u.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, id)
 }
