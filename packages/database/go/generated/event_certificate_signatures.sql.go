@@ -121,14 +121,40 @@ func (q *Queries) GetEventCertificateSignaturesByEventCertificateID(ctx context.
 	return items, nil
 }
 
+const UpdateEventCertificateIssuerSignature = `-- name: UpdateEventCertificateIssuerSignature :one
+UPDATE event_certificate_signatures
+SET issuer_signature = $1
+WHERE id = $2
+RETURNING id, event_certificate_id, issuer_credential_id, issuer_signature, host_signature, sign_message, sign_message_digest
+`
+
+type UpdateEventCertificateIssuerSignatureParams struct {
+	IssuerSignature pgtype.Text `json:"issuer_signature"`
+	ID              uuid.UUID   `json:"id"`
+}
+
+func (q *Queries) UpdateEventCertificateIssuerSignature(ctx context.Context, arg UpdateEventCertificateIssuerSignatureParams) (EventCertificateSignature, error) {
+	row := q.db.QueryRow(ctx, UpdateEventCertificateIssuerSignature, arg.IssuerSignature, arg.ID)
+	var i EventCertificateSignature
+	err := row.Scan(
+		&i.ID,
+		&i.EventCertificateID,
+		&i.IssuerCredentialID,
+		&i.IssuerSignature,
+		&i.HostSignature,
+		&i.SignMessage,
+		&i.SignMessageDigest,
+	)
+	return i, err
+}
+
 const UpdateEventCertificateSignature = `-- name: UpdateEventCertificateSignature :one
 UPDATE event_certificate_signatures
 SET 
     issuer_signature = $1,
     host_signature = $2,
     sign_message = $3,
-    sign_message_digest = $4,
-    updated_at = NOW()
+    sign_message_digest = $4
 WHERE id = $5
 RETURNING id, event_certificate_id, issuer_credential_id, issuer_signature, host_signature, sign_message, sign_message_digest
 `

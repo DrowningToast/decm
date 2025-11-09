@@ -100,6 +100,26 @@ func (r *Repository) UpdateEventCertificateSignature(ctx context.Context, id uui
 	}, nil
 }
 
+func (r *Repository) UpdateEventCertificateIssuerSignature(ctx context.Context, id uuid.UUID, issuerSignature *string) (*entity.EventCertificateSignature, error) {
+	result, err := r.queries.UpdateEventCertificateIssuerSignature(ctx, generated.UpdateEventCertificateIssuerSignatureParams{
+		ID:              id,
+		IssuerSignature: pgmapper.StringPtrToPgText(issuerSignature),
+	})
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	return &entity.EventCertificateSignature{
+		ID:                 result.ID,
+		EventCertificateID: result.EventCertificateID,
+		IssuerCredentialID: result.IssuerCredentialID,
+		IssuerSignature:    pgmapper.PgTextToStringPtr(result.IssuerSignature),
+		HostSignature:      *pgmapper.PgTextToStringPtr(result.HostSignature),
+		SignMessage:        pgmapper.PgTextToStringPtr(result.SignMessage),
+		SignMessageDigest:  pgmapper.PgTextToStringPtr(result.SignMessageDigest),
+	}, nil
+}
+
 func (r *Repository) DeleteEventCertificateSignature(ctx context.Context, id uuid.UUID) error {
 	err := r.queries.DeleteEventCertificateSignature(ctx, id)
 	if err != nil {
