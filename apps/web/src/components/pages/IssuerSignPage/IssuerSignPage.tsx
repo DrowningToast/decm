@@ -10,13 +10,18 @@ import { useEventCertificateConfig } from "@/components/pages/HostPages/EventPag
 import { useEventContract } from "@/hooks/events/useEventContracts";
 import { useSignEventCertificates } from "@/hooks/useSignEventCertificates";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { ChevronLeft, ExternalLinkIcon } from "lucide-react";
+import { ChevronLeft, ExternalLinkIcon, CheckCircle, Clock } from "lucide-react";
 import { PasswordPinModal } from "@/components/ui/password-pin-modal";
 import { TextLabelValue } from "@/components/ui/text-label-value";
 import { DataTable } from "@/components/ui/data-table";
 import { CertificateColumns } from "@/components/pages/HostPages/EventsPage/columns/CertificateColumns";
 import { formatEthereumAddress } from "@/lib/utils";
 import SectionContainer from "@/components/container/SectionContainer";
+import { IssuerStatusBadge } from "./IssuerStatusBadge";
+import { SigningProgress } from "./SigningProgress";
+import { IssuersStatus } from "./IssuersStatus";
+import { isIssuerSigned, isIssuerPending } from "./issuerStateUtils";
+import { useAuth } from "@/context/AuthContext";
 
 interface IssuerSignPageProps {
     eventId: string;
@@ -26,6 +31,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [showPinModal, setShowPinModal] = useState(false);
+    const { user: currentUser } = useAuth();
 
     // Fetch event data
     const { event, isLoadingEventError } = useEvent(eventId);
@@ -33,10 +39,16 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
     const { certificates: eventCertificates } = useEventCertificates(eventId);
     const { data: eventCertificateConfig } = useEventCertificateConfig(eventId);
     const { data: eventContract } = useEventContract(eventId);
-    const { signEventCertificates, isSigning } = useSignEventCertificates();
+    const { signEventCertificates, isSigning } = useSignEventCertificates(eventId);
 
     // Get current issuer's information
-    const currentIssuer = eventIssuers?.find((issuer) => issuer.is_signed === 0);
+    const currentIssuer = eventIssuers?.find(
+        (issuer) => issuer.issuer_credential_id === currentUser?.authentication_credential_id,
+    );
+
+    // Determine if current issuer has already signed
+    const hasCurrentIssuerSigned = currentIssuer && currentIssuer.is_signed === 1;
+    const isCurrentIssuerPending = currentIssuer && currentIssuer.is_signed === 0;
 
     // Calculate total certificates to be signed
     const certificatesToSign =
@@ -119,6 +131,20 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                 {t("issuer.sign.pageDescription")}
                             </Typography>
                         </div>
+                        {/* Issuers Status Section */}
+                        {eventIssuers && eventIssuers.length > 0 && (
+                            <IssuersStatus
+                                issuers={
+                                    eventIssuers?.map((issuer) => ({
+                                        id: issuer.id || "",
+                                        issuer_credential_id: issuer.issuer_credential_id || "",
+                                        is_signed: issuer.is_signed || 0,
+                                    })) || []
+                                }
+                                currentIssuerId={currentUser?.id}
+                                className="mb-8"
+                            />
+                        )}
 
                         {/* Signing Details Section */}
                         <div className="bg-[#1a1a1a] border border-[#333333] rounded-lg p-6 mb-8">
@@ -130,16 +156,36 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                 {t("issuer.sign.signingDetails")}
                             </Typography>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <TextLabelValue
-                                    label={t("issuer.sign.signingStatus")}
-                                    value={
-                                        currentIssuer
-                                            ? currentIssuer.is_signed === 1
-                                                ? "Signed"
-                                                : "Pending"
-                                            : "N/A"
-                                    }
-                                />
+                                <div>
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        color="muted-foreground"
+                                        className="text-sm"
+                                    >
+                                        {t("issuer.sign.signingStatus")}
+                                    </Typography>
+                                    <div className="mt-1">
+                                        {currentIssuer ? (
+                                            <div className="flex items-center space-x-2">
+                                                <IssuerStatusBadge
+                                                    isSigned={currentIssuer.is_signed || 0}
+                                                />
+                                                {hasCurrentIssuerSigned && (
+                                                    <Typography
+                                                        variant="text"
+                                                        tag="span"
+                                                        className="text-sm text-green-500"
+                                                    >
+                                                        Completed
+                                                    </Typography>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            "N/A"
+                                        )}
+                                    </div>
+                                </div>
                                 <TextLabelValue
                                     label={t("issuer.sign.contractAddress")}
                                     value={
@@ -275,15 +321,29 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                         </Typography>
 
                                         {/* Sign Button */}
-                                        <Button
-                                            onClick={handleSignCertificates}
-                                            disabled={isSigning || certificatesToSign.length === 0}
-                                            className="w-full bg-[#ff6a39] text-white font-semibold py-3 px-6 rounded-lg mb-3"
-                                        >
-                                            {isSigning
-                                                ? t("issuer.sign.signing")
-                                                : `${t("issuer.sign.signAndApprove")}`}
-                                        </Button>
+                                        {isCurrentIssuerPending ? (
+                                            <Button
+                                                onClick={handleSignCertificates}
+                                                disabled={
+                                                    isSigning || certificatesToSign.length === 0
+                                                }
+                                                className="w-full bg-[#ff6a39] text-white font-semibold py-3 px-6 rounded-lg mb-3"
+                                            >
+                                                {isSigning
+                                                    ? t("issuer.sign.signing")
+                                                    : `${t("issuer.sign.signAndApprove")} (${certificatesToSign.length})`}
+                                            </Button>
+                                        ) : hasCurrentIssuerSigned ? (
+                                            <div className="w-full bg-green-600 text-white font-semibold py-3 px-6 rounded-lg mb-3 flex items-center justify-center">
+                                                <CheckCircle className="mr-2 h-5 w-5" />
+                                                {t("issuer.sign.alreadySigned")}
+                                            </div>
+                                        ) : (
+                                            <div className="w-full bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg mb-3 flex items-center justify-center">
+                                                <Clock className="mr-2 h-5 w-5" />
+                                                {t("issuer.sign.notAnIssuer")}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -299,7 +359,12 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                             tag="h2"
                             className="text-xl font-semibold text-white mb-4"
                         >
-                            {t("issuer.sign.eventCertificates")} (
+                            {isCurrentIssuerPending
+                                ? t("issuer.sign.certificatesToSign")
+                                : hasCurrentIssuerSigned
+                                  ? t("issuer.sign.signedCertificates")
+                                  : t("issuer.sign.eventCertificates")}{" "}
+                            (
                             {eventCertificates?.filter((cert) => cert.revoked_at === null).length ||
                                 0}
                             )
@@ -322,7 +387,11 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                             email: cert.receiver_email || "",
                                             academicInstitution: cert.academic_institution || "",
                                             issuedAt: cert.created_at || "",
-                                            status: cert.revoked_at ? "rejected" : "received",
+                                            status: cert.revoked_at
+                                                ? "rejected"
+                                                : isCurrentIssuerPending
+                                                  ? "pending_signature"
+                                                  : "received",
                                         };
                                     }) || []
                             }
