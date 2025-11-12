@@ -25,10 +25,10 @@ const (
 type Event struct {
 	ID                       uuid.UUID   `json:"id"`
 	EventType                EventType   `json:"event_type"`
-	ChainID                  int         `json:"chain_id"`
+	ChainId                  int         `json:"chain_id"`
 	ContactNumber            string      `json:"contact_number"`
 	ContactAddress           string      `json:"contact_address"`
-	OwnerCredentialID        uuid.UUID   `json:"owner_credential_id"`
+	OwnerCredentialId        uuid.UUID   `json:"owner_credential_id"`
 	BannerStorageKey         string      `json:"banner_storage_key"`
 	IconStorageKey           string      `json:"icon_storage_key"`
 	Title                    string      `json:"title"`

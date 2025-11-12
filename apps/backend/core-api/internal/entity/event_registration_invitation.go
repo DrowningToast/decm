@@ -7,9 +7,9 @@ import (
 )
 
 type EventRegistrationInvitation struct {
-	ID                  uuid.UUID  `json:"id"`
-	EventID             uuid.UUID  `json:"event_id"`
-	InboxMessageID      uuid.UUID  `json:"inbox_message_id"`
+	Id                  uuid.UUID  `json:"id"`
+	EventId             uuid.UUID  `json:"event_id"`
+	InboxMessageId      uuid.UUID  `json:"inbox_message_id"`
 	ValidUntil          *time.Time `json:"valid_until"`
 	Code                *string    `json:"code"`
 	FirstName           *string    `json:"first_name"`

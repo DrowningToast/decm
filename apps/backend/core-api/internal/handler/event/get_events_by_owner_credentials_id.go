@@ -7,6 +7,7 @@ import (
 	"time"
 
 	customerror "apps/backend/common/customerror"
+	event_uc "apps/backend/core-api/internal/usecase/event"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -50,7 +51,7 @@ func (h *Handler) GetEventsByOwnerCredentialsId(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	result := make([]*EventResponse, len(events))
+	result := make([]*event_uc.EventResponse, len(events))
 	for i, event := range events {
 		bannerPresignedURL, err := h.EventUc.S3Service.GetPresignedURL(ctx.Context(), event.BannerStorageKey)
 		if err != nil {
@@ -61,11 +62,11 @@ func (h *Handler) GetEventsByOwnerCredentialsId(ctx *fiber.Ctx) error {
 			return customerror.Parse(&customerror.ErrInternalServer, err)
 		}
 
-		result[i] = &EventResponse{
+		result[i] = &event_uc.EventResponse{
 			ID:                       event.ID,
-			ChainID:                  int32(event.ChainID),
+			ChainID:                  int32(event.ChainId),
 			ContactNumber:            event.ContactNumber,
-			OwnerCredentialID:        event.OwnerCredentialID,
+			OwnerCredentialID:        event.OwnerCredentialId,
 			BannerStorageKey:         event.BannerStorageKey,
 			IconStorageKey:           event.IconStorageKey,
 			BannerPresignedURL:       bannerPresignedURL,

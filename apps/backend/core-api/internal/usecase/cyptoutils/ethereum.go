@@ -1,8 +1,9 @@
 package cyptoutils
 
 import (
-	"apps/backend/core-api/config"
 	"math/big"
+
+	"apps/backend/core-api/config"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"

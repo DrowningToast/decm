@@ -57,7 +57,7 @@ func (uc *EventRegistrationInvitationUsecase) ImportEventParticipants(ctx contex
 		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	if dbEvent.OwnerCredentialID != currentUser.UserId {
+	if dbEvent.OwnerCredentialId != currentUser.UserId {
 		return nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("user is not the event owner"))
 	}
 
@@ -110,7 +110,7 @@ func (uc *EventRegistrationInvitationUsecase) ImportEventParticipants(ctx contex
 		// Create event registration invitation
 		invitationParams := datagateway.CreateEventRegistrationInvitationParameters{
 			EventID:             params.EventID,
-			InboxMessageID:      inboxMessage.ID,
+			InboxMessageID:      inboxMessage.Id,
 			ValidUntil:          nil, // No expiration by default
 			Code:                &code,
 			FirstName:           stringPtr(participant.FirstName),

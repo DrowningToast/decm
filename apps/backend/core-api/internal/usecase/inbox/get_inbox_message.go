@@ -33,7 +33,7 @@ func (uc *InboxUsecase) GetInboxMessage(ctx context.Context, user auth.JwtClaims
 
 	switch entity.InboxMessageType(message.MessageType) {
 	case entity.InboxMessageTypeEventRegistrationInvitation:
-		eventRegistrationInvitation, event, err := uc.GetRelatedEventRegistrationInvitation(ctx, message.ID)
+		eventRegistrationInvitation, event, err := uc.GetRelatedEventRegistrationInvitation(ctx, message.Id)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get related event registration invitation")
 		}
@@ -57,7 +57,7 @@ func (uc *InboxUsecase) GetRelatedEventRegistrationInvitation(ctx context.Contex
 	if eventRegistrationInvitation == nil {
 		return nil, nil, customerror.Parse(&customerror.ErrNotFound, errors.New("event registration invitation not found"))
 	}
-	event, err := uc.EventDg.GetEventById(ctx, eventRegistrationInvitation.EventID)
+	event, err := uc.EventDg.GetEventById(ctx, eventRegistrationInvitation.EventId)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to get event by id")
 	}

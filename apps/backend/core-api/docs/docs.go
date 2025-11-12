@@ -2013,6 +2013,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/events/{event_id}/viewmodel": {
+            "get": {
+                "description": "Get event by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Get event by ID",
+                "operationId": "get-event-viewmodel-by-id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/event.EventViewModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/issuers": {
             "get": {
                 "description": "Get verified issuers",
@@ -3405,6 +3456,86 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "is_booking_request_required": {
+                    "type": "boolean"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "is_ticket_transferable": {
+                    "type": "boolean"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "long_description": {
+                    "type": "string"
+                },
+                "max_attendees": {
+                    "type": "integer"
+                },
+                "owner_credential_id": {
+                    "type": "string"
+                },
+                "short_description": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.EventViewModel": {
+            "type": "object",
+            "properties": {
+                "banner_presigned_url": {
+                    "type": "string"
+                },
+                "banner_storage_key": {
+                    "type": "string"
+                },
+                "chain_id": {
+                    "type": "integer"
+                },
+                "contact_number": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "event_status": {
+                    "$ref": "#/definitions/entity.EventStatus"
+                },
+                "google_map_query": {
+                    "type": "string"
+                },
+                "icon_presigned_url": {
+                    "type": "string"
+                },
+                "icon_storage_key": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_booking_request_required": {
+                    "type": "boolean"
+                },
+                "is_invited": {
+                    "type": "boolean"
+                },
+                "is_joined": {
                     "type": "boolean"
                 },
                 "is_public": {

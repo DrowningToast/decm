@@ -89,6 +89,118 @@ func (q *Queries) DeleteEventRegistrationInvitation(ctx context.Context, id uuid
 	return err
 }
 
+const GetEventRegistrationInvitationByEventIdAndCredentialId = `-- name: GetEventRegistrationInvitationByEventIdAndCredentialId :one
+SELECT 
+    event_registration_invitations.id as event_registration_invitation_id,
+    event_registration_invitations.event_id as event_id,
+    event_registration_invitations.valid_until as valid_until,
+    event_registration_invitations.code as code,
+    event_registration_invitations.first_name as first_name,
+    event_registration_invitations.last_name as last_name,
+    event_registration_invitations.email as email,
+    event_registration_invitations.phone_number as phone_number,
+    event_registration_invitations.academic_institution as academic_institution,
+    event_registration_invitations.created_at as event_registration_invitation_created_at,
+    event_registration_invitations.updated_at as event_registration_invitation_updated_at,
+    event_registration_invitations.cancelled_at as event_registration_invitation_cancelled_at,
+    inbox_messages.id as inbox_message_id,
+    inbox_messages.id as sender_credential_id,
+    inbox_messages.receiver_credential_id as receiver_credential_id,
+    inbox_messages.receiver_email as receiver_email,
+    inbox_messages.receiver_wallet_address as receiver_wallet_address,
+    inbox_messages.message_type as message_type,
+    inbox_messages.message_content as message_content,
+    inbox_messages.fallback_message_content as fallback_message_content,
+    inbox_messages.created_at as inbox_message_created_at,
+    inbox_messages.updated_at as inbox_message_updated_at,
+    inbox_messages.is_read as inbox_message_is_read,
+    inbox_messages.hidden_at as inbox_message_hidden_at,
+    inbox_messages.deleted_at as inbox_message_deleted_at
+FROM event_registration_invitations 
+INNER JOIN inbox_messages ON event_registration_invitations.inbox_message_id = inbox_messages.id
+WHERE event_registration_invitations.event_id = $1 
+AND event_registration_invitations.cancelled_at IS NULL
+AND (
+    inbox_messages.receiver_credential_id = $2
+    OR inbox_messages.receiver_email = $3
+    OR inbox_messages.receiver_wallet_address = $4
+)
+ORDER BY event_registration_invitations.created_at DESC
+`
+
+type GetEventRegistrationInvitationByEventIdAndCredentialIdParams struct {
+	EventID       uuid.UUID   `json:"event_id"`
+	CredentialID  pgtype.UUID `json:"credential_id"`
+	Email         pgtype.Text `json:"email"`
+	WalletAddress pgtype.Text `json:"wallet_address"`
+}
+
+type GetEventRegistrationInvitationByEventIdAndCredentialIdRow struct {
+	EventRegistrationInvitationID          uuid.UUID          `json:"event_registration_invitation_id"`
+	EventID                                uuid.UUID          `json:"event_id"`
+	ValidUntil                             pgtype.Timestamptz `json:"valid_until"`
+	Code                                   pgtype.Text        `json:"code"`
+	FirstName                              pgtype.Text        `json:"first_name"`
+	LastName                               pgtype.Text        `json:"last_name"`
+	Email                                  pgtype.Text        `json:"email"`
+	PhoneNumber                            pgtype.Text        `json:"phone_number"`
+	AcademicInstitution                    pgtype.Text        `json:"academic_institution"`
+	EventRegistrationInvitationCreatedAt   pgtype.Timestamptz `json:"event_registration_invitation_created_at"`
+	EventRegistrationInvitationUpdatedAt   pgtype.Timestamptz `json:"event_registration_invitation_updated_at"`
+	EventRegistrationInvitationCancelledAt pgtype.Timestamptz `json:"event_registration_invitation_cancelled_at"`
+	InboxMessageID                         uuid.UUID          `json:"inbox_message_id"`
+	SenderCredentialID                     uuid.UUID          `json:"sender_credential_id"`
+	ReceiverCredentialID                   pgtype.UUID        `json:"receiver_credential_id"`
+	ReceiverEmail                          pgtype.Text        `json:"receiver_email"`
+	ReceiverWalletAddress                  pgtype.Text        `json:"receiver_wallet_address"`
+	MessageType                            int32              `json:"message_type"`
+	MessageContent                         []byte             `json:"message_content"`
+	FallbackMessageContent                 pgtype.Text        `json:"fallback_message_content"`
+	InboxMessageCreatedAt                  pgtype.Timestamptz `json:"inbox_message_created_at"`
+	InboxMessageUpdatedAt                  pgtype.Timestamptz `json:"inbox_message_updated_at"`
+	InboxMessageIsRead                     pgtype.Int4        `json:"inbox_message_is_read"`
+	InboxMessageHiddenAt                   pgtype.Timestamptz `json:"inbox_message_hidden_at"`
+	InboxMessageDeletedAt                  pgtype.Timestamptz `json:"inbox_message_deleted_at"`
+}
+
+func (q *Queries) GetEventRegistrationInvitationByEventIdAndCredentialId(ctx context.Context, arg GetEventRegistrationInvitationByEventIdAndCredentialIdParams) (GetEventRegistrationInvitationByEventIdAndCredentialIdRow, error) {
+	row := q.db.QueryRow(ctx, GetEventRegistrationInvitationByEventIdAndCredentialId,
+		arg.EventID,
+		arg.CredentialID,
+		arg.Email,
+		arg.WalletAddress,
+	)
+	var i GetEventRegistrationInvitationByEventIdAndCredentialIdRow
+	err := row.Scan(
+		&i.EventRegistrationInvitationID,
+		&i.EventID,
+		&i.ValidUntil,
+		&i.Code,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.AcademicInstitution,
+		&i.EventRegistrationInvitationCreatedAt,
+		&i.EventRegistrationInvitationUpdatedAt,
+		&i.EventRegistrationInvitationCancelledAt,
+		&i.InboxMessageID,
+		&i.SenderCredentialID,
+		&i.ReceiverCredentialID,
+		&i.ReceiverEmail,
+		&i.ReceiverWalletAddress,
+		&i.MessageType,
+		&i.MessageContent,
+		&i.FallbackMessageContent,
+		&i.InboxMessageCreatedAt,
+		&i.InboxMessageUpdatedAt,
+		&i.InboxMessageIsRead,
+		&i.InboxMessageHiddenAt,
+		&i.InboxMessageDeletedAt,
+	)
+	return i, err
+}
+
 const GetEventRegistrationInvitationByID = `-- name: GetEventRegistrationInvitationByID :one
 SELECT id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at FROM event_registration_invitations WHERE id = $1
 `

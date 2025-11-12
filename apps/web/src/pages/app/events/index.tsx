@@ -1,4 +1,4 @@
-import { ParticipantEventListPage } from "@/components/pages/Participant/Events/ParticipantEventListPage";
+import { ParticipantEventListPage } from "@/components/pages/Participant/Events/List/ParticipantEventListPage";
 
 const EventsPage = () => {
     return (

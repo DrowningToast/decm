@@ -8,6 +8,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+
+	event_uc "apps/backend/core-api/internal/usecase/event"
 )
 
 type DeleteEventRequest struct {
@@ -54,11 +56,11 @@ func (h *Handler) DeleteEvent(ctx *fiber.Ctx) error {
 	}
 
 	// Map domain event to EventResponse DTO
-	response := EventResponse{
+	response := event_uc.EventResponse{
 		ID:                       event.ID,
-		ChainID:                  int32(event.ChainID),
+		ChainID:                  int32(event.ChainId),
 		ContactNumber:            event.ContactNumber,
-		OwnerCredentialID:        event.OwnerCredentialID,
+		OwnerCredentialID:        event.OwnerCredentialId,
 		BannerStorageKey:         event.BannerStorageKey,
 		IconStorageKey:           event.IconStorageKey,
 		BannerPresignedURL:       "", // Empty after deletion

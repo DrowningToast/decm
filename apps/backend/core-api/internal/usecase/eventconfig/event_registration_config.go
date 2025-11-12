@@ -96,7 +96,7 @@ func (uc *EventConfigUsecase) UpdateEventRegistrationConfig(ctx context.Context,
 		return nil, err
 	}
 
-	if event.OwnerCredentialID != credential.Id {
+	if event.OwnerCredentialId != credential.Id {
 		return nil, customerror.Parse(&customerror.ErrUnauthorized, err)
 	}
 

@@ -34,7 +34,7 @@ func NewInboxUsecase(authenticationCredentialDg datagateway.AuthenticationCreden
 // - ReceiverWalletAddress matches user's wallet address
 func (uc *InboxUsecase) isAuthorizedToReadMessage(message *entity.InboxMessage, user auth.JwtClaims) bool {
 	// Check if receiver credential ID matches
-	if message.ReceiverCredentialID != nil && *message.ReceiverCredentialID == user.UserId {
+	if message.ReceiverCredentialId != nil && *message.ReceiverCredentialId == user.UserId {
 		return true
 	}
 
@@ -67,7 +67,7 @@ type InboxMessagesViewModel struct {
 }
 
 func (uc *InboxUsecase) ToViewModel(ctx context.Context, inboxMessage entity.InboxMessage) (*InboxMessagesViewModel, error) {
-	sender, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, *inboxMessage.SenderCredentialID)
+	sender, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, *inboxMessage.SenderCredentialId)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (uc *InboxUsecase) ToViewModel(ctx context.Context, inboxMessage entity.Inb
 		return nil, customerror.Parse(&customerror.ErrNotFound, err)
 	}
 	return &InboxMessagesViewModel{
-		ID:                    inboxMessage.ID,
+		ID:                    inboxMessage.Id,
 		ReceiverWalletAddress: inboxMessage.ReceiverWalletAddress,
 		ReceiverEmail:         inboxMessage.ReceiverEmail,
 		MessageType:           entity.InboxMessageType(inboxMessage.MessageType),

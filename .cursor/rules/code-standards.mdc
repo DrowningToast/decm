@@ -81,6 +81,34 @@ defer cancel()
 
 ## TypeScript & React Standards
 
+### Naming Convention: API Key Transformation
+**Critical Rule**: Convert API keys from **snake_case** to **camelCase** at the service layer.
+
+```typescript
+// ❌ WRONG - Using snake_case from API directly in components
+const event = await api.getEvent(); // Returns { event_id, created_at, updated_at }
+<Component eventId={event.event_id} /> // Direct snake_case usage
+
+// ✅ CORRECT - Transform at service level
+// apps/web/src/services/EventService.ts
+export async function getEventById(eventId: string) {
+  const response = await api.getEvent({ id: eventId });
+  
+  // Transform snake_case → camelCase
+  return {
+    eventId: response.event_id,
+    createdAt: response.created_at,
+    updatedAt: response.updated_at,
+    // ... rest of transformed fields
+  };
+}
+
+// Component receives camelCase
+<Component eventId={eventData.eventId} />
+```
+
+**Flow**: Backend (snake_case) → Service (transform) → Frontend (camelCase)
+
 ### Component Structure
 ```tsx
 interface ComponentProps {

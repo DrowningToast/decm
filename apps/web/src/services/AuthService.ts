@@ -210,3 +210,9 @@ export class AuthService {
 
 // Default instance
 export const authService = new AuthService(coreApiClient, queryClient, onboardService, wagmiConfig);
+export const defaultAuthService = new AuthService(
+    coreApiClient,
+    queryClient,
+    onboardService,
+    wagmiConfig,
+);

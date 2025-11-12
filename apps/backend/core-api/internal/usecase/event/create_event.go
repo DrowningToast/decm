@@ -133,7 +133,6 @@ func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParam
 		event.ShortDescription,                // Event description
 		big.NewInt(int64(event.MaxAttendees)), // Seats count
 	)
-
 	if err != nil {
 		return nil, common.Address{}, common.Address{}, nil, err
 	}
