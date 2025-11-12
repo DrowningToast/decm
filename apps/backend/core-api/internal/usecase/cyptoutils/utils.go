@@ -1,9 +1,10 @@
 package cyptoutils
 
 import (
-	"apps/backend/common/encryptutils"
 	"crypto/ecdsa"
 	"encoding/hex"
+
+	"apps/backend/common/encryptutils"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethCommon "github.com/ethereum/go-ethereum/common"

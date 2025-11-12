@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { EventService } from "@/services/EventService";
 import { QUERY_KEY } from "@/lib/queryKeys";
+import { eventService } from "@/services/services";
 
 interface UseGetEventListParams {
     includeActiveEvents?: boolean;
@@ -23,8 +23,6 @@ export function useGetEventList(params: UseGetEventListParams = {}) {
         onlyUserJoinedEvents,
         enabled = true,
     } = params;
-
-    const eventService = new EventService();
 
     return useQuery({
         queryKey: QUERY_KEY.event.list({

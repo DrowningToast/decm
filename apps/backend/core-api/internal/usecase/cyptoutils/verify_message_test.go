@@ -47,7 +47,6 @@ func TestVerifyMessage_WithGivenInputs(t *testing.T) {
 
 	// 4) Sign the hash with the private key
 	signature, err := crypto.Sign(hash.Bytes(), privateKey)
-
 	if err != nil {
 		t.Fatalf("crypto.Sign error: %v", err)
 	}

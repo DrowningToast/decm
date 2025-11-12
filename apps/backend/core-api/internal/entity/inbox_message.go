@@ -19,9 +19,9 @@ func (t InboxMessageType) String() string {
 }
 
 type InboxMessage struct {
-	ID                     uuid.UUID  `json:"id"`
-	SenderCredentialID     *uuid.UUID `json:"sender_credential_id"`
-	ReceiverCredentialID   *uuid.UUID `json:"receiver_credential_id"`
+	Id                     uuid.UUID  `json:"id"`
+	SenderCredentialId     *uuid.UUID `json:"sender_credential_id"`
+	ReceiverCredentialId   *uuid.UUID `json:"receiver_credential_id"`
 	ReceiverWalletAddress  *string    `json:"receiver_wallet_address"`
 	ReceiverEmail          *string    `json:"receiver_email"`
 	MessageType            int        `json:"message_type"`

@@ -92,6 +92,8 @@ func (u *AuthUsecase) CheckRole(ctx context.Context, params CheckRoleParams) (*C
 
 **Responsibility**: HTTP request/response handling, input validation, error mapping
 
+**Note**: Handlers remain thin and delegate business logic to usecases.
+
 **Structure**:
 
 ```
@@ -168,7 +170,14 @@ func (h *Handler) RegisterRoutes(router fiber.Router) {
 
 ### 2. UseCase Layer (`internal/usecase/`)
 
-**Responsibility**: Business logic, orchestration, transaction management
+**Responsibility**: Business logic, orchestration, transaction management, ViewModels/Response DTOs
+
+**⚠️ ViewModels Location**: Response DTOs/ViewModels MUST be defined at the usecase level, NOT at the handler level. ViewModels are part of the business logic boundary and transform usecase results for HTTP presentation.
+
+```
+✅ CORRECT:   Views/DTOs for HTTP responses are in usecase/
+❌ INCORRECT: Views/DTOs for HTTP responses are in handler/
+```
 
 **Structure**:
 
@@ -176,6 +185,7 @@ func (h *Handler) RegisterRoutes(router fiber.Router) {
 internal/usecase/
 └── [feature]/
     ├── usecase_[action].go
+    ├── viewmodels.go         # ← Response DTOs/ViewModels defined here
     └── usecase.go
 ```
 
@@ -361,14 +371,69 @@ type RegisterRequest struct {
 }
 ```
 
-### Response DTO (handler):
+### Response DTO / ViewModel (usecase level):
+
+**Important**: ViewModels are defined in the usecase package as part of the business logic boundary. They represent the response contract returned directly by usecase methods.
 
 ```go
+// internal/usecase/event/viewmodels.go
+type GetEventViewModel struct {
+    ID          uuid.UUID `json:"id"`
+    Title       string    `json:"title"`
+    Description string    `json:"description"`
+    Date        time.Time `json:"date"`
+    CreatedAt   time.Time `json:"created_at"`
+}
+
+// internal/usecase/user/viewmodels.go
 type RegisterResponse struct {
     UserID    uuid.UUID `json:"user_id"`
     Email     string    `json:"email"`
     FirstName string    `json:"first_name"`
     LastName  string    `json:"last_name"`
+}
+```
+
+**UseCase method returning ViewModel**:
+
+```go
+// internal/usecase/event/usecase_get_event.go
+func (uc *EventUseCase) GetEventByID(ctx context.Context, eventID uuid.UUID) (*GetEventViewModel, error) {
+    // Business logic
+    event, err := uc.EventRepo.GetByID(ctx, eventID)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Return ViewModel directly from usecase
+    return &GetEventViewModel{
+        ID:          event.ID,
+        Title:       event.Title,
+        Description: event.Description,
+        Date:        event.Date,
+        CreatedAt:   event.CreatedAt,
+    }, nil
+}
+```
+
+**Handler using ViewModel from usecase**:
+
+```go
+// internal/handler/event/handler_get_event_by_id.go
+func (h *Handler) GetEventByID(ctx *fiber.Ctx) error {
+    eventID, err := uuid.Parse(ctx.Params("event_id"))
+    if err != nil {
+        return customerror.Parse(&customerror.ErrInvalidArgument, err)
+    }
+    
+    // Usecase already returns ViewModel
+    viewModel, err := h.EventUseCase.GetEventByID(ctx.Context(), eventID)
+    if err != nil {
+        return err
+    }
+    
+    // Return ViewModel directly from handler
+    return ctx.Status(fiber.StatusOK).JSON(viewModel)
 }
 ```
 
@@ -496,12 +561,17 @@ func (uc *UseCase) ComplexOperation(ctx context.Context, input InputDTO) error {
 - Implement business logic in usecase layer
 - Keep handlers thin (< 30 lines)
 - Use context.Context for cancellation
+- **Define ViewModels/Response DTOs in the usecase layer** - They are the response contract of the usecase boundary
+- Return ViewModels directly from usecase methods to handlers
+- Handlers pass usecase ViewModels directly as JSON responses
 
 ### ❌ DON'T:
 
 - **Put business logic in handlers** - All business logic belongs in usecases
 - **Access database directly from handlers** - Always go through usecase layer
 - **Call repositories from handlers** - This violates clean architecture
+- **Define ViewModels/Response DTOs in handler layer** - These are business logic concerns and belong in usecases
+- **Transform usecase results to different types in handlers** - Usecase already provides the correct response format
 - Skip input validation
 - Return raw errors to clients
 - Store PII unencrypted
@@ -547,11 +617,156 @@ encryptutils.Encrypt(data, key)
 encryptutils.Decrypt(encrypted, key)
 ```
 
+## ViewModel / Response DTO Pattern
+
+All response types for API endpoints are defined in the usecase layer and returned directly by usecase methods.
+
+### File Organization:
+
+```
+internal/usecase/[feature]/
+├── viewmodels.go           # All response types for this feature
+├── usecase.go              # Main usecase struct
+├── usecase_[action].go     # Usecase methods returning ViewModels
+└── [specific].go           # Other files
+```
+
+### ViewModel Definition Example:
+
+```go
+// internal/usecase/event/viewmodels.go
+package event
+
+import (
+    "time"
+    "github.com/google/uuid"
+    "apps/backend/core-api/internal/entity"
+)
+
+// EventResponse - returned by event list and detail endpoints
+type EventResponse struct {
+    ID                       uuid.UUID          `json:"id"`
+    ChainID                  int32              `json:"chain_id"`
+    Title                    string             `json:"title"`
+    ShortDescription         string             `json:"short_description"`
+    LongDescription          string             `json:"long_description"`
+    StartDate                time.Time          `json:"start_date"`
+    EndDate                  time.Time          `json:"end_date"`
+    Location                 string             `json:"location"`
+    MaxAttendees             int32              `json:"max_attendees"`
+    IsPublic                 bool               `json:"is_public"`
+    IsVerified               bool               `json:"is_verified"`
+    BannerPresignedURL       string             `json:"banner_presigned_url"`
+    IconPresignedURL         string             `json:"icon_presigned_url"`
+    CreatedAt                time.Time          `json:"created_at"`
+    UpdatedAt                time.Time          `json:"updated_at"`
+    EventStatus              entity.EventStatus `json:"event_status"`
+}
+
+// GetEventListViewModel - wrapper for list responses
+type GetEventListViewModel struct {
+    Events    []EventResponse `json:"events"`
+    Total     int32           `json:"total"`
+    Page      int32           `json:"page"`
+    PageSize  int32           `json:"page_size"`
+}
+```
+
+### Usecase Returning ViewModel:
+
+```go
+// internal/usecase/event/usecase_get_event.go
+func (uc *EventUseCase) GetEventByID(ctx context.Context, eventID uuid.UUID, user *auth.JwtClaims) (*EventResponse, error) {
+    // Business logic and data gathering
+    event, err := uc.EventDg.GetEventByID(ctx, eventID)
+    if err != nil {
+        return nil, err
+    }
+
+    // Get presigned URLs (S3 service call)
+    bannerURL, err := uc.S3Service.GetPresignedURL(ctx, event.BannerStorageKey)
+    if err != nil {
+        return nil, err
+    }
+
+    iconURL, err := uc.S3Service.GetPresignedURL(ctx, event.IconStorageKey)
+    if err != nil {
+        return nil, err
+    }
+
+    // Return fully constructed ViewModel
+    return &EventResponse{
+        ID:                 event.ID,
+        ChainID:            int32(event.ChainId),
+        Title:              event.Title,
+        ShortDescription:   event.ShortDescription,
+        LongDescription:    event.LongDescription,
+        StartDate:          event.StartDate,
+        EndDate:            event.EndDate,
+        Location:           event.Location,
+        MaxAttendees:       int32(event.MaxAttendees),
+        IsPublic:           event.IsPublic,
+        IsVerified:         event.IsVerified,
+        BannerPresignedURL: bannerURL,
+        IconPresignedURL:   iconURL,
+        CreatedAt:          event.CreatedAt,
+        UpdatedAt:          event.UpdatedAt,
+        EventStatus:        event.EventStatus,
+    }, nil
+}
+```
+
+### Handler Using ViewModel:
+
+```go
+// internal/handler/event/get_event_by_id.go
+// @Summary Get event by ID
+// @Description Get event details by ID
+// @Tags Events
+// @ID get-event-by-id
+// @Param event_id path string true "Event ID"
+// @Success 200 {object} event.EventResponse
+// @Router /api/v1/events/{event_id} [get]
+func (h *Handler) GetEventByID(ctx *fiber.Ctx) error {
+    eventID, err := uuid.Parse(ctx.Params("event_id"))
+    if err != nil {
+        return customerror.Parse(&customerror.ErrInvalidArgument, err)
+    }
+
+    user, err := h.AuthService.GetUserContext(ctx)
+    if err != nil {
+        return customerror.Parse(&customerror.ErrUnauthorized, err)
+    }
+
+    // Usecase returns the ViewModel directly
+    event, err := h.EventUc.GetEventByID(ctx.Context(), eventID, user)
+    if err != nil {
+        return err
+    }
+
+    if event == nil {
+        return customerror.Parse(&customerror.ErrNotFound, nil)
+    }
+
+    // Handler returns ViewModel directly as JSON
+    return ctx.Status(fiber.StatusOK).JSON(event)
+}
+```
+
+### Benefits of Usecase-Level ViewModels:
+
+- ✅ **Single Responsibility**: Usecase handles all data gathering and transformation
+- ✅ **Reusable**: Multiple handlers can use the same ViewModel from the same usecase
+- ✅ **Testable**: Easy to test usecase without handlers
+- ✅ **Clear Contract**: ViewModels define the exact response structure
+- ✅ **Clean Handlers**: Handlers just call usecase and return result
+
 ## File Naming Conventions
 
 - Handlers: `handler_[action].go` (e.g., `handler_register_with_google_oauth.go`)
 - UseCases: `usecase_[action].go` (e.g., `usecase_register_user.go`)
 - Repositories: `repository_[action].go` (e.g., `repository_create_user.go`)
+- ViewModels: `viewmodels.go` (one file per feature for all response types)
 - Routes: `routes.go` (one per feature)
 - Main struct: `handler.go`, `usecase.go`, `repository.go`
 

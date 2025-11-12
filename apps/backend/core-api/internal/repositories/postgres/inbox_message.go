@@ -51,9 +51,9 @@ func (r *Repository) CreateInboxMessage(ctx context.Context, params datagateway.
 	fallbackMessageContentStr := pgmapper.PgTextToStringPtr(result.FallbackMessageContent)
 
 	return &entity.InboxMessage{
-		ID:                     result.ID,
-		SenderCredentialID:     &result.SenderCredentialID,
-		ReceiverCredentialID:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+		Id:                     result.ID,
+		SenderCredentialId:     &result.SenderCredentialID,
+		ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 		ReceiverEmail:          decryptedEmail,
 		MessageType:            int(result.MessageType),
 		MessageContent:         messageContentStr,
@@ -83,9 +83,9 @@ func (r *Repository) GetInboxMessageByID(ctx context.Context, id uuid.UUID) (*en
 	fallbackMessageContentStr := pgmapper.PgTextToStringPtr(result.FallbackMessageContent)
 
 	return &entity.InboxMessage{
-		ID:                     result.ID,
-		SenderCredentialID:     &result.SenderCredentialID,
-		ReceiverCredentialID:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+		Id:                     result.ID,
+		SenderCredentialId:     &result.SenderCredentialID,
+		ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 		ReceiverEmail:          decryptedEmail,
 		ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 		MessageType:            int(result.MessageType),
@@ -137,9 +137,9 @@ func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params 
 		}
 
 		messages[i] = &entity.InboxMessage{
-			ID:                     result.ID,
-			SenderCredentialID:     &result.SenderCredentialID,
-			ReceiverCredentialID:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			Id:                     result.ID,
+			SenderCredentialId:     &result.SenderCredentialID,
+			ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 			ReceiverEmail:          decryptedEmail,
 			ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 			MessageType:            int(result.MessageType),
@@ -179,9 +179,9 @@ func (r *Repository) GetInboxMessagesByReceiverEmail(ctx context.Context, receiv
 		fallbackMessageContentStr := pgmapper.PgTextToStringPtr(result.FallbackMessageContent)
 
 		messages[i] = &entity.InboxMessage{
-			ID:                     result.ID,
-			SenderCredentialID:     &result.SenderCredentialID,
-			ReceiverCredentialID:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			Id:                     result.ID,
+			SenderCredentialId:     &result.SenderCredentialID,
+			ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 			ReceiverEmail:          decryptedEmail,
 			ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 			MessageType:            int(result.MessageType),
@@ -223,9 +223,9 @@ func (r *Repository) GetInboxMessagesByReceiverWalletAddress(ctx context.Context
 		}
 
 		messages[i] = &entity.InboxMessage{
-			ID:                     result.ID,
-			SenderCredentialID:     &result.SenderCredentialID,
-			ReceiverCredentialID:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			Id:                     result.ID,
+			SenderCredentialId:     &result.SenderCredentialID,
+			ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 			ReceiverEmail:          decryptedEmail,
 			ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 			MessageType:            int(result.MessageType),
@@ -252,9 +252,9 @@ func (r *Repository) GetInboxMessagesBySenderCredentialID(ctx context.Context, s
 		}
 
 		messages[i] = &entity.InboxMessage{
-			ID:                     result.ID,
-			SenderCredentialID:     &result.SenderCredentialID,
-			ReceiverCredentialID:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			Id:                     result.ID,
+			SenderCredentialId:     &result.SenderCredentialID,
+			ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 			ReceiverEmail:          decryptedEmail,
 			ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 			MessageType:            int(result.MessageType),
@@ -291,9 +291,9 @@ func (r *Repository) UpdateInboxMessageReadStatus(ctx context.Context, id uuid.U
 	fallbackMessageContentStr := pgmapper.PgTextToStringPtr(result.FallbackMessageContent)
 
 	return &entity.InboxMessage{
-		ID:                     result.ID,
-		SenderCredentialID:     &result.SenderCredentialID,
-		ReceiverCredentialID:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+		Id:                     result.ID,
+		SenderCredentialId:     &result.SenderCredentialID,
+		ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 		ReceiverEmail:          decryptedEmail,
 		ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 		MessageType:            int(result.MessageType),
@@ -322,9 +322,9 @@ func (r *Repository) UpdateInboxMessageReadStatusAll(ctx context.Context, creden
 		}
 
 		messages[i] = &entity.InboxMessage{
-			ID:                     result.ID,
-			SenderCredentialID:     &result.SenderCredentialID,
-			ReceiverCredentialID:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			Id:                     result.ID,
+			SenderCredentialId:     &result.SenderCredentialID,
+			ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 			ReceiverEmail:          decryptedEmail,
 			ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 			MessageType:            int(result.MessageType),

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { ExternalLink } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
-import { useEventDetailUsecase } from "./useEventDetailUsecase";
+import { useViewEventDetailUsecase } from "./useViewEventDetailUsecase";
 import { useEventPasswordNavStore } from "@/components/BottomNav/stores/event-password";
 import { useEventInvitationNavStore } from "@/components/BottomNav/stores/event-invitation";
 
@@ -13,36 +13,10 @@ interface EventDetailPageProps {
 
 export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
     const { t } = useTranslation();
-    const {
-        event,
-        isLoading,
-        error,
-        submitPassword,
-        acceptInvitation,
-        bottomNavVariant,
-        hasJoinedPasswordEvent,
-        hasAcceptedInvitation,
-    } = useEventDetailUsecase({ eventId });
+    const { event, isLoading, error } = useViewEventDetailUsecase({ eventId });
 
     const { setOnSubmitCallback, resetPassword } = useEventPasswordNavStore();
     const { setOnAcceptCallback } = useEventInvitationNavStore();
-
-    // Set up password submit callback
-    useEffect(() => {
-        setOnSubmitCallback((password: string) => {
-            if (password.trim()) {
-                submitPassword({ password });
-                resetPassword();
-            }
-        });
-    }, [setOnSubmitCallback, submitPassword, resetPassword]);
-
-    // Set up invitation accept callback
-    useEffect(() => {
-        setOnAcceptCallback(() => {
-            acceptInvitation();
-        });
-    }, [setOnAcceptCallback, acceptInvitation]);
 
     // Loading state
     if (isLoading) {

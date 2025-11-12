@@ -396,6 +396,34 @@ export interface EventEventResponse {
     updated_at?: string;
 }
 
+export interface EventEventViewModel {
+    banner_presigned_url?: string;
+    banner_storage_key?: string;
+    chain_id?: number;
+    contact_number?: string;
+    created_at?: string;
+    end_date?: string;
+    event_status?: EntityEventStatus;
+    google_map_query?: string;
+    icon_presigned_url?: string;
+    icon_storage_key?: string;
+    id?: string;
+    is_booking_request_required?: boolean;
+    is_invited?: boolean;
+    is_joined?: boolean;
+    is_public?: boolean;
+    is_ticket_transferable?: boolean;
+    is_verified?: boolean;
+    location?: string;
+    long_description?: string;
+    max_attendees?: number;
+    owner_credential_id?: string;
+    short_description?: string;
+    start_date?: string;
+    title?: string;
+    updated_at?: string;
+}
+
 export interface EventGetEventCertificatesResponse {
     certificates?: EntityEventCertificate[];
 }
@@ -555,6 +583,15 @@ export type GetEventRegistrationInvitationsByEventIdData = EntityEventRegistrati
 export type GetEventRegistrationInvitationsByEventIdError = CustomerrorErrResponse;
 
 export interface GetEventRegistrationInvitationsByEventIdParams {
+    eventId: string;
+}
+
+export type GetEventViewmodelByIdData = EventEventViewModel;
+
+export type GetEventViewmodelByIdError = CustomerrorErrResponse;
+
+export interface GetEventViewmodelByIdParams {
+    /** Event ID */
     eventId: string;
 }
 
@@ -2000,6 +2037,26 @@ export class Api<SecurityDataType extends unknown> {
             >({
                 path: `/api/v1/events/${eventId}/registration-config`,
                 method: "DELETE",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get event by ID
+         *
+         * @tags Events
+         * @name GetEventViewmodelById
+         * @summary Get event by ID
+         * @request GET:/api/v1/events/{event_id}/viewmodel
+         */
+        getEventViewmodelById: (
+            { eventId, ...query }: GetEventViewmodelByIdParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetEventViewmodelByIdData, GetEventViewmodelByIdError>({
+                path: `/api/v1/events/${eventId}/viewmodel`,
+                method: "GET",
                 type: ContentType.Json,
                 format: "json",
                 ...params,

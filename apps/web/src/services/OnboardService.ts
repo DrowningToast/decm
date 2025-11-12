@@ -72,5 +72,5 @@ export class OnboardService {
     }
 }
 
-const DefaultOnboardService = new OnboardService(coreApiClient, queryClient);
-export { DefaultOnboardService as onboardService };
+export const defaultOnboardService = new OnboardService(coreApiClient, queryClient);
+export { defaultOnboardService as onboardService };

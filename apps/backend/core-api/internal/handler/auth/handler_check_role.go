@@ -60,4 +60,3 @@ func (h Handler) CheckRole(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(response)
 }
-

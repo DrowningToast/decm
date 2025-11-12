@@ -53,6 +53,26 @@ func (err *Err) Extend(msg string) *Err {
 	}
 }
 
+func New(httpStatus int, code ErrCode, message string, inner error) *Err {
+	return &Err{
+		HttpStatus:  &httpStatus,
+		Code:        &code,
+		Message:     message,
+		Inner:       inner,
+		LoggerLevel: slog.LevelError,
+	}
+}
+
+func NewWithPreset(preset *ErrSignature, err error) *Err {
+	return &Err{
+		HttpStatus:  &preset.HttpStatus,
+		Code:        &preset.Code,
+		Message:     preset.DefaultMessage,
+		Inner:       err,
+		LoggerLevel: preset.LoggerLevel,
+	}
+}
+
 func Parse(preset *ErrSignature, err error) *Err {
 	var defaultErrSignature *ErrSignature = &ErrInternalServer
 	if preset != nil {
