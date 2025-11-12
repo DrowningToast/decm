@@ -15,7 +15,7 @@ import { InboxViewCertificateNav } from "./variants/InboxViewCertificateNav";
 import { InboxMissingEventNav } from "./variants/InboxMissingEventNav";
 import { BottomContainerProvider } from "./context";
 
-type BottomNavVariant =
+export type BottomNavVariant =
     | "search-certificate"
     | "search-notification"
     | "certificate-detail"

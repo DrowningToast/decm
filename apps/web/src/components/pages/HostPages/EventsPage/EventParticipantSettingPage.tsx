@@ -62,10 +62,7 @@ export const EventParticipantSettingPage = ({
     };
 
     return (
-        <div
-            title={t("participantSettings.pageTitle")}
-            description={t("participantSettings.pageDescription")}
-        >
+        <div>
             <SectionContainer>
                 <ParticipantSettingsForm
                     onSubmit={onSubmit}

@@ -1,5 +1,10 @@
 import { coreApiClient, type CoreApiType } from "@/lib/api/api";
-import type { EntityEventStatus, EntityEventType } from "@decm/api";
+import {
+    EntityEventStatus,
+    EntityEventType,
+    type EntityEvent,
+    type EventEventViewModel,
+} from "@decm/api";
 
 interface GetEventsListParams {
     includeActiveEvents?: boolean;
@@ -9,30 +14,38 @@ interface GetEventsListParams {
 }
 
 export interface Event {
-    banner_storage_key?: string;
-    chain_id?: number;
-    contact_address?: string;
-    contact_number?: string;
-    created_at?: string;
-    end_date?: string;
-    event_status?: EntityEventStatus;
-    event_type?: EntityEventType;
-    google_map_query?: string;
-    icon_storage_key?: string;
+    bannerStorageKey?: string;
+    chainId?: number;
+    contactAddress?: string;
+    contactNumber?: string;
+    createdAt?: string;
+    endDate?: string;
+    eventStatus?: EntityEventStatus;
+    eventType?: EntityEventType;
+    googleMapQuery?: string;
+    iconStorageKey?: string;
     id?: string;
-    is_booking_request_required?: boolean;
-    is_public?: boolean;
-    is_ticket_transferable?: boolean;
-    is_verified?: boolean;
+    isBookingRequestRequired?: boolean;
+    isPublic?: boolean;
+    isTicketTransferable?: boolean;
+    isVerified?: boolean;
     location?: string;
-    long_description?: string;
-    max_attendees?: number;
-    owner_credential_id?: string;
-    short_description?: string;
-    start_date?: string;
+    longDescription?: string;
+    maxAttendees?: number;
+    ownerCredentialId?: string;
+    shortDescription?: string;
+    startDate?: string;
     title?: string;
-    updated_at?: string;
+    updatedAt?: string;
 }
+
+export interface EventViewModel extends Event {
+    isInvited?: boolean;
+    isJoined?: boolean;
+}
+
+export const EventStatus = EntityEventStatus;
+export const EventType = EntityEventType;
 
 export class EventService {
     private _coreApi: CoreApiType;
@@ -41,20 +54,68 @@ export class EventService {
         this._coreApi = coreApi;
     }
 
-    public async getEventById(eventId: string) {
+    /**
+     * Transform API response from snake_case to camelCase
+     */
+    private transformEventEvent(entityEvent: EntityEvent): Event {
+        return {
+            bannerStorageKey: entityEvent.banner_storage_key,
+            chainId: entityEvent.chain_id,
+            contactAddress: entityEvent.contact_address,
+            contactNumber: entityEvent.contact_number,
+            createdAt: entityEvent.created_at as string | undefined,
+            endDate: entityEvent.end_date as string | undefined,
+            eventStatus: entityEvent.event_status as EntityEventStatus | undefined,
+            eventType: entityEvent.event_type as EntityEventType | undefined,
+            googleMapQuery: entityEvent.google_map_query as string | undefined,
+            iconStorageKey: entityEvent.icon_storage_key as string | undefined,
+            id: entityEvent.id as string | undefined,
+            isBookingRequestRequired: entityEvent.is_booking_request_required as
+                | boolean
+                | undefined,
+            isPublic: entityEvent.is_public as boolean | undefined,
+            isTicketTransferable: entityEvent.is_ticket_transferable as boolean | undefined,
+            isVerified: entityEvent.is_verified as boolean | undefined,
+            location: entityEvent.location as string | undefined,
+            longDescription: entityEvent.long_description as string | undefined,
+            maxAttendees: entityEvent.max_attendees as number | undefined,
+            ownerCredentialId: entityEvent.owner_credential_id as string | undefined,
+            shortDescription: entityEvent.short_description as string | undefined,
+            startDate: entityEvent.start_date as string | undefined,
+            title: entityEvent.title as string | undefined,
+            updatedAt: entityEvent.updated_at as string | undefined,
+        };
+    }
+
+    private transformEventEventViewModel(
+        entityEventViewModel: EventEventViewModel,
+    ): EventViewModel {
+        return {
+            ...this.transformEventEvent(entityEventViewModel),
+            isInvited: entityEventViewModel.is_invited as boolean | undefined,
+            isJoined: entityEventViewModel.is_joined as boolean | undefined,
+        };
+    }
+
+    public async getEventById(eventId: string): Promise<Event> {
         const response = await this._coreApi.v1.getEventById({ eventId });
-        return response;
+        return this.transformEventEvent(response);
     }
 
     public async getEvents(params: GetEventsListParams): Promise<Event[]> {
         const response = await this._coreApi.v1.getEventsList({
-            include_active_events: params.includeActiveEvents,
+            include_active_events: params.includeActiveEvents ?? true,
             include_inactive_events: params.includeInactiveEvents,
             include_closed_events: params.includeClosedEvents,
             only_user_joined_events: params.onlyUserJoinedEvents,
         });
 
-        return response;
+        return response.events?.map((event) => this.transformEventEvent(event)) ?? [];
+    }
+
+    public async getEventViewModel(eventId: string): Promise<EventViewModel> {
+        const response = await this._coreApi.v1.getEventViewmodelById({ eventId });
+        return this.transformEventEventViewModel(response);
     }
 }
 

@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { Loader2, SearchX } from "lucide-react";
 import { CertificateEmptyState } from "./CertificateEmptyState";
-import type { Certificate } from "./useCertificatesListUsecase";
 import { Link } from "@/router";
 import { useSearchCertificateNavStore } from "@/components/BottomNav/stores/certificates";
 

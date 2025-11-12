@@ -11,8 +11,8 @@ import (
 )
 
 // GetEventById godoc
-// @Summary Get event by ID
-// @Description Get event by ID
+// @Summary Get event viewmodel by ID
+// @Description Get event viewmodel by ID
 // @Tags Events
 // @ID get-event-viewmodel-by-id
 // @Accept json

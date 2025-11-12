@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { ExternalLink } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
-import { useViewEventDetailUsecase } from "./useViewEventDetailUsecase";
+import { useEventViewModelUsecase } from "./useEventViewModelUsecase";
 import { useEventPasswordNavStore } from "@/components/BottomNav/stores/event-password";
 import { useEventInvitationNavStore } from "@/components/BottomNav/stores/event-invitation";
 
@@ -13,7 +13,7 @@ interface EventDetailPageProps {
 
 export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
     const { t } = useTranslation();
-    const { event, isLoading, error } = useViewEventDetailUsecase({ eventId });
+    const { event, isLoading, error } = useEventViewModelUsecase({ eventId });
 
     const { setOnSubmitCallback, resetPassword } = useEventPasswordNavStore();
     const { setOnAcceptCallback } = useEventInvitationNavStore();

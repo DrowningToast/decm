@@ -95,7 +95,7 @@ func (uc *EventRegistrationInvitationUsecase) ImportEventParticipants(ctx contex
 			ReceiverEmail:          participant.Email,
 			MessageType:            1, // event_registration_invitation
 			MessageContent:         string(messageContentJSON),
-			FallbackMessageContent: stringPtr(fmt.Sprintf("You have been invited to join the event")),
+			FallbackMessageContent: stringPtr("You have been invited to join the event"),
 			IsRead:                 0, // Unread
 		}
 
