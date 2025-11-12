@@ -745,6 +745,16 @@
         "formPreview": {
             "description": "This is how registration form will appear to participants",
             "title": "Registration Form Preview"
+        },
+        "preview": {
+            "title": "Registration Form Preview",
+            "description": "This is how registration form will appear to participants",
+            "enter": "Enter",
+            "optional": "Optional",
+            "bookingRequired": "Booking Approval Required",
+            "transferable": "Ticket Transferable",
+            "register": "Register",
+            "note": "This is a preview of the registration form"
         }
     },
     "participantImport": {

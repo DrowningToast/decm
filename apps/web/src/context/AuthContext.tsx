@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import type { EntityProfile } from "@decm/api";
 import { AxiosError } from "axios";
 import { useMyProfile } from "@/hooks/useMyProfile";
+
+export type AuthUser = EntityProfile;
 interface AuthContextType {
     user: EntityProfile | null;
     isFetching: boolean;

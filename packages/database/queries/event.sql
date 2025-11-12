@@ -69,6 +69,16 @@ SELECT
 FROM events
 WHERE id = sqlc.arg(id);
 
+-- name: GetEventViewModelById :one
+SELECT 
+    events.*,
+    event_registration_configs.*,
+    event_contracts.*
+FROM events
+INNER JOIN event_registration_configs ON events.id = event_registration_configs.event_id
+INNER JOIN event_contracts ON events.id = event_contracts.event_id
+WHERE events.id = sqlc.arg(id);
+
 -- name: UpdateEvent :one
 UPDATE events
 SET 

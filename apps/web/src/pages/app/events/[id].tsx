@@ -1,12 +1,12 @@
 import { useParams } from "@/router";
 import { EventDetailPage } from "@/components/pages/Participant/Events/Detail/ParticipantEventDetailPage";
-import { useViewEventDetailUsecase } from "@/components/pages/Participant/Events/Detail/useViewEventDetailUsecase";
+import { useEventViewModelUsecase } from "@/components/pages/Participant/Events/Detail/useEventViewModelUsecase";
 import { useInviteStatusUsecase } from "@/components/pages/Participant/Events/Detail/useInviteStatusUsecase";
 import { Typography } from "@/components/typography/typography";
 
 const EventDetailRoute = () => {
     const { id } = useParams("/app/events/:id");
-    const { event, isLoading, error } = useViewEventDetailUsecase({ eventId: id });
+    const { event, isLoading, error } = useEventViewModelUsecase({ eventId: id });
     const { inviteStatus } = useInviteStatusUsecase(id);
 
     if (isLoading) {

@@ -1,5 +1,5 @@
-import { CustomHelmet } from "../providers/helmets/CustomHelmet";
-import { useHelmet } from "../../hooks/useHelmet";
+import { CustomHelmet } from "@/components/providers/helmets/CustomHelmet";
+import { useHelmet } from "@/hooks/useHelmet";
 import { Typography } from "@/components/typography/typography";
 
 export const LoginPage = () => {
@@ -23,7 +23,7 @@ export const LoginPage = () => {
                 ]}
             />
             <div>
-                <Typography variant="h1" tag="h1">
+                <Typography variant="header" tag="h1">
                     Login to DECM
                 </Typography>
                 <Typography variant="text" tag="p">
