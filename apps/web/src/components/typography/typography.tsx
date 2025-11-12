@@ -10,6 +10,7 @@ export const typographyVariants = cva("text-wrap", {
             base: "text-base",
             subheader: "text-2xl",
             header: "text-4xl",
+            title: "text-6xl",
         },
         color: {
             foreground: "text-foreground",
@@ -21,6 +22,7 @@ export const typographyVariants = cva("text-wrap", {
             muted: "text-muted",
             "muted-foreground": "text-muted-foreground",
             destructive: "text-destructive",
+            current: "text-current",
         },
         variant: {
             header: "font-semibold font-header",

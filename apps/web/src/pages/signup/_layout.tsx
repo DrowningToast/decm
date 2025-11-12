@@ -6,7 +6,7 @@ const Layout = () => {
     return (
         <BaseLayout className="max-h-screen w-full overflow-hidden" variant="light">
             <PublicNavbar variant="light" />
-            <div className="pt-[15px] md:pt-14">
+            <div className="py-4 md:py-14">
                 <Outlet />
             </div>
         </BaseLayout>

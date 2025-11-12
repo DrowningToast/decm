@@ -51,7 +51,7 @@ export const MainPage = () => {
             </div>
 
             {/* Main content */}
-            <div className="relative z-10 w-full max-w-[1384px] mx-auto px-4 md:px-16 py-4 md:py-16 flex flex-col gap-y-8">
+            <div className="relative z-10 w-full max-w-[1384px] mx-auto px-4 md:px-16 flex flex-col gap-y-8">
                 {/* Greeting section */}
                 <div className="flex flex-col gap-1">
                     <Typography

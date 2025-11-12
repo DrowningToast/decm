@@ -22,7 +22,7 @@ interface WrappedInputFileProps<T extends FieldValues> {
 }
 
 // Separate component for file input with preview
-const FileInputWithPreview = ({
+const StyledInputWithPreview = ({
     value,
     onChange,
     name,
@@ -136,7 +136,7 @@ const FileInputWithPreview = ({
                         {label}
                     </Typography>
                 </Label>
-                <div className="relative w-full h-72 rounded-lg overflow-hidden border border-[#D9D9D91A]">
+                <div className="relative w-full h-72 rounded-lg overflow-hidden border border-primary">
                     <img
                         src={previewUrl}
                         alt="File preview"
@@ -155,7 +155,7 @@ const FileInputWithPreview = ({
 
                 <Button
                     type="button"
-                    variant="secondary-dark"
+                    variant="secondary-light"
                     size="default"
                     disabled={disabled}
                     className="w-full cursor-pointer"
@@ -225,7 +225,7 @@ const FileInputWithPreview = ({
                     {preview ? (
                         <div
                             className={cn(
-                                "relative w-full h-72 rounded-lg overflow-hidden border border-[#D9D9D91A]",
+                                "relative w-full h-72 rounded-lg overflow-hidden border border-primary",
                                 previewClassName,
                             )}
                         >
@@ -236,7 +236,7 @@ const FileInputWithPreview = ({
                             />
                         </div>
                     ) : fileInfo ? (
-                        <div className="flex items-center gap-4 p-4 border border-[#D9D9D91A] rounded-lg bg-background">
+                        <div className="flex items-center gap-4 p-4 border border-primary rounded-lg bg-background">
                             <div className="flex-shrink-0">
                                 <FileIcon className="w-10 h-10 text-muted-foreground" />
                             </div>
@@ -272,7 +272,7 @@ const FileInputWithPreview = ({
                             />
                             <Button
                                 type="button"
-                                variant="secondary-dark"
+                                variant="secondary-light"
                                 size="default"
                                 disabled={disabled}
                                 className="w-full cursor-pointer"
@@ -332,7 +332,7 @@ export const WrappedInputFile = <T extends FieldValues>({
             name={name}
             control={control}
             render={({ field: { value, onChange }, fieldState: { error } }) => (
-                <FileInputWithPreview
+                <StyledInputWithPreview
                     value={value}
                     onChange={onChange}
                     name={name}

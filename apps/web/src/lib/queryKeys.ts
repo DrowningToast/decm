@@ -20,7 +20,7 @@ export const QUERY_KEY = {
     user: {
         profile: ["user", "profile"] as const,
         roles: (requireHost?: boolean, requireIssuer?: boolean) =>
-            ["user", "roles", requireHost, requireIssuer] as const,
+            ["user", "profile", "roles", requireHost, requireIssuer] as const,
     },
 
     // Onboarding
@@ -76,7 +76,7 @@ export const QUERY_KEY = {
     // Inbox
     inbox: {
         all: ["inbox"] as const,
-        list: (limit: number, offset: number) => ["inbox", "list", limit, offset] as const,
+        list: () => ["inbox", "list"] as const,
         byId: (messageId: string) => ["inbox", messageId] as const,
     },
 

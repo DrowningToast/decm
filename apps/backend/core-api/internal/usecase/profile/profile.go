@@ -9,6 +9,7 @@ import (
 	"apps/backend/common/validatorutils"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 
 	"github.com/google/uuid"
 )
@@ -16,6 +17,8 @@ import (
 type ProfileUsecase struct {
 	ProfileDg                  datagateway.ProfileDataGateway
 	AuthenticationCredentialDg datagateway.AuthenticationCredentialDataGateway
+
+	AuthService auth.AuthService
 }
 
 func NewProfileUsecase(profileDg datagateway.ProfileDataGateway, authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway) *ProfileUsecase {

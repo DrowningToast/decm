@@ -10,7 +10,6 @@ import { CertificateTemplateUpload } from "@/components/CertificateTemplateUploa
 import { CertificatePreview } from "@/components/CertificatePreview";
 import { useIssuerManagement } from "@/hooks/useIssuerManagement";
 import { useCertificateTemplate } from "@/hooks/useCertificateTemplate";
-import PageContainer from "@/components/container/PageContainer";
 import SectionContainer from "@/components/container/SectionContainer";
 import { useUpdateCertificateConfig } from "./useUpdateCertificateConfig";
 import type {
@@ -151,10 +150,7 @@ export const CertificateSettingsPage = ({
     const isFormValid = !eventCertificateConfig ? isCreateFormValid : isUpdateFormValid;
 
     return (
-        <PageContainer
-            title={t("certificateSettings.pageTitle")}
-            description={t("certificateSettings.pageDescription")}
-        >
+        <div>
             <SectionContainer>
                 <div className="space-y-8">
                     {/* Step 1: Issuer Settings */}
@@ -326,6 +322,6 @@ export const CertificateSettingsPage = ({
                 id="svg-temp-container"
                 className="absolute top-0 left-0 w-[1920px] h-[1080px] overflow-hidden opacity-0 pointer-events-none"
             />
-        </PageContainer>
+        </div>
     );
 };

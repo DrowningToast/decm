@@ -38,7 +38,8 @@
         "verify": "ตรวจสอบ",
         "to": "ถึง",
         "signOut": "ออกจากระบบ",
-        "signingOut": "กำลังออกจากระบบ..."
+        "signingOut": "กำลังออกจากระบบ...",
+        "notAvailable": "ไม่มีข้อมูล"
     },
     "nav": {
         "home": "หน้าหลัก",
@@ -54,7 +55,7 @@
         "settings": "การตั้งค่า",
         "other": "อื่นๆ",
         "preference": "การตั้งค่าส่วนตัว",
-        "readDocs": "อ่านเอกสาร",
+        "readDocs": "เร็วๆ นี้",
         "socials": "โซเชียล",
         "noItems": "ไม่มีรายการ",
         "menu": "เมนู",
@@ -254,8 +255,10 @@
         "personalInfo": "ข้อมูลส่วนตัว",
         "contactInfo": "ข้อมูลติดต่อ",
         "academicInfo": "ข้อมูลทางวิชาการ",
+        "accountInfo": "ข้อมูลบัญชี",
         "profilePicture": "รูปโปรไฟล์",
         "wallet": "ที่อยู่กระเป๋าเงิน",
+        "googleEmail": "อีเมลบัญชี Google",
         "email": "อีเมล",
         "name": "ชื่อ",
         "firstName": "ชื่อ",
@@ -284,6 +287,46 @@
         "pastEvents": "กิจกรรมที่ผ่านมา",
         "eventDetails": "รายละเอียดกิจกรรม",
         "tickets": "ตั๋ว",
+        "details": {
+            "status": "สถานะกิจกรรม",
+            "finalCallForRequest": "ประกาศรอบสุดท้ายสำหรับคำขอ",
+            "participationRequest": "คำขอเข้าร่วม",
+            "seatsCount": "จำนวนที่นั่ง",
+            "eventContractAddress": "ที่อยู่สัญญากิจกรรม"
+        },
+        "hostDetails": {
+            "actions": {
+                "confirmEvent": "ยืนยันกิจกรรม",
+                "editEvent": "แก้ไขกิจกรรม",
+                "publishCertificates": "เผยแพร่ใบรับรอง",
+                "waitingForSignatures": "รอการลงนามให้ครบ",
+                "importReceivers": "นำเข้าผู้รับ"
+            },
+            "tabs": {
+                "eventInfo": "ข้อมูลกิจกรรม",
+                "participants": "ผู้เข้าร่วม",
+                "certificates": "ใบรับรอง"
+            },
+            "eventInfo": {
+                "contact": "ติดต่อ"
+            },
+            "participants": {
+                "searchPlaceholder": "ค้นหาผู้เข้าร่วม..."
+            },
+            "certificates": {
+                "summaryDescription": "ตั้งค่าเทมเพลตและกฎของใบรับรองสำหรับกิจกรรมนี้แล้ว จัดการผู้ออกและเผยแพร่ใบรับรองเมื่อพร้อม",
+                "issuersTitle": "ผู้ออกกิจกรรม ({{count}})",
+                "searchIssuersPlaceholder": "ค้นหาผู้ออก...",
+                "publishTitle": "เผยแพร่ใบรับรอง",
+                "publishDescription": "เผยแพร่ใบรับรองขึ้นบล็อกเชนเมื่อผู้ออกทั้งหมดลงนามเรียบร้อยแล้ว",
+                "eventCertificatesTitle": "ใบรับรองกิจกรรม ({{count}})",
+                "searchCertificatesPlaceholder": "ค้นหาใบรับรอง...",
+                "importSectionTitle": "นำเข้ารายชื่อผู้รับใบรับรอง",
+                "noIssuersConfigured": "ยังไม่ได้ตั้งค่าผู้ออกสำหรับกิจกรรมนี้ กรุณาเพิ่มผู้ออกในหน้าการตั้งค่าใบรับรอง",
+                "noConfigTitle": "เพิ่มการตั้งค่าใบรับรองของกิจกรรม",
+                "noConfigDescription": "ตั้งค่าเทมเพลตและกฎของใบรับรองสำหรับกิจกรรมนี้ ผู้เข้าร่วมจะได้รับใบรับรองตามการตั้งค่าของคุณ"
+            }
+        },
         "participants": {
             "requirementsTitle": "ข้อมูลที่ต้องการจากผู้เข้าร่วม",
             "required": "จำเป็น",
@@ -752,7 +795,8 @@
         },
         "confirmButton": "ยืนยันการตั้งค่า",
         "saveSuccess": "บันทึกการตั้งค่าใบประกาศนียบัตรเรียบร้อยแล้ว",
-        "saveError": "ไม่สามารถบันทึกการตั้งค่าใบประกาศนียบัตร กรุณาลองอีกครั้ง"
+        "saveError": "ไม่สามารถบันทึกการตั้งค่าใบประกาศนียบัตร กรุณาลองอีกครั้ง",
+        "nameNotFound": "ไม่พบชื่อผู้รับใบรับรองในไฟล์ที่อัปโหลด"
     },
     "credentials": {
         "title": "ประกาศนียบัตร",
@@ -810,7 +854,6 @@
         "network": "ข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อของคุณ",
         "unauthorized": "คุณไม่ได้รับอนุญาตให้ทำการกระทำนี้",
         "forbidden": "คุณไม่ได้รับอนุญาตให้ทำการกระทำนี้",
-        "notFound": "ไม่พบทรัพยากรที่ร้องขอ",
         "conflict": "ข้อมูลที่ป้อนมีอยู่แล้ว",
         "serverError": "ข้อผิดพลาดเซิร์ฟเวอร์ กรุณาลองอีกครั้งในภายหลัง",
         "invalidInput": "ข้อมูลที่ป้อนไม่ถูกต้อง",
@@ -822,6 +865,10 @@
         "internalServerErrorDescription": "เกิดข้อผิดพลาด กรุณาลองอีกครั้งในภายหลัง",
         "internalClientErrorDescription": "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",
         "forbiddenDescription": "คุณไม่ได้รับอนุญาตให้ทำการกระทำนี้",
+        "notFound": {
+            "title": "ไม่พบ",
+            "description": "ไม่พบทรัพยากรที่ร้องขอ"
+        },
         "inbox": {
             "title": "เกิดข้อผิดพลาด",
             "description": "เราไม่สามารถโหลดข้อความนี้ได้ กรุณาลองอีกครั้งในภายหลัง"

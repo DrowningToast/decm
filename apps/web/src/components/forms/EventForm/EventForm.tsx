@@ -13,7 +13,7 @@ import {
     WrappedTextarea,
     WrappedDateSelect,
     WrappedInputFile,
-} from "@/components/forms/wrapped-inputs";
+} from "@/components/forms/styled-inputs";
 import ConfirmModal from "@/components/ConfirmModal";
 import { PasswordPinModal } from "@/components/ui/password-pin-modal";
 import type { GetEventContractByEventIdData } from "@decm/api";
@@ -354,10 +354,10 @@ export const EventForm = ({
             {/* Navigation Buttons */}
             <div className="flex justify-between gap-4 pt-4">
                 {/* Previous Button */}
-                {currentStep > 1 && (
+                {currentStep > 1 ? (
                     <Button
                         type="button"
-                        variant="secondary-dark"
+                        variant="muted"
                         size="lg"
                         onClick={handlePrevious}
                         disabled={isLoading}
@@ -368,12 +368,12 @@ export const EventForm = ({
                             {t("events.form.previous")}
                         </Typography>
                     </Button>
-                )}
+                ) : null}
 
                 {/* Spacer */}
-                {currentStep === 1 && <div />}
+                {currentStep === 1 ? <div /> : null}
 
-                {mode === "edit" && (
+                {mode === "edit" ? (
                     <ConfirmModal
                         title={t("events.form.deleteEvent")}
                         message={t("events.form.deleteEventMessage")}
@@ -384,7 +384,7 @@ export const EventForm = ({
                     >
                         <Button
                             type="button"
-                            variant="ghost"
+                            variant="destructive"
                             size="lg"
                             onClick={() => {}}
                             disabled={isLoading}
@@ -396,7 +396,7 @@ export const EventForm = ({
                             </Typography>
                         </Button>
                     </ConfirmModal>
-                )}
+                ) : null}
 
                 {/* Next or Submit Button */}
                 {currentStep === 1 ? (

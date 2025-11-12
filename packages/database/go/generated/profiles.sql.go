@@ -160,6 +160,126 @@ func (q *Queries) DeleteProfileByAuthCredentialID(ctx context.Context, authentic
 	return err
 }
 
+const GetProfileAndCredentialWithCredentialId = `-- name: GetProfileAndCredentialWithCredentialId :one
+SELECT
+ authentication_credentials.ID as authentication_credential_id,
+ authentication_credentials.solution_status as solution_status,
+ authentication_credentials.hashed_password as hashed_password,
+ authentication_credentials.encrypted_private_key as encrypted_private_key,
+ authentication_credentials.wallet_address as wallet_address,
+ authentication_credentials.google_connector_ref as google_connector_ref,
+ authentication_credentials.github_connector_ref as github_connector_ref,
+ authentication_credentials.is_verified_organizer as is_verified_organizer,
+ authentication_credentials.is_verified_issuer as is_verified_issuer,
+ authentication_credentials.is_verified_student as is_verified_student,
+ authentication_credentials.created_at as authentication_credential_created_at,
+ authentication_credentials.updated_at as authentication_credential_updated_at,
+ profiles.ID as profile_id,
+ profiles.authentication_credential_id as profile_authentication_credential_id,
+ profiles.is_profile_picture_public as profile_is_profile_picture_public,
+ profiles.profile_picture_url as profile_profile_picture_url,
+ profiles.is_first_name_public as profile_is_first_name_public,
+ profiles.first_name as profile_first_name,
+ profiles.is_last_name_public as profile_is_last_name_public,
+ profiles.last_name as profile_last_name,
+ profiles.is_email_public as profile_is_email_public,
+ profiles.email as profile_email,
+ profiles.is_bio_public as profile_is_bio_public,
+ profiles.bio as profile_bio,
+ profiles.is_phone_number_public as profile_is_phone_number_public,
+ profiles.phone_number as profile_phone_number,
+ profiles.is_address_public as profile_is_address_public,
+ profiles.address as profile_address,
+ profiles.is_academic_institution_public as profile_is_academic_institution_public,
+ profiles.academic_institution as profile_academic_institution,
+ profiles.is_academic_email_public as profile_is_academic_email_public,
+ profiles.academic_email as profile_academic_email,
+ profiles.created_at as profile_created_at,
+ profiles.updated_at as profile_updated_at
+ FROM profiles 
+INNER JOIN authentication_credentials ON profiles.authentication_credential_id = authentication_credentials.id
+WHERE profiles.authentication_credential_id = $1
+`
+
+type GetProfileAndCredentialWithCredentialIdRow struct {
+	AuthenticationCredentialID         uuid.UUID          `json:"authentication_credential_id"`
+	SolutionStatus                     int32              `json:"solution_status"`
+	HashedPassword                     pgtype.Text        `json:"hashed_password"`
+	EncryptedPrivateKey                []byte             `json:"encrypted_private_key"`
+	WalletAddress                      string             `json:"wallet_address"`
+	GoogleConnectorRef                 pgtype.Text        `json:"google_connector_ref"`
+	GithubConnectorRef                 pgtype.Text        `json:"github_connector_ref"`
+	IsVerifiedOrganizer                int32              `json:"is_verified_organizer"`
+	IsVerifiedIssuer                   int32              `json:"is_verified_issuer"`
+	IsVerifiedStudent                  int32              `json:"is_verified_student"`
+	AuthenticationCredentialCreatedAt  pgtype.Timestamptz `json:"authentication_credential_created_at"`
+	AuthenticationCredentialUpdatedAt  pgtype.Timestamptz `json:"authentication_credential_updated_at"`
+	ProfileID                          uuid.UUID          `json:"profile_id"`
+	ProfileAuthenticationCredentialID  uuid.UUID          `json:"profile_authentication_credential_id"`
+	ProfileIsProfilePicturePublic      int32              `json:"profile_is_profile_picture_public"`
+	ProfileProfilePictureUrl           pgtype.Text        `json:"profile_profile_picture_url"`
+	ProfileIsFirstNamePublic           int32              `json:"profile_is_first_name_public"`
+	ProfileFirstName                   pgtype.Text        `json:"profile_first_name"`
+	ProfileIsLastNamePublic            int32              `json:"profile_is_last_name_public"`
+	ProfileLastName                    pgtype.Text        `json:"profile_last_name"`
+	ProfileIsEmailPublic               int32              `json:"profile_is_email_public"`
+	ProfileEmail                       pgtype.Text        `json:"profile_email"`
+	ProfileIsBioPublic                 int32              `json:"profile_is_bio_public"`
+	ProfileBio                         pgtype.Text        `json:"profile_bio"`
+	ProfileIsPhoneNumberPublic         int32              `json:"profile_is_phone_number_public"`
+	ProfilePhoneNumber                 pgtype.Text        `json:"profile_phone_number"`
+	ProfileIsAddressPublic             int32              `json:"profile_is_address_public"`
+	ProfileAddress                     pgtype.Text        `json:"profile_address"`
+	ProfileIsAcademicInstitutionPublic int32              `json:"profile_is_academic_institution_public"`
+	ProfileAcademicInstitution         pgtype.Text        `json:"profile_academic_institution"`
+	ProfileIsAcademicEmailPublic       int32              `json:"profile_is_academic_email_public"`
+	ProfileAcademicEmail               pgtype.Text        `json:"profile_academic_email"`
+	ProfileCreatedAt                   pgtype.Timestamptz `json:"profile_created_at"`
+	ProfileUpdatedAt                   pgtype.Timestamptz `json:"profile_updated_at"`
+}
+
+func (q *Queries) GetProfileAndCredentialWithCredentialId(ctx context.Context, authenticationCredentialID uuid.UUID) (GetProfileAndCredentialWithCredentialIdRow, error) {
+	row := q.db.QueryRow(ctx, GetProfileAndCredentialWithCredentialId, authenticationCredentialID)
+	var i GetProfileAndCredentialWithCredentialIdRow
+	err := row.Scan(
+		&i.AuthenticationCredentialID,
+		&i.SolutionStatus,
+		&i.HashedPassword,
+		&i.EncryptedPrivateKey,
+		&i.WalletAddress,
+		&i.GoogleConnectorRef,
+		&i.GithubConnectorRef,
+		&i.IsVerifiedOrganizer,
+		&i.IsVerifiedIssuer,
+		&i.IsVerifiedStudent,
+		&i.AuthenticationCredentialCreatedAt,
+		&i.AuthenticationCredentialUpdatedAt,
+		&i.ProfileID,
+		&i.ProfileAuthenticationCredentialID,
+		&i.ProfileIsProfilePicturePublic,
+		&i.ProfileProfilePictureUrl,
+		&i.ProfileIsFirstNamePublic,
+		&i.ProfileFirstName,
+		&i.ProfileIsLastNamePublic,
+		&i.ProfileLastName,
+		&i.ProfileIsEmailPublic,
+		&i.ProfileEmail,
+		&i.ProfileIsBioPublic,
+		&i.ProfileBio,
+		&i.ProfileIsPhoneNumberPublic,
+		&i.ProfilePhoneNumber,
+		&i.ProfileIsAddressPublic,
+		&i.ProfileAddress,
+		&i.ProfileIsAcademicInstitutionPublic,
+		&i.ProfileAcademicInstitution,
+		&i.ProfileIsAcademicEmailPublic,
+		&i.ProfileAcademicEmail,
+		&i.ProfileCreatedAt,
+		&i.ProfileUpdatedAt,
+	)
+	return i, err
+}
+
 const GetProfileByAuthCredentialID = `-- name: GetProfileByAuthCredentialID :one
 SELECT id, authentication_credential_id, is_profile_picture_public, profile_picture_url, is_first_name_public, first_name, is_last_name_public, last_name, is_email_public, email, is_bio_public, bio, is_phone_number_public, phone_number, is_address_public, address, is_academic_institution_public, academic_institution, is_academic_email_public, academic_email, created_at, updated_at FROM profiles 
 WHERE authentication_credential_id = $1

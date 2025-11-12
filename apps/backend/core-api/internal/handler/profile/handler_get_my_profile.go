@@ -12,7 +12,7 @@ import (
 // @Tags Profile
 // @Accept json
 // @Produce json
-// @Success 200 {object} entity.Profile
+// @Success 200 {object} profile.GetMyProfileViewModel
 // @Failure 400 {object} customerror.Err
 // @Failure 404 {object} customerror.Err
 // @Failure 500 {object} customerror.Err
@@ -22,10 +22,10 @@ func (h *Handler) GetMyProfile(c *fiber.Ctx) error {
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
-	profile, err := h.ProfileUc.GetProfileByAuthenticationCredentialId(c.Context(), user.UserId)
+	viewmodel, err := h.ProfileUc.GetMyProfileViewModel(c.Context(), user)
 	if err != nil {
-		return err
+		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(profile)
+	return c.Status(fiber.StatusOK).JSON(viewmodel)
 }

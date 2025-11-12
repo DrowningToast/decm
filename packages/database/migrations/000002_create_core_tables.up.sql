@@ -80,7 +80,7 @@ CREATE TYPE event_status AS ENUM ('active', 'inactive', 'closed');
 -- events table, index by id and owner_credential_id
 CREATE TABLE events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    event_type event_type NOT NULL DEFAULT 'private',
+    event_type event_type NOT NULL DEFAULT 'invite',
     event_status event_status NOT NULL DEFAULT 'active',
      
     chain_id INTEGER NOT NULL,

@@ -10,6 +10,15 @@ definitions:
       is_issuer:
         type: boolean
     type: object
+  common.SolutionStatus:
+    enum:
+    - 0
+    - 1
+    format: int32
+    type: integer
+    x-enum-varnames:
+    - SolutionStatusManaged
+    - SolutionStatusBYOK
   core-api_internal_handler_event.CertificateSignature:
     properties:
       certificate:
@@ -241,12 +250,10 @@ definitions:
     - EventStatusClosed
   entity.EventType:
     enum:
-    - public
     - private
     - invite
     type: string
     x-enum-varnames:
-    - EventTypePublic
     - EventTypePrivate
     - EventTypeInvite
   entity.InboxMessageType:
@@ -436,6 +443,13 @@ definitions:
       certificates:
         items:
           $ref: '#/definitions/entity.EventCertificate'
+        type: array
+    type: object
+  event.GetEventListViewModel:
+    properties:
+      events:
+        items:
+          $ref: '#/definitions/entity.Event'
         type: array
     type: object
   event.ImportCertificateReceiverRequest:
@@ -891,6 +905,65 @@ definitions:
       updated_at:
         type: string
     type: object
+  profile.GetMyProfileViewModel:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        type: string
+      address:
+        type: string
+      authentication_credential_created_at:
+        type: string
+      authentication_credential_id:
+        type: string
+      authentication_credential_updated_at:
+        type: string
+      bio:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      github_connector_ref:
+        type: string
+      google_connector_ref:
+        type: string
+      is_academic_email_public:
+        type: boolean
+      is_academic_institution_public:
+        type: boolean
+      is_address_public:
+        type: boolean
+      is_bio_public:
+        type: boolean
+      is_email_public:
+        type: boolean
+      is_first_name_public:
+        type: boolean
+      is_last_name_public:
+        type: boolean
+      is_phone_number_public:
+        type: boolean
+      is_profile_picture_public:
+        type: boolean
+      last_name:
+        type: string
+      phone_number:
+        type: string
+      profile_created_at:
+        type: string
+      profile_id:
+        type: string
+      profile_picture_url:
+        type: string
+      profile_updated_at:
+        type: string
+      solution_status:
+        $ref: '#/definitions/common.SolutionStatus'
+      wallet_address:
+        type: string
+    type: object
   profile.UpdateProfileRequest:
     properties:
       academic_email:
@@ -1192,11 +1265,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              items:
-                $ref: '#/definitions/event.EventResponse'
-              type: array
-            type: array
+            $ref: '#/definitions/event.GetEventListViewModel'
         "400":
           description: Bad Request
           schema:
@@ -2747,7 +2816,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entity.Profile'
+            $ref: '#/definitions/profile.GetMyProfileViewModel'
         "400":
           description: Bad Request
           schema:

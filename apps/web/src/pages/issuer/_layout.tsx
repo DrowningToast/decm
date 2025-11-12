@@ -3,11 +3,11 @@ import { BaseLayout } from "@/components/layouts/BaseLayout";
 import { PrivateNavbar } from "@/components/layouts/navigations/PrivateNavbar";
 import { Outlet } from "react-router-dom";
 
-const HostLayout = () => {
+const IssuerLayout = () => {
     return (
         <ProtectedRoute>
             <BaseLayout variant="dark">
-                <PrivateNavbar currentRole="Verified Organizer" />
+                <PrivateNavbar currentRole="Issuer" />
                 <div className="py-4 md:py-14">
                     <Outlet />
                 </div>
@@ -16,4 +16,4 @@ const HostLayout = () => {
     );
 };
 
-export default HostLayout;
+export default IssuerLayout;

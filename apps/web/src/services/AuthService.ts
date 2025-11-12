@@ -201,6 +201,11 @@ export class AuthService {
         });
         return response;
     }
+
+    public async getMyProfile() {
+        const response = await this._coreApi.v1.getMyProfile();
+        return response;
+    }
 }
 
 // Default instance

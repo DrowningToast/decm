@@ -1,6 +1,7 @@
 import type React from "react";
 import { StaggeredMenu, type StaggeredMenuSection } from "@/components/bits/StaggeredMenu";
 import { useTranslation } from "react-i18next";
+import { useCheckRoles } from "@/hooks/useCheckRoles";
 
 interface PrivateNavbarProps {
     className?: string;
@@ -8,8 +9,12 @@ interface PrivateNavbarProps {
     currentRole?: "Verified Organizer" | "Issuer";
 }
 
-export const PrivateNavbar: React.FC<PrivateNavbarProps> = ({ currentRole }) => {
+export const PrivateNavbar: React.FC<PrivateNavbarProps> = ({ currentRole, variant = "dark" }) => {
     const { t } = useTranslation();
+    const { isHost, isIssuer } = useCheckRoles({
+        requireHost: true,
+        requireIssuer: true,
+    });
 
     const sections: StaggeredMenuSection[] = [
         {
@@ -31,6 +36,25 @@ export const PrivateNavbar: React.FC<PrivateNavbarProps> = ({ currentRole }) => 
             title: t("nav.other"),
             items: [
                 {
+                    label: t("nav.home"),
+                    ariaLabel: t("nav.home"),
+                    link: "/app",
+                },
+                isHost
+                    ? {
+                          label: t("nav.host"),
+                          ariaLabel: t("nav.host"),
+                          link: "/host/home",
+                      }
+                    : null,
+                isIssuer
+                    ? {
+                          label: t("nav.issuer"),
+                          ariaLabel: t("nav.issuer"),
+                          link: "/issuer/home",
+                      }
+                    : null,
+                {
                     label: t("nav.preference"),
                     ariaLabel: t("nav.preference"),
                     link: "/app/preference",
@@ -39,6 +63,7 @@ export const PrivateNavbar: React.FC<PrivateNavbarProps> = ({ currentRole }) => 
                     label: t("nav.readDocs"),
                     ariaLabel: t("nav.readDocs"),
                     link: "/docs",
+                    disabled: true,
                 },
             ],
         },
@@ -62,6 +87,7 @@ export const PrivateNavbar: React.FC<PrivateNavbarProps> = ({ currentRole }) => 
             position="right"
             roleLabel={currentRole ? `You're currently signed in as a ${currentRole}` : undefined}
             logoLink={getLogoLink()}
+            variant={variant}
         />
     );
 };

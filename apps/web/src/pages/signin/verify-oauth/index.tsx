@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+import { Typography } from "@/components/typography/typography";
 
 const VerifyOauthPage = () => {
     const [searchParams] = useSearchParams();
@@ -94,7 +95,11 @@ const VerifyOauthPage = () => {
         init();
     }, [accessToken, expiresIn, navigate, t]);
 
-    return <span>Loading...</span>;
+    return (
+        <Typography variant="text" tag="span">
+            Loading...
+        </Typography>
+    );
 };
 
 export default VerifyOauthPage;

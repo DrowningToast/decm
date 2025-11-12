@@ -38,10 +38,13 @@
         "verify": "Verify",
         "to": "to",
         "signOut": "Sign Out",
-        "signingOut": "Signing out..."
+        "signingOut": "Signing out...",
+        "notAvailable": "N/A"
     },
     "nav": {
         "home": "Home",
+        "host": "Host Home",
+        "issuer": "Issuer Home",
         "events": "Events",
         "credentials": "Credentials",
         "portfolio": "Portfolio",
@@ -54,7 +57,7 @@
         "settings": "Settings",
         "other": "Other",
         "preference": "Preference",
-        "readDocs": "Read our docs",
+        "readDocs": "Coming soon",
         "socials": "Socials",
         "noItems": "No items",
         "menu": "Menu",
@@ -260,8 +263,10 @@
         "personalInfo": "Personal Information",
         "contactInfo": "Contact Information",
         "academicInfo": "Academic Information",
+        "accountInfo": "Account Information",
         "profilePicture": "Profile Picture",
         "wallet": "Wallet Address",
+        "googleEmail": "Google Account Email",
         "email": "Email",
         "name": "Name",
         "firstName": "First Name",
@@ -506,9 +511,43 @@
         },
         "details": {
             "status": "Event Status",
+            "finalCallForRequest": "Final call for request",
             "participationRequest": "Participation request",
             "seatsCount": "Seats count",
             "eventContractAddress": "Event Contract Address"
+        },
+        "hostDetails": {
+            "actions": {
+                "confirmEvent": "Confirm Event",
+                "editEvent": "Edit Event",
+                "publishCertificates": "Publish Certificates",
+                "waitingForSignatures": "Waiting for All Signatures",
+                "importReceivers": "Import Receivers"
+            },
+            "tabs": {
+                "eventInfo": "Event Info",
+                "participants": "Participants",
+                "certificates": "Certificates"
+            },
+            "eventInfo": {
+                "contact": "Contact"
+            },
+            "participants": {
+                "searchPlaceholder": "Search participants..."
+            },
+            "certificates": {
+                "summaryDescription": "Certificate template and rules are configured for this event. Manage issuers and publish certificates when ready.",
+                "issuersTitle": "Event Issuers ({{count}})",
+                "searchIssuersPlaceholder": "Search issuers...",
+                "publishTitle": "Publish Certificates",
+                "publishDescription": "Publish certificates to the blockchain when all issuers have signed the certificate.",
+                "eventCertificatesTitle": "Event Certificates ({{count}})",
+                "searchCertificatesPlaceholder": "Search certificates...",
+                "importSectionTitle": "Import Certificate Receivers",
+                "noIssuersConfigured": "No issuers configured for this event. Please add issuers in certificate settings.",
+                "noConfigTitle": "Add event's certificate configuration",
+                "noConfigDescription": "Set up a certificate template and rules for this event. Participants will receive certificates based on your configuration."
+            }
         }
     },
     "participant": {
@@ -901,7 +940,8 @@
         },
         "confirmButton": "Confirm Settings",
         "saveSuccess": "Certificate settings saved successfully",
-        "saveError": "Failed to save certificate settings. Please try again."
+        "saveError": "Failed to save certificate settings. Please try again.",
+        "nameNotFound": "Certificate recipient name is missing in the uploaded file."
     },
     "credentials": {
         "title": "Credentials",
@@ -959,7 +999,6 @@
         "network": "Network error. Please check your connection.",
         "unauthorized": "You are not authorized to perform this action.",
         "forbidden": "You are not authorized to perform this action.",
-        "notFound": "The requested resource was not found.",
         "conflict": "The input already exists.",
         "serverError": "Something went wrong. Please try again later.",
         "invalidInput": "Invalid input",
@@ -971,6 +1010,10 @@
         "internalServerErrorDescription": "Something went wrong. Please try again later.",
         "internalClientErrorDescription": "Client error. Please try again later.",
         "forbiddenDescription": "You are not authorized to perform this action.",
+        "notFound": {
+            "title": "Not Found",
+            "description": "The requested resource was not found."
+        },
         "inbox": {
             "title": "Something went wrong",
             "description": "We couldn't load this message. Please try again later."

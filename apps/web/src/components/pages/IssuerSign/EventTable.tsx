@@ -43,7 +43,7 @@ export const EventTable: React.FC<EventTableProps> = ({ events, type, onActionCl
                         </TableHead>
                     </TableRow>
                 </TableHeader>
-                <TableBody className="bg-black divide-y divide-primary">
+                <TableBody className=" divide-y divide-primary">
                     {events.map((event) => (
                         <TableRow key={event.id}>
                             <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-primary">
