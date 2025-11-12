@@ -44,26 +44,20 @@ export const useEventsListUsecase = (options?: UseEventsListOptions) => {
 
     // Transform API response to match Event interface
     const events = useMemo(() => {
-        if (!apiEvents?.data) return [];
+        if (!apiEvents?.events) {
+            return [];
+        }
 
-        return apiEvents.data.map((event) => ({
-            id: event.event_id,
-            name: event.event_name,
-            description: event.short_description || "",
-            eventName: event.event_name,
-            contactAddress: event.contact_address,
+        return apiEvents.events.map((event) => ({
+            id: event.id,
+            name: event.title,
+            description: event.short_description,
+            eventName: event.title,
+            contactAddress: event.contact_number,
             dateTime: event.start_date,
-            finalCallDate: event.final_call_registration_date,
-            status: event.event_status === "active" ? ("accepting" as const) : ("closed" as const),
-            accessType: event.is_public
-                ? ("public" as const)
-                : event.require_registration_password
-                  ? ("password" as const)
-                  : ("invite-only" as const),
-            seatsAvailable: event.seats_count,
-            totalSeats: event.seats_count,
-            requiresPassword: event.require_registration_password,
-            image: event.event_banner_url,
+            finalCallDate: event.end_date,
+            status: event.event_status,
+            accessType: event.is_public ? ("public" as const) : ("password" as const),
         }));
     }, [apiEvents]);
 

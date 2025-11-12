@@ -17,7 +17,7 @@ interface WrappedTextareaProps<T extends FieldValues> {
     maxLength?: number;
 }
 
-export const WrappedTextarea = <T extends FieldValues>({
+export const StyledTextArea = <T extends FieldValues>({
     name,
     control,
     label,
@@ -48,7 +48,7 @@ export const WrappedTextarea = <T extends FieldValues>({
                         placeholder={placeholder}
                         disabled={disabled}
                         aria-invalid={!!error}
-                        className={`!border !border-[#D9D9D91A] ${className}`}
+                        className={`!border !border-primary ${className}`}
                         rows={rows}
                         maxLength={maxLength}
                         value={field.value ?? ""}

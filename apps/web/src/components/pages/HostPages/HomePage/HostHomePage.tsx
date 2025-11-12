@@ -1,4 +1,3 @@
-import PageContainer from "@/components/container/PageContainer";
 import SectionContainer from "@/components/container/SectionContainer";
 import TitleSubtitle from "@/components/TitleSubtitle";
 import { Typography } from "@/components/typography/typography";
@@ -6,7 +5,7 @@ import { Link, type Path } from "@/router";
 
 export default function HostHomePage() {
     return (
-        <PageContainer title="Host Dashboard">
+        <div title="Host Dashboard">
             <img
                 src="/justice.png"
                 alt="Host Dashboard Background"
@@ -38,7 +37,7 @@ export default function HostHomePage() {
                     <MenuItem title="Verify certificate" to="/host/home" />
                 </div>
             </SectionContainer>
-        </PageContainer>
+        </div>
     );
 }
 

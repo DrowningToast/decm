@@ -177,7 +177,7 @@ func main() {
 	}
 	onboardHandler.Mount(apiV1)
 
-	authHandler := auth_handler.NewHandler(oauthUc, authUc, googleOAuthService, authService)
+	authHandler := auth_handler.NewHandler(oauthUc, authUc, googleOAuthService, authService, authenticationGuardMiddleware)
 	authHandler.Mount(apiV1)
 
 	profileHandler := profile.NewHandler(profileUc, authService, authenticationGuardMiddleware)

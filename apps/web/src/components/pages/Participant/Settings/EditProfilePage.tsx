@@ -307,6 +307,48 @@ export const EditProfilePage: React.FC = () => {
                         </div>
 
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                            {/* Account Information Section (Read-only) */}
+                            <div className="space-y-4">
+                                <Typography
+                                    variant="header"
+                                    tag="h2"
+                                    color="primary"
+                                    className="text-[24px] leading-[28px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
+                                >
+                                    {t("profile.accountInfo")}
+                                </Typography>
+
+                                <div className="space-y-2.5">
+                                    {/* Wallet Address */}
+                                    <div className="space-y-1">
+                                        <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                            {t("profile.wallet")}
+                                        </Label>
+                                        <Input
+                                            value={profile?.wallet_address || ""}
+                                            readOnly
+                                            disabled
+                                            className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.3)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background/70 cursor-not-allowed"
+                                        />
+                                    </div>
+
+                                    {/* Google OAuth Email (if exists) */}
+                                    {profile?.google_connector_ref && (
+                                        <div className="space-y-1">
+                                            <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
+                                                {t("profile.googleEmail")}
+                                            </Label>
+                                            <Input
+                                                value={profile.google_connector_ref}
+                                                readOnly
+                                                disabled
+                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.3)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background/70 cursor-not-allowed"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             {/* Personal Information Section */}
                             <div className="space-y-4">
                                 <Typography

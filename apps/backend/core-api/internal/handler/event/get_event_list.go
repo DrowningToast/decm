@@ -2,6 +2,7 @@ package event
 
 import (
 	customerror "apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/event"
 	"apps/backend/services/auth"
 
@@ -17,6 +18,10 @@ type GetEventListQuery struct {
 	OnlyUserJoinedEvents bool `query:"only_user_joined_events,omitempty" validate:"omitempty,boolean" default:"false"`
 }
 
+type GetEventListViewModel struct {
+	Events []*entity.Event `json:"events"`
+}
+
 // GetEventsList godoc
 // @Summary Get events list
 // @Description Get events list
@@ -27,7 +32,7 @@ type GetEventListQuery struct {
 // @Param include_closed_events query bool false "Include closed events" default(false)
 // @Param only_user_joined_events query bool false "Only user joined events" default(false)
 // @Produce json
-// @Success 200 {array} []EventResponse
+// @Success 200 {object} GetEventListViewModel
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
@@ -61,7 +66,9 @@ func (h *Handler) GetEventsList(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.JSON(events)
+	return ctx.JSON(&GetEventListViewModel{
+		Events: events,
+	})
 }
 
 func (q *GetEventListQuery) Parse(ctx *fiber.Ctx) error {

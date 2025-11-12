@@ -8,7 +8,7 @@ import {
 
 describe("participantSettingsSchema", () => {
     const baseValidData = {
-        eventType: "public" as const,
+        eventType: "private" as const,
         isBookingRequired: false,
         isTicketTransferable: true,
         requireRegistrationPassword: false,
@@ -29,7 +29,7 @@ describe("participantSettingsSchema", () => {
         });
 
         it("accepts all valid event types", () => {
-            const eventTypes = ["public", "private", "invite"] as const;
+            const eventTypes = ["private", "invite"] as const;
 
             eventTypes.forEach((eventType) => {
                 const data = {
@@ -215,7 +215,7 @@ describe("participantSettingsSchema", () => {
 
         it("defaults requireRegistrationPassword to false", () => {
             const dataWithoutPasswordFlag = {
-                eventType: "public" as const,
+                eventType: "private" as const,
                 isBookingRequired: false,
                 isTicketTransferable: true,
                 firstName: "not_required" as const,
@@ -285,7 +285,6 @@ describe("participantSettingsSchema", () => {
 
     describe("Enum Validation", () => {
         it("eventTypeEnum accepts valid values", () => {
-            expect(eventTypeEnum.safeParse("public").success).toBe(true);
             expect(eventTypeEnum.safeParse("private").success).toBe(true);
             expect(eventTypeEnum.safeParse("invite").success).toBe(true);
         });
@@ -293,6 +292,7 @@ describe("participantSettingsSchema", () => {
         it("eventTypeEnum rejects invalid values", () => {
             expect(eventTypeEnum.safeParse("invalid").success).toBe(false);
             expect(eventTypeEnum.safeParse("").success).toBe(false);
+            expect(eventTypeEnum.safeParse("public").success).toBe(false);
         });
 
         it("fieldRequirementEnum accepts valid values", () => {
@@ -324,7 +324,7 @@ describe("participantSettingsSchema", () => {
         });
 
         it("defaultParticipantSettings has expected default values", () => {
-            expect(defaultParticipantSettings.eventType).toBe("public");
+            expect(defaultParticipantSettings.eventType).toBe("private");
             expect(defaultParticipantSettings.isBookingRequired).toBe(false);
             expect(defaultParticipantSettings.isTicketTransferable).toBe(true);
             expect(defaultParticipantSettings.requireRegistrationPassword).toBe(false);

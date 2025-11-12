@@ -1,0 +1,120 @@
+# SQL Query Logging
+
+## Overview
+
+The Go backend has built-in SQL query logging using pgx's `tracelog` package. This is extremely useful for debugging database interactions in development.
+
+## How It Works
+
+The logging implementation is in:
+
+- **Config**: `apps/backend/core-api/config/postgres/postgres.go`
+- **Pool Setup**: `apps/backend/common/pgclient/pgpool.go`
+
+```go
+// QueryTracer configures SQL logging based on debug mode
+func (c *Config) QueryTracer(logger slog.Logger) pgx.QueryTracer {
+    loglevel := DefaultLogLevel // tracelog.LogLevelError
+    if c.Debug {
+        loglevel = tracelog.LogLevelTrace // Logs all SQL queries
+    }
+    return &tracelog.TraceLog{
+        Logger:   pgxslog.NewLogger(&logger),
+        LogLevel: loglevel,
+    }
+}
+```
+
+## Enable SQL Query Logging
+
+### Step 1: Set Environment Variable
+
+Add to your `.env` file:
+
+```bash
+DB_DEBUG=true
+```
+
+### Step 2: Restart the Backend
+
+```bash
+pnpm dev:core
+```
+
+## What Gets Logged
+
+With `DB_DEBUG=true`, you'll see:
+
+```
+Query: SELECT id, name, email FROM users WHERE id = $1
+Args: [123]
+Time: 2.5ms
+```
+
+For encrypted queries:
+
+```
+Query: SELECT pgp_sym_decrypt(encrypted_email, $1::varchar) FROM profiles WHERE user_id = $2
+Args: [encryption_key_hash, user_id_value]
+Time: 5.2ms
+```
+
+## Log Levels
+
+- `DB_DEBUG=false` (default): Only logs **errors** (`LogLevelError`)
+- `DB_DEBUG=true`: Logs **all queries** with parameters and timing (`LogLevelTrace`)
+
+## Production Usage
+
+⚠️ **NEVER enable `DB_DEBUG=true` in production!**
+
+- Performance overhead from logging
+- Sensitive data in logs (encrypted parameters visible)
+- Disk space from verbose logging
+
+## Use Cases
+
+### Development Debugging
+
+✅ Understand what SQL is being executed
+✅ Debug slow queries
+✅ Verify parameter binding
+✅ Check encryption key usage
+
+### Performance Analysis
+
+```bash
+# Find slow queries in logs
+grep "Time:" your-log-file.log | awk '$2 > 100' # Queries over 100ms
+```
+
+## Example Output
+
+```log
+[INFO] Query execution
+  query: SELECT
+    pgp_sym_decrypt(encrypted_first_name, $1::varchar) as first_name,
+    pgp_sym_decrypt(encrypted_last_name, $2::varchar) as last_name
+  FROM profiles
+  WHERE user_id = $3
+  args: [*****, *****, "user-uuid-here"]
+  time: 3.45ms
+
+[INFO] Query execution
+  query: INSERT INTO events (name, description) VALUES ($1, $2) RETURNING id
+  args: ["Tech Conference", "Annual technology conference"]
+  time: 1.2ms
+```
+
+## Related Files
+
+- `apps/backend/core-api/config/postgres/postgres.go` - Config and tracer setup
+- `apps/backend/common/pgclient/pgpool.go` - Pool initialization with tracer
+- `.env.example` - Environment variable documentation
+
+## Additional Notes
+
+- Uses `github.com/mcosta74/pgx-slog` for structured logging integration
+- Compatible with pgx v5 connection pooling
+- No code changes needed - purely configuration-driven
+- Works with sqlc-generated queries automatically

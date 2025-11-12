@@ -10,6 +10,7 @@ import { queryClient } from "@/lib/api/queryClient";
 import { QUERY_KEY } from "@/lib/queryKeys";
 import { handleUniversalError } from "@/common/Err";
 import { ErrorPage } from "@/components/pages/Error";
+import { Typography } from "@/components/typography/typography";
 
 const AuthSuccessPage = () => {
     const { t } = useTranslation();
@@ -60,7 +61,9 @@ const AuthSuccessPage = () => {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <h1>You're being redirected. Please wait...</h1>
+            <Typography variant="h1" tag="h1">
+                You're being redirected. Please wait...
+            </Typography>
         </div>
     );
 };

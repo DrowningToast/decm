@@ -1,11 +1,8 @@
-import React, { createContext, useContext, useEffect } from "react";
+import React, { createContext, useContext } from "react";
 import type { ReactNode } from "react";
 import type { EntityProfile } from "@decm/api";
 import { AxiosError } from "axios";
-import { useTranslation } from "react-i18next";
-import { useSignout } from "@/components/useSignout";
 import { useMyProfile } from "@/hooks/useMyProfile";
-import { useNavigate } from "@/router";
 interface AuthContextType {
     user: EntityProfile | null;
     isFetching: boolean;
@@ -21,7 +18,6 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-    const { t } = useTranslation();
     const { data: user, error, isFetching, refetch } = useMyProfile();
 
     const contextValue: AuthContextType = {

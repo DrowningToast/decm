@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { useForm } from "react-hook-form";
-import { WrappedInput } from "./WrappedInput";
+import { StyledFormInput } from "./StyledInput";
 
 // Mock components
 vi.mock("@/components/typography/typography", () => ({
@@ -40,7 +40,7 @@ function TestForm() {
 
     return (
         <form>
-            <WrappedInput
+            <StyledFormInput
                 name="testField"
                 control={control}
                 label="Test Label"
@@ -71,7 +71,7 @@ describe("WrappedInput Component", () => {
         function RequiredTest() {
             const { control } = useForm();
             return (
-                <WrappedInput
+                <StyledFormInput
                     name="field"
                     control={control}
                     label="Required Field"
@@ -91,7 +91,7 @@ describe("WrappedInput Component", () => {
         function OptionalTest() {
             const { control } = useForm();
             return (
-                <WrappedInput
+                <StyledFormInput
                     name="field"
                     control={control}
                     label="Optional Field"
@@ -110,7 +110,7 @@ describe("WrappedInput Component", () => {
     it("should handle different input types", () => {
         function TypeTest() {
             const { control } = useForm();
-            return <WrappedInput name="field" control={control} label="Email" type="email" />;
+            return <StyledFormInput name="field" control={control} label="Email" type="email" />;
         }
 
         const { rerender } = render(<TypeTest />);
@@ -120,7 +120,9 @@ describe("WrappedInput Component", () => {
 
         function PasswordTest() {
             const { control } = useForm();
-            return <WrappedInput name="field" control={control} label="Password" type="password" />;
+            return (
+                <StyledFormInput name="field" control={control} label="Password" type="password" />
+            );
         }
 
         rerender(<PasswordTest />);
@@ -133,7 +135,7 @@ describe("WrappedInput Component", () => {
         function DisabledTest() {
             const { control } = useForm();
             return (
-                <WrappedInput
+                <StyledFormInput
                     name="field"
                     control={control}
                     label="Disabled Input"
@@ -152,7 +154,7 @@ describe("WrappedInput Component", () => {
         function ClassNameTest() {
             const { control } = useForm();
             return (
-                <WrappedInput
+                <StyledFormInput
                     name="field"
                     control={control}
                     label="Custom Class"
@@ -171,7 +173,7 @@ describe("WrappedInput Component", () => {
         function MaxLengthTest() {
             const { control } = useForm();
             return (
-                <WrappedInput
+                <StyledFormInput
                     name="field"
                     control={control}
                     label="Limited"
@@ -193,7 +195,7 @@ describe("WrappedInput Component", () => {
                 defaultValues: { field: "hello" },
             });
             return (
-                <WrappedInput
+                <StyledFormInput
                     name="field"
                     control={control}
                     label="Text"
@@ -214,7 +216,7 @@ describe("WrappedInput Component", () => {
         function NoCharCountTest() {
             const { control } = useForm();
             return (
-                <WrappedInput
+                <StyledFormInput
                     name="field"
                     control={control}
                     label="Text"
@@ -235,7 +237,7 @@ describe("WrappedInput Component", () => {
         function NumberRangeTest() {
             const { control } = useForm();
             return (
-                <WrappedInput
+                <StyledFormInput
                     name="field"
                     control={control}
                     label="Number"
@@ -257,7 +259,7 @@ describe("WrappedInput Component", () => {
         function StepTest() {
             const { control } = useForm();
             return (
-                <WrappedInput
+                <StyledFormInput
                     name="field"
                     control={control}
                     label="Step Number"
@@ -276,7 +278,7 @@ describe("WrappedInput Component", () => {
     it("should set input id to field name", () => {
         function IdTest() {
             const { control } = useForm();
-            return <WrappedInput name="myField" control={control} label="My Field" />;
+            return <StyledFormInput name="myField" control={control} label="My Field" />;
         }
 
         render(<IdTest />);
@@ -290,7 +292,7 @@ describe("WrappedInput Component", () => {
             const { control } = useForm({
                 defaultValues: { field: "default text" },
             });
-            return <WrappedInput name="field" control={control} label="Text" />;
+            return <StyledFormInput name="field" control={control} label="Text" />;
         }
 
         render(<DefaultValueTest />);
@@ -304,7 +306,7 @@ describe("WrappedInput Component", () => {
             const { control } = useForm({
                 defaultValues: { field: null },
             });
-            return <WrappedInput name="field" control={control} label="Text" />;
+            return <StyledFormInput name="field" control={control} label="Text" />;
         }
 
         render(<EmptyValueTest />);
@@ -318,7 +320,7 @@ describe("WrappedInput Component", () => {
             const { control } = useForm({
                 defaultValues: { field: undefined },
             });
-            return <WrappedInput name="field" control={control} label="Text" />;
+            return <StyledFormInput name="field" control={control} label="Text" />;
         }
 
         render(<UndefinedValueTest />);
@@ -341,7 +343,7 @@ describe("WrappedInput Component", () => {
             function TypeVariantTest() {
                 const { control } = useForm();
                 return (
-                    <WrappedInput
+                    <StyledFormInput
                         name="field"
                         control={control}
                         label={`${type} input`}
@@ -362,7 +364,7 @@ describe("WrappedInput Component", () => {
     it("should have aria-invalid attribute for error state", () => {
         function ErrorStateTest() {
             const { control } = useForm();
-            return <WrappedInput name="field" control={control} label="Field" />;
+            return <StyledFormInput name="field" control={control} label="Field" />;
         }
 
         render(<ErrorStateTest />);
@@ -377,7 +379,7 @@ describe("WrappedInput Component", () => {
             const { control } = useForm({
                 defaultValues: { field: "" },
             });
-            return <WrappedInput name="field" control={control} label="Text Input" />;
+            return <StyledFormInput name="field" control={control} label="Text Input" />;
         }
 
         render(<InputTest />);

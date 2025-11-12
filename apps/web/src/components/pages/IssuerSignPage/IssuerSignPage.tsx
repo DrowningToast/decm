@@ -90,7 +90,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-black text-white">
+            <div className="min-h-screen  text-white">
                 {/* Header */}
                 <header className="bg-[#ff6a39] shadow-lg">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -235,7 +235,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                         {t("issuer.sign.certificatePreview")}
                                     </Typography>
                                     <div className="bg-[#1a1a1a] border border-[#333333] rounded-lg p-4">
-                                        <div className="aspect-w-16 aspect-h-9 bg-black rounded flex items-center justify-center border border-dashed border-[#333333]">
+                                        <div className="aspect-w-16 aspect-h-9  rounded flex items-center justify-center border border-dashed border-[#333333]">
                                             {eventCertificateConfig?.base_certificate_presigned_url ? (
                                                 <img
                                                     src={

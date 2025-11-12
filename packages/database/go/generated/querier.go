@@ -66,6 +66,7 @@ type Querier interface {
 	GetInboxMessagesByReceiverEmail(ctx context.Context, receiverEmail pgtype.Text) ([]InboxMessage, error)
 	GetInboxMessagesByReceiverWalletAddress(ctx context.Context, receiverWalletAddress pgtype.Text) ([]InboxMessage, error)
 	GetInboxMessagesBySenderCredentialID(ctx context.Context, senderCredentialID uuid.UUID) ([]InboxMessage, error)
+	GetProfileAndCredentialWithCredentialId(ctx context.Context, authenticationCredentialID uuid.UUID) (GetProfileAndCredentialWithCredentialIdRow, error)
 	GetProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) (Profile, error)
 	// Note: Searches encrypted email field directly (linear scan)
 	GetProfileByEmail(ctx context.Context, email pgtype.Text) (Profile, error)

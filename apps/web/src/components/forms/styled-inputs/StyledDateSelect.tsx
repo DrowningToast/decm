@@ -23,7 +23,7 @@ interface WrappedDateSelectProps<T extends FieldValues> {
     disablePastDates?: boolean;
 }
 
-export const WrappedDateSelect = <T extends FieldValues>({
+export const StyledDateSelect = <T extends FieldValues>({
     name,
     control,
     label,
@@ -55,7 +55,7 @@ export const WrappedDateSelect = <T extends FieldValues>({
                                 variant="secondary-dark"
                                 id={name}
                                 className={cn(
-                                    "w-full justify-start text-left font-normal border border-[#D9D9D91A] bg-transparent",
+                                    "w-full justify-start text-left font-normal border border-primary bg-transparent",
                                     !field.value && "text-muted-foreground",
                                     className,
                                 )}

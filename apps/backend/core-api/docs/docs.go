@@ -285,13 +285,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/event.EventResponse"
-                                }
-                            }
+                            "$ref": "#/definitions/event.GetEventListViewModel"
                         }
                     },
                     "400": {
@@ -2599,7 +2593,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entity.Profile"
+                            "$ref": "#/definitions/profile.GetMyProfileViewModel"
                         }
                     },
                     "400": {
@@ -2806,6 +2800,18 @@ const docTemplate = `{
                     "type": "boolean"
                 }
             }
+        },
+        "common.SolutionStatus": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+                0,
+                1
+            ],
+            "x-enum-varnames": [
+                "SolutionStatusManaged",
+                "SolutionStatusBYOK"
+            ]
         },
         "core-api_internal_handler_event.CertificateSignature": {
             "type": "object",
@@ -3155,12 +3161,10 @@ const docTemplate = `{
         "entity.EventType": {
             "type": "string",
             "enum": [
-                "public",
                 "private",
                 "invite"
             ],
             "x-enum-varnames": [
-                "EventTypePublic",
                 "EventTypePrivate",
                 "EventTypeInvite"
             ]
@@ -3445,6 +3449,17 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.EventCertificate"
+                    }
+                }
+            }
+        },
+        "event.GetEventListViewModel": {
+            "type": "object",
+            "properties": {
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Event"
                     }
                 }
             }
@@ -4127,6 +4142,95 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "profile.GetMyProfileViewModel": {
+            "type": "object",
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "authentication_credential_created_at": {
+                    "type": "string"
+                },
+                "authentication_credential_id": {
+                    "type": "string"
+                },
+                "authentication_credential_updated_at": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "github_connector_ref": {
+                    "type": "string"
+                },
+                "google_connector_ref": {
+                    "type": "string"
+                },
+                "is_academic_email_public": {
+                    "type": "boolean"
+                },
+                "is_academic_institution_public": {
+                    "type": "boolean"
+                },
+                "is_address_public": {
+                    "type": "boolean"
+                },
+                "is_bio_public": {
+                    "type": "boolean"
+                },
+                "is_email_public": {
+                    "type": "boolean"
+                },
+                "is_first_name_public": {
+                    "type": "boolean"
+                },
+                "is_last_name_public": {
+                    "type": "boolean"
+                },
+                "is_phone_number_public": {
+                    "type": "boolean"
+                },
+                "is_profile_picture_public": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "profile_created_at": {
+                    "type": "string"
+                },
+                "profile_id": {
+                    "type": "string"
+                },
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "profile_updated_at": {
+                    "type": "string"
+                },
+                "solution_status": {
+                    "$ref": "#/definitions/common.SolutionStatus"
+                },
+                "wallet_address": {
                     "type": "string"
                 }
             }

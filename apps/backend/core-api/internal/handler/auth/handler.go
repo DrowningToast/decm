@@ -1,6 +1,7 @@
 package auth
 
 import (
+	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
 	auth_usecase "apps/backend/core-api/internal/usecase/auth"
 	"apps/backend/core-api/internal/usecase/oauth"
 	"apps/backend/services/auth"
@@ -13,8 +14,10 @@ type Handler struct {
 
 	GoogleOAuthService *oauth_services.GoogleOAuthService
 	AuthService        *auth.AuthService
+
+	AuthenticationGuardMiddleware *authenticationguard.AuthenticationGuardMiddleware
 }
 
-func NewHandler(oauthUc *oauth.OAuthUsecase, authUc *auth_usecase.AuthUsecase, googleOAuthService *oauth_services.GoogleOAuthService, authService *auth.AuthService) *Handler {
-	return &Handler{OAuthUc: oauthUc, AuthUc: authUc, GoogleOAuthService: googleOAuthService, AuthService: authService}
+func NewHandler(oauthUc *oauth.OAuthUsecase, authUc *auth_usecase.AuthUsecase, googleOAuthService *oauth_services.GoogleOAuthService, authService *auth.AuthService, authenticationGuardMiddleware *authenticationguard.AuthenticationGuardMiddleware) *Handler {
+	return &Handler{OAuthUc: oauthUc, AuthUc: authUc, GoogleOAuthService: googleOAuthService, AuthService: authService, AuthenticationGuardMiddleware: authenticationGuardMiddleware}
 }

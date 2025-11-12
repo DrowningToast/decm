@@ -4,6 +4,7 @@ import (
 	"context"
 	"decm-database/go/generated"
 
+	"apps/backend/common"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 
@@ -234,6 +235,101 @@ func (r *Repository) GetProfileByEmail(ctx context.Context, email string) (*enti
 		CreatedAt:                   query.CreatedAt.Time,
 		UpdatedAt:                   query.UpdatedAt.Time,
 	}, nil
+}
+
+func (r *Repository) GetProfileAndCredentialWithCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID) (*entity.Profile, *entity.AuthenticationCredential, error) {
+	result, err := r.queries.GetProfileAndCredentialWithCredentialId(ctx, authenticationCredentialId)
+	if err != nil {
+		return nil, nil, pgerrutils.ParsePgError(err)
+	}
+
+	decryptedProfilePictureUrl, err := pgmapper.DecryptPgTextToStringPtr(result.ProfileProfilePictureUrl, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	decryptedFirstName, err := pgmapper.DecryptPgTextToStringPtr(result.ProfileFirstName, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	decryptedLastName, err := pgmapper.DecryptPgTextToStringPtr(result.ProfileLastName, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	decryptedEmail, err := pgmapper.DecryptPgTextToStringPtr(result.ProfileEmail, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	decryptedBio, err := pgmapper.DecryptPgTextToStringPtr(result.ProfileBio, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	decryptedPhoneNumber, err := pgmapper.DecryptPgTextToStringPtr(result.ProfilePhoneNumber, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	decryptedAddress, err := pgmapper.DecryptPgTextToStringPtr(result.ProfileAddress, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	decryptedAcademicInstitution, err := pgmapper.DecryptPgTextToStringPtr(result.ProfileAcademicInstitution, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	decryptedAcademicEmail, err := pgmapper.DecryptPgTextToStringPtr(result.ProfileAcademicEmail, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	profile := &entity.Profile{
+		Id:                          result.ProfileID,
+		AuthenticationCredentialId:  result.ProfileAuthenticationCredentialID,
+		IsProfilePicturePublic:      result.ProfileIsProfilePicturePublic == 1,
+		ProfilePictureUrl:           decryptedProfilePictureUrl,
+		IsFirstNamePublic:           result.ProfileIsFirstNamePublic == 1,
+		FirstName:                   decryptedFirstName,
+		IsLastNamePublic:            result.ProfileIsLastNamePublic == 1,
+		LastName:                    decryptedLastName,
+		IsEmailPublic:               result.ProfileIsEmailPublic == 1,
+		Email:                       decryptedEmail,
+		IsBioPublic:                 result.ProfileIsBioPublic == 1,
+		Bio:                         decryptedBio,
+		IsPhoneNumberPublic:         result.ProfileIsPhoneNumberPublic == 1,
+		PhoneNumber:                 decryptedPhoneNumber,
+		IsAddressPublic:             result.ProfileIsAddressPublic == 1,
+		Address:                     decryptedAddress,
+		IsAcademicInstitutionPublic: result.ProfileIsAcademicInstitutionPublic == 1,
+		AcademicInstitution:         decryptedAcademicInstitution,
+		IsAcademicEmailPublic:       result.ProfileIsAcademicEmailPublic == 1,
+		AcademicEmail:               decryptedAcademicEmail,
+		CreatedAt:                   result.ProfileCreatedAt.Time,
+		UpdatedAt:                   result.ProfileUpdatedAt.Time,
+	}
+
+	decryptedGoogleConnectorRef, err := pgmapper.DecryptPgTextToStringPtr(result.GoogleConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	decryptedGithubConnectorRef, err := pgmapper.DecryptPgTextToStringPtr(result.GithubConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	authenticationCredential := &entity.AuthenticationCredential{
+		Id:                  result.AuthenticationCredentialID,
+		SolutionStatus:      common.SolutionStatus(result.SolutionStatus),
+		HashedPassword:      pgmapper.PgTextToStringPtr(result.HashedPassword),
+		EncryptedPrivateKey: nil,
+		WalletAddress:       result.WalletAddress,
+		GoogleConnectorRef:  decryptedGoogleConnectorRef,
+		GithubConnectorRef:  decryptedGithubConnectorRef,
+		IsVerifiedOrganizer: result.IsVerifiedOrganizer == 1,
+		IsVerifiedStudent:   result.IsVerifiedStudent == 1,
+		IsVerifiedIssuer:    result.IsVerifiedIssuer == 1,
+		CreatedAt:           result.AuthenticationCredentialCreatedAt.Time,
+		UpdatedAt:           result.AuthenticationCredentialUpdatedAt.Time,
+	}
+
+	return profile, authenticationCredential, nil
 }
 
 func (r *Repository) CreateProfile(ctx context.Context, profile entity.Profile) (*entity.Profile, error) {

@@ -1,9 +1,9 @@
-import { EventListPage } from "@/components/pages/Participant/Events/EventListPage";
+import { ParticipantEventListPage } from "@/components/pages/Participant/Events/ParticipantEventListPage";
 
 const EventsPage = () => {
     return (
         <section className="relative z-10">
-            <EventListPage />
+            <ParticipantEventListPage />
         </section>
     );
 };

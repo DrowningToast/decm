@@ -21,7 +21,7 @@ interface WrappedInputProps<T extends FieldValues> {
     showCharCount?: boolean;
 }
 
-export const WrappedInput = <T extends FieldValues>({
+export const StyledFormInput = <T extends FieldValues>({
     name,
     control,
     label,
@@ -62,7 +62,7 @@ export const WrappedInput = <T extends FieldValues>({
                             placeholder={placeholder}
                             disabled={disabled}
                             aria-invalid={!!error}
-                            className={`!border !border-[#D9D9D91A] ${className}`}
+                            className={`!border !border-primary min-h-12 ${className}`}
                             min={min}
                             max={max}
                             step={step}
@@ -92,12 +92,13 @@ export const WrappedInput = <T extends FieldValues>({
                             <Typography
                                 variant="text"
                                 tag="p"
-                                className={`text-xs text-right ${isOverLimit
-                                    ? "text-destructive font-medium"
-                                    : isNearLimit
-                                        ? "text-yellow-600 dark:text-yellow-500"
-                                        : "text-muted-foreground"
-                                    }`}
+                                className={`text-xs text-right ${
+                                    isOverLimit
+                                        ? "text-destructive font-medium"
+                                        : isNearLimit
+                                          ? "text-yellow-600 dark:text-yellow-500"
+                                          : "text-muted-foreground"
+                                }`}
                             >
                                 {currentLength} / {maxLength} {t("common.characters")}
                             </Typography>

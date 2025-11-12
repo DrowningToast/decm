@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { ParticipantSettingsForm } from "@/components/forms/ParticipantSettingsForm";
 import { type ParticipantSettingsData } from "@/lib/schemas/participantSettingsSchema";
-import PageContainer from "@/components/container/PageContainer";
+
 import SectionContainer from "@/components/container/SectionContainer";
 import { useUpdateParticipantSetting } from "@/components/forms/ParticipantSettingsForm/useUpdateParticipantSetting";
 import type {
@@ -62,7 +62,7 @@ export const EventParticipantSettingPage = ({
     };
 
     return (
-        <PageContainer
+        <div
             title={t("participantSettings.pageTitle")}
             description={t("participantSettings.pageDescription")}
         >
@@ -113,6 +113,6 @@ export const EventParticipantSettingPage = ({
                     showPreview={true}
                 />
             </SectionContainer>
-        </PageContainer>
+        </div>
     );
 };

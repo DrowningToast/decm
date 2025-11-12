@@ -8,7 +8,7 @@ const AppLayout = () => {
         <ProtectedRoute>
             <BaseLayout variant="dark">
                 <PrivateNavbar />
-                <div className="pt-[15px] md:pt-14">
+                <div className="py-4 md:py-14">
                     <Outlet />
                 </div>
             </BaseLayout>

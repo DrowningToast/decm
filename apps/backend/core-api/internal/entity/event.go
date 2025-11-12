@@ -8,18 +8,18 @@ import (
 
 type EventType string
 
+const (
+	// EventTypePublic  EventType = "public"
+	EventTypePrivate EventType = "private"
+	EventTypeInvite  EventType = "invite"
+)
+
 type EventStatus string
 
 const (
 	EventStatusActive   EventStatus = "active"
 	EventStatusInactive EventStatus = "inactive"
 	EventStatusClosed   EventStatus = "closed"
-)
-
-const (
-	EventTypePublic  EventType = "public"
-	EventTypePrivate EventType = "private"
-	EventTypeInvite  EventType = "invite"
 )
 
 type Event struct {

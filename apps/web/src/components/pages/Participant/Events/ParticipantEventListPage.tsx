@@ -8,7 +8,7 @@ import { BottomNav } from "@/components/BottomNav/BottomNav";
 
 type EventFilterType = "all" | "my-events";
 
-export const EventListPage = () => {
+export const ParticipantEventListPage = () => {
     const { t } = useTranslation();
     const [filterType, setFilterType] = useState<EventFilterType>("all");
     const { events, isLoading } = useEventsListUsecase({

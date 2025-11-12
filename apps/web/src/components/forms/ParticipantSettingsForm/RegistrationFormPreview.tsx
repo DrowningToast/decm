@@ -86,18 +86,7 @@ export const RegistrationFormPreview = ({ settings }: RegistrationFormPreviewPro
                         {t("participantSettings.preview.title")}
                     </Typography>
                     <div className="flex items-center space-x-2">
-                        {settings.eventType === "public" ? (
-                            <>
-                                <Globe className="h-4 w-4 text-primary" />
-                                <Typography
-                                    variant="text"
-                                    tag="span"
-                                    className="text-sm text-primary font-medium"
-                                >
-                                    {t("participantSettings.eventTypePublic")}
-                                </Typography>
-                            </>
-                        ) : settings.eventType === "invite" ? (
+                        {settings.eventType === "invite" ? (
                             <>
                                 <Mail className="h-4 w-4 text-orange-500" />
                                 <Typography
@@ -172,26 +161,26 @@ export const RegistrationFormPreview = ({ settings }: RegistrationFormPreviewPro
                 settings.lastName !== "not_required" ||
                 settings.email !== "not_required" ||
                 settings.phoneNumber !== "not_required") && (
+                <div className="space-y-4">
+                    <Typography variant="header" tag="h3" className="text-sm font-semibold">
+                        {t("participantSettings.basicInformation")}
+                    </Typography>
                     <div className="space-y-4">
-                        <Typography variant="header" tag="h3" className="text-sm font-semibold">
-                            {t("participantSettings.basicInformation")}
-                        </Typography>
-                        <div className="space-y-4">
-                            {renderField(
-                                "firstName",
-                                t("participantSettings.fields.firstName"),
-                                "text",
-                            )}
-                            {renderField("lastName", t("participantSettings.fields.lastName"), "text")}
-                            {renderField("email", t("participantSettings.fields.email"), "email")}
-                            {renderField(
-                                "phoneNumber",
-                                t("participantSettings.fields.phoneNumber"),
-                                "text",
-                            )}
-                        </div>
+                        {renderField(
+                            "firstName",
+                            t("participantSettings.fields.firstName"),
+                            "text",
+                        )}
+                        {renderField("lastName", t("participantSettings.fields.lastName"), "text")}
+                        {renderField("email", t("participantSettings.fields.email"), "email")}
+                        {renderField(
+                            "phoneNumber",
+                            t("participantSettings.fields.phoneNumber"),
+                            "text",
+                        )}
                     </div>
-                )}
+                </div>
+            )}
 
             {/* Additional Information Fields */}
             {(settings.bio !== "not_required" || settings.address !== "not_required") && (
@@ -213,24 +202,24 @@ export const RegistrationFormPreview = ({ settings }: RegistrationFormPreviewPro
             {/* Academic Information Fields */}
             {(settings.academicInstitution !== "not_required" ||
                 settings.academicEmail !== "not_required") && (
-                    <div className="space-y-4 pt-4">
-                        <Typography variant="header" tag="h3" className="text-sm font-semibold">
-                            {t("participantSettings.academicInformation")}
-                        </Typography>
-                        <div className="space-y-4">
-                            {renderField(
-                                "academicInstitution",
-                                t("participantSettings.fields.academicInstitution"),
-                                "text",
-                            )}
-                            {renderField(
-                                "academicEmail",
-                                t("participantSettings.fields.academicEmail"),
-                                "email",
-                            )}
-                        </div>
+                <div className="space-y-4 pt-4">
+                    <Typography variant="header" tag="h3" className="text-sm font-semibold">
+                        {t("participantSettings.academicInformation")}
+                    </Typography>
+                    <div className="space-y-4">
+                        {renderField(
+                            "academicInstitution",
+                            t("participantSettings.fields.academicInstitution"),
+                            "text",
+                        )}
+                        {renderField(
+                            "academicEmail",
+                            t("participantSettings.fields.academicEmail"),
+                            "email",
+                        )}
                     </div>
-                )}
+                </div>
+            )}
 
             {/* Preview Submit Button */}
             <div className="pt-4">

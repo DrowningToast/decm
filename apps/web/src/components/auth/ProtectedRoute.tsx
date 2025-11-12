@@ -40,7 +40,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     requireIssuer = false,
     fallback,
 }) => {
-    const { isAuthenticated, isFetching, error: authError, user } = useAuth();
+    const { isAuthenticated, isFetching, error: authError } = useAuth();
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { signout } = useSignout();

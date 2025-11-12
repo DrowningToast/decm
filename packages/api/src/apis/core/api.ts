@@ -43,6 +43,12 @@ export interface CheckRoleResponse {
     is_issuer?: boolean;
 }
 
+/** @format int32 */
+export enum CommonSolutionStatus {
+    SolutionStatusManaged = 0,
+    SolutionStatusBYOK = 1,
+}
+
 export interface CoreApiInternalHandlerEventCertificateSignature {
     certificate?: EntityEventCertificate;
     signature?: string;
@@ -288,7 +294,6 @@ export enum EntityEventStatus {
 }
 
 export enum EntityEventType {
-    EventTypePublic = "public",
     EventTypePrivate = "private",
     EventTypeInvite = "invite",
 }
@@ -393,6 +398,10 @@ export interface EventEventResponse {
 
 export interface EventGetEventCertificatesResponse {
     certificates?: EntityEventCertificate[];
+}
+
+export interface EventGetEventListViewModel {
+    events?: EntityEvent[];
 }
 
 export interface EventImportCertificateReceiverRequest {
@@ -568,7 +577,7 @@ export interface GetEventsByOwnerCredentialsIdParams {
     ownerCredentialId: string;
 }
 
-export type GetEventsListData = EventEventResponse[][];
+export type GetEventsListData = EventGetEventListViewModel;
 
 export type GetEventsListError = CustomerrorErrResponse;
 
@@ -614,7 +623,7 @@ export interface GetIssuerEventsParams {
     offset?: number;
 }
 
-export type GetMyProfileData = EntityProfile;
+export type GetMyProfileData = ProfileGetMyProfileViewModel;
 
 export type GetMyProfileError = CustomerrorErr;
 
@@ -844,6 +853,37 @@ export interface ProfileCreateProfileResponse {
     phone_number?: string;
     profile_picture_url?: string;
     updated_at?: string;
+}
+
+export interface ProfileGetMyProfileViewModel {
+    academic_email?: string;
+    academic_institution?: string;
+    address?: string;
+    authentication_credential_created_at?: string;
+    authentication_credential_id?: string;
+    authentication_credential_updated_at?: string;
+    bio?: string;
+    email?: string;
+    first_name?: string;
+    github_connector_ref?: string;
+    google_connector_ref?: string;
+    is_academic_email_public?: boolean;
+    is_academic_institution_public?: boolean;
+    is_address_public?: boolean;
+    is_bio_public?: boolean;
+    is_email_public?: boolean;
+    is_first_name_public?: boolean;
+    is_last_name_public?: boolean;
+    is_phone_number_public?: boolean;
+    is_profile_picture_public?: boolean;
+    last_name?: string;
+    phone_number?: string;
+    profile_created_at?: string;
+    profile_id?: string;
+    profile_picture_url?: string;
+    profile_updated_at?: string;
+    solution_status?: CommonSolutionStatus;
+    wallet_address?: string;
 }
 
 export interface ProfileUpdateProfileRequest {

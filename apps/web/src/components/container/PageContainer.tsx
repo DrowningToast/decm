@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 const pageContainerVariants = cva("py-10 min-h-dvh lg:py-16", {
     variants: {
         bgColor: {
-            default: "bg-black",
+            default: "",
             primary: "from-[#EB5331] to-[#362927] bg-gradient-to-b",
         },
     },
@@ -36,8 +36,6 @@ export default function PageContainer({
         "relative",
         className,
     );
-
-    const navigate = useNavigate();
 
     return (
         <div className={_className}>
