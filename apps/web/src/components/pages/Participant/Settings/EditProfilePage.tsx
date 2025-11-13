@@ -347,6 +347,17 @@ export const EditProfilePage: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
+
+                                {/* Expose Private Key Button */}
+                                <Button
+                                    type="button"
+                                    variant="secondary-light"
+                                    size="lg"
+                                    className="w-full mt-4"
+                                    disabled
+                                >
+                                    {t("profile.exposePrivateKey")} - {t("common.comingSoon")}
+                                </Button>
                             </div>
 
                             {/* Personal Information Section */}

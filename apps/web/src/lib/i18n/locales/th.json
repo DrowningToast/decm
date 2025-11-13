@@ -39,7 +39,9 @@
         "to": "ถึง",
         "signOut": "ออกจากระบบ",
         "signingOut": "กำลังออกจากระบบ...",
-        "notAvailable": "ไม่มีข้อมูล"
+        "notAvailable": "ไม่มีข้อมูล",
+        "networkError": "ข้อผิดพลาดเครือข่าย โปรดตรวจสอบการเชื่อมต่อ",
+        "comingSoon": "เร็ว ๆ นี้"
     },
     "nav": {
         "home": "หน้าหลัก",
@@ -239,6 +241,11 @@
                 "register": "ลงทะเบียนกับเรา",
                 "signIn": "เข้าสู่ระบบ",
                 "eventManagement": "การจัดการกิจกรรม"
+            },
+            "issuer": {
+                "title": "ผู้ออกใบรับรอง",
+                "signInIAM": "เข้าสู่ระบบด้วย IAM",
+                "register": "ลงทะเบียน"
             }
         },
         "developer": {
@@ -277,7 +284,8 @@
         "academicVerification": "การยืนยันทางวิชาการ",
         "verifyNow": "ยืนยันตอนนี้",
         "updateSuccess": "อัปเดตโปรไฟล์สำเร็จ",
-        "updateError": "ไม่สามารถอัปเดตโปรไฟล์ได้ กรุณาลองอีกครั้ง"
+        "updateError": "ไม่สามารถอัปเดตโปรไฟล์ได้ กรุณาลองอีกครั้ง",
+        "exposePrivateKey": "เปิดรหัสส่วนตัวของบัญชี"
     },
     "events": {
         "title": "กิจกรรม",
@@ -552,6 +560,27 @@
             }
         }
     },
+    "participant": {
+        "events": {
+            "detail": {
+                "loadingDetails": "กำลังโหลดรายละเอียดกิจกรรม...",
+                "loadError": "ไม่สามารถโหลดรายละเอียดกิจกรรมได้"
+            },
+            "passwordPlaceholder": "ป้อนรหัสผ่านกิจกรรม",
+            "participating": "เข้าร่วม",
+            "shortlisted": "คัดเลือก"
+        },
+        "certificates": {
+            "sign": "ลงนามในใบรับรอง",
+            "searchPlaceholder": "ค้นหาใบรับรอง..."
+        },
+        "identities": {
+            "searchPlaceholder": "ค้นหาตัวตน..."
+        },
+        "notifications": {
+            "searchPlaceholder": "ค้นหาการแจ้งเตือน..."
+        }
+    },
     "participantSettings": {
         "pageTitle": "การตั้งค่าผู้เข้าร่วม",
         "pageDescription": "กำหนดความต้องการและฟิลด์ข้อมูลผู้เข้าร่วมสำหรับกิจกรรมของคุณ",
@@ -610,6 +639,10 @@
             "transferable": "สามารถโอนบัตร",
             "register": "ลงทะเบียน",
             "note": "นี่คือตัวอย่างของแบบฟอร์มการลงทะเบียน"
+        },
+        "templateColumns": {
+            "firstName": "first_name",
+            "lastName": "last_name"
         }
     },
     "participantImport": {
@@ -719,6 +752,9 @@
     "certificateSettings": {
         "pageTitle": "ตั้งค่าใบประกาศนียบัตร",
         "pageDescription": "กำหนดค่าผู้ออกใบประกาศนียบัตรและออกแบบเทมเพลตใบประกาศนียบัตร",
+        "eventNameNotFound": "ไม่พบชื่อกิจกรรม",
+        "removeIssuerSuccess": "ลบผู้ออกสำเร็จ",
+        "removeIssuerError": "ไม่สามารถลบผู้ออก",
         "step1": {
             "title": "ขั้นตอนที่ 1: ตั้งค่าผู้ออกใบประกาศนียบัตร",
             "description": "ค้นหาและเลือกผู้ออกใบประกาศนียบัตรสำหรับกิจกรรมนี้",
@@ -741,7 +777,12 @@
                 "description": "เลือกผู้ออกหนึ่งรายขึ้นไปจากผลการค้นหา",
                 "selected": "ที่เลือก",
                 "noResults": "ไม่พบผู้ออกใบประกาศนียบัตร",
+                "enterSearch": "ป้อนข้อความค้นหา",
                 "chooseButton": "เลือก"
+            },
+            "removeIssuer": {
+                "title": "ลบผู้ออก",
+                "description": "คุณแน่ใจหรือว่าต้องการลบผู้ออกนี้"
             }
         },
         "step2": {
@@ -988,11 +1029,14 @@
                 "identities": "ตัวตน",
                 "profile": "โปรไฟล์",
                 "verifyCertificates": "ตรวจสอบใบรับรอง"
-            }
+            },
+            "signedCertificates": "ใบรับรองที่ลงนามแล้ว"
         },
         "certificates": {
             "title": "ประกาศนียบัตร",
             "description": "ประกาศนียบัตรทั้งหมดที่คุณได้รับ",
+            "sign": "ลงนามในใบรับรอง",
+            "searchPlaceholder": "ค้นหาใบรับรอง...",
             "filters": {
                 "all": "ทั้งหมด",
                 "completed": "เสร็จสิ้น",
@@ -1050,6 +1094,24 @@
         },
         "pagination": {
             "rowsPerPage": "แถวต่อหน้า:"
+        }
+    },
+    "examples": {
+        "buttonSizes": "ขนาดปุ่ม",
+        "buttons": {
+            "small": "เล็ก",
+            "default": "ค่าเริ่มต้น",
+            "large": "ใหญ่",
+            "extraLarge": "พิเศษขนาดใหญ่"
+        }
+    },
+    "flow": {
+        "oauth_google": {
+            "create_account_error_expired_token": "ลิงก์การอนุญาตหมดอายุแล้ว คุณได้ออกจากระบบ กรุณาเข้าสู่ระบบอีกครั้งผ่านผู้ให้บริการ OAuth",
+            "create_account_error_generic": "เกิดข้อผิดพลาดระหว่างการยืนยันตัวตน กรุณาลองใหม่"
+        },
+        "wallet": {
+            "create_profile_error": "ไม่สามารถสร้างโปรไฟล์ได้ กรุณาลองอีกครั้ง"
         }
     }
 }

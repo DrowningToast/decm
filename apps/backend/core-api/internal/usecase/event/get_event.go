@@ -2,23 +2,21 @@ package event
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 
+	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
 )
 
 type EventResponse struct {
-	ID                       uuid.UUID          `json:"id"`
+	Id                       uuid.UUID          `json:"id"`
 	ChainID                  int32              `json:"chain_id"`
 	ContactNumber            string             `json:"contact_number"`
 	OwnerCredentialID        uuid.UUID          `json:"owner_credential_id"`
-	BannerStorageKey         string             `json:"banner_storage_key"`
-	IconStorageKey           string             `json:"icon_storage_key"`
 	BannerPresignedURL       string             `json:"banner_presigned_url"`
 	IconPresignedURL         string             `json:"icon_presigned_url"`
 	Title                    string             `json:"title"`
@@ -36,10 +34,37 @@ type EventResponse struct {
 	CreatedAt                time.Time          `json:"created_at"`
 	UpdatedAt                time.Time          `json:"updated_at"`
 	EventStatus              entity.EventStatus `json:"event_status"`
+	EventType                entity.EventType   `json:"event_type"`
+}
+
+type RegistrationConfigResponse struct {
+	Id                                   uuid.UUID  `json:"id"`
+	EventId                              uuid.UUID  `json:"event_id"`
+	FinalCallForRegistration             *time.Time `json:"final_call_for_registration,omitempty"`
+	IsIdentityVerificationRequired       bool       `json:"is_identity_verification_required"`
+	FirstNameRequirementStatus           int        `json:"first_name_requirement_status"`
+	LastNameRequirementStatus            int        `json:"last_name_requirement_status"`
+	EmailRequirementStatus               int        `json:"email_requirement_status"`
+	BioRequirementStatus                 int        `json:"bio_requirement_status"`
+	PhoneNumberRequirementStatus         int        `json:"phone_number_requirement_status"`
+	AddressRequirementStatus             int        `json:"address_requirement_status"`
+	AcademicInstitutionRequirementStatus int        `json:"academic_institution_requirement_status"`
+	AcademicEmailRequirementStatus       int        `json:"academic_email_requirement_status"`
+}
+
+type EventContractResponse struct {
+	ID                           uuid.UUID `json:"id"`
+	EventID                      uuid.UUID `json:"event_id"`
+	AccessManagerContractAddress string    `json:"access_manager_contract_address"`
+	EventContractAddress         string    `json:"event_contract_address"`
+	TicketContractAddress        *string   `json:"ticket_contract_address,omitempty"`
+	CertificateContractAddress   *string   `json:"certificate_contract_address,omitempty"`
 }
 
 type EventViewModel struct {
 	EventResponse
+	RegistrationConfig RegistrationConfigResponse `json:"registration_config"`
+	EventContract      EventContractResponse      `json:"event_contract"`
 
 	IsInvited bool `json:"is_invited,omitempty"`
 	IsJoined  bool `json:"is_joined,omitempty"`
@@ -64,7 +89,8 @@ func (u *EventUsecase) GetEventById(ctx context.Context, eventId uuid.UUID) (*en
 }
 
 func (u *EventUsecase) GetEventViewModelByEventId(ctx context.Context, eventId uuid.UUID, currentUser *auth.JwtClaims) (*EventViewModel, error) {
-	event, err := u.GetEventById(ctx, eventId)
+	// Get event with registration config and contracts in a single query
+	event, registrationConfig, eventContract, err := u.EventDataGateway.GetViewModelById(ctx, eventId)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +103,12 @@ func (u *EventUsecase) GetEventViewModelByEventId(ctx context.Context, eventId u
 
 	invitation, inbox, err := u.EventRegistrationInvitationDg.GetEventRegistrationInvitationByEventIDAndCredential(ctx, eventId, currentUser.UserId, email, &walletAddress)
 	if err != nil {
-		return nil, err
+		var customError *customerror.Err
+		if errors.As(err, &customError) {
+			if *customError.Code != customerror.ErrNotFound.Code {
+				return nil, errors.Wrap(err, "failed to get event registration invitation by event id and credential")
+			}
+		}
 	}
 	if invitation != nil {
 		isInvited = true
@@ -96,6 +127,7 @@ func (u *EventUsecase) GetEventViewModelByEventId(ctx context.Context, eventId u
 		}
 	}
 
+	// Convert to EventResponse with presigned URLs
 	eventResponse, err := u.ToEventResponse(ctx, event)
 	if err != nil {
 		return nil, err
@@ -104,10 +136,38 @@ func (u *EventUsecase) GetEventViewModelByEventId(ctx context.Context, eventId u
 		return nil, customerror.NewWithPreset(&customerror.ErrInternalServer, errors.New("event response is nil"))
 	}
 
+	// Convert RegistrationConfig to response format
+	registrationConfigResponse := RegistrationConfigResponse{
+		Id:                                   registrationConfig.ID,
+		EventId:                              registrationConfig.EventID,
+		FinalCallForRegistration:             registrationConfig.FinalCallForRegistration,
+		IsIdentityVerificationRequired:       registrationConfig.IsIdentityVerificationRequired,
+		FirstNameRequirementStatus:           registrationConfig.FirstNameRequirementStatus,
+		LastNameRequirementStatus:            registrationConfig.LastNameRequirementStatus,
+		EmailRequirementStatus:               registrationConfig.EmailRequirementStatus,
+		BioRequirementStatus:                 registrationConfig.BioRequirementStatus,
+		PhoneNumberRequirementStatus:         registrationConfig.PhoneNumberRequirementStatus,
+		AddressRequirementStatus:             registrationConfig.AddressRequirementStatus,
+		AcademicInstitutionRequirementStatus: registrationConfig.AcademicInstitutionRequirementStatus,
+		AcademicEmailRequirementStatus:       registrationConfig.AcademicEmailRequirementStatus,
+	}
+
+	// Convert EventContract to response format
+	eventContractResponse := EventContractResponse{
+		ID:                           eventContract.ID,
+		EventID:                      eventContract.EventID,
+		AccessManagerContractAddress: eventContract.AccessManagerContractAddress,
+		EventContractAddress:         eventContract.EventContractAddress,
+		TicketContractAddress:        eventContract.TicketContractAddress,
+		CertificateContractAddress:   eventContract.CertificateContractAddress,
+	}
+
 	return &EventViewModel{
-		EventResponse: *eventResponse,
-		IsInvited:     isInvited,
-		IsJoined:      isJoined,
+		EventResponse:      *eventResponse,
+		RegistrationConfig: registrationConfigResponse,
+		EventContract:      eventContractResponse,
+		IsInvited:          isInvited,
+		IsJoined:           isJoined,
 	}, nil
 }
 

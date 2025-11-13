@@ -35,6 +35,8 @@ export const typographyVariants = cva("text-wrap", {
     },
 });
 
+export type TypographyColor = VariantProps<typeof typographyVariants>["color"];
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "span", "p", "div", "label"] as const;
 

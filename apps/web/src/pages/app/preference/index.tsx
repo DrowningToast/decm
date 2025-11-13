@@ -1,10 +1,11 @@
 import { PreferencePage } from "@/components/pages/Participant/Preference/PreferencePage";
+import { PageContainer } from "@/components/container/PageContainer";
 
 const PreferenceRoute = () => {
     return (
-        <section className="relative z-10">
+        <PageContainer className="relative z-10">
             <PreferencePage />
-        </section>
+        </PageContainer>
     );
 };
 

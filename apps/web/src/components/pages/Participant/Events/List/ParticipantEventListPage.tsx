@@ -21,7 +21,7 @@ export const ParticipantEventListPage = () => {
 
     return (
         <section className="relative z-10 w-full">
-            <div className="relative min-h-screen w-full overflow-hidden">
+            <div className="relative w-full overflow-hidden">
                 {/* Background image */}
                 <div className="absolute bottom-0 right-0 -translate-x-1/2 aspect-auto w-[229px] h-auto opacity-30 pointer-events-none">
                     <img
@@ -54,7 +54,11 @@ export const ParticipantEventListPage = () => {
                     </div>
 
                     {/* Event List */}
-                    <EventList events={events} isLoading={isLoading} filterType={filterType} />
+                    <EventList
+                        events={events ?? []}
+                        isLoading={isLoading}
+                        filterType={filterType}
+                    />
                 </div>
 
                 {/* Filters section - Fixed above BottomNav */}

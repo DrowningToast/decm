@@ -40,7 +40,7 @@ export const MainPage = () => {
     // }));
 
     return (
-        <div className="relative min-h-screen w-full overflow-hidden">
+        <div className="relative w-full overflow-hidden">
             {/* Background image - positioned at bottom right, visible on both mobile and desktop */}
             <div className="absolute bottom-0 right-0 w-[424px] h-[424px] md:w-[500px] md:h-[500px] opacity-20 md:opacity-20 pointer-events-none">
                 <img

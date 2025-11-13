@@ -63,6 +63,7 @@ type Querier interface {
 	GetEventRegistrationInvitationByID(ctx context.Context, id uuid.UUID) (EventRegistrationInvitation, error)
 	GetEventRegistrationInvitationByInboxMessageID(ctx context.Context, inboxMessageID uuid.UUID) (EventRegistrationInvitation, error)
 	GetEventRegistrationInvitationsByEventID(ctx context.Context, eventID uuid.UUID) ([]EventRegistrationInvitation, error)
+	GetEventViewModelById(ctx context.Context, id uuid.UUID) (GetEventViewModelByIdRow, error)
 	GetInboxMessageByID(ctx context.Context, id uuid.UUID) (InboxMessage, error)
 	GetInboxMessagesByCredentialID(ctx context.Context, arg GetInboxMessagesByCredentialIDParams) ([]InboxMessage, error)
 	GetInboxMessagesByReceiverEmail(ctx context.Context, receiverEmail pgtype.Text) ([]InboxMessage, error)

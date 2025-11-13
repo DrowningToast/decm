@@ -14,7 +14,7 @@ export const BaseLayout: React.FC<BaseLayoutProps> = ({
 }) => {
     return (
         <div
-            className={cn("pt-12 md:pt-[60px]", className, {
+            className={cn("pt-12 md:pt-[60px] box-content", className, {
                 "bg-foreground-alt text-background-alt": variant === "light",
                 "bg-background text-foreground": variant === "dark",
             })}

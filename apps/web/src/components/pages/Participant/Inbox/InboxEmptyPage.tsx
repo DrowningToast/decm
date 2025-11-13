@@ -7,7 +7,7 @@ export const InboxEmptyPage = () => {
 
     return (
         <section className="relative z-10 w-full">
-            <div className="relative min-h-screen w-full overflow-hidden pb-24">
+            <div className="relative w-full overflow-hidden pb-24">
                 {/* Background image */}
                 <div className="absolute bottom-0 right-0 -translate-x-1/2 aspect-auto w-[229px] h-auto opacity-30 pointer-events-none">
                     <img

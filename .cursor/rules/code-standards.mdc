@@ -7,6 +7,45 @@ description: "Unified code standards for Go backend and TypeScript/React fronten
 
 ## Go Backend Standards
 
+### Naming Conventions
+
+**Variable & Field Naming - "Id" vs "ID"**
+
+Always use `Id` (with lowercase 'd') in camelCase variable names, not `ID` (all caps).
+
+```go
+// ✅ CORRECT - Use "Id" in camelCase
+userId := uuid.New()
+eventId := "event-123"
+credentialId := user.AuthenticationCredentialId
+
+type Event struct {
+    Id                  uuid.UUID
+    OwnerCredentialId   uuid.UUID
+    EventId            string
+}
+
+func GetEventById(ctx context.Context, eventId uuid.UUID) (*Event, error) {
+    // ...
+}
+
+// ❌ WRONG - Don't use "ID" (all caps)
+userID := uuid.New()
+eventID := "event-123"
+credentialID := user.AuthenticationCredentialID
+
+type Event struct {
+    ID                  uuid.UUID
+    OwnerCredentialID   uuid.UUID
+}
+
+func GetEventByID(ctx context.Context, eventID uuid.UUID) (*Event, error) {
+    // ...
+}
+```
+
+**Rationale**: Consistent camelCase naming improves readability and follows the project's established patterns across entities, functions, and variables.
+
 ### Package Structure
 ```go
 package handlers

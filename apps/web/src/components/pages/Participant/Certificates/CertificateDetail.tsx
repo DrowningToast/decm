@@ -15,7 +15,7 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
 
     if (!certificate) {
         return (
-            <div className="relative min-h-screen w-full overflow-hidden flex items-center justify-center pb-24 md:pb-12">
+            <div className="relative w-full overflow-hidden flex items-center justify-center pb-24 md:pb-12">
                 <Typography variant="text" tag="p" color="muted" className="text-lg">
                     {t("common.error")}
                 </Typography>

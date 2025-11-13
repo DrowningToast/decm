@@ -17,12 +17,10 @@ func (u *EventUsecase) ToEventResponse(ctx context.Context, event *entity.Event)
 	}
 
 	return &EventResponse{
-		ID:                       event.ID,
+		Id:                       event.ID,
 		ChainID:                  int32(event.ChainId),
 		ContactNumber:            event.ContactNumber,
 		OwnerCredentialID:        event.OwnerCredentialId,
-		BannerStorageKey:         event.BannerStorageKey,
-		IconStorageKey:           event.IconStorageKey,
 		BannerPresignedURL:       bannerPresignedURL,
 		IconPresignedURL:         iconPresignedURL,
 		Title:                    event.Title,
@@ -40,5 +38,6 @@ func (u *EventUsecase) ToEventResponse(ctx context.Context, event *entity.Event)
 		CreatedAt:                event.CreatedAt,
 		UpdatedAt:                event.UpdatedAt,
 		EventStatus:              event.EventStatus,
+		EventType:                event.EventType,
 	}, nil
 }
