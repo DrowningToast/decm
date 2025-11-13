@@ -18,7 +18,7 @@ type GetEventListQuery struct {
 	OnlyUserJoinedEvents bool `query:"only_user_joined_events,omitempty" validate:"omitempty,boolean" default:"false"`
 }
 
-type GetEventListViewModel struct {
+type GetEventListResponse struct {
 	Events []*entity.Event `json:"events"`
 }
 
@@ -32,7 +32,7 @@ type GetEventListViewModel struct {
 // @Param include_closed_events query bool false "Include closed events" default(false)
 // @Param only_user_joined_events query bool false "Only user joined events" default(false)
 // @Produce json
-// @Success 200 {object} GetEventListViewModel
+// @Success 200 {object} GetEventListResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
@@ -66,7 +66,7 @@ func (h *Handler) GetEventsList(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.JSON(&GetEventListViewModel{
+	return ctx.JSON(&GetEventListResponse{
 		Events: events,
 	})
 }

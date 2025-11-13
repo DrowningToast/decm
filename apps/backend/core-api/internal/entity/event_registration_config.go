@@ -10,8 +10,8 @@ import (
 type EventRegistrationConfig struct {
 	ID                                   uuid.UUID  `json:"id"`
 	EventID                              uuid.UUID  `json:"event_id"`
-	FinalCallForRegistration             *time.Time `json:"final_call_for_registration"`
-	RegistrationPassword                 *string    `json:"registration_password"`
+	FinalCallForRegistration             *time.Time `json:"final_call_for_registration,omitempty"`
+	RegistrationPassword                 *string    `json:"registration_password,omitempty"`
 	IsIdentityVerificationRequired       bool       `json:"is_identity_verification_required"`
 	FirstNameRequirementStatus           int        `json:"first_name_requirement_status"`
 	LastNameRequirementStatus            int        `json:"last_name_requirement_status"`
@@ -24,4 +24,3 @@ type EventRegistrationConfig struct {
 	CreatedAt                            time.Time  `json:"created_at"`
 	UpdatedAt                            time.Time  `json:"updated_at"`
 }
-

@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	datagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 
@@ -19,16 +20,40 @@ type MockListEventDataGateway struct {
 	mock.Mock
 }
 
-func (m *MockListEventDataGateway) ListEvents(ctx context.Context, offset *int32, limit *int32) ([]*entity.Event, error) {
-	args := m.Called(ctx, offset, limit)
+func (m *MockListEventDataGateway) CreateEvent(ctx context.Context, params datagateway.CreateEventParameters) (*entity.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockListEventDataGateway) GetEventById(ctx context.Context, id uuid.UUID) (*entity.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockListEventDataGateway) GetViewModelById(ctx context.Context, id uuid.UUID) (*entity.Event, *entity.EventRegistrationConfig, *entity.EventContract, error) {
+	return nil, nil, nil, errors.New("not implemented")
+}
+
+func (m *MockListEventDataGateway) ListEventsByOwnerCredentialID(ctx context.Context, ownerCredentialID uuid.UUID, limitCount int32, offsetCount int32) ([]*entity.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockListEventDataGateway) UpdateEvent(ctx context.Context, id uuid.UUID, params datagateway.UpdateEventParameters) (*entity.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockListEventDataGateway) DeleteEvent(ctx context.Context, id uuid.UUID) (*entity.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockListEventDataGateway) ListEvents(ctx context.Context, limitCount *int32, offsetCount *int32) ([]*entity.Event, error) {
+	args := m.Called(ctx, limitCount, offsetCount)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]*entity.Event), args.Error(1)
 }
 
-func (m *MockListEventDataGateway) ListEventsByEventAttendeeCredentialID(ctx context.Context, credentialId uuid.UUID, offset *int32, limit *int32) ([]*entity.Event, error) {
-	args := m.Called(ctx, credentialId, offset, limit)
+func (m *MockListEventDataGateway) ListEventsByEventAttendeeCredentialID(ctx context.Context, eventAttendeeCredentialID uuid.UUID, limitCount *int32, offsetCount *int32) ([]*entity.Event, error) {
+	args := m.Called(ctx, eventAttendeeCredentialID, limitCount, offsetCount)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

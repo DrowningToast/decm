@@ -61,7 +61,11 @@ func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParam
 		return nil, common.Address{}, common.Address{}, nil, err
 	}
 
+	// Get chain ID from blockchain configuration
+	chainId := config.LoadConfig().Blockchain.ChainID
+
 	createEventParams := datagateway.CreateEventParameters{
+		ChainId:                  chainId,
 		Name:                     params.Name,
 		ShortDescription:         params.ShortDescription,
 		Description:              params.Description,

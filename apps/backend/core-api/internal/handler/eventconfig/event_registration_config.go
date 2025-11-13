@@ -38,8 +38,8 @@ type EventRegistrationConfigResponse struct {
 	EventID                              uuid.UUID                                `json:"event_id"`
 	FinalCallForRegistration             *time.Time                               `json:"final_call_for_registration,omitempty"`
 	RegistrationPassword                 *string                                  `json:"registration_password,omitempty"`
-	FirstNameRequirementStatus           EventRegistrationConfigRequirementStatus `json:"first_name_requirement_status,omitempty"`
-	LastNameRequirementStatus            EventRegistrationConfigRequirementStatus `json:"last_name_requirement_status"`
+	FirstNameRequirementStatus           EventRegistrationConfigRequirementStatus `json:"first_name_requirement_status"`
+	LastNameRequirementStatus            EventRegistrationConfigRequirementStatus `json:"last_name_requirement_status" validate:"required"`
 	EmailRequirementStatus               EventRegistrationConfigRequirementStatus `json:"email_requirement_status"`
 	BioRequirementStatus                 EventRegistrationConfigRequirementStatus `json:"bio_requirement_status"`
 	PhoneNumberRequirementStatus         EventRegistrationConfigRequirementStatus `json:"phone_number_requirement_status"`

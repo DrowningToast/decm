@@ -11,7 +11,7 @@
         "dev:core": "cd apps/backend && go run core-api/cmd/main.go",
         "build:core": "cd apps/backend && go build -o bin/decm-backend core-api/cmd/main.go",
         "start:core": "cd apps/backend && ./bin/decm-backend",
-        "docs:core": "cd apps/backend && swag init -g core-api/cmd/main.go -o core-api/docs",
+        "docs:core": "cd apps/backend && swag init -g core-api/cmd/main.go -o core-api/docs --requiredByDefault",
         "gen-api:core": "pnpm run docs:core && cd packages/api && pnpm install && pnpm generate:core && pnpm run build",
         "compose:up": "docker compose -f docker-compose.isolated.yml up -d",
         "compose:down": "docker compose -f docker-compose.isolated.yml down",

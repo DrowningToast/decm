@@ -39,6 +39,7 @@ type Event struct {
 	Location                 string      `json:"location"`
 	GoogleMapQuery           string      `json:"google_map_query"`
 	MaxAttendees             int         `json:"max_attendees"`
+	AttendeesCount           int         `json:"attendees_count"`
 	IsPublic                 bool        `json:"is_public"`
 	IsBookingRequestRequired bool        `json:"is_booking_request_required"`
 	IsVerified               bool        `json:"is_verified"`

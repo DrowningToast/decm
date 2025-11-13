@@ -35,7 +35,6 @@ INSERT INTO events (
     is_ticket_transferable,
     event_status
 ) VALUES (
-    1, -- Default chain_id, should be parameterized in production
     $1,
     $2,
     $3,
@@ -53,11 +52,13 @@ INSERT INTO events (
     $15,
     $16,
     $17,
-    $18
+    $18,
+    $19
 ) RETURNING id, event_type, event_status, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at
 `
 
 type CreateEventParams struct {
+	ChainID                  int32       `json:"chain_id"`
 	ContactNumber            string      `json:"contact_number"`
 	ContactAddress           string      `json:"contact_address"`
 	OwnerCredentialID        uuid.UUID   `json:"owner_credential_id"`
@@ -80,6 +81,7 @@ type CreateEventParams struct {
 
 func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error) {
 	row := q.db.QueryRow(ctx, CreateEvent,
+		arg.ChainID,
 		arg.ContactNumber,
 		arg.ContactAddress,
 		arg.OwnerCredentialID,
@@ -259,11 +261,15 @@ const GetEventViewModelById = `-- name: GetEventViewModelById :one
 SELECT 
     events.id, events.event_type, events.event_status, events.chain_id, events.contact_number, events.contact_address, events.owner_credential_id, events.banner_storage_key, events.icon_storage_key, events.title, events.short_description, events.long_description, events.start_date, events.end_date, events.location, events.google_map_query, events.max_attendees, events.is_public, events.is_booking_request_required, events.is_verified, events.is_ticket_transferable, events.created_at, events.updated_at, events.deleted_at,
     event_registration_configs.id, event_registration_configs.event_id, event_registration_configs.final_call_for_registration, event_registration_configs.registration_password, event_registration_configs.is_identity_verification_required, event_registration_configs.first_name_requirement_status, event_registration_configs.last_name_requirement_status, event_registration_configs.email_requirement_status, event_registration_configs.bio_requirement_status, event_registration_configs.phone_number_requirement_status, event_registration_configs.address_requirement_status, event_registration_configs.academic_institution_requirement_status, event_registration_configs.academic_email_requirement_status, event_registration_configs.created_at, event_registration_configs.updated_at,
-    event_contracts.id, event_contracts.event_id, event_contracts.access_manager_contract_address, event_contracts.event_contract_address, event_contracts.ticket_contract_address, event_contracts.certificate_contract_address, event_contracts.created_at, event_contracts.updated_at
+    event_contracts.id, event_contracts.event_id, event_contracts.access_manager_contract_address, event_contracts.event_contract_address, event_contracts.ticket_contract_address, event_contracts.certificate_contract_address, event_contracts.created_at, event_contracts.updated_at,
+    COALESCE(COUNT(event_attendees.id), 0)::INTEGER AS attendees_count
 FROM events
 INNER JOIN event_registration_configs ON events.id = event_registration_configs.event_id
 INNER JOIN event_contracts ON events.id = event_contracts.event_id
+LEFT JOIN event_attendees ON events.id = event_attendees.event_id 
+    AND event_attendees.is_attendee_accepted = 1
 WHERE events.id = $1
+GROUP BY events.id, event_registration_configs.id, event_contracts.id
 `
 
 type GetEventViewModelByIdRow struct {
@@ -314,6 +320,7 @@ type GetEventViewModelByIdRow struct {
 	CertificateContractAddress           pgtype.Text        `json:"certificate_contract_address"`
 	CreatedAt_3                          pgtype.Timestamptz `json:"created_at_3"`
 	UpdatedAt_3                          pgtype.Timestamptz `json:"updated_at_3"`
+	AttendeesCount                       int32              `json:"attendees_count"`
 }
 
 func (q *Queries) GetEventViewModelById(ctx context.Context, id uuid.UUID) (GetEventViewModelByIdRow, error) {
@@ -367,6 +374,7 @@ func (q *Queries) GetEventViewModelById(ctx context.Context, id uuid.UUID) (GetE
 		&i.CertificateContractAddress,
 		&i.CreatedAt_3,
 		&i.UpdatedAt_3,
+		&i.AttendeesCount,
 	)
 	return i, err
 }

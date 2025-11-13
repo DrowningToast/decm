@@ -1,12 +1,12 @@
 import React, { createContext, useContext } from "react";
 import type { ReactNode } from "react";
-import type { EntityProfile } from "@decm/api";
+import type { Profile } from "@/services/AuthService/AuthService";
 import { AxiosError } from "axios";
 import { useMyProfile } from "@/hooks/useMyProfile";
 
-export type AuthUser = EntityProfile;
+export type AuthUser = Profile;
 interface AuthContextType {
-    user: EntityProfile | null;
+    user: AuthUser | null;
     isFetching: boolean;
     isAuthenticated: boolean;
     refetch: () => Promise<unknown>;

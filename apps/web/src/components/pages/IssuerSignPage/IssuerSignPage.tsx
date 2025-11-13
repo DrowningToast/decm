@@ -282,7 +282,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                         />
                                         <TextLabelValue
                                             label={t("events.details.seatsCount")}
-                                            value={`${0} / ${event.max_attendees}`}
+                                            value={`${event.attendees_count ?? 0} / ${event.max_attendees}`}
                                         />
                                         <TextLabelValue
                                             label={t("events.details.eventContractAddress")}

@@ -4,10 +4,14 @@ import { Lock, Mail, X, Loader2, SearchX } from "lucide-react";
 import { EventEmptyState } from "./EventEmptyState";
 import { Link } from "@/router";
 import { useSearchEventNavStore } from "@/components/BottomNav/stores/events";
-import { EventStatus, EventType, type Event } from "@/services/EventService";
+import {
+    EventStatus,
+    EventType,
+    type EventViewModelExtended,
+} from "@/services/EventService/EventService";
 
 interface EventListProps {
-    events: Event[];
+    events: EventViewModelExtended[];
     isLoading?: boolean;
     filterType?: "all" | "my-events";
 }
@@ -106,7 +110,7 @@ export const EventList = ({ events = [], isLoading, filterType }: EventListProps
     );
 };
 
-const EventItem = ({ event }: { event: Event }) => {
+const EventItem = ({ event }: { event: EventViewModelExtended }) => {
     const { t } = useTranslation();
 
     const getAccessIcon = (): {

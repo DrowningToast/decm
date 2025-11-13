@@ -1,4 +1,4 @@
-import { authService } from "@/services/AuthService";
+import { authService } from "@/services/AuthService/AuthService";
 import { QUERY_KEY } from "@/lib/queryKeys";
 import { useQuery } from "@tanstack/react-query";
 

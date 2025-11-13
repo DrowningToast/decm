@@ -2,8 +2,8 @@ import { type ProfileCreateProfileRequest } from "@decm/api";
 import { useMutation, useMutationState } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { onboardService } from "../../../services/OnboardService";
-import { authService, type CreateAccountParams } from "../../../services/AuthService";
+import { onboardService } from "../../../services/OnboardService/OnboardService";
+import { authService, type CreateAccountParams } from "../../../services/AuthService/AuthService";
 
 export const useSignup = () => {
     const { t } = useTranslation();

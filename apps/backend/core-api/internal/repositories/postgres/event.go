@@ -26,6 +26,7 @@ func (r *Repository) CreateEvent(ctx context.Context, params datagateway.CreateE
 	longDescription := pgmapper.StringPtrToPgText(&params.Description)
 
 	result, err := r.queries.CreateEvent(ctx, generated.CreateEventParams{
+		ChainID:                  int32(params.ChainId),
 		ContactNumber:            params.ContactNumber,
 		ContactAddress:           params.ContactAddress,
 		OwnerCredentialID:        params.OwnerCredentialID,
@@ -131,6 +132,7 @@ func (r *Repository) GetViewModelById(ctx context.Context, id uuid.UUID) (*entit
 		Location:                 result.Location,
 		GoogleMapQuery:           result.GoogleMapQuery,
 		MaxAttendees:             int(result.MaxAttendees),
+		AttendeesCount:           int(result.AttendeesCount),
 		IsPublic:                 result.IsPublic.Int32 == 1,
 		IsBookingRequestRequired: result.IsBookingRequestRequired.Int32 == 1,
 		IsVerified:               result.IsVerified.Int32 == 1,

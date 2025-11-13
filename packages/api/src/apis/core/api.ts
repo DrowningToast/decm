@@ -60,18 +60,18 @@ export enum CommonSolutionStatus {
 
 export interface CoreApiInternalHandlerEventCertificateSignature {
     certificate?: EntityEventCertificate;
-    signature?: string;
+    signature: string;
 }
 
 export interface CoreApiInternalHandlerEventEventContractResponse {
-    access_manager_contract_address?: string;
-    certificate_contract_address?: string;
-    created_at?: string;
-    event_contract_address?: string;
-    event_id?: string;
-    id?: string;
-    ticket_contract_address?: string;
-    updated_at?: string;
+    access_manager_contract_address: string;
+    certificate_contract_address: string;
+    created_at: string;
+    event_contract_address: string;
+    event_id: string;
+    id: string;
+    ticket_contract_address: string;
+    updated_at: string;
 }
 
 export interface CoreApiInternalHandlerEventImportCertificateReceiversRequest {
@@ -82,9 +82,9 @@ export interface CoreApiInternalHandlerEventImportCertificateReceiversRequest {
 }
 
 export interface CoreApiInternalHandlerEventImportCertificateReceiversResponse {
-    certificates?: EntityEventCertificate[];
-    event_certificate_address?: string;
-    event_id?: string;
+    certificates: EntityEventCertificate[];
+    event_certificate_address: string;
+    event_id: string;
 }
 
 export interface CoreApiInternalHandlerEventRevokeEventCertificatesRequest {
@@ -93,7 +93,7 @@ export interface CoreApiInternalHandlerEventRevokeEventCertificatesRequest {
 }
 
 export interface CoreApiInternalHandlerEventRevokeEventCertificatesResponse {
-    revoked_certificates?: EntityEventCertificate[];
+    revoked_certificates: EntityEventCertificate[];
 }
 
 export interface CoreApiInternalHandlerEventSignEventCertificatesRequest {
@@ -101,30 +101,30 @@ export interface CoreApiInternalHandlerEventSignEventCertificatesRequest {
 }
 
 export interface CoreApiInternalHandlerEventSignEventCertificatesResponse {
-    certificates?: CoreApiInternalHandlerEventCertificateSignature[];
+    certificates: CoreApiInternalHandlerEventCertificateSignature[];
 }
 
 export interface CoreApiInternalHandlerEventconfigEventCertificateConfigResponse {
     academic_institution_pos_x?: number;
     academic_institution_pos_y?: number;
-    base_certificate_presigned_url?: string;
-    base_certificate_storage_key?: string;
-    created_at?: string;
-    event_id?: string;
-    event_name_pos_x?: number;
-    event_name_pos_y?: number;
-    id?: string;
-    name_pos_x?: number;
-    name_pos_y?: number;
-    updated_at?: string;
+    base_certificate_presigned_url: string;
+    base_certificate_storage_key: string;
+    created_at: string;
+    event_id: string;
+    event_name_pos_x: number;
+    event_name_pos_y: number;
+    id: string;
+    name_pos_x: number;
+    name_pos_y: number;
+    updated_at: string;
 }
 
 export interface CoreApiInternalUsecaseEventEventContractResponse {
-    access_manager_contract_address?: string;
+    access_manager_contract_address: string;
     certificate_contract_address?: string;
-    event_contract_address?: string;
-    event_id?: string;
-    id?: string;
+    event_contract_address: string;
+    event_id: string;
+    id: string;
     ticket_contract_address?: string;
 }
 
@@ -208,7 +208,7 @@ export interface CustomerrorErr {
 
 /** Response for the client to sign to register */
 export interface CustomerrorErrResponse {
-    message?: string;
+    message: string;
 }
 
 export type DeleteEventByIdData = EventEventResponse;
@@ -259,29 +259,30 @@ export interface DeleteEventRegistrationConfigParams {
 }
 
 export interface EntityEvent {
-    banner_storage_key?: string;
-    chain_id?: number;
-    contact_address?: string;
-    contact_number?: string;
-    created_at?: string;
-    end_date?: string;
-    event_status?: EntityEventStatus;
-    event_type?: EntityEventType;
-    google_map_query?: string;
-    icon_storage_key?: string;
-    id?: string;
-    is_booking_request_required?: boolean;
-    is_public?: boolean;
-    is_ticket_transferable?: boolean;
-    is_verified?: boolean;
-    location?: string;
-    long_description?: string;
-    max_attendees?: number;
-    owner_credential_id?: string;
-    short_description?: string;
-    start_date?: string;
-    title?: string;
-    updated_at?: string;
+    attendees_count: number;
+    banner_storage_key: string;
+    chain_id: number;
+    contact_address: string;
+    contact_number: string;
+    created_at: string;
+    end_date: string;
+    event_status: EntityEventStatus;
+    event_type: EntityEventType;
+    google_map_query: string;
+    icon_storage_key: string;
+    id: string;
+    is_booking_request_required: boolean;
+    is_public: boolean;
+    is_ticket_transferable: boolean;
+    is_verified: boolean;
+    location: string;
+    long_description: string;
+    max_attendees: number;
+    owner_credential_id: string;
+    short_description: string;
+    start_date: string;
+    title: string;
+    updated_at: string;
 }
 
 export interface EntityEventCertificate {
@@ -289,11 +290,11 @@ export interface EntityEventCertificate {
     certificate_subtitle?: string;
     certificate_title?: string;
     certificate_token_id?: string;
-    created_at?: string;
+    created_at: string;
     event_certificate_address?: string;
-    event_contract_address?: string;
-    event_id?: string;
-    id?: string;
+    event_contract_address: string;
+    event_id: string;
+    id: string;
     name?: string;
     receiver_credential_id?: string;
     receiver_email?: string;
@@ -304,15 +305,15 @@ export interface EntityEventRegistrationInvitation {
     academic_institution?: string;
     cancelled_at?: string;
     code?: string;
-    created_at?: string;
+    created_at: string;
     email?: string;
-    event_id?: string;
+    event_id: string;
     first_name?: string;
-    id?: string;
-    inbox_message_id?: string;
+    id: string;
+    inbox_message_id: string;
     last_name?: string;
     phone_number?: string;
-    updated_at?: string;
+    updated_at: string;
     valid_until?: string;
 }
 
@@ -327,6 +328,22 @@ export enum EntityEventType {
     EventTypeInvite = "invite",
 }
 
+export interface EntityInboxMessage {
+    created_at: string;
+    deleted_at?: string;
+    fallback_message_content?: string;
+    hidden_at?: string;
+    id: string;
+    is_read: number;
+    message_content: string;
+    message_type: number;
+    receiver_credential_id?: string;
+    receiver_email?: string;
+    receiver_wallet_address?: string;
+    sender_credential_id?: string;
+    updated_at: string;
+}
+
 export enum EntityInboxMessageType {
     InboxMessageTypeGeneral = 0,
     InboxMessageTypeEventRegistrationInvitation = 1,
@@ -337,119 +354,122 @@ export interface EntityProfile {
     academic_email?: string;
     academic_institution?: string;
     address?: string;
-    authentication_credential_id?: string;
+    authentication_credential_id: string;
     bio?: string;
-    created_at?: string;
+    created_at: string;
     email?: string;
     first_name?: string;
-    id?: string;
-    is_academic_email_public?: boolean;
-    is_academic_institution_public?: boolean;
-    is_address_public?: boolean;
-    is_bio_public?: boolean;
-    is_email_public?: boolean;
-    is_first_name_public?: boolean;
-    is_last_name_public?: boolean;
-    is_phone_number_public?: boolean;
-    is_profile_picture_public?: boolean;
+    id: string;
+    is_academic_email_public: boolean;
+    is_academic_institution_public: boolean;
+    is_address_public: boolean;
+    is_bio_public: boolean;
+    is_email_public: boolean;
+    is_first_name_public: boolean;
+    is_last_name_public: boolean;
+    is_phone_number_public: boolean;
+    is_profile_picture_public: boolean;
     last_name?: string;
     phone_number?: string;
     profile_picture_url?: string;
-    updated_at?: string;
+    updated_at: string;
 }
 
 export interface EventCreateEventContractRequest {
     access_manager_contract_address: string;
-    certificate_contract_address?: string;
+    certificate_contract_address: string;
     event_contract_address: string;
-    ticket_contract_address?: string;
+    ticket_contract_address: string;
 }
 
 export interface EventCreateEventIssuerRequest {
     is_signed: 0 | 1;
     issuer_credential_id: string;
-    sign_message?: string;
-    signature?: string;
+    sign_message: string;
+    signature: string;
 }
 
 export interface EventDeleteEventRequest {
-    host_password?: string;
+    host_password: string;
 }
 
 export interface EventEventIssuerResponse {
-    created_at?: string;
-    event_id?: string;
-    id?: string;
-    is_signed?: number;
-    issuer_credential_id?: string;
+    created_at: string;
+    event_id: string;
+    id: string;
+    is_signed: number;
+    issuer_credential_id: string;
     issuer_profile?: EntityProfile;
-    sign_message?: string;
-    signature?: string;
-    updated_at?: string;
+    sign_message: string;
+    signature: string;
+    updated_at: string;
 }
 
 export interface EventEventResponse {
-    banner_presigned_url?: string;
-    chain_id?: number;
-    contact_address?: string;
-    contact_number?: string;
-    created_at?: string;
-    end_date?: string;
-    event_status?: EntityEventStatus;
-    event_type?: EntityEventType;
-    google_map_query?: string;
-    icon_presigned_url?: string;
-    id?: string;
-    is_booking_request_required?: boolean;
-    is_public?: boolean;
-    is_ticket_transferable?: boolean;
-    is_verified?: boolean;
-    location?: string;
-    long_description?: string;
-    max_attendees?: number;
-    owner_credential_id?: string;
-    short_description?: string;
-    start_date?: string;
-    title?: string;
-    updated_at?: string;
+    attendees_count: number;
+    banner_presigned_url: string;
+    chain_id: number;
+    contact_address: string;
+    contact_number: string;
+    created_at: string;
+    end_date: string;
+    event_status: EntityEventStatus;
+    event_type: EntityEventType;
+    google_map_query: string;
+    icon_presigned_url: string;
+    id: string;
+    is_booking_request_required: boolean;
+    is_public: boolean;
+    is_ticket_transferable: boolean;
+    is_verified: boolean;
+    location: string;
+    long_description: string;
+    max_attendees: number;
+    owner_credential_id: string;
+    short_description: string;
+    start_date: string;
+    title: string;
+    updated_at: string;
 }
 
 export interface EventEventViewModel {
-    banner_presigned_url?: string;
-    chain_id?: number;
-    contact_address?: string;
-    contact_number?: string;
-    created_at?: string;
-    end_date?: string;
-    event_contract?: CoreApiInternalUsecaseEventEventContractResponse;
-    event_status?: EntityEventStatus;
-    event_type?: EntityEventType;
-    google_map_query?: string;
-    icon_presigned_url?: string;
-    id?: string;
-    is_booking_request_required?: boolean;
-    is_invited?: boolean;
+    attendees_count: number;
+    banner_presigned_url: string;
+    chain_id: number;
+    contact_address: string;
+    contact_number: string;
+    created_at: string;
+    end_date: string;
+    event_contract: CoreApiInternalUsecaseEventEventContractResponse;
+    event_status: EntityEventStatus;
+    event_type: EntityEventType;
+    google_map_query: string;
+    icon_presigned_url: string;
+    id: string;
+    is_booking_request_required: boolean;
+    is_full: boolean;
+    is_invited: boolean;
     is_joined?: boolean;
-    is_public?: boolean;
-    is_ticket_transferable?: boolean;
-    is_verified?: boolean;
-    location?: string;
-    long_description?: string;
-    max_attendees?: number;
-    owner_credential_id?: string;
-    registration_config?: EventRegistrationConfigResponse;
-    short_description?: string;
-    start_date?: string;
-    title?: string;
-    updated_at?: string;
+    is_public: boolean;
+    is_ticket_transferable: boolean;
+    is_verified: boolean;
+    location: string;
+    long_description: string;
+    max_attendees: number;
+    owner_credential_id: string;
+    registration_config: EventRegistrationConfigResponse;
+    short_description: string;
+    start_date: string;
+    title: string;
+    updated_at: string;
 }
 
 export interface EventGetEventCertificatesResponse {
-    certificates?: EntityEventCertificate[];
+    certificates: EntityEventCertificate[];
 }
 
-export interface EventGetEventListViewModel {
-    events?: EntityEvent[];
+export interface EventGetEventListResponse {
+    events: EntityEvent[];
 }
 
 export interface EventImportCertificateReceiverRequest {
@@ -461,18 +481,23 @@ export interface EventImportCertificateReceiverRequest {
 }
 
 export interface EventRegistrationConfigResponse {
-    academic_email_requirement_status?: number;
-    academic_institution_requirement_status?: number;
-    address_requirement_status?: number;
-    bio_requirement_status?: number;
-    email_requirement_status?: number;
-    event_id?: string;
+    academic_email_requirement_status: number;
+    academic_institution_requirement_status: number;
+    address_requirement_status: number;
+    bio_requirement_status: number;
+    email_requirement_status: number;
+    event_id: string;
     final_call_for_registration?: string;
-    first_name_requirement_status?: number;
-    id?: string;
-    is_identity_verification_required?: boolean;
-    last_name_requirement_status?: number;
-    phone_number_requirement_status?: number;
+    first_name_requirement_status: number;
+    id: string;
+    is_identity_verification_required: boolean;
+    last_name_requirement_status: number;
+    phone_number_requirement_status: number;
+}
+
+export interface EventRegistrationInvitationGetEventRegistrationInvitationByUserAndEventResponse {
+    inbox?: EntityInboxMessage;
+    registration_invitation?: EntityEventRegistrationInvitation;
 }
 
 export interface EventRegistrationInvitationImportEventParticipantsRequest {
@@ -482,23 +507,23 @@ export interface EventRegistrationInvitationImportEventParticipantsRequest {
 }
 
 export interface EventRegistrationInvitationParticipantRequestItem {
-    academic_institution?: string;
+    academic_institution: string;
     email: string;
     first_name: string;
     last_name: string;
-    phone_number?: string;
+    phone_number: string;
 }
 
 export interface EventUpdateEventContractRequest {
-    access_manager_contract_address?: string;
-    certificate_contract_address?: string;
-    event_contract_address?: string;
-    ticket_contract_address?: string;
+    access_manager_contract_address: string;
+    certificate_contract_address: string;
+    event_contract_address: string;
+    ticket_contract_address: string;
 }
 
 export interface EventUpdateEventIssuerRequest {
-    event_id?: string;
-    issuer_credential_id?: string;
+    event_id: string;
+    issuer_credential_id: string;
 }
 
 export interface EventconfigCheckEventPasswordBody {
@@ -506,19 +531,19 @@ export interface EventconfigCheckEventPasswordBody {
 }
 
 export interface EventconfigCheckEventPasswordResponse {
-    is_valid?: boolean;
+    is_valid: boolean;
 }
 
 export interface EventconfigCreateEventRegistrationConfigRequest {
-    academic_email_requirement_status?: number;
-    academic_institution_requirement_status?: number;
-    address_requirement_status?: number;
-    bio_requirement_status?: number;
-    email_requirement_status?: number;
+    academic_email_requirement_status: number;
+    academic_institution_requirement_status: number;
+    address_requirement_status: number;
+    bio_requirement_status: number;
+    email_requirement_status: number;
     final_call_for_registration?: string;
-    first_name_requirement_status?: number;
-    last_name_requirement_status?: number;
-    phone_number_requirement_status?: number;
+    first_name_requirement_status: number;
+    last_name_requirement_status: number;
+    phone_number_requirement_status: number;
     registration_password?: string;
 }
 
@@ -530,35 +555,35 @@ export enum EventconfigEventRegistrationConfigRequirementStatus {
 }
 
 export interface EventconfigEventRegistrationConfigResponse {
-    academic_email_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
-    academic_institution_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
-    address_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
-    bio_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
-    created_at?: string;
-    email_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
-    event_id?: string;
+    academic_email_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    academic_institution_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    address_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    bio_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    created_at: string;
+    email_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    event_id: string;
     final_call_for_registration?: string;
-    first_name_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
-    id?: string;
-    last_name_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
-    phone_number_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
+    first_name_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    id: string;
+    last_name_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    phone_number_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
     registration_password?: string;
-    updated_at?: string;
+    updated_at: string;
 }
 
 export interface EventconfigUpdateEventRegistrationConfigRequest {
-    academic_email_requirement_status?: number;
-    academic_institution_requirement_status?: number;
-    address_requirement_status?: number;
-    bio_requirement_status?: number;
-    email_requirement_status?: number;
+    academic_email_requirement_status: number;
+    academic_institution_requirement_status: number;
+    address_requirement_status: number;
+    bio_requirement_status: number;
+    email_requirement_status: number;
     event_type?: EntityEventType;
     final_call_for_registration?: string;
-    first_name_requirement_status?: number;
-    is_booking_request_required?: boolean;
-    is_ticket_transferable?: boolean;
-    last_name_requirement_status?: number;
-    phone_number_requirement_status?: number;
+    first_name_requirement_status: number;
+    is_booking_request_required: boolean;
+    is_ticket_transferable: boolean;
+    last_name_requirement_status: number;
+    phone_number_requirement_status: number;
     registration_password?: string;
 }
 
@@ -628,6 +653,15 @@ export interface GetEventRegistrationConfigParams {
     eventId: string;
 }
 
+export type GetEventRegistrationInvitationByUserAndEventData =
+    EventRegistrationInvitationGetEventRegistrationInvitationByUserAndEventResponse;
+
+export type GetEventRegistrationInvitationByUserAndEventError = CustomerrorErrResponse;
+
+export interface GetEventRegistrationInvitationByUserAndEventParams {
+    eventId: string;
+}
+
 export type GetEventRegistrationInvitationsByEventIdData = EntityEventRegistrationInvitation[];
 
 export type GetEventRegistrationInvitationsByEventIdError = CustomerrorErrResponse;
@@ -664,7 +698,7 @@ export interface GetEventsByOwnerCredentialsIdParams {
     ownerCredentialId: string;
 }
 
-export type GetEventsListData = EventGetEventListViewModel;
+export type GetEventsListData = EventGetEventListResponse;
 
 export type GetEventsListError = CustomerrorErrResponse;
 
@@ -748,39 +782,39 @@ export interface InboxInboxMessagesEventRegistrationInvitationViewModel {
     academic_institution?: string;
     cancelled_at?: string;
     code?: string;
-    created_at?: string;
+    created_at: string;
     deleted_at?: string;
     email?: string;
-    event_id?: string;
+    event_id: string;
     first_name?: string;
     hidden_at?: string;
-    id?: string;
-    is_read?: number;
+    id: string;
+    is_read: number;
     last_name?: string;
-    message_content?: string;
-    message_type?: EntityInboxMessageType;
+    message_content: string;
+    message_type: EntityInboxMessageType;
     phone_number?: string;
     receiver_email?: string;
     receiver_wallet_address?: string;
     sender_credential_email?: string;
     sender_credential_wallet_address?: string;
-    updated_at?: string;
+    updated_at: string;
     valid_until?: string;
 }
 
 export interface InboxInboxMessagesViewModel {
-    created_at?: string;
+    created_at: string;
     deleted_at?: string;
     hidden_at?: string;
-    id?: string;
-    is_read?: number;
-    message_content?: string;
-    message_type?: EntityInboxMessageType;
+    id: string;
+    is_read: number;
+    message_content: string;
+    message_type: EntityInboxMessageType;
     receiver_email?: string;
     receiver_wallet_address?: string;
     sender_credential_email?: string;
     sender_credential_wallet_address?: string;
-    updated_at?: string;
+    updated_at: string;
 }
 
 export type InboxMessagesDetailData =
@@ -793,19 +827,19 @@ export interface InboxMessagesDetailParams {
 export type InboxMessagesListData = InboxmessagesGetInboxMessagesResponse;
 
 export interface InboxmessagesGetInboxMessageEventRegistrationInvitationResponse {
-    inbox_message?: InboxInboxMessagesEventRegistrationInvitationViewModel;
+    inbox_message: InboxInboxMessagesEventRegistrationInvitationViewModel;
 }
 
 export interface InboxmessagesGetInboxMessageResponse {
-    inbox_message?: InboxInboxMessagesViewModel;
+    inbox_message: InboxInboxMessagesViewModel;
 }
 
 export interface InboxmessagesGetInboxMessagesResponse {
-    inbox_messages?: InboxInboxMessagesViewModel[];
+    inbox_messages: InboxInboxMessagesViewModel[];
 }
 
 export interface InboxmessagesMarkAllMessagesAsReadResponse {
-    inbox_messages?: InboxInboxMessagesViewModel[];
+    inbox_messages: InboxInboxMessagesViewModel[];
 }
 
 export interface InboxmessagesMarkMessageAsReadRequest {
@@ -813,24 +847,24 @@ export interface InboxmessagesMarkMessageAsReadRequest {
 }
 
 export interface InboxmessagesMarkMessageAsReadResponse {
-    inbox_message?: InboxInboxMessagesViewModel;
+    inbox_message: InboxInboxMessagesViewModel;
 }
 
 export interface IssuerIssuerEventResponse {
-    created_at?: string;
-    event_end_date?: string;
-    event_id?: string;
-    event_location?: string;
-    event_owner_credential_id?: string;
-    event_short_description?: string;
-    event_start_date?: string;
-    event_title?: string;
-    id?: string;
-    is_signed?: number;
-    issuer_credential_id?: string;
-    sign_message?: string;
-    signature?: string;
-    updated_at?: string;
+    created_at: string;
+    event_end_date: string;
+    event_id: string;
+    event_location: string;
+    event_owner_credential_id: string;
+    event_short_description: string;
+    event_start_date: string;
+    event_title: string;
+    id: string;
+    is_signed: number;
+    issuer_credential_id: string;
+    sign_message: string;
+    signature: string;
+    updated_at: string;
 }
 
 export type LogoutData = Record<string, string>;
@@ -860,13 +894,13 @@ export interface OnboardRegisterResponse {
 }
 
 export interface OnboardRegisterWithGoogleOAuthRequest {
-    access_token?: string;
+    access_token: string;
     /** @minLength 6 */
     password: string;
 }
 
 export interface OnboardRegisterWithWalletRequest {
-    signed_message?: string;
+    signed_message: string;
 }
 
 export enum OnboardRegistrationMethod {
@@ -921,56 +955,56 @@ export interface ProfileCreateProfileResponse {
     academic_email?: string;
     academic_institution?: string;
     address?: string;
-    authentication_credential_id?: string;
+    authentication_credential_id: string;
     bio?: string;
-    created_at?: string;
+    created_at: string;
     email?: string;
     first_name?: string;
-    id?: string;
-    is_academic_email_public?: boolean;
-    is_academic_institution_public?: boolean;
-    is_address_public?: boolean;
-    is_bio_public?: boolean;
-    is_email_public?: boolean;
-    is_first_name_public?: boolean;
-    is_last_name_public?: boolean;
-    is_phone_number_public?: boolean;
-    is_profile_picture_public?: boolean;
+    id: string;
+    is_academic_email_public: boolean;
+    is_academic_institution_public: boolean;
+    is_address_public: boolean;
+    is_bio_public: boolean;
+    is_email_public: boolean;
+    is_first_name_public: boolean;
+    is_last_name_public: boolean;
+    is_phone_number_public: boolean;
+    is_profile_picture_public: boolean;
     last_name?: string;
     phone_number?: string;
     profile_picture_url?: string;
-    updated_at?: string;
+    updated_at: string;
 }
 
 export interface ProfileGetMyProfileViewModel {
     academic_email?: string;
     academic_institution?: string;
     address?: string;
-    authentication_credential_created_at?: string;
-    authentication_credential_id?: string;
-    authentication_credential_updated_at?: string;
+    authentication_credential_created_at: string;
+    authentication_credential_id: string;
+    authentication_credential_updated_at: string;
     bio?: string;
     email?: string;
     first_name?: string;
     github_connector_ref?: string;
     google_connector_ref?: string;
-    is_academic_email_public?: boolean;
-    is_academic_institution_public?: boolean;
-    is_address_public?: boolean;
-    is_bio_public?: boolean;
-    is_email_public?: boolean;
-    is_first_name_public?: boolean;
-    is_last_name_public?: boolean;
-    is_phone_number_public?: boolean;
-    is_profile_picture_public?: boolean;
+    is_academic_email_public: boolean;
+    is_academic_institution_public: boolean;
+    is_address_public: boolean;
+    is_bio_public: boolean;
+    is_email_public: boolean;
+    is_first_name_public: boolean;
+    is_last_name_public: boolean;
+    is_phone_number_public: boolean;
+    is_profile_picture_public: boolean;
     last_name?: string;
     phone_number?: string;
-    profile_created_at?: string;
-    profile_id?: string;
+    profile_created_at: string;
+    profile_id: string;
     profile_picture_url?: string;
-    profile_updated_at?: string;
-    solution_status?: CommonSolutionStatus;
-    wallet_address?: string;
+    profile_updated_at: string;
+    solution_status: CommonSolutionStatus;
+    wallet_address: string;
 }
 
 export interface ProfileUpdateProfileRequest {
@@ -1019,35 +1053,35 @@ export interface ProfileUpdateProfileResponse {
     academic_email?: string;
     academic_institution?: string;
     address?: string;
-    authentication_credential_id?: string;
+    authentication_credential_id: string;
     bio?: string;
-    created_at?: string;
+    created_at: string;
     email?: string;
     first_name?: string;
-    id?: string;
-    is_academic_email_public?: boolean;
-    is_academic_institution_public?: boolean;
-    is_address_public?: boolean;
-    is_bio_public?: boolean;
-    is_email_public?: boolean;
-    is_first_name_public?: boolean;
-    is_last_name_public?: boolean;
-    is_phone_number_public?: boolean;
-    is_profile_picture_public?: boolean;
+    id: string;
+    is_academic_email_public: boolean;
+    is_academic_institution_public: boolean;
+    is_address_public: boolean;
+    is_bio_public: boolean;
+    is_email_public: boolean;
+    is_first_name_public: boolean;
+    is_last_name_public: boolean;
+    is_phone_number_public: boolean;
+    is_profile_picture_public: boolean;
     last_name?: string;
     phone_number?: string;
     profile_picture_url?: string;
-    updated_at?: string;
+    updated_at: string;
 }
 
 export interface ProfileVerifyPasswordRequest {
-    authentication_credential_id?: string;
-    password?: string;
+    authentication_credential_id: string;
+    password: string;
 }
 
 export interface ProfileVerifyPasswordResponse {
-    is_success?: boolean;
-    message?: string;
+    is_success: boolean;
+    message: string;
 }
 
 export type ReadAllUpdateData = InboxmessagesMarkAllMessagesAsReadResponse;
@@ -1508,6 +1542,29 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Get event registration invitation of user and by event id
+         *
+         * @tags Event Registration Invitation
+         * @name GetEventRegistrationInvitationByUserAndEvent
+         * @summary Get event registration invitation of user and by event id
+         * @request GET:/api/v1/event-registration-invitations/my/{event_id}
+         */
+        getEventRegistrationInvitationByUserAndEvent: (
+            { eventId, ...query }: GetEventRegistrationInvitationByUserAndEventParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                GetEventRegistrationInvitationByUserAndEventData,
+                GetEventRegistrationInvitationByUserAndEventError
+            >({
+                path: `/api/v1/event-registration-invitations/my/${eventId}`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Cancel an event registration invitation by ID
          *
          * @tags Event Registration Invitation
@@ -1548,7 +1605,7 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Create a new event with banner image upload
+         * @description Create a new event with banner image upload. Chain ID is automatically set from environment configuration.
          *
          * @tags Event
          * @name CreateEvent
