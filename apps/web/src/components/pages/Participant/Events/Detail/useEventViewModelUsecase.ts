@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { eventService } from "@/services/services";
 import { QUERY_KEY } from "@/lib/queryKeys";
 import { useAuth } from "@/context/AuthContext";
-import { EventStatus, EventType } from "@/services/EventService";
 import type { BottomNavVariant } from "@/components/BottomNav/BottomNav";
 
 interface UseEventDetailUsecaseOptions {
@@ -33,20 +32,20 @@ export const useEventViewModelUsecase = ({ eventId }: UseEventDetailUsecaseOptio
         if (!event || !user) {
             return undefined;
         }
-        if (event.eventStatus === EventStatus.EventStatusClosed) {
+        if (event.eventStatus === "closed") {
             return undefined;
         }
         if (event.isJoined) {
             return "participating";
         }
         switch (event.eventType) {
-            case EventType.EventTypeInvite: {
+            case "invite": {
                 if (event.isInvited) {
                     return "invited";
                 }
                 return "invitation-required";
             }
-            case EventType.EventTypePrivate: {
+            case "private": {
                 return "event-password";
             }
             default: {

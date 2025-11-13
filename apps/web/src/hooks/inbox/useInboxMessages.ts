@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { InboxService } from "@/services/InboxService";
+import { InboxService } from "@/services/InboxService/InboxService";
 import { QUERY_KEY } from "@/lib/queryKeys";
 
 interface UseInboxMessagesParams {

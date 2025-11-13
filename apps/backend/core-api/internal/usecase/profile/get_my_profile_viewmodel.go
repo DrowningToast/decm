@@ -13,23 +13,23 @@ type GetMyProfileViewModel struct {
 	ProfileId                  string `json:"profile_id"`
 
 	IsProfilePicturePublic      bool    `json:"is_profile_picture_public"`
-	ProfilePictureUrl           *string `json:"profile_picture_url"`
+	ProfilePictureUrl           *string `json:"profile_picture_url,omitempty"`
 	IsFirstNamePublic           bool    `json:"is_first_name_public"`
-	FirstName                   *string `json:"first_name"`
+	FirstName                   *string `json:"first_name,omitempty"`
 	IsLastNamePublic            bool    `json:"is_last_name_public"`
-	LastName                    *string `json:"last_name"`
+	LastName                    *string `json:"last_name,omitempty"`
 	IsEmailPublic               bool    `json:"is_email_public"`
-	Email                       *string `json:"email"`
+	Email                       *string `json:"email,omitempty"`
 	IsBioPublic                 bool    `json:"is_bio_public"`
-	Bio                         *string `json:"bio"`
+	Bio                         *string `json:"bio,omitempty"`
 	IsPhoneNumberPublic         bool    `json:"is_phone_number_public"`
-	PhoneNumber                 *string `json:"phone_number"`
+	PhoneNumber                 *string `json:"phone_number,omitempty"`
 	IsAddressPublic             bool    `json:"is_address_public"`
-	Address                     *string `json:"address"`
+	Address                     *string `json:"address,omitempty"`
 	IsAcademicInstitutionPublic bool    `json:"is_academic_institution_public"`
-	AcademicInstitution         *string `json:"academic_institution"`
+	AcademicInstitution         *string `json:"academic_institution,omitempty"`
 	IsAcademicEmailPublic       bool    `json:"is_academic_email_public"`
-	AcademicEmail               *string `json:"academic_email"`
+	AcademicEmail               *string `json:"academic_email,omitempty"`
 
 	ProfileCreatedAt time.Time `json:"profile_created_at"`
 	ProfileUpdatedAt time.Time `json:"profile_updated_at"`
@@ -39,8 +39,8 @@ type GetMyProfileViewModel struct {
 
 	WalletAddress      string                `json:"wallet_address"`
 	SolutionStatus     common.SolutionStatus `json:"solution_status"`
-	GoogleConnectorRef *string               `json:"google_connector_ref"`
-	GithubConnectorRef *string               `json:"github_connector_ref"`
+	GoogleConnectorRef *string               `json:"google_connector_ref,omitempty"`
+	GithubConnectorRef *string               `json:"github_connector_ref,omitempty"`
 }
 
 func (u *ProfileUsecase) GetMyProfileViewModel(ctx context.Context, user *auth.JwtClaims) (*GetMyProfileViewModel, error) {

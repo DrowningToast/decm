@@ -2,11 +2,11 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode } from "react";
 import { useCheckRoles } from "./useCheckRoles";
-import { authService } from "@/services/AuthService";
+import { authService } from "@/services/AuthService/AuthService";
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 
 // Mock the authService
-vi.mock("@/services/AuthService", () => ({
+vi.mock("@/services/AuthService/AuthService", () => ({
     authService: {
         checkRoles: vi.fn(),
     },

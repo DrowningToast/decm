@@ -9,8 +9,8 @@ import (
 // @name Err
 // @description Custom error type
 type Err struct {
-	HttpStatus  *int              `json:"http_status"`
-	Code        *ErrCode          `json:"code"`
+	HttpStatus  *int              `json:"http_status,omitempty"`
+	Code        *ErrCode          `json:"code,omitempty"`
 	LoggerLevel slog.Level        `json:"-"`
 	Message     string            `json:"message,omitempty"`
 	Reasons     map[string]string `json:"reasons,omitempty"`

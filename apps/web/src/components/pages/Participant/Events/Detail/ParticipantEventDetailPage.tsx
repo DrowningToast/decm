@@ -1,13 +1,12 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
-import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { useEventViewModelUsecase } from "./useEventViewModelUsecase";
-import { EventStatus, EventType } from "@/services/EventService";
 import { ImageLoader } from "@/components/common/ImageLoader";
 import { addr } from "@/components/common/addr";
 import { EthExplorerLink } from "@/components/common/EthscanLink";
 import { GoogleMapsEmbed } from "@/components/ui/google-maps-embed";
+import { ActionMenu } from "./ActionMenu";
 
 interface EventDetailPageProps {
     eventId: string;
@@ -15,14 +14,14 @@ interface EventDetailPageProps {
 
 export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
     const { t } = useTranslation();
-    const { event, isLoading, error, bottomNavVariant } = useEventViewModelUsecase({ eventId });
+    const { event, isLoading, error } = useEventViewModelUsecase({ eventId });
 
     const eventType = useMemo(() => {
         switch (event?.eventType) {
-            case EventType.EventTypeInvite: {
+            case "invite": {
                 return t("participant.events.detail.inviteOnly");
             }
-            case EventType.EventTypePrivate: {
+            case "private": {
                 return t("participant.events.detail.passwordRequired");
             }
         }
@@ -37,31 +36,17 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
           })
         : "";
 
-    const isShowFinalCallDate =
-        event?.finalCallDate && event?.eventStatus !== EventStatus.EventStatusClosed;
+    const isShowFinalCallDate = event?.finalCallDate && event?.eventStatus !== "closed";
 
     const eventStatusText = useMemo(() => {
         switch (event?.eventStatus) {
-            case EventStatus.EventStatusActive:
+            case "active":
                 return t("participant.events.detail.active");
-            case EventStatus.EventStatusInactive:
+            case "inactive":
                 return t("participant.events.detail.inactive");
         }
         return t("participant.events.detail.closed");
     }, [event?.eventStatus, t]);
-
-    const instructionText = useMemo(() => {
-        switch (bottomNavVariant) {
-            case "participating":
-                return t("participant.events.detail.instruction.participating");
-            case "invited":
-                return t("participant.events.detail.instruction.invited");
-            case "invitation-required":
-                return t("participant.events.detail.instruction.invitationRequired");
-            case "event-password":
-                return t("participant.events.detail.instruction.passwordRequired");
-        }
-    }, [bottomNavVariant, t]);
 
     // Loading state
     if (isLoading) {
@@ -97,7 +82,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                 <div className="flex flex-col gap-y-4">
                     <div className="flex items-start gap-3 md:gap-4">
                         <ImageLoader
-                            src={event.icon_presigned_url || ""}
+                            src={event.iconPresignedUrl || ""}
                             alt={event.title || ""}
                             className="w-8 h-8 md:w-10 md:h-10 bg-muted rounded flex-shrink-0"
                         />
@@ -127,7 +112,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                 </div>
 
                 <ImageLoader
-                    src={event.banner_presigned_url || ""}
+                    src={event.bannerPresignedUrl || ""}
                     alt={event.title || ""}
                     className="w-full min-h-[172px] md:min-h-[300px] bg-muted rounded-lg flex-shrink-0"
                 />
@@ -230,7 +215,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                                 tag="p"
                                 className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                             >
-                                {event.maxAttendees}
+                                {`${event.attendeesCount ?? 0} / ${event.maxAttendees}`}
                             </Typography>
                         </div>
                     )}
@@ -298,29 +283,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                     </div>
                 )}
             </div>
-
-            {/* Bottom Navigation */}
-            <div className="relative">
-                <div className="flex flex-col gap-y-4 md:sticky md:top-1/2">
-                    <div className="hidden md:inline-block w-full">
-                        <Typography
-                            variant="text"
-                            tag="p"
-                            color="muted"
-                            className="text-center text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
-                        >
-                            {instructionText}
-                        </Typography>
-                    </div>
-                    {bottomNavVariant && (
-                        <BottomNav
-                            className="md:min-w-[220px] md:w-full md:relative md:translate-y-0 md:top-0 md:bottom-0 md:translate-x-0 md:left-0 z-60 flex-col items-stretch"
-                            variant={bottomNavVariant}
-                            onBack={() => window.history.back()}
-                        />
-                    )}
-                </div>
-            </div>
+            <ActionMenu eventId={eventId} />
         </div>
     );
 };

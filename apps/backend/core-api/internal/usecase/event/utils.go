@@ -31,6 +31,7 @@ func (u *EventUsecase) ToEventResponse(ctx context.Context, event *entity.Event)
 		Location:                 event.Location,
 		GoogleMapQuery:           event.GoogleMapQuery,
 		MaxAttendees:             int32(event.MaxAttendees),
+		AttendeesCount:           int32(event.AttendeesCount),
 		IsPublic:                 event.IsPublic,
 		IsBookingRequestRequired: event.IsBookingRequestRequired,
 		IsVerified:               event.IsVerified,

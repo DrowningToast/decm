@@ -10,6 +10,7 @@ import (
 	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/services/auth"
 	"apps/backend/services/s3"
+
 	"github.com/google/uuid"
 )
 

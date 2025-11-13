@@ -10,6 +10,7 @@ import (
 )
 
 type CreateEventParameters struct {
+	ChainId                  int
 	Name                     string
 	ShortDescription         string
 	Description              string

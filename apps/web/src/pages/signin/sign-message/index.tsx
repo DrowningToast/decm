@@ -16,7 +16,7 @@ import { TOAST_USECASE_VIEWMODEL } from "@/constants/toast";
 import { useSignout } from "@/components/useSignout";
 import { queryClient } from "@/lib/api/queryClient";
 import { QUERY_KEY } from "@/lib/queryKeys";
-import { onboardService } from "@/services/OnboardService";
+import { onboardService } from "@/services/OnboardService/OnboardService";
 
 const VerifyMessagePage = () => {
     const { t } = useTranslation();

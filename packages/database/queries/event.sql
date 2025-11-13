@@ -20,7 +20,7 @@ INSERT INTO events (
     is_ticket_transferable,
     event_status
 ) VALUES (
-    1, -- Default chain_id, should be parameterized in production
+    sqlc.arg(chain_id),
     sqlc.arg(contact_number),
     sqlc.arg(contact_address),
     sqlc.arg(owner_credential_id),
@@ -73,11 +73,15 @@ WHERE id = sqlc.arg(id);
 SELECT 
     events.*,
     event_registration_configs.*,
-    event_contracts.*
+    event_contracts.*,
+    COALESCE(COUNT(event_attendees.id), 0)::INTEGER AS attendees_count
 FROM events
 INNER JOIN event_registration_configs ON events.id = event_registration_configs.event_id
 INNER JOIN event_contracts ON events.id = event_contracts.event_id
-WHERE events.id = sqlc.arg(id);
+LEFT JOIN event_attendees ON events.id = event_attendees.event_id 
+    AND event_attendees.is_attendee_accepted = 1
+WHERE events.id = sqlc.arg(id)
+GROUP BY events.id, event_registration_configs.id, event_contracts.id;
 
 -- name: UpdateEvent :one
 UPDATE events

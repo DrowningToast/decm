@@ -5,7 +5,7 @@ import { SearchEventNav } from "./variants/SearchEventNav";
 import { SearchIdentitiesNav } from "./variants/SearchIdentitiesNav";
 import { EventPasswordNav } from "./variants/EventPasswordNav";
 import { InvitedNav } from "./variants/InvitedNav";
-import { ShortlistedNav } from "./variants/ShortlistedNav";
+import { EventInvited } from "./variants/EventInvited";
 import { ParticipatingNav } from "./variants/ParticipatingNav";
 import { InvitationRequiredNav } from "./variants/InvitationRequiredNav";
 import { SearchNotificationNav } from "./variants/SearchNotificationNav";
@@ -61,7 +61,7 @@ export const BottomNav = ({
             case "invited":
                 return <InvitedNav />;
             case "shortlisted":
-                return <ShortlistedNav />;
+                return <EventInvited />;
             case "participating":
                 return <ParticipatingNav />;
             case "invitation-required":

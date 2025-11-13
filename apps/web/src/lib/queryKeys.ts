@@ -58,7 +58,11 @@ export const QUERY_KEY = {
             config: (eventId: string) => ["event", eventId, "certificate", "config"] as const,
         },
         certificates: (eventId: string) => ["event", eventId, "certificates"] as const,
-        invitations: (eventId: string) => ["event", eventId, "invitations"] as const,
+        invitations: {
+            byEventId: (eventId: string) => ["event", eventId, "invitations"] as const,
+            ofUserAndEventId: (eventId: string, userId: string) =>
+                ["event", eventId, "invitations", "ofUserAndEventId", userId] as const,
+        },
         viewmodel: (eventId: string, userId: string | undefined) =>
             ["event", eventId, "viewmodel", userId ?? "me"] as const,
     },

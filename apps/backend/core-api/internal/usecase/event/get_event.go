@@ -28,6 +28,7 @@ type EventResponse struct {
 	Location                 string             `json:"location"`
 	GoogleMapQuery           string             `json:"google_map_query"`
 	MaxAttendees             int32              `json:"max_attendees"`
+	AttendeesCount           int32              `json:"attendees_count"`
 	IsPublic                 bool               `json:"is_public"`
 	IsBookingRequestRequired bool               `json:"is_booking_request_required"`
 	IsVerified               bool               `json:"is_verified"`
@@ -67,8 +68,9 @@ type EventViewModel struct {
 	RegistrationConfig RegistrationConfigResponse `json:"registration_config"`
 	EventContract      EventContractResponse      `json:"event_contract"`
 
-	IsInvited bool `json:"is_invited,omitempty"`
+	IsInvited bool `json:"is_invited"`
 	IsJoined  bool `json:"is_joined,omitempty"`
+	IsFull    bool `json:"is_full"`
 }
 
 func (u *EventUsecase) ListEventsByOwnerCredentialID(ctx context.Context, ownerCredentialID uuid.UUID, limitCount int32, offsetCount int32) ([]*entity.Event, error) {
@@ -169,6 +171,7 @@ func (u *EventUsecase) GetEventViewModelByEventId(ctx context.Context, eventId u
 		EventContract:      eventContractResponse,
 		IsInvited:          isInvited,
 		IsJoined:           isJoined,
+		IsFull:             event.MaxAttendees <= 0 || event.MaxAttendees <= event.AttendeesCount,
 	}, nil
 }
 

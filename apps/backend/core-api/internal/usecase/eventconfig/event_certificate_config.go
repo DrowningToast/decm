@@ -23,8 +23,8 @@ type EventCertificateConfigResponse struct {
 	EventNamePosY               float64   `json:"event_name_pos_y"`
 	NamePosX                    float64   `json:"name_pos_x"`
 	NamePosY                    float64   `json:"name_pos_y"`
-	AcademicInstitutionPosX     *float64  `json:"academic_institution_pos_x"`
-	AcademicInstitutionPosY     *float64  `json:"academic_institution_pos_y"`
+	AcademicInstitutionPosX     *float64  `json:"academic_institution_pos_x,omitempty"`
+	AcademicInstitutionPosY     *float64  `json:"academic_institution_pos_y,omitempty"`
 	CreatedAt                   string    `json:"created_at"`
 	UpdatedAt                   string    `json:"updated_at"`
 }

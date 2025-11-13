@@ -53,17 +53,17 @@ func (uc *InboxUsecase) isAuthorizedToReadMessage(message *entity.InboxMessage, 
 
 type InboxMessagesViewModel struct {
 	ID                            uuid.UUID               `json:"id"`
-	SenderCredentialEmail         *string                 `json:"sender_credential_email"`
-	SenderCredentialWalletAddress *string                 `json:"sender_credential_wallet_address"`
-	ReceiverWalletAddress         *string                 `json:"receiver_wallet_address"`
-	ReceiverEmail                 *string                 `json:"receiver_email"`
+	SenderCredentialEmail         *string                 `json:"sender_credential_email,omitempty"`
+	SenderCredentialWalletAddress *string                 `json:"sender_credential_wallet_address,omitempty"`
+	ReceiverWalletAddress         *string                 `json:"receiver_wallet_address,omitempty"`
+	ReceiverEmail                 *string                 `json:"receiver_email,omitempty"`
 	MessageType                   entity.InboxMessageType `json:"message_type"`
 	MessageContent                string                  `json:"message_content"`
 	IsRead                        int                     `json:"is_read"`
 	CreatedAt                     time.Time               `json:"created_at"`
 	UpdatedAt                     time.Time               `json:"updated_at"`
-	HiddenAt                      *time.Time              `json:"hidden_at"`
-	DeletedAt                     *time.Time              `json:"deleted_at"`
+	HiddenAt                      *time.Time              `json:"hidden_at,omitempty"`
+	DeletedAt                     *time.Time              `json:"deleted_at,omitempty"`
 }
 
 func (uc *InboxUsecase) ToViewModel(ctx context.Context, inboxMessage entity.InboxMessage) (*InboxMessagesViewModel, error) {
@@ -93,17 +93,17 @@ type InboxMessagesEventRegistrationInvitationViewModel struct {
 	InboxMessagesViewModel
 
 	EventId             uuid.UUID  `json:"event_id"`
-	ValidUntil          *time.Time `json:"valid_until"`
-	Code                *string    `json:"code"`
-	FirstName           *string    `json:"first_name"`
-	LastName            *string    `json:"last_name"`
-	Email               *string    `json:"email"`
-	PhoneNumber         *string    `json:"phone_number"`
-	AcademicInstitution *string    `json:"academic_institution"`
+	ValidUntil          *time.Time `json:"valid_until,omitempty"`
+	Code                *string    `json:"code,omitempty"`
+	FirstName           *string    `json:"first_name,omitempty"`
+	LastName            *string    `json:"last_name,omitempty"`
+	Email               *string    `json:"email,omitempty"`
+	PhoneNumber         *string    `json:"phone_number,omitempty"`
+	AcademicInstitution *string    `json:"academic_institution,omitempty"`
 
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
-	CancelledAt *time.Time `json:"cancelled_at"`
+	CancelledAt *time.Time `json:"cancelled_at,omitempty"`
 }
 
 func (uc *InboxUsecase) ToWithEventRegistrationInvitationViewModel(ctx context.Context, inboxMessage entity.InboxMessage, eventRegistrationInvitation entity.EventRegistrationInvitation, event entity.Event) (*InboxMessagesEventRegistrationInvitationViewModel, error) {

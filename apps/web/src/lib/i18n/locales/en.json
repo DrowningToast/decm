@@ -30,6 +30,7 @@
         "required": "Required",
         "optional": "Optional",
         "saving": "Saving...",
+        "submitting": "Submitting...",
         "notRequired": "Not Required",
         "about": "About",
         "date": "Date",
@@ -413,6 +414,20 @@
             "internalClientErrorDescription": "Client error. Please try again later.",
             "forbiddenDescription": "You are not authorized to perform this action."
         },
+        "registration": {
+            "incorrectPassword": "Incorrect password. Please try again.",
+            "invalidData": "Please check your information and try again.",
+            "success": "Registration successful!",
+            "successDescription": "You have successfully registered for this event.",
+            "piiForm": {
+                "title": "Personal Information",
+                "subtitle": "Please provide your information to register for this event",
+                "privacyTitle": "Privacy & Data Control",
+                "privacyDescription": "Your information is encrypted and secure. Use the checkboxes to control which information is publicly visible.",
+                "submitSuccess": "Information submitted successfully",
+                "submitError": "Failed to submit information. Please try again."
+            }
+        },
         "notFound": {
             "title": "404 - Page Not Found",
             "heading": "Oops! Page not found",
@@ -635,7 +650,7 @@
             "inviteOnly": "Invite only",
             "nolongerAccepting": "No longer accepting request",
             "participating": "Participating",
-            "shortlisted": "Shortlisted",
+            "invited": "You're invited! Click here to accept.",
             "filters": {
                 "seatsCount": "Seats Available",
                 "allEvents": "All events",
@@ -681,7 +696,6 @@
                     "passwordRequired": "This event requires a password to join"
                 }
             },
-            "invited": "You're invited! Click here to accept.",
             "invitationRequired": "Invitation is required."
         },
         "identities": {
@@ -1031,6 +1045,7 @@
         "passwordMin6": "Password must be at least 6 characters long",
         "passwordMax32": "Password must be at most 32 characters long",
         "passwordMismatch": "Passwords do not match",
+        "passwordRequired": "Password is required",
         "invalidWallet": "Invalid wallet address",
         "accessTokenAndSignedTokenRequired": "Access token or signed token is required",
         "finalCallRegistrationDateFuture": "Final call registration date must be in the future",

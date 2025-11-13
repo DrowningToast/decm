@@ -1,5 +1,5 @@
 import { QUERY_KEY } from "@/lib/queryKeys";
-import { authService } from "@/services/AuthService";
+import { authService } from "@/services/services";
 import { useQuery } from "@tanstack/react-query";
 
 export const useMyProfile = () => {
