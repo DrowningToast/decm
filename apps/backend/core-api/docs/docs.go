@@ -3451,6 +3451,9 @@ const docTemplate = `{
                 "chain_id": {
                     "type": "integer"
                 },
+                "contact_address": {
+                    "type": "string"
+                },
                 "contact_number": {
                     "type": "string"
                 },
@@ -3462,6 +3465,9 @@ const docTemplate = `{
                 },
                 "event_status": {
                     "$ref": "#/definitions/entity.EventStatus"
+                },
+                "event_type": {
+                    "$ref": "#/definitions/entity.EventType"
                 },
                 "google_map_query": {
                     "type": "string"
@@ -3519,6 +3525,9 @@ const docTemplate = `{
                 "chain_id": {
                     "type": "integer"
                 },
+                "contact_address": {
+                    "type": "string"
+                },
                 "contact_number": {
                     "type": "string"
                 },
@@ -3533,6 +3542,9 @@ const docTemplate = `{
                 },
                 "event_status": {
                     "$ref": "#/definitions/entity.EventStatus"
+                },
+                "event_type": {
+                    "$ref": "#/definitions/entity.EventType"
                 },
                 "google_map_query": {
                     "type": "string"

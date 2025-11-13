@@ -2,7 +2,7 @@ import { coreApiClient, type CoreApiType } from "@/lib/api/api";
 import {
     EntityEventStatus,
     EntityEventType,
-    type EntityEvent,
+    type EventEventResponse,
     type EventEventViewModel,
 } from "@decm/api";
 
@@ -75,10 +75,22 @@ export class EventService {
         this._coreApi = coreApi;
     }
 
+    private transformRegistrationRequirementStatus(status: number): RegistrationRequirementStatus {
+        switch (status) {
+            case 0:
+                return "not_required";
+            case 1:
+                return "required";
+            case 2:
+                return "optional";
+        }
+        throw new Error(`Invalid registration requirement status: ${status}`);
+    }
+
     /**
      * Transform API response from snake_case to camelCase
      */
-    private transformEntityEvent(entityEvent: EntityEvent): Event {
+    private transformEntityEvent(entityEvent: EventEventResponse): Event {
         return {
             banner_presigned_url: entityEvent.banner_presigned_url,
             chainId: entityEvent.chain_id,
@@ -115,6 +127,44 @@ export class EventService {
             ...this.transformEntityEvent(entityEventViewModel),
             isInvited: entityEventViewModel.is_invited as boolean | undefined,
             isJoined: entityEventViewModel.is_joined as boolean | undefined,
+
+            registrationRequirement: {
+                firstName: this.transformRegistrationRequirementStatus(
+                    entityEventViewModel.registration_config
+                        ?.first_name_requirement_status as number,
+                ),
+                lastName: this.transformRegistrationRequirementStatus(
+                    entityEventViewModel.registration_config
+                        ?.last_name_requirement_status as number,
+                ),
+                email: this.transformRegistrationRequirementStatus(
+                    entityEventViewModel.registration_config?.email_requirement_status as number,
+                ),
+                bio: this.transformRegistrationRequirementStatus(
+                    entityEventViewModel.registration_config?.bio_requirement_status as number,
+                ),
+                phoneNumber: this.transformRegistrationRequirementStatus(
+                    entityEventViewModel.registration_config
+                        ?.phone_number_requirement_status as number,
+                ),
+                address: this.transformRegistrationRequirementStatus(
+                    entityEventViewModel.registration_config?.address_requirement_status as number,
+                ),
+                academicInstitution: this.transformRegistrationRequirementStatus(
+                    entityEventViewModel.registration_config
+                        ?.academic_institution_requirement_status as number,
+                ),
+                academicEmail: this.transformRegistrationRequirementStatus(
+                    entityEventViewModel.registration_config
+                        ?.academic_email_requirement_status as number,
+                ),
+            },
+
+            finalCallDate: entityEventViewModel.registration_config?.final_call_for_registration,
+            eventContractAddress: entityEventViewModel.event_contract?.event_contract_address,
+            ticketContractAddress: entityEventViewModel.event_contract?.ticket_contract_address,
+            certificateContractAddress:
+                entityEventViewModel.event_contract?.certificate_contract_address,
         };
     }
 

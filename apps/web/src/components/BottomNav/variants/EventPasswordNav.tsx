@@ -4,10 +4,14 @@ import { useEventPasswordNavStore } from "../stores/event-password";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
-export const EventPasswordNav = () => {
+interface EventPasswordNavProps {
+    className?: string;
+}
+
+export const EventPasswordNav = ({ className: propClassName }: EventPasswordNavProps) => {
     const { password, setPassword, onSubmitCallback } = useEventPasswordNavStore();
 
-    const { onBack, className } = useBottomContainerContext();
+    const { onBack, className: contextClassName } = useBottomContainerContext();
     const { t } = useTranslation();
 
     const onSubmit = () => {
@@ -18,7 +22,11 @@ export const EventPasswordNav = () => {
 
     return (
         <div
-            className={cn(className, "flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5")}
+            className={cn(
+                contextClassName,
+                propClassName,
+                "flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5",
+            )}
         >
             {/* Back Button */}
             <button

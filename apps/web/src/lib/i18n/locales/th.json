@@ -564,7 +564,36 @@
         "events": {
             "detail": {
                 "loadingDetails": "กำลังโหลดรายละเอียดกิจกรรม...",
-                "loadError": "ไม่สามารถโหลดรายละเอียดกิจกรรมได้"
+                "loadError": "ไม่สามารถโหลดรายละเอียดกิจกรรมได้",
+                "status": "สถานะ",
+                "acceptingRequests": "กำลังรับลงทะเบียน",
+                "closed": "ปิดรับลงทะเบียนแล้ว",
+                "finalCallForRequest": "วันสุดท้ายของการลงทะเบียน",
+                "participationRequest": "การเข้าร่วม",
+                "passwordRequired": "ต้องใช้รหัสผ่าน",
+                "inviteOnly": "เฉพาะผู้ได้รับเชิญ",
+                "open": "เปิดรับทั่วไป",
+                "joined": "เข้าร่วมแล้ว",
+                "accepted": "ได้รับการยอมรับ",
+                "seatsCount": "จำนวนที่นั่ง",
+                "eventContactAddress": "ที่อยู่ติดต่อกิจกรรม",
+                "noAddress": "ไม่มีที่อยู่ติดต่อ",
+                "passwordPlaceholder": "ใส่รหัสผ่านที่นี่",
+                "shortDescription": "คำอธิบายสั้น",
+                "longDescription": "คำอธิบาย",
+                "location": "สถานที่",
+                "noLocation": "ไม่มีข้อมูลสถานที่",
+                "eventContractAddress": "ที่อยู่สัญญาอัจฉริยะของกิจกรรม",
+                "noContractAddress": "ไม่มีที่อยู่สัญญา",
+                "googleMap": "แผนที่",
+                "active": "เปิดใช้งาน",
+                "inactive": "ปิดใช้งาน",
+                "instruction": {
+                    "participating": "คุณกำลังเข้าร่วมกิจกรรมนี้",
+                    "invited": "คุณได้รับเชิญให้เข้าร่วมกิจกรรมนี้",
+                    "invitationRequired": "กิจกรรมนี้ต้องการคำเชิญ",
+                    "passwordRequired": "กิจกรรมนี้ต้องใช้รหัสผ่านเพื่อเข้าร่วม"
+                }
             },
             "passwordPlaceholder": "ป้อนรหัสผ่านกิจกรรม",
             "participating": "เข้าร่วม",
