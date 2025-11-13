@@ -54,6 +54,17 @@ export interface CoreApiInternalHandlerEventCertificateSignature {
     signature?: string;
 }
 
+export interface CoreApiInternalHandlerEventEventContractResponse {
+    access_manager_contract_address?: string;
+    certificate_contract_address?: string;
+    created_at?: string;
+    event_contract_address?: string;
+    event_id?: string;
+    id?: string;
+    ticket_contract_address?: string;
+    updated_at?: string;
+}
+
 export interface CoreApiInternalHandlerEventImportCertificateReceiversRequest {
     event_id: string;
     host_pin: string;
@@ -99,7 +110,16 @@ export interface CoreApiInternalHandlerEventconfigEventCertificateConfigResponse
     updated_at?: string;
 }
 
-export type CreateEventContractData = EventEventContractResponse;
+export interface CoreApiInternalUsecaseEventEventContractResponse {
+    access_manager_contract_address?: string;
+    certificate_contract_address?: string;
+    event_contract_address?: string;
+    event_id?: string;
+    id?: string;
+    ticket_contract_address?: string;
+}
+
+export type CreateEventContractData = CoreApiInternalHandlerEventEventContractResponse;
 
 export type CreateEventContractError = CustomerrorErrResponse;
 
@@ -347,17 +367,6 @@ export interface EventDeleteEventRequest {
     host_password?: string;
 }
 
-export interface EventEventContractResponse {
-    access_manager_contract_address?: string;
-    certificate_contract_address?: string;
-    created_at?: string;
-    event_contract_address?: string;
-    event_id?: string;
-    id?: string;
-    ticket_contract_address?: string;
-    updated_at?: string;
-}
-
 export interface EventEventIssuerResponse {
     created_at?: string;
     event_id?: string;
@@ -372,7 +381,6 @@ export interface EventEventIssuerResponse {
 
 export interface EventEventResponse {
     banner_presigned_url?: string;
-    banner_storage_key?: string;
     chain_id?: number;
     contact_number?: string;
     created_at?: string;
@@ -380,7 +388,6 @@ export interface EventEventResponse {
     event_status?: EntityEventStatus;
     google_map_query?: string;
     icon_presigned_url?: string;
-    icon_storage_key?: string;
     id?: string;
     is_booking_request_required?: boolean;
     is_public?: boolean;
@@ -398,15 +405,14 @@ export interface EventEventResponse {
 
 export interface EventEventViewModel {
     banner_presigned_url?: string;
-    banner_storage_key?: string;
     chain_id?: number;
     contact_number?: string;
     created_at?: string;
     end_date?: string;
+    event_contract?: CoreApiInternalUsecaseEventEventContractResponse;
     event_status?: EntityEventStatus;
     google_map_query?: string;
     icon_presigned_url?: string;
-    icon_storage_key?: string;
     id?: string;
     is_booking_request_required?: boolean;
     is_invited?: boolean;
@@ -418,6 +424,7 @@ export interface EventEventViewModel {
     long_description?: string;
     max_attendees?: number;
     owner_credential_id?: string;
+    registration_config?: EventRegistrationConfigResponse;
     short_description?: string;
     start_date?: string;
     title?: string;
@@ -438,6 +445,21 @@ export interface EventImportCertificateReceiverRequest {
     certificate_title: string;
     first_name: string;
     last_name: string;
+}
+
+export interface EventRegistrationConfigResponse {
+    academic_email_requirement_status?: number;
+    academic_institution_requirement_status?: number;
+    address_requirement_status?: number;
+    bio_requirement_status?: number;
+    email_requirement_status?: number;
+    event_id?: string;
+    final_call_for_registration?: string;
+    first_name_requirement_status?: number;
+    id?: string;
+    is_identity_verification_required?: boolean;
+    last_name_requirement_status?: number;
+    phone_number_requirement_status?: number;
 }
 
 export interface EventRegistrationInvitationImportEventParticipantsRequest {
@@ -540,7 +562,7 @@ export interface GetEventCertificatesParams {
     eventId: string;
 }
 
-export type GetEventContractByEventIdData = EventEventContractResponse;
+export type GetEventContractByEventIdData = CoreApiInternalHandlerEventEventContractResponse;
 
 export type GetEventContractByEventIdError = CustomerrorErrResponse;
 
@@ -1083,7 +1105,7 @@ export interface UpdateEventCertificateConfigPayload {
     name_pos_y: number;
 }
 
-export type UpdateEventContractData = EventEventContractResponse;
+export type UpdateEventContractData = CoreApiInternalHandlerEventEventContractResponse;
 
 export type UpdateEventContractError = CustomerrorErrResponse;
 
@@ -2043,11 +2065,11 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Get event by ID
+         * @description Get event viewmodel by ID
          *
          * @tags Events
          * @name GetEventViewmodelById
-         * @summary Get event by ID
+         * @summary Get event viewmodel by ID
          * @request GET:/api/v1/events/{event_id}/viewmodel
          */
         getEventViewmodelById: (

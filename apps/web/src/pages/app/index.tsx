@@ -1,10 +1,11 @@
+import { PageContainer } from "@/components/container/PageContainer";
 import { MainPage } from "@/components/pages/Participant/MainPage";
 
 const AppPage = () => {
     return (
-        <section className="relative z-10">
+        <PageContainer className="relative z-10">
             <MainPage />
-        </section>
+        </PageContainer>
     );
 };
 

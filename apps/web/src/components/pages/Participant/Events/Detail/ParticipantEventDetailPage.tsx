@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { ExternalLink } from "lucide-react";
@@ -6,6 +6,8 @@ import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { useEventViewModelUsecase } from "./useEventViewModelUsecase";
 import { useEventPasswordNavStore } from "@/components/BottomNav/stores/event-password";
 import { useEventInvitationNavStore } from "@/components/BottomNav/stores/event-invitation";
+import { EventStatus, EventType } from "@/services/EventService";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface EventDetailPageProps {
     eventId: string;
@@ -13,10 +15,35 @@ interface EventDetailPageProps {
 
 export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
     const { t } = useTranslation();
-    const { event, isLoading, error } = useEventViewModelUsecase({ eventId });
+    const { event, isLoading, error, bottomNavVariant } = useEventViewModelUsecase({ eventId });
 
     const { setOnSubmitCallback, resetPassword } = useEventPasswordNavStore();
     const { setOnAcceptCallback } = useEventInvitationNavStore();
+
+    const eventType = useMemo(() => {
+        switch (event?.eventType) {
+            case EventType.EventTypeInvite: {
+                return t("participant.events.detail.inviteOnly");
+            }
+            case EventType.EventTypePrivate: {
+                return t("participant.events.detail.passwordRequired");
+            }
+        }
+        return t("participant.events.detail.open");
+    }, [event?.eventType, t]);
+
+    const formattedDate = event?.finalCallDate
+        ? new Date(event?.finalCallDate).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+          })
+        : "";
+
+    const isShowFinalCallDate =
+        event?.finalCallDate && event?.eventStatus !== EventStatus.EventStatusClosed;
+
+    const isClosed = event?.eventStatus === EventStatus.EventStatusClosed;
 
     // Loading state
     if (isLoading) {
@@ -44,81 +71,86 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
         );
     }
 
-    const formattedDate = event.finalCallDate
-        ? new Date(event.finalCallDate).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-          })
-        : "";
-
-    const isClosed = event.status === "closed";
-
     return (
-        <section className="relative z-10 w-full">
-            <div className="relative min-h-screen w-full overflow-hidden">
-                {/* Background image */}
-                <div className="absolute bottom-0 right-0 w-[424px] h-[424px] md:w-[500px] md:h-[500px] opacity-30 pointer-events-none">
-                    <img
-                        src="/assets/scale.webp"
-                        alt=""
-                        className="w-full h-full object-cover object-center"
-                    />
+        <div className="relative w-full overflow-hidden">
+            {/* Background image */}
+            <div className="absolute bottom-0 right-0 w-[424px] h-[424px] md:w-[500px] md:h-[500px] opacity-30 pointer-events-none">
+                <img
+                    src="/assets/scale.webp"
+                    alt=""
+                    className="w-full h-full object-cover object-center"
+                />
+            </div>
+
+            {/* Main content */}
+            <div className="relative z-10 w-full max-w-[1384px] mx-auto px-4 md:px-16 py-4 md:pt-16 md:pb-24 flex flex-col gap-y-4 md:gap-y-6">
+                {/* Header section with logo and title */}
+                <div className="flex flex-col gap-y-4">
+                    <div className="flex items-start gap-3 md:gap-4">
+                        <Skeleton className="w-8 h-8 md:w-10 md:h-10 bg-muted rounded flex-shrink-0">
+                            <img
+                                src={event.icon_presigned_url}
+                                alt={event.title}
+                                className="w-full h-full object-cover object-center"
+                            />
+                        </Skeleton>
+                        <Typography
+                            variant="header"
+                            tag="h1"
+                            color="foreground"
+                            className="text-[28px]/[34px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px] font-header"
+                        >
+                            {event.title}
+                        </Typography>
+                    </div>
+
+                    <Typography
+                        variant="text"
+                        tag="p"
+                        color="muted"
+                        className="text-base/[22px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                    >
+                        {event.longDescription}
+                    </Typography>
                 </div>
 
-                {/* Main content */}
-                <div className="relative z-10 w-full max-w-[1384px] mx-auto px-4 md:px-16 py-4 md:pt-16 md:pb-24 flex flex-col gap-y-4 md:gap-y-6">
-                    {/* Header section with logo and title */}
-                    <div className="flex flex-col gap-y-4">
-                        <div className="flex items-start gap-3 md:gap-4">
-                            <div className="w-8 h-8 md:w-10 md:h-10 bg-muted rounded flex-shrink-0" />
-                            <Typography
-                                variant="header"
-                                tag="h1"
-                                color="foreground"
-                                className="text-[28px]/[34px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px] font-header"
-                            >
-                                {event.name}
-                            </Typography>
-                        </div>
+                <div>
+                    <Skeleton className="w-full h-[172px] md:h-[300px] bg-muted rounded-lg flex-shrink-0">
+                        <img
+                            src={event.banner_presigned_url}
+                            alt={event.title}
+                            className="w-full h-full object-cover object-center"
+                        />
+                    </Skeleton>
+                </div>
 
+                {/* Event Details */}
+                <div className="flex flex-col gap-y-4">
+                    {/* Status */}
+                    <div className="flex flex-col gap-y-1">
                         <Typography
                             variant="text"
                             tag="p"
                             color="muted"
-                            className="text-base/[22px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                            className="text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                         >
-                            {event.description}
+                            {t("participant.events.detail.status")}
+                        </Typography>
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                        >
+                            {isClosed
+                                ? t("participant.events.detail.closed")
+                                : event.eventStatus === EventStatus.EventStatusActive
+                                  ? t("participant.events.detail.acceptingRequests")
+                                  : t("participant.events.detail.inactive")}
                         </Typography>
                     </div>
 
-                    {/* Event image placeholder */}
-                    <div className="w-full h-[172px] md:h-[300px] bg-muted rounded-lg flex-shrink-0" />
-
-                    {/* Event Details */}
-                    <div className="flex flex-col gap-y-4">
-                        {/* Status */}
-                        <div className="flex flex-col gap-y-1">
-                            <Typography
-                                variant="text"
-                                tag="p"
-                                color="muted"
-                                className="text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
-                            >
-                                {t("participant.events.detail.status")}
-                            </Typography>
-                            <Typography
-                                variant="text"
-                                tag="p"
-                                className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
-                            >
-                                {isClosed
-                                    ? t("participant.events.detail.closed")
-                                    : t("participant.events.detail.acceptingRequests")}
-                            </Typography>
-                        </div>
-
-                        {/* Final Call Date */}
+                    {/* Final Call Date */}
+                    {isShowFinalCallDate && (
                         <div className="flex flex-col gap-y-1">
                             <Typography
                                 variant="text"
@@ -136,8 +168,28 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                                 {formattedDate}
                             </Typography>
                         </div>
+                    )}
+                    {/* Participation Request */}
+                    <div className="flex flex-col gap-y-1">
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="muted"
+                            className="text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                        >
+                            {t("participant.events.detail.participationRequest")}
+                        </Typography>
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                        >
+                            {eventType}
+                        </Typography>
+                    </div>
 
-                        {/* Participation Request */}
+                    {/* Seats Count */}
+                    {event.maxAttendees && (
                         <div className="flex flex-col gap-y-1">
                             <Typography
                                 variant="text"
@@ -145,76 +197,46 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                                 color="muted"
                                 className="text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                             >
-                                {t("participant.events.detail.participationRequest")}
+                                {t("participant.events.detail.seatsCount")}
                             </Typography>
                             <Typography
                                 variant="text"
                                 tag="p"
                                 className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                             >
-                                {hasJoinedPasswordEvent
-                                    ? t("participant.events.detail.joined")
-                                    : hasAcceptedInvitation
-                                      ? t("participant.events.detail.accepted")
-                                      : event.accessType === "password" || event.requiresPassword
-                                        ? t("participant.events.detail.passwordRequired")
-                                        : event.accessType === "invite-only"
-                                          ? t("participant.events.detail.inviteOnly")
-                                          : t("participant.events.detail.open")}
+                                {event.maxAttendees}
                             </Typography>
                         </div>
+                    )}
 
-                        {/* Seats Count */}
-                        {event.totalSeats && (
-                            <div className="flex flex-col gap-y-1">
-                                <Typography
-                                    variant="text"
-                                    tag="p"
-                                    color="muted"
-                                    className="text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
-                                >
-                                    {t("participant.events.detail.seatsCount")}
-                                </Typography>
-                                <Typography
-                                    variant="text"
-                                    tag="p"
-                                    className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
-                                >
-                                    {event.seatsAvailable}/{event.totalSeats}
-                                </Typography>
-                            </div>
-                        )}
-
-                        {/* Event Contact Address */}
-                        <div className="flex flex-col gap-y-1">
+                    {/* Event Contact Address */}
+                    <div className="flex flex-col gap-y-1">
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="muted"
+                            className="text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                        >
+                            {t("participant.events.detail.eventContactAddress")}
+                        </Typography>
+                        <div className="flex items-center gap-2">
                             <Typography
                                 variant="text"
                                 tag="p"
-                                color="muted"
-                                className="text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                                className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                             >
-                                {t("participant.events.detail.eventContactAddress")}
+                                {event.contactAddress || t("participant.events.detail.noAddress")}
                             </Typography>
-                            <div className="flex items-center gap-2">
-                                <Typography
-                                    variant="text"
-                                    tag="p"
-                                    className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
-                                >
-                                    {event.contactAddress ||
-                                        t("participant.events.detail.noAddress")}
-                                </Typography>
-                                <ExternalLink className="w-4 h-4 text-foreground-alt" />
-                            </div>
+                            <ExternalLink className="w-4 h-4 text-foreground-alt" />
                         </div>
                     </div>
                 </div>
-
-                {/* Bottom Navigation */}
-                {bottomNavVariant && (
-                    <BottomNav variant={bottomNavVariant} onBack={() => window.history.back()} />
-                )}
             </div>
-        </section>
+
+            {/* Bottom Navigation */}
+            {bottomNavVariant && (
+                <BottomNav variant={bottomNavVariant} onBack={() => window.history.back()} />
+            )}
+        </div>
     );
 };

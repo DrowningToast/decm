@@ -8,9 +8,7 @@ const IssuerLayout = () => {
         <ProtectedRoute>
             <BaseLayout variant="dark">
                 <PrivateNavbar currentRole="Issuer" />
-                <div className="py-4 md:py-14">
-                    <Outlet />
-                </div>
+                <Outlet />
             </BaseLayout>
         </ProtectedRoute>
     );

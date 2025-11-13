@@ -26,6 +26,25 @@ definitions:
       signature:
         type: string
     type: object
+  core-api_internal_handler_event.EventContractResponse:
+    properties:
+      access_manager_contract_address:
+        type: string
+      certificate_contract_address:
+        type: string
+      created_at:
+        type: string
+      event_contract_address:
+        type: string
+      event_id:
+        type: string
+      id:
+        type: string
+      ticket_contract_address:
+        type: string
+      updated_at:
+        type: string
+    type: object
   core-api_internal_handler_event.ImportCertificateReceiversRequest:
     properties:
       event_id:
@@ -109,6 +128,21 @@ definitions:
       name_pos_y:
         type: number
       updated_at:
+        type: string
+    type: object
+  core-api_internal_usecase_event.EventContractResponse:
+    properties:
+      access_manager_contract_address:
+        type: string
+      certificate_contract_address:
+        type: string
+      event_contract_address:
+        type: string
+      event_id:
+        type: string
+      id:
+        type: string
+      ticket_contract_address:
         type: string
     type: object
   customerror.Err:
@@ -349,25 +383,6 @@ definitions:
       host_password:
         type: string
     type: object
-  event.EventContractResponse:
-    properties:
-      access_manager_contract_address:
-        type: string
-      certificate_contract_address:
-        type: string
-      created_at:
-        type: string
-      event_contract_address:
-        type: string
-      event_id:
-        type: string
-      id:
-        type: string
-      ticket_contract_address:
-        type: string
-      updated_at:
-        type: string
-    type: object
   event.EventIssuerResponse:
     properties:
       created_at:
@@ -393,8 +408,6 @@ definitions:
     properties:
       banner_presigned_url:
         type: string
-      banner_storage_key:
-        type: string
       chain_id:
         type: integer
       contact_number:
@@ -408,8 +421,6 @@ definitions:
       google_map_query:
         type: string
       icon_presigned_url:
-        type: string
-      icon_storage_key:
         type: string
       id:
         type: string
@@ -442,8 +453,6 @@ definitions:
     properties:
       banner_presigned_url:
         type: string
-      banner_storage_key:
-        type: string
       chain_id:
         type: integer
       contact_number:
@@ -452,13 +461,13 @@ definitions:
         type: string
       end_date:
         type: string
+      event_contract:
+        $ref: '#/definitions/core-api_internal_usecase_event.EventContractResponse'
       event_status:
         $ref: '#/definitions/entity.EventStatus'
       google_map_query:
         type: string
       icon_presigned_url:
-        type: string
-      icon_storage_key:
         type: string
       id:
         type: string
@@ -482,6 +491,8 @@ definitions:
         type: integer
       owner_credential_id:
         type: string
+      registration_config:
+        $ref: '#/definitions/event.RegistrationConfigResponse'
       short_description:
         type: string
       start_date:
@@ -523,6 +534,33 @@ definitions:
     - certificate_title
     - first_name
     - last_name
+    type: object
+  event.RegistrationConfigResponse:
+    properties:
+      academic_email_requirement_status:
+        type: integer
+      academic_institution_requirement_status:
+        type: integer
+      address_requirement_status:
+        type: integer
+      bio_requirement_status:
+        type: integer
+      email_requirement_status:
+        type: integer
+      event_id:
+        type: string
+      final_call_for_registration:
+        type: string
+      first_name_requirement_status:
+        type: integer
+      id:
+        type: string
+      is_identity_verification_required:
+        type: boolean
+      last_name_requirement_status:
+        type: integer
+      phone_number_requirement_status:
+        type: integer
     type: object
   event.UpdateEventContractRequest:
     properties:
@@ -2011,7 +2049,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/event.EventContractResponse'
+            $ref: '#/definitions/core-api_internal_handler_event.EventContractResponse'
         "400":
           description: Bad Request
           schema:
@@ -2050,7 +2088,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/event.EventContractResponse'
+            $ref: '#/definitions/core-api_internal_handler_event.EventContractResponse'
         "400":
           description: Bad Request
           schema:
@@ -2089,7 +2127,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/event.EventContractResponse'
+            $ref: '#/definitions/core-api_internal_handler_event.EventContractResponse'
         "400":
           description: Bad Request
           schema:
@@ -2375,7 +2413,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get event by ID
+      description: Get event viewmodel by ID
       operationId: get-event-viewmodel-by-id
       parameters:
       - description: Event ID
@@ -2402,7 +2440,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
-      summary: Get event by ID
+      summary: Get event viewmodel by ID
       tags:
       - Events
   /api/v1/events/{eventId}/participants/import:

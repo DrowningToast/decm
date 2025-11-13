@@ -1413,7 +1413,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event.EventContractResponse"
+                            "$ref": "#/definitions/core-api_internal_handler_event.EventContractResponse"
                         }
                     },
                     "400": {
@@ -1468,7 +1468,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event.EventContractResponse"
+                            "$ref": "#/definitions/core-api_internal_handler_event.EventContractResponse"
                         }
                     },
                     "400": {
@@ -1526,7 +1526,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/event.EventContractResponse"
+                            "$ref": "#/definitions/core-api_internal_handler_event.EventContractResponse"
                         }
                     },
                     "400": {
@@ -2015,7 +2015,7 @@ const docTemplate = `{
         },
         "/api/v1/events/{event_id}/viewmodel": {
             "get": {
-                "description": "Get event by ID",
+                "description": "Get event viewmodel by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -2025,7 +2025,7 @@ const docTemplate = `{
                 "tags": [
                     "Events"
                 ],
-                "summary": "Get event by ID",
+                "summary": "Get event viewmodel by ID",
                 "operationId": "get-event-viewmodel-by-id",
                 "parameters": [
                     {
@@ -2875,6 +2875,35 @@ const docTemplate = `{
                 }
             }
         },
+        "core-api_internal_handler_event.EventContractResponse": {
+            "type": "object",
+            "properties": {
+                "access_manager_contract_address": {
+                    "type": "string"
+                },
+                "certificate_contract_address": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_contract_address": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ticket_contract_address": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "core-api_internal_handler_event.ImportCertificateReceiversRequest": {
             "type": "object",
             "required": [
@@ -3000,6 +3029,29 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "core-api_internal_usecase_event.EventContractResponse": {
+            "type": "object",
+            "properties": {
+                "access_manager_contract_address": {
+                    "type": "string"
+                },
+                "certificate_contract_address": {
+                    "type": "string"
+                },
+                "event_contract_address": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ticket_contract_address": {
                     "type": "string"
                 }
             }
@@ -3358,35 +3410,6 @@ const docTemplate = `{
                 }
             }
         },
-        "event.EventContractResponse": {
-            "type": "object",
-            "properties": {
-                "access_manager_contract_address": {
-                    "type": "string"
-                },
-                "certificate_contract_address": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "event_contract_address": {
-                    "type": "string"
-                },
-                "event_id": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "ticket_contract_address": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
         "event.EventIssuerResponse": {
             "type": "object",
             "properties": {
@@ -3425,9 +3448,6 @@ const docTemplate = `{
                 "banner_presigned_url": {
                     "type": "string"
                 },
-                "banner_storage_key": {
-                    "type": "string"
-                },
                 "chain_id": {
                     "type": "integer"
                 },
@@ -3447,9 +3467,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "icon_presigned_url": {
-                    "type": "string"
-                },
-                "icon_storage_key": {
                     "type": "string"
                 },
                 "id": {
@@ -3499,9 +3516,6 @@ const docTemplate = `{
                 "banner_presigned_url": {
                     "type": "string"
                 },
-                "banner_storage_key": {
-                    "type": "string"
-                },
                 "chain_id": {
                     "type": "integer"
                 },
@@ -3514,6 +3528,9 @@ const docTemplate = `{
                 "end_date": {
                     "type": "string"
                 },
+                "event_contract": {
+                    "$ref": "#/definitions/core-api_internal_usecase_event.EventContractResponse"
+                },
                 "event_status": {
                     "$ref": "#/definitions/entity.EventStatus"
                 },
@@ -3521,9 +3538,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "icon_presigned_url": {
-                    "type": "string"
-                },
-                "icon_storage_key": {
                     "type": "string"
                 },
                 "id": {
@@ -3558,6 +3572,9 @@ const docTemplate = `{
                 },
                 "owner_credential_id": {
                     "type": "string"
+                },
+                "registration_config": {
+                    "$ref": "#/definitions/event.RegistrationConfigResponse"
                 },
                 "short_description": {
                     "type": "string"
@@ -3619,6 +3636,47 @@ const docTemplate = `{
                 },
                 "last_name": {
                     "type": "string"
+                }
+            }
+        },
+        "event.RegistrationConfigResponse": {
+            "type": "object",
+            "properties": {
+                "academic_email_requirement_status": {
+                    "type": "integer"
+                },
+                "academic_institution_requirement_status": {
+                    "type": "integer"
+                },
+                "address_requirement_status": {
+                    "type": "integer"
+                },
+                "bio_requirement_status": {
+                    "type": "integer"
+                },
+                "email_requirement_status": {
+                    "type": "integer"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "final_call_for_registration": {
+                    "type": "string"
+                },
+                "first_name_requirement_status": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_identity_verification_required": {
+                    "type": "boolean"
+                },
+                "last_name_requirement_status": {
+                    "type": "integer"
+                },
+                "phone_number_requirement_status": {
+                    "type": "integer"
                 }
             }
         },

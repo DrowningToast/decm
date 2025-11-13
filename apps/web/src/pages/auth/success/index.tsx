@@ -61,8 +61,8 @@ const AuthSuccessPage = () => {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <Typography variant="h1" tag="h1">
-                You're being redirected. Please wait...
+            <Typography variant="header" tag="h1">
+                {t("auth.success.title")}
             </Typography>
         </div>
     );

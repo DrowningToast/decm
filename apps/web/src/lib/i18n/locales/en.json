@@ -39,7 +39,9 @@
         "to": "to",
         "signOut": "Sign Out",
         "signingOut": "Signing out...",
-        "notAvailable": "N/A"
+        "notAvailable": "N/A",
+        "networkError": "Network error. Please check your connection.",
+        "comingSoon": "Coming Soon"
     },
     "nav": {
         "home": "Home",
@@ -242,6 +244,11 @@
                 "signIn": "Sign in",
                 "eventManagement": "Event management"
             },
+            "issuer": {
+                "title": "Issuer",
+                "signInIAM": "Sign in with IAM",
+                "register": "Register"
+            },
             "developer": {
                 "title": "Developer",
                 "manageIntegration": "Manage automation & integration",
@@ -285,7 +292,8 @@
         "academicVerification": "Academic Verification",
         "verifyNow": "Verify Now",
         "updateSuccess": "Profile updated successfully",
-        "updateError": "Failed to update profile. Please try again."
+        "updateError": "Failed to update profile. Please try again.",
+        "exposePrivateKey": "Expose Account Private Key"
     },
     "events": {
         "title": "Events",
@@ -573,6 +581,8 @@
         "certificates": {
             "title": "Certificates",
             "description": "All of your certificates you've received",
+            "sign": "Sign Certificate",
+            "searchPlaceholder": "Search certificates...",
             "filters": {
                 "all": "All",
                 "completed": "Completed",
@@ -621,8 +631,11 @@
             "finalCall": "Final call",
             "searchPlaceholder": "Search for events",
             "passwordRequired": "Password required",
+            "passwordPlaceholder": "Enter event password",
             "inviteOnly": "Invite only",
             "nolongerAccepting": "No longer accepting request",
+            "participating": "Participating",
+            "shortlisted": "Shortlisted",
             "filters": {
                 "seatsCount": "Seats Available",
                 "allEvents": "All events",
@@ -650,10 +663,18 @@
                 "seatsCount": "Seats count",
                 "eventContactAddress": "Event Contact Address",
                 "noAddress": "No contact address provided",
-                "passwordPlaceholder": "Password here"
+                "passwordPlaceholder": "Password here",
+                "loadingDetails": "Loading event details...",
+                "loadError": "Failed to load event details"
             },
             "invited": "You're invited! Click here to accept.",
             "invitationRequired": "Invitation is required."
+        },
+        "identities": {
+            "searchPlaceholder": "Search identities..."
+        },
+        "notifications": {
+            "searchPlaceholder": "Search notifications..."
         },
         "inbox": {
             "title": "Inbox",
@@ -755,6 +776,10 @@
             "transferable": "Ticket Transferable",
             "register": "Register",
             "note": "This is a preview of the registration form"
+        },
+        "templateColumns": {
+            "firstName": "first_name",
+            "lastName": "last_name"
         }
     },
     "participantImport": {
@@ -864,6 +889,9 @@
     "certificateSettings": {
         "pageTitle": "Certificate Settings",
         "pageDescription": "Configure certificate issuers and design your certificate template",
+        "eventNameNotFound": "Event name not found",
+        "removeIssuerSuccess": "Issuer removed successfully",
+        "removeIssuerError": "Failed to remove issuer",
         "step1": {
             "title": "Step 1: Issuer Settings",
             "description": "Search and select certificate issuers for this event",
@@ -886,7 +914,12 @@
                 "description": "Select one or more issuers from the search results",
                 "selected": "selected",
                 "noResults": "No issuers found",
+                "enterSearch": "Enter search text",
                 "chooseButton": "Choose"
+            },
+            "removeIssuer": {
+                "title": "Remove Issuer",
+                "description": "Are you sure you want to remove this issuer?"
             }
         },
         "step2": {
@@ -1140,6 +1173,7 @@
         "sign": {
             "pageTitle": "Sign Event Certificates",
             "pageDescription": "Review and sign pending certificate batches for events you are assigned to.",
+            "signedCertificates": "Signed Certificates",
             "pendingTab": "Pending Signature",
             "signedTab": "Signed",
             "table": {
@@ -1210,6 +1244,15 @@
         "description": "It looks like you already have an account with us. Please sign in to continue.",
         "signInButton": "Sign In to Your Account"
     },
+    "examples": {
+        "buttonSizes": "Button Sizes",
+        "buttons": {
+            "small": "Small",
+            "default": "Default",
+            "large": "Large",
+            "extraLarge": "Extra Large"
+        }
+    },
     "flow": {
         "check_onboard_status": {
             "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
@@ -1224,6 +1267,8 @@
             "create_account_error": "Failed to authenticate with Google",
             "create_account_error_duplicate": "The account with this email already exists.",
             "create_account_error_password": "Password is required to create an account.",
+            "create_account_error_expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
+            "create_account_error_generic": "An error occurred during authentication. Please try again.",
             "create_profile_error_duplicate": "The profile with this email already exists.",
             "create_profile_error": "Failed to update profile. Please try again later.",
             "missing_access_token": "Missing Access Token",
@@ -1235,7 +1280,8 @@
             "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
         },
         "wallet": {
-            "create_profile_success": "Profile created successfully"
+            "create_profile_success": "Profile created successfully",
+            "create_profile_error": "Failed to create profile. Please try again."
         },
         "generic": {
             "unauthenticated_response": "You must be logged in to access this page. Please sign in.",

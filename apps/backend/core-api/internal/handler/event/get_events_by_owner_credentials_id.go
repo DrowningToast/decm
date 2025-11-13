@@ -63,12 +63,10 @@ func (h *Handler) GetEventsByOwnerCredentialsId(ctx *fiber.Ctx) error {
 		}
 
 		result[i] = &event_uc.EventResponse{
-			ID:                       event.ID,
+			Id:                       event.ID,
 			ChainID:                  int32(event.ChainId),
 			ContactNumber:            event.ContactNumber,
 			OwnerCredentialID:        event.OwnerCredentialId,
-			BannerStorageKey:         event.BannerStorageKey,
-			IconStorageKey:           event.IconStorageKey,
 			BannerPresignedURL:       bannerPresignedURL,
 			IconPresignedURL:         iconPresignedURL,
 			Title:                    event.Title,

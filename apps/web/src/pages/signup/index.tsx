@@ -3,6 +3,7 @@ import { LOCAL_STORAGE_KEYS, setLocalStorageItem } from "@/lib/constants/localSt
 import { OnboardMethods } from "../onboard/[method]";
 import { SignupPage } from "@/components/pages/Auth/SignupPage";
 import { useSignUpPageRedirect } from "@/components/pages/Auth/useSignUpPageRedirect";
+import { PageContainer } from "@/components/container/PageContainer";
 
 const SignUpPage = () => {
     const { isLoading } = useSignUpPageRedirect();
@@ -16,7 +17,11 @@ const SignUpPage = () => {
         window.location.href = `${env.VITE_CORE_BACKEND_API}/api/v1/auth/request-google-oauth`;
     };
 
-    return <SignupPage onGoogleOAuthClick={handleRequestGoogleOAuthUrl} isLoading={isLoading} />;
+    return (
+        <PageContainer>
+            <SignupPage onGoogleOAuthClick={handleRequestGoogleOAuthUrl} isLoading={isLoading} />;
+        </PageContainer>
+    );
 };
 
 export default SignUpPage;

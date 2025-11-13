@@ -14,7 +14,7 @@ export const PreferencePage = () => {
 
     return (
         <section className="relative z-10 w-full">
-            <div className="relative min-h-screen w-full overflow-hidden">
+            <div className="relative w-full overflow-hidden">
                 {/* Background image */}
                 <div className="absolute bottom-0 right-0 w-[424px] h-[424px] md:w-[500px] md:h-[500px] opacity-20 pointer-events-none">
                     <img

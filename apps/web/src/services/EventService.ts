@@ -13,8 +13,21 @@ interface GetEventsListParams {
     onlyUserJoinedEvents?: boolean;
 }
 
+export type RegistrationRequirementStatus = "required" | "optional" | "not_required";
+
+interface RegistrationRequirement {
+    firstName: RegistrationRequirementStatus;
+    lastName: RegistrationRequirementStatus;
+    email: RegistrationRequirementStatus;
+    bio: RegistrationRequirementStatus;
+    phoneNumber: RegistrationRequirementStatus;
+    address: RegistrationRequirementStatus;
+    academicInstitution: RegistrationRequirementStatus;
+    academicEmail: RegistrationRequirementStatus;
+}
+
 export interface Event {
-    bannerStorageKey?: string;
+    banner_presigned_url?: string;
     chainId?: number;
     contactAddress?: string;
     contactNumber?: string;
@@ -23,7 +36,7 @@ export interface Event {
     eventStatus?: EntityEventStatus;
     eventType?: EntityEventType;
     googleMapQuery?: string;
-    iconStorageKey?: string;
+    icon_presigned_url?: string;
     id?: string;
     isBookingRequestRequired?: boolean;
     isPublic?: boolean;
@@ -42,6 +55,14 @@ export interface Event {
 export interface EventViewModel extends Event {
     isInvited?: boolean;
     isJoined?: boolean;
+
+    finalCallDate?: string;
+    registrationRequirement?: RegistrationRequirement;
+
+    accessManagerContractAddress?: string;
+    eventContractAddress?: string;
+    ticketContractAddress?: string;
+    certificateContractAddress?: string;
 }
 
 export const EventStatus = EntityEventStatus;
@@ -57,9 +78,9 @@ export class EventService {
     /**
      * Transform API response from snake_case to camelCase
      */
-    private transformEventEvent(entityEvent: EntityEvent): Event {
+    private transformEntityEvent(entityEvent: EntityEvent): Event {
         return {
-            bannerStorageKey: entityEvent.banner_storage_key,
+            banner_presigned_url: entityEvent.banner_presigned_url,
             chainId: entityEvent.chain_id,
             contactAddress: entityEvent.contact_address,
             contactNumber: entityEvent.contact_number,
@@ -68,7 +89,7 @@ export class EventService {
             eventStatus: entityEvent.event_status as EntityEventStatus | undefined,
             eventType: entityEvent.event_type as EntityEventType | undefined,
             googleMapQuery: entityEvent.google_map_query as string | undefined,
-            iconStorageKey: entityEvent.icon_storage_key as string | undefined,
+            icon_presigned_url: entityEvent.icon_presigned_url as string | undefined,
             id: entityEvent.id as string | undefined,
             isBookingRequestRequired: entityEvent.is_booking_request_required as
                 | boolean
@@ -87,11 +108,11 @@ export class EventService {
         };
     }
 
-    private transformEventEventViewModel(
+    private transformEntityEventViewModel(
         entityEventViewModel: EventEventViewModel,
     ): EventViewModel {
         return {
-            ...this.transformEventEvent(entityEventViewModel),
+            ...this.transformEntityEvent(entityEventViewModel),
             isInvited: entityEventViewModel.is_invited as boolean | undefined,
             isJoined: entityEventViewModel.is_joined as boolean | undefined,
         };
@@ -99,7 +120,7 @@ export class EventService {
 
     public async getEventById(eventId: string): Promise<Event> {
         const response = await this._coreApi.v1.getEventById({ eventId });
-        return this.transformEventEvent(response);
+        return this.transformEntityEvent(response);
     }
 
     public async getEvents(params: GetEventsListParams): Promise<Event[]> {
@@ -110,12 +131,12 @@ export class EventService {
             only_user_joined_events: params.onlyUserJoinedEvents,
         });
 
-        return response.events?.map((event) => this.transformEventEvent(event)) ?? [];
+        return response.events?.map((event) => this.transformEntityEvent(event)) ?? [];
     }
 
     public async getEventViewModel(eventId: string): Promise<EventViewModel> {
         const response = await this._coreApi.v1.getEventViewmodelById({ eventId });
-        return this.transformEventEventViewModel(response);
+        return this.transformEntityEventViewModel(response);
     }
 }
 

@@ -8,9 +8,7 @@ const HostLayout = () => {
         <ProtectedRoute>
             <BaseLayout variant="dark">
                 <PrivateNavbar currentRole="Verified Organizer" />
-                <div className="py-4 md:py-14">
-                    <Outlet />
-                </div>
+                <Outlet />
             </BaseLayout>
         </ProtectedRoute>
     );

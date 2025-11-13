@@ -255,6 +255,122 @@ func (q *Queries) GetEventById(ctx context.Context, id uuid.UUID) (GetEventByIdR
 	return i, err
 }
 
+const GetEventViewModelById = `-- name: GetEventViewModelById :one
+SELECT 
+    events.id, events.event_type, events.event_status, events.chain_id, events.contact_number, events.contact_address, events.owner_credential_id, events.banner_storage_key, events.icon_storage_key, events.title, events.short_description, events.long_description, events.start_date, events.end_date, events.location, events.google_map_query, events.max_attendees, events.is_public, events.is_booking_request_required, events.is_verified, events.is_ticket_transferable, events.created_at, events.updated_at, events.deleted_at,
+    event_registration_configs.id, event_registration_configs.event_id, event_registration_configs.final_call_for_registration, event_registration_configs.registration_password, event_registration_configs.is_identity_verification_required, event_registration_configs.first_name_requirement_status, event_registration_configs.last_name_requirement_status, event_registration_configs.email_requirement_status, event_registration_configs.bio_requirement_status, event_registration_configs.phone_number_requirement_status, event_registration_configs.address_requirement_status, event_registration_configs.academic_institution_requirement_status, event_registration_configs.academic_email_requirement_status, event_registration_configs.created_at, event_registration_configs.updated_at,
+    event_contracts.id, event_contracts.event_id, event_contracts.access_manager_contract_address, event_contracts.event_contract_address, event_contracts.ticket_contract_address, event_contracts.certificate_contract_address, event_contracts.created_at, event_contracts.updated_at
+FROM events
+INNER JOIN event_registration_configs ON events.id = event_registration_configs.event_id
+INNER JOIN event_contracts ON events.id = event_contracts.event_id
+WHERE events.id = $1
+`
+
+type GetEventViewModelByIdRow struct {
+	ID                                   uuid.UUID          `json:"id"`
+	EventType                            EventType          `json:"event_type"`
+	EventStatus                          EventStatus        `json:"event_status"`
+	ChainID                              int32              `json:"chain_id"`
+	ContactNumber                        string             `json:"contact_number"`
+	ContactAddress                       string             `json:"contact_address"`
+	OwnerCredentialID                    uuid.UUID          `json:"owner_credential_id"`
+	BannerStorageKey                     string             `json:"banner_storage_key"`
+	IconStorageKey                       string             `json:"icon_storage_key"`
+	Title                                string             `json:"title"`
+	ShortDescription                     string             `json:"short_description"`
+	LongDescription                      pgtype.Text        `json:"long_description"`
+	StartDate                            time.Time          `json:"start_date"`
+	EndDate                              time.Time          `json:"end_date"`
+	Location                             string             `json:"location"`
+	GoogleMapQuery                       string             `json:"google_map_query"`
+	MaxAttendees                         int32              `json:"max_attendees"`
+	IsPublic                             pgtype.Int4        `json:"is_public"`
+	IsBookingRequestRequired             pgtype.Int4        `json:"is_booking_request_required"`
+	IsVerified                           pgtype.Int4        `json:"is_verified"`
+	IsTicketTransferable                 pgtype.Int4        `json:"is_ticket_transferable"`
+	CreatedAt                            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                            pgtype.Timestamptz `json:"updated_at"`
+	DeletedAt                            pgtype.Timestamptz `json:"deleted_at"`
+	ID_2                                 uuid.UUID          `json:"id_2"`
+	EventID                              uuid.UUID          `json:"event_id"`
+	FinalCallForRegistration             pgtype.Timestamptz `json:"final_call_for_registration"`
+	RegistrationPassword                 pgtype.Text        `json:"registration_password"`
+	IsIdentityVerificationRequired       pgtype.Int4        `json:"is_identity_verification_required"`
+	FirstNameRequirementStatus           pgtype.Int4        `json:"first_name_requirement_status"`
+	LastNameRequirementStatus            pgtype.Int4        `json:"last_name_requirement_status"`
+	EmailRequirementStatus               pgtype.Int4        `json:"email_requirement_status"`
+	BioRequirementStatus                 pgtype.Int4        `json:"bio_requirement_status"`
+	PhoneNumberRequirementStatus         pgtype.Int4        `json:"phone_number_requirement_status"`
+	AddressRequirementStatus             pgtype.Int4        `json:"address_requirement_status"`
+	AcademicInstitutionRequirementStatus pgtype.Int4        `json:"academic_institution_requirement_status"`
+	AcademicEmailRequirementStatus       pgtype.Int4        `json:"academic_email_requirement_status"`
+	CreatedAt_2                          pgtype.Timestamptz `json:"created_at_2"`
+	UpdatedAt_2                          pgtype.Timestamptz `json:"updated_at_2"`
+	ID_3                                 uuid.UUID          `json:"id_3"`
+	EventID_2                            uuid.UUID          `json:"event_id_2"`
+	AccessManagerContractAddress         string             `json:"access_manager_contract_address"`
+	EventContractAddress                 string             `json:"event_contract_address"`
+	TicketContractAddress                pgtype.Text        `json:"ticket_contract_address"`
+	CertificateContractAddress           pgtype.Text        `json:"certificate_contract_address"`
+	CreatedAt_3                          pgtype.Timestamptz `json:"created_at_3"`
+	UpdatedAt_3                          pgtype.Timestamptz `json:"updated_at_3"`
+}
+
+func (q *Queries) GetEventViewModelById(ctx context.Context, id uuid.UUID) (GetEventViewModelByIdRow, error) {
+	row := q.db.QueryRow(ctx, GetEventViewModelById, id)
+	var i GetEventViewModelByIdRow
+	err := row.Scan(
+		&i.ID,
+		&i.EventType,
+		&i.EventStatus,
+		&i.ChainID,
+		&i.ContactNumber,
+		&i.ContactAddress,
+		&i.OwnerCredentialID,
+		&i.BannerStorageKey,
+		&i.IconStorageKey,
+		&i.Title,
+		&i.ShortDescription,
+		&i.LongDescription,
+		&i.StartDate,
+		&i.EndDate,
+		&i.Location,
+		&i.GoogleMapQuery,
+		&i.MaxAttendees,
+		&i.IsPublic,
+		&i.IsBookingRequestRequired,
+		&i.IsVerified,
+		&i.IsTicketTransferable,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.ID_2,
+		&i.EventID,
+		&i.FinalCallForRegistration,
+		&i.RegistrationPassword,
+		&i.IsIdentityVerificationRequired,
+		&i.FirstNameRequirementStatus,
+		&i.LastNameRequirementStatus,
+		&i.EmailRequirementStatus,
+		&i.BioRequirementStatus,
+		&i.PhoneNumberRequirementStatus,
+		&i.AddressRequirementStatus,
+		&i.AcademicInstitutionRequirementStatus,
+		&i.AcademicEmailRequirementStatus,
+		&i.CreatedAt_2,
+		&i.UpdatedAt_2,
+		&i.ID_3,
+		&i.EventID_2,
+		&i.AccessManagerContractAddress,
+		&i.EventContractAddress,
+		&i.TicketContractAddress,
+		&i.CertificateContractAddress,
+		&i.CreatedAt_3,
+		&i.UpdatedAt_3,
+	)
+	return i, err
+}
+
 const ListEvents = `-- name: ListEvents :many
 SELECT id, event_type, event_status, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, created_at, updated_at, deleted_at 
 FROM events 
