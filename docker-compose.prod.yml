@@ -1,0 +1,168 @@
+version: "3.8"
+
+services:
+  # ==========================================
+  # PostgreSQL Database
+  # ==========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: decm-postgres-prod
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME:-decm}
+      POSTGRES_USER: ${DB_USER:-decm_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-decm_user} -d ${DB_NAME:-decm}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - decm-network
+
+  # ==========================================
+  # Backend API
+  # ==========================================
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    image: decm-backend:${IMAGE_TAG:-latest}
+    container_name: decm-backend-prod
+    restart: always
+    environment:
+      # Environment
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      PORT: 8080
+      
+      # CORS
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      
+      # Database
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-decm_user}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-decm}
+      DB_SSL_MODE: ${DB_SSL_MODE:-disable}
+      
+      # Security
+      PII_ENCRYPTION_KEY: ${PII_ENCRYPTION_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER:-decm-service}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-24h}
+      
+      # OAuth
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET}
+      GOOGLE_OAUTH_REDIRECT_URL: ${GOOGLE_OAUTH_REDIRECT_URL}
+      GOOGLE_OAUTH_SUCCESS_URL: ${GOOGLE_OAUTH_SUCCESS_URL}
+      
+      # Storage
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      S3_REGION: ${S3_REGION}
+      
+      # Blockchain
+      BLOCKCHAIN_NETWORK: ${BLOCKCHAIN_NETWORK:-mainnet}
+      BLOCKCHAIN_RPC_URL: ${BLOCKCHAIN_RPC_URL}
+      BLOCKCHAIN_PRIVATE_KEY: ${BLOCKCHAIN_PRIVATE_KEY}
+      BLOCKCHAIN_CHAIN_ID: ${BLOCKCHAIN_CHAIN_ID:-1}
+      
+      # LDAP
+      LDAP_HOST: ${LDAP_HOST}
+      LDAP_PORT: ${LDAP_PORT:-389}
+      LDAP_BASE_DN: ${LDAP_BASE_DN}
+      LDAP_BIND_USER: ${LDAP_BIND_USER}
+      LDAP_BIND_PASS: ${LDAP_BIND_PASS}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - decm-network
+
+  # ==========================================
+  # Frontend Web App
+  # ==========================================
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_ENVIRONMENT: ${VITE_ENVIRONMENT:-production}
+        VITE_GOOGLE_OAUTH_CLIENT_ID: ${VITE_GOOGLE_OAUTH_CLIENT_ID}
+        VITE_GOOGLE_MAPS_API_KEY: ${VITE_GOOGLE_MAPS_API_KEY}
+    image: decm-frontend:${IMAGE_TAG:-latest}
+    container_name: decm-frontend-prod
+    restart: always
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - decm-network
+
+  # ==========================================
+  # Nginx Proxy Manager
+  # ==========================================
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: decm-nginx-proxy-manager
+    restart: always
+    ports:
+      # Public HTTP
+      - "80:80"
+      # Public HTTPS
+      - "443:443"
+      # Admin UI
+      - "${NPM_ADMIN_PORT:-81}:81"
+    environment:
+      DB_SQLITE_FILE: "/data/database.sqlite"
+      DISABLE_IPV6: "true"
+    volumes:
+      - npm_data:/data
+      - npm_letsencrypt:/etc/letsencrypt
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:81"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - decm-network
+
+volumes:
+  postgres_data:
+    driver: local
+  npm_data:
+    driver: local
+  npm_letsencrypt:
+    driver: local
+
+networks:
+  decm-network:
+    driver: bridge

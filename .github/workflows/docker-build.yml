@@ -1,0 +1,188 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - production/**
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches:
+      - main
+    types: [labeled]
+
+env:
+  GO_VERSION: "1.23"
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9.15.0"
+  REGISTRY: ghcr.io
+  IMAGE_NAME_BACKEND: ${{ github.repository }}/backend
+  IMAGE_NAME_FRONTEND: ${{ github.repository }}/frontend
+
+jobs:
+  # Build and push backend Docker image
+  build-backend:
+    name: Build Backend Docker Image
+    runs-on: ubuntu-latest
+    # Only run on main/develop/production branches or version tags
+    if: |
+      github.ref == 'refs/heads/main' || 
+      github.ref == 'refs/heads/develop' ||
+      startsWith(github.ref, 'refs/heads/production/') ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'docker-build'))
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}
+          tags: |
+            # For tagged releases (v1.0.0)
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            # For branch pushes
+            type=ref,event=branch
+            # For PRs
+            type=ref,event=pr
+            # Always tag with commit SHA
+            type=sha,prefix={{branch}}-
+            # Latest tag for main branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - name: Image digest
+        run: echo "Backend image digest - ${{ steps.meta.outputs.digest }}"
+
+  # Build and push frontend Docker image
+  build-frontend:
+    name: Build Frontend Docker Image
+    runs-on: ubuntu-latest
+    # Only run on main/develop/production branches or version tags
+    if: |
+      github.ref == 'refs/heads/main' || 
+      github.ref == 'refs/heads/develop' ||
+      startsWith(github.ref, 'refs/heads/production/') ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'docker-build'))
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}
+          tags: |
+            # For tagged releases (v1.0.0)
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            # For branch pushes
+            type=ref,event=branch
+            # For PRs
+            type=ref,event=pr
+            # Always tag with commit SHA
+            type=sha,prefix={{branch}}-
+            # Latest tag for main branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Frontend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/web/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+          build-args: |
+            VITE_API_URL=${{ secrets.VITE_API_URL || 'http://localhost:8080/api/v1' }}
+            VITE_ENVIRONMENT=production
+
+      - name: Image digest
+        run: echo "Frontend image digest - ${{ steps.meta.outputs.digest }}"
+
+  # Summary job
+  docker-build-summary:
+    name: Docker Build Summary
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-frontend]
+    if: always()
+
+    steps:
+      - name: Check build status
+        run: |
+          echo "### Docker Build Summary ###"
+          echo ""
+          
+          if [ "${{ needs.build-backend.result }}" = "success" ]; then
+            echo "✅ Backend Docker Build: PASSED"
+          else
+            echo "❌ Backend Docker Build: FAILED"
+          fi
+          
+          if [ "${{ needs.build-frontend.result }}" = "success" ]; then
+            echo "✅ Frontend Docker Build: PASSED"
+          else
+            echo "❌ Frontend Docker Build: FAILED"
+          fi
+          
+          echo ""
+          
+          if [ "${{ needs.build-backend.result }}" = "success" ] && \
+             [ "${{ needs.build-frontend.result }}" = "success" ]; then
+            echo "🎉 All Docker images built successfully!"
+            exit 0
+          else
+            echo "❌ Some Docker builds failed."
+            exit 1
+          fi
