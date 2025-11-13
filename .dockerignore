@@ -1,0 +1,14 @@
+.git
+.github
+.turbo
+node_modules
+**/node_modules
+**/.turbo
+**/.cache
+**/dist
+**/build
+apps/web/coverage
+apps/web/.vite
+apps/backend/bin
+*.log
+docker-compose.isolated.yml
