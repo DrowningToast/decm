@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (uc *EventUsecase) UploadEventBanner(
+func (uc *EventUsecase) uploadEventBannerImpl(
 	ctx context.Context,
 	entityID uuid.UUID,
 	bannerFile *multipart.FileHeader,
@@ -27,7 +27,7 @@ func (uc *EventUsecase) UploadEventBanner(
 	return storageKey, nil
 }
 
-func (uc *EventUsecase) UploadEventIcon(
+func (uc *EventUsecase) uploadEventIconImpl(
 	ctx context.Context,
 	entityID uuid.UUID,
 	iconFile *multipart.FileHeader,

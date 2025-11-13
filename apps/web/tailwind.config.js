@@ -1,6 +1,6 @@
 import twGlow from "twglow";
 
 export default {
-	// ...
-	plugins: [twGlow],
+    content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+    plugins: [twGlow],
 };

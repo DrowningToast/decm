@@ -183,6 +183,62 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/event-registration-invitations/import/{eventId}": {
+            "post": {
+                "description": "Import a list of participants for an event, creating inbox messages and event registration invitations",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Registration Invitation"
+                ],
+                "summary": "Import event participants",
+                "operationId": "import-event-participants",
+                "parameters": [
+                    {
+                        "description": "Import participants request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event_registration_invitation.ImportEventParticipantsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/event-registration-invitations/{eventRegistrationInvitationId}": {
             "delete": {
                 "description": "Cancel an event registration invitation by ID",
@@ -479,62 +535,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/events/{eventId}/participants/import": {
-            "post": {
-                "description": "Import a list of participants for an event, creating inbox messages and event registration invitations",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Event Registration Invitation"
-                ],
-                "summary": "Import event participants",
-                "operationId": "import-event-participants",
-                "parameters": [
-                    {
-                        "description": "Import participants request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/event_registration_invitation.ImportEventParticipantsRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.EventRegistrationInvitation"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
@@ -1267,6 +1267,60 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{event_id}/config/password-check": {
+            "post": {
+                "description": "Check if the password is correct for an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Config"
+                ],
+                "summary": "Check event password",
+                "operationId": "check-event-password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Check event password request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/eventconfig.CheckEventPasswordBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/eventconfig.CheckEventPasswordResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
@@ -3764,6 +3818,25 @@ const docTemplate = `{
                 }
             }
         },
+        "eventconfig.CheckEventPasswordBody": {
+            "type": "object",
+            "required": [
+                "password"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "eventconfig.CheckEventPasswordResponse": {
+            "type": "object",
+            "properties": {
+                "is_valid": {
+                    "type": "boolean"
+                }
+            }
+        },
         "eventconfig.CreateEventRegistrationConfigRequest": {
             "type": "object",
             "properties": {
@@ -3799,26 +3872,40 @@ const docTemplate = `{
                 }
             }
         },
+        "eventconfig.EventRegistrationConfigRequirementStatus": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "EventRegistrationConfigRequirementStatusNotRequired",
+                "EventRegistrationConfigRequirementStatusRequired",
+                "EventRegistrationConfigRequirementStatusOptional"
+            ]
+        },
         "eventconfig.EventRegistrationConfigResponse": {
             "type": "object",
             "properties": {
                 "academic_email_requirement_status": {
-                    "type": "integer"
+                    "$ref": "#/definitions/eventconfig.EventRegistrationConfigRequirementStatus"
                 },
                 "academic_institution_requirement_status": {
-                    "type": "integer"
+                    "$ref": "#/definitions/eventconfig.EventRegistrationConfigRequirementStatus"
                 },
                 "address_requirement_status": {
-                    "type": "integer"
+                    "$ref": "#/definitions/eventconfig.EventRegistrationConfigRequirementStatus"
                 },
                 "bio_requirement_status": {
-                    "type": "integer"
+                    "$ref": "#/definitions/eventconfig.EventRegistrationConfigRequirementStatus"
                 },
                 "created_at": {
                     "type": "string"
                 },
                 "email_requirement_status": {
-                    "type": "integer"
+                    "$ref": "#/definitions/eventconfig.EventRegistrationConfigRequirementStatus"
                 },
                 "event_id": {
                     "type": "string"
@@ -3827,16 +3914,16 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "first_name_requirement_status": {
-                    "type": "integer"
+                    "$ref": "#/definitions/eventconfig.EventRegistrationConfigRequirementStatus"
                 },
                 "id": {
                     "type": "string"
                 },
                 "last_name_requirement_status": {
-                    "type": "integer"
+                    "$ref": "#/definitions/eventconfig.EventRegistrationConfigRequirementStatus"
                 },
                 "phone_number_requirement_status": {
-                    "type": "integer"
+                    "$ref": "#/definitions/eventconfig.EventRegistrationConfigRequirementStatus"
                 },
                 "registration_password": {
                     "type": "string"

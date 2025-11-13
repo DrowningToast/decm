@@ -25,15 +25,6 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
 
     return (
         <div className="relative w-full overflow-hidden">
-            {/* Background image */}
-            <div className="absolute bottom-0 right-0 w-[424px] h-[424px] md:w-[500px] md:h-[500px] opacity-20 pointer-events-none">
-                <img
-                    src="/assets/passport.webp"
-                    alt=""
-                    className="w-full h-full object-cover object-center"
-                />
-            </div>
-
             {/* Main content */}
             <div className="relative z-10 w-full max-w-[1384px] mx-auto px-4 md:px-16 py-4 md:py-16 flex flex-col gap-y-4">
                 {/* Certificate Header with Check Icon */}

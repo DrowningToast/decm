@@ -618,6 +618,18 @@ definitions:
     - first_name
     - last_name
     type: object
+  eventconfig.CheckEventPasswordBody:
+    properties:
+      password:
+        type: string
+    required:
+    - password
+    type: object
+  eventconfig.CheckEventPasswordResponse:
+    properties:
+      is_valid:
+        type: boolean
+    type: object
   eventconfig.CreateEventRegistrationConfigRequest:
     properties:
       academic_email_requirement_status:
@@ -641,32 +653,43 @@ definitions:
       registration_password:
         type: string
     type: object
+  eventconfig.EventRegistrationConfigRequirementStatus:
+    enum:
+    - 0
+    - 1
+    - 2
+    format: int32
+    type: integer
+    x-enum-varnames:
+    - EventRegistrationConfigRequirementStatusNotRequired
+    - EventRegistrationConfigRequirementStatusRequired
+    - EventRegistrationConfigRequirementStatusOptional
   eventconfig.EventRegistrationConfigResponse:
     properties:
       academic_email_requirement_status:
-        type: integer
+        $ref: '#/definitions/eventconfig.EventRegistrationConfigRequirementStatus'
       academic_institution_requirement_status:
-        type: integer
+        $ref: '#/definitions/eventconfig.EventRegistrationConfigRequirementStatus'
       address_requirement_status:
-        type: integer
+        $ref: '#/definitions/eventconfig.EventRegistrationConfigRequirementStatus'
       bio_requirement_status:
-        type: integer
+        $ref: '#/definitions/eventconfig.EventRegistrationConfigRequirementStatus'
       created_at:
         type: string
       email_requirement_status:
-        type: integer
+        $ref: '#/definitions/eventconfig.EventRegistrationConfigRequirementStatus'
       event_id:
         type: string
       final_call_for_registration:
         type: string
       first_name_requirement_status:
-        type: integer
+        $ref: '#/definitions/eventconfig.EventRegistrationConfigRequirementStatus'
       id:
         type: string
       last_name_requirement_status:
-        type: integer
+        $ref: '#/definitions/eventconfig.EventRegistrationConfigRequirementStatus'
       phone_number_requirement_status:
-        type: integer
+        $ref: '#/definitions/eventconfig.EventRegistrationConfigRequirementStatus'
       registration_password:
         type: string
       updated_at:
@@ -1333,6 +1356,44 @@ paths:
       summary: Cancel event registration invitation
       tags:
       - Event Registration Invitation
+  /api/v1/event-registration-invitations/import/{eventId}:
+    post:
+      consumes:
+      - application/json
+      description: Import a list of participants for an event, creating inbox messages
+        and event registration invitations
+      operationId: import-event-participants
+      parameters:
+      - description: Import participants request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/event_registration_invitation.ImportEventParticipantsRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/entity.EventRegistrationInvitation'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Import event participants
+      tags:
+      - Event Registration Invitation
   /api/v1/events:
     get:
       description: Get events list
@@ -1925,6 +1986,42 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Update event certificate config
+  /api/v1/events/{event_id}/config/password-check:
+    post:
+      consumes:
+      - application/json
+      description: Check if the password is correct for an event
+      operationId: check-event-password
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Check event password request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/eventconfig.CheckEventPasswordBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/eventconfig.CheckEventPasswordResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Check event password
+      tags:
+      - Event Config
   /api/v1/events/{event_id}/config/registration:
     get:
       consumes:
@@ -2451,44 +2548,6 @@ paths:
       summary: Get event viewmodel by ID
       tags:
       - Events
-  /api/v1/events/{eventId}/participants/import:
-    post:
-      consumes:
-      - application/json
-      description: Import a list of participants for an event, creating inbox messages
-        and event registration invitations
-      operationId: import-event-participants
-      parameters:
-      - description: Import participants request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/event_registration_invitation.ImportEventParticipantsRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            items:
-              $ref: '#/definitions/entity.EventRegistrationInvitation'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-      summary: Import event participants
-      tags:
-      - Event Registration Invitation
   /api/v1/events/{eventId}/registration/invitations:
     get:
       consumes:
