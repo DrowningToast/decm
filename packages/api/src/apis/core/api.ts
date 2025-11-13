@@ -382,10 +382,12 @@ export interface EventEventIssuerResponse {
 export interface EventEventResponse {
     banner_presigned_url?: string;
     chain_id?: number;
+    contact_address?: string;
     contact_number?: string;
     created_at?: string;
     end_date?: string;
     event_status?: EntityEventStatus;
+    event_type?: EntityEventType;
     google_map_query?: string;
     icon_presigned_url?: string;
     id?: string;
@@ -406,11 +408,13 @@ export interface EventEventResponse {
 export interface EventEventViewModel {
     banner_presigned_url?: string;
     chain_id?: number;
+    contact_address?: string;
     contact_number?: string;
     created_at?: string;
     end_date?: string;
     event_contract?: CoreApiInternalUsecaseEventEventContractResponse;
     event_status?: EntityEventStatus;
+    event_type?: EntityEventType;
     google_map_query?: string;
     icon_presigned_url?: string;
     id?: string;

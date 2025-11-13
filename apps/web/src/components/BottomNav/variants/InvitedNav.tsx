@@ -7,8 +7,12 @@ import { cn } from "@/lib/utils";
 import { Typography } from "@/components/typography/typography";
 import { useEventInvitationNavStore } from "../stores/event-invitation";
 
-export const InvitedNav = (): ReactJSX.Element => {
-    const { onBack, className } = useBottomContainerContext();
+interface InvitedNavProps {
+    className?: string;
+}
+
+export const InvitedNav = ({ className: propClassName }: InvitedNavProps): ReactJSX.Element => {
+    const { onBack, className: contextClassName } = useBottomContainerContext();
     const { t } = useTranslation();
     const { onAcceptCallback } = useEventInvitationNavStore();
 
@@ -20,7 +24,11 @@ export const InvitedNav = (): ReactJSX.Element => {
 
     return (
         <div
-            className={cn(className, "flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5")}
+            className={cn(
+                contextClassName,
+                propClassName,
+                "flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5",
+            )}
         >
             {/* Back Button */}
             <button

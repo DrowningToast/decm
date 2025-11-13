@@ -410,6 +410,8 @@ definitions:
         type: string
       chain_id:
         type: integer
+      contact_address:
+        type: string
       contact_number:
         type: string
       created_at:
@@ -418,6 +420,8 @@ definitions:
         type: string
       event_status:
         $ref: '#/definitions/entity.EventStatus'
+      event_type:
+        $ref: '#/definitions/entity.EventType'
       google_map_query:
         type: string
       icon_presigned_url:
@@ -455,6 +459,8 @@ definitions:
         type: string
       chain_id:
         type: integer
+      contact_address:
+        type: string
       contact_number:
         type: string
       created_at:
@@ -465,6 +471,8 @@ definitions:
         $ref: '#/definitions/core-api_internal_usecase_event.EventContractResponse'
       event_status:
         $ref: '#/definitions/entity.EventStatus'
+      event_type:
+        $ref: '#/definitions/entity.EventType'
       google_map_query:
         type: string
       icon_presigned_url:

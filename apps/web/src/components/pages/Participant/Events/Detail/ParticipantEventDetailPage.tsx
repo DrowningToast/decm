@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
-import { ExternalLink } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { useEventViewModelUsecase } from "./useEventViewModelUsecase";
-import { useEventPasswordNavStore } from "@/components/BottomNav/stores/event-password";
-import { useEventInvitationNavStore } from "@/components/BottomNav/stores/event-invitation";
 import { EventStatus, EventType } from "@/services/EventService";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ImageLoader } from "@/components/common/ImageLoader";
+import { addr } from "@/components/common/addr";
+import { EthExplorerLink } from "@/components/common/EthscanLink";
+import { GoogleMapsEmbed } from "@/components/ui/google-maps-embed";
 
 interface EventDetailPageProps {
     eventId: string;
@@ -16,9 +16,6 @@ interface EventDetailPageProps {
 export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
     const { t } = useTranslation();
     const { event, isLoading, error, bottomNavVariant } = useEventViewModelUsecase({ eventId });
-
-    const { setOnSubmitCallback, resetPassword } = useEventPasswordNavStore();
-    const { setOnAcceptCallback } = useEventInvitationNavStore();
 
     const eventType = useMemo(() => {
         switch (event?.eventType) {
@@ -43,7 +40,28 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
     const isShowFinalCallDate =
         event?.finalCallDate && event?.eventStatus !== EventStatus.EventStatusClosed;
 
-    const isClosed = event?.eventStatus === EventStatus.EventStatusClosed;
+    const eventStatusText = useMemo(() => {
+        switch (event?.eventStatus) {
+            case EventStatus.EventStatusActive:
+                return t("participant.events.detail.active");
+            case EventStatus.EventStatusInactive:
+                return t("participant.events.detail.inactive");
+        }
+        return t("participant.events.detail.closed");
+    }, [event?.eventStatus, t]);
+
+    const instructionText = useMemo(() => {
+        switch (bottomNavVariant) {
+            case "participating":
+                return t("participant.events.detail.instruction.participating");
+            case "invited":
+                return t("participant.events.detail.instruction.invited");
+            case "invitation-required":
+                return t("participant.events.detail.instruction.invitationRequired");
+            case "event-password":
+                return t("participant.events.detail.instruction.passwordRequired");
+        }
+    }, [bottomNavVariant, t]);
 
     // Loading state
     if (isLoading) {
@@ -72,7 +90,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
     }
 
     return (
-        <div className="relative w-full overflow-hidden">
+        <div className="relative w-full overflow-hidden md:grid grid-cols-3 gap-x-2 md:gap-x-8 px-4 md:px-16">
             {/* Background image */}
             <div className="absolute bottom-0 right-0 w-[424px] h-[424px] md:w-[500px] md:h-[500px] opacity-30 pointer-events-none">
                 <img
@@ -83,17 +101,15 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
             </div>
 
             {/* Main content */}
-            <div className="relative z-10 w-full max-w-[1384px] mx-auto px-4 md:px-16 py-4 md:pt-16 md:pb-24 flex flex-col gap-y-4 md:gap-y-6">
+            <div className="col-span-2 relative z-10 w-full max-w-[1384px] mx-auto pb-4 md:pb-24 flex flex-col gap-y-4 md:gap-y-6">
                 {/* Header section with logo and title */}
                 <div className="flex flex-col gap-y-4">
                     <div className="flex items-start gap-3 md:gap-4">
-                        <Skeleton className="w-8 h-8 md:w-10 md:h-10 bg-muted rounded flex-shrink-0">
-                            <img
-                                src={event.icon_presigned_url}
-                                alt={event.title}
-                                className="w-full h-full object-cover object-center"
-                            />
-                        </Skeleton>
+                        <ImageLoader
+                            src={event.icon_presigned_url || ""}
+                            alt={event.title || ""}
+                            className="w-8 h-8 md:w-10 md:h-10 bg-muted rounded flex-shrink-0"
+                        />
                         <Typography
                             variant="header"
                             tag="h1"
@@ -104,28 +120,51 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                         </Typography>
                     </div>
 
-                    <Typography
-                        variant="text"
-                        tag="p"
-                        color="muted"
-                        className="text-base/[22px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
-                    >
-                        {event.longDescription}
-                    </Typography>
+                    {/* Short Description */}
+                    {event.shortDescription && (
+                        <div className="flex flex-col gap-y-2">
+                            <Typography
+                                variant="text"
+                                tag="p"
+                                color="foreground"
+                                className="text-base/[22px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                            >
+                                {event.shortDescription}
+                            </Typography>
+                        </div>
+                    )}
                 </div>
 
-                <div>
-                    <Skeleton className="w-full h-[172px] md:h-[300px] bg-muted rounded-lg flex-shrink-0">
-                        <img
-                            src={event.banner_presigned_url}
-                            alt={event.title}
-                            className="w-full h-full object-cover object-center"
-                        />
-                    </Skeleton>
-                </div>
+                <ImageLoader
+                    src={event.banner_presigned_url || ""}
+                    alt={event.title || ""}
+                    className="w-full min-h-[172px] md:min-h-[300px] bg-muted rounded-lg flex-shrink-0"
+                />
+
+                {/* Long Description */}
+                {event.longDescription && (
+                    <div className="flex flex-col gap-y-2">
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="muted"
+                            className="text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] font-medium"
+                        >
+                            {t("participant.events.detail.longDescription")}
+                        </Typography>
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="foreground"
+                            className="text-base/[22px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] whitespace-pre-wrap"
+                        >
+                            {event.longDescription}
+                        </Typography>
+                    </div>
+                )}
 
                 {/* Event Details */}
-                <div className="flex flex-col gap-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Status */}
                     <div className="flex flex-col gap-y-1">
                         <Typography
@@ -141,11 +180,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                             tag="p"
                             className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                         >
-                            {isClosed
-                                ? t("participant.events.detail.closed")
-                                : event.eventStatus === EventStatus.EventStatusActive
-                                  ? t("participant.events.detail.acceptingRequests")
-                                  : t("participant.events.detail.inactive")}
+                            {eventStatusText}
                         </Typography>
                     </div>
 
@@ -209,7 +244,28 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                         </div>
                     )}
 
-                    {/* Event Contact Address */}
+                    {/* Location */}
+                    {event.location && (
+                        <div className="flex flex-col gap-y-1">
+                            <Typography
+                                variant="text"
+                                tag="p"
+                                color="muted"
+                                className="text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                            >
+                                {t("participant.events.detail.location")}
+                            </Typography>
+                            <Typography
+                                variant="text"
+                                tag="p"
+                                className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                            >
+                                {event.location}
+                            </Typography>
+                        </div>
+                    )}
+
+                    {/* Event Contract Address */}
                     <div className="flex flex-col gap-y-1">
                         <Typography
                             variant="text"
@@ -217,26 +273,63 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
                             color="muted"
                             className="text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                         >
-                            {t("participant.events.detail.eventContactAddress")}
+                            {t("participant.events.detail.eventContractAddress")}
                         </Typography>
-                        <div className="flex items-center gap-2">
+                        <EthExplorerLink address={event.eventContractAddress || ""}>
                             <Typography
                                 variant="text"
                                 tag="p"
-                                className="text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                                className="underline text-base [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                             >
-                                {event.contactAddress || t("participant.events.detail.noAddress")}
+                                {addr(event.eventContractAddress || "") ||
+                                    t("participant.events.detail.noContractAddress")}
                             </Typography>
-                            <ExternalLink className="w-4 h-4 text-foreground-alt" />
-                        </div>
+                        </EthExplorerLink>
                     </div>
                 </div>
+
+                {/* Google Map */}
+                {event.googleMapQuery && (
+                    <div className="flex flex-col gap-y-2">
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="muted"
+                            className="text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] font-medium"
+                        >
+                            {t("participant.events.detail.googleMap")}
+                        </Typography>
+                        <GoogleMapsEmbed
+                            query={event.googleMapQuery}
+                            height="300px"
+                            className="md:h-[400px]"
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Bottom Navigation */}
-            {bottomNavVariant && (
-                <BottomNav variant={bottomNavVariant} onBack={() => window.history.back()} />
-            )}
+            <div className="h-full relative">
+                <div className="flex flex-col h-auto gap-y-4 md:sticky md:top-0">
+                    <div className="hidden md:inline-block w-full">
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="muted"
+                            className="text-center text-sm [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                        >
+                            {instructionText}
+                        </Typography>
+                    </div>
+                    {bottomNavVariant && (
+                        <BottomNav
+                            className="md:min-w-[220px] md:w-full md:relative md:translate-y-0 md:top-0 md:bottom-0 md:translate-x-0 md:left-0 z-60 flex-col items-stretch"
+                            variant={bottomNavVariant}
+                            onBack={() => window.history.back()}
+                        />
+                    )}
+                </div>
+            </div>
         </div>
     );
 };

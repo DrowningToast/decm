@@ -14,6 +14,8 @@ import { InboxViewEventNav } from "./variants/InboxViewEventNav";
 import { InboxViewCertificateNav } from "./variants/InboxViewCertificateNav";
 import { InboxMissingEventNav } from "./variants/InboxMissingEventNav";
 import { BottomContainerProvider } from "./context";
+import type { ClassValue } from "clsx";
+import { cn } from "@/lib/utils";
 
 export type BottomNavVariant =
     | "search-certificate"
@@ -34,9 +36,14 @@ export type BottomNavVariant =
 interface BottomNavProps {
     variant?: BottomNavVariant;
     onBack?: () => void;
+    className?: ClassValue;
 }
 
-export const BottomNav = ({ variant = "search-certificate", onBack }: BottomNavProps) => {
+export const BottomNav = ({
+    variant = "search-certificate",
+    onBack,
+    className,
+}: BottomNavProps) => {
     const content = useMemo(() => {
         switch (variant) {
             case "search-certificate":
@@ -75,16 +82,26 @@ export const BottomNav = ({ variant = "search-certificate", onBack }: BottomNavP
     return (
         <>
             {/* Mobile - Full Width */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background to-transparent">
+            <div
+                className={cn(
+                    "md:hidden fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background to-transparent",
+                    className,
+                )}
+            >
                 <BottomContainerProvider onBack={onBack} className="w-full">
                     <div className="flex flex-col gap-1 w-full">{content}</div>
                 </BottomContainerProvider>
             </div>
 
             {/* Desktop - Fixed Width */}
-            <div className="hidden md:flex fixed bottom-12 left-1/2 transform -translate-x-1/2 justify-center z-50 pointer-events-auto">
-                <BottomContainerProvider onBack={onBack} className="w-[343px]">
-                    <div className="flex flex-col gap-1 w-[343px]">{content}</div>
+            <div
+                className={cn(
+                    "hidden md:flex fixed bottom-12 left-1/2 transform -translate-x-1/2 justify-center z-50 pointer-events-auto w-[343px]",
+                    className,
+                )}
+            >
+                <BottomContainerProvider onBack={onBack} className="w-auto">
+                    <div className="flex flex-col gap-1">{content}</div>
                 </BottomContainerProvider>
             </div>
         </>

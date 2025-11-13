@@ -1,8 +1,7 @@
 import { createAppKit } from "@reown/appkit/react";
 
 import { WagmiProvider } from "wagmi";
-import { mainnet, sepolia, type AppKitNetwork } from "@reown/appkit/networks";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { polygon, sepolia, type AppKitNetwork } from "@reown/appkit/networks";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { env } from "./env";
 
@@ -17,8 +16,11 @@ const metadata = {
     icons: ["/logo.svg"],
 };
 
+const isDev = import.meta.env.DEV;
+// eslint-disable-next-line react-refresh/only-export-components
+export const currentNetwork = (isDev ? sepolia : polygon) satisfies AppKitNetwork;
 // 3. Set the networks
-const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, sepolia];
+const networks: [AppKitNetwork, ...AppKitNetwork[]] = [currentNetwork];
 
 // 4. Create Wagmi Adapter
 const wagmiAdapter = new WagmiAdapter({

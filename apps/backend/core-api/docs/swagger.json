@@ -3445,6 +3445,9 @@
                 "chain_id": {
                     "type": "integer"
                 },
+                "contact_address": {
+                    "type": "string"
+                },
                 "contact_number": {
                     "type": "string"
                 },
@@ -3456,6 +3459,9 @@
                 },
                 "event_status": {
                     "$ref": "#/definitions/entity.EventStatus"
+                },
+                "event_type": {
+                    "$ref": "#/definitions/entity.EventType"
                 },
                 "google_map_query": {
                     "type": "string"
@@ -3513,6 +3519,9 @@
                 "chain_id": {
                     "type": "integer"
                 },
+                "contact_address": {
+                    "type": "string"
+                },
                 "contact_number": {
                     "type": "string"
                 },
@@ -3527,6 +3536,9 @@
                 },
                 "event_status": {
                     "$ref": "#/definitions/entity.EventStatus"
+                },
+                "event_type": {
+                    "$ref": "#/definitions/entity.EventType"
                 },
                 "google_map_query": {
                     "type": "string"

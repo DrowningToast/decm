@@ -665,7 +665,21 @@
                 "noAddress": "No contact address provided",
                 "passwordPlaceholder": "Password here",
                 "loadingDetails": "Loading event details...",
-                "loadError": "Failed to load event details"
+                "loadError": "Failed to load event details",
+                "longDescription": "Description",
+                "location": "Location",
+                "noLocation": "No location provided",
+                "eventContractAddress": "Event Contract Address",
+                "noContractAddress": "No contract address",
+                "googleMap": "Event Location",
+                "active": "Active",
+                "inactive": "Inactive",
+                "instruction": {
+                    "participating": "You are participating in this event",
+                    "invited": "You have been invited to this event",
+                    "invitationRequired": "This event requires an invitation",
+                    "passwordRequired": "This event requires a password to join"
+                }
             },
             "invited": "You're invited! Click here to accept.",
             "invitationRequired": "Invitation is required."

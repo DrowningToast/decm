@@ -16,6 +16,7 @@ type EventResponse struct {
 	Id                       uuid.UUID          `json:"id"`
 	ChainID                  int32              `json:"chain_id"`
 	ContactNumber            string             `json:"contact_number"`
+	ContactAddress           string             `json:"contact_address"`
 	OwnerCredentialID        uuid.UUID          `json:"owner_credential_id"`
 	BannerPresignedURL       string             `json:"banner_presigned_url"`
 	IconPresignedURL         string             `json:"icon_presigned_url"`
