@@ -19,6 +19,15 @@ export interface CancelEventRegistrationInvitationParams {
     eventRegistrationInvitationId: string;
 }
 
+export type CheckEventPasswordData = EventconfigCheckEventPasswordResponse;
+
+export type CheckEventPasswordError = CustomerrorErrResponse;
+
+export interface CheckEventPasswordParams {
+    /** Event ID */
+    eventId: string;
+}
+
 export type CheckOnboardStatusData = OnboardCheckOnboardStatusResponse;
 
 export type CheckOnboardStatusError = CustomerrorErrResponse;
@@ -492,6 +501,14 @@ export interface EventUpdateEventIssuerRequest {
     issuer_credential_id?: string;
 }
 
+export interface EventconfigCheckEventPasswordBody {
+    password: string;
+}
+
+export interface EventconfigCheckEventPasswordResponse {
+    is_valid?: boolean;
+}
+
 export interface EventconfigCreateEventRegistrationConfigRequest {
     academic_email_requirement_status?: number;
     academic_institution_requirement_status?: number;
@@ -505,19 +522,26 @@ export interface EventconfigCreateEventRegistrationConfigRequest {
     registration_password?: string;
 }
 
+/** @format int32 */
+export enum EventconfigEventRegistrationConfigRequirementStatus {
+    EventRegistrationConfigRequirementStatusNotRequired = 0,
+    EventRegistrationConfigRequirementStatusRequired = 1,
+    EventRegistrationConfigRequirementStatusOptional = 2,
+}
+
 export interface EventconfigEventRegistrationConfigResponse {
-    academic_email_requirement_status?: number;
-    academic_institution_requirement_status?: number;
-    address_requirement_status?: number;
-    bio_requirement_status?: number;
+    academic_email_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
+    academic_institution_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
+    address_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
+    bio_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
     created_at?: string;
-    email_requirement_status?: number;
+    email_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
     event_id?: string;
     final_call_for_registration?: string;
-    first_name_requirement_status?: number;
+    first_name_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
     id?: string;
-    last_name_requirement_status?: number;
-    phone_number_requirement_status?: number;
+    last_name_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
+    phone_number_requirement_status?: EventconfigEventRegistrationConfigRequirementStatus;
     registration_password?: string;
     updated_at?: string;
 }
@@ -1462,6 +1486,28 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Import a list of participants for an event, creating inbox messages and event registration invitations
+         *
+         * @tags Event Registration Invitation
+         * @name ImportEventParticipants
+         * @summary Import event participants
+         * @request POST:/api/v1/event-registration-invitations/import/{eventId}
+         */
+        importEventParticipants: (
+            { eventId, ...query }: ImportEventParticipantsParams,
+            request: EventRegistrationInvitationImportEventParticipantsRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<ImportEventParticipantsData, ImportEventParticipantsError>({
+                path: `/api/v1/event-registration-invitations/import/${eventId}`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Cancel an event registration invitation by ID
          *
          * @tags Event Registration Invitation
@@ -1537,28 +1583,6 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/events/owner-credentials/${ownerCredentialId}`,
                 method: "GET",
                 query: query,
-                type: ContentType.Json,
-                format: "json",
-                ...params,
-            }),
-
-        /**
-         * @description Import a list of participants for an event, creating inbox messages and event registration invitations
-         *
-         * @tags Event Registration Invitation
-         * @name ImportEventParticipants
-         * @summary Import event participants
-         * @request POST:/api/v1/events/{eventId}/participants/import
-         */
-        importEventParticipants: (
-            { eventId, ...query }: ImportEventParticipantsParams,
-            request: EventRegistrationInvitationImportEventParticipantsRequest,
-            params: RequestParams = {},
-        ) =>
-            this.http.request<ImportEventParticipantsData, ImportEventParticipantsError>({
-                path: `/api/v1/events/${eventId}/participants/import`,
-                method: "POST",
-                body: request,
                 type: ContentType.Json,
                 format: "json",
                 ...params,
@@ -1790,6 +1814,28 @@ export class Api<SecurityDataType extends unknown> {
                 method: "PUT",
                 body: data,
                 type: ContentType.FormData,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Check if the password is correct for an event
+         *
+         * @tags Event Config
+         * @name CheckEventPassword
+         * @summary Check event password
+         * @request POST:/api/v1/events/{event_id}/config/password-check
+         */
+        checkEventPassword: (
+            { eventId, ...query }: CheckEventPasswordParams,
+            request: EventconfigCheckEventPasswordBody,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<CheckEventPasswordData, CheckEventPasswordError>({
+                path: `/api/v1/events/${eventId}/config/password-check`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
                 format: "json",
                 ...params,
             }),

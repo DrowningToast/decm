@@ -8,15 +8,6 @@ export const InboxNotFoundPage = () => {
     return (
         <section className="relative z-10 w-full">
             <div className="relative w-full overflow-hidden pb-24">
-                {/* Background image */}
-                <div className="absolute bottom-0 right-0 -translate-x-1/2 aspect-auto w-[229px] h-auto opacity-30 pointer-events-none">
-                    <img
-                        src="/assets/hand.webp"
-                        alt=""
-                        className="w-full h-full object-cover object-center"
-                    />
-                </div>
-
                 {/* Main content */}
                 <div className="relative z-10 w-full px-4 py-4 flex flex-col gap-y-4">
                     {/* Header section */}

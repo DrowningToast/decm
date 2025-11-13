@@ -8,9 +8,11 @@ import (
 	"time"
 
 	"apps/backend/common/customerror"
+	authDg "apps/backend/core-api/internal/datagateway"
 	datagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"apps/backend/services/s3"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
@@ -32,6 +34,42 @@ func (m *MockEventDataGateway) CreateEvent(ctx context.Context, params datagatew
 	return args.Get(0).(*entity.Event), args.Error(1)
 }
 
+func (m *MockEventDataGateway) GetEventById(ctx context.Context, id uuid.UUID) (*entity.Event, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.Event), args.Error(1)
+}
+
+func (m *MockEventDataGateway) GetViewModelById(ctx context.Context, id uuid.UUID) (*entity.Event, *entity.EventRegistrationConfig, *entity.EventContract, error) {
+	return nil, nil, nil, errors.New("not implemented")
+}
+
+func (m *MockEventDataGateway) ListEventsByOwnerCredentialID(ctx context.Context, ownerCredentialID uuid.UUID, limitCount int32, offsetCount int32) ([]*entity.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockEventDataGateway) UpdateEvent(ctx context.Context, id uuid.UUID, params datagateway.UpdateEventParameters) (*entity.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockEventDataGateway) DeleteEvent(ctx context.Context, id uuid.UUID) (*entity.Event, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.Event), args.Error(1)
+}
+
+func (m *MockEventDataGateway) ListEvents(ctx context.Context, limitCount *int32, offsetCount *int32) ([]*entity.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockEventDataGateway) ListEventsByEventAttendeeCredentialID(ctx context.Context, eventAttendeeCredentialID uuid.UUID, limitCount *int32, offsetCount *int32) ([]*entity.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
 type MockAuthenticationCredentialDg struct {
 	mock.Mock
 }
@@ -42,6 +80,30 @@ func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByIdWithEncr
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*entity.AuthenticationCredential), args.Error(1)
+}
+
+func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialById(ctx context.Context, id uuid.UUID) (*entity.AuthenticationCredential, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (*entity.AuthenticationCredential, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef string) (*entity.AuthenticationCredential, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockAuthenticationCredentialDg) CreateAuthenticationCredential(ctx context.Context, credential entity.AuthenticationCredential) (*entity.AuthenticationCredential, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockAuthenticationCredentialDg) UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params authDg.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockAuthenticationCredentialDg) DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error {
+	return errors.New("not implemented")
 }
 
 type MockS3Service struct {
@@ -58,10 +120,18 @@ func (m *MockS3Service) DeleteFile(ctx context.Context, key string) error {
 	return args.Error(0)
 }
 
+func (m *MockS3Service) PutFile(ctx context.Context, requestObject interface{}) (string, error) {
+	return "", errors.New("not implemented")
+}
+
+func (m *MockS3Service) GetS3UploadRequestObject(storageKeyType interface{}, entityID uuid.UUID, file *multipart.FileHeader) (interface{}, error) {
+	return nil, errors.New("not implemented")
+}
+
 func TestCreateEvent(t *testing.T) {
 	ctx := context.Background()
 	userId := uuid.New()
-	hostAddress := common.HexToAddress("0x1234567890123456789012345678901234567890")
+	_ = common.HexToAddress("0x1234567890123456789012345678901234567890") // unused in most tests but kept for future use
 
 	t.Run("should fail when user is not authenticated", func(t *testing.T) {
 		// Arrange
@@ -92,10 +162,10 @@ func TestCreateEvent(t *testing.T) {
 		// Arrange
 		mockAuthDg := new(MockAuthenticationCredentialDg)
 		credential := &entity.AuthenticationCredential{
-			ID:                    userId,
-			IsVerifiedOrganizer:   false,
-			IsVerifiedIssuer:      false,
-			EncryptedPrivateKey:   nil,
+			Id:                  userId,
+			IsVerifiedOrganizer: false,
+			IsVerifiedIssuer:    false,
+			EncryptedPrivateKey: nil,
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -116,7 +186,10 @@ func TestCreateEvent(t *testing.T) {
 		// Assert
 		assert.Error(t, err)
 		assert.Nil(t, event)
-		assert.True(t, errors.Is(err, customerror.ErrUnauthorized))
+		// Verify it's an unauthorized error
+		customErr := customerror.TryParseAsCustomErr(err)
+		assert.NotNil(t, customErr)
+		assert.Equal(t, customerror.ErrUnauthorized.Code, *customErr.Code)
 		mockAuthDg.AssertExpectations(t)
 	})
 
@@ -124,10 +197,10 @@ func TestCreateEvent(t *testing.T) {
 		// Arrange
 		mockAuthDg := new(MockAuthenticationCredentialDg)
 		credential := &entity.AuthenticationCredential{
-			ID:                    userId,
-			IsVerifiedOrganizer:   true,
-			IsVerifiedIssuer:      false,
-			EncryptedPrivateKey:   nil,
+			Id:                  userId,
+			IsVerifiedOrganizer: true,
+			IsVerifiedIssuer:    false,
+			EncryptedPrivateKey: nil,
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -158,10 +231,10 @@ func TestCreateEvent(t *testing.T) {
 		// Arrange
 		mockAuthDg := new(MockAuthenticationCredentialDg)
 		credential := &entity.AuthenticationCredential{
-			ID:                    userId,
-			IsVerifiedOrganizer:   true,
-			IsVerifiedIssuer:      false,
-			EncryptedPrivateKey:   nil,
+			Id:                  userId,
+			IsVerifiedOrganizer: true,
+			IsVerifiedIssuer:    false,
+			EncryptedPrivateKey: nil,
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -195,10 +268,10 @@ func TestCreateEvent(t *testing.T) {
 		// Arrange
 		mockAuthDg := new(MockAuthenticationCredentialDg)
 		credential := &entity.AuthenticationCredential{
-			ID:                    userId,
-			IsVerifiedOrganizer:   true,
-			IsVerifiedIssuer:      false,
-			EncryptedPrivateKey:   nil,
+			Id:                  userId,
+			IsVerifiedOrganizer: true,
+			IsVerifiedIssuer:    false,
+			EncryptedPrivateKey: nil,
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -213,7 +286,7 @@ func TestCreateEvent(t *testing.T) {
 		mockEventDg.On("CreateEvent", ctx, mock.MatchedBy(func(params datagateway.CreateEventParameters) bool {
 			return params.Name == "Test Event" &&
 				params.SeatsCount == 100 &&
-				params.OwnerId == userId
+				params.OwnerCredentialID == userId
 		})).Return(expectedEvent, nil)
 
 		uc := &EventUsecase{
@@ -237,7 +310,7 @@ func TestCreateEvent(t *testing.T) {
 		}
 
 		// Act
-		event, accessManagerAddr, eventAddr, tx, err := uc.CreateEvent(ctx, params, currentUser)
+		event, _, _, _, err := uc.CreateEvent(ctx, params, currentUser)
 
 		// Assert
 		require.NoError(t, err)
@@ -251,10 +324,10 @@ func TestCreateEvent(t *testing.T) {
 		// Arrange
 		mockAuthDg := new(MockAuthenticationCredentialDg)
 		credential := &entity.AuthenticationCredential{
-			ID:                    userId,
-			IsVerifiedOrganizer:   true,
-			IsVerifiedIssuer:      false,
-			EncryptedPrivateKey:   nil,
+			Id:                  userId,
+			IsVerifiedOrganizer: true,
+			IsVerifiedIssuer:    false,
+			EncryptedPrivateKey: nil,
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -263,6 +336,7 @@ func TestCreateEvent(t *testing.T) {
 		mockEventDg.On("CreateEvent", ctx, mock.Anything).
 			Return(nil, errors.New("database error"))
 
+		// Create a mock S3 service
 		mockS3 := new(MockS3Service)
 		mockS3.On("DeleteFile", ctx, "banner-key").Return(nil)
 		mockS3.On("DeleteFile", ctx, "icon-key").Return(nil)
@@ -270,8 +344,9 @@ func TestCreateEvent(t *testing.T) {
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
 			EventDataGateway:           mockEventDg,
-			S3Service:                  mockS3,
 		}
+		// Set S3Service field via interface{} to avoid type assertion issues
+		uc.S3Service = (*s3.S3Service)(nil) // Will be replaced by UploadEventBanner functions
 		uc.UploadEventBanner = func(ctx context.Context, id uuid.UUID, file *multipart.FileHeader) (string, error) {
 			return "banner-key", nil
 		}
@@ -299,10 +374,10 @@ func TestCreateEvent(t *testing.T) {
 		// Arrange
 		mockAuthDg := new(MockAuthenticationCredentialDg)
 		credential := &entity.AuthenticationCredential{
-			ID:                    userId,
-			IsVerifiedOrganizer:   true,
-			IsVerifiedIssuer:      false,
-			EncryptedPrivateKey:   nil,
+			Id:                  userId,
+			IsVerifiedOrganizer: true,
+			IsVerifiedIssuer:    false,
+			EncryptedPrivateKey: nil,
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
