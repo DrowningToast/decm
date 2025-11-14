@@ -15,14 +15,17 @@ func (h *Handler) Mount(r fiber.Router) {
 		h.AuthenticationGuardMiddleware.Middleware,
 	)
 
+	// Participant end
+	eventConfigGroup.Post("/password-check", h.CheckEventPassword)
+
 	// Event Registration Config routes
-	eventConfigGroup.Post("/registration", h.CreateEventRegistrationConfig)
-	eventConfigGroup.Get("/registration", h.GetEventRegistrationConfig)
-	eventConfigGroup.Put("/registration", h.UpdateEventRegistrationConfig)
-	eventConfigGroup.Delete("/registration", h.DeleteEventRegistrationConfig)
+	eventConfigGroup.Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).Post("/registration", h.CreateEventRegistrationConfig)
+	eventConfigGroup.Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).Get("/registration", h.GetEventRegistrationConfig)
+	eventConfigGroup.Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).Put("/registration", h.UpdateEventRegistrationConfig)
+	eventConfigGroup.Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).Delete("/registration", h.DeleteEventRegistrationConfig)
 
 	// Event Certificate Config routes
-	eventConfigGroup.Get("/certificate", h.GetEventCertificateConfig)
-	eventConfigGroup.Put("/certificate", h.UpdateEventCertificateConfig)
-	eventConfigGroup.Delete("/certificate", h.DeleteEventCertificateConfig)
+	eventConfigGroup.Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).Get("/certificate", h.GetEventCertificateConfig)
+	eventConfigGroup.Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).Put("/certificate", h.UpdateEventCertificateConfig)
+	eventConfigGroup.Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).Delete("/certificate", h.DeleteEventCertificateConfig)
 }

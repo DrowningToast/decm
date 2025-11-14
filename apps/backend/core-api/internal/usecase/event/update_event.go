@@ -56,7 +56,7 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("event not found"))
 	}
 
-	if credential.Id != dbEvent.OwnerCredentialID {
+	if credential.Id != dbEvent.OwnerCredentialId {
 		return nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("user is not the owner of the event"))
 	}
 

@@ -4,15 +4,23 @@ import { useSearchNotificationNavStore } from "../stores/notifications";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
-export const SearchNotificationNav = () => {
+interface SearchNotificationNavProps {
+    className?: string;
+}
+
+export const SearchNotificationNav = ({ className: propClassName }: SearchNotificationNavProps) => {
     const { searchQuery, setSearchQuery } = useSearchNotificationNavStore();
 
-    const { onBack, className } = useBottomContainerContext();
+    const { onBack, className: contextClassName } = useBottomContainerContext();
     const { t } = useTranslation();
 
     return (
         <div
-            className={cn(className, `flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5`)}
+            className={cn(
+                contextClassName,
+                propClassName,
+                `flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5`,
+            )}
         >
             {/* Back Button */}
             <button

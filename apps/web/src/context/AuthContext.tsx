@@ -1,16 +1,16 @@
-import React, { createContext, useContext, useEffect } from "react";
+import React, { createContext, useContext } from "react";
 import type { ReactNode } from "react";
-import type { EntityProfile } from "@decm/api";
+import type { Profile } from "@/services/AuthService/AuthService";
 import { AxiosError } from "axios";
-import { useTranslation } from "react-i18next";
-import { useSignout } from "@/components/useSignout";
 import { useMyProfile } from "@/hooks/useMyProfile";
-import { handleAxiosError } from "@/common/Err";
+
+export type AuthUser = Profile;
 interface AuthContextType {
-    user: EntityProfile | null;
-    isPending: boolean;
+    user: AuthUser | null;
+    isFetching: boolean;
     isAuthenticated: boolean;
     refetch: () => Promise<unknown>;
+    error?: AxiosError;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,32 +20,14 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-    const { t } = useTranslation();
-    const { signout } = useSignout();
-    const {
-        data: user,
-        error,
-        isPending,
-        refetch,
-    } = useMyProfile();
-
-    useEffect(() => {
-        if (!error) {
-            return;
-        }
-
-        console.error(error);
-        if (error instanceof AxiosError) {
-            handleAxiosError(t, error);
-            void signout();
-        }
-    }, [error, signout, t]);
+    const { data: user, error, isFetching, refetch } = useMyProfile();
 
     const contextValue: AuthContextType = {
         user: user || null,
-        isPending,
+        isFetching,
         isAuthenticated: !!user,
         refetch,
+        error: error instanceof AxiosError ? error : undefined,
     };
 
     return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;

@@ -93,31 +93,20 @@ func (h *Handler) UpdateEventRegistrationConfig(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	// Prepare response with nullable fields
-	var finalCallForRegistrationResp *time.Time
-	if config.FinalCallForRegistration.Valid {
-		finalCallForRegistrationResp = &config.FinalCallForRegistration.Time
-	}
-
-	var registrationPasswordResp *string
-	if config.RegistrationPassword.Valid {
-		registrationPasswordResp = &config.RegistrationPassword.String
-	}
-
 	return ctx.Status(http.StatusOK).JSON(EventRegistrationConfigResponse{
 		ID:                                   config.ID,
 		EventID:                              config.EventID,
-		FinalCallForRegistration:             finalCallForRegistrationResp,
-		RegistrationPassword:                 registrationPasswordResp,
-		FirstNameRequirementStatus:           config.FirstNameRequirementStatus.Int32,
-		LastNameRequirementStatus:            config.LastNameRequirementStatus.Int32,
-		EmailRequirementStatus:               config.EmailRequirementStatus.Int32,
-		BioRequirementStatus:                 config.BioRequirementStatus.Int32,
-		PhoneNumberRequirementStatus:         config.PhoneNumberRequirementStatus.Int32,
-		AddressRequirementStatus:             config.AddressRequirementStatus.Int32,
-		AcademicInstitutionRequirementStatus: config.AcademicInstitutionRequirementStatus.Int32,
-		AcademicEmailRequirementStatus:       config.AcademicEmailRequirementStatus.Int32,
-		CreatedAt:                            config.CreatedAt.Time.String(),
-		UpdatedAt:                            config.UpdatedAt.Time.String(),
+		FinalCallForRegistration:             config.FinalCallForRegistration,
+		RegistrationPassword:                 config.RegistrationPassword,
+		FirstNameRequirementStatus:           EventRegistrationConfigRequirementStatus(config.FirstNameRequirementStatus),
+		LastNameRequirementStatus:            EventRegistrationConfigRequirementStatus(config.LastNameRequirementStatus),
+		EmailRequirementStatus:               EventRegistrationConfigRequirementStatus(config.EmailRequirementStatus),
+		BioRequirementStatus:                 EventRegistrationConfigRequirementStatus(config.BioRequirementStatus),
+		PhoneNumberRequirementStatus:         EventRegistrationConfigRequirementStatus(config.PhoneNumberRequirementStatus),
+		AddressRequirementStatus:             EventRegistrationConfigRequirementStatus(config.AddressRequirementStatus),
+		AcademicInstitutionRequirementStatus: EventRegistrationConfigRequirementStatus(config.AcademicInstitutionRequirementStatus),
+		AcademicEmailRequirementStatus:       EventRegistrationConfigRequirementStatus(config.AcademicEmailRequirementStatus),
+		CreatedAt:                            config.CreatedAt.String(),
+		UpdatedAt:                            config.UpdatedAt.String(),
 	})
 }

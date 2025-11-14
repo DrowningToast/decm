@@ -35,7 +35,7 @@ type ParticipantRequestItem struct {
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
-// @Router /api/v1/events/{eventId}/participants/import [post]
+// @Router /api/v1/event-registration-invitations/import/{eventId} [post]
 func (h *Handler) ImportEventParticipants(ctx *fiber.Ctx) error {
 	// 1. Parse and validate request
 	requestBody := ImportEventParticipantsRequest{}

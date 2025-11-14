@@ -2,6 +2,7 @@ package event
 
 import (
 	"context"
+	"decm-database/go/generated"
 	"encoding/json"
 	"fmt"
 
@@ -14,8 +15,6 @@ import (
 	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 
 	eventCertificateContract "apps/backend/contracts/certificate"
-
-	"decm-database/go/generated"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -166,7 +165,7 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 		}
 
 		certificates = append(certificates, certificate)
-		certificateIDs = append(certificateIDs, certificate.ID)
+		certificateIDs = append(certificateIDs, certificate.Id)
 	}
 
 	// 7. Create sign_message with hashes

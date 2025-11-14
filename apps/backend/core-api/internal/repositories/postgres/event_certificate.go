@@ -55,9 +55,9 @@ func (r *Repository) CreateEventCertificate(ctx context.Context, params datagate
 	}
 
 	return &entity.EventCertificate{
-		ID:                      result.ID,
-		EventID:                 result.EventID,
-		ReceiverCredentialID:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+		Id:                      result.ID,
+		EventId:                 result.EventID,
+		ReceiverCredentialId:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 		ReceiverEmail:           pgmapper.PgTextToStringPtr(result.ReceiverEmail),
 		Name:                    nameDec,
 		AcademicInstitution:     academicInstitutionDec,
@@ -65,7 +65,7 @@ func (r *Repository) CreateEventCertificate(ctx context.Context, params datagate
 		CertificateSubtitle:     pgmapper.PgTextToStringPtr(result.CertificateSubtitle),
 		EventContractAddress:    *pgmapper.PgTextToStringPtr(result.EventContractAddress),
 		EventCertificateAddress: pgmapper.PgTextToStringPtr(result.EventCertificateAddress),
-		CertificateTokenID:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
+		CertificateTokenId:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
 		CreatedAt:               result.CreatedAt.Time,
 		RevokedAt:               pgmapper.PgTimestampzToTimePtr(result.RevokedAt),
 	}, nil
@@ -89,9 +89,9 @@ func (r *Repository) GetEventCertificateByID(ctx context.Context, id uuid.UUID) 
 	}
 
 	return &entity.EventCertificate{
-		ID:                      result.ID,
-		EventID:                 result.EventID,
-		ReceiverCredentialID:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+		Id:                      result.ID,
+		EventId:                 result.EventID,
+		ReceiverCredentialId:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 		ReceiverEmail:           pgmapper.PgTextToStringPtr(result.ReceiverEmail),
 		Name:                    name,
 		AcademicInstitution:     academicInstitution,
@@ -99,7 +99,7 @@ func (r *Repository) GetEventCertificateByID(ctx context.Context, id uuid.UUID) 
 		CertificateSubtitle:     pgmapper.PgTextToStringPtr(result.CertificateSubtitle),
 		EventContractAddress:    *pgmapper.PgTextToStringPtr(result.EventContractAddress),
 		EventCertificateAddress: pgmapper.PgTextToStringPtr(result.EventCertificateAddress),
-		CertificateTokenID:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
+		CertificateTokenId:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
 		CreatedAt:               result.CreatedAt.Time,
 		RevokedAt:               pgmapper.PgTimestampzToTimePtr(result.RevokedAt),
 	}, nil
@@ -125,9 +125,9 @@ func (r *Repository) GetEventCertificatesByEventID(ctx context.Context, eventID 
 		}
 
 		certificates[i] = &entity.EventCertificate{
-			ID:                      result.ID,
-			EventID:                 result.EventID,
-			ReceiverCredentialID:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			Id:                      result.ID,
+			EventId:                 result.EventID,
+			ReceiverCredentialId:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 			ReceiverEmail:           pgmapper.PgTextToStringPtr(result.ReceiverEmail),
 			Name:                    name,
 			AcademicInstitution:     academicInstitution,
@@ -135,7 +135,7 @@ func (r *Repository) GetEventCertificatesByEventID(ctx context.Context, eventID 
 			CertificateSubtitle:     pgmapper.PgTextToStringPtr(result.CertificateSubtitle),
 			EventContractAddress:    *pgmapper.PgTextToStringPtr(result.EventContractAddress),
 			EventCertificateAddress: pgmapper.PgTextToStringPtr(result.EventCertificateAddress),
-			CertificateTokenID:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
+			CertificateTokenId:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
 			CreatedAt:               result.CreatedAt.Time,
 			RevokedAt:               pgmapper.PgTimestampzToTimePtr(result.RevokedAt),
 		}
@@ -185,9 +185,9 @@ func (r *Repository) UpdateEventCertificate(ctx context.Context, id uuid.UUID, p
 	}
 
 	return &entity.EventCertificate{
-		ID:                      result.ID,
-		EventID:                 result.EventID,
-		ReceiverCredentialID:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+		Id:                      result.ID,
+		EventId:                 result.EventID,
+		ReceiverCredentialId:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 		ReceiverEmail:           pgmapper.PgTextToStringPtr(result.ReceiverEmail),
 		Name:                    nameDec,
 		AcademicInstitution:     academicInstitutionDec,
@@ -195,7 +195,7 @@ func (r *Repository) UpdateEventCertificate(ctx context.Context, id uuid.UUID, p
 		CertificateSubtitle:     pgmapper.PgTextToStringPtr(result.CertificateSubtitle),
 		EventContractAddress:    *pgmapper.PgTextToStringPtr(result.EventContractAddress),
 		EventCertificateAddress: pgmapper.PgTextToStringPtr(result.EventCertificateAddress),
-		CertificateTokenID:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
+		CertificateTokenId:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
 		CreatedAt:               result.CreatedAt.Time,
 		RevokedAt:               pgmapper.PgTimestampzToTimePtr(result.RevokedAt),
 	}, nil

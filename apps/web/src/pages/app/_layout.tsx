@@ -6,9 +6,9 @@ import { Outlet } from "react-router-dom";
 const AppLayout = () => {
     return (
         <ProtectedRoute>
-            <BaseLayout>
-                <Outlet />
+            <BaseLayout variant="dark">
                 <PrivateNavbar />
+                <Outlet />
             </BaseLayout>
         </ProtectedRoute>
     );

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { ExcelUpload } from "./ExcelUpload";
 import { ExcelPreview } from "./ExcelPreview";
-import PageContainer from "@/components/container/PageContainer";
+
 import type { EventImportCertificateReceiverRequest } from "@decm/api";
 import { useImportCertificates } from "@/hooks/events/useImportCertificates";
 import * as XLSX from "xlsx";
@@ -88,7 +88,7 @@ export const ImportEventCertificatesPage = ({
     };
 
     return (
-        <PageContainer title="Certificate Import">
+        <div title="Certificate Import">
             <div className="mx-auto p-6">
                 <div className="mb-8">
                     <Typography
@@ -248,6 +248,6 @@ export const ImportEventCertificatesPage = ({
                     />
                 )}
             </div>
-        </PageContainer>
+        </div>
     );
 };

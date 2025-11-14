@@ -76,7 +76,7 @@ docker compose -f docker-compose.prod.yml up -d
 **With Nginx Proxy Manager (for SSL/reverse proxy):**
 
 ```bash
-docker compose -f docker-compose.prod.yml --profile proxy up -d
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ### 3. Verify Services
@@ -111,25 +111,24 @@ docker compose -f docker-compose.prod.yml logs -f postgres
 The production setup includes:
 
 1. **PostgreSQL Database** (`postgres`)
-   - Persistent data storage with healthchecks
-   - Automatic initialization
-   - Volume: `postgres_data`
+    - Persistent data storage with healthchecks
+    - Automatic initialization
+    - Volume: `postgres_data`
 
 2. **Backend API** (`backend`)
-   - Go-based REST API
-   - Auto-runs database migrations on startup
-   - Waits for database to be healthy
-   - Healthcheck on `/ready` endpoint
+    - Go-based REST API
+    - Auto-runs database migrations on startup
+    - Waits for database to be healthy
+    - Healthcheck on `/ready` endpoint
 
 3. **Frontend** (`frontend`)
-   - React 19 SPA served by Nginx
-   - Static files with optimized caching
-   - Waits for backend to be healthy
+    - React 19 SPA served by Nginx
+    - Static files with optimized caching
+    - Waits for backend to be healthy
 
 4. **Nginx Proxy Manager** (`proxy`, optional)
-   - SSL/TLS termination
-   - Reverse proxy
-   - Only starts with `--profile proxy`
+    - SSL/TLS termination
+    - Reverse proxy
 
 ## Port Configuration
 
@@ -167,19 +166,21 @@ cat backup.sql | docker compose -f docker-compose.prod.yml exec -T postgres psql
 ### Update Services
 
 1. Pull latest code:
-   ```bash
-   git pull origin main
-   ```
+
+    ```bash
+    git pull origin main
+    ```
 
 2. Rebuild images:
-   ```bash
-   docker compose -f docker-compose.prod.yml build
-   ```
+
+    ```bash
+    docker compose -f docker-compose.prod.yml build
+    ```
 
 3. Restart services:
-   ```bash
-   docker compose -f docker-compose.prod.yml up -d
-   ```
+    ```bash
+    docker compose -f docker-compose.prod.yml up -d
+    ```
 
 ### Zero-downtime Updates
 
@@ -199,18 +200,18 @@ If you started the proxy service:
 1. Access NPM admin UI at http://your-server-ip:81
 2. Login with configured credentials (`NPM_ADMIN_EMAIL` / `NPM_ADMIN_PASSWORD`)
 3. Add a Proxy Host:
-   - **Domain Names**: yourdomain.com, www.yourdomain.com
-   - **Scheme**: http
-   - **Forward Hostname/IP**: frontend
-   - **Forward Port**: 80
-   - **SSL**: Request a new SSL certificate (Let's Encrypt)
+    - **Domain Names**: yourdomain.com, www.yourdomain.com
+    - **Scheme**: http
+    - **Forward Hostname/IP**: frontend
+    - **Forward Port**: 80
+    - **SSL**: Request a new SSL certificate (Let's Encrypt)
 
 4. Add API proxy:
-   - **Domain Names**: api.yourdomain.com
-   - **Scheme**: http
-   - **Forward Hostname/IP**: backend
-   - **Forward Port**: 8080
-   - **SSL**: Request a new SSL certificate
+    - **Domain Names**: api.yourdomain.com
+    - **Scheme**: http
+    - **Forward Hostname/IP**: backend
+    - **Forward Port**: 8080
+    - **SSL**: Request a new SSL certificate
 
 ## Monitoring and Logs
 
@@ -248,12 +249,14 @@ docker compose -f docker-compose.prod.yml exec postgres pg_isready -U postgres
 ### Backend fails to start
 
 **Check database connection:**
+
 ```bash
 docker compose -f docker-compose.prod.yml logs postgres
 docker compose -f docker-compose.prod.yml logs backend
 ```
 
 **Verify environment variables:**
+
 ```bash
 docker compose -f docker-compose.prod.yml exec backend env | grep DB_
 ```
@@ -261,12 +264,14 @@ docker compose -f docker-compose.prod.yml exec backend env | grep DB_
 ### Frontend shows API errors
 
 **Check CORS configuration:**
+
 - Ensure `CORS_ALLOWED_ORIGINS` in `.env` includes your frontend domain
 - Verify `VITE_CORE_BACKEND_API` points to the correct backend URL
 
 ### Database migrations fail
 
 **Manually run migrations:**
+
 ```bash
 # Access backend container
 docker compose -f docker-compose.prod.yml exec backend sh
@@ -278,11 +283,13 @@ docker compose -f docker-compose.prod.yml exec backend sh
 ### Out of disk space
 
 **Clean up Docker resources:**
+
 ```bash
 docker system prune -a --volumes
 ```
 
 **Check volume sizes:**
+
 ```bash
 docker system df -v
 ```
@@ -330,6 +337,7 @@ docker compose -f docker-compose.prod.yml down -v
 ## Support
 
 For issues and questions:
+
 - Check logs: `docker compose -f docker-compose.prod.yml logs`
 - Review environment configuration in `.env`
 - Consult main README.md and CLAUDE.md for development details

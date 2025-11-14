@@ -9,6 +9,7 @@ import (
 	"apps/backend/common/validatorutils"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 
 	"github.com/google/uuid"
 )
@@ -16,12 +17,15 @@ import (
 type ProfileUsecase struct {
 	ProfileDg                  datagateway.ProfileDataGateway
 	AuthenticationCredentialDg datagateway.AuthenticationCredentialDataGateway
+
+	AuthService *auth.AuthService
 }
 
-func NewProfileUsecase(profileDg datagateway.ProfileDataGateway, authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway) *ProfileUsecase {
+func NewProfileUsecase(profileDg datagateway.ProfileDataGateway, authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway, authService *auth.AuthService) *ProfileUsecase {
 	return &ProfileUsecase{
 		ProfileDg:                  profileDg,
 		AuthenticationCredentialDg: authenticationCredentialDg,
+		AuthService:                authService,
 	}
 }
 
@@ -50,7 +54,7 @@ type CreateProfileParameters struct {
 	IsBioPublic                 bool      `json:"is_bio_public,omitempty"`
 	Bio                         *string   `json:"bio,omitempty" validate:"omitempty,min=10,max=255"`
 	IsPhoneNumberPublic         bool      `json:"is_phone_number_public,omitempty"`
-	PhoneNumber                 *string   `json:"phone_number,omitempty" validate:"omitempty,len=10,e164"`
+	PhoneNumber                 *string   `json:"phone_number,omitempty" validate:"omitempty,e164"`
 	IsAddressPublic             bool      `json:"is_address_public,omitempty"`
 	Address                     *string   `json:"address,omitempty" validate:"omitempty,min=10,max=255"`
 	IsAcademicInstitutionPublic bool      `json:"is_academic_institution_public,omitempty"`
@@ -75,7 +79,7 @@ type UpdateProfileParameters struct {
 	IsBioPublic                 *bool   `json:"is_bio_public,omitempty"`
 	Bio                         *string `json:"bio,omitempty" validate:"omitempty,min=10,max=255"`
 	IsPhoneNumberPublic         *bool   `json:"is_phone_number_public,omitempty"`
-	PhoneNumber                 *string `json:"phone_number,omitempty" validate:"omitempty,len=10,e164"`
+	PhoneNumber                 *string `json:"phone_number,omitempty" validate:"omitempty,e164"`
 	IsAddressPublic             *bool   `json:"is_address_public,omitempty"`
 	Address                     *string `json:"address,omitempty" validate:"omitempty,min=10,max=255"`
 	IsAcademicInstitutionPublic *bool   `json:"is_academic_institution_public,omitempty"`

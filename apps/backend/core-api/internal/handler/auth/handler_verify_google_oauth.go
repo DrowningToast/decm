@@ -44,7 +44,7 @@ func (h Handler) VerifyGoogleOAuth(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	token, err := h.AuthUc.VerifyGoogleOAuthCode(ctx.UserContext(), session, requestQueries.Code, requestQueries.State)
+	token, err := h.OAuthUc.VerifyGoogleOAuthCode(ctx.UserContext(), session, requestQueries.Code, requestQueries.State)
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}

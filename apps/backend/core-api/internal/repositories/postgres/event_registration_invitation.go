@@ -75,9 +75,9 @@ func (r *Repository) CreateEventRegistrationInvitation(ctx context.Context, para
 	}
 
 	return &entity.EventRegistrationInvitation{
-		ID:                  result.ID,
-		EventID:             result.EventID,
-		InboxMessageID:      result.InboxMessageID,
+		Id:                  result.ID,
+		EventId:             result.EventID,
+		InboxMessageId:      result.InboxMessageID,
 		ValidUntil:          pgmapper.PgTimestampzToTimePtr(result.ValidUntil),
 		Code:                pgmapper.PgTextToStringPtr(result.Code),
 		FirstName:           firstNameDec,
@@ -120,9 +120,53 @@ func (r *Repository) GetEventRegistrationInvitationByID(ctx context.Context, id 
 	}
 
 	return &entity.EventRegistrationInvitation{
-		ID:                  result.ID,
-		EventID:             result.EventID,
-		InboxMessageID:      result.InboxMessageID,
+		Id:                  result.ID,
+		EventId:             result.EventID,
+		InboxMessageId:      result.InboxMessageID,
+		ValidUntil:          pgmapper.PgTimestampzToTimePtr(result.ValidUntil),
+		Code:                pgmapper.PgTextToStringPtr(result.Code),
+		FirstName:           firstNameDec,
+		LastName:            lastNameDec,
+		Email:               emailDec,
+		PhoneNumber:         phoneNumberDec,
+		AcademicInstitution: academicInstitutionDec,
+		CreatedAt:           *pgmapper.PgTimestampzToTimePtr(result.CreatedAt),
+		UpdatedAt:           *pgmapper.PgTimestampzToTimePtr(result.UpdatedAt),
+		CancelledAt:         pgmapper.PgTimestampzToTimePtr(result.CancelledAt),
+	}, nil
+}
+
+func (r *Repository) GetEventRegistrationInvitationByInboxMessageID(ctx context.Context, inboxMessageID uuid.UUID) (*entity.EventRegistrationInvitation, error) {
+	result, err := r.queries.GetEventRegistrationInvitationByInboxMessageID(ctx, inboxMessageID)
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	// Decrypt PII fields using pgmapper
+	firstNameDec, err := pgmapper.DecryptPgTextToStringPtr(result.FirstName, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	lastNameDec, err := pgmapper.DecryptPgTextToStringPtr(result.LastName, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	emailDec, err := pgmapper.DecryptPgTextToStringPtr(result.Email, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	phoneNumberDec, err := pgmapper.DecryptPgTextToStringPtr(result.PhoneNumber, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	academicInstitutionDec, err := pgmapper.DecryptPgTextToStringPtr(result.AcademicInstitution, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	return &entity.EventRegistrationInvitation{
+		Id:                  result.ID,
+		EventId:             result.EventID,
+		InboxMessageId:      result.InboxMessageID,
 		ValidUntil:          pgmapper.PgTimestampzToTimePtr(result.ValidUntil),
 		Code:                pgmapper.PgTextToStringPtr(result.Code),
 		FirstName:           firstNameDec,
@@ -167,9 +211,9 @@ func (r *Repository) GetEventRegistrationInvitationsByEventID(ctx context.Contex
 		}
 
 		invitations[i] = &entity.EventRegistrationInvitation{
-			ID:                  result.ID,
-			EventID:             result.EventID,
-			InboxMessageID:      result.InboxMessageID,
+			Id:                  result.ID,
+			EventId:             result.EventID,
+			InboxMessageId:      result.InboxMessageID,
 			ValidUntil:          pgmapper.PgTimestampzToTimePtr(result.ValidUntil),
 			Code:                pgmapper.PgTextToStringPtr(result.Code),
 			FirstName:           firstNameDec,
@@ -184,6 +228,79 @@ func (r *Repository) GetEventRegistrationInvitationsByEventID(ctx context.Contex
 	}
 
 	return invitations, nil
+}
+
+func (r *Repository) GetEventRegistrationInvitationByEventIDAndCredential(ctx context.Context, eventId uuid.UUID, credentialId uuid.UUID, email *string, walletAddress *string) (*entity.EventRegistrationInvitation, *entity.InboxMessage, error) {
+	encryptedEmail, err := pgmapper.EncryptStringPtrToPgText(email, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	params := generated.GetEventRegistrationInvitationByEventIdAndCredentialIdParams{
+		EventID:       eventId,
+		CredentialID:  pgmapper.UUIDToPgUUID(&credentialId),
+		Email:         encryptedEmail,
+		WalletAddress: pgmapper.StringPtrToPgText(walletAddress),
+	}
+	result, err := r.queries.GetEventRegistrationInvitationByEventIdAndCredentialId(ctx, params)
+	if err != nil {
+		return nil, nil, pgerrutils.ParsePgError(err)
+	}
+
+	// decrypt
+	firstNameDec, err := pgmapper.DecryptPgTextToStringPtr(result.FirstName, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	lastNameDec, err := pgmapper.DecryptPgTextToStringPtr(result.LastName, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	emailDec, err := pgmapper.DecryptPgTextToStringPtr(result.Email, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	phoneNumberDec, err := pgmapper.DecryptPgTextToStringPtr(result.PhoneNumber, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+	academicInstitutionDec, err := pgmapper.DecryptPgTextToStringPtr(result.AcademicInstitution, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	registrationInvitation := &entity.EventRegistrationInvitation{
+		Id:                  result.EventRegistrationInvitationID,
+		EventId:             result.EventID,
+		InboxMessageId:      result.InboxMessageID,
+		ValidUntil:          pgmapper.PgTimestampzToTimePtr(result.ValidUntil),
+		Code:                pgmapper.PgTextToStringPtr(result.Code),
+		FirstName:           firstNameDec,
+		LastName:            lastNameDec,
+		Email:               emailDec,
+		PhoneNumber:         phoneNumberDec,
+		AcademicInstitution: academicInstitutionDec,
+		CreatedAt:           *pgmapper.PgTimestampzToTimePtr(result.EventRegistrationInvitationCreatedAt),
+		UpdatedAt:           *pgmapper.PgTimestampzToTimePtr(result.EventRegistrationInvitationUpdatedAt),
+		CancelledAt:         pgmapper.PgTimestampzToTimePtr(result.EventRegistrationInvitationCancelledAt),
+	}
+
+	inboxMessage := &entity.InboxMessage{
+		Id:                     result.InboxMessageID,
+		SenderCredentialId:     &result.SenderCredentialID,
+		ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+		ReceiverEmail:          emailDec,
+		ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
+		MessageType:            int(result.MessageType),
+		MessageContent:         string(result.MessageContent),
+		FallbackMessageContent: pgmapper.PgTextToStringPtr(result.FallbackMessageContent),
+		IsRead:                 int(result.InboxMessageIsRead.Int32),
+		CreatedAt:              *pgmapper.PgTimestampzToTimePtr(result.InboxMessageCreatedAt),
+		UpdatedAt:              *pgmapper.PgTimestampzToTimePtr(result.InboxMessageUpdatedAt),
+		HiddenAt:               pgmapper.PgTimestampzToTimePtr(result.InboxMessageHiddenAt),
+		DeletedAt:              pgmapper.PgTimestampzToTimePtr(result.InboxMessageDeletedAt),
+	}
+
+	return registrationInvitation, inboxMessage, nil
 }
 
 func (r *Repository) UpdateEventRegistrationInvitation(ctx context.Context, id uuid.UUID, params datagateway.UpdateEventRegistrationInvitationParameters) (*entity.EventRegistrationInvitation, error) {
@@ -247,9 +364,9 @@ func (r *Repository) UpdateEventRegistrationInvitation(ctx context.Context, id u
 	}
 
 	return &entity.EventRegistrationInvitation{
-		ID:                  result.ID,
-		EventID:             result.EventID,
-		InboxMessageID:      result.InboxMessageID,
+		Id:                  result.ID,
+		EventId:             result.EventID,
+		InboxMessageId:      result.InboxMessageID,
 		ValidUntil:          pgmapper.PgTimestampzToTimePtr(result.ValidUntil),
 		Code:                pgmapper.PgTextToStringPtr(result.Code),
 		FirstName:           firstNameDec,

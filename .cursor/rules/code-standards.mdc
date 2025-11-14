@@ -7,6 +7,45 @@ description: "Unified code standards for Go backend and TypeScript/React fronten
 
 ## Go Backend Standards
 
+### Naming Conventions
+
+**Variable & Field Naming - "Id" vs "ID"**
+
+Always use `Id` (with lowercase 'd') in camelCase variable names, not `ID` (all caps).
+
+```go
+// ✅ CORRECT - Use "Id" in camelCase
+userId := uuid.New()
+eventId := "event-123"
+credentialId := user.AuthenticationCredentialId
+
+type Event struct {
+    Id                  uuid.UUID
+    OwnerCredentialId   uuid.UUID
+    EventId            string
+}
+
+func GetEventById(ctx context.Context, eventId uuid.UUID) (*Event, error) {
+    // ...
+}
+
+// ❌ WRONG - Don't use "ID" (all caps)
+userID := uuid.New()
+eventID := "event-123"
+credentialID := user.AuthenticationCredentialID
+
+type Event struct {
+    ID                  uuid.UUID
+    OwnerCredentialID   uuid.UUID
+}
+
+func GetEventByID(ctx context.Context, eventID uuid.UUID) (*Event, error) {
+    // ...
+}
+```
+
+**Rationale**: Consistent camelCase naming improves readability and follows the project's established patterns across entities, functions, and variables.
+
 ### Package Structure
 ```go
 package handlers
@@ -80,6 +119,34 @@ defer cancel()
 - Error codes: 400 (validation), 404 (not found), 409 (conflict), 500 (server)
 
 ## TypeScript & React Standards
+
+### Naming Convention: API Key Transformation
+**Critical Rule**: Convert API keys from **snake_case** to **camelCase** at the service layer.
+
+```typescript
+// ❌ WRONG - Using snake_case from API directly in components
+const event = await api.getEvent(); // Returns { event_id, created_at, updated_at }
+<Component eventId={event.event_id} /> // Direct snake_case usage
+
+// ✅ CORRECT - Transform at service level
+// apps/web/src/services/EventService.ts
+export async function getEventById(eventId: string) {
+  const response = await api.getEvent({ id: eventId });
+  
+  // Transform snake_case → camelCase
+  return {
+    eventId: response.event_id,
+    createdAt: response.created_at,
+    updatedAt: response.updated_at,
+    // ... rest of transformed fields
+  };
+}
+
+// Component receives camelCase
+<Component eventId={eventData.eventId} />
+```
+
+**Flow**: Backend (snake_case) → Service (transform) → Frontend (camelCase)
 
 ### Component Structure
 ```tsx

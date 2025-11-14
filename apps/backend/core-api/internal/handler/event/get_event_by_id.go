@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"apps/backend/common/customerror"
+	event_uc "apps/backend/core-api/internal/usecase/event"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -52,13 +53,11 @@ func (h *Handler) GetEventById(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	return ctx.JSON(EventResponse{
-		ID:                       event.ID,
-		ChainID:                  int32(event.ChainID),
+	return ctx.JSON(event_uc.EventResponse{
+		Id:                       event.ID,
+		ChainID:                  int32(event.ChainId),
 		ContactNumber:            event.ContactNumber,
-		OwnerCredentialID:        event.OwnerCredentialID,
-		BannerStorageKey:         event.BannerStorageKey,
-		IconStorageKey:           event.IconStorageKey,
+		OwnerCredentialID:        event.OwnerCredentialId,
 		BannerPresignedURL:       bannerPresignedURL,
 		IconPresignedURL:         iconPresignedURL,
 		Title:                    event.Title,
