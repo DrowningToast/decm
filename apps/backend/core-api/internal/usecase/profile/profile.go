@@ -18,13 +18,14 @@ type ProfileUsecase struct {
 	ProfileDg                  datagateway.ProfileDataGateway
 	AuthenticationCredentialDg datagateway.AuthenticationCredentialDataGateway
 
-	AuthService auth.AuthService
+	AuthService *auth.AuthService
 }
 
-func NewProfileUsecase(profileDg datagateway.ProfileDataGateway, authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway) *ProfileUsecase {
+func NewProfileUsecase(profileDg datagateway.ProfileDataGateway, authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway, authService *auth.AuthService) *ProfileUsecase {
 	return &ProfileUsecase{
 		ProfileDg:                  profileDg,
 		AuthenticationCredentialDg: authenticationCredentialDg,
+		AuthService:                authService,
 	}
 }
 
