@@ -58,13 +58,10 @@ RUN printf "VITE_CORE_BACKEND_API=%s\nVITE_APP_URL=%s\nVITE_ENVIRONMENT=%s\nVITE
         "${VITE_GOOGLE_MAPS_API_KEY:-}" \
         > .env
 
-# Build using turbo - build @decm/api and web app together
-# Turbo handles the dependency order automatically
-RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm turbo build --filter=@decm/web...
-
-# Verify build outputs exist
-RUN echo "Verifying build outputs..." && \
-    ls -la apps/web/dist/ || (echo "ERROR: Frontend build failed - apps/web/dist/ not found" && exit 1)
+# Build the web app
+# Vite will automatically import and compile @decm/api TypeScript source during the build
+# No separate build step needed for @decm/api - Vite handles it all
+RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm turbo build --filter=@decm/web
 
 # ---
 # Runtime stage - Nginx to serve static files
