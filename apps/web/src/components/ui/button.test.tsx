@@ -38,11 +38,14 @@ describe("Button", () => {
         const { rerender } = render(<Button size="sm">Small</Button>);
         expect(screen.getByRole("button")).toHaveClass("h-8");
 
+        rerender(<Button size="default">Default</Button>);
+        expect(screen.getByRole("button")).toHaveClass("px-4");
+
         rerender(<Button size="lg">Large</Button>);
-        expect(screen.getByRole("button")).toHaveClass("h-10");
+        expect(screen.getByRole("button")).toHaveClass("h-12");
 
         rerender(<Button size="xl">Extra Large</Button>);
-        expect(screen.getByRole("button")).toHaveClass("h-12");
+        expect(screen.getByRole("button")).toHaveClass("h-16");
 
         rerender(<Button size="icon">Icon</Button>);
         expect(screen.getByRole("button")).toHaveClass("size-9");

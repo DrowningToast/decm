@@ -115,7 +115,7 @@ export const BaseConfirmPage: React.FC<BaseConfirmPageProps> = ({
                         onClick={onConfirm}
                         disabled={isConfirmDisabled || isLoading}
                         variant="primary"
-                        size="xl"
+                        size="lg"
                         className="w-full"
                     >
                         {confirmButtonText}
@@ -126,7 +126,7 @@ export const BaseConfirmPage: React.FC<BaseConfirmPageProps> = ({
                         type="button"
                         onClick={onBack}
                         variant="secondary-light"
-                        size="xl"
+                        size="lg"
                         className="w-full flex"
                     >
                         {backButtonText}

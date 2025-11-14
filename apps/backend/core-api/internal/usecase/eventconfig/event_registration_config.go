@@ -33,7 +33,7 @@ type CreateEventRegistrationConfigParams struct {
 
 func (uc *EventConfigUsecase) CreateEventRegistrationConfig(ctx context.Context, eventID uuid.UUID, params CreateEventRegistrationConfigParams) (*entity.EventRegistrationConfig, error) {
 	// Check if config already exists for this event
-	existingConfig, err := uc.EventRegistrationDg.GetEventRegistrationConfigByEventID(ctx, eventID)
+	existingConfig, err := uc.EventRegistrationDg.GetEventRegistrationConfigByEventId(ctx, eventID)
 	if err == nil && existingConfig != nil {
 		return nil, fmt.Errorf("event registration config already exists for event ID: %s", eventID.String())
 	}
@@ -57,7 +57,7 @@ func (uc *EventConfigUsecase) CreateEventRegistrationConfig(ctx context.Context,
 }
 
 func (uc *EventConfigUsecase) GetEventRegistrationConfigByEventID(ctx context.Context, eventID uuid.UUID) (*entity.EventRegistrationConfig, error) {
-	return uc.EventRegistrationDg.GetEventRegistrationConfigByEventID(ctx, eventID)
+	return uc.EventRegistrationDg.GetEventRegistrationConfigByEventId(ctx, eventID)
 }
 
 type UpdateEventRegistrationConfigParams struct {
@@ -91,7 +91,7 @@ func (uc *EventConfigUsecase) UpdateEventRegistrationConfig(ctx context.Context,
 		return nil, err
 	}
 
-	eventRegistrationConfig, err := uc.EventRegistrationDg.GetEventRegistrationConfigByEventID(ctx, eventID)
+	eventRegistrationConfig, err := uc.EventRegistrationDg.GetEventRegistrationConfigByEventId(ctx, eventID)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +144,7 @@ func (uc *EventConfigUsecase) UpdateEventRegistrationConfig(ctx context.Context,
 		}
 	}
 
-	return uc.EventRegistrationDg.GetEventRegistrationConfigByEventID(ctx, eventID)
+	return uc.EventRegistrationDg.GetEventRegistrationConfigByEventId(ctx, eventID)
 }
 
 func (uc *EventConfigUsecase) DeleteEventRegistrationConfig(ctx context.Context, eventID uuid.UUID) error {

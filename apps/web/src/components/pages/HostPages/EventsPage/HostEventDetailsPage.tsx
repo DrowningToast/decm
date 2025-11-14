@@ -21,33 +21,35 @@ import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
 import { issuerColumns } from "./columns/issuer-columns";
 import type {
-    EventconfigEventRegistrationConfigResponse,
-    EventEventResponse,
     GetEventCertificateConfigData,
     GetEventContractByEventIdData,
     GetEventIssuersByEventIdData,
-    GetEventRegistrationInvitationsByEventIdData,
 } from "@decm/api";
-import { toEventRegistrationConfigStatus } from "@/lib/events/event.utils";
 import { formatEthereumAddress } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type { SortingState } from "@tanstack/react-table";
-import { ParticipantColumns, type Participant } from "./columns/ParticipantColumns";
+import { useParticipantColumns, type Participant } from "./columns/useParticipantColumns";
 import { CertificateColumns } from "./columns/CertificateColumns";
 import { Separator } from "@/components/ui/separator";
 import { useEventCertificates } from "@/hooks/useEventCertificates";
 import { useRevokeEventCertificate } from "@/hooks/events/useRevokeEventCertificate";
 import { Link } from "@/router";
+import type {
+    EventRegistrationConfiguration,
+    EventRegistrationInvitation,
+} from "@/services/EventRegistration/EventRegistration";
+import { EventStatusesViewModel, EventTypesViewModel } from "./ViewModel";
+import type { EventViewModel } from "@/services/EventService/EventService";
 
 interface HostEventDetailsPageProps {
     eventId: string;
-    event: EventEventResponse;
-    eventRegistrationConfig: EventconfigEventRegistrationConfigResponse;
+    event: EventViewModel;
+    eventRegistrationConfig: EventRegistrationConfiguration;
     eventCertificateConfig?: GetEventCertificateConfigData;
     eventIssuers?: GetEventIssuersByEventIdData;
     eventContract?: GetEventContractByEventIdData;
-    eventInvitations?: GetEventRegistrationInvitationsByEventIdData;
+    eventInvitations?: EventRegistrationInvitation[];
 }
 
 export default function HostEventDetailsPage({
@@ -82,6 +84,7 @@ export default function HostEventDetailsPage({
 
     // Memoized filtered and sorted data
     const processedData = useMemo(() => {
+        console.log(eventInvitations);
         if (!eventInvitations) return [];
 
         let filtered = [...eventInvitations];
@@ -91,11 +94,11 @@ export default function HostEventDetailsPage({
             const searchLower = debouncedSearch.toLowerCase();
             filtered = filtered.filter(
                 (item) =>
-                    item.first_name?.toLowerCase().includes(searchLower) ||
-                    item.last_name?.toLowerCase().includes(searchLower) ||
+                    item.firstName?.toLowerCase().includes(searchLower) ||
+                    item.lastName?.toLowerCase().includes(searchLower) ||
                     item.email?.toLowerCase().includes(searchLower) ||
-                    item.academic_institution?.toLowerCase().includes(searchLower) ||
-                    item.phone_number?.toLowerCase().includes(searchLower),
+                    item.academicInstitution?.toLowerCase().includes(searchLower) ||
+                    item.phoneNumber?.toLowerCase().includes(searchLower),
             );
         }
 
@@ -126,16 +129,18 @@ export default function HostEventDetailsPage({
         return processedData.slice(startIndex, endIndex).map(
             (invitation): Participant => ({
                 id: invitation.id,
-                firstName: invitation.first_name || "",
-                lastName: invitation.last_name || "",
+                firstName: invitation.firstName || "",
+                lastName: invitation.lastName || "",
                 email: invitation.email || "",
-                phoneNumber: invitation.phone_number || "",
-                academicInstitution: invitation.academic_institution || "",
+                phoneNumber: invitation.phoneNumber || "",
+                academicInstitution: invitation.academicInstitution || "",
                 walletAddress: "", // Not available in invitation data
-                status: invitation.cancelled_at ? "rejected" : "pending",
+                status: invitation.cancelledAt ? "rejected" : "pending",
             }),
         );
     }, [processedData, currentPage, pageSize]);
+
+    const participantColumns = useParticipantColumns();
 
     // Callbacks for DataTable
     const handlePageChange = useCallback((page: number) => {
@@ -163,17 +168,7 @@ export default function HostEventDetailsPage({
     const { certificates: eventCertificates, isLoading: certificatesLoading } =
         useEventCertificates(eventId);
 
-    // Mock participant requirements data - replace with actual data
-    // const participantRequirements: Record<string, RequirementStatus> = {
-    //     firstName: "required",
-    //     lastName: "required",
-    //     email: "required",
-    //     bio: "optional",
-    //     phoneNumber: "optional",
-    //     address: "not_required",
-    //     academicInstitution: "required",
-    //     academicEmail: "required",
-    // };
+    console.log(event.googleMapQuery);
 
     return (
         <div className="flex flex-col gap-y-6">
@@ -181,7 +176,7 @@ export default function HostEventDetailsPage({
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <img
-                            src={event.icon_presigned_url ?? ""}
+                            src={event.iconPresignedUrl ?? ""}
                             alt={event.title}
                             className="w-12 h-12 rounded-full object-cover"
                         />
@@ -190,16 +185,17 @@ export default function HostEventDetailsPage({
                             <Typography variant="header" tag="p" size={"header"}>
                                 {event.title}
                             </Typography>
-                            {event.is_verified && <CheckCircle2Icon color="#eb5331" />}
+                            {event.isVerified && <CheckCircle2Icon color="#eb5331" />}
                         </div>
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <Button size="xl" variant="secondary-light">
+                        {/* TODO: Add confirm event button */}
+                        {/* <Button size="xl" variant="secondary-light">
                             {t("events.hostDetails.actions.confirmEvent")}
-                        </Button>
+                        </Button> */}
                         <Link to={`/host/events/:eventId/edit`} params={{ eventId }}>
-                            <Button size="xl">{t("events.hostDetails.actions.editEvent")}</Button>
+                            <Button size="lg">{t("events.hostDetails.actions.editEvent")}</Button>
                         </Link>
                     </div>
                 </div>
@@ -208,15 +204,15 @@ export default function HostEventDetailsPage({
             <SectionContainer className="lg:grid lg:grid-cols-4 gap-8">
                 <div className="flex flex-col gap-4 lg:col-span-3">
                     <Typography tag="p" size={"base"} color="muted">
-                        {event.short_description}
+                        {event.shortDescription}
                     </Typography>
 
                     <Typography tag="p" size={"base"} color="muted">
-                        {event.long_description}
+                        {event.longDescription}
                     </Typography>
 
                     <img
-                        src={event.banner_presigned_url ?? ""}
+                        src={event.bannerPresignedUrl ?? ""}
                         alt={event.title}
                         className="w-full h-[350px] object-cover rounded-lg"
                     />
@@ -225,23 +221,17 @@ export default function HostEventDetailsPage({
                 <div className="flex flex-col gap-4 mt-6 lg:mt-0 border rounded-lg p-6 ">
                     <TextLabelValue
                         label={t("events.details.status")}
-                        value={event.event_status?.toUpperCase() ?? t("common.notAvailable")}
-                    />
-                    <TextLabelValue
-                        label={t("events.details.finalCallForRequest")}
-                        value={t("common.notAvailable")}
-                    />
-                    <TextLabelValue
-                        label={t("events.details.participationRequest")}
                         value={
-                            event.is_booking_request_required
-                                ? t("common.required")
-                                : t("common.notRequired")
+                            EventStatusesViewModel[event.eventStatus] ?? t("common.notAvailable")
                         }
                     />
                     <TextLabelValue
+                        label={t("events.details.eventType")}
+                        value={EventTypesViewModel[event.eventType] ?? t("common.notAvailable")}
+                    />
+                    <TextLabelValue
                         label={t("events.details.seatsCount")}
-                        value={`${event.attendees_count ?? 0} / ${event.max_attendees}`}
+                        value={`${event.attendeesCount ?? 0} / ${event.maxAttendees}`}
                     />
                     <TextLabelValue
                         label={t("events.details.eventContractAddress")}
@@ -285,31 +275,31 @@ export default function HostEventDetailsPage({
                                 />
                                 <TextLabelValue
                                     label={t("events.form.googleMapQuery")}
-                                    value={event.google_map_query ?? ""}
+                                    value={event.googleMapQuery ?? ""}
                                 />
 
                                 <TextLabelValue
                                     label={t("events.form.contactAddress")}
-                                    value={event.contact_number ?? ""}
+                                    value={event.contactNumber ?? ""}
                                 />
                                 <TextLabelValue
                                     label={t("events.hostDetails.eventInfo.contact")}
-                                    value={event.contact_number ?? ""}
+                                    value={event.contactNumber ?? ""}
                                 />
                             </div>
                             <div className="flex-1">
-                                <GoogleMapsEmbed query={event.google_map_query ?? ""} />
+                                <GoogleMapsEmbed query={event.googleMapQuery ?? ""} />
                             </div>
                         </div>
                     </StyledTabsContent>
                     <StyledTabsContent value="participants">
                         <div className="space-y-4">
                             {/* Event Settings Summary */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 my-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-6">
                                 <TextLabelValue
                                     label={t("events.settings.eventType")}
                                     value={
-                                        event.is_public
+                                        event.isPublic
                                             ? t("participantSettings.eventTypePublic")
                                             : t("participantSettings.eventTypePrivate")
                                     }
@@ -317,7 +307,7 @@ export default function HostEventDetailsPage({
                                 <TextLabelValue
                                     label={t("events.settings.bookingRequired")}
                                     value={
-                                        event.is_booking_request_required
+                                        event.isBookingRequestRequired
                                             ? t("common.yes")
                                             : t("common.no")
                                     }
@@ -325,23 +315,29 @@ export default function HostEventDetailsPage({
                                 <TextLabelValue
                                     label={t("events.settings.tokenTransferable")}
                                     value={
-                                        event.is_ticket_transferable
+                                        event.isTicketTransferable
                                             ? t("common.yes")
                                             : t("common.no")
                                     }
                                 />
 
                                 <div className="flex items-center justify-end gap-4">
-                                    <Button variant="secondary-dark" className="h-full">
-                                        <a href={`/host/events/${eventId}/imports/participants`}>
-                                            {t("participantImport.title")}
-                                        </a>
-                                    </Button>
-                                    <WrappedButton
-                                        href={`/host/events/${eventId}/settings/participant`}
+                                    <Link
+                                        to="/host/events/:eventId/imports/participants"
+                                        params={{ eventId }}
                                     >
-                                        {t("events.settings.participantSettings")}
-                                    </WrappedButton>
+                                        <Button size="lg" variant="secondary-light">
+                                            {t("participantImport.title")}
+                                        </Button>
+                                    </Link>
+                                    <Link
+                                        to="/host/events/:eventId/settings/participant"
+                                        params={{ eventId }}
+                                    >
+                                        <Button size="lg" variant="primary">
+                                            {t("events.settings.participantSettings")}
+                                        </Button>
+                                    </Link>
                                 </div>
                             </div>
 
@@ -367,55 +363,39 @@ export default function HostEventDetailsPage({
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                                             <RequirementItem
                                                 label={t("events.participants.fields.firstName")}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.first_name_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.firstName}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.lastName")}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.last_name_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.lastName}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.email")}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.email_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.email}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.bio")}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.bio_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.bio}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.phoneNumber")}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.phone_number_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.phoneNumber}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.address")}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.address_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.address}
                                             />
                                             <RequirementItem
                                                 label={t(
                                                     "events.participants.fields.academicInstitution",
                                                 )}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.academic_institution_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.academicInstitution}
                                             />
                                             <RequirementItem
                                                 label={t(
                                                     "events.participants.fields.academicEmail",
                                                 )}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.academic_email_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.academicEmail}
                                             />
                                         </div>
                                     </AccordionContent>
@@ -423,7 +403,7 @@ export default function HostEventDetailsPage({
                             </Accordion>
 
                             <DataTable
-                                columns={ParticipantColumns()}
+                                columns={participantColumns}
                                 data={paginatedData}
                                 totalItems={processedData.length}
                                 currentPage={currentPage}

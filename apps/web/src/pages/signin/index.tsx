@@ -3,6 +3,7 @@ import { env } from "@/config/env";
 import { LOCAL_STORAGE_KEYS } from "../../lib/constants/localStorage";
 import { SigninPage } from "@/components/pages/Auth/SigninPage";
 import { useSignInPageRedirect } from "@/components/pages/Auth/useSignInPageRedirect";
+import { PageContainer } from "@/components/container/PageContainer";
 
 const SignInPage = () => {
     const { isLoading } = useSignInPageRedirect();
@@ -19,7 +20,11 @@ const SignInPage = () => {
         window.location.href = `${env.VITE_CORE_BACKEND_API}/api/v1/auth/request-google-oauth`;
     };
 
-    return <SigninPage onGoogleOAuthClick={handleRequestGoogleOAuthUrl} isLoading={isLoading} />;
+    return (
+        <PageContainer>
+            <SigninPage onGoogleOAuthClick={handleRequestGoogleOAuthUrl} isLoading={isLoading} />
+        </PageContainer>
+    );
 };
 
 export default SignInPage;

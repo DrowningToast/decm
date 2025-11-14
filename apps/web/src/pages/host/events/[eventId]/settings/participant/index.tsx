@@ -18,11 +18,5 @@ export default function Page() {
         return <div>Event or event registration config not found</div>;
     }
 
-    return (
-        <EventParticipantSettingPage
-            eventId={eventId}
-            event={event}
-            eventRegistrationConfig={eventRegistrationConfig}
-        />
-    );
+    return <EventParticipantSettingPage eventId={eventId} />;
 }

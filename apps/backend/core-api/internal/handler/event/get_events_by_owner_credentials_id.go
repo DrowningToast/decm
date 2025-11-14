@@ -53,36 +53,13 @@ func (h *Handler) GetEventsByOwnerCredentialsId(ctx *fiber.Ctx) error {
 
 	result := make([]*event_uc.EventResponse, len(events))
 	for i, event := range events {
-		bannerPresignedURL, err := h.EventUc.S3Service.GetPresignedURL(ctx.Context(), event.BannerStorageKey)
+		eventResponse, err := h.EventUc.ToEventResponse(ctx.Context(), event)
 		if err != nil {
 			return customerror.Parse(&customerror.ErrInternalServer, err)
 		}
-		iconPresignedURL, err := h.EventUc.S3Service.GetPresignedURL(ctx.Context(), event.IconStorageKey)
+		result[i] = eventResponse
 		if err != nil {
 			return customerror.Parse(&customerror.ErrInternalServer, err)
-		}
-
-		result[i] = &event_uc.EventResponse{
-			Id:                       event.ID,
-			ChainID:                  int32(event.ChainId),
-			ContactNumber:            event.ContactNumber,
-			OwnerCredentialID:        event.OwnerCredentialId,
-			BannerPresignedURL:       bannerPresignedURL,
-			IconPresignedURL:         iconPresignedURL,
-			Title:                    event.Title,
-			ShortDescription:         event.ShortDescription,
-			LongDescription:          event.LongDescription,
-			StartDate:                event.StartDate,
-			EndDate:                  event.EndDate,
-			Location:                 event.Location,
-			GoogleMapQuery:           event.GoogleMapQuery,
-			MaxAttendees:             int32(event.MaxAttendees),
-			IsPublic:                 event.IsPublic,
-			IsBookingRequestRequired: event.IsBookingRequestRequired,
-			IsVerified:               event.IsVerified,
-			IsTicketTransferable:     event.IsTicketTransferable,
-			CreatedAt:                event.CreatedAt,
-			UpdatedAt:                event.UpdatedAt,
 		}
 	}
 

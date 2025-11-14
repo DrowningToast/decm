@@ -87,7 +87,7 @@ export const WalletOnboardSignPage = () => {
                         type="button"
                         onClick={handleSignSignature}
                         variant="primary"
-                        size="xl"
+                        size="lg"
                         className="w-full"
                     >
                         {t("verify.requestButton")}

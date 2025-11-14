@@ -106,7 +106,7 @@ export class EventService {
         return response.events?.map(mapEntityEventToEventItem) ?? [];
     }
 
-    public async getEventViewModel(eventId: string): Promise<EventViewModelExtended> {
+    public async getEventViewModelExtended(eventId: string): Promise<EventViewModelExtended> {
         const response = await this._coreApi.v1.getEventViewmodelById({ eventId });
         return mapEventViewModelExtended(response);
     }

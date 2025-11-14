@@ -3,29 +3,30 @@ import { type ParticipantSettingsData } from "@/lib/schemas/participantSettingsS
 
 import SectionContainer from "@/components/container/SectionContainer";
 import { useUpdateParticipantSetting } from "@/components/forms/ParticipantSettingsForm/useUpdateParticipantSetting";
-import type {
-    EntityEventType,
-    EventconfigEventRegistrationConfigResponse,
-    EventconfigUpdateEventRegistrationConfigRequest,
-    EventEventResponse,
-} from "@decm/api";
-import {
-    toEventRegistrationConfigStatus,
-    toEventRegistrationConfigStatusNumber,
-} from "@/lib/events/event.utils";
+import type { EntityEventType, EventconfigUpdateEventRegistrationConfigRequest } from "@decm/api";
+import { toEventRegistrationConfigStatusNumber } from "@/lib/events/event.utils";
+import { useEventViewModelUsecase } from "@/components/pages/Participant/Events/Detail/useEventViewModelUsecase";
 
 interface EventParticipantSettingPageProps {
     eventId: string;
-    event: EventEventResponse;
-    eventRegistrationConfig: EventconfigEventRegistrationConfigResponse;
 }
-export const EventParticipantSettingPage = ({
-    eventId,
-    eventRegistrationConfig,
-    event,
-}: EventParticipantSettingPageProps) => {
+export const EventParticipantSettingPage = ({ eventId }: EventParticipantSettingPageProps) => {
+    const { event, isLoading: isLoadingEvent } = useEventViewModelUsecase({ eventId });
     const { updateParticipantSetting, isUpdatingParticipantSetting } =
         useUpdateParticipantSetting(eventId);
+
+    if (isLoadingEvent) {
+        return <div>Loading event...</div>;
+    }
+
+    if (!event) {
+        return <div>Event not found</div>;
+    }
+
+    const eventRegistrationConfig = event.registrationRequirement;
+    if (!eventRegistrationConfig) {
+        return <div>Event registration config not found</div>;
+    }
 
     const onSubmit = async (data: ParticipantSettingsData) => {
         const params: EventconfigUpdateEventRegistrationConfigRequest = {
@@ -58,6 +59,8 @@ export const EventParticipantSettingPage = ({
         await updateParticipantSetting(params);
     };
 
+    console.log("eventRegistrationConfig", eventRegistrationConfig);
+
     return (
         <div>
             <SectionContainer>
@@ -66,43 +69,23 @@ export const EventParticipantSettingPage = ({
                     isLoading={isUpdatingParticipantSetting}
                     defaultValues={{
                         // Event Config
-                        academicEmail: toEventRegistrationConfigStatus(
-                            eventRegistrationConfig.academic_email_requirement_status,
-                        ),
-                        academicInstitution: toEventRegistrationConfigStatus(
-                            eventRegistrationConfig.academic_institution_requirement_status,
-                        ),
-                        address: toEventRegistrationConfigStatus(
-                            eventRegistrationConfig.address_requirement_status,
-                        ),
-                        bio: toEventRegistrationConfigStatus(
-                            eventRegistrationConfig.bio_requirement_status,
-                        ),
-                        email: toEventRegistrationConfigStatus(
-                            eventRegistrationConfig.email_requirement_status,
-                        ),
-                        firstName: toEventRegistrationConfigStatus(
-                            eventRegistrationConfig.first_name_requirement_status,
-                        ),
-                        lastName: toEventRegistrationConfigStatus(
-                            eventRegistrationConfig.last_name_requirement_status,
-                        ),
-                        phoneNumber: toEventRegistrationConfigStatus(
-                            eventRegistrationConfig.phone_number_requirement_status,
-                        ),
-                        finalCallRegistrationDate:
-                            eventRegistrationConfig.final_call_for_registration
-                                ? new Date(eventRegistrationConfig.final_call_for_registration)
-                                : undefined,
-                        registrationPassword: eventRegistrationConfig.registration_password
-                            ? eventRegistrationConfig.registration_password
+                        academicEmail: eventRegistrationConfig.academicEmail,
+                        academicInstitution: eventRegistrationConfig.academicInstitution,
+                        address: eventRegistrationConfig.address,
+                        bio: eventRegistrationConfig.bio,
+                        email: eventRegistrationConfig.email,
+                        firstName: eventRegistrationConfig.firstName,
+                        lastName: eventRegistrationConfig.lastName,
+                        phoneNumber: eventRegistrationConfig.phoneNumber,
+                        finalCallRegistrationDate: eventRegistrationConfig.finalCallForRegistration
+                            ? new Date(eventRegistrationConfig.finalCallForRegistration)
                             : undefined,
-                        requireRegistrationPassword:
-                            !!eventRegistrationConfig.registration_password,
+                        // registrationPassword: event.registrationPassword,
+                        requireRegistrationPassword: event.registrationPassword !== undefined,
 
                         // Event
-                        isBookingRequired: event.is_booking_request_required,
-                        isTicketTransferable: event.is_ticket_transferable,
+                        isBookingRequired: event.isBookingRequestRequired,
+                        isTicketTransferable: event.isTicketTransferable,
                     }}
                     showPreview={true}
                 />

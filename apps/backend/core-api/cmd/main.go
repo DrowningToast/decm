@@ -108,7 +108,7 @@ func main() {
 	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
 	authUc := auth_usecase.NewAuthUsecase() // No database dependency - reads from JWT claims
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo, authService)
-	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService, &cfg)
+	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService, &cfg)
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, logger)
 	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)
 	eventRegistrationInvitationUc := event_registration_invitation_usecase.NewEventRegistrationInvitationUsecase(pgRepo, pgRepo, pgRepo)

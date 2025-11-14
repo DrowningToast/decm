@@ -21,7 +21,7 @@ import (
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
-// @Router /api/v1/events/{eventId}/registration/invitations [get]
+// @Router /api/v1/event-registration-invitations/{eventId} [get]
 func (h *Handler) GetEventRegistrationInvitationsByEventId(ctx *fiber.Ctx) error {
 	// 1. Get current user
 	currentUser, err := h.AuthenticationService.GetUserContext(ctx)

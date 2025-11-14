@@ -5,7 +5,14 @@ import {
     type EventEventResponse,
     EntityEventType,
 } from "@decm/api";
-import type { EventViewModelExtended, EventStatus, EventItem, EventType } from "./EventService";
+import type {
+    EventViewModelExtended,
+    EventStatus,
+    EventItem,
+    EventType,
+    EventViewModel,
+} from "./EventService";
+import { mapEntityEventRegistrationConfigToEventRegistrationConfiguration } from "../EventRegistration/mapper";
 
 export const mapEntityEventStatusToEventStatus = (
     entityEventStatus: EntityEventStatus,
@@ -60,9 +67,7 @@ export const mapEntityEventToEventItem = (entityEvent: EntityEvent): EventItem =
     };
 };
 
-export const mapEventResponseToViewModel = (
-    eventResponse: EventEventResponse,
-): EventViewModelExtended => {
+export const mapEventResponseToViewModel = (eventResponse: EventEventResponse): EventViewModel => {
     return {
         bannerPresignedUrl: eventResponse.banner_presigned_url,
         chainId: eventResponse.chain_id,
@@ -87,6 +92,7 @@ export const mapEventResponseToViewModel = (
         startDate: new Date(eventResponse.start_date),
         title: eventResponse.title,
         updatedAt: new Date(eventResponse.updated_at),
+        googleMapQuery: eventResponse.google_map_query,
     };
 };
 
@@ -99,7 +105,9 @@ export const mapEventViewModelExtended = (
         isJoined: eventViewModel.is_joined,
         isFull: eventViewModel.is_full,
         finalCallDate: eventViewModel.registration_config?.final_call_for_registration,
-
+        registrationRequirement: mapEntityEventRegistrationConfigToEventRegistrationConfiguration(
+            eventViewModel.registration_config,
+        ),
         accessManagerContractAddress:
             eventViewModel.event_contract?.access_manager_contract_address,
         eventContractAddress: eventViewModel.event_contract?.event_contract_address,

@@ -24,7 +24,6 @@ export type BottomNavVariant =
     | "search-identities"
     | "event-password"
     | "invited"
-    | "shortlisted"
     | "participating"
     | "invitation-required"
     | "certificate-signing"
@@ -58,8 +57,6 @@ export const BottomNav = ({
             case "event-password":
                 return <EventPasswordNav />;
             case "invited":
-                return <InvitedNav />;
-            case "shortlisted":
                 return <InvitedNav />;
             case "participating":
                 return <ParticipatingNav />;

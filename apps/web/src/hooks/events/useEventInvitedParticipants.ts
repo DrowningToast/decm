@@ -1,5 +1,5 @@
-import { coreApiClient } from "@/lib/api/api";
 import { QUERY_KEY } from "@/lib/queryKeys";
+import { eventRegistrationService } from "@/services/services";
 import { useQuery } from "@tanstack/react-query";
 
 export function useEventInvitedParticipants(eventId: string) {
@@ -9,10 +9,10 @@ export function useEventInvitedParticipants(eventId: string) {
         error,
     } = useQuery({
         queryKey: QUERY_KEY.event.invitations.byEventId(eventId),
-        queryFn: () => coreApiClient.v1.getEventRegistrationInvitationsByEventId({ eventId }),
+        queryFn: () => eventRegistrationService.getInvitationByEventId(eventId),
         enabled: !!eventId,
     });
-
+    console.log(invitations);
     return {
         invitations,
         isLoading,

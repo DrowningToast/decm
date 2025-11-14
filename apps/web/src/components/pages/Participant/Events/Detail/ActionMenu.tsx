@@ -17,12 +17,14 @@ interface ActionMenuProps {
 export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
     const { t } = useTranslation();
     const { user } = useAuth();
-    const [isSubmittingPII, setIsSubmittingPII] = useState(false);
+    const [isSubmiting, setIsSubmiting] = useState(false);
 
     const { bottomNavVariant } = useEventViewModelUsecase({ eventId });
     const { showPreviewModal, closePreviewModal } = usePreviewRegistrationUsecase(eventId);
     const { invitation } = useEventInvitationByUserAndEvent(eventId, user?.walletAddress);
     const registrationInvitation = invitation?.registrationInvitation;
+
+    console.log("registrationInvitation", registrationInvitation);
 
     // Use invitation data first, then profile data, then empty object
     const prefilledProfile = useMemo<RegistrationConfirmDataForm>(() => {
@@ -65,9 +67,9 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
         return "";
     }, [bottomNavVariant, t]);
 
-    const handlePIISubmit = async (data: RegistrationConfirmDataForm) => {
+    const handleSubmit = async (data: RegistrationConfirmDataForm) => {
         try {
-            setIsSubmittingPII(true);
+            setIsSubmiting(true);
             // TODO: Implement API call to submit PII data
             console.log("Registration Confirm Data submitted:", data);
 
@@ -80,13 +82,16 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
             console.error("Failed to submit Registration Confirm data:", error);
             toast.error(t("events.registration.piiForm.submitError"));
         } finally {
-            setIsSubmittingPII(false);
+            setIsSubmiting(false);
         }
     };
 
-    const handlePIICancel = () => {
+    const handleCancel = () => {
         closePreviewModal();
     };
+
+    console.log("prefilledProfile", prefilledProfile);
+    console.log("showPreviewModal", showPreviewModal);
 
     // Always show ActionMenu with conditional PII form
     return (
@@ -96,9 +101,9 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
                 {showPreviewModal && (
                     <RegistrationConfirmForm
                         eventId={eventId}
-                        onSubmit={handlePIISubmit}
-                        onCancel={handlePIICancel}
-                        isSubmitting={isSubmittingPII}
+                        onSubmit={handleSubmit}
+                        onCancel={handleCancel}
+                        isSubmitting={isSubmiting}
                         initialData={prefilledProfile}
                     />
                 )}

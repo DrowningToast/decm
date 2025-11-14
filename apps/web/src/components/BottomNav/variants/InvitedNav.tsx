@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import type { JSX as ReactJSX } from "react";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, PartyPopper } from "lucide-react";
 import { useBottomContainerContext } from "../context";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -42,17 +42,18 @@ export const InvitedNav = ({ className: propClassName }: InvitedNavProps): React
             {/* Message Box - Clickable */}
             <button
                 onClick={handleAccept}
-                className="flex-1 h-10 bg-white rounded-lg flex items-center justify-center px-4 hover:bg-white/90 transition-colors cursor-pointer"
+                className="mx-auto flex-1 h-10 bg-white rounded-lg flex items-center justify-center px-4 gap-2 hover:bg-white/90 transition-colors cursor-pointer"
                 aria-label="Accept invitation"
             >
                 <Typography
                     variant="text"
                     tag="span"
-                    color="background-alt"
-                    className="text-xs font-normal leading-normal tracking-[0.06px] text-center whitespace-nowrap"
+                    color="primary"
+                    className="text-xs leading-normal tracking-[0.06px] text-center whitespace-nowrap"
                 >
                     {t("participant.events.invited")}
                 </Typography>
+                <PartyPopper className="w-4 h-4 text-primary" />
             </button>
         </div>
     );

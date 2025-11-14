@@ -888,7 +888,7 @@ export const EditProfilePage: React.FC = () => {
                                 <Button
                                     type="submit"
                                     variant="primary"
-                                    size="xl"
+                                    size="lg"
                                     className="w-full"
                                     disabled={isUpdating}
                                 >
@@ -907,7 +907,7 @@ export const EditProfilePage: React.FC = () => {
                                     type="button"
                                     onClick={() => navigate("/app")}
                                     variant="secondary-light"
-                                    size="xl"
+                                    size="lg"
                                     className="w-full"
                                     disabled={isUpdating}
                                 >

@@ -448,7 +448,7 @@
                 "title": "Personal Information",
                 "subtitle": "Please provide your information to register for this event",
                 "privacyTitle": "Privacy & Data Control",
-                "privacyDescription": "Your information is encrypted and secure. Use the checkboxes to control which information is publicly visible.",
+                "privacyDescription": "Your information is encrypted and secure. Your data is publicity is controlled in the settings menu. Fields marked as required are mandatory to register for the event.",
                 "submitSuccess": "Information submitted successfully",
                 "submitError": "Failed to submit information. Please try again."
             }
@@ -559,6 +559,7 @@
         },
         "details": {
             "status": "Event Status",
+            "eventType": "Event Type",
             "finalCallForRequest": "Final call for request",
             "participationRequest": "Participation request",
             "seatsCount": "Seats count",
@@ -675,7 +676,7 @@
             "inviteOnly": "Invite only",
             "nolongerAccepting": "No longer accepting request",
             "participating": "Participating",
-            "invited": "You're invited! Click here to accept.",
+            "invited": "Yay. You're invited! Click here to accept.",
             "filters": {
                 "seatsCount": "Seats Available",
                 "allEvents": "All events",

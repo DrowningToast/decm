@@ -11,7 +11,7 @@ import (
 )
 
 func (u *EventConfigUsecase) CheckEventPassword(ctx context.Context, eventID uuid.UUID, password string) (bool, error) {
-	passwordHash, err := u.EventRegistrationDg.GetEventRegistrationConfigPasswordByEventID(ctx, eventID)
+	passwordHash, err := u.EventRegistrationDg.GetEventRegistrationConfigPasswordByEventId(ctx, eventID)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to get event registration config")
 	}
