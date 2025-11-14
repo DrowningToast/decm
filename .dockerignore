@@ -60,8 +60,6 @@ documentations
 # Docker files
 docker-compose.isolated.yml
 docker-compose.prod.yml
-Dockerfile
-**/Dockerfile
 .dockerignore
 
 # Logs
