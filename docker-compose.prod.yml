@@ -150,8 +150,6 @@ services:
         restart: unless-stopped
         networks:
             - decm-prod
-        profiles:
-            - proxy # Only start when explicitly requested with --profile proxy
 
 networks:
     decm-prod:
