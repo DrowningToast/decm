@@ -91,7 +91,7 @@ func main() {
 		logger.ErrorContext(ctx, "failed to parse jwt expiration", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
-	authService := auth.NewAuthService(cfg.Jwt.Issuer, cfg.Jwt.SecretKey, expiration)
+	authService := auth.NewAuthService(cfg.Jwt.Issuer, cfg.Jwt.SecretKey, expiration, cfg.CookieDomain)
 	googleOAuthService := oauth.NewGoogleOAuthService()
 	s3Service, err := s3.NewS3Service()
 	if err != nil {

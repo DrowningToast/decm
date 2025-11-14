@@ -16,7 +16,9 @@ import (
 )
 
 const (
-	DefaultEnvPath = "../../.env"
+	DefaultEnvPath = "../../.env" // For local development
+	DockerEnvPath  = ".env"       // For Docker container
+	AppEnvPath     = "/app/.env"  // For Docker absolute path
 )
 
 var (
@@ -29,6 +31,7 @@ type Config struct {
 	Env                string `env:"ENVIRONMENT,required"`
 	Port               int    `env:"PORT,required" envDefault:"8080"`
 	CorsAllowedOrigins string `env:"CORS_ALLOWED_ORIGINS" envDefault:"http://localhost:3000, http://127.0.0.1:3000"`
+	CookieDomain       string `env:"COOKIE_DOMAIN"` // Empty for dev (host-only), domain for production
 
 	Api      ApiConfig       `envPrefix:"API_"`
 	Postgres postgres.Config `envPrefix:"DB_"`
@@ -74,18 +77,37 @@ type JwtConfig struct {
 func LoadConfig() Config {
 	configOnce.Do(
 		func() {
-			if err := godotenv.Load(DefaultEnvPath); err != nil {
-				panic(errors.Wrap(err, "failed to load environment variables"))
+			// Try to load .env file for local development
+			// In production (Docker), environment variables are injected by docker-compose,
+			// so it's okay if no .env file exists
+			envPaths := []string{DefaultEnvPath, DockerEnvPath, AppEnvPath}
+
+			fileLoaded := false
+			for _, path := range envPaths {
+				// Attempt to load, but don't panic if file doesn't exist
+				// Environment variables might already be set by the container runtime
+				if err := godotenv.Load(path); err == nil {
+					fileLoaded = true
+					break
+				}
 			}
 
+			// Parse environment variables (whether from .env file or container runtime)
+			// This will fail with a clear error if required environment variables are missing
 			envOptions := env.Options{
 				UseFieldNameByDefault: true,
 				RequiredIfNoDef:       false,
 			}
 
 			if err := env.ParseWithOptions(config, envOptions); err != nil {
-				panic(errors.Wrap(err, "failed to parse environment variables"))
+				// Provide context about where config should come from
+				if !fileLoaded {
+					panic(errors.Wrap(err, "failed to parse environment variables: no .env file found and required environment variables are not set. In Docker, ensure docker-compose is configured to inject environment variables"))
+				}
+				panic(errors.Wrap(err, "failed to parse environment variables from .env file"))
 			}
+
+			// No need for manual validation of required fields; env.ParseWithOptions enforces this.
 
 			environment, err := IParseEnvironment(config.Env)
 			if err != nil {
