@@ -15,6 +15,8 @@
         "gen-api:core": "pnpm run docs:core && cd packages/api && pnpm install && pnpm generate:core && pnpm run build",
         "compose:up": "docker compose -f docker-compose.isolated.yml up -d",
         "compose:down": "docker compose -f docker-compose.isolated.yml down",
+        "compose:prod:up": "docker compose -f docker-compose.prod.yml up -d",
+        "compose:prod:down": "docker compose -f docker-compose.prod.yml down",
         "db:setup": "pnpm run db:start && pnpm run db:wait && pnpm run db:migrate",
         "db:start": "docker compose -f docker-compose.isolated.yml up -d",
         "db:stop": "docker compose -f docker-compose.isolated.yml down",

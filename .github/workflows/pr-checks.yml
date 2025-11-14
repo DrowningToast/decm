@@ -385,7 +385,7 @@ jobs:
             - name: Run Web Tests
               run: pnpm --filter @decm/web run test:coverage
               env:
-                  VITE_API_URL: http://localhost:8080/api/v1
+                  VITE_CORE_BACKEND_API: http://localhost:8080
                   VITE_ENVIRONMENT: test
 
             - name: Upload frontend coverage
@@ -403,7 +403,7 @@ jobs:
         needs: [check-label, backend-build, frontend-build]
 
         env:
-            VITE_API_URL: http://localhost:8080/api/v1
+            VITE_CORE_BACKEND_API: http://localhost:8080
             VITE_APP_URL: http://localhost:3000
             VITE_ENVIRONMENT: test
 
@@ -432,7 +432,7 @@ jobs:
                   push: false
                   tags: decm-frontend:test
                   build-args: |
-                      VITE_API_URL=${{ env.VITE_API_URL }}
+                      VITE_CORE_BACKEND_API=${{ env.VITE_CORE_BACKEND_API }}
                       VITE_APP_URL=${{ env.VITE_APP_URL }}
                       VITE_ENVIRONMENT=${{ env.VITE_ENVIRONMENT }}
 
