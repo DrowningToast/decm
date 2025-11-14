@@ -15,6 +15,14 @@ type Handler struct {
 	InboxUc *inbox.InboxUsecase
 }
 
-func NewHandler(inboxUsecase *inbox.InboxUsecase) *Handler {
-	return &Handler{InboxUc: inboxUsecase}
+func NewHandler(
+	inboxUsecase *inbox.InboxUsecase,
+	authenticationGuardMiddleware *authenticationguard.AuthenticationGuardMiddleware,
+	authService *auth_service.AuthService,
+) *Handler {
+	return &Handler{
+		InboxUc:                      inboxUsecase,
+		AuthenticationGuardMiddleware: authenticationGuardMiddleware,
+		AuthService:                  authService,
+	}
 }
