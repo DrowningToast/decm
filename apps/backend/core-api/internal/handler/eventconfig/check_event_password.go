@@ -37,7 +37,7 @@ func (r *CheckEventPasswordBody) Parse(ctx *fiber.Ctx) error {
 // @Failure 500 {object} customerror.ErrResponse
 // @Router /api/v1/events/{event_id}/config/password-check [post]
 func (h *Handler) CheckEventPassword(ctx *fiber.Ctx) error {
-	eventId, err := uuid.Parse(ctx.Params("eventId"))
+	eventId, err := uuid.Parse(ctx.Params("event_id"))
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}

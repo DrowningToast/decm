@@ -2,29 +2,14 @@ package event_registration_invitation
 
 import (
 	"errors"
+	"fmt"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/common/validatorutils"
 	"apps/backend/core-api/internal/entity"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
-
-type GetEventRegistrationInvitationByUserAndEventRequest struct {
-	EventId uuid.UUID `json:"event_id" validate:"required,uuid"`
-}
-
-func (r *GetEventRegistrationInvitationByUserAndEventRequest) Parse(ctx *fiber.Ctx) error {
-	if err := ctx.ParamsParser(r); err != nil {
-		return customerror.Parse(&customerror.ErrInvalidArgument, err)
-	}
-	return nil
-}
-
-func (r *GetEventRegistrationInvitationByUserAndEventRequest) IsValid() error {
-	return validatorutils.ValidateStruct(r)
-}
 
 type GetEventRegistrationInvitationByUserAndEventResponse struct {
 	RegistrationInvitation *entity.EventRegistrationInvitation `json:"registration_invitation,omitempty"`
@@ -44,7 +29,18 @@ type GetEventRegistrationInvitationByUserAndEventResponse struct {
 // @Failure 500 {object} customerror.ErrResponse
 // @Router /api/v1/event-registration-invitations/my/{event_id} [get]
 func (h *Handler) GetEventRegistrationInvitationByUserAndEvent(ctx *fiber.Ctx) error {
-	// 1. Get current user
+	// 1. Convert event_id from string to UUID
+
+	eventIdStr := ctx.Params("event_id")
+	if eventIdStr == "" {
+		return customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("event_id is required"))
+	}
+
+	eventId, err := uuid.Parse(eventIdStr)
+	if err != nil {
+		return customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("invalid event_id: %w", err))
+	}
+
 	currentUser, err := h.AuthenticationService.GetUserContext(ctx)
 	if err != nil {
 		return err
@@ -53,17 +49,8 @@ func (h *Handler) GetEventRegistrationInvitationByUserAndEvent(ctx *fiber.Ctx) e
 		return customerror.Parse(&customerror.ErrUnauthorized, errors.New("not logged in"))
 	}
 
-	// 2. Parse and validate request
-	requestBody := GetEventRegistrationInvitationByUserAndEventRequest{}
-	if err := requestBody.Parse(ctx); err != nil {
-		return err
-	}
-	if err := requestBody.IsValid(); err != nil {
-		return err
-	}
-
-	// 3. Prepare parameters for usecase
-	registrationInvitation, inbox, err := h.EventRegistrationInvitationUc.GetEventRegistrationByUserAndEvent(ctx.UserContext(), requestBody.EventId, currentUser)
+	// 2. Prepare parameters for usecase
+	registrationInvitation, inbox, err := h.EventRegistrationInvitationUc.GetEventRegistrationByUserAndEvent(ctx.UserContext(), eventId, currentUser)
 	if err != nil {
 		return err
 	}

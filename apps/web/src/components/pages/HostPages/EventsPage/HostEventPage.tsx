@@ -4,7 +4,18 @@ import WrappedButton from "@/components/wrapper/WrappedButton";
 import { Link } from "@/router";
 import { DataTablePagination } from "@/components/ui/pagination/Pagination";
 import { useHostEvents } from "./useHostEvents";
-import type { EventEventResponse } from "@decm/api";
+import type { EventStatus, EventType } from "@/services/EventService/EventService";
+
+const EventTypes: Record<EventType, string> = {
+    private: "Private",
+    invite: "Invite",
+};
+
+const EventStatuses: Record<EventStatus, string> = {
+    active: "Active",
+    inactive: "Inactive",
+    closed: "Closed",
+} as const;
 
 export default function HostEventPage() {
     const {
@@ -48,7 +59,7 @@ export default function HostEventPage() {
                             </thead>
                             <tbody>
                                 {events && events.length > 0 ? (
-                                    events.flat().map((event: EventEventResponse) => (
+                                    events.flat().map((event) => (
                                         <tr key={event.id}>
                                             <td>
                                                 <Link
@@ -62,16 +73,16 @@ export default function HostEventPage() {
                                                     </p>
                                                 </Link>
                                                 <p className="text-muted text-sm mt-0.5">
-                                                    {event.start_date && event.end_date
-                                                        ? `${new Date(event.start_date).toLocaleDateString()} - ${new Date(event.end_date).toLocaleDateString()}`
+                                                    {event.startDate && event.endDate
+                                                        ? `${new Date(event.startDate).toLocaleDateString()} - ${new Date(event.endDate).toLocaleDateString()}`
                                                         : "Date TBD"}
                                                 </p>
                                                 <p className="text-muted text-sm">
-                                                    {event.is_public ? "Public" : "Invite Only"}
+                                                    {EventTypes[event.eventType]}
                                                 </p>
                                             </td>
                                             <td className="text-end">
-                                                {event.is_verified ? "Verified" : "Active"}
+                                                {EventStatuses[event.eventStatus]}
                                             </td>
                                         </tr>
                                     ))

@@ -83,7 +83,7 @@ func TestAuthenticationGuard_ValidToken(t *testing.T) {
 	// Create request with token in cookie
 	req := httptest.NewRequest("GET", "/test", nil)
 	req.AddCookie(&http.Cookie{
-		Name:  "session",
+		Name:  "themis-session",
 		Value: token,
 	})
 
@@ -125,7 +125,7 @@ func TestAuthenticationGuard_ValidToken_WithUserContext(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "/test", nil)
 	req.AddCookie(&http.Cookie{
-		Name:  "session",
+		Name:  "themis-session",
 		Value: token,
 	})
 
@@ -156,7 +156,7 @@ func TestAuthenticationGuard_EmptyToken(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "/test", nil)
 	req.AddCookie(&http.Cookie{
-		Name:  "session",
+		Name:  "themis-session",
 		Value: "",
 	})
 
@@ -173,7 +173,7 @@ func TestAuthenticationGuard_InvalidToken(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "/test", nil)
 	req.AddCookie(&http.Cookie{
-		Name:  "session",
+		Name:  "themis-session",
 		Value: "invalid-token-format",
 	})
 
@@ -194,7 +194,7 @@ func TestAuthenticationGuard_MalformedToken(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "/test", nil)
 	req.AddCookie(&http.Cookie{
-		Name:  "session",
+		Name:  "themis-session",
 		Value: token,
 	})
 
@@ -216,7 +216,7 @@ func TestAuthenticationGuard_ExpiredToken(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "/test", nil)
 	req.AddCookie(&http.Cookie{
-		Name:  "session",
+		Name:  "themis-session",
 		Value: token,
 	})
 
@@ -257,7 +257,7 @@ func TestAuthenticationGuard_MultipleRequests(t *testing.T) {
 	// First request
 	req1 := httptest.NewRequest("GET", "/test", nil)
 	req1.AddCookie(&http.Cookie{
-		Name:  "session",
+		Name:  "themis-session",
 		Value: token1,
 	})
 	resp1, err := app.Test(req1)
@@ -267,7 +267,7 @@ func TestAuthenticationGuard_MultipleRequests(t *testing.T) {
 	// Second request
 	req2 := httptest.NewRequest("GET", "/test", nil)
 	req2.AddCookie(&http.Cookie{
-		Name:  "session",
+		Name:  "themis-session",
 		Value: token2,
 	})
 	resp2, err := app.Test(req2)
@@ -319,7 +319,7 @@ func TestAuthenticationGuard_ContextPropagation(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "/test", nil)
 	req.AddCookie(&http.Cookie{
-		Name:  "session",
+		Name:  "themis-session",
 		Value: token,
 	})
 
@@ -336,7 +336,7 @@ func TestAuthenticationGuard_TokenWithSpecialCharacters(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "/test", nil)
 	req.AddCookie(&http.Cookie{
-		Name:  "session",
+		Name:  "themis-session",
 		Value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9!@#$%^&*()",
 	})
 
@@ -372,7 +372,7 @@ func TestAuthenticationGuard_ContinuesOnSuccess(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "/test", nil)
 	req.AddCookie(&http.Cookie{
-		Name:  "session",
+		Name:  "themis-session",
 		Value: token,
 	})
 

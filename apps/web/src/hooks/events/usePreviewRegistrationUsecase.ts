@@ -5,6 +5,8 @@ import { useEventPasswordNavStore } from "@/components/BottomNav/stores/event-pa
 import { useEventInvitationNavStore } from "@/components/BottomNav/stores/event-invitation";
 import { useCheckPasswordMutation } from "./useCheckPasswordMutation";
 import { useEventViewModelUsecase } from "@/components/pages/Participant/Events/Detail/useEventViewModelUsecase";
+import { AxiosError } from "axios";
+import { handleAxiosError } from "@/common/Err";
 
 /**
  * Mock PII data interface
@@ -111,16 +113,30 @@ export function usePreviewRegistrationUsecase(eventId: string) {
                 return;
             }
 
-            const isPasswordValid = await checkPassword({ eventId, password });
-            setIsPasswordValid(isPasswordValid);
-            if (isPasswordValid) {
-                toast.success(t("event.registration.success"), {
-                    description: t("event.registration.successDescription"),
-                });
-            } else {
-                toast.error(t("event.registration.incorrectPassword"), {
-                    description: t("event.registration.incorrectPasswordDescription"),
-                });
+            try {
+                const isPasswordValid = await checkPassword({ eventId, password });
+
+                setIsPasswordValid(isPasswordValid);
+                if (isPasswordValid) {
+                    toast.success(t("event.registration.success"), {
+                        description: t("event.registration.successDescription"),
+                    });
+                } else {
+                    toast.error(t("event.registration.incorrectPassword"), {
+                        description: t("event.registration.incorrectPasswordDescription"),
+                    });
+                }
+            } catch (error) {
+                if (error instanceof AxiosError) {
+                    if (error.response?.status === 400) {
+                        // maybe the password isn't set
+                        toast.error(t("event.registration.unavilablePassword"), {
+                            description: t("event.registration.unavilablePassword"),
+                        });
+                    } else {
+                        handleAxiosError(t, error);
+                    }
+                }
             }
         },
         [event?.isFull, event?.eventType, checkPassword, eventId, t],
