@@ -1,0 +1,78 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Dependencies
+node_modules
+**/node_modules
+.pnpm-store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+.turbo
+**/.turbo
+**/.cache
+**/dist
+**/build
+**/out
+**/.next
+apps/web/coverage
+apps/web/.vite
+apps/backend/bin
+
+# Environment files (handled via build args)
+.env
+.env.*
+!.env.example
+
+# Testing
+**/coverage
+**/.nyc_output
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+**/vitest.config.ts
+# Note: DO NOT exclude tsconfig.test.json - it's referenced in tsconfig.json
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Documentation
+README.md
+*.md
+docs
+documentations
+
+# Docker files
+docker-compose.isolated.yml
+docker-compose.prod.yml
+.dockerignore
+
+# Logs
+*.log
+logs
+
+# Database
+database/backups
+# Note: packages/database/migrations is needed for backend Docker image
+# Exclude other migration-related files but not the actual migrations directory
+**/node_modules/**/migrations
+
+# Temp files
+temp
+tmp
+.cache
