@@ -435,7 +435,8 @@ jobs:
                       VITE_CORE_BACKEND_API=${{ env.VITE_CORE_BACKEND_API }}
                       VITE_APP_URL=${{ env.VITE_APP_URL }}
                       VITE_ENVIRONMENT=${{ env.VITE_ENVIRONMENT }}
-
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
     # Job 9: Contract Build Successfully
     contracts-build:
         name: Contract Build
