@@ -491,6 +491,7 @@ export interface EventRegistrationConfigResponse {
     first_name_requirement_status: number;
     id: string;
     is_identity_verification_required: boolean;
+    is_registration_password_required: boolean;
     last_name_requirement_status: number;
     phone_number_requirement_status: number;
 }

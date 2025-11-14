@@ -4004,6 +4004,7 @@ const docTemplate = `{
                 "first_name_requirement_status",
                 "id",
                 "is_identity_verification_required",
+                "is_registration_password_required",
                 "last_name_requirement_status",
                 "phone_number_requirement_status"
             ],
@@ -4036,6 +4037,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "is_identity_verification_required": {
+                    "type": "boolean"
+                },
+                "is_registration_password_required": {
                     "type": "boolean"
                 },
                 "last_name_requirement_status": {
