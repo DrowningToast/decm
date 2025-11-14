@@ -6,7 +6,6 @@
     "types": "src/index.ts",
     "type": "module",
     "scripts": {
-        "build": "tsc",
         "clean": "rm -rf dist generated",
         "generate:core": "swagger-typescript-api generate -p ../../apps/backend/core-api/docs/swagger.json -o ./src/apis/core/ -n api.ts --axios --module-name-index 1 --sort-types --extract-request-params --extract-request-body --extract-response-body --extract-response-error --unwrap-response-data --single-http-client"
     },
