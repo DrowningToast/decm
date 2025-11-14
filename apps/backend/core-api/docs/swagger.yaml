@@ -769,6 +769,8 @@ definitions:
         type: string
       is_identity_verification_required:
         type: boolean
+      is_registration_password_required:
+        type: boolean
       last_name_requirement_status:
         type: integer
       phone_number_requirement_status:
@@ -783,6 +785,7 @@ definitions:
     - first_name_requirement_status
     - id
     - is_identity_verification_required
+    - is_registration_password_required
     - last_name_requirement_status
     - phone_number_requirement_status
     type: object
