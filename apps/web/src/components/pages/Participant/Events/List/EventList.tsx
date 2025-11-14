@@ -5,13 +5,13 @@ import { EventEmptyState } from "./EventEmptyState";
 import { Link } from "@/router";
 import { useSearchEventNavStore } from "@/components/BottomNav/stores/events";
 import {
-    EventStatus,
-    EventType,
+    type EventItem as EventItemType,
     type EventViewModelExtended,
 } from "@/services/EventService/EventService";
+import { EntityEventStatus, EntityEventType } from "@decm/api";
 
 interface EventListProps {
-    events: EventViewModelExtended[];
+    events: EventItemType[];
     isLoading?: boolean;
     filterType?: "all" | "my-events";
 }
@@ -110,7 +110,7 @@ export const EventList = ({ events = [], isLoading, filterType }: EventListProps
     );
 };
 
-const EventItem = ({ event }: { event: EventViewModelExtended }) => {
+const EventItem = ({ event }: { event: EventItemType | EventViewModelExtended }) => {
     const { t } = useTranslation();
 
     const getAccessIcon = (): {
@@ -119,7 +119,7 @@ const EventItem = ({ event }: { event: EventViewModelExtended }) => {
         color: "foreground-alt" | "destructive";
         iconColor: string;
     } | null => {
-        if (event.eventType === EventType.EventTypeInvite) {
+        if (event.eventType === EntityEventType.EventTypeInvite) {
             return {
                 icon: Mail,
                 label: t("participant.events.inviteOnly"),
@@ -127,7 +127,7 @@ const EventItem = ({ event }: { event: EventViewModelExtended }) => {
                 iconColor: "text-foreground-alt",
             };
         }
-        if (event.eventStatus === EventStatus.EventStatusClosed) {
+        if (event.eventStatus === EntityEventStatus.EventStatusClosed) {
             return {
                 icon: X,
                 label: t("participant.events.nolongerAccepting"),
@@ -135,7 +135,7 @@ const EventItem = ({ event }: { event: EventViewModelExtended }) => {
                 iconColor: "text-destructive",
             };
         }
-        if (event.eventType === EventType.EventTypePrivate) {
+        if (event.eventType === EntityEventType.EventTypePrivate) {
             return {
                 icon: Lock,
                 label: t("participant.events.passwordRequired"),

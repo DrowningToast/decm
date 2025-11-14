@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { ParticipantSettingsForm } from "@/components/forms/ParticipantSettingsForm";
 import { type ParticipantSettingsData } from "@/lib/schemas/participantSettingsSchema";
 
@@ -25,8 +24,6 @@ export const EventParticipantSettingPage = ({
     eventRegistrationConfig,
     event,
 }: EventParticipantSettingPageProps) => {
-    const { t } = useTranslation();
-
     const { updateParticipantSetting, isUpdatingParticipantSetting } =
         useUpdateParticipantSetting(eventId);
 

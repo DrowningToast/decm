@@ -98,13 +98,13 @@ export function usePreviewRegistrationUsecase(eventId: string) {
      */
     const previewWithPassword = useCallback(
         async (password: string = "") => {
-            if (!event?.isFull) {
+            if (event?.isFull) {
                 toast.error(t("event.registration.eventFull"), {
                     description: t("event.registration.eventFullDescription"),
                 });
                 return;
             }
-            if (event.eventType !== "private") {
+            if (event?.eventType !== "private") {
                 toast.error(t("event.registration.privateOnly"), {
                     description: t("event.registration.privateOnlyDescription"),
                 });

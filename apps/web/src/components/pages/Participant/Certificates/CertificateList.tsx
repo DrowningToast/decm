@@ -4,9 +4,10 @@ import { Loader2, SearchX } from "lucide-react";
 import { CertificateEmptyState } from "./CertificateEmptyState";
 import { Link } from "@/router";
 import { useSearchCertificateNavStore } from "@/components/BottomNav/stores/certificates";
+import type { EntityEventCertificate } from "@decm/api";
 
 interface CertificateListProps {
-    certificates: Certificate[];
+    certificates: EntityEventCertificate[];
     isLoading?: boolean;
 }
 
@@ -102,8 +103,8 @@ export const CertificateList = ({ certificates = [], isLoading }: CertificateLis
     );
 };
 
-const CertificateItem = ({ certificate }: { certificate: Certificate }) => {
-    const formattedDate = new Date(certificate.issuedDate).toLocaleDateString("en-US", {
+const CertificateItem = ({ certificate }: { certificate: EntityEventCertificate }) => {
+    const formattedDate = new Date(certificate.created_at).toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -123,7 +124,7 @@ const CertificateItem = ({ certificate }: { certificate: Certificate }) => {
                         tag="p"
                         className="text-base md:text-lg font-normal underline truncate group-hover:text-primary transition-colors"
                     >
-                        {certificate.name}
+                        {certificate.certificate_title || certificate.name}
                     </Typography>
                 </div>
 
@@ -141,7 +142,7 @@ const CertificateItem = ({ certificate }: { certificate: Certificate }) => {
             {/* Issuer info - below name */}
             <div>
                 <Typography variant="text" tag="p" color="muted" className="text-xs md:text-sm">
-                    {certificate.issuer}
+                    {certificate.academic_institution}
                 </Typography>
             </div>
         </Link>

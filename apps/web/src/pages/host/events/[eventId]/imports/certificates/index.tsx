@@ -3,10 +3,12 @@ import { ImportEventCertificatesPage } from "@/components/pages/HostPages/Import
 import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import type { EventEventResponse } from "@decm/api";
+
 import { useParams } from "@/router";
 
 // Mock event data for now since backend isn't ready
-const mockEvent: EventEventResponse = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockEvent: any = {
     id: "1",
     title: "Sample Event",
     short_description: "This is a sample event for certificate import",

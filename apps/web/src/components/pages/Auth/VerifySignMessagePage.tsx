@@ -10,7 +10,7 @@ import { useSignMessage } from "wagmi";
 import { toast } from "sonner";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
-import { onboardService } from "@/services/OnboardService/OnboardService";
+import { onboardService } from "@/services/services";
 import { OnboardRegistrationMethod } from "@decm/api";
 import { handleUniversalError } from "@/common/Err";
 

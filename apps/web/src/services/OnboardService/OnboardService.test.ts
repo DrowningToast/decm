@@ -3,15 +3,18 @@ import type { CheckOnboardParams } from "./OnboardService";
 import { OnboardService } from "./OnboardService";
 import { OnboardRegistrationMethod } from "@decm/api";
 import type { CoreApiType } from "@/lib/api/api";
+import type { QueryClient } from "@tanstack/react-query";
 
 // Mock the coreApiClient at the module level - must use factory function
 vi.mock("@/lib/api/api", () => ({
     coreApiClient: {},
 }));
 
+type MockQueryClient = Pick<QueryClient, "setQueryData">;
+
 describe("OnboardService", () => {
     let mockCoreApi: CoreApiType;
-    let mockQueryClient: any;
+    let mockQueryClient: MockQueryClient;
     let onboardService: OnboardService;
 
     beforeEach(() => {
@@ -26,7 +29,7 @@ describe("OnboardService", () => {
             setQueryData: vi.fn(),
         };
 
-        onboardService = new OnboardService(mockCoreApi, mockQueryClient);
+        onboardService = new OnboardService(mockCoreApi, mockQueryClient as QueryClient);
     });
 
     describe("checkOnboardStatus", () => {

@@ -5,6 +5,7 @@ import * as AuthContextModule from "@/context/AuthContext";
 import { BrowserRouter } from "react-router-dom";
 import { toast } from "sonner";
 import * as UseCheckRolesModule from "@/hooks/useCheckRoles";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Mock dependencies
 vi.mock("sonner", () => ({
@@ -32,12 +33,31 @@ vi.mock("@/hooks/useCheckRoles", () => ({
 }));
 
 describe("ProtectedRoute", () => {
+    let queryClient: QueryClient;
+
     beforeEach(() => {
+        queryClient = new QueryClient({
+            defaultOptions: {
+                queries: {
+                    retry: false,
+                },
+            },
+        });
         vi.clearAllMocks();
+
+        // Default mock for useCheckRoles - returns a valid object
+        vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
+            hasRequiredRoles: true,
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
     });
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <BrowserRouter>{children}</BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+            <BrowserRouter>{children}</BrowserRouter>
+        </QueryClientProvider>
     );
 
     describe("Loading State", () => {
@@ -543,7 +563,12 @@ describe("ProtectedRoute", () => {
             await waitFor(() => {
                 expect(screen.getByTestId("protected-content")).toBeInTheDocument();
             });
-            expect(UseCheckRolesModule.useCheckRoles).not.toHaveBeenCalled();
+            // useCheckRoles is always called (it's a hook), but with enabled: false
+            expect(UseCheckRolesModule.useCheckRoles).toHaveBeenCalledWith({
+                requireHost: false,
+                requireIssuer: false,
+                enabled: false,
+            });
         });
 
         it("should check host role when requireHost is true", async () => {
@@ -842,7 +867,12 @@ describe("ProtectedRoute", () => {
                 expect(navigate).toHaveTextContent("/signup");
             });
 
-            expect(UseCheckRolesModule.useCheckRoles).not.toHaveBeenCalled();
+            // useCheckRoles is called but with enabled: false because user is not authenticated
+            expect(UseCheckRolesModule.useCheckRoles).toHaveBeenCalledWith({
+                requireHost: true,
+                requireIssuer: false,
+                enabled: false,
+            });
         });
 
         it("should render custom fallback during role check", async () => {
@@ -927,7 +957,12 @@ describe("ProtectedRoute", () => {
             });
 
             expect(toast.error).not.toHaveBeenCalled();
-            expect(UseCheckRolesModule.useCheckRoles).not.toHaveBeenCalled();
+            // useCheckRoles is always called (it's a hook), but with enabled: false
+            expect(UseCheckRolesModule.useCheckRoles).toHaveBeenCalledWith({
+                requireHost: false,
+                requireIssuer: false,
+                enabled: false,
+            });
         });
     });
 });

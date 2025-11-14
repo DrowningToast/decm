@@ -102,7 +102,11 @@
         "email": "Email",
         "password": "Password",
         "confirmPassword": "Confirm Password",
-        "rememberMe": "Remember me"
+        "rememberMe": "Remember me",
+        "success": {
+            "title": "Authentication Successful",
+            "description": "You have been successfully authenticated"
+        }
     },
     "signup": {
         "title": "Sign up",
@@ -296,6 +300,20 @@
         "updateError": "Failed to update profile. Please try again.",
         "exposePrivateKey": "Expose Account Private Key"
     },
+    "event": {
+        "registration": {
+            "eventFull": "Event is full",
+            "eventFullDescription": "This event has reached maximum capacity and is no longer accepting registrations.",
+            "incorrectPassword": "Incorrect password. Please try again.",
+            "incorrectPasswordDescription": "The password you entered is incorrect. Please check and try again.",
+            "inviteOnly": "Invitation required",
+            "inviteOnlyDescription": "This event is invite-only. You need an invitation to register.",
+            "privateOnly": "Password required",
+            "privateOnlyDescription": "This event is private and requires a password to register.",
+            "success": "Registration successful!",
+            "successDescription": "You have successfully registered for this event."
+        }
+    },
     "events": {
         "title": "Events",
         "createEvent": "Create Event",
@@ -416,7 +434,14 @@
         },
         "registration": {
             "incorrectPassword": "Incorrect password. Please try again.",
+            "incorrectPasswordDescription": "The password you entered is incorrect. Please check and try again.",
             "invalidData": "Please check your information and try again.",
+            "eventFull": "Event is full",
+            "eventFullDescription": "This event has reached maximum capacity and is no longer accepting registrations.",
+            "inviteOnly": "Invitation required",
+            "inviteOnlyDescription": "This event is invite-only. You need an invitation to register.",
+            "privateOnly": "Password required",
+            "privateOnlyDescription": "This event is private and requires a password to register.",
             "success": "Registration successful!",
             "successDescription": "You have successfully registered for this event.",
             "piiForm": {
@@ -855,7 +880,9 @@
             "name": "name",
             "email": "email",
             "phoneNumber": "phone_number",
-            "academicInstitution": "academic_institution_name"
+            "academicInstitution": "academic_institution_name",
+            "firstName": "first_name",
+            "lastName": "last_name"
         }
     },
     "certificateImport": {
@@ -1063,7 +1090,15 @@
         "addressMin10": "Address must be at least 10 characters",
         "addressMax255": "Address must be at most 255 characters",
         "academicInstitutionMin3": "Academic institution must be at least 3 characters",
-        "academicInstitutionMax255": "Academic institution must be at most 255 characters"
+        "academicInstitutionMax255": "Academic institution must be at most 255 characters",
+        "firstNameRequired": "First name is required",
+        "lastNameRequired": "Last name is required",
+        "bioRequired": "Bio is required",
+        "emailRequired": "Email is required",
+        "phoneNumberRequired": "Phone number is required",
+        "addressRequired": "Address is required",
+        "academicEmailRequired": "Academic email is required",
+        "academicInstitutionRequired": "Academic institution is required"
     },
     "errors": {
         "generic": "Something went wrong. Please try again.",

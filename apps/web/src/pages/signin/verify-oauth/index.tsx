@@ -1,7 +1,7 @@
 import { TOAST_USECASE_VIEWMODEL } from "@/constants/toast";
 import { USECASE_IDS } from "@/constants/usecase";
 import { coreApiClient } from "@/lib/api/api";
-import { authService } from "@/services/AuthService/AuthService";
+import { authService } from "@/services/services";
 import { OnboardRegistrationMethod } from "@decm/api";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";

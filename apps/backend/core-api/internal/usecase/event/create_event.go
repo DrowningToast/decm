@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"apps/backend/common/customerror"
-	"apps/backend/core-api/config"
 	datagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
@@ -62,7 +61,7 @@ func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParam
 	}
 
 	// Get chain ID from blockchain configuration
-	chainId := config.LoadConfig().Blockchain.ChainID
+	chainId := uc.cfg.Blockchain.ChainID
 
 	createEventParams := datagateway.CreateEventParameters{
 		ChainId:                  chainId,
@@ -93,7 +92,7 @@ func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParam
 		return nil, common.Address{}, common.Address{}, nil, err
 	}
 
-	decmAccessManagerAddress := common.HexToAddress(config.LoadConfig().Blockchain.DecmAccessManagerAddress)
+	decmAccessManagerAddress := common.HexToAddress(uc.cfg.Blockchain.DecmAccessManagerAddress)
 	if decmAccessManagerAddress == (common.Address{}) {
 		return nil, common.Address{}, common.Address{}, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("DecmAccessManagerAddress is required"))
 	}

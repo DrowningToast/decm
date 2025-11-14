@@ -31,7 +31,7 @@ const IssuerSignPage = () => {
     } = usePendingEvents({
         limit: rowsPerPage,
         offset: (currentPage - 1) * rowsPerPage,
-        issuer_credential_id: user?.authentication_credential_id || "",
+        issuer_credential_id: user?.authenticationCredentialId || "",
     });
 
     const {
@@ -41,7 +41,7 @@ const IssuerSignPage = () => {
     } = useSignedEvents({
         limit: rowsPerPage,
         offset: (currentPage - 1) * rowsPerPage,
-        issuer_credential_id: user?.authentication_credential_id || "",
+        issuer_credential_id: user?.authenticationCredentialId || "",
     });
 
     // Calculate pagination
