@@ -113,6 +113,7 @@ services:
                 VITE_ENVIRONMENT: "${VITE_ENVIRONMENT:-production}"
                 VITE_GOOGLE_MAPS_API_KEY: "${VITE_GOOGLE_MAPS_API_KEY:-}"
                 VITE_WALLETCONNECT_PROJECT_ID: "${VITE_WALLETCONNECT_PROJECT_ID:-}"
+                VITE_GOOGLE_OAUTH_CLIENT_ID: "${VITE_GOOGLE_OAUTH_CLIENT_ID:-}"
         image: "${FRONTEND_IMAGE:-decm-frontend}:${FRONTEND_IMAGE_TAG:-latest}"
         container_name: decm-frontend-prod
         depends_on:
