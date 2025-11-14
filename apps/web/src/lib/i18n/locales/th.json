@@ -100,7 +100,11 @@
         "email": "อีเมล",
         "password": "รหัสผ่าน",
         "confirmPassword": "ยืนยันรหัสผ่าน",
-        "rememberMe": "จำฉันไว้"
+        "rememberMe": "จำฉันไว้",
+        "success": {
+            "title": "การตรวจสอบสิทธิ์สำเร็จ",
+            "description": "คุณได้รับการตรวจสอบสิทธิ์สำเร็จ"
+        }
     },
     "signup": {
         "title": "สมัครสมาชิก",
@@ -288,6 +292,20 @@
         "updateError": "ไม่สามารถอัปเดตโปรไฟล์ได้ กรุณาลองอีกครั้ง",
         "exposePrivateKey": "เปิดรหัสส่วนตัวของบัญชี"
     },
+    "event": {
+        "registration": {
+            "eventFull": "กิจกรรมเต็มแล้ว",
+            "eventFullDescription": "กิจกรรมนี้ถึงความจุสูงสุดแล้วและไม่ยอมรับการลงทะเบียนเพิ่มเติม",
+            "incorrectPassword": "รหัสผ่านไม่ถูกต้อง กรุณาลองอีกครั้ง",
+            "incorrectPasswordDescription": "รหัสผ่านที่คุณป้อนไม่ถูกต้อง กรุณาตรวจสอบและลองอีกครั้ง",
+            "inviteOnly": "ต้องมีการเชิญเท่านั้น",
+            "inviteOnlyDescription": "กิจกรรมนี้เป็นการเชิญเท่านั้น คุณต้องมีการเชิญเพื่อลงทะเบียน",
+            "privateOnly": "ต้องมีรหัสผ่าน",
+            "privateOnlyDescription": "กิจกรรมนี้เป็นส่วนตัวและต้องมีรหัสผ่านเพื่อลงทะเบียน",
+            "success": "ลงทะเบียนสำเร็จ!",
+            "successDescription": "คุณได้ลงทะเบียนสำหรับกิจกรรมนี้สำเร็จแล้ว"
+        }
+    },
     "events": {
         "title": "กิจกรรม",
         "createEvent": "สร้างกิจกรรม",
@@ -448,7 +466,14 @@
         },
         "registration": {
             "incorrectPassword": "รหัสผ่านไม่ถูกต้อง กรุณาลองอีกครั้ง",
+            "incorrectPasswordDescription": "รหัสผ่านที่คุณป้อนไม่ถูกต้อง กรุณาตรวจสอบและลองอีกครั้ง",
             "invalidData": "กรุณาตรวจสอบข้อมูลของคุณและลองอีกครั้ง",
+            "eventFull": "กิจกรรมเต็มแล้ว",
+            "eventFullDescription": "กิจกรรมนี้มีผู้เข้าร่วมครบจำนวนแล้วและไม่รับลงทะเบียนเพิ่มเติม",
+            "inviteOnly": "ต้องมีคำเชิญ",
+            "inviteOnlyDescription": "กิจกรรมนี้เฉพาะผู้ได้รับเชิญเท่านั้น คุณต้องมีคำเชิญเพื่อลงทะเบียน",
+            "privateOnly": "ต้องใช้รหัสผ่าน",
+            "privateOnlyDescription": "กิจกรรมนี้เป็นแบบส่วนตัวและต้องใช้รหัสผ่านเพื่อลงทะเบียน",
             "success": "ลงทะเบียนสำเร็จ!",
             "successDescription": "คุณได้ลงทะเบียนเข้าร่วมกิจกรรมนี้เรียบร้อยแล้ว",
             "piiForm": {
@@ -734,7 +759,9 @@
             "name": "name",
             "email": "email",
             "phoneNumber": "phone_number",
-            "academicInstitution": "academic_institution_name"
+            "academicInstitution": "academic_institution_name",
+            "firstName": "first_name",
+            "lastName": "last_name"
         }
     },
     "certificateImport": {
@@ -942,7 +969,15 @@
         "addressMin10": "ที่อยู่ต้องมีอย่างน้อย 10 ตัวอักษร",
         "addressMax255": "ที่อยู่ต้องมีไม่เกิน 255 ตัวอักษร",
         "academicInstitutionMin3": "สถาบันการศึกษาต้องมีอย่างน้อย 3 ตัวอักษร",
-        "academicInstitutionMax255": "สถาบันการศึกษาต้องมีไม่เกิน 255 ตัวอักษร"
+        "academicInstitutionMax255": "สถาบันการศึกษาต้องมีไม่เกิน 255 ตัวอักษร",
+        "firstNameRequired": "ชื่อจำเป็นต้องกรอก",
+        "lastNameRequired": "นามสกุลจำเป็นต้องกรอก",
+        "bioRequired": "ประวัติย่อจำเป็นต้องกรอก",
+        "emailRequired": "อีเมลจำเป็นต้องกรอก",
+        "phoneNumberRequired": "หมายเลขโทรศัพท์จำเป็นต้องกรอก",
+        "addressRequired": "ที่อยู่จำเป็นต้องกรอก",
+        "academicEmailRequired": "อีเมลของสถาบันการศึกษาจำเป็นต้องกรอก",
+        "academicInstitutionRequired": "สถาบันการศึกษาจำเป็นต้องกรอก"
     },
     "errors": {
         "generic": "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",

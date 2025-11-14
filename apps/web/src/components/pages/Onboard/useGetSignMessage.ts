@@ -1,4 +1,4 @@
-import { onboardService } from "@/services/OnboardService/OnboardService";
+import { onboardService } from "@/services/services";
 import { useQuery } from "@tanstack/react-query";
 import { QUERY_KEY } from "@/lib/queryKeys";
 

@@ -22,21 +22,17 @@ export const useHostEvents = (options: UseHostEventsOptions = {}) => {
         error: isLoadingEventsError,
         refetch,
     } = useQuery({
-        queryKey: QUERY_KEY.hostEvents.list(
-            user?.authentication_credential_id,
-            rowsPerPage,
-            offset,
-        ),
+        queryKey: QUERY_KEY.hostEvents.list(user?.authenticationCredentialId, rowsPerPage, offset),
         queryFn: async () => {
             const result = await coreApiClient.v1.getEventsByOwnerCredentialsId({
-                ownerCredentialId: user?.authentication_credential_id ?? "",
+                ownerCredentialId: user?.authenticationCredentialId ?? "",
                 limit: rowsPerPage,
                 offset: offset,
             });
 
             return result;
         },
-        enabled: !!user?.authentication_credential_id,
+        enabled: !!user?.authenticationCredentialId,
     });
 
     // Determine if there are more pages

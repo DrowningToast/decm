@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"apps/backend/common/customerror"
+	"apps/backend/core-api/config"
+	"apps/backend/core-api/config/blockchain"
 	authDg "apps/backend/core-api/internal/datagateway"
 	datagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
@@ -128,6 +130,16 @@ func (m *MockS3Service) GetS3UploadRequestObject(storageKeyType interface{}, ent
 	return nil, errors.New("not implemented")
 }
 
+// Helper function to create a mock config for testing
+func createMockConfig() *config.Config {
+	return &config.Config{
+		Blockchain: blockchain.BlockchainConfig{
+			ChainID:                    1,
+			DecmAccessManagerAddress:   "0x1234567890123456789012345678901234567890",
+		},
+	}
+}
+
 func TestCreateEvent(t *testing.T) {
 	ctx := context.Background()
 	userId := uuid.New()
@@ -141,6 +153,7 @@ func TestCreateEvent(t *testing.T) {
 
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
+			cfg:                        createMockConfig(),
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
@@ -172,6 +185,7 @@ func TestCreateEvent(t *testing.T) {
 
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
+			cfg:                        createMockConfig(),
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
@@ -207,6 +221,7 @@ func TestCreateEvent(t *testing.T) {
 
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
+			cfg:                        createMockConfig(),
 		}
 		uc.UploadEventBanner = func(ctx context.Context, id uuid.UUID, file *multipart.FileHeader) (string, error) {
 			return "", errors.New("upload failed")
@@ -241,6 +256,7 @@ func TestCreateEvent(t *testing.T) {
 
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
+			cfg:                        createMockConfig(),
 		}
 		uc.UploadEventBanner = func(ctx context.Context, id uuid.UUID, file *multipart.FileHeader) (string, error) {
 			return "banner-key", nil
@@ -292,6 +308,7 @@ func TestCreateEvent(t *testing.T) {
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
 			EventDataGateway:           mockEventDg,
+			cfg:                        createMockConfig(),
 		}
 		uc.UploadEventBanner = func(ctx context.Context, id uuid.UUID, file *multipart.FileHeader) (string, error) {
 			return "banner-key", nil
@@ -344,6 +361,7 @@ func TestCreateEvent(t *testing.T) {
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
 			EventDataGateway:           mockEventDg,
+			cfg:                        createMockConfig(),
 		}
 		// Set S3Service field via interface{} to avoid type assertion issues
 		uc.S3Service = (*s3.S3Service)(nil) // Will be replaced by UploadEventBanner functions
@@ -384,6 +402,7 @@ func TestCreateEvent(t *testing.T) {
 
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
+			cfg:                        createMockConfig(),
 		}
 		uc.UploadEventBanner = func(ctx context.Context, id uuid.UUID, file *multipart.FileHeader) (string, error) {
 			return "banner-key", nil

@@ -119,11 +119,22 @@ export default function HostEventDetailsPage({
         return filtered;
     }, [eventInvitations, debouncedSearch, sorting]);
 
-    // Calculate pagination
+    // Calculate pagination and map to Participant type
     const paginatedData = useMemo(() => {
         const startIndex = (currentPage - 1) * pageSize;
         const endIndex = startIndex + pageSize;
-        return processedData.slice(startIndex, endIndex);
+        return processedData.slice(startIndex, endIndex).map(
+            (invitation): Participant => ({
+                id: invitation.id,
+                firstName: invitation.first_name || "",
+                lastName: invitation.last_name || "",
+                email: invitation.email || "",
+                phoneNumber: invitation.phone_number || "",
+                academicInstitution: invitation.academic_institution || "",
+                walletAddress: "", // Not available in invitation data
+                status: invitation.cancelled_at ? "rejected" : "pending",
+            }),
+        );
     }, [processedData, currentPage, pageSize]);
 
     // Callbacks for DataTable
@@ -413,7 +424,7 @@ export default function HostEventDetailsPage({
 
                             <DataTable
                                 columns={ParticipantColumns()}
-                                data={paginatedData as Participant[]}
+                                data={paginatedData}
                                 totalItems={processedData.length}
                                 currentPage={currentPage}
                                 pageSize={pageSize}
@@ -572,8 +583,20 @@ export default function HostEventDetailsPage({
                                             data={
                                                 eventCertificates
                                                     ?.filter(
-                                                        (cert) =>
-                                                            cert.id && cert.revoked_at === null,
+                                                        (
+                                                            cert,
+                                                        ): cert is typeof cert & {
+                                                            created_at: string;
+                                                            event_contract_address: string;
+                                                            event_id: string;
+                                                            id: string;
+                                                        } =>
+                                                            cert.id !== undefined &&
+                                                            cert.event_id !== undefined &&
+                                                            cert.revoked_at === null &&
+                                                            cert.created_at !== undefined &&
+                                                            cert.event_contract_address !==
+                                                                undefined,
                                                     )
                                                     .map((cert) => {
                                                         const firstName =
@@ -585,13 +608,13 @@ export default function HostEventDetailsPage({
                                                                 .join(" ") || "";
 
                                                         return {
-                                                            id: cert.id, // Remove fallback to empty string
+                                                            ...cert,
                                                             firstName,
                                                             lastName,
                                                             email: cert.receiver_email || "",
                                                             academicInstitution:
                                                                 cert.academic_institution || "",
-                                                            issuedAt: cert.created_at || "",
+                                                            issuedAt: cert.created_at,
                                                             status: cert.revoked_at
                                                                 ? "rejected"
                                                                 : "received",

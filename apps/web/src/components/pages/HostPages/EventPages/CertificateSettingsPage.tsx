@@ -14,6 +14,7 @@ import SectionContainer from "@/components/container/SectionContainer";
 import { useUpdateCertificateConfig } from "./useUpdateCertificateConfig";
 import type {
     CoreApiInternalHandlerEventconfigEventCertificateConfigResponse,
+    EntityProfile,
     GetEventIssuersByEventIdData,
     GetVerifiedIssuersData,
     UpdateEventCertificateConfigPayload,
@@ -47,9 +48,14 @@ export const CertificateSettingsPage = ({
     const { deleteEventIssuerAsync } = useDeleteEventIssuer();
 
     // Use custom hooks for state management
+    // Extract issuer profiles from event issuers
+    const selectedIssuerProfiles = eventIssuers
+        ?.map((issuer) => issuer.issuer_profile)
+        .filter((profile): profile is EntityProfile => profile !== undefined);
+
     const issuerManagement = useIssuerManagement({
         verifiedIssuers,
-        selectedIssuers: eventIssuers,
+        selectedIssuers: selectedIssuerProfiles,
     });
     const certificateTemplate = useCertificateTemplate();
 
@@ -227,7 +233,7 @@ export const CertificateSettingsPage = ({
 
                             {/* Selected Issuers Table */}
                             <SelectedIssuersTable
-                                selectedIssuers={issuerManagement.selectedIssuers}
+                                selectedIssuers={eventIssuers}
                                 onRemoveIssuer={handleRemoveIssuer}
                             />
                         </div>

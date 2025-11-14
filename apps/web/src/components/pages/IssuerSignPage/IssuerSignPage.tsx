@@ -41,7 +41,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
 
     // Get current issuer's information
     const currentIssuer = eventIssuers?.find(
-        (issuer) => issuer.issuer_credential_id === currentUser?.authentication_credential_id,
+        (issuer) => issuer.issuer_credential_id === currentUser?.authenticationCredentialId,
     );
 
     // Determine if current issuer has already signed
@@ -139,7 +139,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                         is_signed: issuer.is_signed || 0,
                                     })) || []
                                 }
-                                currentIssuerId={currentUser?.id}
+                                currentIssuerId={currentUser?.profileId}
                                 className="mb-8"
                             />
                         )}
@@ -372,19 +372,33 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                             columns={CertificateColumns()}
                             data={
                                 eventCertificates
-                                    ?.filter((cert) => cert.id && cert.revoked_at === null)
+                                    ?.filter(
+                                        (
+                                            cert,
+                                        ): cert is typeof cert & {
+                                            created_at: string;
+                                            event_contract_address: string;
+                                            event_id: string;
+                                            id: string;
+                                        } =>
+                                            cert.id !== undefined &&
+                                            cert.event_id !== undefined &&
+                                            cert.revoked_at === null &&
+                                            cert.created_at !== undefined &&
+                                            cert.event_contract_address !== undefined,
+                                    )
                                     .map((cert) => {
                                         const firstName = cert.name?.split(" ")[0] || "";
                                         const lastName =
                                             cert.name?.split(" ").slice(1).join(" ") || "";
 
                                         return {
-                                            id: cert.id,
+                                            ...cert,
                                             firstName,
                                             lastName,
                                             email: cert.receiver_email || "",
                                             academicInstitution: cert.academic_institution || "",
-                                            issuedAt: cert.created_at || "",
+                                            issuedAt: cert.created_at,
                                             status: cert.revoked_at
                                                 ? "rejected"
                                                 : isCurrentIssuerPending

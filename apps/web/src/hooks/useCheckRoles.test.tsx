@@ -2,12 +2,12 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode } from "react";
 import { useCheckRoles } from "./useCheckRoles";
-import { authService } from "@/services/AuthService/AuthService";
+import { defaultAuthService } from "@/services/AuthService/AuthService";
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 
-// Mock the authService
+// Mock the defaultAuthService
 vi.mock("@/services/AuthService/AuthService", () => ({
-    authService: {
+    defaultAuthService: {
         checkRoles: vi.fn(),
     },
 }));
@@ -37,7 +37,7 @@ describe("useCheckRoles", () => {
 
     it("should return hasRequiredRoles as true when user has host role and it is required", async () => {
         const mockResponse = { is_host: true, is_issuer: false };
-        vi.mocked(authService.checkRoles).mockResolvedValue(mockResponse);
+        vi.mocked(defaultAuthService.checkRoles).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(
             () => useCheckRoles({ requireHost: true, requireIssuer: false }),
@@ -55,7 +55,7 @@ describe("useCheckRoles", () => {
 
     it("should return hasRequiredRoles as true when user has issuer role and it is required", async () => {
         const mockResponse = { is_host: false, is_issuer: true };
-        vi.mocked(authService.checkRoles).mockResolvedValue(mockResponse);
+        vi.mocked(defaultAuthService.checkRoles).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(
             () => useCheckRoles({ requireHost: false, requireIssuer: true }),
@@ -72,7 +72,7 @@ describe("useCheckRoles", () => {
 
     it("should return hasRequiredRoles as true when user has both roles", async () => {
         const mockResponse = { is_host: true, is_issuer: true };
-        vi.mocked(authService.checkRoles).mockResolvedValue(mockResponse);
+        vi.mocked(defaultAuthService.checkRoles).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(
             () => useCheckRoles({ requireHost: true, requireIssuer: true }),
@@ -90,7 +90,7 @@ describe("useCheckRoles", () => {
 
     it("should return hasRequiredRoles as false when user lacks required host role", async () => {
         const mockResponse = { is_host: false, is_issuer: true };
-        vi.mocked(authService.checkRoles).mockResolvedValue(mockResponse);
+        vi.mocked(defaultAuthService.checkRoles).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(
             () => useCheckRoles({ requireHost: true, requireIssuer: false }),
@@ -107,7 +107,7 @@ describe("useCheckRoles", () => {
 
     it("should return hasRequiredRoles as false when user lacks required issuer role", async () => {
         const mockResponse = { is_host: true, is_issuer: false };
-        vi.mocked(authService.checkRoles).mockResolvedValue(mockResponse);
+        vi.mocked(defaultAuthService.checkRoles).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(
             () => useCheckRoles({ requireHost: false, requireIssuer: true }),
@@ -124,7 +124,7 @@ describe("useCheckRoles", () => {
 
     it("should handle when both roles are not required", async () => {
         const mockResponse = { is_host: false, is_issuer: false };
-        vi.mocked(authService.checkRoles).mockResolvedValue(mockResponse);
+        vi.mocked(defaultAuthService.checkRoles).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(
             () => useCheckRoles({ requireHost: false, requireIssuer: false }),
@@ -147,12 +147,12 @@ describe("useCheckRoles", () => {
             expect(result.current.isLoading).toBe(false);
         });
 
-        expect(authService.checkRoles).not.toHaveBeenCalled();
+        expect(defaultAuthService.checkRoles).not.toHaveBeenCalled();
     });
 
     it("should handle errors gracefully", async () => {
         const error = new Error("Failed to check roles");
-        vi.mocked(authService.checkRoles).mockRejectedValue(error);
+        vi.mocked(defaultAuthService.checkRoles).mockRejectedValue(error);
 
         const { result } = renderHook(() => useCheckRoles({ requireHost: true }), {
             wrapper: createWrapper(),
@@ -167,8 +167,8 @@ describe("useCheckRoles", () => {
         expect(result.current.hasRequiredRoles).toBe(false);
     });
 
-    it("should call authService.checkRoles with correct parameters", async () => {
-        vi.mocked(authService.checkRoles).mockResolvedValue({
+    it("should call defaultAuthService.checkRoles with correct parameters", async () => {
+        vi.mocked(defaultAuthService.checkRoles).mockResolvedValue({
             is_host: true,
             is_issuer: false,
         });
@@ -178,7 +178,7 @@ describe("useCheckRoles", () => {
         });
 
         await waitFor(() => {
-            expect(authService.checkRoles).toHaveBeenCalledWith({
+            expect(defaultAuthService.checkRoles).toHaveBeenCalledWith({
                 requireHost: true,
                 requireIssuer: false,
             });

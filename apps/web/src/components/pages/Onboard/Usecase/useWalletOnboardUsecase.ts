@@ -8,8 +8,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useSignup } from "../useSignup";
-import { onboardService } from "@/services/OnboardService/OnboardService";
-import { authService } from "@/services/AuthService/AuthService";
+import { onboardService, authService } from "@/services/services";
 import type { Profile } from "../ProfilePage";
 import { useMyProfile } from "@/hooks/useMyProfile";
 

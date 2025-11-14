@@ -1,8 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-    onboardService,
-    type CheckOnboardParams,
-} from "../../../services/OnboardService/OnboardService";
+import { onboardService } from "@/services/services";
+import type { CheckOnboardParams } from "@/services/OnboardService/OnboardService";
 import { OnboardRegistrationMethod } from "@decm/api";
 import { QUERY_KEY } from "@/lib/queryKeys";
 

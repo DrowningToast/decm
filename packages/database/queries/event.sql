@@ -74,14 +74,19 @@ SELECT
     events.*,
     event_registration_configs.*,
     event_contracts.*,
-    COALESCE(COUNT(event_attendees.id), 0)::INTEGER AS attendees_count
+    COALESCE(
+        (SELECT COUNT(event_attendees.id) 
+         FROM event_attendees 
+         WHERE event_attendees.event_id = events.id 
+           AND event_attendees.is_attendee_accepted = 1
+        ), 
+    0)::INTEGER AS attendees_count
 FROM events
-INNER JOIN event_registration_configs ON events.id = event_registration_configs.event_id
-INNER JOIN event_contracts ON events.id = event_contracts.event_id
-LEFT JOIN event_attendees ON events.id = event_attendees.event_id 
-    AND event_attendees.is_attendee_accepted = 1
-WHERE events.id = sqlc.arg(id)
-GROUP BY events.id, event_registration_configs.id, event_contracts.id;
+INNER JOIN event_registration_configs 
+    ON events.id = event_registration_configs.event_id
+INNER JOIN event_contracts 
+    ON events.id = event_contracts.event_id
+WHERE events.id = sqlc.arg(id);
 
 -- name: UpdateEvent :one
 UPDATE events

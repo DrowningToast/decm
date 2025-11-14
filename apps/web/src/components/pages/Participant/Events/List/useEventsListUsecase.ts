@@ -46,7 +46,7 @@ export const useEventsListUsecase = (options?: UseEventsListOptions) => {
     const searcher = new FuzzySearch(events ?? [], ["name"], {
         caseSensitive: false,
     });
-    const filteredEvents = searchQuery ? searcher.search(searchQuery) : events;
+    const filteredEvents = searchQuery ? searcher.search(searchQuery) : (events ?? []);
 
     return { events: filteredEvents, isLoading, error };
 };
