@@ -53,11 +53,11 @@ func (h *Handler) MarkMessageAsRead(c *fiber.Ctx) error {
 	}
 
 	var request MarkMessageAsReadRequest
-	if err := request.IsValid(); err != nil {
-		return errors.Wrap(err, "invalid request body")
-	}
 	if err := request.Parse(c); err != nil {
 		return errors.Wrap(err, "failed to parse request body")
+	}
+	if err := request.IsValid(); err != nil {
+		return errors.Wrap(err, "invalid request body")
 	}
 
 	message, err := h.InboxUc.MarkMessageAsRead(c.Context(), *user, request.MessageID)
