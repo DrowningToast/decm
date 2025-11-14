@@ -38,6 +38,6 @@ ENV PORT=8080 \
     ENVIRONMENT=production
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=40s \
-    CMD wget --quiet --tries=1 --spider http://localhost:8080/ready || exit 1
+    CMD wget --quiet --tries=1 -O /dev/null http://localhost:8080/ready || exit 1
 
 ENTRYPOINT ["/app/decm-backend"]
