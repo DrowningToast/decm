@@ -22,7 +22,7 @@ import (
 // @Param owner_credential_id path string true "Owner Credentials ID"
 // @Param limit query int false "Limit" default(10)
 // @Param offset query int false "Offset" default(0)
-// @Success 200 {array} []EventResponse
+// @Success 200 {array} EventResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
 // @Router /api/v1/events/owner-credentials/{owner_credential_id} [get]

@@ -16,7 +16,7 @@ func (h *Handler) Mount(r fiber.Router) {
 	)
 
 	// Participant end
-	eventConfigGroup.Post("/password-check/:eventId", h.CheckEventPassword)
+	eventConfigGroup.Post("/password-check", h.CheckEventPassword)
 
 	// Event Registration Config routes
 	eventConfigGroup.Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).Post("/registration", h.CreateEventRegistrationConfig)

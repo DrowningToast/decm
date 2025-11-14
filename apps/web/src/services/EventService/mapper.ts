@@ -3,8 +3,9 @@ import {
     EntityEventStatus,
     type EntityEvent,
     type EventEventResponse,
+    EntityEventType,
 } from "@decm/api";
-import type { EventViewModelExtended, EventStatus, EventItem } from "./EventService";
+import type { EventViewModelExtended, EventStatus, EventItem, EventType } from "./EventService";
 
 export const mapEntityEventStatusToEventStatus = (
     entityEventStatus: EntityEventStatus,
@@ -17,7 +18,17 @@ export const mapEntityEventStatusToEventStatus = (
         case EntityEventStatus.EventStatusClosed:
             return "closed";
         default:
+            console.error(`Invalid entity event status: ${entityEventStatus}`);
             throw new Error(`Invalid entity event status: ${entityEventStatus}`);
+    }
+};
+
+export const mapEntityEventTypeToEventType = (entityEventType: EntityEventType): EventType => {
+    switch (entityEventType) {
+        case EntityEventType.EventTypePrivate:
+            return "private";
+        case EntityEventType.EventTypeInvite:
+            return "invite";
     }
 };
 
@@ -60,7 +71,7 @@ export const mapEventResponseToViewModel = (
         createdAt: new Date(eventResponse.created_at),
         endDate: new Date(eventResponse.end_date),
         eventStatus: mapEntityEventStatusToEventStatus(eventResponse.event_status),
-        eventType: eventResponse.event_type,
+        eventType: mapEntityEventTypeToEventType(eventResponse.event_type),
         iconPresignedUrl: eventResponse.icon_presigned_url,
         id: eventResponse.id,
         isBookingRequestRequired: eventResponse.is_booking_request_required,

@@ -110,6 +110,16 @@ export class EventService {
         const response = await this._coreApi.v1.getEventViewmodelById({ eventId });
         return mapEventViewModelExtended(response);
     }
+
+    public async getEventsByOwnerCredentialId(
+        ownerCredentialId: string,
+    ): Promise<EventViewModel[]> {
+        const response = await coreApiClient.v1.getEventsByOwnerCredentialsId({
+            ownerCredentialId: ownerCredentialId,
+        });
+
+        return response.map(mapEventResponseToViewModel);
+    }
 }
 
 export const defaultEventService = new EventService(coreApiClient);

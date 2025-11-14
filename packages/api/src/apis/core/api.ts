@@ -679,7 +679,7 @@ export interface GetEventViewmodelByIdParams {
     eventId: string;
 }
 
-export type GetEventsByOwnerCredentialsIdData = EventEventResponse[][];
+export type GetEventsByOwnerCredentialsIdData = EventEventResponse[];
 
 export type GetEventsByOwnerCredentialsIdError = CustomerrorErrResponse;
 

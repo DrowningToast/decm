@@ -104,7 +104,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
                 )}
 
                 {/* Always show instruction text and BottomNav */}
-                <div className="hidden md:inline-block w-full">
+                <div className="hidden md:inline-block w-full text-center">
                     <Typography
                         variant="text"
                         tag="p"

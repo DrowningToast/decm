@@ -55,7 +55,7 @@ func (s *AuthService) RequireUserContext(ctx *fiber.Ctx) (*JwtClaims, error) {
 func (s *AuthService) Logout(ctx *fiber.Ctx) {
 	// Clear session cookie
 	sessionCookie := new(fiber.Cookie)
-	sessionCookie.Name = "session"
+	sessionCookie.Name = "themis-session"
 	sessionCookie.Value = ""
 	sessionCookie.Expires = time.Now().Add(-1 * time.Hour) // Set to past time to delete
 	sessionCookie.Path = "/"

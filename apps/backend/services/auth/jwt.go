@@ -83,7 +83,7 @@ func (s *AuthService) VerifyToken(tokenString string) (*JwtClaims, error) {
 
 func (s *AuthService) SetJwtCookie(ctx *fiber.Ctx, token string) {
 	cookie := new(fiber.Cookie)
-	cookie.Name = "session"
+	cookie.Name = "themis-session"
 	cookie.Value = token
 	cookie.Expires = time.Now().Add(s.Expiration)
 	cookie.Path = "/"
@@ -97,5 +97,5 @@ func (s *AuthService) SetJwtCookie(ctx *fiber.Ctx, token string) {
 }
 
 func (s *AuthService) GetJwtCookie(ctx *fiber.Ctx) string {
-	return ctx.Cookies("session")
+	return ctx.Cookies("themis-session")
 }

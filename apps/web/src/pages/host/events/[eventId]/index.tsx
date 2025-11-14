@@ -44,8 +44,7 @@ export default function Page() {
         isErrorEventRegistrationConfig ||
         !event ||
         !eventRegistrationConfig ||
-        !eventContract ||
-        !invitations
+        !eventContract
     ) {
         return <div>Error loading event</div>;
     }

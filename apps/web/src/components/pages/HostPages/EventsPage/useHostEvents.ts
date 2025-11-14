@@ -1,8 +1,8 @@
 import { useAuth } from "@/context/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { coreApiClient } from "@/lib/api/api";
 import { usePaginationState } from "@/hooks/usePaginationState";
 import { QUERY_KEY } from "@/lib/queryKeys";
+import { eventService } from "@/services/services";
 
 interface UseHostEventsOptions {
     initialPage?: number;
@@ -17,19 +17,16 @@ export const useHostEvents = (options: UseHostEventsOptions = {}) => {
         usePaginationState(initialPage, initialRowsPerPage);
 
     const {
-        data: events,
+        data: events = [],
         isLoading: isLoadingEvents,
         error: isLoadingEventsError,
         refetch,
     } = useQuery({
         queryKey: QUERY_KEY.hostEvents.list(user?.authenticationCredentialId, rowsPerPage, offset),
         queryFn: async () => {
-            const result = await coreApiClient.v1.getEventsByOwnerCredentialsId({
-                ownerCredentialId: user?.authenticationCredentialId ?? "",
-                limit: rowsPerPage,
-                offset: offset,
-            });
-
+            const result = await eventService.getEventsByOwnerCredentialId(
+                user?.authenticationCredentialId ?? "",
+            );
             return result;
         },
         enabled: !!user?.authenticationCredentialId,

@@ -3009,9 +3009,7 @@ paths:
           description: OK
           schema:
             items:
-              items:
-                $ref: '#/definitions/event.EventResponse'
-              type: array
+              $ref: '#/definitions/event.EventResponse'
             type: array
         "400":
           description: Bad Request

@@ -574,10 +574,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/event.EventResponse"
-                                }
+                                "$ref": "#/definitions/event.EventResponse"
                             }
                         }
                     },
