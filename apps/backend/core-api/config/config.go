@@ -107,16 +107,7 @@ func LoadConfig() Config {
 				panic(errors.Wrap(err, "failed to parse environment variables from .env file"))
 			}
 
-			// Validate that critical required fields are populated
-			if config.Env == "" {
-				panic(errors.New("ENVIRONMENT variable is required but not set"))
-			}
-			if config.PIIEncryptionKey == "" {
-				panic(errors.New("PII_ENCRYPTION_KEY variable is required but not set"))
-			}
-			if config.Jwt.SecretKey == "" {
-				panic(errors.New("JWT_SECRET variable is required but not set"))
-			}
+			// No need for manual validation of required fields; env.ParseWithOptions enforces this.
 
 			environment, err := IParseEnvironment(config.Env)
 			if err != nil {
