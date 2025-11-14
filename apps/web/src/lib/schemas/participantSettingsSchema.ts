@@ -3,7 +3,7 @@ import { z } from "zod";
 /**
  * Event type enum
  */
-export const eventTypeEnum = z.enum(["public", "private", "invite"]);
+export const eventTypeEnum = z.enum(["private", "invite"]);
 export type EventType = z.infer<typeof eventTypeEnum>;
 
 /**
@@ -81,7 +81,7 @@ export type ParticipantSettingsData = z.infer<typeof participantSettingsSchema>;
  * Default values for participant settings
  */
 export const defaultParticipantSettings: ParticipantSettingsData = {
-    eventType: "public",
+    eventType: "private",
     isBookingRequired: false,
     isTicketTransferable: true,
     requireRegistrationPassword: false,

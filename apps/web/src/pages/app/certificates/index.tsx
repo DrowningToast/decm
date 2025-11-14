@@ -1,7 +1,12 @@
+import { PageContainer } from "@/components/container/PageContainer";
 import { CertificateListPage } from "@/components/pages/Participant/Certificates/CertificateListPage";
 
 const CertificatesPage = () => {
-    return <CertificateListPage />;
+    return (
+        <PageContainer>
+            <CertificateListPage />;
+        </PageContainer>
+    );
 };
 
 export default CertificatesPage;

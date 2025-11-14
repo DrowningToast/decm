@@ -16,17 +16,17 @@ const (
 )
 
 type CheckOnboardStatusRequest struct {
-	Method *RegistrationMethod `json:"method" validate:"omitempty,oneof=google wallet"`
+	Method *RegistrationMethod `json:"method,omitempty" validate:"omitempty,oneof=google wallet"`
 
-	AccessToken *string `json:"access_token"`
-	ExpiresIn   *int    `json:"expires_in"`
+	AccessToken *string `json:"access_token,omitempty"`
+	ExpiresIn   *int    `json:"expires_in,omitempty"`
 
-	MessageSignature *string `json:"message_signature"`
+	MessageSignature *string `json:"message_signature,omitempty"`
 }
 
 type CheckOnboardStatusResponse struct {
-	AuthenticationCredentialId *string `json:"authentication_credential_id"`
-	ProfileId                  *string `json:"profile_id"`
+	AuthenticationCredentialId *string `json:"authentication_credential_id,omitempty"`
+	ProfileId                  *string `json:"profile_id,omitempty"`
 }
 
 // @Summary Check onboard status

@@ -1,0 +1,134 @@
+# JSON Tags - omitempty Convention
+
+## Overview
+
+All struct types with JSON tags in handlers and usecases **MUST** use the `omitempty` tag for any pointer (nil-able) fields. This ensures Swagger/OpenAPI correctly marks these fields as optional in the generated API documentation.
+
+## Why This Matters
+
+The OpenAPI code generator treats all fields as **REQUIRED** by default unless told otherwise. Without `omitempty`, nil-able pointer fields will be incorrectly marked as required in:
+- Swagger UI documentation
+- Generated TypeScript clients
+- API contracts
+
+## Rule
+
+**For any struct type with JSON tags at the Handler or UseCase level:**
+- If a field is a pointer type (`*Type`), it **MUST** include `,omitempty` in its JSON tag
+- This applies to all pointer types: `*string`, `*int`, `*float64`, `*time.Time`, `*CustomStruct`, etc.
+- This applies to **any struct with JSON tags**, not just response types (includes request types, ViewModels, DTOs, etc.)
+
+## Examples
+
+### ✅ Correct - Pointer fields with omitempty
+
+```go
+// Handler response type
+type CheckOnboardStatusResponse struct {
+    AuthenticationCredentialId *string `json:"authentication_credential_id,omitempty"`
+    ProfileId                  *string `json:"profile_id,omitempty"`
+}
+
+// ViewModel type
+type GetMyProfileViewModel struct {
+    AuthenticationCredentialId string  `json:"authentication_credential_id"`
+    ProfileId                  string  `json:"profile_id"`
+    
+    IsProfilePicturePublic bool    `json:"is_profile_picture_public"`
+    ProfilePictureUrl      *string `json:"profile_picture_url,omitempty"`
+    IsFirstNamePublic      bool    `json:"is_first_name_public"`
+    FirstName              *string `json:"first_name,omitempty"`
+    
+    GoogleConnectorRef *string `json:"google_connector_ref,omitempty"`
+    GithubConnectorRef *string `json:"github_connector_ref,omitempty"`
+}
+
+// Time pointer example
+type EventRegistrationConfigResponse struct {
+    Id                       uuid.UUID  `json:"id"`
+    EventId                  uuid.UUID  `json:"event_id"`
+    FinalCallForRegistration *time.Time `json:"final_call_for_registration,omitempty"`
+}
+
+// Struct pointer example
+type GetEventRegistrationInvitationByUserAndEventResponse struct {
+    RegistrationInvitation *entity.EventRegistrationInvitation `json:"registration_invitation,omitempty"`
+    Inbox                  *entity.InboxMessage                `json:"inbox,omitempty"`
+}
+
+// Float pointer example
+type EventCertificateConfigResponse struct {
+    ID                      uuid.UUID `json:"id"`
+    EventID                 uuid.UUID `json:"event_id"`
+    NamePosX                float64   `json:"name_pos_x"`
+    NamePosY                float64   `json:"name_pos_y"`
+    AcademicInstitutionPosX *float64  `json:"academic_institution_pos_x,omitempty"`
+    AcademicInstitutionPosY *float64  `json:"academic_institution_pos_y,omitempty"`
+}
+```
+
+### ❌ Incorrect - Missing omitempty
+
+```go
+// BAD: Pointer fields without omitempty
+type CheckOnboardStatusResponse struct {
+    AuthenticationCredentialId *string `json:"authentication_credential_id"` // Missing omitempty!
+    ProfileId                  *string `json:"profile_id"` // Missing omitempty!
+}
+
+// BAD: Will be marked as required in Swagger
+type GetMyProfileViewModel struct {
+    ProfilePictureUrl *string `json:"profile_picture_url"` // Missing omitempty!
+    FirstName         *string `json:"first_name"` // Missing omitempty!
+}
+```
+
+## Scope
+
+This rule applies to:
+- ✅ **Any struct with JSON tags in handlers** (in `internal/handler/*`) - response types, request types, DTOs, etc.
+- ✅ **Any struct with JSON tags in usecases** (in `internal/usecase/*`) - ViewModels, response types, etc.
+- ❌ **NOT** entity structs (in `internal/entity/*`) - entities are domain models with different serialization needs
+
+## Checking Your Code
+
+Quick grep to find violations (pointer fields with JSON tags but without omitempty):
+
+```bash
+# Find pointer fields without omitempty in handlers
+grep -r '\*\w\+\s\+`json:"\w\+"[^,]*`' apps/backend/core-api/internal/handler
+
+# Find pointer fields without omitempty in usecases
+grep -r '\*\w\+\s\+`json:"\w\+"[^,]*`' apps/backend/core-api/internal/usecase
+
+# Check both at once
+grep -r '\*\w\+\s\+`json:"\w\+"[^,]*`' apps/backend/core-api/internal/{handler,usecase}
+```
+
+## After Making Changes
+
+After adding `omitempty` tags to any structs with JSON tags, regenerate Swagger documentation:
+
+```bash
+pnpm docs:core       # Regenerate OpenAPI/Swagger docs
+pnpm gen-api:core    # Regenerate TypeScript client
+```
+
+## Related Conventions
+
+- See [error-handling.mdc](mdc:.cursor/rules/error-handling.mdc) for error response patterns
+- See [go-backend-architecture.mdc](mdc:.cursor/rules/go-backend-architecture.mdc) for handler patterns
+- See [api-generation.mdc](mdc:.cursor/rules/api-generation.mdc) for TypeScript client generation
+
+## Summary
+
+**Key Rule**: Pointer field = Required `omitempty`
+
+```
+*Type → `json:"field_name,omitempty"`
+```
+
+This ensures:
+- Correct Swagger/OpenAPI documentation
+- Accurate TypeScript type generation
+- Clear API contracts showing optional vs required fields

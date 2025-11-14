@@ -11,10 +11,11 @@ export interface StaggeredMenuItem {
     label: string;
     ariaLabel: string;
     link: string;
+    disabled?: boolean;
 }
 export interface StaggeredMenuSection {
     title: string;
-    items: StaggeredMenuItem[];
+    items: (StaggeredMenuItem | null)[];
 }
 export interface StaggeredMenuSocialItem {
     label: string;
@@ -36,6 +37,9 @@ export interface StaggeredMenuProps {
     changeMenuColorOnOpen?: boolean;
     onMenuOpen?: () => void;
     onMenuClose?: () => void;
+    roleLabel?: string;
+    logoLink?: string;
+    variant?: "light" | "dark";
 }
 
 export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
@@ -54,6 +58,9 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     isFixed = false,
     onMenuOpen,
     onMenuClose,
+    roleLabel,
+    logoLink = "/app",
+    variant = "dark",
 }: StaggeredMenuProps) => {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
@@ -444,40 +451,63 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                     className="staggered-menu-header absolute top-0 left-0 w-full flex items-center justify-between px-3 md:px-6 py-1.5 pointer-events-auto z-20 transition-all backdrop-blur-[2px] shadow-[0px_4px_16px_0px_rgba(0,0,0,0.1)] overflow-hidden bg-[rgba(217,217,217,0.1)]"
                     aria-label="Main navigation header"
                 >
-                    <Link to="/app">
-                        <div className="sm-logo flex items-center select-none" aria-label="Logo">
-                            <div className="md:hidden">
-                                <AnimatePresence mode="wait">
-                                    {!open ? (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: 10 }}
-                                            transition={{ duration: 0.3 }}
-                                            layout
-                                            key="open"
-                                        >
-                                            <ThemisWhite className="size-9 md:size-12" />
-                                        </motion.div>
+                    <div className="flex items-center gap-4">
+                        <Link to={logoLink}>
+                            <div
+                                className="sm-logo flex items-center select-none"
+                                aria-label="Logo"
+                            >
+                                <div className="md:hidden">
+                                    <AnimatePresence mode="wait">
+                                        {!open ? (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 10 }}
+                                                transition={{ duration: 0.3 }}
+                                                layout
+                                                key="open"
+                                            >
+                                                {variant === "light" ? (
+                                                    <ThemisBlack className="size-9 md:size-12" />
+                                                ) : (
+                                                    <ThemisWhite className="size-9 md:size-12" />
+                                                )}
+                                            </motion.div>
+                                        ) : (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 10 }}
+                                                transition={{ duration: 0.3 }}
+                                                layout
+                                                key="closed"
+                                            >
+                                                <ThemisBlack className="size-9 md:size-12" />
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                                <div className="hidden md:block">
+                                    {variant === "light" ? (
+                                        <ThemisBlack className="size-9 md:size-12" />
                                     ) : (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: 10 }}
-                                            transition={{ duration: 0.3 }}
-                                            layout
-                                            key="closed"
-                                        >
-                                            <ThemisBlack className="size-9 md:size-12" />
-                                        </motion.div>
+                                        <ThemisWhite className="size-9 md:size-12" />
                                     )}
-                                </AnimatePresence>
+                                </div>
                             </div>
-                            <div className="hidden md:block">
-                                <ThemisWhite className="size-9 md:size-12" />
-                            </div>
-                        </div>
-                    </Link>
+                        </Link>
+                        {roleLabel && (
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                color="foreground-alt"
+                                className="text-sm hidden md:block"
+                            >
+                                {roleLabel}
+                            </Typography>
+                        )}
+                    </div>
 
                     <button
                         ref={toggleBtnRef}
@@ -488,10 +518,17 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                         onClick={toggleMenu}
                         type="button"
                     >
-                        <span
+                        <motion.span
                             ref={textWrapRef}
-                            className="sm-toggle-textWrap relative inline-block h-[1em] overflow-hidden whitespace-nowrap w-[var(--sm-toggle-width,auto)] min-w-[var(--sm-toggle-width,auto)]"
+                            className={cn(
+                                "sm-toggle-textWrap relative inline-block h-[1em] overflow-hidden whitespace-nowrap w-[var(--sm-toggle-width,auto)] min-w-[var(--sm-toggle-width,auto)]",
+                                {
+                                    "text-foreground": variant === "dark" ? !open : open,
+                                    "text-background": variant === "light" ? !open : open,
+                                },
+                            )}
                             aria-hidden="true"
+                            layout
                         >
                             <Typography
                                 variant="text"
@@ -500,7 +537,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                                 aria-hidden="true"
                                 className="sm-toggle-textInner flex flex-col leading-none"
                             ></Typography>
-                        </span>
+                        </motion.span>
                         <motion.span
                             layout
                             ref={iconRef}
@@ -550,27 +587,47 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                                         role="list"
                                         data-numbering={displayItemNumbering || undefined}
                                     >
-                                        {section.items.map((it, idx) => (
-                                            <li
-                                                className="relative overflow-hidden leading-none"
-                                                key={it.label + idx}
-                                            >
-                                                <a
-                                                    className="sm-panel-item relative cursor-pointer leading-none tracking-[-2px] uppercase transition-colors duration-150 ease-linear inline-block no-underline pr-[1.4em] hover:text-[var(--sm-accent,#ff0000)]"
-                                                    href={it.link}
-                                                    aria-label={it.ariaLabel}
-                                                    data-index={sectionIdx * 100 + idx + 1}
+                                        {section.items.map((it, idx) =>
+                                            it !== null ? (
+                                                <li
+                                                    className={cn(
+                                                        "relative overflow-hidden leading-none",
+                                                        {
+                                                            "opacity-30": it.disabled,
+                                                        },
+                                                    )}
+                                                    key={it.label + idx}
                                                 >
-                                                    <Typography
-                                                        variant="header"
-                                                        tag="span"
-                                                        className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform text-[4rem] font-semibold text-black"
+                                                    <a
+                                                        className={cn(
+                                                            "sm-panel-item relative leading-none tracking-[-2px] uppercase transition-colors duration-150 ease-linear inline-block no-underline pr-[1.4em]",
+                                                            {
+                                                                "cursor-pointer hover:text-[var(--sm-accent,#ff0000)]":
+                                                                    !it.disabled,
+                                                                "cursor-not-allowed": it.disabled,
+                                                            },
+                                                        )}
+                                                        href={it.disabled ? "#" : it.link}
+                                                        aria-label={it.ariaLabel}
+                                                        data-index={sectionIdx * 100 + idx + 1}
+                                                        onClick={(e) => {
+                                                            if (it.disabled) {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
                                                     >
-                                                        {it.label}
-                                                    </Typography>
-                                                </a>
-                                            </li>
-                                        ))}
+                                                        <Typography
+                                                            variant="header"
+                                                            tag="span"
+                                                            size="title"
+                                                            className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform font-semibold text-black"
+                                                        >
+                                                            {it.label}
+                                                        </Typography>
+                                                    </a>
+                                                </li>
+                                            ) : null,
+                                        )}
                                     </ul>
                                 </div>
                             ))

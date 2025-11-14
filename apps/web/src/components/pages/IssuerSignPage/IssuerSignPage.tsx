@@ -41,7 +41,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
 
     // Get current issuer's information
     const currentIssuer = eventIssuers?.find(
-        (issuer) => issuer.issuer_credential_id === currentUser?.authentication_credential_id,
+        (issuer) => issuer.issuer_credential_id === currentUser?.authenticationCredentialId,
     );
 
     // Determine if current issuer has already signed
@@ -90,7 +90,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-black text-white">
+            <div className="min-h-screen  text-white">
                 {/* Header */}
                 <header className="bg-[#ff6a39] shadow-lg">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -139,7 +139,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                         is_signed: issuer.is_signed || 0,
                                     })) || []
                                 }
-                                currentIssuerId={currentUser?.id}
+                                currentIssuerId={currentUser?.profileId}
                                 className="mb-8"
                             />
                         )}
@@ -235,7 +235,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                         {t("issuer.sign.certificatePreview")}
                                     </Typography>
                                     <div className="bg-[#1a1a1a] border border-[#333333] rounded-lg p-4">
-                                        <div className="aspect-w-16 aspect-h-9 bg-black rounded flex items-center justify-center border border-dashed border-[#333333]">
+                                        <div className="aspect-w-16 aspect-h-9  rounded flex items-center justify-center border border-dashed border-[#333333]">
                                             {eventCertificateConfig?.base_certificate_presigned_url ? (
                                                 <img
                                                     src={
@@ -282,7 +282,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                         />
                                         <TextLabelValue
                                             label={t("events.details.seatsCount")}
-                                            value={`${0} / ${event.max_attendees}`}
+                                            value={`${event.attendees_count ?? 0} / ${event.max_attendees}`}
                                         />
                                         <TextLabelValue
                                             label={t("events.details.eventContractAddress")}
@@ -372,19 +372,33 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                             columns={CertificateColumns()}
                             data={
                                 eventCertificates
-                                    ?.filter((cert) => cert.id && cert.revoked_at === null)
+                                    ?.filter(
+                                        (
+                                            cert,
+                                        ): cert is typeof cert & {
+                                            created_at: string;
+                                            event_contract_address: string;
+                                            event_id: string;
+                                            id: string;
+                                        } =>
+                                            cert.id !== undefined &&
+                                            cert.event_id !== undefined &&
+                                            cert.revoked_at === null &&
+                                            cert.created_at !== undefined &&
+                                            cert.event_contract_address !== undefined,
+                                    )
                                     .map((cert) => {
                                         const firstName = cert.name?.split(" ")[0] || "";
                                         const lastName =
                                             cert.name?.split(" ").slice(1).join(" ") || "";
 
                                         return {
-                                            id: cert.id,
+                                            ...cert,
                                             firstName,
                                             lastName,
                                             email: cert.receiver_email || "",
                                             academicInstitution: cert.academic_institution || "",
-                                            issuedAt: cert.created_at || "",
+                                            issuedAt: cert.created_at,
                                             status: cert.revoked_at
                                                 ? "rejected"
                                                 : isCurrentIssuerPending

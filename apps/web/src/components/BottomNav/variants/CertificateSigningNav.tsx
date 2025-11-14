@@ -4,8 +4,12 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Typography } from "@/components/typography/typography";
 
-export const CertificateSigningNav = () => {
-    const { onBack, className } = useBottomContainerContext();
+interface CertificateSigningNavProps {
+    className?: string;
+}
+
+export const CertificateSigningNav = ({ className: propClassName }: CertificateSigningNavProps) => {
+    const { onBack, className: contextClassName } = useBottomContainerContext();
     const { t } = useTranslation();
 
     const handleSignCertificate = () => {
@@ -15,7 +19,11 @@ export const CertificateSigningNav = () => {
 
     return (
         <div
-            className={cn(className, "flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5")}
+            className={cn(
+                contextClassName,
+                propClassName,
+                "flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5",
+            )}
         >
             {/* Back Button */}
             <button

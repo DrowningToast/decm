@@ -9,7 +9,7 @@ import (
 
 type EventCertificateConfigDataGateway interface {
 	CreateEventCertificateConfig(ctx context.Context, params generated.CreateEventCertificateConfigParams) (*generated.EventCertificateConfig, error)
-	GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (*generated.EventCertificateConfig, error)
+	GetEventCertificateConfigByEventID(ctx context.Context, eventId uuid.UUID) (*generated.EventCertificateConfig, error)
 	UpdateEventCertificateConfig(ctx context.Context, params generated.UpdateEventCertificateConfigParams) (*generated.EventCertificateConfig, error)
 	DeleteEventCertificateConfig(ctx context.Context, eventID uuid.UUID) error
 }

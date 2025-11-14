@@ -51,10 +51,10 @@ func (r *Repository) CreateInboxMessage(ctx context.Context, params datagateway.
 	fallbackMessageContentStr := pgmapper.PgTextToStringPtr(result.FallbackMessageContent)
 
 	return &entity.InboxMessage{
-		ID:                     result.ID,
-		SenderCredentialID:     &result.SenderCredentialID,
-		ReceiverCredentialID:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
-		ReceiverEmail:          *decryptedEmail,
+		Id:                     result.ID,
+		SenderCredentialId:     &result.SenderCredentialID,
+		ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+		ReceiverEmail:          decryptedEmail,
 		MessageType:            int(result.MessageType),
 		MessageContent:         messageContentStr,
 		FallbackMessageContent: fallbackMessageContentStr,
@@ -83,10 +83,11 @@ func (r *Repository) GetInboxMessageByID(ctx context.Context, id uuid.UUID) (*en
 	fallbackMessageContentStr := pgmapper.PgTextToStringPtr(result.FallbackMessageContent)
 
 	return &entity.InboxMessage{
-		ID:                     result.ID,
-		SenderCredentialID:     &result.SenderCredentialID,
-		ReceiverCredentialID:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
-		ReceiverEmail:          *decryptedEmail,
+		Id:                     result.ID,
+		SenderCredentialId:     &result.SenderCredentialID,
+		ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+		ReceiverEmail:          decryptedEmail,
+		ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 		MessageType:            int(result.MessageType),
 		MessageContent:         messageContentStr,
 		FallbackMessageContent: fallbackMessageContentStr,
@@ -96,6 +97,58 @@ func (r *Repository) GetInboxMessageByID(ctx context.Context, id uuid.UUID) (*en
 		HiddenAt:               pgmapper.PgTimestampzToTimePtr(result.HiddenAt),
 		DeletedAt:              pgmapper.PgTimestampzToTimePtr(result.DeletedAt),
 	}, nil
+}
+
+func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
+	var err error
+	var encryptedReceiverEmail pgtype.Text
+	receiverEmail := params.ReceiverEmail
+	if receiverEmail != nil {
+		encryptedReceiverEmail, err = pgmapper.EncryptStringPtrToPgText(receiverEmail, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var encryptedReceiverWalletAddress pgtype.Text
+	receiverWalletAddress := params.ReceiverWalletAddress
+	if receiverWalletAddress != nil {
+		encryptedReceiverWalletAddress, err = pgmapper.EncryptStringPtrToPgText(receiverWalletAddress, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	results, err := r.queries.GetInboxMessagesByCredentialID(ctx, generated.GetInboxMessagesByCredentialIDParams{
+		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(&params.CredentialID),
+		ReceiverEmail:         encryptedReceiverEmail,
+		ReceiverWalletAddress: encryptedReceiverWalletAddress,
+	})
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	messages := make([]*entity.InboxMessage, len(results))
+	for i, result := range results {
+		// Decrypt PII field
+		decryptedEmail, err := pgmapper.DecryptPgTextToStringPtr(result.ReceiverEmail, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		messages[i] = &entity.InboxMessage{
+			Id:                     result.ID,
+			SenderCredentialId:     &result.SenderCredentialID,
+			ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			ReceiverEmail:          decryptedEmail,
+			ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
+			MessageType:            int(result.MessageType),
+			MessageContent:         string(result.MessageContent),
+			FallbackMessageContent: pgmapper.PgTextToStringPtr(result.FallbackMessageContent),
+		}
+	}
+
+	return messages, nil
 }
 
 func (r *Repository) GetInboxMessagesByReceiverEmail(ctx context.Context, receiverEmail string) ([]*entity.InboxMessage, error) {
@@ -126,13 +179,87 @@ func (r *Repository) GetInboxMessagesByReceiverEmail(ctx context.Context, receiv
 		fallbackMessageContentStr := pgmapper.PgTextToStringPtr(result.FallbackMessageContent)
 
 		messages[i] = &entity.InboxMessage{
-			ID:                     result.ID,
-			SenderCredentialID:     &result.SenderCredentialID,
-			ReceiverCredentialID:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
-			ReceiverEmail:          *decryptedEmail,
+			Id:                     result.ID,
+			SenderCredentialId:     &result.SenderCredentialID,
+			ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			ReceiverEmail:          decryptedEmail,
+			ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 			MessageType:            int(result.MessageType),
 			MessageContent:         messageContentStr,
 			FallbackMessageContent: fallbackMessageContentStr,
+			IsRead:                 int(result.IsRead.Int32),
+			CreatedAt:              *pgmapper.PgTimestampzToTimePtr(result.CreatedAt),
+			UpdatedAt:              *pgmapper.PgTimestampzToTimePtr(result.UpdatedAt),
+			HiddenAt:               pgmapper.PgTimestampzToTimePtr(result.HiddenAt),
+			DeletedAt:              pgmapper.PgTimestampzToTimePtr(result.DeletedAt),
+		}
+	}
+
+	return messages, nil
+}
+
+func (r *Repository) GetInboxMessagesByReceiverWalletAddress(ctx context.Context, receiverWalletAddress string) ([]*entity.InboxMessage, error) {
+	// Encrypt search term
+	encryptedWalletAddress, err := pgmapper.EncryptPII(receiverWalletAddress, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	results, err := r.queries.GetInboxMessagesByReceiverWalletAddress(ctx, pgtype.Text{
+		String: encryptedWalletAddress,
+		Valid:  true,
+	})
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	messages := make([]*entity.InboxMessage, len(results))
+
+	for i, result := range results {
+		// Decrypt PII field
+		decryptedEmail, err := pgmapper.DecryptPgTextToStringPtr(result.ReceiverEmail, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		messages[i] = &entity.InboxMessage{
+			Id:                     result.ID,
+			SenderCredentialId:     &result.SenderCredentialID,
+			ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			ReceiverEmail:          decryptedEmail,
+			ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
+			MessageType:            int(result.MessageType),
+			MessageContent:         string(result.MessageContent),
+			FallbackMessageContent: pgmapper.PgTextToStringPtr(result.FallbackMessageContent),
+		}
+	}
+
+	return messages, nil
+}
+
+func (r *Repository) GetInboxMessagesBySenderCredentialID(ctx context.Context, senderCredentialID uuid.UUID) ([]*entity.InboxMessage, error) {
+	results, err := r.queries.GetInboxMessagesBySenderCredentialID(ctx, senderCredentialID)
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	messages := make([]*entity.InboxMessage, len(results))
+	for i, result := range results {
+		// Decrypt PII field
+		decryptedEmail, err := pgmapper.DecryptPgTextToStringPtr(result.ReceiverEmail, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		messages[i] = &entity.InboxMessage{
+			Id:                     result.ID,
+			SenderCredentialId:     &result.SenderCredentialID,
+			ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			ReceiverEmail:          decryptedEmail,
+			ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
+			MessageType:            int(result.MessageType),
+			MessageContent:         string(result.MessageContent),
+			FallbackMessageContent: pgmapper.PgTextToStringPtr(result.FallbackMessageContent),
 			IsRead:                 int(result.IsRead.Int32),
 			CreatedAt:              *pgmapper.PgTimestampzToTimePtr(result.CreatedAt),
 			UpdatedAt:              *pgmapper.PgTimestampzToTimePtr(result.UpdatedAt),
@@ -164,10 +291,11 @@ func (r *Repository) UpdateInboxMessageReadStatus(ctx context.Context, id uuid.U
 	fallbackMessageContentStr := pgmapper.PgTextToStringPtr(result.FallbackMessageContent)
 
 	return &entity.InboxMessage{
-		ID:                     result.ID,
-		SenderCredentialID:     &result.SenderCredentialID,
-		ReceiverCredentialID:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
-		ReceiverEmail:          *decryptedEmail,
+		Id:                     result.ID,
+		SenderCredentialId:     &result.SenderCredentialID,
+		ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+		ReceiverEmail:          decryptedEmail,
+		ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 		MessageType:            int(result.MessageType),
 		MessageContent:         messageContentStr,
 		FallbackMessageContent: fallbackMessageContentStr,
@@ -177,4 +305,38 @@ func (r *Repository) UpdateInboxMessageReadStatus(ctx context.Context, id uuid.U
 		HiddenAt:               pgmapper.PgTimestampzToTimePtr(result.HiddenAt),
 		DeletedAt:              pgmapper.PgTimestampzToTimePtr(result.DeletedAt),
 	}, nil
+}
+
+func (r *Repository) UpdateInboxMessageReadStatusAll(ctx context.Context, credentialID uuid.UUID) ([]*entity.InboxMessage, error) {
+	results, err := r.queries.UpdateInboxMessageReadStatusAll(ctx, pgmapper.UUIDToPgUUID(&credentialID))
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	messages := make([]*entity.InboxMessage, len(results))
+	for i, result := range results {
+		// Decrypt PII field
+		decryptedEmail, err := pgmapper.DecryptPgTextToStringPtr(result.ReceiverEmail, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		messages[i] = &entity.InboxMessage{
+			Id:                     result.ID,
+			SenderCredentialId:     &result.SenderCredentialID,
+			ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			ReceiverEmail:          decryptedEmail,
+			ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
+			MessageType:            int(result.MessageType),
+			MessageContent:         string(result.MessageContent),
+			FallbackMessageContent: pgmapper.PgTextToStringPtr(result.FallbackMessageContent),
+			IsRead:                 int(result.IsRead.Int32),
+			CreatedAt:              *pgmapper.PgTimestampzToTimePtr(result.CreatedAt),
+			UpdatedAt:              *pgmapper.PgTimestampzToTimePtr(result.UpdatedAt),
+			HiddenAt:               pgmapper.PgTimestampzToTimePtr(result.HiddenAt),
+			DeletedAt:              pgmapper.PgTimestampzToTimePtr(result.DeletedAt),
+		}
+	}
+
+	return messages, nil
 }

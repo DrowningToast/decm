@@ -1,14 +1,22 @@
 import { useAppKit } from "@reown/appkit/react";
 import type { ClassValue } from "clsx";
 import { cn } from "@/lib/utils";
+import { Button, buttonVariants } from "./ui/button";
+import type { VariantProps } from "class-variance-authority";
 
-interface Props extends React.PropsWithChildren {
+interface Props extends React.PropsWithChildren, VariantProps<typeof buttonVariants> {
     className?: ClassValue;
     onClick?: () => void;
     isLoading?: boolean;
 }
 
-export const WalletConnectButton = ({ className, onClick, children, isLoading = false }: Props) => {
+export const WalletConnectButton = ({
+    className,
+    onClick,
+    children,
+    isLoading = false,
+    variant = "primary",
+}: Props) => {
     const { open } = useAppKit();
 
     const handleClick = () => {
@@ -20,13 +28,13 @@ export const WalletConnectButton = ({ className, onClick, children, isLoading = 
     };
 
     return (
-        <button
+        <Button
             type="button"
-            className={cn("border-0 bg-transparent p-0 font-inherit text-inherit", className)}
+            className={cn(buttonVariants({ variant, className }))}
             onClick={handleClick}
             disabled={isLoading}
         >
             {children}
-        </button>
+        </Button>
     );
 };

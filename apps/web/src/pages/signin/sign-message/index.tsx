@@ -16,7 +16,7 @@ import { TOAST_USECASE_VIEWMODEL } from "@/constants/toast";
 import { useSignout } from "@/components/useSignout";
 import { queryClient } from "@/lib/api/queryClient";
 import { QUERY_KEY } from "@/lib/queryKeys";
-import { onboardService } from "@/services/OnboardService";
+import { onboardService } from "@/services/services";
 
 const VerifyMessagePage = () => {
     const { t } = useTranslation();
@@ -85,6 +85,11 @@ const VerifyMessagePage = () => {
                         method: OnboardMethods.WALLET,
                     },
                 });
+                return;
+            }
+            if (authSignSignature) {
+                toast.error(t(TOAST_USECASE_VIEWMODEL[USECASE_IDS.SIGN_IN].NOTFOUND));
+                navigate("/signup");
                 return;
             }
         };

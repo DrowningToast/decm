@@ -30,16 +30,24 @@
         "required": "Required",
         "optional": "Optional",
         "saving": "Saving...",
+        "submitting": "Submitting...",
         "notRequired": "Not Required",
         "about": "About",
         "date": "Date",
         "download": "Download",
         "share": "Share",
         "verify": "Verify",
-        "to": "to"
+        "to": "to",
+        "signOut": "Sign Out",
+        "signingOut": "Signing out...",
+        "notAvailable": "N/A",
+        "networkError": "Network error. Please check your connection.",
+        "comingSoon": "Coming Soon"
     },
     "nav": {
         "home": "Home",
+        "host": "Host Home",
+        "issuer": "Issuer Home",
         "events": "Events",
         "credentials": "Credentials",
         "portfolio": "Portfolio",
@@ -52,7 +60,7 @@
         "settings": "Settings",
         "other": "Other",
         "preference": "Preference",
-        "readDocs": "Read our docs",
+        "readDocs": "Coming soon",
         "socials": "Socials",
         "noItems": "No items",
         "menu": "Menu",
@@ -94,7 +102,11 @@
         "email": "Email",
         "password": "Password",
         "confirmPassword": "Confirm Password",
-        "rememberMe": "Remember me"
+        "rememberMe": "Remember me",
+        "success": {
+            "title": "Authentication Successful",
+            "description": "You have been successfully authenticated"
+        }
     },
     "signup": {
         "title": "Sign up",
@@ -237,6 +249,11 @@
                 "signIn": "Sign in",
                 "eventManagement": "Event management"
             },
+            "issuer": {
+                "title": "Issuer",
+                "signInIAM": "Sign in with IAM",
+                "register": "Register"
+            },
             "developer": {
                 "title": "Developer",
                 "manageIntegration": "Manage automation & integration",
@@ -258,8 +275,10 @@
         "personalInfo": "Personal Information",
         "contactInfo": "Contact Information",
         "academicInfo": "Academic Information",
+        "accountInfo": "Account Information",
         "profilePicture": "Profile Picture",
         "wallet": "Wallet Address",
+        "googleEmail": "Google Account Email",
         "email": "Email",
         "name": "Name",
         "firstName": "First Name",
@@ -278,7 +297,22 @@
         "academicVerification": "Academic Verification",
         "verifyNow": "Verify Now",
         "updateSuccess": "Profile updated successfully",
-        "updateError": "Failed to update profile. Please try again."
+        "updateError": "Failed to update profile. Please try again.",
+        "exposePrivateKey": "Expose Account Private Key"
+    },
+    "event": {
+        "registration": {
+            "eventFull": "Event is full",
+            "eventFullDescription": "This event has reached maximum capacity and is no longer accepting registrations.",
+            "incorrectPassword": "Incorrect password. Please try again.",
+            "incorrectPasswordDescription": "The password you entered is incorrect. Please check and try again.",
+            "inviteOnly": "Invitation required",
+            "inviteOnlyDescription": "This event is invite-only. You need an invitation to register.",
+            "privateOnly": "Password required",
+            "privateOnlyDescription": "This event is private and requires a password to register.",
+            "success": "Registration successful!",
+            "successDescription": "You have successfully registered for this event."
+        }
     },
     "events": {
         "title": "Events",
@@ -398,6 +432,27 @@
             "internalClientErrorDescription": "Client error. Please try again later.",
             "forbiddenDescription": "You are not authorized to perform this action."
         },
+        "registration": {
+            "incorrectPassword": "Incorrect password. Please try again.",
+            "incorrectPasswordDescription": "The password you entered is incorrect. Please check and try again.",
+            "invalidData": "Please check your information and try again.",
+            "eventFull": "Event is full",
+            "eventFullDescription": "This event has reached maximum capacity and is no longer accepting registrations.",
+            "inviteOnly": "Invitation required",
+            "inviteOnlyDescription": "This event is invite-only. You need an invitation to register.",
+            "privateOnly": "Password required",
+            "privateOnlyDescription": "This event is private and requires a password to register.",
+            "success": "Registration successful!",
+            "successDescription": "You have successfully registered for this event.",
+            "piiForm": {
+                "title": "Personal Information",
+                "subtitle": "Please provide your information to register for this event",
+                "privacyTitle": "Privacy & Data Control",
+                "privacyDescription": "Your information is encrypted and secure. Your data is publicity is controlled in the settings menu. Fields marked as required are mandatory to register for the event.",
+                "submitSuccess": "Information submitted successfully",
+                "submitError": "Failed to submit information. Please try again."
+            }
+        },
         "notFound": {
             "title": "404 - Page Not Found",
             "heading": "Oops! Page not found",
@@ -489,6 +544,11 @@
                     "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
                     "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
                     "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
+                },
+                "generic": {
+                    "unauthenticated_response": "You must be logged in to access this page. Please sign in.",
+                    "unauthorized_response": "You don't have permission to access this page. Please contact an administrator.",
+                    "sign_out_success": "You have been signed out successfully."
                 }
             },
             "api": {
@@ -499,9 +559,44 @@
         },
         "details": {
             "status": "Event Status",
+            "eventType": "Event Type",
+            "finalCallForRequest": "Final call for request",
             "participationRequest": "Participation request",
             "seatsCount": "Seats count",
             "eventContractAddress": "Event Contract Address"
+        },
+        "hostDetails": {
+            "actions": {
+                "confirmEvent": "Confirm Event",
+                "editEvent": "Edit Event",
+                "publishCertificates": "Publish Certificates",
+                "waitingForSignatures": "Waiting for All Signatures",
+                "importReceivers": "Import Receivers"
+            },
+            "tabs": {
+                "eventInfo": "Event Info",
+                "participants": "Participants",
+                "certificates": "Certificates"
+            },
+            "eventInfo": {
+                "contact": "Contact"
+            },
+            "participants": {
+                "searchPlaceholder": "Search participants..."
+            },
+            "certificates": {
+                "summaryDescription": "Certificate template and rules are configured for this event. Manage issuers and publish certificates when ready.",
+                "issuersTitle": "Event Issuers ({{count}})",
+                "searchIssuersPlaceholder": "Search issuers...",
+                "publishTitle": "Publish Certificates",
+                "publishDescription": "Publish certificates to the blockchain when all issuers have signed the certificate.",
+                "eventCertificatesTitle": "Event Certificates ({{count}})",
+                "searchCertificatesPlaceholder": "Search certificates...",
+                "importSectionTitle": "Import Certificate Receivers",
+                "noIssuersConfigured": "No issuers configured for this event. Please add issuers in certificate settings.",
+                "noConfigTitle": "Add event's certificate configuration",
+                "noConfigDescription": "Set up a certificate template and rules for this event. Participants will receive certificates based on your configuration."
+            }
         }
     },
     "participant": {
@@ -527,6 +622,8 @@
         "certificates": {
             "title": "Certificates",
             "description": "All of your certificates you've received",
+            "sign": "Sign Certificate",
+            "searchPlaceholder": "Search certificates...",
             "filters": {
                 "all": "All",
                 "completed": "Completed",
@@ -575,8 +672,11 @@
             "finalCall": "Final call",
             "searchPlaceholder": "Search for events",
             "passwordRequired": "Password required",
+            "passwordPlaceholder": "Enter event password",
             "inviteOnly": "Invite only",
             "nolongerAccepting": "No longer accepting request",
+            "participating": "Participating",
+            "invited": "Yay. You're invited! Click here to accept.",
             "filters": {
                 "seatsCount": "Seats Available",
                 "allEvents": "All events",
@@ -603,11 +703,15 @@
                 "accepted": "Accepted",
                 "seatsCount": "Seats count",
                 "eventContactAddress": "Event Contact Address",
-                "noAddress": "No contact address provided",
                 "passwordPlaceholder": "Password here"
             },
-            "invited": "You're invited! Click here to accept.",
             "invitationRequired": "Invitation is required."
+        },
+        "identities": {
+            "searchPlaceholder": "Search identities..."
+        },
+        "notifications": {
+            "searchPlaceholder": "Search notifications..."
         },
         "inbox": {
             "title": "Inbox",
@@ -699,6 +803,20 @@
         "formPreview": {
             "description": "This is how registration form will appear to participants",
             "title": "Registration Form Preview"
+        },
+        "preview": {
+            "title": "Registration Form Preview",
+            "description": "This is how registration form will appear to participants",
+            "enter": "Enter",
+            "optional": "Optional",
+            "bookingRequired": "Booking Approval Required",
+            "transferable": "Ticket Transferable",
+            "register": "Register",
+            "note": "This is a preview of the registration form"
+        },
+        "templateColumns": {
+            "firstName": "first_name",
+            "lastName": "last_name"
         }
     },
     "participantImport": {
@@ -746,7 +864,9 @@
             "name": "name",
             "email": "email",
             "phoneNumber": "phone_number",
-            "academicInstitution": "academic_institution_name"
+            "academicInstitution": "academic_institution_name",
+            "firstName": "first_name",
+            "lastName": "last_name"
         }
     },
     "certificateImport": {
@@ -808,6 +928,9 @@
     "certificateSettings": {
         "pageTitle": "Certificate Settings",
         "pageDescription": "Configure certificate issuers and design your certificate template",
+        "eventNameNotFound": "Event name not found",
+        "removeIssuerSuccess": "Issuer removed successfully",
+        "removeIssuerError": "Failed to remove issuer",
         "step1": {
             "title": "Step 1: Issuer Settings",
             "description": "Search and select certificate issuers for this event",
@@ -830,7 +953,12 @@
                 "description": "Select one or more issuers from the search results",
                 "selected": "selected",
                 "noResults": "No issuers found",
+                "enterSearch": "Enter search text",
                 "chooseButton": "Choose"
+            },
+            "removeIssuer": {
+                "title": "Remove Issuer",
+                "description": "Are you sure you want to remove this issuer?"
             }
         },
         "step2": {
@@ -894,7 +1022,8 @@
         },
         "confirmButton": "Confirm Settings",
         "saveSuccess": "Certificate settings saved successfully",
-        "saveError": "Failed to save certificate settings. Please try again."
+        "saveError": "Failed to save certificate settings. Please try again.",
+        "nameNotFound": "Certificate recipient name is missing in the uploaded file."
     },
     "credentials": {
         "title": "Credentials",
@@ -927,6 +1056,7 @@
         "passwordMin6": "Password must be at least 6 characters long",
         "passwordMax32": "Password must be at most 32 characters long",
         "passwordMismatch": "Passwords do not match",
+        "passwordRequired": "Password is required",
         "invalidWallet": "Invalid wallet address",
         "accessTokenAndSignedTokenRequired": "Access token or signed token is required",
         "finalCallRegistrationDateFuture": "Final call registration date must be in the future",
@@ -944,7 +1074,15 @@
         "addressMin10": "Address must be at least 10 characters",
         "addressMax255": "Address must be at most 255 characters",
         "academicInstitutionMin3": "Academic institution must be at least 3 characters",
-        "academicInstitutionMax255": "Academic institution must be at most 255 characters"
+        "academicInstitutionMax255": "Academic institution must be at most 255 characters",
+        "firstNameRequired": "First name is required",
+        "lastNameRequired": "Last name is required",
+        "bioRequired": "Bio is required",
+        "emailRequired": "Email is required",
+        "phoneNumberRequired": "Phone number is required",
+        "addressRequired": "Address is required",
+        "academicEmailRequired": "Academic email is required",
+        "academicInstitutionRequired": "Academic institution is required"
     },
     "errors": {
         "generic": "Something went wrong. Please try again.",
@@ -952,7 +1090,6 @@
         "network": "Network error. Please check your connection.",
         "unauthorized": "You are not authorized to perform this action.",
         "forbidden": "You are not authorized to perform this action.",
-        "notFound": "The requested resource was not found.",
         "conflict": "The input already exists.",
         "serverError": "Something went wrong. Please try again later.",
         "invalidInput": "Invalid input",
@@ -964,6 +1101,10 @@
         "internalServerErrorDescription": "Something went wrong. Please try again later.",
         "internalClientErrorDescription": "Client error. Please try again later.",
         "forbiddenDescription": "You are not authorized to perform this action.",
+        "notFound": {
+            "title": "Not Found",
+            "description": "The requested resource was not found."
+        },
         "inbox": {
             "title": "Something went wrong",
             "description": "We couldn't load this message. Please try again later."
@@ -1023,12 +1164,22 @@
             "title": "Heads up",
             "oauth": {
                 "description": {
-                    "part1": "Certificates rely on blockchain technology as a source of truth. Since you’re using OAuth account instead of web3 wallet as a account. We’re managing the your account/wallet private key behind the scene.",
+                    "part1": "Certificates rely on blockchain technology as a source of truth. Since you're using OAuth account instead of web3 wallet as a account. We're managing the your account/wallet private key behind the scene.",
                     "part2": "Your private key is encrypted with your passcode/password you provided.  <strong>If you do not set up a back-up authentication method. We do not either.</strong>"
                 },
                 "checkboxes": {
                     "acceptRisk": "I'm ok with that.",
                     "acknowledgePasswordLoss": "I acknowledged that losing my passcode/password will result in total account lost"
+                }
+            },
+            "wallet": {
+                "description": {
+                    "part1": "Certificates rely on blockchain technology as a source of truth. Your account is permanently bonded with your EVM wallet.",
+                    "part2": "If you lose your wallet, you'll no-longer able to access your portfolio."
+                },
+                "checkboxes": {
+                    "acceptRisk": "I'm ok with that.",
+                    "acknowledgeWalletLoss": "I acknowledged that losing my wallet will result in total account lost"
                 }
             }
         },
@@ -1043,10 +1194,15 @@
                 "create_account_success": "Authenticated with Google successfully",
                 "create_account_error": "Failed to authenticate with Google",
                 "create_account_error_duplicate": "The account with this email already exists.",
+                "create_account_error_password": "Password is required to create an account.",
                 "create_profile_pending": "Updating profile...",
                 "create_profile_success": "Profile updated successfully",
                 "create_profile_error_duplicate": "The profile with this email already exists.",
                 "create_profile_error": "Failed to update profile. Please try again later.",
+                "missing_access_token": "Missing Access Token",
+                "missing_access_token_description": "The OAuth access token is missing. Please try signing in again through Google.",
+                "missing_expires_in": "Missing Token Expiration",
+                "missing_expires_in_description": "The token expiration information is missing. Please try signing in again through Google.",
                 "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
                 "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
                 "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
@@ -1057,77 +1213,5 @@
                 "authentication_credential_id_already_exists": "Authentication credential ID already exists"
             }
         }
-    },
-    "issuer": {
-        "title": "Issuer",
-        "signInIAM": "Sign in with IAM",
-        "register": "Register with us",
-        "sign": {
-            "pageTitle": "Sign Event Certificates",
-            "pageDescription": "Review and sign pending certificate batches for events you are assigned to.",
-            "pendingTab": "Pending Signature",
-            "signedTab": "Signed",
-            "table": {
-                "eventName": "Event Name",
-                "host": "Host",
-                "hostPlaceholder": "Event Host",
-                "certificates": "Certificates",
-                "status": "Status",
-                "action": "Action"
-            },
-            "status": {
-                "waiting": "Waiting for Signature",
-                "signed": "Signed"
-            },
-            "action": {
-                "review": "Review & Sign",
-                "view": "View"
-            },
-            "pagination": {
-                "rowsPerPage": "Rows per page:"
-            },
-            "pinRequired": "PIN is required",
-            "pinMinLength": "PIN must be at least 4 characters",
-            "signingSuccess": "Successfully signed {{count}} certificates",
-            "signingError": "Failed to sign certificates. Please check your PIN and try again.",
-            "signing": "Signing...",
-            "signAndApprove": "Sign and Approve",
-            "reject": "Reject",
-            "confirmSign": "By signing, you confirm that you approve issuance of {{count}} certificates for \"{{eventName}}\". This action is irreversible and will be recorded.",
-            "backToDashboard": "Back to Dashboard",
-            "eventDetails": "Event Details",
-            "certificatesToSign": "Participants to be Signed ({{count}})",
-            "certificatePreview": "Certificate Template Preview",
-            "templateNotAvailable": "Certificate template not available",
-            "signCertificateBatch": "Sign Certificate Batch",
-            "signCertificateBatchDescription": "Review certificate template and confirm to sign all pending certificates for this event.",
-            "signatureRequest": "Signature Request",
-            "signatureRequestDescription": "Review request details before you confirm.",
-            "yourStatus": "Your Status",
-            "signingStatus": "Signing Status",
-            "contractAddress": "Certificate Contract Address",
-            "certificatesCount": "Certificates",
-            "certificates": "Certificates",
-            "eventCertificates": "Event Certificates",
-            "signingDetails": "Signing Details",
-            "issuersStatus": "Issuers Status",
-            "noIssuersFound": "No issuers found for this event.",
-            "signingProgress": "Signing Progress",
-            "ofSigned": "of {{count}} signed",
-            "you": "You",
-            "issuer": "Issuer #",
-            "completed": "Completed",
-            "alreadySigned": "Already Signed",
-            "notAnIssuer": "Not an Issuer"
-        },
-        "pagination": {
-            "rowsPerPage": "Rows per page:"
-        }
-    },
-    "deleteEvent": {
-        "success": "Activity successfully deleted"
-    },
-    "editEvent": {
-        "success": "Successfully edited activity"
     }
 }

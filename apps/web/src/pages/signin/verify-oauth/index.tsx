@@ -1,13 +1,16 @@
 import { TOAST_USECASE_VIEWMODEL } from "@/constants/toast";
 import { USECASE_IDS } from "@/constants/usecase";
 import { coreApiClient } from "@/lib/api/api";
-import { authService } from "@/services/AuthService";
+import { authService } from "@/services/services";
 import { OnboardRegistrationMethod } from "@decm/api";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+import { Typography } from "@/components/typography/typography";
+import { useOAuthOnboardUsecase } from "@/components/pages/Onboard/Usecase/useOAuthOnboardUsecase";
+import { useMyProfile } from "@/hooks/useMyProfile";
 
 const VerifyOauthPage = () => {
     const [searchParams] = useSearchParams();
@@ -15,6 +18,7 @@ const VerifyOauthPage = () => {
     const expiresIn = searchParams.get("expires_in");
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const { refetch: refetchMyProfile } = useMyProfile();
 
     useEffect(() => {
         const init = async () => {
@@ -49,9 +53,10 @@ const VerifyOauthPage = () => {
                     navigate("/signup", { replace: true });
                     return;
                 }
-
+                await useOAuthOnboardUsecase;
                 if (status.authentication_credential_id) {
-                    navigate("/app");
+                    await refetchMyProfile();
+                    await navigate("/app");
                 } else {
                     toast.error(t(TOAST_USECASE_VIEWMODEL[USECASE_IDS.SIGN_IN].NOTFOUND));
                     await authService.signOut({ showSuccessToast: false });
@@ -92,9 +97,13 @@ const VerifyOauthPage = () => {
             }
         };
         init();
-    }, [accessToken, expiresIn, navigate, t]);
+    }, [accessToken, expiresIn, navigate, refetchMyProfile, t]);
 
-    return <span>Loading...</span>;
+    return (
+        <Typography variant="text" tag="span">
+            Loading...
+        </Typography>
+    );
 };
 
 export default VerifyOauthPage;

@@ -44,10 +44,6 @@ export function useLocalStorage<T>(
             if (options.deserializer) {
                 return options.deserializer(value);
             }
-            // Support 'undefined' as a value
-            if (value === "undefined") {
-                return undefined as unknown as T;
-            }
 
             const defaultValue = initialValue instanceof Function ? initialValue() : initialValue;
 
@@ -57,6 +53,11 @@ export function useLocalStorage<T>(
             } catch (error) {
                 console.error("Error parsing JSON:", error);
                 return defaultValue; // Return initialValue if parsing fails
+            }
+
+            // Support 'undefined' as a value - check after parsing
+            if (parsed === "undefined") {
+                return undefined as unknown as T;
             }
 
             return parsed as T;

@@ -1,6 +1,8 @@
 import { useSearchNotificationNavStore } from "@/components/BottomNav/stores/notifications";
-import { useQuery } from "@tanstack/react-query";
+import { useInboxMessages } from "@/hooks/inbox/useInboxMessages";
+import { EntityInboxMessageType } from "@decm/api";
 import FuzzySearch from "fuzzy-search";
+import { useMemo } from "react";
 
 export interface InboxItem {
     id: string;
@@ -10,66 +12,43 @@ export interface InboxItem {
     status: "pending" | "available" | "expired" | "action-required";
 }
 
-const MOCK_INBOX_ITEMS: InboxItem[] = [
-    {
-        id: "1",
-        title: "Event Invitation",
-        sender: "ToBeIT69",
-        date: "24 Sep 2025",
-        status: "pending",
-    },
-    {
-        id: "2",
-        title: "Event Invitation",
-        sender: "ToBeIT69",
-        date: "24 Sep 2025",
-        status: "available",
-    },
-    {
-        id: "3",
-        title: "Event Invitation",
-        sender: "ToBeIT69",
-        date: "24 Sep 2025",
-        status: "expired",
-    },
-    {
-        id: "4",
-        title: "New certificate",
-        sender: "ToBeIT69",
-        date: "24 Sep 2025",
-        status: "action-required",
-    },
-    {
-        id: "5",
-        title: "New certificate",
-        sender: "ToBeIT69",
-        date: "24 Sep 2025",
-        status: "available",
-    },
-];
+const deriveStatus = (message: {
+    is_read?: number;
+    deleted_at?: string;
+    hidden_at?: string;
+}): "pending" | "available" | "expired" | "action-required" => {
+    if (message.is_read === 0) return "action-required";
+    return "available";
+};
 
 export const useInboxListUsecase = () => {
-    // const api = useApi();
     const { searchQuery } = useSearchNotificationNavStore();
 
-    const {
-        data: inboxItems = [],
-        isLoading,
-        error,
-    } = useQuery({
-        queryKey: ["participant-inbox"],
-        queryFn: async () => {
-            try {
-                // TODO: Replace with actual API call once endpoint is available
-                // const response = await api.getParticipantInbox();
-                return MOCK_INBOX_ITEMS;
-            } catch (error) {
-                console.error("Failed to fetch inbox items:", error);
-                return [] as InboxItem[];
-            }
-        },
-    });
+    // Fetch inbox messages from API
+    const { data: apiMessages = [], isLoading, error } = useInboxMessages();
 
+    // Transform API response to match InboxItem interface
+    const inboxItems = useMemo(() => {
+        return apiMessages.map((message) => ({
+            id: message.id ?? "",
+            title:
+                message.message_type ===
+                EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation
+                    ? "Event Registration Invitation"
+                    : message.message_type ===
+                        EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation
+                      ? "Certificate Invitation"
+                      : "Message",
+            sender:
+                message.sender_credential_email ??
+                message.sender_credential_wallet_address ??
+                "Unknown",
+            date: message.created_at ?? "",
+            status: deriveStatus(message),
+        }));
+    }, [apiMessages]);
+
+    // Apply fuzzy search filter
     const searcher = new FuzzySearch(inboxItems, ["title", "sender"], {
         caseSensitive: false,
     });

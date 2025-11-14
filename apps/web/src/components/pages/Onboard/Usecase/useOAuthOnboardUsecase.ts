@@ -8,11 +8,13 @@ import { toast } from "sonner";
 import { USECASE_IDS } from "@/constants/usecase";
 import type { OnboardCheckOnboardStatusResponse } from "@decm/api";
 import type { Profile } from "../ProfilePage";
+import { useMyProfile } from "@/hooks/useMyProfile";
 
 export const useOAuthOnboardUsecase = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { createAccount, upsertProfile, isLoading } = useSignup();
+    const { refetch: refetchMyProfile } = useMyProfile();
 
     const usecaseAsync = async (
         accessToken: string,
@@ -112,7 +114,8 @@ export const useOAuthOnboardUsecase = () => {
         }
 
         toast.success(t("flow.oauth_google.create_profile_success"));
-        navigate("/app");
+        await refetchMyProfile();
+        await navigate("/app");
     };
 
     return {

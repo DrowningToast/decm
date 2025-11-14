@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/styled-tabs";
 import { EventTable } from "@/components/pages/IssuerSign/EventTable";
 import { PaginationControls } from "@/components/pages/IssuerSign/PaginationControls";
-import PageContainer from "@/components/container/PageContainer";
+
 import { useNavigate } from "@/router";
 
 const IssuerSignPage = () => {
@@ -31,7 +31,7 @@ const IssuerSignPage = () => {
     } = usePendingEvents({
         limit: rowsPerPage,
         offset: (currentPage - 1) * rowsPerPage,
-        issuer_credential_id: user?.authentication_credential_id || "",
+        issuer_credential_id: user?.authenticationCredentialId || "",
     });
 
     const {
@@ -41,7 +41,7 @@ const IssuerSignPage = () => {
     } = useSignedEvents({
         limit: rowsPerPage,
         offset: (currentPage - 1) * rowsPerPage,
-        issuer_credential_id: user?.authentication_credential_id || "",
+        issuer_credential_id: user?.authenticationCredentialId || "",
     });
 
     // Calculate pagination
@@ -71,7 +71,7 @@ const IssuerSignPage = () => {
     }
 
     return (
-        <PageContainer title={t("issuer.sign.pageTitle")}>
+        <div title={t("issuer.sign.pageTitle")}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Page Header */}
                 <div className="mb-8">
@@ -141,7 +141,7 @@ const IssuerSignPage = () => {
                     </StyledTabsContent>
                 </StyledTabs>
             </div>
-        </PageContainer>
+        </div>
     );
 };
 

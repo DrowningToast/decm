@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { WrappedSelect } from "@/components/forms/WrappedSelect";
-import { WrappedDateSelect } from "@/components/forms/wrapped-inputs";
+import { WrappedDateSelect } from "@/components/forms/styled-inputs";
 import { Controller } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { RegistrationFormPreview } from "./RegistrationFormPreview";
@@ -50,22 +50,24 @@ export const ParticipantSettingsForm = ({
 
     const form = useForm<ParticipantSettingsData>({
         resolver: zodResolver(participantSettingsSchema) as Resolver<ParticipantSettingsData>,
-        defaultValues: {
-            eventType: defaultValues?.eventType || "public",
-            isBookingRequired: defaultValues?.isBookingRequired ?? false,
-            isTicketTransferable: defaultValues?.isTicketTransferable ?? true,
-            requireRegistrationPassword: defaultValues?.requireRegistrationPassword ?? false,
-            registrationPassword: defaultValues?.registrationPassword || "",
-            finalCallRegistrationDate: defaultValues?.finalCallRegistrationDate,
-            firstName: defaultValues?.firstName || "not_required",
-            lastName: defaultValues?.lastName || "not_required",
-            email: defaultValues?.email || "not_required",
-            bio: defaultValues?.bio || "not_required",
-            phoneNumber: defaultValues?.phoneNumber || "not_required",
-            address: defaultValues?.address || "not_required",
-            academicInstitution: defaultValues?.academicInstitution || "not_required",
-            academicEmail: defaultValues?.academicEmail || "not_required",
-        },
+        defaultValues: defaultValues
+            ? {
+                  eventType: defaultValues?.eventType,
+                  isBookingRequired: defaultValues?.isBookingRequired,
+                  isTicketTransferable: defaultValues?.isTicketTransferable,
+                  requireRegistrationPassword: defaultValues?.requireRegistrationPassword,
+                  registrationPassword: defaultValues?.registrationPassword,
+                  finalCallRegistrationDate: defaultValues?.finalCallRegistrationDate,
+                  firstName: defaultValues?.firstName,
+                  lastName: defaultValues?.lastName,
+                  email: defaultValues?.email,
+                  bio: defaultValues?.bio,
+                  phoneNumber: defaultValues?.phoneNumber,
+                  address: defaultValues?.address,
+                  academicInstitution: defaultValues?.academicInstitution,
+                  academicEmail: defaultValues?.academicEmail,
+              }
+            : undefined,
         mode: "onChange",
     });
 
@@ -102,7 +104,7 @@ export const ParticipantSettingsForm = ({
                     <Typography variant="header" tag="h2" className="text-xl font-bold mb-2 ">
                         {t("participantSettings.registrationSettings")}
                     </Typography>
-                    <Typography variant="text" tag="p" className="text-sm text-muted-foreground">
+                    <Typography variant="text" tag="p" className="text-muted-foreground">
                         {t("participantSettings.registrationSettingsDescription")}
                     </Typography>
                 </div>
@@ -116,7 +118,6 @@ export const ParticipantSettingsForm = ({
                         description={t("participantSettings.eventTypeDescription")}
                         htmlFor="eventType"
                         options={[
-                            { value: "public", label: t("participantSettings.eventTypePublic") },
                             { value: "private", label: t("participantSettings.eventTypePrivate") },
                             {
                                 value: "invite",
@@ -129,14 +130,14 @@ export const ParticipantSettingsForm = ({
 
                     {/* Switches Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Booking Required */}
-                        <div className="flex items-center justify-between space-x-2">
+                        {/* TODO: Booking Required */}
+                        {/* <div className="flex items-center justify-between space-x-2">
                             <div className="space-y-1 flex-1">
                                 <Label htmlFor="isBookingRequired">
                                     <Typography
                                         variant="text"
                                         tag="span"
-                                        className="text-sm font-medium"
+                                        className="font-medium"
                                     >
                                         {t("participantSettings.bookingRequired")}
                                     </Typography>
@@ -161,16 +162,16 @@ export const ParticipantSettingsForm = ({
                                     />
                                 )}
                             />
-                        </div>
+                        </div> */}
 
-                        {/* Ticket Transferable */}
-                        <div className="flex items-center justify-between space-x-2">
+                        {/* TODO: Ticket Transferable */}
+                        {/* <div className="flex items-center justify-between space-x-2">
                             <div className="space-y-1 flex-1">
                                 <Label htmlFor="isTicketTransferable">
                                     <Typography
                                         variant="text"
                                         tag="span"
-                                        className="text-sm font-medium"
+                                        className="font-medium"
                                     >
                                         {t("participantSettings.ticketTransferable")}
                                     </Typography>
@@ -195,97 +196,103 @@ export const ParticipantSettingsForm = ({
                                     />
                                 )}
                             />
-                        </div>
+                        </div> */}
                     </div>
 
-                    {/* Registration Password Required */}
-                    <div className="flex items-center justify-between space-x-2">
-                        <div className="space-y-1 flex-1">
-                            <Label htmlFor="requireRegistrationPassword">
-                                <Typography
-                                    variant="text"
-                                    tag="span"
-                                    className="text-sm font-medium"
-                                >
-                                    {t("participantSettings.requireRegistrationPassword")}
-                                </Typography>
-                            </Label>
-                            <Typography
-                                variant="text"
-                                tag="p"
-                                className="text-xs text-muted-foreground"
-                            >
-                                {t("participantSettings.requireRegistrationPasswordDescription")}
-                            </Typography>
-                        </div>
-                        <Controller
-                            name="requireRegistrationPassword"
-                            control={control}
-                            render={({ field }) => (
-                                <Switch
-                                    id="requireRegistrationPassword"
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    disabled={isLoading}
-                                />
-                            )}
-                        />
-                    </div>
-
-                    {/* Registration Password (conditional) */}
-                    {requireRegistrationPassword && (
-                        <div className="space-y-2 pt-2 border-t pb-6">
-                            <Label htmlFor="registrationPassword" className="pt-6">
-                                <Typography
-                                    variant="text"
-                                    tag="span"
-                                    className="text-sm font-medium"
-                                >
-                                    {t("participantSettings.registrationPassword")}
-                                </Typography>
-                            </Label>
-                            <Controller
-                                name="registrationPassword"
-                                control={control}
-                                render={({ field, fieldState: { error } }) => (
-                                    <div className="space-y-2">
-                                        <Input
-                                            {...field}
-                                            id="registrationPassword"
-                                            type="password"
-                                            placeholder={t(
-                                                "participantSettings.registrationPasswordPlaceholder",
-                                            )}
-                                            disabled={isLoading}
-                                            className={`!border !border-[#D9D9D91A] ${error ? "border-destructive" : ""}`}
-                                            value={field.value || ""}
-                                            onChange={(e) => field.onChange(e.target.value)}
-                                        />
-                                        {error && (
-                                            <Typography
-                                                variant="text"
-                                                tag="p"
-                                                className="text-sm text-destructive"
-                                                role="alert"
-                                            >
-                                                {t(error.message as string)}
-                                            </Typography>
+                    {/* Registration Password Required - Hide when event type is invite only */}
+                    {eventType !== "invite" && (
+                        <>
+                            <div className="flex items-center justify-between space-x-2">
+                                <div className="space-y-1 flex-1">
+                                    <Label htmlFor="requireRegistrationPassword">
+                                        <Typography
+                                            variant="text"
+                                            tag="span"
+                                            className="font-medium"
+                                        >
+                                            {t("participantSettings.requireRegistrationPassword")}
+                                        </Typography>
+                                    </Label>
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        className="text-xs text-muted-foreground"
+                                    >
+                                        {t(
+                                            "participantSettings.requireRegistrationPasswordDescription",
                                         )}
-                                    </div>
-                                )}
-                            />
-                            <Typography
-                                variant="text"
-                                tag="p"
-                                className="text-xs text-muted-foreground"
-                            >
-                                {t("participantSettings.registrationPasswordDescription")}
-                            </Typography>
-                        </div>
+                                    </Typography>
+                                </div>
+                                <Controller
+                                    name="requireRegistrationPassword"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Switch
+                                            id="requireRegistrationPassword"
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                            disabled={isLoading}
+                                        />
+                                    )}
+                                />
+                            </div>
+
+                            {/* Registration Password (conditional) */}
+                            {requireRegistrationPassword && (
+                                <div className="space-y-2 pt-2 border-t pb-6">
+                                    <Label htmlFor="registrationPassword" className="pt-6">
+                                        <Typography
+                                            variant="text"
+                                            tag="span"
+                                            className="font-medium"
+                                        >
+                                            {t("participantSettings.registrationPassword")}
+                                        </Typography>
+                                    </Label>
+                                    <Controller
+                                        name="registrationPassword"
+                                        control={control}
+                                        render={({ field, fieldState: { error } }) => (
+                                            <div className="space-y-2">
+                                                <Input
+                                                    {...field}
+                                                    id="registrationPassword"
+                                                    type="password"
+                                                    placeholder={t(
+                                                        "participantSettings.registrationPasswordPlaceholder",
+                                                    )}
+                                                    disabled={isLoading}
+                                                    className={`!border !border-primary ${error ? "border-destructive" : ""}`}
+                                                    value={field.value || ""}
+                                                    onChange={(e) => field.onChange(e.target.value)}
+                                                />
+                                                {error && (
+                                                    <Typography
+                                                        variant="text"
+                                                        tag="p"
+                                                        className="text-destructive"
+                                                        role="alert"
+                                                    >
+                                                        {t(error.message as string)}
+                                                    </Typography>
+                                                )}
+                                            </div>
+                                        )}
+                                    />
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        className="text-xs text-muted-foreground"
+                                    >
+                                        {t("participantSettings.registrationPasswordDescription")}
+                                    </Typography>
+                                </div>
+                            )}
+                        </>
                     )}
 
                     {/* Final Call Registration Date (conditional) */}
-                    {(eventType === "public" || eventType === "private") && isBookingRequired && (
+                    {eventType === "private" && isBookingRequired && (
                         <div className="space-y-2 pt-2 pb-4">
                             <WrappedDateSelect
                                 control={control}
@@ -315,7 +322,7 @@ export const ParticipantSettingsForm = ({
                     <Typography variant="header" tag="h2" className="text-xl font-bold mb-2">
                         {t("participantSettings.participantRequirements")}
                     </Typography>
-                    <Typography variant="text" tag="p" className="text-sm text-muted-foreground">
+                    <Typography variant="text" tag="p" className="text-muted-foreground">
                         {t("participantSettings.participantRequirementsDescription")}
                     </Typography>
                 </div>
@@ -323,7 +330,12 @@ export const ParticipantSettingsForm = ({
                 <div className="space-y-4 rounded-lg border p-6 ">
                     {/* Basic Information */}
                     <div className="space-y-4">
-                        <Typography variant="header" tag="h3" className="text-sm font-semibold">
+                        <Typography
+                            size="subheader"
+                            variant="header"
+                            tag="h3"
+                            className="font-semibold"
+                        >
                             {t("participantSettings.basicInformation")}
                         </Typography>
 
@@ -382,7 +394,12 @@ export const ParticipantSettingsForm = ({
 
                     {/* Additional Information */}
                     <div className="pt-4 space-y-4 border-t">
-                        <Typography variant="header" tag="h3" className="text-sm font-semibold">
+                        <Typography
+                            size="subheader"
+                            variant="header"
+                            tag="h3"
+                            className="font-semibold"
+                        >
                             {t("participantSettings.additionalInformation")}
                         </Typography>
 
@@ -415,7 +432,12 @@ export const ParticipantSettingsForm = ({
 
                     {/* Academic Information */}
                     <div className="pt-4 space-y-4 border-t">
-                        <Typography variant="header" tag="h3" className="text-sm font-semibold">
+                        <Typography
+                            size="subheader"
+                            variant="header"
+                            tag="h3"
+                            className="font-semibold"
+                        >
                             {t("participantSettings.academicInformation")}
                         </Typography>
 

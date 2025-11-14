@@ -51,7 +51,7 @@ export const StyledTabsList = ({
     children,
     className,
 }: StyledTabsListProps): React.ReactElement => {
-    return <TabsList className={cn("w-full h-10 bg-muted py-1.5", className)}>{children}</TabsList>;
+    return <TabsList className={cn("w-full h-14 bg-muted p-1.5", className)}>{children}</TabsList>;
 };
 
 /**
@@ -62,13 +62,9 @@ export const StyledTabsTrigger = ({ value, children, className }: StyledTabsTrig
         <TabsTrigger
             value={value}
             className={cn(
-                "data-[state=active]:bg-primary text-gray-900 data-[state=active]:text-white",
+                "cursor-pointer data-[state=active]:bg-primary text-background data-[state=active]:text-foreground",
                 className,
             )}
-            style={{
-                fontFamily: "Cormorant Garamond",
-                fontSize: "16px",
-            }}
         >
             {children}
         </TabsTrigger>

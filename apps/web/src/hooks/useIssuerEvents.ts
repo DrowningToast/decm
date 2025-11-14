@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getIssuerEvents } from "@/services/issuerService";
+import { getIssuerEvents } from "@/services/IssuerService/IssuerService";
 import type { GetIssuerEventsData } from "@decm/api";
 
 interface UseIssuerEventsOptions {

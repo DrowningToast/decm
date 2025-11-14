@@ -1,5 +1,4 @@
 import { EditEventPage } from "@/components/pages/HostPages/EditEventPage/EditEventPage";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useParams } from "@/router";
 import { useEvent } from "@/hooks/events/useEvent";
 import { useEventContract } from "@/hooks/events/useEventContracts";
@@ -20,9 +19,5 @@ export default function Page() {
         return <div>Error loading event</div>;
     }
 
-    return (
-        <ProtectedRoute>
-            <EditEventPage event={event} eventContract={eventContract} />
-        </ProtectedRoute>
-    );
+    return <EditEventPage event={event} eventContract={eventContract} />;
 }

@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "GO debug",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "remotePath": "",
+            "program": "${workspaceRoot}/apps/backend/core-api/cmd/main.go",
+            "cwd": "${workspaceRoot}/apps/backend",
+            "env": {
+                "ENVIRONMENT":"development"
+            },
+            "args": [],
+            "showLog": true
+        }
+    ]
+}

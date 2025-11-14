@@ -1,4 +1,5 @@
-import { authService, type SignOutParams } from "@/services/AuthService";
+import { type SignOutParams } from "@/services/AuthService/AuthService";
+import { authService } from "@/services/services";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback } from "react";
 

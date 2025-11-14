@@ -36,8 +36,8 @@ type GoogleUser struct {
 
 // OAuthResult contains both token and user information
 type OAuthResult struct {
-	Token *oauth2.Token `json:"token"`
-	User  *GoogleUser   `json:"user"`
+	Token *oauth2.Token `json:"token,omitempty"`
+	User  *GoogleUser   `json:"user,omitempty"`
 }
 
 type GoogleOAuthService struct {
@@ -71,7 +71,7 @@ func NewGoogleOAuthService() *GoogleOAuthService {
 		CookiePath:     "/",                           // Ensure cookie is sent on all paths
 		CookieSecure:   cfg.Env == "production",       // Only secure in production
 		CookieSameSite: "Lax",
-		CookieDomain:   cfg.CookieDomain,              // Set domain from config (empty for dev, domain for production)
+		CookieDomain:   cfg.CookieDomain, // Set domain from config (empty for dev, domain for production)
 		KeyGenerator: func() string {
 			return utils.GenerateSecureRandomString(32)
 		},

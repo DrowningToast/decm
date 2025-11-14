@@ -1,4 +1,3 @@
-import PageContainer from "@/components/container/PageContainer";
 import SectionContainer from "@/components/container/SectionContainer";
 import { Typography } from "@/components/typography/typography";
 import { GoogleMapsEmbed } from "@/components/ui/google-maps-embed";
@@ -22,32 +21,35 @@ import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
 import { issuerColumns } from "./columns/issuer-columns";
 import type {
-    EventconfigEventRegistrationConfigResponse,
-    EventEventResponse,
     GetEventCertificateConfigData,
     GetEventContractByEventIdData,
     GetEventIssuersByEventIdData,
-    GetEventRegistrationInvitationsByEventIdData,
 } from "@decm/api";
-import { toEventRegistrationConfigStatus } from "@/lib/events/event.utils";
 import { formatEthereumAddress } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type { SortingState } from "@tanstack/react-table";
-import { ParticipantColumns, type Participant } from "./columns/ParticipantColumns";
+import { useParticipantColumns, type Participant } from "./columns/useParticipantColumns";
 import { CertificateColumns } from "./columns/CertificateColumns";
 import { Separator } from "@/components/ui/separator";
 import { useEventCertificates } from "@/hooks/useEventCertificates";
 import { useRevokeEventCertificate } from "@/hooks/events/useRevokeEventCertificate";
+import { Link } from "@/router";
+import type {
+    EventRegistrationConfiguration,
+    EventRegistrationInvitation,
+} from "@/services/EventRegistration/EventRegistration";
+import { EventStatusesViewModel, EventTypesViewModel } from "./ViewModel";
+import type { EventViewModel } from "@/services/EventService/EventService";
 
 interface HostEventDetailsPageProps {
     eventId: string;
-    event: EventEventResponse;
-    eventRegistrationConfig: EventconfigEventRegistrationConfigResponse;
+    event: EventViewModel;
+    eventRegistrationConfig: EventRegistrationConfiguration;
     eventCertificateConfig?: GetEventCertificateConfigData;
     eventIssuers?: GetEventIssuersByEventIdData;
     eventContract?: GetEventContractByEventIdData;
-    eventInvitations?: GetEventRegistrationInvitationsByEventIdData;
+    eventInvitations?: EventRegistrationInvitation[];
 }
 
 export default function HostEventDetailsPage({
@@ -82,6 +84,7 @@ export default function HostEventDetailsPage({
 
     // Memoized filtered and sorted data
     const processedData = useMemo(() => {
+        console.log(eventInvitations);
         if (!eventInvitations) return [];
 
         let filtered = [...eventInvitations];
@@ -91,11 +94,11 @@ export default function HostEventDetailsPage({
             const searchLower = debouncedSearch.toLowerCase();
             filtered = filtered.filter(
                 (item) =>
-                    item.first_name?.toLowerCase().includes(searchLower) ||
-                    item.last_name?.toLowerCase().includes(searchLower) ||
+                    item.firstName?.toLowerCase().includes(searchLower) ||
+                    item.lastName?.toLowerCase().includes(searchLower) ||
                     item.email?.toLowerCase().includes(searchLower) ||
-                    item.academic_institution?.toLowerCase().includes(searchLower) ||
-                    item.phone_number?.toLowerCase().includes(searchLower),
+                    item.academicInstitution?.toLowerCase().includes(searchLower) ||
+                    item.phoneNumber?.toLowerCase().includes(searchLower),
             );
         }
 
@@ -119,12 +122,25 @@ export default function HostEventDetailsPage({
         return filtered;
     }, [eventInvitations, debouncedSearch, sorting]);
 
-    // Calculate pagination
+    // Calculate pagination and map to Participant type
     const paginatedData = useMemo(() => {
         const startIndex = (currentPage - 1) * pageSize;
         const endIndex = startIndex + pageSize;
-        return processedData.slice(startIndex, endIndex);
+        return processedData.slice(startIndex, endIndex).map(
+            (invitation): Participant => ({
+                id: invitation.id,
+                firstName: invitation.firstName || "",
+                lastName: invitation.lastName || "",
+                email: invitation.email || "",
+                phoneNumber: invitation.phoneNumber || "",
+                academicInstitution: invitation.academicInstitution || "",
+                walletAddress: "", // Not available in invitation data
+                status: invitation.cancelledAt ? "rejected" : "pending",
+            }),
+        );
     }, [processedData, currentPage, pageSize]);
+
+    const participantColumns = useParticipantColumns();
 
     // Callbacks for DataTable
     const handlePageChange = useCallback((page: number) => {
@@ -152,42 +168,35 @@ export default function HostEventDetailsPage({
     const { certificates: eventCertificates, isLoading: certificatesLoading } =
         useEventCertificates(eventId);
 
-    // Mock participant requirements data - replace with actual data
-    // const participantRequirements: Record<string, RequirementStatus> = {
-    //     firstName: "required",
-    //     lastName: "required",
-    //     email: "required",
-    //     bio: "optional",
-    //     phoneNumber: "optional",
-    //     address: "not_required",
-    //     academicInstitution: "required",
-    //     academicEmail: "required",
-    // };
+    console.log(event.googleMapQuery);
 
     return (
-        <PageContainer title="Events Details">
+        <div className="flex flex-col gap-y-6">
             <SectionContainer>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <img
-                            src={event.icon_presigned_url ?? ""}
+                            src={event.iconPresignedUrl ?? ""}
                             alt={event.title}
                             className="w-12 h-12 rounded-full object-cover"
                         />
 
                         <div className="flex items-center gap-2">
-                            <Typography tag="p" size={"subheader"}>
+                            <Typography variant="header" tag="p" size={"header"}>
                                 {event.title}
                             </Typography>
-                            {event.is_verified && <CheckCircle2Icon color="#eb5331" />}
+                            {event.isVerified && <CheckCircle2Icon color="#eb5331" />}
                         </div>
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <WrappedButton variant={"secondaryWhite"}>Confirm Event</WrappedButton>
-                        <WrappedButton href={`/host/events/${eventId}/edit`}>
-                            Edit Event
-                        </WrappedButton>
+                        {/* TODO: Add confirm event button */}
+                        {/* <Button size="xl" variant="secondary-light">
+                            {t("events.hostDetails.actions.confirmEvent")}
+                        </Button> */}
+                        <Link to={`/host/events/:eventId/edit`} params={{ eventId }}>
+                            <Button size="lg">{t("events.hostDetails.actions.editEvent")}</Button>
+                        </Link>
                     </div>
                 </div>
             </SectionContainer>
@@ -195,15 +204,15 @@ export default function HostEventDetailsPage({
             <SectionContainer className="lg:grid lg:grid-cols-4 gap-8">
                 <div className="flex flex-col gap-4 lg:col-span-3">
                     <Typography tag="p" size={"base"} color="muted">
-                        {event.short_description}
+                        {event.shortDescription}
                     </Typography>
 
                     <Typography tag="p" size={"base"} color="muted">
-                        {event.long_description}
+                        {event.longDescription}
                     </Typography>
 
                     <img
-                        src={event.banner_presigned_url ?? ""}
+                        src={event.bannerPresignedUrl ?? ""}
                         alt={event.title}
                         className="w-full h-[350px] object-cover rounded-lg"
                     />
@@ -211,21 +220,25 @@ export default function HostEventDetailsPage({
 
                 <div className="flex flex-col gap-4 mt-6 lg:mt-0 border rounded-lg p-6 ">
                     <TextLabelValue
-                        label="Status"
-                        value={event.event_status?.toUpperCase() ?? "NA"}
+                        label={t("events.details.status")}
+                        value={
+                            EventStatusesViewModel[event.eventStatus] ?? t("common.notAvailable")
+                        }
                     />
-                    <TextLabelValue label="Final call for request" value={"NA"} />
                     <TextLabelValue
-                        label="Participation request"
-                        value={event.is_booking_request_required ? "Required" : "Not Required"}
+                        label={t("events.details.eventType")}
+                        value={EventTypesViewModel[event.eventType] ?? t("common.notAvailable")}
                     />
-                    <TextLabelValue label="Seats count" value={`${0} / ${event.max_attendees}`} />
                     <TextLabelValue
-                        label="Event Contract Address"
+                        label={t("events.details.seatsCount")}
+                        value={`${event.attendeesCount ?? 0} / ${event.maxAttendees}`}
+                    />
+                    <TextLabelValue
+                        label={t("events.details.eventContractAddress")}
                         value={
                             eventContract?.event_contract_address
                                 ? formatEthereumAddress(eventContract.event_contract_address)
-                                : "NA"
+                                : t("common.notAvailable")
                         }
                         endIcon={<ExternalLinkIcon size={16} />}
                         valueClassName="cursor-pointer underline"
@@ -237,48 +250,64 @@ export default function HostEventDetailsPage({
             <SectionContainer>
                 <StyledTabs defaultValue="event-info">
                     <StyledTabsList>
-                        <StyledTabsTrigger value="event-info">Event Info</StyledTabsTrigger>
-                        <StyledTabsTrigger value="participants">Participants</StyledTabsTrigger>
-                        <StyledTabsTrigger value="certificates">Certificates</StyledTabsTrigger>
+                        <StyledTabsTrigger value="event-info">
+                            <Typography variant="text" tag="span" color="current">
+                                {t("events.hostDetails.tabs.eventInfo")}
+                            </Typography>
+                        </StyledTabsTrigger>
+                        <StyledTabsTrigger value="participants">
+                            <Typography variant="text" tag="span" color="current">
+                                {t("events.hostDetails.tabs.participants")}
+                            </Typography>
+                        </StyledTabsTrigger>
+                        <StyledTabsTrigger value="certificates">
+                            <Typography variant="text" tag="span" color="current">
+                                {t("events.hostDetails.tabs.certificates")}
+                            </Typography>
+                        </StyledTabsTrigger>
                     </StyledTabsList>
                     <StyledTabsContent value="event-info">
                         <div className="flex flex-col gap-4 lg:flex-row">
                             <div className="flex flex-col gap-4 flex-1">
                                 <TextLabelValue
-                                    label="Venue Location"
+                                    label={t("events.form.location")}
                                     value={event.location ?? ""}
                                 />
                                 <TextLabelValue
-                                    label="Google Map Search"
-                                    value={event.google_map_query ?? ""}
+                                    label={t("events.form.googleMapQuery")}
+                                    value={event.googleMapQuery ?? ""}
                                 />
 
                                 <TextLabelValue
-                                    label="Contact Address"
-                                    value={event.contact_number ?? ""}
+                                    label={t("events.form.contactAddress")}
+                                    value={event.contactNumber ?? ""}
                                 />
                                 <TextLabelValue
-                                    label="Contact"
-                                    value={event.contact_number ?? ""}
+                                    label={t("events.hostDetails.eventInfo.contact")}
+                                    value={event.contactNumber ?? ""}
                                 />
                             </div>
                             <div className="flex-1">
-                                <GoogleMapsEmbed query={event.google_map_query ?? ""} />
+                                <GoogleMapsEmbed query={event.googleMapQuery ?? ""} />
                             </div>
                         </div>
                     </StyledTabsContent>
                     <StyledTabsContent value="participants">
                         <div className="space-y-4">
                             {/* Event Settings Summary */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 my-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-6">
                                 <TextLabelValue
                                     label={t("events.settings.eventType")}
-                                    value={event.is_public ? "Public" : "Private"}
+                                    value={
+                                        event.isPublic
+                                            ? t("participantSettings.eventTypePublic")
+                                            : t("participantSettings.eventTypePrivate")
+                                    }
                                 />
                                 <TextLabelValue
                                     label={t("events.settings.bookingRequired")}
                                     value={
-                                        event.is_booking_request_required
+                                        event.isBookingRequestRequired
                                             ? t("common.yes")
                                             : t("common.no")
                                     }
@@ -286,23 +315,29 @@ export default function HostEventDetailsPage({
                                 <TextLabelValue
                                     label={t("events.settings.tokenTransferable")}
                                     value={
-                                        event.is_ticket_transferable
+                                        event.isTicketTransferable
                                             ? t("common.yes")
                                             : t("common.no")
                                     }
                                 />
 
                                 <div className="flex items-center justify-end gap-4">
-                                    <Button variant="secondary-dark" className="h-full">
-                                        <a href={`/host/events/${eventId}/imports/participants`}>
-                                            Import Participants
-                                        </a>
-                                    </Button>
-                                    <WrappedButton
-                                        href={`/host/events/${eventId}/settings/participant`}
+                                    <Link
+                                        to="/host/events/:eventId/imports/participants"
+                                        params={{ eventId }}
                                     >
-                                        {t("events.settings.participantSettings")}
-                                    </WrappedButton>
+                                        <Button size="lg" variant="secondary-light">
+                                            {t("participantImport.title")}
+                                        </Button>
+                                    </Link>
+                                    <Link
+                                        to="/host/events/:eventId/settings/participant"
+                                        params={{ eventId }}
+                                    >
+                                        <Button size="lg" variant="primary">
+                                            {t("events.settings.participantSettings")}
+                                        </Button>
+                                    </Link>
                                 </div>
                             </div>
 
@@ -328,55 +363,39 @@ export default function HostEventDetailsPage({
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                                             <RequirementItem
                                                 label={t("events.participants.fields.firstName")}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.first_name_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.firstName}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.lastName")}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.last_name_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.lastName}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.email")}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.email_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.email}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.bio")}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.bio_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.bio}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.phoneNumber")}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.phone_number_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.phoneNumber}
                                             />
                                             <RequirementItem
                                                 label={t("events.participants.fields.address")}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.address_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.address}
                                             />
                                             <RequirementItem
                                                 label={t(
                                                     "events.participants.fields.academicInstitution",
                                                 )}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.academic_institution_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.academicInstitution}
                                             />
                                             <RequirementItem
                                                 label={t(
                                                     "events.participants.fields.academicEmail",
                                                 )}
-                                                status={toEventRegistrationConfigStatus(
-                                                    eventRegistrationConfig.academic_email_requirement_status,
-                                                )}
+                                                status={eventRegistrationConfig.academicEmail}
                                             />
                                         </div>
                                     </AccordionContent>
@@ -384,8 +403,8 @@ export default function HostEventDetailsPage({
                             </Accordion>
 
                             <DataTable
-                                columns={ParticipantColumns()}
-                                data={paginatedData as Participant[]}
+                                columns={participantColumns}
+                                data={paginatedData}
                                 totalItems={processedData.length}
                                 currentPage={currentPage}
                                 pageSize={pageSize}
@@ -393,7 +412,9 @@ export default function HostEventDetailsPage({
                                 onPageSizeChange={handlePageSizeChange}
                                 searchValue={searchValue}
                                 onSearchChange={handleSearchChange}
-                                searchPlaceholder="Search participants..."
+                                searchPlaceholder={t(
+                                    "events.hostDetails.participants.searchPlaceholder",
+                                )}
                                 sorting={sorting}
                                 onSortingChange={(value) =>
                                     handleSortingChange(value as SortingState)
@@ -408,21 +429,29 @@ export default function HostEventDetailsPage({
                                 {/* Certificate Settings Section */}
                                 <div className="w-full bg-white border border-white/50 rounded-lg p-6 flex flex-row items-center justify-between">
                                     <div>
-                                        <p className="font-semibold text-lg text-black">
-                                            Certificate Settings
-                                        </p>
-                                        <p className="text-black/50 text-base mt-1">
-                                            Certificate template and rules are configured for this
-                                            event. Manage issuers and publish certificates when
-                                            ready.
-                                        </p>
+                                        <Typography
+                                            variant="text"
+                                            tag="p"
+                                            className="font-semibold text-lg text-black"
+                                        >
+                                            {t("certificateSettings.pageTitle")}
+                                        </Typography>
+                                        <Typography
+                                            variant="text"
+                                            tag="p"
+                                            className="text-black/50 text-base mt-1"
+                                        >
+                                            {t(
+                                                "events.hostDetails.certificates.summaryDescription",
+                                            )}
+                                        </Typography>
                                     </div>
                                     <div className="flex gap-2">
                                         <WrappedButton
                                             className="px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
                                             href={`/host/events/${eventId}/settings/certificate`}
                                         >
-                                            Certificate Settings
+                                            {t("certificateSettings.pageTitle")}
                                         </WrappedButton>
                                     </div>
                                 </div>
@@ -437,7 +466,10 @@ export default function HostEventDetailsPage({
                                                     tag="h3"
                                                     className="text-lg font-semibold"
                                                 >
-                                                    Event Issuers ({eventIssuers.length})
+                                                    {t(
+                                                        "events.hostDetails.certificates.issuersTitle",
+                                                        { count: eventIssuers.length },
+                                                    )}
                                                 </Typography>
                                             </div>
 
@@ -451,7 +483,9 @@ export default function HostEventDetailsPage({
                                                 onPageSizeChange={() => {}}
                                                 searchValue=""
                                                 onSearchChange={() => {}}
-                                                searchPlaceholder="Search issuers..."
+                                                searchPlaceholder={t(
+                                                    "events.hostDetails.certificates.searchIssuersPlaceholder",
+                                                )}
                                                 sorting={[]}
                                                 onSortingChange={() => {}}
                                                 isLoading={false}
@@ -465,13 +499,24 @@ export default function HostEventDetailsPage({
                                             {/* Publish Certificates Section */}
                                             <div className="w-full bg-white border border-white/50 rounded-lg p-6 flex flex-row items-center justify-between">
                                                 <div>
-                                                    <p className="font-semibold text-lg text-black">
-                                                        Publish Certificates
-                                                    </p>
-                                                    <p className="text-black/50 text-base mt-1">
-                                                        Publish certificates to the blockchain when
-                                                        all issuers have signed the certificate.
-                                                    </p>
+                                                    <Typography
+                                                        variant="text"
+                                                        tag="p"
+                                                        className="font-semibold text-lg text-black"
+                                                    >
+                                                        {t(
+                                                            "events.hostDetails.certificates.publishTitle",
+                                                        )}
+                                                    </Typography>
+                                                    <Typography
+                                                        variant="text"
+                                                        tag="p"
+                                                        className="text-black/50 text-base mt-1"
+                                                    >
+                                                        {t(
+                                                            "events.hostDetails.certificates.publishDescription",
+                                                        )}
+                                                    </Typography>
                                                 </div>
                                                 <div className="flex gap-2">
                                                     <WrappedButton
@@ -485,9 +530,11 @@ export default function HostEventDetailsPage({
                                                             );
                                                         }}
                                                     >
-                                                        {allIssuersSigned
-                                                            ? "Publish Certificates"
-                                                            : "Waiting for All Signatures"}
+                                                        {t(
+                                                            allIssuersSigned
+                                                                ? "events.hostDetails.actions.publishCertificates"
+                                                                : "events.hostDetails.actions.waitingForSignatures",
+                                                        )}
                                                     </WrappedButton>
                                                 </div>
                                             </div>
@@ -498,7 +545,10 @@ export default function HostEventDetailsPage({
                                             tag="h3"
                                             className="text-lg font-semibold"
                                         >
-                                            Event Certificates ({eventCertificates?.length || 0})
+                                            {t(
+                                                "events.hostDetails.certificates.eventCertificatesTitle",
+                                                { count: eventCertificates?.length || 0 },
+                                            )}
                                         </Typography>
 
                                         <DataTable
@@ -513,8 +563,20 @@ export default function HostEventDetailsPage({
                                             data={
                                                 eventCertificates
                                                     ?.filter(
-                                                        (cert) =>
-                                                            cert.id && cert.revoked_at === null,
+                                                        (
+                                                            cert,
+                                                        ): cert is typeof cert & {
+                                                            created_at: string;
+                                                            event_contract_address: string;
+                                                            event_id: string;
+                                                            id: string;
+                                                        } =>
+                                                            cert.id !== undefined &&
+                                                            cert.event_id !== undefined &&
+                                                            cert.revoked_at === null &&
+                                                            cert.created_at !== undefined &&
+                                                            cert.event_contract_address !==
+                                                                undefined,
                                                     )
                                                     .map((cert) => {
                                                         const firstName =
@@ -526,13 +588,13 @@ export default function HostEventDetailsPage({
                                                                 .join(" ") || "";
 
                                                         return {
-                                                            id: cert.id, // Remove fallback to empty string
+                                                            ...cert,
                                                             firstName,
                                                             lastName,
                                                             email: cert.receiver_email || "",
                                                             academicInstitution:
                                                                 cert.academic_institution || "",
-                                                            issuedAt: cert.created_at || "",
+                                                            issuedAt: cert.created_at,
                                                             status: cert.revoked_at
                                                                 ? "rejected"
                                                                 : "received",
@@ -546,7 +608,9 @@ export default function HostEventDetailsPage({
                                             onPageSizeChange={() => {}}
                                             searchValue=""
                                             onSearchChange={() => {}}
-                                            searchPlaceholder="Search certificates..."
+                                            searchPlaceholder={t(
+                                                "events.hostDetails.certificates.searchCertificatesPlaceholder",
+                                            )}
                                             sorting={[]}
                                             onSortingChange={() => {}}
                                             isLoading={certificatesLoading}
@@ -557,7 +621,12 @@ export default function HostEventDetailsPage({
                                             href={`/host/events/${eventId}/imports/certificates`}
                                             className="flex items-center justify-center p-6 border-dashed rounded-xl border-2 border-white/50 gap-4 cursor-pointer"
                                         >
-                                            <CloudUploadIcon /> <p>Import Certificate Receivers</p>
+                                            <CloudUploadIcon />{" "}
+                                            <Typography variant="text" tag="span">
+                                                {t(
+                                                    "events.hostDetails.certificates.importSectionTitle",
+                                                )}
+                                            </Typography>
                                         </a>
                                     </div>
                                 )}
@@ -569,41 +638,47 @@ export default function HostEventDetailsPage({
                                             tag="p"
                                             className="text-muted-foreground"
                                         >
-                                            No issuers configured for this event. Please add issuers
-                                            in certificate settings.
+                                            {t(
+                                                "events.hostDetails.certificates.noIssuersConfigured",
+                                            )}
                                         </Typography>
                                     </div>
                                 )}
                             </div>
                         ) : (
                             <div className="w-full bg-primary/10 border border-primary/20 rounded-lg p-6 flex flex-col items-center justify-center">
-                                <p className="font-semibold text-lg text-primary">
-                                    Add event's certificate configuration
-                                </p>
-                                <p className="text-muted-foreground text-base mt-1 text-center max-w-xl">
-                                    Set up a certificate template and rules for this event.
-                                    Participants will receive certificates based on your
-                                    configuration.
-                                </p>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    className="font-semibold text-lg text-primary"
+                                >
+                                    {t("events.hostDetails.certificates.noConfigTitle")}
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    className="text-muted-foreground text-base mt-1 text-center max-w-xl"
+                                >
+                                    {t("events.hostDetails.certificates.noConfigDescription")}
+                                </Typography>
                                 <div className="flex gap-4 mt-6">
                                     <WrappedButton
                                         className="px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
                                         href={`/host/events/${eventId}/settings/certificate`}
                                     >
-                                        Certificate Settings
+                                        {t("certificateSettings.pageTitle")}
                                     </WrappedButton>
-                                    <WrappedButton
-                                        className="px-5 py-2 rounded-md bg-secondary text-white font-medium hover:bg-secondary/90 transition"
-                                        href={`/event/certificate/import`}
-                                    >
-                                        Import Receivers
-                                    </WrappedButton>
+                                    <a href={`/host/events/${eventId}/imports/certificates`}>
+                                        <Button size="xl" variant="secondary-light">
+                                            {t("events.hostDetails.actions.importReceivers")}
+                                        </Button>
+                                    </a>
                                 </div>
                             </div>
                         )}
                     </StyledTabsContent>
                 </StyledTabs>
             </SectionContainer>
-        </PageContainer>
+        </div>
     );
 }

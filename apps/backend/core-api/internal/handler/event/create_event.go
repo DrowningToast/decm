@@ -30,7 +30,7 @@ type CreateEventRequest struct {
 }
 
 // @Summary Create a new event
-// @Description Create a new event with banner image upload
+// @Description Create a new event with banner image upload. Chain ID is automatically set from environment configuration.
 // @ID create-event
 // @Tags Event
 // @Accept multipart/form-data

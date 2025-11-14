@@ -1,13 +1,11 @@
 import { createAppKit } from "@reown/appkit/react";
 
 import { WagmiProvider } from "wagmi";
-import { mainnet, sepolia, type AppKitNetwork } from "@reown/appkit/networks";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { polygon, sepolia, type AppKitNetwork } from "@reown/appkit/networks";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { env } from "./env";
 
-// 0. Setup queryClient
-const queryClient = new QueryClient();
+// 0. Setup
 
 const projectId = env.VITE_WALLETCONNECT_PROJECT_ID;
 
@@ -18,8 +16,11 @@ const metadata = {
     icons: ["/logo.svg"],
 };
 
+const isDev = import.meta.env.DEV;
+// eslint-disable-next-line react-refresh/only-export-components
+export const currentNetwork = (isDev ? sepolia : polygon) satisfies AppKitNetwork;
 // 3. Set the networks
-const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, sepolia];
+const networks: [AppKitNetwork, ...AppKitNetwork[]] = [currentNetwork];
 
 // 4. Create Wagmi Adapter
 const wagmiAdapter = new WagmiAdapter({
@@ -52,9 +53,5 @@ createAppKit({
 export const wagmiConfig = wagmiAdapter.wagmiConfig;
 
 export function AppKitProvider({ children }: { children: React.ReactNode }) {
-    return (
-        <WagmiProvider config={wagmiAdapter.wagmiConfig}>
-            <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-        </WagmiProvider>
-    );
+    return <WagmiProvider config={wagmiAdapter.wagmiConfig}>{children}</WagmiProvider>;
 }

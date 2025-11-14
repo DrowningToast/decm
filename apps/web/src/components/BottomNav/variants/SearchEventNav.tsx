@@ -4,15 +4,23 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { useSearchEventNavStore } from "../stores/events";
 
-export const SearchEventNav = () => {
+interface SearchEventNavProps {
+    className?: string;
+}
+
+export const SearchEventNav = ({ className: propClassName }: SearchEventNavProps) => {
     const { searchQuery, setSearchQuery } = useSearchEventNavStore();
 
-    const { onBack, className } = useBottomContainerContext();
+    const { onBack, className: contextClassName } = useBottomContainerContext();
     const { t } = useTranslation();
 
     return (
         <div
-            className={cn(className, `flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5`)}
+            className={cn(
+                contextClassName,
+                propClassName,
+                `flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5`,
+            )}
         >
             {/* Back Button */}
             <button

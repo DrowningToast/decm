@@ -1,11 +1,10 @@
-import PageContainer from "@/components/container/PageContainer";
 import SectionContainer from "@/components/container/SectionContainer";
 import TitleSubtitle from "@/components/TitleSubtitle";
 import WrappedButton from "@/components/wrapper/WrappedButton";
 import { Link } from "@/router";
 import { DataTablePagination } from "@/components/ui/pagination/Pagination";
 import { useHostEvents } from "./useHostEvents";
-import type { EventEventResponse } from "@decm/api";
+import { EventStatusesViewModel, EventTypesViewModel } from "./ViewModel";
 
 export default function HostEventPage() {
     const {
@@ -21,7 +20,7 @@ export default function HostEventPage() {
     } = useHostEvents();
 
     return (
-        <PageContainer title="Events">
+        <div title="Events">
             <SectionContainer className="flex items-center justify-between">
                 <TitleSubtitle title="Events" subtitle="Create or manage your events" />
                 <div className="flex justify-end">
@@ -49,7 +48,7 @@ export default function HostEventPage() {
                             </thead>
                             <tbody>
                                 {events && events.length > 0 ? (
-                                    events.flat().map((event: EventEventResponse) => (
+                                    events.flat().map((event) => (
                                         <tr key={event.id}>
                                             <td>
                                                 <Link
@@ -63,16 +62,16 @@ export default function HostEventPage() {
                                                     </p>
                                                 </Link>
                                                 <p className="text-muted text-sm mt-0.5">
-                                                    {event.start_date && event.end_date
-                                                        ? `${new Date(event.start_date).toLocaleDateString()} - ${new Date(event.end_date).toLocaleDateString()}`
+                                                    {event.startDate && event.endDate
+                                                        ? `${new Date(event.startDate).toLocaleDateString()} - ${new Date(event.endDate).toLocaleDateString()}`
                                                         : "Date TBD"}
                                                 </p>
                                                 <p className="text-muted text-sm">
-                                                    {event.is_public ? "Public" : "Invite Only"}
+                                                    {EventTypesViewModel[event.eventType]}
                                                 </p>
                                             </td>
                                             <td className="text-end">
-                                                {event.is_verified ? "Verified" : "Active"}
+                                                {EventStatusesViewModel[event.eventStatus]}
                                             </td>
                                         </tr>
                                     ))
@@ -102,6 +101,6 @@ export default function HostEventPage() {
                     </>
                 )}
             </SectionContainer>
-        </PageContainer>
+        </div>
     );
 }

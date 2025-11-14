@@ -5,8 +5,12 @@ import { cn } from "@/lib/utils";
 import { Typography } from "@/components/typography/typography";
 import { useInboxNavStore } from "../stores/inbox";
 
-export const InboxViewEventNav = () => {
-    const { onBack, className } = useBottomContainerContext();
+interface InboxViewEventNavProps {
+    className?: string;
+}
+
+export const InboxViewEventNav = ({ className: propClassName }: InboxViewEventNavProps) => {
+    const { onBack, className: contextClassName } = useBottomContainerContext();
     const { t } = useTranslation();
     const { onViewEventCallback } = useInboxNavStore();
 
@@ -18,7 +22,11 @@ export const InboxViewEventNav = () => {
 
     return (
         <div
-            className={cn(className, "flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5")}
+            className={cn(
+                contextClassName,
+                propClassName,
+                "flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5",
+            )}
         >
             {/* Back Button */}
             <button
