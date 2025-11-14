@@ -42,6 +42,7 @@ ARG VITE_CORE_BACKEND_API
 ARG VITE_APP_URL
 ARG VITE_ENVIRONMENT=production
 ARG VITE_GOOGLE_MAPS_API_KEY
+ARG VITE_WALLETCONNECT_PROJECT_ID
 
 # Uncomment to enable Turborepo Remote Caching
 # ARG TURBO_TEAM
@@ -54,17 +55,20 @@ ENV NODE_ENV=production \
     VITE_CORE_BACKEND_API=${VITE_CORE_BACKEND_API} \
     VITE_APP_URL=${VITE_APP_URL} \
     VITE_ENVIRONMENT=${VITE_ENVIRONMENT} \
-    VITE_GOOGLE_MAPS_API_KEY=${VITE_GOOGLE_MAPS_API_KEY}
+    VITE_GOOGLE_MAPS_API_KEY=${VITE_GOOGLE_MAPS_API_KEY} \
+    VITE_WALLETCONNECT_PROJECT_ID=${VITE_WALLETCONNECT_PROJECT_ID}
 
 # Create .env file for build process
-RUN printf "VITE_CORE_BACKEND_API=%s\nVITE_APP_URL=%s\nVITE_ENVIRONMENT=%s\nVITE_GOOGLE_MAPS_API_KEY=%s\n" \
+RUN printf "VITE_CORE_BACKEND_API=%s\nVITE_APP_URL=%s\nVITE_ENVIRONMENT=%s\nVITE_GOOGLE_MAPS_API_KEY=%s\nVITE_WALLETCONNECT_PROJECT_ID=%s\n" \
         "${VITE_CORE_BACKEND_API:-}" \
         "${VITE_APP_URL:-}" \
         "${VITE_ENVIRONMENT:-production}" \
         "${VITE_GOOGLE_MAPS_API_KEY:-}" \
+        "${VITE_WALLETCONNECT_PROJECT_ID:-}" \
         > .env
 
-RUN pnpm turbo build --filter=@decm/web
+# Build using turbo with increased Node.js memory limit
+RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm turbo build --filter=@decm/web
 
 # ---
 # Runtime stage - Nginx to serve static files

@@ -10,16 +10,18 @@ import (
 )
 
 type AuthService struct {
-	Issuer     string
-	SecretKey  string
-	Expiration time.Duration
+	Issuer       string
+	SecretKey    string
+	Expiration   time.Duration
+	CookieDomain string
 }
 
-func NewAuthService(issuer string, secretKey string, expiration time.Duration) *AuthService {
+func NewAuthService(issuer string, secretKey string, expiration time.Duration, cookieDomain string) *AuthService {
 	return &AuthService{
-		Issuer:     issuer,
-		SecretKey:  secretKey,
-		Expiration: expiration,
+		Issuer:       issuer,
+		SecretKey:    secretKey,
+		Expiration:   expiration,
+		CookieDomain: cookieDomain,
 	}
 }
 
@@ -59,6 +61,9 @@ func (s *AuthService) Logout(ctx *fiber.Ctx) {
 	sessionCookie.Path = "/"
 	sessionCookie.HTTPOnly = true
 	sessionCookie.SameSite = "Lax"
+	if s.CookieDomain != "" {
+		sessionCookie.Domain = s.CookieDomain
+	}
 	ctx.Cookie(sessionCookie)
 
 	// Clear google_oauth_session cookie
@@ -69,5 +74,8 @@ func (s *AuthService) Logout(ctx *fiber.Ctx) {
 	googleOAuthCookie.Path = "/"
 	googleOAuthCookie.HTTPOnly = true
 	googleOAuthCookie.SameSite = "Lax"
+	if s.CookieDomain != "" {
+		googleOAuthCookie.Domain = s.CookieDomain
+	}
 	ctx.Cookie(googleOAuthCookie)
 }
