@@ -611,11 +611,11 @@ jobs:
                   | Backend Build | ${{ needs.backend-build.result == 'success' && '✅' || '❌' }} |
                   | Backend Unit Tests | ${{ needs.backend-tests.result == 'success' && '✅' || '❌' }} |
                   | Backend OpenAPI & Swagger | ${{ needs.backend-openapi.result == 'success' && '✅' || '❌' }} |
-                    | Frontend Build | ${{ needs.frontend-build.result == 'success' && '✅' || '❌' }} |
-                    | Frontend ESLint | ${{ needs.frontend-eslint.result == 'success' && '✅' || '❌' }} |
-                    | Frontend Unit Tests | ${{ needs.frontend-tests.result == 'success' && '✅' || '❌' }} |
-                    | Docker Image Builds | ${{ needs.docker-build.result == 'success' && '✅' || '❌' }} |
-                    | Contract Build | ${{ needs.contracts-build.result == 'success' && '✅' || '❌' }} |
+                  | Frontend Build | ${{ needs.frontend-build.result == 'success' && '✅' || '❌' }} |
+                  | Frontend ESLint | ${{ needs.frontend-eslint.result == 'success' && '✅' || '❌' }} |
+                  | Frontend Unit Tests | ${{ needs.frontend-tests.result == 'success' && '✅' || '❌' }} |
+                  | Docker Image Builds | ${{ needs.docker-build.result == 'success' && '✅' || '❌' }} |
+                  | Contract Build | ${{ needs.contracts-build.result == 'success' && '✅' || '❌' }} |
 
                   **Action Required:** The 'ready-to-review' label has been removed. Please fix the failing checks and reapply the label to retry.
 
