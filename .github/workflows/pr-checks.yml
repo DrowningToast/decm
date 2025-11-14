@@ -574,9 +574,9 @@ jobs:
                      [ "${{ needs.backend-tests.result }}" = "success" ] && \
                      [ "${{ needs.backend-openapi.result }}" = "success" ] && \
                      [ "${{ needs.frontend-build.result }}" = "success" ] && \
-                       [ "${{ needs.frontend-eslint.result }}" = "success" ] && \
-                       [ "${{ needs.frontend-tests.result }}" = "success" ] && \
-                       [ "${{ needs.docker-build.result }}" = "success" ] && \
+                     [ "${{ needs.frontend-eslint.result }}" = "success" ] && \
+                     [ "${{ needs.frontend-tests.result }}" = "success" ] && \
+                     [ "${{ needs.docker-build.result }}" = "success" ] && \
                      [ "${{ needs.contracts-build.result }}" = "success" ]; then
                     echo "🎉 All checks passed! PR is ready to merge."
                     echo "all_passed=true" >> $GITHUB_OUTPUT
