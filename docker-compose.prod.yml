@@ -51,6 +51,7 @@ services:
             # Security
             PII_ENCRYPTION_KEY: ${PII_ENCRYPTION_KEY}
             JWT_SECRET: ${JWT_SECRET}
+            COOKIE_DOMAIN: ${COOKIE_DOMAIN}
             JWT_ISSUER: ${JWT_ISSUER:-decm-service}
             JWT_EXPIRATION: ${JWT_EXPIRATION:-24h}
 
