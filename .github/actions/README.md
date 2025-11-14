@@ -55,7 +55,7 @@ Basic Node.js and pnpm setup for backend jobs (single .env file).
 - Copy `.env.test` → `.env`
 - Run `pnpm install --frozen-lockfile`
 
-**Used in**: `docker-compose`, `database-migrate`, `database-generate`, `backend-build`, `backend-tests`, `backend-openapi`
+**Used in**: `database-migrate`, `database-generate`, `backend-build`, `backend-tests`, `backend-openapi`
 
 ---
 
