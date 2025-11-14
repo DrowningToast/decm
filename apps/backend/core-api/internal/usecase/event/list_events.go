@@ -39,7 +39,7 @@ func (uc *EventUsecase) ListEvents(ctx context.Context, params ListEventsParamet
 	if err != nil {
 		return nil, err
 	}
-	log.Println("events", events)
+	
 	filteredEvents := make([]*entity.Event, 0)
 	for _, event := range events {
 		if event.EventStatus == entity.EventStatusActive && params.IncludeActiveEvents {
