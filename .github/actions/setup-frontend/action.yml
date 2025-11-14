@@ -39,7 +39,6 @@ runs:
           shell: bash
           run: |
               cp .env.test .env
-              cp .env.client.test .env.client
 
         - name: Install dependencies
           if: steps.cache-node-modules.outputs.cache-hit != 'true'
