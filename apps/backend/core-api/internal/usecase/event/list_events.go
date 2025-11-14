@@ -2,8 +2,6 @@ package event
 
 import (
 	"context"
-	"log"
-
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 )
