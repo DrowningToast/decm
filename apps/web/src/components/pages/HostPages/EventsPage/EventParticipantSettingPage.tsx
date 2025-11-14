@@ -81,7 +81,7 @@ export const EventParticipantSettingPage = ({ eventId }: EventParticipantSetting
                             ? new Date(eventRegistrationConfig.finalCallForRegistration)
                             : undefined,
                         // registrationPassword: event.registrationPassword,
-                        requireRegistrationPassword: event.registrationPassword !== undefined,
+                        // requireRegistrationPassword: eventRegistrationConfig.registrationPassword !== undefined,
 
                         // Event
                         isBookingRequired: event.isBookingRequestRequired,
