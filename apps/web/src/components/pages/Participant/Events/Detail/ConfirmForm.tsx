@@ -24,8 +24,6 @@ import type { RegistrationRequirement } from "@/services/EventRegistration/Event
 
 interface RegistrationConfirmFormProps {
     eventId: string;
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
     onSubmit: (data: RegistrationConfirmDataForm) => Promise<void>;
     onCancel: () => void;
     isSubmitting?: boolean;
