@@ -21,28 +21,8 @@ func setupLogger() *slog.Logger {
 	}))
 }
 
-func setupTestApp(middleware fiber.Handler) *fiber.App {
-	logger := setupLogger()
-	app := fiber.New(fiber.Config{
-		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
-			return customerror.GetErrFiberHandler(logger)(ctx, err)
-		},
-	})
-
-	app.Get("/test",
-		middleware,
-		func(c *fiber.Ctx) error {
-			return c.Status(fiber.StatusOK).JSON(fiber.Map{
-				"message": "success",
-			})
-		},
-	)
-
-	return app
-}
-
 func setupAuthService() *auth.AuthService {
-	return auth.NewAuthService("test-issuer", "test-secret-key", time.Hour)
+	return auth.NewAuthService("test-issuer", "test-secret-key", time.Hour, "test-cookie-domain")
 }
 
 func createMockClaims(isVerifiedOrganizer *bool, isVerifiedIssuer *bool) *auth.JwtClaims {
@@ -644,8 +624,7 @@ func TestRequireRole_ErrorMessageFormat(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, fiber.StatusForbidden, resp.StatusCode)
-	
+
 	// Error message should list the required roles
 	// (Testing through integration test - error is handled by error handler)
 }
-
