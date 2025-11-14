@@ -1,5 +1,5 @@
 import { coreApiClient, type CoreApiType } from "@/lib/api/api";
-import { type OnboardService } from "../OnboardService/OnboardService";
+import { type OnboardService, defaultOnboardService } from "../OnboardService/OnboardService";
 import { OnboardRegistrationMethod } from "@decm/api";
 import { t } from "i18next";
 import { Err } from "@/common/Err";
@@ -12,7 +12,6 @@ import { USECASE_IDS } from "@/constants/usecase";
 import { LOCAL_STORAGE_KEYS, removeLocalStorageItem } from "@/lib/constants/localStorage";
 import { wagmiConfig } from "@/config/walletConnect";
 import { disconnect, getAccount, type Config } from "@wagmi/core";
-import { onboardService } from "../services";
 import { mapProfileViewModel } from "./mapper";
 
 export type CreateAccountParams =
@@ -245,6 +244,6 @@ export class AuthService {
 export const defaultAuthService = new AuthService(
     coreApiClient,
     queryClient,
-    onboardService,
+    defaultOnboardService,
     wagmiConfig,
 );

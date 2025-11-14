@@ -75,9 +75,9 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
     }
 
     return (
-        <div className="relative w-full md:grid grid-cols-3 gap-x-2 md:gap-x-8 px-4 md:px-16">
+        <div className="relative w-full md:grid md:grid-cols-2 lg:grid-cols-3 gap-x-2 md:gap-x-8 px-4 md:px-16">
             {/* Main content */}
-            <div className="col-span-2 relative z-10 w-full max-w-[1384px] mx-auto flex flex-col gap-y-4 md:gap-y-6 pb-8">
+            <div className="lg:col-span-2 relative z-10 w-full max-w-[1384px] mx-auto flex flex-col gap-y-4 md:gap-y-6 pb-8">
                 {/* Header section with logo and title */}
                 <div className="flex flex-col gap-y-4">
                     <div className="flex items-start gap-3 md:gap-4">

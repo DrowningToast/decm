@@ -16,12 +16,8 @@ type GetEventRegistrationInvitationByUserAndEventRequest struct {
 }
 
 func (r *GetEventRegistrationInvitationByUserAndEventRequest) Parse(ctx *fiber.Ctx) error {
-	requestBody := GetEventRegistrationInvitationByUserAndEventRequest{}
-	if err := requestBody.Parse(ctx); err != nil {
-		return err
-	}
-	if err := requestBody.IsValid(); err != nil {
-		return err
+	if err := ctx.ParamsParser(r); err != nil {
+		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 	return nil
 }

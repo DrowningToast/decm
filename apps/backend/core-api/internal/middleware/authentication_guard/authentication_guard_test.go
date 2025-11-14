@@ -44,7 +44,7 @@ func setupTestApp(middleware fiber.Handler) *fiber.App {
 }
 
 func setupAuthService() *auth.AuthService {
-	return auth.NewAuthService("test-issuer", "test-secret-key", time.Hour)
+	return auth.NewAuthService("test-issuer", "test-secret-key", time.Hour, "test-cookie-domain")
 }
 
 func createValidJWT(authService *auth.AuthService) (string, *auth.JwtClaims) {
@@ -189,7 +189,7 @@ func TestAuthenticationGuard_MalformedToken(t *testing.T) {
 	app := setupTestApp(middleware.Middleware)
 
 	// Create a token signed with different key
-	differentAuthService := auth.NewAuthService("different-issuer", "different-secret-key", time.Hour)
+	differentAuthService := auth.NewAuthService("different-issuer", "different-secret-key", time.Hour, "test-cookie-domain")
 	token, _ := createValidJWT(differentAuthService)
 
 	req := httptest.NewRequest("GET", "/test", nil)
@@ -206,7 +206,7 @@ func TestAuthenticationGuard_MalformedToken(t *testing.T) {
 
 func TestAuthenticationGuard_ExpiredToken(t *testing.T) {
 	// Create auth service with very short expiration
-	shortLivedAuthService := auth.NewAuthService("test-issuer", "test-secret-key", -time.Hour)
+	shortLivedAuthService := auth.NewAuthService("test-issuer", "test-secret-key", -time.Hour, "test-cookie-domain")
 	token, _ := createValidJWT(shortLivedAuthService)
 
 	// Use the original auth service to verify (which has different timing)
