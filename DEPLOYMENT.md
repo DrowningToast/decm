@@ -49,7 +49,6 @@ S3_ACCESS_KEY_ID=your-access-key
 S3_SECRET_ACCESS_KEY=your-secret-key
 S3_BUCKET_NAME=your-bucket
 S3_ENDPOINT=https://s3.amazonaws.com
-S3_REGION=us-east-1
 
 # CORS
 CORS_ALLOWED_ORIGINS=https://yourdomain.com
