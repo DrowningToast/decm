@@ -28,7 +28,7 @@ FROM alpine:3.20 AS runtime
 
 WORKDIR /app
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata wget
 
 COPY --from=builder /workspace/apps/backend/bin/decm-backend /app/decm-backend
 
@@ -36,5 +36,8 @@ EXPOSE 8080
 
 ENV PORT=8080 \
     ENVIRONMENT=production
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=40s \
+    CMD wget --quiet --tries=1 --spider http://localhost:8080/ready || exit 1
 
 ENTRYPOINT ["/app/decm-backend"]
