@@ -1,9 +1,10 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode } from "react";
-import { useEventCertificates, EventCertificate } from "./useEventCertificates";
+import { useEventCertificates } from "./useEventCertificates";
 import { coreApiClient } from "@/lib/api/api";
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
+import type { EntityEventCertificate } from "@decm/api";
 
 // Mock the API client
 vi.mock("@/lib/api/api", () => ({
@@ -30,10 +31,11 @@ const createWrapper = () => {
 
 describe("useEventCertificates", () => {
     const mockEventId = "event-123";
-    const mockCertificates: EventCertificate[] = [
+    const mockCertificates: EntityEventCertificate[] = [
         {
             id: "cert-1",
             event_id: mockEventId,
+            event_contract_address: "0x1234567890123456789012345678901234567890",
             receiver_email: "user1@example.com",
             name: "John Doe",
             certificate_title: "Certificate of Completion",
@@ -42,6 +44,7 @@ describe("useEventCertificates", () => {
         {
             id: "cert-2",
             event_id: mockEventId,
+            event_contract_address: "0x1234567890123456789012345678901234567890",
             receiver_email: "user2@example.com",
             name: "Jane Doe",
             certificate_title: "Certificate of Achievement",
@@ -90,8 +93,10 @@ describe("useEventCertificates", () => {
         expect(result.current.certificates).toEqual([]);
     });
 
-    it("should handle when response has no certificates property", async () => {
-        vi.mocked(coreApiClient.v1.getEventCertificates).mockResolvedValue({});
+    it("should handle when response has empty certificates array", async () => {
+        vi.mocked(coreApiClient.v1.getEventCertificates).mockResolvedValue({
+            certificates: [],
+        });
 
         const { result } = renderHook(() => useEventCertificates(mockEventId), {
             wrapper: createWrapper(),
@@ -173,11 +178,12 @@ describe("useEventCertificates", () => {
     });
 
     it("should handle certificates with revoked_at timestamp", async () => {
-        const revokedCertificates: EventCertificate[] = [
+        const revokedCertificates: EntityEventCertificate[] = [
             ...mockCertificates,
             {
                 id: "cert-3",
                 event_id: mockEventId,
+                event_contract_address: "0x1234567890123456789012345678901234567890",
                 receiver_email: "user3@example.com",
                 revoked_at: "2024-01-15T00:00:00Z",
                 created_at: "2024-01-10T00:00:00Z",
