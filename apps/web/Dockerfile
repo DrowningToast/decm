@@ -2,7 +2,14 @@
 
 # Base stage with common dependencies
 FROM node:20-alpine AS base
-RUN apk update && apk add --no-cache libc6-compat bash git curl
+RUN apk update && apk add --no-cache \
+    libc6-compat \
+    bash \
+    git \
+    curl \
+    python3 \
+    make \
+    g++
 WORKDIR /app
 
 # Enable corepack and prepare pnpm
@@ -25,8 +32,7 @@ FROM base AS builder
 # First, copy only package.json files and lockfile (changes less often)
 # This leverages Docker layer caching - if dependencies don't change, this layer is cached
 COPY --from=prepare /app/out/json/ .
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile
+RUN  pnpm install --frozen-lockfile
 
 # Then copy the full pruned source code
 COPY --from=prepare /app/out/full/ .
@@ -58,10 +64,7 @@ RUN printf "VITE_CORE_BACKEND_API=%s\nVITE_APP_URL=%s\nVITE_ENVIRONMENT=%s\nVITE
         "${VITE_GOOGLE_MAPS_API_KEY:-}" \
         > .env
 
-# Build the web app
-# Vite will automatically import and compile @decm/api TypeScript source during the build
-# No separate build step needed for @decm/api - Vite handles it all
-RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm turbo build --filter=@decm/web
+RUN pnpm turbo build --filter=@decm/web
 
 # ---
 # Runtime stage - Nginx to serve static files
