@@ -76,7 +76,7 @@ RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm turbo build --filter=@decm/web
 
 # ---
 # Runtime stage - Nginx to serve static files
-FROM nginx:1.27-alpine AS runtime
+FROM nginx:1-alpine AS runtime
 
 WORKDIR /usr/share/nginx/html
 
