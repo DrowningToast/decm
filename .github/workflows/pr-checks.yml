@@ -396,45 +396,45 @@ jobs:
                   name: frontend-coverage
                   token: ${{ secrets.CODECOV_TOKEN }}
 
-      # Job 9b: Build Production Docker Images
-      docker-build:
-          name: Docker Image Builds
-          runs-on: ubuntu-latest
-          needs: [check-label, backend-build, frontend-build]
+    # Job 9b: Build Production Docker Images
+    docker-build:
+        name: Docker Image Builds
+        runs-on: ubuntu-latest
+        needs: [check-label, backend-build, frontend-build]
 
-          env:
-              VITE_API_URL: http://localhost:8080/api/v1
-              VITE_APP_URL: http://localhost:3000
-              VITE_ENVIRONMENT: test
+        env:
+            VITE_API_URL: http://localhost:8080/api/v1
+            VITE_APP_URL: http://localhost:3000
+            VITE_ENVIRONMENT: test
 
-          steps:
-              - name: Checkout code
-                uses: actions/checkout@v4
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-              - name: Set up Docker Buildx
-                uses: docker/setup-buildx-action@v3
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
 
-              - name: Build backend image
-                uses: docker/build-push-action@v6
-                with:
-                    context: .
-                    file: apps/backend/Dockerfile
-                    target: runtime
-                    push: false
-                    tags: decm-backend:test
+            - name: Build backend image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: apps/backend/Dockerfile
+                  target: runtime
+                  push: false
+                  tags: decm-backend:test
 
-              - name: Build frontend image
-                uses: docker/build-push-action@v6
-                with:
-                    context: .
-                    file: apps/web/Dockerfile
-                    target: runtime
-                    push: false
-                    tags: decm-frontend:test
-                    build-args: |
-                        VITE_API_URL=${{ env.VITE_API_URL }}
-                        VITE_APP_URL=${{ env.VITE_APP_URL }}
-                        VITE_ENVIRONMENT=${{ env.VITE_ENVIRONMENT }}
+            - name: Build frontend image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: apps/web/Dockerfile
+                  target: runtime
+                  push: false
+                  tags: decm-frontend:test
+                  build-args: |
+                      VITE_API_URL=${{ env.VITE_API_URL }}
+                      VITE_APP_URL=${{ env.VITE_APP_URL }}
+                      VITE_ENVIRONMENT=${{ env.VITE_ENVIRONMENT }}
 
     # Job 9: Contract Build Successfully
     contracts-build:
@@ -473,19 +473,19 @@ jobs:
         name: PR Checks Summary
         runs-on: ubuntu-latest
         needs:
-              [
-                  check-label,
-                  database-migrate,
-                  database-generate,
-                  backend-build,
-                  backend-tests,
-                  backend-openapi,
-                  frontend-build,
-                  frontend-eslint,
-                  frontend-tests,
-                  docker-build,
-                  contracts-build,
-              ]
+            [
+                check-label,
+                database-migrate,
+                database-generate,
+                backend-build,
+                backend-tests,
+                backend-openapi,
+                frontend-build,
+                frontend-eslint,
+                frontend-tests,
+                docker-build,
+                contracts-build,
+            ]
         if: always()
 
         steps:
