@@ -18,15 +18,20 @@
         "axios": "^1.6.0"
     },
     "devDependencies": {
+        "@repo/typescript-config": "workspace:*",
         "swagger-typescript-api": "^13.2.9",
         "@types/node": "^22.10.4",
         "typescript": "^5.8.3"
     },
     "exports": {
         ".": {
+            "types": "./dist/index.d.ts",
             "import": "./dist/index.js",
             "require": "./dist/index.js",
-            "types": "./dist/index.d.ts"
+            "default": "./dist/index.js"
         }
+    },
+    "publishConfig": {
+        "access": "restricted"
     }
 }

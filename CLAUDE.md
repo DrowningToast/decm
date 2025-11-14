@@ -406,13 +406,16 @@ GOOGLE_OAUTH_CLIENT_SECRET=your-client-secret
 CORS_ALLOWED_ORIGINS=http://localhost:3000
 ```
 
-**Frontend** (`.env.client` - MUST use `VITE_` prefix):
+**Frontend** (same `.env` file - MUST use `VITE_` prefix):
 
 ```bash
-VITE_API_URL=http://localhost:8080/api/v1
+VITE_CORE_BACKEND_API=http://localhost:8080
 VITE_ENVIRONMENT=development
 VITE_GOOGLE_OAUTH_CLIENT_ID=your-client-id
+VITE_GOOGLE_MAPS_API_KEY=your-maps-api-key
 ```
+
+**Note**: Both backend and frontend variables are stored in the same root `.env` file. Frontend variables must be prefixed with `VITE_`.
 
 ## Development URLs
 
@@ -571,7 +574,7 @@ pnpm test:coverage               # Coverage report
 
 - Regenerate TypeScript client: `pnpm gen-api:core`
 - Check CORS settings in backend config
-- Verify `VITE_API_URL` in `.env.client`
+- Verify `VITE_CORE_BACKEND_API` in root `.env` file
 
 **Database migration issues**:
 

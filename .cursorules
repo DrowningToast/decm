@@ -297,7 +297,6 @@ GOOGLE_OAUTH_CLIENT_SECRET=
 **Frontend (.env.client file - MUST use VITE\_ prefix)**:
 
 ```env
-VITE_API_URL=http://localhost:8080/api/v1
 VITE_ENVIRONMENT=development
 ```
 
