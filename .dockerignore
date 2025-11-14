@@ -12,3 +12,4 @@ apps/web/.vite
 apps/backend/bin
 *.log
 docker-compose.isolated.yml
+docker-compose.prod.yml
