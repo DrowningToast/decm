@@ -89,7 +89,7 @@ jobs:
                   grep -q "events" migration_output.txt
                   echo "✅ All core tables verified"
 
-    # Job 3: Database Can Be Generated
+    # Job 2: Database Can Be Generated (runs in parallel with backend-build after db-migrate)
     database-generate:
         name: Database Generation (SQLC)
         runs-on: ubuntu-latest
@@ -179,11 +179,11 @@ jobs:
                     echo "✅ SQLC generated files match committed files"
                   fi
 
-    # Job 4: Backend Build Successfully
+    # Job 3: Backend Build (runs in parallel with db-generate after check-label)
     backend-build:
         name: Backend Build
         runs-on: ubuntu-latest
-        needs: [check-label, database-generate]
+        needs: [check-label]
 
         steps:
             - name: Checkout code
@@ -212,11 +212,11 @@ jobs:
                     echo "✅ Core API binary built successfully"
                   fi
 
-    # Job 5: Backend Unit Tests Successfully
+    # Job 4: Backend Unit Tests (waits for build + db-migrate)
     backend-tests:
         name: Backend Unit Tests
         runs-on: ubuntu-latest
-        needs: [check-label, backend-build, database-migrate]
+        needs: [backend-build, database-migrate]
 
         services:
             postgres:
@@ -282,11 +282,11 @@ jobs:
                   JWT_ISSUER: decm-service-test
                   JWT_EXPIRATION: 24h
 
-    # Job 6: Backend Generate OpenAPI and Swagger
+    # Job 5: Backend Generate OpenAPI and Swagger (runs in parallel with backend-tests)
     backend-openapi:
         name: Backend OpenAPI & Swagger
         runs-on: ubuntu-latest
-        needs: [check-label, backend-build]
+        needs: [backend-build]
 
         steps:
             - name: Checkout code
@@ -320,7 +320,7 @@ jobs:
                     echo "✅ OpenAPI documentation matches committed files"
                   fi
 
-    # Job 7: Frontend ESLint Check
+    # Job 6: Frontend ESLint Check (runs in parallel early)
     frontend-eslint:
         name: Frontend ESLint Check
         runs-on: ubuntu-latest
@@ -339,11 +339,11 @@ jobs:
             - name: Run ESLint
               run: pnpm lint
 
-    # Job 8: Frontend Build Successfully
+    # Job 7: Frontend Build (runs after eslint)
     frontend-build:
         name: Frontend Build
         runs-on: ubuntu-latest
-        needs: [check-label, frontend-eslint]
+        needs: [frontend-eslint]
 
         steps:
             - name: Checkout code
@@ -366,11 +366,11 @@ jobs:
                     echo "✅ Frontend built successfully"
                   fi
 
-    # Job 9: Frontend Unit Test Successfully
+    # Job 8: Frontend Unit Test (runs in parallel with docker builds after frontend-build)
     frontend-tests:
         name: Frontend Unit Tests
         runs-on: ubuntu-latest
-        needs: [check-label, frontend-build, frontend-eslint]
+        needs: [frontend-build, frontend-eslint]
 
         steps:
             - name: Checkout code
@@ -396,16 +396,11 @@ jobs:
                   name: frontend-coverage
                   token: ${{ secrets.CODECOV_TOKEN }}
 
-    # Job 9b: Build Production Docker Images
-    docker-build:
-        name: Docker Image Builds
+    # Job 9a: Build Backend Docker Image (runs in parallel with frontend docker)
+    docker-backend-build:
+        name: Docker Backend Build
         runs-on: ubuntu-latest
-        needs: [check-label, backend-build, frontend-build]
-
-        env:
-            VITE_CORE_BACKEND_API: http://localhost:8080
-            VITE_APP_URL: http://localhost:3000
-            VITE_ENVIRONMENT: test
+        needs: [backend-build]
 
         steps:
             - name: Checkout code
@@ -422,6 +417,26 @@ jobs:
                   target: runtime
                   push: false
                   tags: decm-backend:test
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+    # Job 9b: Build Frontend Docker Image (runs in parallel with backend docker)
+    docker-frontend-build:
+        name: Docker Frontend Build
+        runs-on: ubuntu-latest
+        needs: [frontend-build]
+
+        env:
+            VITE_CORE_BACKEND_API: http://localhost:8080
+            VITE_APP_URL: http://localhost:3000
+            VITE_ENVIRONMENT: test
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
 
             - name: Build frontend image
               uses: docker/build-push-action@v6
@@ -437,7 +452,8 @@ jobs:
                       VITE_ENVIRONMENT=${{ env.VITE_ENVIRONMENT }}
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
-    # Job 9: Contract Build Successfully
+
+    # Job 10: Contract Build (runs in parallel early)
     contracts-build:
         name: Contract Build
         runs-on: ubuntu-latest
@@ -469,7 +485,7 @@ jobs:
                     echo "✅ Contracts compiled successfully"
                   fi
 
-    # Job 10: Final Summary (Required Status Check)
+    # Job 11: Final Summary (Required Status Check)
     pr-checks-summary:
         name: PR Checks Summary
         runs-on: ubuntu-latest
@@ -484,7 +500,8 @@ jobs:
                 frontend-build,
                 frontend-eslint,
                 frontend-tests,
-                docker-build,
+                docker-backend-build,
+                docker-frontend-build,
                 contracts-build,
             ]
         if: always()
@@ -555,10 +572,16 @@ jobs:
                     echo "❌ Frontend Unit Tests: FAILED"
                   fi
 
-                  if [ "${{ needs.docker-build.result }}" = "success" ]; then
-                    echo "✅ Docker Image Builds: PASSED"
+                  if [ "${{ needs.docker-backend-build.result }}" = "success" ]; then
+                    echo "✅ Docker Backend Build: PASSED"
                   else
-                    echo "❌ Docker Image Builds: FAILED"
+                    echo "❌ Docker Backend Build: FAILED"
+                  fi
+
+                  if [ "${{ needs.docker-frontend-build.result }}" = "success" ]; then
+                    echo "✅ Docker Frontend Build: PASSED"
+                  else
+                    echo "❌ Docker Frontend Build: FAILED"
                   fi
 
                   if [ "${{ needs.contracts-build.result }}" = "success" ]; then
@@ -577,7 +600,8 @@ jobs:
                      [ "${{ needs.frontend-build.result }}" = "success" ] && \
                      [ "${{ needs.frontend-eslint.result }}" = "success" ] && \
                      [ "${{ needs.frontend-tests.result }}" = "success" ] && \
-                     [ "${{ needs.docker-build.result }}" = "success" ] && \
+                     [ "${{ needs.docker-backend-build.result }}" = "success" ] && \
+                     [ "${{ needs.docker-frontend-build.result }}" = "success" ] && \
                      [ "${{ needs.contracts-build.result }}" = "success" ]; then
                     echo "🎉 All checks passed! PR is ready to merge."
                     echo "all_passed=true" >> $GITHUB_OUTPUT
@@ -615,7 +639,8 @@ jobs:
                   | Frontend Build | ${{ needs.frontend-build.result == 'success' && '✅' || '❌' }} |
                   | Frontend ESLint | ${{ needs.frontend-eslint.result == 'success' && '✅' || '❌' }} |
                   | Frontend Unit Tests | ${{ needs.frontend-tests.result == 'success' && '✅' || '❌' }} |
-                  | Docker Image Builds | ${{ needs.docker-build.result == 'success' && '✅' || '❌' }} |
+                  | Docker Backend Build | ${{ needs.docker-backend-build.result == 'success' && '✅' || '❌' }} |
+                  | Docker Frontend Build | ${{ needs.docker-frontend-build.result == 'success' && '✅' || '❌' }} |
                   | Contract Build | ${{ needs.contracts-build.result == 'success' && '✅' || '❌' }} |
 
                   **Action Required:** The 'ready-to-review' label has been removed. Please fix the failing checks and reapply the label to retry.

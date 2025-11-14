@@ -81,6 +81,9 @@ RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm turbo build --filter=@decm/web
 # Runtime stage - Nginx to serve static files
 FROM nginx:1-alpine AS runtime
 
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
 WORKDIR /usr/share/nginx/html
 
 # Copy nginx configuration
