@@ -45,5 +45,10 @@ apps/backend/main
 apps/backend/bin/
 claude_code_zai_env.sh
 
+# Docker
+*.tar
+*.tar.gz
+.docker/
+
 apps/contracts/.github
 apps/contracts/libss
