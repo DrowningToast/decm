@@ -1683,6 +1683,40 @@ paths:
       summary: Verify Google OAuth code
       tags:
       - Auth
+  /api/v1/event-registration-invitations/{eventId}:
+    get:
+      consumes:
+      - application/json
+      description: Get all event registration invitations for a specific event
+      operationId: get-event-registration-invitations-by-event-id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.EventRegistrationInvitation'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get event registration invitations by event ID
+      tags:
+      - Event Registration Invitation
   /api/v1/event-registration-invitations/{eventRegistrationInvitationId}:
     delete:
       consumes:
@@ -2946,40 +2980,6 @@ paths:
       summary: Get event viewmodel by ID
       tags:
       - Events
-  /api/v1/events/{eventId}/registration/invitations:
-    get:
-      consumes:
-      - application/json
-      description: Get all event registration invitations for a specific event
-      operationId: get-event-registration-invitations-by-event-id
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/entity.EventRegistrationInvitation'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-      summary: Get event registration invitations by event ID
-      tags:
-      - Event Registration Invitation
   /api/v1/events/owner-credentials/{owner_credential_id}:
     get:
       consumes:

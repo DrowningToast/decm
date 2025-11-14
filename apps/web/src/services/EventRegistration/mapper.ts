@@ -12,6 +12,11 @@ import type {
 import type { InboxMessage } from "../InboxService/InboxService";
 import { mapEntityInboxMessageToInboxMessage as mapInboxMessage } from "../InboxService/mapper";
 
+export type EventRegistrationConfigResponse = Omit<
+    EventconfigEventRegistrationConfigResponse,
+    "created_at" | "updated_at"
+>;
+
 export const mapRegistrationRequirementStatus = (status: number): RegistrationRequirementStatus => {
     switch (status) {
         case 0:
@@ -25,7 +30,7 @@ export const mapRegistrationRequirementStatus = (status: number): RegistrationRe
 };
 
 export const mapEntityEventRegistrationConfigRequirementStatus = (
-    entityEventRegistrationConfig: EventconfigEventRegistrationConfigResponse,
+    entityEventRegistrationConfig: EventRegistrationConfigResponse,
 ): RegistrationRequirement => {
     return {
         firstName: mapRegistrationRequirementStatus(
@@ -54,7 +59,7 @@ export const mapEntityEventRegistrationConfigRequirementStatus = (
 };
 
 export const mapEntityEventRegistrationConfigToEventRegistrationConfiguration = (
-    entityEventRegistrationConfig: EventconfigEventRegistrationConfigResponse,
+    entityEventRegistrationConfig: EventRegistrationConfigResponse,
 ): EventRegistrationConfiguration => {
     return {
         finalCallForRegistration: entityEventRegistrationConfig.final_call_for_registration

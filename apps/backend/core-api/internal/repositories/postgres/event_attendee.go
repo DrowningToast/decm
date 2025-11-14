@@ -14,7 +14,7 @@ import (
 
 var _ datagateway.EventAttendeeDataGateway = (*Repository)(nil)
 
-func (r *Repository) GetEventAttendeeByEventIDAndCredentialID(ctx context.Context, eventID uuid.UUID, credentialID uuid.UUID) (*entity.EventAttendee, error) {
+func (r *Repository) GetEventAttendeeByEventIdAndCredentialId(ctx context.Context, eventID uuid.UUID, credentialID uuid.UUID) (*entity.EventAttendee, error) {
 	query, err := r.queries.GetEventAttendeeByEventIDAndCredentialID(ctx, generated.GetEventAttendeeByEventIDAndCredentialIDParams{
 		EventID:              eventID,
 		AttendeeCredentialID: credentialID,

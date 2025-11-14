@@ -23,7 +23,7 @@ func (r *Repository) CreateEventRegistrationConfig(ctx context.Context, params g
 	return mapGeneratedToEntityEventRegistrationConfig(&result), nil
 }
 
-func (r *Repository) GetEventRegistrationConfigByEventID(ctx context.Context, eventID uuid.UUID) (*entity.EventRegistrationConfig, error) {
+func (r *Repository) GetEventRegistrationConfigByEventId(ctx context.Context, eventID uuid.UUID) (*entity.EventRegistrationConfig, error) {
 	result, err := r.queries.GetEventRegistrationConfigByEventID(ctx, eventID)
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
@@ -43,12 +43,12 @@ func (r *Repository) DeleteEventRegistrationConfig(ctx context.Context, eventID 
 	return r.queries.DeleteEventRegistrationConfig(ctx, eventID)
 }
 
-func (r *Repository) GetEventRegistrationConfigPasswordByEventID(ctx context.Context, eventID uuid.UUID) (*string, error) {
+func (r *Repository) GetEventRegistrationConfigPasswordByEventId(ctx context.Context, eventID uuid.UUID) (*entity.EventRegistrationConfig, error) {
 	result, err := r.queries.GetEventRegistrationConfigByEventID(ctx, eventID)
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
 	}
-	return pgmapper.PgTextToStringPtr(result.RegistrationPassword), nil
+	return mapGeneratedToEntityEventRegistrationConfig(&result), nil
 }
 
 // mapGeneratedToEntityEventRegistrationConfig converts generated.EventRegistrationConfig to entity.EventRegistrationConfig

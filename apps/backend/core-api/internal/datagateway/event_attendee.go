@@ -9,5 +9,5 @@ import (
 )
 
 type EventAttendeeDataGateway interface {
-	GetEventAttendeeByEventIDAndCredentialID(ctx context.Context, eventID uuid.UUID, credentialID uuid.UUID) (*entity.EventAttendee, error)
+	GetEventAttendeeByEventIdAndCredentialId(ctx context.Context, eventID uuid.UUID, credentialID uuid.UUID) (*entity.EventAttendee, error)
 }

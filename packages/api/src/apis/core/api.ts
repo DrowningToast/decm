@@ -1565,6 +1565,29 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Get all event registration invitations for a specific event
+         *
+         * @tags Event Registration Invitation
+         * @name GetEventRegistrationInvitationsByEventId
+         * @summary Get event registration invitations by event ID
+         * @request GET:/api/v1/event-registration-invitations/{eventId}
+         */
+        getEventRegistrationInvitationsByEventId: (
+            { eventId, ...query }: GetEventRegistrationInvitationsByEventIdParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                GetEventRegistrationInvitationsByEventIdData,
+                GetEventRegistrationInvitationsByEventIdError
+            >({
+                path: `/api/v1/event-registration-invitations/${eventId}`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Cancel an event registration invitation by ID
          *
          * @tags Event Registration Invitation
@@ -1640,29 +1663,6 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/events/owner-credentials/${ownerCredentialId}`,
                 method: "GET",
                 query: query,
-                type: ContentType.Json,
-                format: "json",
-                ...params,
-            }),
-
-        /**
-         * @description Get all event registration invitations for a specific event
-         *
-         * @tags Event Registration Invitation
-         * @name GetEventRegistrationInvitationsByEventId
-         * @summary Get event registration invitations by event ID
-         * @request GET:/api/v1/events/{eventId}/registration/invitations
-         */
-        getEventRegistrationInvitationsByEventId: (
-            { eventId, ...query }: GetEventRegistrationInvitationsByEventIdParams,
-            params: RequestParams = {},
-        ) =>
-            this.http.request<
-                GetEventRegistrationInvitationsByEventIdData,
-                GetEventRegistrationInvitationsByEventIdError
-            >({
-                path: `/api/v1/events/${eventId}/registration/invitations`,
-                method: "GET",
                 type: ContentType.Json,
                 format: "json",
                 ...params,

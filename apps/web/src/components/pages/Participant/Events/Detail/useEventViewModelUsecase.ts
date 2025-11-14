@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { eventService } from "@/services/services";
 import { QUERY_KEY } from "@/lib/queryKeys";
 import { useAuth } from "@/context/AuthContext";
+import { useMemo } from "react";
 import type { BottomNavVariant } from "@/components/BottomNav/BottomNav";
 
 interface UseEventDetailUsecaseOptions {
@@ -18,7 +19,7 @@ export const useEventViewModelUsecase = ({ eventId }: UseEventDetailUsecaseOptio
         queryKey: [QUERY_KEY.event.viewmodel(eventId, user?.authenticationCredentialId)],
         queryFn: async () => {
             try {
-                const response = await eventService.getEventViewModel(eventId);
+                const response = await eventService.getEventViewModelExtended(eventId);
                 return response;
             } catch (error) {
                 console.error("Failed to fetch event detail:", error);
@@ -28,7 +29,7 @@ export const useEventViewModelUsecase = ({ eventId }: UseEventDetailUsecaseOptio
     });
 
     // Determine bottom nav variant
-    const getBottomNavVariant = (): BottomNavVariant | undefined => {
+    const bottomNavVariant = useMemo<BottomNavVariant | undefined>(() => {
         if (!event || !user) {
             return undefined;
         }
@@ -52,13 +53,13 @@ export const useEventViewModelUsecase = ({ eventId }: UseEventDetailUsecaseOptio
                 return undefined;
             }
         }
-    };
+    }, [event, user]);
 
     return {
         event,
         isLoading,
         error,
         // States
-        bottomNavVariant: getBottomNavVariant(),
+        bottomNavVariant,
     };
 };

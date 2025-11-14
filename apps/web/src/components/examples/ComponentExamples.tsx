@@ -20,7 +20,7 @@ export function ButtonExamples() {
                 {/* Primary Button - Web3 Wallet */}
                 <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">Primary Variant (Web3/Wallet)</p>
-                    <Button variant="primary" size="xl">
+                    <Button variant="primary" size="lg">
                         Sign in with Web3 Wallet Provider
                     </Button>
                 </div>
@@ -28,7 +28,7 @@ export function ButtonExamples() {
                 {/* Secondary Dark Button - Google */}
                 <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">Secondary Dark Variant (Google)</p>
-                    <Button variant="secondary-dark" size="xl">
+                    <Button variant="secondary-dark" size="lg">
                         Sign up with Google Account
                     </Button>
                 </div>
@@ -38,7 +38,7 @@ export function ButtonExamples() {
                     <p className="text-sm text-muted-foreground">
                         Secondary Light Variant (Portfolio)
                     </p>
-                    <Button variant="secondary-light" size="xl">
+                    <Button variant="secondary-light" size="lg">
                         Start building your portfolio
                     </Button>
                 </div>
@@ -59,7 +59,7 @@ export function ButtonExamples() {
                     <Button variant="primary" size="lg">
                         {t("examples.buttons.large")}
                     </Button>
-                    <Button variant="primary" size="xl">
+                    <Button variant="primary" size="lg">
                         {t("examples.buttons.extraLarge")}
                     </Button>
                 </div>
@@ -107,7 +107,7 @@ export function NavbarExamples() {
  *     <>
  *       <PublicNavbar variant="primary" />
  *       <main className="pt-20">
- *         <Button variant="primary" size="xl">
+ *         <Button variant="primary" size="lg">
  *           Sign in with Web3 Wallet Provider
  *         </Button>
  *       </main>

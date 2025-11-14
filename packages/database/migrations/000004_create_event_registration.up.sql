@@ -18,8 +18,8 @@ CREATE TABLE inbox_messages (
 
     sender_credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
     receiver_credential_id UUID REFERENCES authentication_credentials(id) ON DELETE CASCADE,
-    receiver_email TEXT NOT NULL,
-    receiver_wallet_address TEXT NOT NULL,
+    receiver_email TEXT,
+    receiver_wallet_address TEXT,
 
     message_type INTEGER NOT NULL REFERENCES inbox_message_types(id) ON DELETE CASCADE,
     -- message_content is a JSONB object that contains translations of the message content

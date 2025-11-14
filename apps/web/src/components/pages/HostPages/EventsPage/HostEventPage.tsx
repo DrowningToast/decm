@@ -4,18 +4,7 @@ import WrappedButton from "@/components/wrapper/WrappedButton";
 import { Link } from "@/router";
 import { DataTablePagination } from "@/components/ui/pagination/Pagination";
 import { useHostEvents } from "./useHostEvents";
-import type { EventStatus, EventType } from "@/services/EventService/EventService";
-
-const EventTypes: Record<EventType, string> = {
-    private: "Private",
-    invite: "Invite",
-};
-
-const EventStatuses: Record<EventStatus, string> = {
-    active: "Active",
-    inactive: "Inactive",
-    closed: "Closed",
-} as const;
+import { EventStatusesViewModel, EventTypesViewModel } from "./ViewModel";
 
 export default function HostEventPage() {
     const {
@@ -78,11 +67,11 @@ export default function HostEventPage() {
                                                         : "Date TBD"}
                                                 </p>
                                                 <p className="text-muted text-sm">
-                                                    {EventTypes[event.eventType]}
+                                                    {EventTypesViewModel[event.eventType]}
                                                 </p>
                                             </td>
                                             <td className="text-end">
-                                                {EventStatuses[event.eventStatus]}
+                                                {EventStatusesViewModel[event.eventStatus]}
                                             </td>
                                         </tr>
                                     ))

@@ -52,6 +52,8 @@ type RegistrationConfigResponse struct {
 	AddressRequirementStatus             int        `json:"address_requirement_status"`
 	AcademicInstitutionRequirementStatus int        `json:"academic_institution_requirement_status"`
 	AcademicEmailRequirementStatus       int        `json:"academic_email_requirement_status"`
+
+	IsRegistrationPasswordRequired bool `json:"is_registration_password_required"`
 }
 
 type EventContractResponse struct {
@@ -104,7 +106,7 @@ func (u *EventUsecase) GetEventViewModelByEventId(ctx context.Context, eventId u
 	isInvited := false
 	isJoined := false
 
-	invitation, inbox, err := u.EventRegistrationInvitationDg.GetEventRegistrationInvitationByEventIDAndCredential(ctx, eventId, currentUser.UserId, email, &walletAddress)
+	invitation, _, err := u.EventRegistrationInvitationDg.GetEventRegistrationInvitationByEventIDAndCredential(ctx, eventId, currentUser.UserId, email, &walletAddress)
 	if err != nil {
 		var customError *customerror.Err
 		if errors.As(err, &customError) {
@@ -116,14 +118,18 @@ func (u *EventUsecase) GetEventViewModelByEventId(ctx context.Context, eventId u
 	if invitation != nil {
 		isInvited = true
 	}
-	if inbox != nil {
-		isJoined = true
-	}
 	// check if user is invited to the event, checks if the user is joined or not
 	if isInvited {
-		attendee, err := u.EventAttendeeDg.GetEventAttendeeByEventIDAndCredentialID(ctx, eventId, currentUser.UserId)
+		attendee, err := u.EventAttendeeDg.GetEventAttendeeByEventIdAndCredentialId(ctx, eventId, currentUser.UserId)
 		if err != nil {
-			return nil, err
+			var customError *customerror.Err
+			if errors.As(err, &customError) {
+				if *customError.Code != customerror.ErrNotFound.Code {
+					return nil, errors.Wrap(err, "failed to get event attendee by event id and credential id")
+				}
+			} else {
+				return nil, err
+			}
 		}
 		if attendee != nil {
 			isJoined = true

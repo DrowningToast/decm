@@ -22,7 +22,7 @@ export function DataTableToolbar({
                     placeholder={searchPlaceholder}
                     value={searchValue}
                     onChange={(event) => onSearchChange(event.target.value)}
-                    className="h-8 w-[150px] lg:w-[250px]"
+                    className="h-10 w-[250px] lg:w-[350px]"
                 />
                 {isFiltered && (
                     <Button

@@ -231,10 +231,14 @@ func (r *Repository) GetEventRegistrationInvitationsByEventID(ctx context.Contex
 }
 
 func (r *Repository) GetEventRegistrationInvitationByEventIDAndCredential(ctx context.Context, eventId uuid.UUID, credentialId uuid.UUID, email *string, walletAddress *string) (*entity.EventRegistrationInvitation, *entity.InboxMessage, error) {
+	encryptedEmail, err := pgmapper.EncryptStringPtrToPgText(email, r.piiEncryptionKey)
+	if err != nil {
+		return nil, nil, err
+	}
 	params := generated.GetEventRegistrationInvitationByEventIdAndCredentialIdParams{
 		EventID:       eventId,
 		CredentialID:  pgmapper.UUIDToPgUUID(&credentialId),
-		Email:         pgmapper.StringPtrToPgText(email),
+		Email:         encryptedEmail,
 		WalletAddress: pgmapper.StringPtrToPgText(walletAddress),
 	}
 	result, err := r.queries.GetEventRegistrationInvitationByEventIdAndCredentialId(ctx, params)

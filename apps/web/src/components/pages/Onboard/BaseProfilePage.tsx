@@ -258,7 +258,7 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
                             type="button"
                             onClick={onConfirm}
                             variant="primary"
-                            size="xl"
+                            size="lg"
                             className="w-full"
                         >
                             {t("common.confirm")}
@@ -270,7 +270,7 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
                                 type="button"
                                 onClick={onBack}
                                 variant="secondary-light"
-                                size="xl"
+                                size="lg"
                                 className="w-full"
                             >
                                 {t("common.back")}

@@ -50,22 +50,24 @@ export const ParticipantSettingsForm = ({
 
     const form = useForm<ParticipantSettingsData>({
         resolver: zodResolver(participantSettingsSchema) as Resolver<ParticipantSettingsData>,
-        defaultValues: {
-            eventType: defaultValues?.eventType || "private",
-            isBookingRequired: defaultValues?.isBookingRequired ?? false,
-            isTicketTransferable: defaultValues?.isTicketTransferable ?? true,
-            requireRegistrationPassword: defaultValues?.requireRegistrationPassword ?? false,
-            registrationPassword: defaultValues?.registrationPassword || "",
-            finalCallRegistrationDate: defaultValues?.finalCallRegistrationDate,
-            firstName: defaultValues?.firstName || "not_required",
-            lastName: defaultValues?.lastName || "not_required",
-            email: defaultValues?.email || "not_required",
-            bio: defaultValues?.bio || "not_required",
-            phoneNumber: defaultValues?.phoneNumber || "not_required",
-            address: defaultValues?.address || "not_required",
-            academicInstitution: defaultValues?.academicInstitution || "not_required",
-            academicEmail: defaultValues?.academicEmail || "not_required",
-        },
+        defaultValues: defaultValues
+            ? {
+                  eventType: defaultValues?.eventType,
+                  isBookingRequired: defaultValues?.isBookingRequired,
+                  isTicketTransferable: defaultValues?.isTicketTransferable,
+                  requireRegistrationPassword: defaultValues?.requireRegistrationPassword,
+                  registrationPassword: defaultValues?.registrationPassword,
+                  finalCallRegistrationDate: defaultValues?.finalCallRegistrationDate,
+                  firstName: defaultValues?.firstName,
+                  lastName: defaultValues?.lastName,
+                  email: defaultValues?.email,
+                  bio: defaultValues?.bio,
+                  phoneNumber: defaultValues?.phoneNumber,
+                  address: defaultValues?.address,
+                  academicInstitution: defaultValues?.academicInstitution,
+                  academicEmail: defaultValues?.academicEmail,
+              }
+            : undefined,
         mode: "onChange",
     });
 
@@ -102,7 +104,7 @@ export const ParticipantSettingsForm = ({
                     <Typography variant="header" tag="h2" className="text-xl font-bold mb-2 ">
                         {t("participantSettings.registrationSettings")}
                     </Typography>
-                    <Typography variant="text" tag="p" className="text-sm text-muted-foreground">
+                    <Typography variant="text" tag="p" className="text-muted-foreground">
                         {t("participantSettings.registrationSettingsDescription")}
                     </Typography>
                 </div>
@@ -128,14 +130,14 @@ export const ParticipantSettingsForm = ({
 
                     {/* Switches Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Booking Required */}
-                        <div className="flex items-center justify-between space-x-2">
+                        {/* TODO: Booking Required */}
+                        {/* <div className="flex items-center justify-between space-x-2">
                             <div className="space-y-1 flex-1">
                                 <Label htmlFor="isBookingRequired">
                                     <Typography
                                         variant="text"
                                         tag="span"
-                                        className="text-sm font-medium"
+                                        className="font-medium"
                                     >
                                         {t("participantSettings.bookingRequired")}
                                     </Typography>
@@ -160,16 +162,16 @@ export const ParticipantSettingsForm = ({
                                     />
                                 )}
                             />
-                        </div>
+                        </div> */}
 
-                        {/* Ticket Transferable */}
-                        <div className="flex items-center justify-between space-x-2">
+                        {/* TODO: Ticket Transferable */}
+                        {/* <div className="flex items-center justify-between space-x-2">
                             <div className="space-y-1 flex-1">
                                 <Label htmlFor="isTicketTransferable">
                                     <Typography
                                         variant="text"
                                         tag="span"
-                                        className="text-sm font-medium"
+                                        className="font-medium"
                                     >
                                         {t("participantSettings.ticketTransferable")}
                                     </Typography>
@@ -194,7 +196,7 @@ export const ParticipantSettingsForm = ({
                                     />
                                 )}
                             />
-                        </div>
+                        </div> */}
                     </div>
 
                     {/* Registration Password Required - Hide when event type is invite only */}
@@ -206,7 +208,7 @@ export const ParticipantSettingsForm = ({
                                         <Typography
                                             variant="text"
                                             tag="span"
-                                            className="text-sm font-medium"
+                                            className="font-medium"
                                         >
                                             {t("participantSettings.requireRegistrationPassword")}
                                         </Typography>
@@ -242,7 +244,7 @@ export const ParticipantSettingsForm = ({
                                         <Typography
                                             variant="text"
                                             tag="span"
-                                            className="text-sm font-medium"
+                                            className="font-medium"
                                         >
                                             {t("participantSettings.registrationPassword")}
                                         </Typography>
@@ -268,7 +270,7 @@ export const ParticipantSettingsForm = ({
                                                     <Typography
                                                         variant="text"
                                                         tag="p"
-                                                        className="text-sm text-destructive"
+                                                        className="text-destructive"
                                                         role="alert"
                                                     >
                                                         {t(error.message as string)}
@@ -320,7 +322,7 @@ export const ParticipantSettingsForm = ({
                     <Typography variant="header" tag="h2" className="text-xl font-bold mb-2">
                         {t("participantSettings.participantRequirements")}
                     </Typography>
-                    <Typography variant="text" tag="p" className="text-sm text-muted-foreground">
+                    <Typography variant="text" tag="p" className="text-muted-foreground">
                         {t("participantSettings.participantRequirementsDescription")}
                     </Typography>
                 </div>
@@ -328,7 +330,12 @@ export const ParticipantSettingsForm = ({
                 <div className="space-y-4 rounded-lg border p-6 ">
                     {/* Basic Information */}
                     <div className="space-y-4">
-                        <Typography variant="header" tag="h3" className="text-sm font-semibold">
+                        <Typography
+                            size="subheader"
+                            variant="header"
+                            tag="h3"
+                            className="font-semibold"
+                        >
                             {t("participantSettings.basicInformation")}
                         </Typography>
 
@@ -387,7 +394,12 @@ export const ParticipantSettingsForm = ({
 
                     {/* Additional Information */}
                     <div className="pt-4 space-y-4 border-t">
-                        <Typography variant="header" tag="h3" className="text-sm font-semibold">
+                        <Typography
+                            size="subheader"
+                            variant="header"
+                            tag="h3"
+                            className="font-semibold"
+                        >
                             {t("participantSettings.additionalInformation")}
                         </Typography>
 
@@ -420,7 +432,12 @@ export const ParticipantSettingsForm = ({
 
                     {/* Academic Information */}
                     <div className="pt-4 space-y-4 border-t">
-                        <Typography variant="header" tag="h3" className="text-sm font-semibold">
+                        <Typography
+                            size="subheader"
+                            variant="header"
+                            tag="h3"
+                            className="font-semibold"
+                        >
                             {t("participantSettings.academicInformation")}
                         </Typography>
 
