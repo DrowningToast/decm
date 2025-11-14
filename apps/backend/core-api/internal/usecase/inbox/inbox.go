@@ -20,10 +20,17 @@ type InboxUsecase struct {
 	EventDg                       eventdatagateway.EventDataGateway
 }
 
-func NewInboxUsecase(authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway, inboxMessageDg datagateway.InboxMessageDataGateway) *InboxUsecase {
+func NewInboxUsecase(
+	authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway,
+	inboxMessageDg datagateway.InboxMessageDataGateway,
+	eventRegistrationInvitationDg datagateway.EventRegistrationInvitationDataGateway,
+	eventDg eventdatagateway.EventDataGateway,
+) *InboxUsecase {
 	return &InboxUsecase{
-		AuthenticationCredentialDg: authenticationCredentialDg,
-		InboxMessageDg:             inboxMessageDg,
+		AuthenticationCredentialDg:    authenticationCredentialDg,
+		InboxMessageDg:                inboxMessageDg,
+		EventRegistrationInvitationDg: eventRegistrationInvitationDg,
+		EventDg:                       eventDg,
 	}
 }
 
