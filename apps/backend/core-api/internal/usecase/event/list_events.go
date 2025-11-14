@@ -2,7 +2,6 @@ package event
 
 import (
 	"context"
-
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 )
@@ -38,7 +37,6 @@ func (uc *EventUsecase) ListEvents(ctx context.Context, params ListEventsParamet
 	if err != nil {
 		return nil, err
 	}
-	
 	filteredEvents := make([]*entity.Event, 0)
 	for _, event := range events {
 		if event.EventStatus == entity.EventStatusActive && params.IncludeActiveEvents {
