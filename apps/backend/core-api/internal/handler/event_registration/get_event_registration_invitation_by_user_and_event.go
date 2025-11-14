@@ -1,4 +1,4 @@
-package event_registration_invitation
+package event_registration
 
 import (
 	"errors"
@@ -27,7 +27,7 @@ type GetEventRegistrationInvitationByUserAndEventResponse struct {
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
-// @Router /api/v1/event-registration-invitations/my/{event_id} [get]
+// @Router /api/v1/event-registration/my/{event_id} [get]
 func (h *Handler) GetEventRegistrationInvitationByUserAndEvent(ctx *fiber.Ctx) error {
 	// 1. Convert event_id from string to UUID
 
@@ -50,7 +50,7 @@ func (h *Handler) GetEventRegistrationInvitationByUserAndEvent(ctx *fiber.Ctx) e
 	}
 
 	// 2. Prepare parameters for usecase
-	registrationInvitation, inbox, err := h.EventRegistrationInvitationUc.GetEventRegistrationByUserAndEvent(ctx.UserContext(), eventId, currentUser)
+	registrationInvitation, inbox, err := h.EventRegistrationUc.GetEventRegistrationByUserAndEvent(ctx.UserContext(), eventId, currentUser)
 	if err != nil {
 		return err
 	}

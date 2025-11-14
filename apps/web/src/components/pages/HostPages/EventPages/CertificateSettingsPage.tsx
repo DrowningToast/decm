@@ -8,33 +8,29 @@ import { IssuerSelectionModal } from "@/components/IssuerSelectionModal";
 import { SelectedIssuersTable } from "@/components/SelectedIssuersTable";
 import { CertificateTemplateUpload } from "@/components/CertificateTemplateUpload";
 import { CertificatePreview } from "@/components/CertificatePreview";
-import { useIssuerManagement } from "@/hooks/useIssuerManagement";
+import { convertProfileToIssuer, useIssuerManagement } from "@/hooks/useIssuerManagement";
 import { useCertificateTemplate } from "@/hooks/useCertificateTemplate";
 import SectionContainer from "@/components/container/SectionContainer";
 import { useUpdateCertificateConfig } from "./useUpdateCertificateConfig";
 import type {
     CoreApiInternalHandlerEventconfigEventCertificateConfigResponse,
-    EntityProfile,
-    GetEventIssuersByEventIdData,
-    GetVerifiedIssuersData,
     UpdateEventCertificateConfigPayload,
 } from "@decm/api";
 import { toast } from "sonner";
 import { useNavigate } from "@/router";
 import { useUpdateEventIssuer } from "./useUpdateEventIssuer";
 import { useDeleteEventIssuer } from "./useDeleteEventIssuer";
+import type { EventIssuer } from "@/services/EventService/EventService";
 
 interface CertificateSettingsPageProps {
     eventId: string;
     eventCertificateConfig?: CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
-    verifiedIssuers?: GetVerifiedIssuersData;
-    eventIssuers?: GetEventIssuersByEventIdData;
+    eventIssuers?: EventIssuer[];
 }
 
 export const CertificateSettingsPage = ({
     eventId,
     eventCertificateConfig,
-    verifiedIssuers,
     eventIssuers,
 }: CertificateSettingsPageProps) => {
     const { t } = useTranslation();
@@ -49,19 +45,26 @@ export const CertificateSettingsPage = ({
 
     // Use custom hooks for state management
     // Extract issuer profiles from event issuers
-    const selectedIssuerProfiles = eventIssuers
-        ?.map((issuer) => issuer.issuer_profile)
-        .filter((profile): profile is EntityProfile => profile !== undefined);
+    const selectedIssuerProfiles = eventIssuers?.map((issuer) => issuer);
 
     const issuerManagement = useIssuerManagement({
-        verifiedIssuers,
-        selectedIssuers: selectedIssuerProfiles,
+        selectedIssuers: selectedIssuerProfiles
+            ?.map((issuer) =>
+                issuer.issuerProfile ? convertProfileToIssuer(issuer.issuerProfile) : undefined,
+            )
+            .filter((v) => !!v),
     });
     const certificateTemplate = useCertificateTemplate();
 
     // Handle form submission
     const handleSubmit = async () => {
         try {
+            // TODO: Implement API call to save certificate settings
+            console.log("Event ID:", eventId);
+            console.log("Selected Issuers:", issuerManagement.selectedIssuers);
+            console.log("SVG File:", certificateTemplate.svgFile);
+            console.log("Detected Keywords:", certificateTemplate.detectedKeywords);
+
             const name = certificateTemplate.detectedKeywords.find(
                 (keyword) => keyword.keyword === "{{ name }}",
             );
@@ -76,6 +79,11 @@ export const CertificateSettingsPage = ({
 
             if (certificateTemplate.svgFile && !name) {
                 toast.error(t("certificateSettings.nameNotFound"));
+                return;
+            }
+
+            if (certificateTemplate.svgFile && !eventName) {
+                toast.error(t("certificateSettings.eventNameNotFound"));
                 return;
             }
 

@@ -33,11 +33,10 @@ func (s EventRegistrationConfigRequirementStatus) String() (*string, error) {
 	}
 }
 
-type EventRegistrationConfigResponse struct {
+type EventRegistrationConfigViewModel struct {
 	ID                                   uuid.UUID                                `json:"id"`
 	EventID                              uuid.UUID                                `json:"event_id"`
 	FinalCallForRegistration             *time.Time                               `json:"final_call_for_registration,omitempty"`
-	RegistrationPassword                 *string                                  `json:"registration_password,omitempty"`
 	FirstNameRequirementStatus           EventRegistrationConfigRequirementStatus `json:"first_name_requirement_status"`
 	LastNameRequirementStatus            EventRegistrationConfigRequirementStatus `json:"last_name_requirement_status"`
 	EmailRequirementStatus               EventRegistrationConfigRequirementStatus `json:"email_requirement_status"`

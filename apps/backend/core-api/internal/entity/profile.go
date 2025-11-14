@@ -32,3 +32,10 @@ type Profile struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+// ProfileWithCredentials includes Profile data plus authentication credential fields for searching
+type ProfileWithCredentials struct {
+	Profile
+	WalletAddress      string  `json:"wallet_address"`
+	GoogleConnectorRef *string `json:"google_connector_ref,omitempty"`
+}

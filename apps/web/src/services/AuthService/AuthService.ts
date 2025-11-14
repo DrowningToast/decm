@@ -1,6 +1,6 @@
 import { coreApiClient, type CoreApiType } from "@/lib/api/api";
 import { type OnboardService, defaultOnboardService } from "../OnboardService/OnboardService";
-import { OnboardRegistrationMethod } from "@decm/api";
+import { OnboardRegistrationMethod, type ProfileUpdateProfileRequest } from "@decm/api";
 import { t } from "i18next";
 import { Err } from "@/common/Err";
 import type { QueryClient } from "@tanstack/react-query";
@@ -12,7 +12,7 @@ import { USECASE_IDS } from "@/constants/usecase";
 import { LOCAL_STORAGE_KEYS, removeLocalStorageItem } from "@/lib/constants/localStorage";
 import { wagmiConfig } from "@/config/walletConnect";
 import { disconnect, getAccount, type Config } from "@wagmi/core";
-import { mapProfileViewModel } from "./mapper";
+import { mapProfileWithAuthViewModel } from "./mapper";
 
 export type CreateAccountParams =
     | {
@@ -47,7 +47,7 @@ export interface CreateProfileParams {
     isProfilePicturePublic?: boolean;
 }
 
-export type UpdateProfileParams = Omit<CreateProfileParams, "email">;
+export type UpdateProfileParams = CreateProfileParams;
 
 export interface SignOutParams {
     showSuccessToast?: boolean;
@@ -65,22 +65,26 @@ export interface Profile {
     academicEmail?: string;
     academicInstitution?: string;
     address?: string;
+    authenticationCredentialId: string;
     bio?: string;
     email?: string;
     firstName?: string;
+    id: string;
+    isAcademicEmailPublic: boolean;
+    isAcademicInstitutionPublic: boolean;
+    isAddressPublic: boolean;
+    isBioPublic: boolean;
+    isEmailPublic: boolean;
+    isFirstNamePublic: boolean;
+    isLastNamePublic: boolean;
+    isPhoneNumberPublic: boolean;
+    isProfilePicturePublic: boolean;
     lastName?: string;
     phoneNumber?: string;
     profilePictureUrl?: string;
-    isAcademicEmailPublic?: boolean;
-    isAcademicInstitutionPublic?: boolean;
-    isAddressPublic?: boolean;
-    isBioPublic?: boolean;
-    isEmailPublic?: boolean;
-    isFirstNamePublic?: boolean;
-    isLastNamePublic?: boolean;
-    isPhoneNumberPublic?: boolean;
-    isProfilePicturePublic?: boolean;
+}
 
+export interface ProfileWithAuth extends Profile {
     walletAddress: string;
     solutionStatus: SolutionStatus;
     googleConnectorRef?: string;
@@ -172,29 +176,57 @@ export class AuthService {
 
     public async updateProfile(authenticationCredentialId: string, profile: UpdateProfileParams) {
         try {
+            // Build request body - only include fields that have actual values
+            // For string fields: include only if value is provided and not empty
+            // For boolean fields: always include with explicit value
+            const requestBody: ProfileUpdateProfileRequest = {};
+
+            // String fields - only include if value is provided and not empty
+            if (profile.academicEmail !== undefined && profile.academicEmail !== "") {
+                requestBody.academic_email = profile.academicEmail;
+            }
+            if (profile.academicInstitution !== undefined && profile.academicInstitution !== "") {
+                requestBody.academic_institution = profile.academicInstitution;
+            }
+            if (profile.address !== undefined && profile.address !== "") {
+                requestBody.address = profile.address;
+            }
+            if (profile.bio !== undefined && profile.bio !== "") {
+                requestBody.bio = profile.bio;
+            }
+            if (profile.email !== undefined && profile.email !== "") {
+                requestBody.email = profile.email;
+            }
+            if (profile.firstName !== undefined && profile.firstName !== "") {
+                requestBody.first_name = profile.firstName;
+            }
+            if (profile.lastName !== undefined && profile.lastName !== "") {
+                requestBody.last_name = profile.lastName;
+            }
+            if (profile.phoneNumber !== undefined && profile.phoneNumber !== "") {
+                requestBody.phone_number = profile.phoneNumber;
+            }
+            if (profile.profilePictureUrl !== undefined && profile.profilePictureUrl !== "") {
+                requestBody.profile_picture_url = profile.profilePictureUrl;
+            }
+
+            // Boolean fields - always include with explicit values
+            requestBody.is_academic_email_public = profile.isAcademicEmailPublic ?? false;
+            requestBody.is_academic_institution_public =
+                profile.isAcademicInstitutionPublic ?? false;
+            requestBody.is_address_public = profile.isAddressPublic ?? false;
+            requestBody.is_bio_public = profile.isBioPublic ?? false;
+            requestBody.is_email_public = profile.isEmailPublic ?? false;
+            requestBody.is_first_name_public = profile.isFirstNamePublic ?? false;
+            requestBody.is_last_name_public = profile.isLastNamePublic ?? false;
+            requestBody.is_phone_number_public = profile.isPhoneNumberPublic ?? false;
+            requestBody.is_profile_picture_public = profile.isProfilePicturePublic ?? false;
+
             const response = await this._coreApi.v1.updateProfileByCredentialId(
                 {
                     credentialId: authenticationCredentialId,
                 },
-                {
-                    academic_email: profile.academicEmail,
-                    academic_institution: profile.academicInstitution,
-                    address: profile.address,
-                    bio: profile.bio,
-                    first_name: profile.firstName,
-                    last_name: profile.lastName,
-                    phone_number: profile.phoneNumber,
-                    profile_picture_url: profile.profilePictureUrl,
-                    is_academic_email_public: profile.isAcademicEmailPublic,
-                    is_academic_institution_public: profile.isAcademicInstitutionPublic,
-                    is_address_public: profile.isAddressPublic,
-                    is_bio_public: profile.isBioPublic,
-                    is_email_public: profile.isEmailPublic,
-                    is_first_name_public: profile.isFirstNamePublic,
-                    is_last_name_public: profile.isLastNamePublic,
-                    is_phone_number_public: profile.isPhoneNumberPublic,
-                    is_profile_picture_public: profile.isProfilePicturePublic,
-                },
+                requestBody,
             );
             await this._queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
             return response;
@@ -236,7 +268,7 @@ export class AuthService {
 
     public async getMyProfile() {
         const response = await this._coreApi.v1.getMyProfile();
-        return mapProfileViewModel(response);
+        return mapProfileWithAuthViewModel(response);
     }
 }
 

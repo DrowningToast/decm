@@ -2,6 +2,7 @@ import { defaultAuthService } from "./AuthService/AuthService";
 import { defaultEventRegistrationService } from "./EventRegistration/EventRegistration";
 import { defaultEventService } from "./EventService/EventService";
 import { defaultOnboardService } from "./OnboardService/OnboardService";
+import { defaultIssuerService } from "./IssuerService/IssuerService";
 
 // TODO: Switch to use the mock service if the environment variable is set to true
 // WHEN: Implementing acceptance tests
@@ -17,5 +18,7 @@ export const onboardService = import.meta.env.VITE_USE_MOCK_API
 export const eventRegistrationService = import.meta.env.VITE_USE_MOCK_API
     ? defaultEventRegistrationService
     : defaultEventRegistrationService;
-// export const issuerService = import.meta.env.VITE_USE_MOCK_API ? defaultIssuerService : defaultIssuerService;
+export const issuerService = import.meta.env.VITE_USE_MOCK_API
+    ? defaultIssuerService
+    : defaultIssuerService;
 // export const inboxService = import.meta.env.VITE_USE_MOCK_API ? defaultInboxService : defaultInboxService;

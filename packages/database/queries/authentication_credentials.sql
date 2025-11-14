@@ -135,6 +135,13 @@ SELECT
     COUNT(*) FILTER (WHERE is_verified_issuer = 1) as verified_issuers
 FROM authentication_credentials;
 
+-- name: ListIssuerAuthenticationCredentialsByWalletAddress :many
+SELECT * FROM authentication_credentials 
+WHERE is_verified_issuer = 1
+  AND LOWER(wallet_address) LIKE '%' || LOWER(sqlc.arg(search_query)) || '%'
+ORDER BY created_at DESC
+LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);
+
 -- name: DeleteAuthenticationCredential :exec
 DELETE FROM authentication_credentials WHERE id = sqlc.arg(id);
 

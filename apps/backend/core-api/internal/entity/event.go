@@ -23,7 +23,7 @@ const (
 )
 
 type Event struct {
-	ID                       uuid.UUID   `json:"id"`
+	Id                       uuid.UUID   `json:"id"`
 	EventType                EventType   `json:"event_type"`
 	ChainId                  int         `json:"chain_id"`
 	ContactNumber            string      `json:"contact_number"`

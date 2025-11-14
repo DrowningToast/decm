@@ -183,7 +183,64 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/event-registration-invitations/import/{eventId}": {
+        "/api/v1/event-registration/invitation": {
+            "delete": {
+                "description": "Cancel an event registration invitation by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Registration Invitation"
+                ],
+                "summary": "Cancel event registration invitation",
+                "operationId": "cancel-event-registration-invitation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event Registration Invitation ID",
+                        "name": "eventRegistrationInvitationID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/event-registration/invitation/:event_id/import": {
             "post": {
                 "description": "Import a list of participants for an event, creating inbox messages and event registration invitations",
                 "consumes": [
@@ -204,7 +261,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_registration_invitation.ImportEventParticipantsRequest"
+                            "$ref": "#/definitions/event_registration.ImportEventParticipantsRequest"
                         }
                     }
                 ],
@@ -239,55 +296,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/event-registration-invitations/my/{event_id}": {
-            "get": {
-                "description": "Get event registration invitation of user and by event id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Event Registration Invitation"
-                ],
-                "summary": "Get event registration invitation of user and by event id",
-                "operationId": "get-event-registration-invitation-by-user-and-event",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/event_registration_invitation.GetEventRegistrationInvitationByUserAndEventResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/event-registration-invitations/{eventId}": {
+        "/api/v1/event-registration/invitation/{eventId}": {
             "get": {
                 "description": "Get all event registration invitations for a specific event",
                 "consumes": [
@@ -338,9 +347,117 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/event-registration-invitations/{eventRegistrationInvitationId}": {
-            "delete": {
-                "description": "Cancel an event registration invitation by ID",
+        "/api/v1/event-registration/join/{event_id}": {
+            "post": {
+                "description": "Join an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Registration"
+                ],
+                "summary": "Join event",
+                "operationId": "join-event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/event-registration/join/{event_id}/sign-message": {
+            "get": {
+                "description": "Get join event sign message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Registration"
+                ],
+                "summary": "Get join event sign message",
+                "operationId": "get-join-event-sign-message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/event_registration.GetJoinEventSignMessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/event-registration/my/{event_id}": {
+            "get": {
+                "description": "Get event registration invitation of user and by event id",
                 "consumes": [
                     "application/json"
                 ],
@@ -350,22 +467,13 @@ const docTemplate = `{
                 "tags": [
                     "Event Registration Invitation"
                 ],
-                "summary": "Cancel event registration invitation",
-                "operationId": "cancel-event-registration-invitation",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event Registration Invitation ID",
-                        "name": "eventRegistrationInvitationID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Get event registration invitation of user and by event id",
+                "operationId": "get-event-registration-invitation-by-user-and-event",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                            "$ref": "#/definitions/event_registration.GetEventRegistrationInvitationByUserAndEventResponse"
                         }
                     },
                     "400": {
@@ -1389,7 +1497,7 @@ const docTemplate = `{
                 "tags": [
                     "Events"
                 ],
-                "summary": "Get event registration config",
+                "summary": "Get event registration config view model",
                 "operationId": "get-event-registration-config",
                 "parameters": [
                     {
@@ -1404,7 +1512,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
+                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigViewModel"
                         }
                     },
                     "400": {
@@ -1459,7 +1567,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
+                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigViewModel"
                         }
                     },
                     "400": {
@@ -2037,7 +2145,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
+                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigViewModel"
                         }
                     },
                     "400": {
@@ -2163,7 +2271,7 @@ const docTemplate = `{
         },
         "/api/v1/issuers": {
             "get": {
-                "description": "Get verified issuers",
+                "description": "Get verified issuers with optional search query",
                 "consumes": [
                     "application/json"
                 ],
@@ -2186,6 +2294,12 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Offset",
                         "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query (searches first name, last name, email, academic email, wallet address)",
+                        "name": "search",
                         "in": "query"
                     }
                 ],
@@ -2545,143 +2659,8 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Is Profile Picture Public",
-                        "name": "IsProfilePicturePublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Profile Picture URL",
-                        "name": "ProfilePictureUrl",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Is First Name Public",
-                        "name": "IsFirstNamePublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "First Name",
-                        "name": "FirstName",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Is Last Name Public",
-                        "name": "IsLastNamePublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Last Name",
-                        "name": "LastName",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Is Email Public",
-                        "name": "IsEmailPublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Email",
-                        "name": "Email",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Is Phone Number Public",
-                        "name": "IsPhoneNumberPublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Phone Number",
-                        "name": "PhoneNumber",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Is Address Public",
-                        "name": "IsAddressPublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Address",
-                        "name": "Address",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Is Academic Institution Public",
-                        "name": "IsAcademicInstitutionPublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Academic Institution",
-                        "name": "AcademicInstitution",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Is Academic Email Public",
-                        "name": "IsAcademicEmailPublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Academic Email",
-                        "name": "AcademicEmail",
+                        "description": "Profile update request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -2979,12 +2958,10 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "access_manager_contract_address",
-                "certificate_contract_address",
                 "created_at",
                 "event_contract_address",
                 "event_id",
                 "id",
-                "ticket_contract_address",
                 "updated_at"
             ],
             "properties": {
@@ -4086,7 +4063,7 @@ const docTemplate = `{
                 }
             }
         },
-        "event_registration_invitation.GetEventRegistrationInvitationByUserAndEventResponse": {
+        "event_registration.GetEventRegistrationInvitationByUserAndEventResponse": {
             "type": "object",
             "properties": {
                 "inbox": {
@@ -4097,7 +4074,18 @@ const docTemplate = `{
                 }
             }
         },
-        "event_registration_invitation.ImportEventParticipantsRequest": {
+        "event_registration.GetJoinEventSignMessageResponse": {
+            "type": "object",
+            "required": [
+                "sign_message"
+            ],
+            "properties": {
+                "sign_message": {
+                    "type": "string"
+                }
+            }
+        },
+        "event_registration.ImportEventParticipantsRequest": {
             "type": "object",
             "required": [
                 "event_id",
@@ -4111,12 +4099,12 @@ const docTemplate = `{
                     "type": "array",
                     "minItems": 1,
                     "items": {
-                        "$ref": "#/definitions/event_registration_invitation.ParticipantRequestItem"
+                        "$ref": "#/definitions/event_registration.ParticipantRequestItem"
                     }
                 }
             }
         },
-        "event_registration_invitation.ParticipantRequestItem": {
+        "event_registration.ParticipantRequestItem": {
             "type": "object",
             "required": [
                 "academic_institution",
@@ -4179,34 +4167,75 @@ const docTemplate = `{
             ],
             "properties": {
                 "academic_email_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "academic_institution_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "address_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "bio_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "email_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "final_call_for_registration": {
                     "type": "string"
                 },
                 "first_name_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "last_name_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "phone_number_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "registration_password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 8
                 }
             }
         },
@@ -4224,7 +4253,7 @@ const docTemplate = `{
                 "EventRegistrationConfigRequirementStatusOptional"
             ]
         },
-        "eventconfig.EventRegistrationConfigResponse": {
+        "eventconfig.EventRegistrationConfigViewModel": {
             "type": "object",
             "required": [
                 "academic_email_requirement_status",
@@ -4276,9 +4305,6 @@ const docTemplate = `{
                 },
                 "phone_number_requirement_status": {
                     "$ref": "#/definitions/eventconfig.EventRegistrationConfigRequirementStatus"
-                },
-                "registration_password": {
-                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"

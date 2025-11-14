@@ -4,6 +4,8 @@ import (
 	"context"
 	"decm-database/go/generated"
 
+	"apps/backend/core-api/internal/entity"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -15,7 +17,7 @@ type UpdateEventContractParams struct {
 	CertificateContractAddress   pgtype.Text
 }
 
-func (u *EventUsecase) UpdateEventContract(ctx context.Context, eventID uuid.UUID, params UpdateEventContractParams) (*generated.EventContract, error) {
+func (u *EventUsecase) UpdateEventContract(ctx context.Context, eventID uuid.UUID, params UpdateEventContractParams) (*entity.EventContract, error) {
 	updateParams := generated.UpdateEventContractParams{
 		EventID:                      eventID,
 		AccessManagerContractAddress: params.AccessManagerContractAddress,

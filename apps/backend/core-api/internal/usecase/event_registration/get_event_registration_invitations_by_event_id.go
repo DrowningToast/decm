@@ -1,4 +1,4 @@
-package event_registration_invitation
+package event_registration
 
 import (
 	"context"
@@ -14,7 +14,7 @@ type GetEventRegistrationInvitationsByEventIDParameters struct {
 	EventId uuid.UUID
 }
 
-func (uc *EventRegistrationInvitationUsecase) GetEventRegistrationInvitationsByEventId(ctx context.Context, params GetEventRegistrationInvitationsByEventIDParameters, currentUser *auth.JwtClaims) ([]*entity.EventRegistrationInvitation, error) {
+func (uc *EventRegistrationUsecase) GetEventRegistrationInvitationsByEventId(ctx context.Context, params GetEventRegistrationInvitationsByEventIDParameters, currentUser *auth.JwtClaims) ([]*entity.EventRegistrationInvitation, error) {
 	// Get all invitations for the specified event
 	invitations, err := uc.EventRegistrationInvitationDg.GetEventRegistrationInvitationsByEventID(ctx, params.EventId)
 	if err != nil {

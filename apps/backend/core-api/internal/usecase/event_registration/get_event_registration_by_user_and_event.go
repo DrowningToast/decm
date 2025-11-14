@@ -1,4 +1,4 @@
-package event_registration_invitation
+package event_registration
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (uc *EventRegistrationInvitationUsecase) GetEventRegistrationByUserAndEvent(ctx context.Context, eventId uuid.UUID, currentUser *auth.JwtClaims) (*entity.EventRegistrationInvitation, *entity.InboxMessage, error) {
+func (uc *EventRegistrationUsecase) GetEventRegistrationByUserAndEvent(ctx context.Context, eventId uuid.UUID, currentUser *auth.JwtClaims) (*entity.EventRegistrationInvitation, *entity.InboxMessage, error) {
 	// Get event registration invitation by user and event
 	email := currentUser.Email
 	walletAddress := currentUser.WalletAddress

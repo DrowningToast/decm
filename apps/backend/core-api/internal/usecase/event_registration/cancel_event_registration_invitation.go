@@ -1,4 +1,4 @@
-package event_registration_invitation
+package event_registration
 
 import (
 	"context"
@@ -17,7 +17,7 @@ type CancelEventRegistrationInvitationParameters struct {
 	EventRegistrationInvitationID uuid.UUID
 }
 
-func (uc *EventRegistrationInvitationUsecase) CancelEventRegistrationInvitation(ctx context.Context, params CancelEventRegistrationInvitationParameters, currentUser *auth.JwtClaims) (*entity.EventRegistrationInvitation, error) {
+func (uc *EventRegistrationUsecase) CancelEventRegistrationInvitation(ctx context.Context, params CancelEventRegistrationInvitationParameters, currentUser *auth.JwtClaims) (*entity.EventRegistrationInvitation, error) {
 	// Check if invitation exists
 	invitation, err := uc.EventRegistrationInvitationDg.GetEventRegistrationInvitationByID(ctx, params.EventRegistrationInvitationID)
 	if err != nil {

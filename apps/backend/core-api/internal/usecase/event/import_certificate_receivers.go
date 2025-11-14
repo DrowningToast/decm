@@ -86,7 +86,7 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 
 	eventCertificateAddressStr := ""
 
-	if eventContract.CertificateContractAddress.String == "" {
+	if eventContract.CertificateContractAddress == nil {
 		// 4. Deploy event certificate contract
 		client, err := cyptoutils.GetEthereumClient()
 		if err != nil {
@@ -116,7 +116,7 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 
 		eventCertificateAddressStr = eventCertificateAddress.Hex()
 	} else {
-		eventCertificateAddressStr = eventContract.CertificateContractAddress.String
+		eventCertificateAddressStr = *eventContract.CertificateContractAddress
 	}
 
 	// 5. Update eventContract.certificate_contract_address
@@ -124,7 +124,7 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 		EventID:                      eventID,
 		AccessManagerContractAddress: eventContract.AccessManagerContractAddress,
 		EventContractAddress:         eventContract.EventContractAddress,
-		TicketContractAddress:        eventContract.TicketContractAddress,
+		TicketContractAddress:        pgmapper.StringPtrToPgText(eventContract.TicketContractAddress),
 		CertificateContractAddress:   pgmapper.StringPtrToPgText(&eventCertificateAddressStr),
 	})
 	if err != nil {

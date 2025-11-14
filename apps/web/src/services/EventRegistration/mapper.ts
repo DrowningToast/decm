@@ -1,7 +1,7 @@
 import type {
     EntityEventRegistrationInvitation,
     EntityInboxMessage,
-    EventconfigEventRegistrationConfigResponse,
+    EventconfigEventRegistrationConfigViewModel,
 } from "@decm/api";
 import type {
     EventRegistrationConfiguration,
@@ -13,7 +13,7 @@ import type { InboxMessage } from "../InboxService/InboxService";
 import { mapEntityInboxMessageToInboxMessage as mapInboxMessage } from "../InboxService/mapper";
 
 export type EventRegistrationConfigResponse = Omit<
-    EventconfigEventRegistrationConfigResponse,
+    EventconfigEventRegistrationConfigViewModel,
     "created_at" | "updated_at"
 >;
 

@@ -20,11 +20,13 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
     const [isSubmiting, setIsSubmiting] = useState(false);
 
     const { bottomNavVariant } = useEventViewModelUsecase({ eventId });
-    const { showPreviewModal, closePreviewModal } = usePreviewRegistrationUsecase(eventId);
-    const { invitation } = useEventInvitationByUserAndEvent(eventId, user?.walletAddress);
+    const { showPreviewModal: _showPreviewModal, closePreviewModal } =
+        usePreviewRegistrationUsecase(eventId);
+    const { invitation, isLoading: isInvitationLoading } = useEventInvitationByUserAndEvent(
+        eventId,
+        user?.walletAddress,
+    );
     const registrationInvitation = invitation?.registrationInvitation;
-
-    console.log("registrationInvitation", registrationInvitation);
 
     // Use invitation data first, then profile data, then empty object
     const prefilledProfile = useMemo<RegistrationConfirmDataForm>(() => {
@@ -90,8 +92,9 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
         closePreviewModal();
     };
 
-    console.log("prefilledProfile", prefilledProfile);
-    console.log("showPreviewModal", showPreviewModal);
+    const showPreviewModal = useMemo(() => {
+        return !isInvitationLoading && invitation !== undefined && _showPreviewModal;
+    }, [_showPreviewModal, invitation, isInvitationLoading]);
 
     // Always show ActionMenu with conditional PII form
     return (
@@ -104,7 +107,8 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
                         onSubmit={handleSubmit}
                         onCancel={handleCancel}
                         isSubmitting={isSubmiting}
-                        initialData={prefilledProfile}
+                        profileData={prefilledProfile}
+                        invitationData={registrationInvitation}
                     />
                 )}
 

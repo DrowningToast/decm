@@ -66,25 +66,25 @@ func TestListEvents(t *testing.T) {
 
 	mockEvents := []*entity.Event{
 		{
-			ID:          uuid.New(),
+			Id:          uuid.New(),
 			Title:       "Active Event 1",
 			EventStatus: entity.EventStatusActive,
 			CreatedAt:   time.Now(),
 		},
 		{
-			ID:          uuid.New(),
+			Id:          uuid.New(),
 			Title:       "Inactive Event 1",
 			EventStatus: entity.EventStatusInactive,
 			CreatedAt:   time.Now(),
 		},
 		{
-			ID:          uuid.New(),
+			Id:          uuid.New(),
 			Title:       "Closed Event 1",
 			EventStatus: entity.EventStatusClosed,
 			CreatedAt:   time.Now(),
 		},
 		{
-			ID:          uuid.New(),
+			Id:          uuid.New(),
 			Title:       "Active Event 2",
 			EventStatus: entity.EventStatusActive,
 			CreatedAt:   time.Now(),

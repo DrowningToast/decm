@@ -1,10 +1,10 @@
-package event_registration_invitation
+package event_registration
 
 import (
 	"fmt"
 
 	customerror "apps/backend/common/customerror"
-	event_registration_invitationUc "apps/backend/core-api/internal/usecase/event_registration_invitation"
+	event_registration_invitationUc "apps/backend/core-api/internal/usecase/event_registration"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -21,7 +21,7 @@ import (
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
-// @Router /api/v1/event-registration-invitations/{eventId} [get]
+// @Router /api/v1/event-registration/invitation/{eventId} [get]
 func (h *Handler) GetEventRegistrationInvitationsByEventId(ctx *fiber.Ctx) error {
 	// 1. Get current user
 	currentUser, err := h.AuthenticationService.GetUserContext(ctx)
@@ -41,7 +41,7 @@ func (h *Handler) GetEventRegistrationInvitationsByEventId(ctx *fiber.Ctx) error
 	}
 
 	// 5. Call usecase
-	invitations, err := h.EventRegistrationInvitationUc.GetEventRegistrationInvitationsByEventId(ctx.UserContext(), params, currentUser)
+	invitations, err := h.EventRegistrationUc.GetEventRegistrationInvitationsByEventId(ctx.UserContext(), params, currentUser)
 	if err != nil {
 		return err
 	}

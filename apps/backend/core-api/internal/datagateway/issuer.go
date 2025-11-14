@@ -9,5 +9,7 @@ import (
 
 type IssuerDataGateway interface {
 	ListVerifiedIssuerProfiles(ctx context.Context, limitCount int, offsetCount int) ([]entity.Profile, error)
+	ListIssuerProfiles(ctx context.Context, limitCount int, offsetCount int) ([]entity.Profile, error)
+	SearchIssuerCredentialsByWalletAddress(ctx context.Context, searchQuery string, limitCount int, offsetCount int) ([]entity.AuthenticationCredential, error)
 	GetEventsByIssuerCredentialID(ctx context.Context, issuerCredentialID string, limitCount int32, offsetCount int32) ([]generated.GetEventIssuersByCredentialIDRow, error)
 }

@@ -2,6 +2,7 @@ package issuer
 
 import (
 	"apps/backend/common/log"
+	roleguard "apps/backend/core-api/internal/middleware/role_guard"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -11,6 +12,6 @@ func (h *Handler) Mount(r fiber.Router) {
 	defer logger.Info("Mounted issuer routes")
 
 	issuerGroup := r.Group("/issuers").Use(h.AuthenticationGuardMiddleware.Middleware)
-	issuerGroup.Get("/", h.GetVerifiedIssuers)
+	issuerGroup.Use(h.RoleGuardMiddleware.RequireRole(roleguard.RoleVerifiedIssuer, roleguard.RoleVerifiedOrganizer)).Get("/", h.GetVerifiedIssuers)
 	issuerGroup.Get("/events", h.GetIssuerEvents)
 }

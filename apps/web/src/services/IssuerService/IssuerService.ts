@@ -1,90 +1,55 @@
-import { coreApiClient } from "@/lib/api/api";
-import type { GetIssuerEventsData } from "@decm/api";
+import { coreApiClient, type CoreApiType } from "@/lib/api/api";
+import type { Profile } from "../AuthService/AuthService";
+import { mapProfileViewModel } from "../AuthService/mapper";
+import { mapToIssuerEvent } from "./mapper";
 
 export interface IssuerEvent {
+    eventEndDate: Date;
+    eventId: string;
+    eventLocation: string;
+    eventOwnerCredentialId: string;
+    eventShortDescription: string;
+    eventStartDate: Date;
+    eventTitle: string;
     id: string;
-    event_id: string;
-    event_title: string;
-    event_short_description: string;
-    event_start_date: string;
-    event_end_date: string;
-    event_location: string;
-    event_owner_credential_id: string;
-    issuer_credential_id: string;
-    is_signed: number;
+    isSigned: boolean;
+    issuerCredentialId: string;
+    signMessage: string;
     signature: string;
-    sign_message: string;
-    created_at: string;
-    updated_at: string;
 }
 
-export interface IssuerEventsResponse {
-    data: IssuerEvent[];
-    total: number;
-    page: number;
-    pageSize: number;
-}
+export class IssuerService {
+    private _coreApi: CoreApiType;
 
-/**
- * Get events for the authenticated issuer
- * @param limit Number of events to return
- * @param offset Number of events to skip
- * @returns Promise with issuer events data
- */
-export const getIssuerEvents = async (
-    issuer_credential_id: string,
-    limit?: number,
-    offset?: number,
-): Promise<GetIssuerEventsData> => {
-    try {
-        const response = await coreApiClient.v1.getIssuerEvents({
-            limit: limit || 10,
-            offset: offset || 0,
-            issuer_credential_id,
-        });
-        return response;
-    } catch (error) {
-        console.error("Error fetching issuer events:", error);
-        throw error;
+    constructor(coreApi: CoreApiType) {
+        this._coreApi = coreApi;
     }
-};
 
-/**
- * Filter events by signing status
- * @param events Array of events to filter
- * @param isSigned Status to filter by (0 for pending, 1 for signed)
- * @returns Filtered events array
- */
-export const filterEventsByStatus = (events: GetIssuerEventsData, isSigned: number) => {
-    return events.filter((event) => event.is_signed === isSigned);
-};
+    public async searchPublicIssuers(
+        searchQuery: string,
+        limit: number,
+        offset: number,
+    ): Promise<Profile[]> {
+        const response = await this._coreApi.v1.getVerifiedIssuers({
+            limit,
+            offset,
+            search: searchQuery,
+        });
+        return response.map(mapProfileViewModel);
+    }
 
-/**
- * Get pending events for issuer
- * @param limit Number of events to return
- * @param offset Number of events to skip
- * @returns Promise with pending events
- */
-export const getPendingEvents = async (
-    issuer_credential_id: string,
-    limit?: number,
-    offset?: number,
-): Promise<GetIssuerEventsData> => {
-    const allEvents = await getIssuerEvents(issuer_credential_id, limit || 10, offset || 0);
-    return filterEventsByStatus(allEvents, 0);
-};
+    public async getTaskedEvents(
+        issuerCredentialID: string,
+        limit: number = 30,
+        offset: number = 0,
+    ): Promise<IssuerEvent[]> {
+        const response = await this._coreApi.v1.getIssuerEvents({
+            issuer_credential_id: issuerCredentialID,
+            limit: limit,
+            offset: offset,
+        });
+        return response.map(mapToIssuerEvent);
+    }
+}
 
-/**
- * Get signed events for issuer
- * @param limit Number of events to return
- * @param offset Number of events to skip
- * @returns Promise with signed events
- */
-export const getSignedEvents = async (
-    issuer_credential_id: string,
-    limit?: number,
-    offset?: number,
-): Promise<GetIssuerEventsData> => {
-    const allEvents = await getIssuerEvents(issuer_credential_id, limit, offset);
-    return filterEventsByStatus(allEvents, 1);
-};
+export const defaultIssuerService = new IssuerService(coreApiClient);

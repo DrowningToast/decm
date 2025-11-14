@@ -54,7 +54,7 @@ func (h *Handler) GetEventById(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(event_uc.EventResponse{
-		Id:                       event.ID,
+		Id:                       event.Id,
 		ChainID:                  int32(event.ChainId),
 		ContactNumber:            event.ContactNumber,
 		OwnerCredentialID:        event.OwnerCredentialId,

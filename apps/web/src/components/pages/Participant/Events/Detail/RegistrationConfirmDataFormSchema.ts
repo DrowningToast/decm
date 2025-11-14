@@ -85,7 +85,7 @@ export const createRegistrationConfirmDataFormSchema = (
 
         phoneNumber: z
             .string()
-            .max(10, { message: t("validation.phoneNumberMax10") })
+            .max(15, { message: t("validation.phoneNumberMax15") })
             .optional()
             .or(z.literal(undefined))
             .transform((v) => (v === "" ? undefined : v))

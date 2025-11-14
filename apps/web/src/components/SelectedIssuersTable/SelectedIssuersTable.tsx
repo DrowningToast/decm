@@ -10,8 +10,8 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Trash2 } from "lucide-react";
-import type { GetEventIssuersByEventIdData } from "@decm/api";
 import ConfirmModal from "../ConfirmModal";
+import type { EventIssuer } from "@/services/EventService/EventService";
 
 export interface Issuer {
     id: string;
@@ -21,7 +21,7 @@ export interface Issuer {
 }
 
 export interface SelectedIssuersTableProps {
-    selectedIssuers?: GetEventIssuersByEventIdData;
+    selectedIssuers?: EventIssuer[];
     onRemoveIssuer: (issuerId: string) => void;
 }
 
@@ -60,12 +60,12 @@ export const SelectedIssuersTable = ({
                         {selectedIssuers.map((issuer) => (
                             <TableRow key={issuer.id}>
                                 <TableCell className="font-medium">
-                                    {issuer.issuer_profile?.first_name}{" "}
-                                    {issuer.issuer_profile?.last_name}
+                                    {issuer.issuerProfile?.firstName}{" "}
+                                    {issuer.issuerProfile?.lastName}
                                 </TableCell>
-                                <TableCell>{issuer.issuer_profile?.email}</TableCell>
+                                <TableCell>{issuer.issuerProfile?.email}</TableCell>
                                 <TableCell>
-                                    {issuer.issuer_profile?.academic_institution || "-"}
+                                    {issuer.issuerProfile?.academicInstitution || "-"}
                                 </TableCell>
                                 <TableCell>
                                     <ConfirmModal

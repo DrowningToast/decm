@@ -1,11 +1,11 @@
-package event_registration_invitation
+package event_registration
 
 import (
 	"fmt"
 
 	customerror "apps/backend/common/customerror"
 	"apps/backend/common/validatorutils"
-	eventRegistrationInvitationUc "apps/backend/core-api/internal/usecase/event_registration_invitation"
+	eventRegistrationInvitationUc "apps/backend/core-api/internal/usecase/event_registration"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -35,7 +35,7 @@ type ParticipantRequestItem struct {
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
-// @Router /api/v1/event-registration-invitations/import/{eventId} [post]
+// @Router /api/v1/event-registration/invitation/:event_id/import [post]
 func (h *Handler) ImportEventParticipants(ctx *fiber.Ctx) error {
 	// 1. Parse and validate request
 	requestBody := ImportEventParticipantsRequest{}
@@ -78,7 +78,7 @@ func (h *Handler) ImportEventParticipants(ctx *fiber.Ctx) error {
 	}
 
 	// 6. Call usecase
-	invitations, err := h.EventRegistrationInvitationUc.ImportEventParticipants(ctx.UserContext(), params, currentUser)
+	invitations, err := h.EventRegistrationUc.ImportEventParticipants(ctx.UserContext(), params, currentUser)
 	if err != nil {
 		return err
 	}

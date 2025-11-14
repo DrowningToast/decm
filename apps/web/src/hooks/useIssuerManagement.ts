@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
-import type { EntityProfile } from "@decm/api";
+import type { Profile } from "@/services/AuthService/AuthService";
+import { useSearchIssuer } from "./useSearchIssuer";
 
 export interface Issuer {
     id: string;
@@ -9,13 +10,11 @@ export interface Issuer {
 }
 
 export interface UseIssuerManagementProps {
-    searchFunction?: (query: string) => Promise<Issuer[]>;
-    verifiedIssuers?: EntityProfile[];
-    selectedIssuers?: EntityProfile[];
+    selectedIssuers?: Issuer[];
 }
 
 export interface UseIssuerManagementReturn {
-    selectedIssuers: EntityProfile[];
+    selectedIssuers: Issuer[];
     searchQuery: string;
     isSearching: boolean;
     searchResults: Issuer[];
@@ -30,75 +29,57 @@ export interface UseIssuerManagementReturn {
     getSelectedIssuerIds: () => Set<string>;
 }
 
+// Helper function to convert VerifiedIssuer to Issuer
+export const convertProfileToIssuer = (profile: Profile): Issuer => {
+    const fullName =
+        [profile.firstName, profile.lastName].filter(Boolean).join(" ").trim() || "Unknown Name";
+
+    return {
+        id: profile.authenticationCredentialId || "",
+        name: fullName,
+        email: profile.email || "",
+        organization: profile.academicInstitution || profile.bio || undefined,
+    };
+};
+
 export const useIssuerManagement = ({
-    searchFunction,
-    verifiedIssuers,
     selectedIssuers: initialSelectedIssuers,
 }: UseIssuerManagementProps = {}): UseIssuerManagementReturn => {
-    const [selectedIssuers, setSelectedIssuers] = useState<EntityProfile[]>(
-        initialSelectedIssuers || [],
-    );
+    const [selectedIssuers, setSelectedIssuers] = useState<Issuer[]>(initialSelectedIssuers || []);
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearching, setIsSearching] = useState(false);
     const [searchResults, setSearchResults] = useState<Issuer[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Helper function to convert EntityProfile to Issuer
-    const convertProfileToIssuer = useCallback((profile: EntityProfile): Issuer => {
-        const fullName =
-            [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim() ||
-            "Unknown Name";
-
-        return {
-            id: profile.authentication_credential_id || "",
-            name: fullName,
-            email: profile.email || "",
-            organization: profile.academic_institution || profile.bio || undefined,
-        };
-    }, []);
-
-    // Default search function using verified issuers
-    const defaultSearchFunction = useCallback(
-        async (query: string): Promise<Issuer[]> => {
-            // Simulate API delay for better UX
-            await new Promise((resolve) => setTimeout(resolve, 300));
-
-            if (!verifiedIssuers || verifiedIssuers.length === 0) {
-                return [];
-            }
-
-            // Convert EntityProfile to Issuer format
-            const issuers = verifiedIssuers.map(convertProfileToIssuer);
-
-            // Filter based on query
-            const filteredIssuers = issuers.filter(
-                (issuer) =>
-                    issuer.name.toLowerCase().includes(query.toLowerCase()) ||
-                    issuer.email.toLowerCase().includes(query.toLowerCase()) ||
-                    issuer.organization?.toLowerCase().includes(query.toLowerCase()),
-            );
-
-            return filteredIssuers;
-        },
-        [verifiedIssuers, convertProfileToIssuer],
-    );
+    // Use the backend search hook
+    const { data: verifiedIssuers } = useSearchIssuer({
+        search: searchQuery,
+    });
 
     const handleSearch = useCallback(async () => {
         if (!searchQuery.trim()) return;
 
         setIsSearching(true);
         try {
-            const searchFn = searchFunction || defaultSearchFunction;
-            const results = await searchFn(searchQuery.trim());
-            setSearchResults(results);
+            // Wait for the backend search results
+            // The results will be available through the verifiedIssuers from the hook
+            // Add a small delay to ensure the query completes
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            if (verifiedIssuers && verifiedIssuers.length > 0) {
+                const results = verifiedIssuers.map(convertProfileToIssuer);
+                setSearchResults(results);
+            } else {
+                setSearchResults([]);
+            }
             setIsModalOpen(true);
         } catch (error) {
             console.error("Error searching issuers:", error);
-            // Could add error handling here (toast, alert, etc.)
+            setSearchResults([]);
         } finally {
             setIsSearching(false);
         }
-    }, [searchQuery, searchFunction, defaultSearchFunction]);
+    }, [searchQuery, verifiedIssuers]);
 
     const handleSearchQueryChange = useCallback((query: string) => {
         setSearchQuery(query);
@@ -116,25 +97,15 @@ export const useIssuerManagement = ({
     const handleConfirmSelection = useCallback(
         (newIssuers: Issuer[]) => {
             // Merge with existing selections (avoid duplicates)
-            const merged = [...selectedIssuers];
-            newIssuers.forEach((issuer) => {
-                if (
-                    !merged.some((existing) => existing.authentication_credential_id === issuer.id)
-                ) {
-                    merged.push(issuer as unknown as EntityProfile);
-                }
-            });
-
+            const merged: Issuer[] = [...newIssuers];
             setSelectedIssuers(merged);
             handleCloseModal();
         },
-        [selectedIssuers, handleCloseModal],
+        [handleCloseModal],
     );
 
     const handleRemoveIssuer = useCallback((issuerId: string) => {
-        setSelectedIssuers((prev) =>
-            prev.filter((issuer) => issuer.authentication_credential_id !== issuerId),
-        );
+        setSelectedIssuers((prev) => prev.filter((issuer) => issuer.id !== issuerId));
     }, []);
 
     const handleClearSelection = useCallback(() => {
@@ -143,7 +114,7 @@ export const useIssuerManagement = ({
 
     const getSelectedIssuerIds = useCallback(() => {
         const issuerIds = selectedIssuers
-            .map((issuer) => issuer.authentication_credential_id)
+            .map((issuer) => issuer.id)
             .filter((id): id is string => typeof id === "string" && id.length > 0);
 
         return new Set(issuerIds);

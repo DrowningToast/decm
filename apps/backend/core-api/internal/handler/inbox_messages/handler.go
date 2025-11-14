@@ -21,8 +21,8 @@ func NewHandler(
 	authService *auth_service.AuthService,
 ) *Handler {
 	return &Handler{
-		InboxUc:                      inboxUsecase,
+		InboxUc:                       inboxUsecase,
 		AuthenticationGuardMiddleware: authenticationGuardMiddleware,
-		AuthService:                  authService,
+		AuthService:                   authService,
 	}
 }

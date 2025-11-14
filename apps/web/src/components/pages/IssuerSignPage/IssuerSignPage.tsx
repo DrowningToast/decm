@@ -10,7 +10,7 @@ import { useEventCertificateConfig } from "@/components/pages/HostPages/EventPag
 import { useEventContract } from "@/hooks/events/useEventContracts";
 import { useSignEventCertificates } from "@/hooks/useSignEventCertificates";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { ExternalLinkIcon, CheckCircle, Clock } from "lucide-react";
+import { ChevronLeft, ExternalLinkIcon, CheckCircle, Clock } from "lucide-react";
 import { PasswordPinModal } from "@/components/ui/password-pin-modal";
 import { TextLabelValue } from "@/components/ui/text-label-value";
 import { DataTable } from "@/components/ui/data-table";
@@ -20,7 +20,6 @@ import SectionContainer from "@/components/container/SectionContainer";
 import { IssuerStatusBadge } from "./IssuerStatusBadge";
 import { IssuersStatus } from "./IssuersStatus";
 import { useAuth } from "@/context/AuthContext";
-import type { EntityEventCertificate } from "@decm/api";
 
 interface IssuerSignPageProps {
     eventId: string;
@@ -91,7 +90,24 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen  text-white mt-12">
+            <div className="min-h-screen  text-white">
+                {/* Header */}
+                <header className="bg-[#ff6a39] shadow-lg">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between h-16 items-center">
+                            <div
+                                className="flex items-center gap-2 cursor-pointer"
+                                onClick={handleGoBack}
+                            >
+                                <ChevronLeft className="h-5 w-5" />
+                                <Typography variant="text" tag="span" color="foreground-alt">
+                                    {t("issuer.sign.backToDashboard")}
+                                </Typography>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
                 {/* Main Content */}
                 <SectionContainer>
                     <main>
@@ -355,24 +371,41 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                         <DataTable
                             columns={CertificateColumns()}
                             data={
-                                eventCertificates?.map((cert) => {
-                                    const firstName = cert.name?.split(" ")[0] || "";
-                                    const lastName = cert.name?.split(" ").slice(1).join(" ") || "";
+                                eventCertificates
+                                    ?.filter(
+                                        (
+                                            cert,
+                                        ): cert is typeof cert & {
+                                            created_at: string;
+                                            event_contract_address: string;
+                                            event_id: string;
+                                            id: string;
+                                        } =>
+                                            cert.id !== undefined &&
+                                            cert.event_id !== undefined &&
+                                            cert.revoked_at === null &&
+                                            cert.created_at !== undefined &&
+                                            cert.event_contract_address !== undefined,
+                                    )
+                                    .map((cert) => {
+                                        const firstName = cert.name?.split(" ")[0] || "";
+                                        const lastName =
+                                            cert.name?.split(" ").slice(1).join(" ") || "";
 
-                                    return {
-                                        ...cert,
-                                        firstName,
-                                        lastName,
-                                        email: cert.receiver_email || "",
-                                        academicInstitution: cert.academic_institution || "",
-                                        issuedAt: cert.created_at,
-                                        status: cert.revoked_at
-                                            ? "rejected"
-                                            : isCurrentIssuerPending
-                                              ? "pending_signature"
-                                              : "received",
-                                    } as EntityEventCertificate;
-                                }) || []
+                                        return {
+                                            ...cert,
+                                            firstName,
+                                            lastName,
+                                            email: cert.receiver_email || "",
+                                            academicInstitution: cert.academic_institution || "",
+                                            issuedAt: cert.created_at,
+                                            status: cert.revoked_at
+                                                ? "rejected"
+                                                : isCurrentIssuerPending
+                                                  ? "pending_signature"
+                                                  : "received",
+                                        };
+                                    }) || []
                             }
                             totalItems={eventCertificates?.length || 0}
                             currentPage={1}

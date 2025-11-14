@@ -120,7 +120,7 @@ func (uc *InboxUsecase) ToWithEventRegistrationInvitationViewModel(ctx context.C
 	}
 	return &InboxMessagesEventRegistrationInvitationViewModel{
 		InboxMessagesViewModel: *inboxMessageViewModel,
-		EventId:                event.ID,
+		EventId:                event.Id,
 		ValidUntil:             eventRegistrationInvitation.ValidUntil,
 		Code:                   eventRegistrationInvitation.Code,
 		FirstName:              eventRegistrationInvitation.FirstName,

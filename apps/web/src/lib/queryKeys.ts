@@ -76,7 +76,23 @@ export const QUERY_KEY = {
 
     // Issuers
     issuers: {
-        verified: ["issuers"] as const,
+        search: (search?: string, limit?: number, offset?: number) =>
+            ["issuers", "search", search ?? "", limit, offset] as const,
+        taskedEvents: (issuerCredentialId: string, limit?: number, offset?: number) =>
+            ["issuers", "tasked", issuerCredentialId, limit, offset] as const,
+        signedEvents: (issuerCredentialId: string, limit?: number, offset?: number) =>
+            ["issuers", "signed", issuerCredentialId, limit, offset] as const,
+        pendingEvents: (issuerCredentialId: string, limit?: number, offset?: number) =>
+            ["issuers", "pending", issuerCredentialId, limit, offset] as const,
+    },
+
+    // Certificates
+    certificate: {
+        all: ["certificate"] as const,
+        list: (limit: number, offset: number, status?: "completed" | "pending") =>
+            ["certificate", "list", limit, offset, status] as const,
+        byId: (certificateId: string) => ["certificate", certificateId] as const,
+        byEventId: (eventId: string) => ["certificate", "event", eventId] as const,
     },
 
     // Inbox

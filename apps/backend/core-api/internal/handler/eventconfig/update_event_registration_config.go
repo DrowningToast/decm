@@ -42,7 +42,7 @@ func (r *UpdateEventRegistrationConfigRequest) IsValid() error {
 // @Produce json
 // @Param event_id path string true "Event ID"
 // @Param request body UpdateEventRegistrationConfigRequest true "Event registration config data"
-// @Success 200 {object} EventRegistrationConfigResponse
+// @Success 200 {object} EventRegistrationConfigViewModel
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
@@ -93,11 +93,10 @@ func (h *Handler) UpdateEventRegistrationConfig(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	return ctx.Status(http.StatusOK).JSON(EventRegistrationConfigResponse{
+	return ctx.Status(http.StatusOK).JSON(EventRegistrationConfigViewModel{
 		ID:                                   config.ID,
 		EventID:                              config.EventID,
 		FinalCallForRegistration:             config.FinalCallForRegistration,
-		RegistrationPassword:                 config.RegistrationPassword,
 		FirstNameRequirementStatus:           EventRegistrationConfigRequirementStatus(config.FirstNameRequirementStatus),
 		LastNameRequirementStatus:            EventRegistrationConfigRequirementStatus(config.LastNameRequirementStatus),
 		EmailRequirementStatus:               EventRegistrationConfigRequirementStatus(config.EmailRequirementStatus),

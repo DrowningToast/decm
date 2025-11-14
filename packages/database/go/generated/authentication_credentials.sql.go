@@ -356,6 +356,53 @@ func (q *Queries) ListAuthenticationCredentials(ctx context.Context, arg ListAut
 	return items, nil
 }
 
+const ListIssuerAuthenticationCredentialsByWalletAddress = `-- name: ListIssuerAuthenticationCredentialsByWalletAddress :many
+SELECT id, solution_status, hashed_password, encrypted_private_key, wallet_address, google_connector_ref, github_connector_ref, is_verified_organizer, is_verified_issuer, is_verified_student, created_at, updated_at FROM authentication_credentials 
+WHERE is_verified_issuer = 1
+  AND LOWER(wallet_address) LIKE '%' || LOWER($1) || '%'
+ORDER BY created_at DESC
+LIMIT $3 OFFSET $2
+`
+
+type ListIssuerAuthenticationCredentialsByWalletAddressParams struct {
+	SearchQuery pgtype.Text `json:"search_query"`
+	OffsetCount int32       `json:"offset_count"`
+	LimitCount  int32       `json:"limit_count"`
+}
+
+func (q *Queries) ListIssuerAuthenticationCredentialsByWalletAddress(ctx context.Context, arg ListIssuerAuthenticationCredentialsByWalletAddressParams) ([]AuthenticationCredential, error) {
+	rows, err := q.db.Query(ctx, ListIssuerAuthenticationCredentialsByWalletAddress, arg.SearchQuery, arg.OffsetCount, arg.LimitCount)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AuthenticationCredential{}
+	for rows.Next() {
+		var i AuthenticationCredential
+		if err := rows.Scan(
+			&i.ID,
+			&i.SolutionStatus,
+			&i.HashedPassword,
+			&i.EncryptedPrivateKey,
+			&i.WalletAddress,
+			&i.GoogleConnectorRef,
+			&i.GithubConnectorRef,
+			&i.IsVerifiedOrganizer,
+			&i.IsVerifiedIssuer,
+			&i.IsVerifiedStudent,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const RemoveGithubConnector = `-- name: RemoveGithubConnector :one
 UPDATE authentication_credentials SET 
     github_connector_ref = NULL,

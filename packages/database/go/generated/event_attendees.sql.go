@@ -9,7 +9,65 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const AddParticipant = `-- name: AddParticipant :one
+INSERT INTO event_attendees (event_id, attendee_credential_id, contract_address, is_attendee_accepted, first_name, last_name, email, bio, phone_number, address, academic_institution, academic_email)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+RETURNING id, event_id, attendee_credential_id, contract_address, is_attendee_accepted, first_name, last_name, email, bio, phone_number, address, academic_institution, academic_email, created_at, updated_at
+`
+
+type AddParticipantParams struct {
+	EventID              uuid.UUID   `json:"event_id"`
+	AttendeeCredentialID uuid.UUID   `json:"attendee_credential_id"`
+	ContractAddress      string      `json:"contract_address"`
+	IsAttendeeAccepted   int32       `json:"is_attendee_accepted"`
+	FirstName            pgtype.Text `json:"first_name"`
+	LastName             pgtype.Text `json:"last_name"`
+	Email                pgtype.Text `json:"email"`
+	Bio                  pgtype.Text `json:"bio"`
+	PhoneNumber          pgtype.Text `json:"phone_number"`
+	Address              pgtype.Text `json:"address"`
+	AcademicInstitution  pgtype.Text `json:"academic_institution"`
+	AcademicEmail        pgtype.Text `json:"academic_email"`
+}
+
+func (q *Queries) AddParticipant(ctx context.Context, arg AddParticipantParams) (EventAttendee, error) {
+	row := q.db.QueryRow(ctx, AddParticipant,
+		arg.EventID,
+		arg.AttendeeCredentialID,
+		arg.ContractAddress,
+		arg.IsAttendeeAccepted,
+		arg.FirstName,
+		arg.LastName,
+		arg.Email,
+		arg.Bio,
+		arg.PhoneNumber,
+		arg.Address,
+		arg.AcademicInstitution,
+		arg.AcademicEmail,
+	)
+	var i EventAttendee
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.AttendeeCredentialID,
+		&i.ContractAddress,
+		&i.IsAttendeeAccepted,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.Bio,
+		&i.PhoneNumber,
+		&i.Address,
+		&i.AcademicInstitution,
+		&i.AcademicEmail,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
 
 const GetEventAttendeeByEventIDAndCredentialID = `-- name: GetEventAttendeeByEventIDAndCredentialID :one
 SELECT id, event_id, attendee_credential_id, contract_address, is_attendee_accepted, first_name, last_name, email, bio, phone_number, address, academic_institution, academic_email, created_at, updated_at

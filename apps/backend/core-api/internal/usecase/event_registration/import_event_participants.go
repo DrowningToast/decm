@@ -1,4 +1,4 @@
-package event_registration_invitation
+package event_registration
 
 import (
 	"context"
@@ -8,46 +8,13 @@ import (
 
 	"apps/backend/common/customerror"
 	datagateway "apps/backend/core-api/internal/datagateway"
-	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 
 	"github.com/google/uuid"
 )
 
-type Participant struct {
-	Name                string `json:"name"`
-	FirstName           string `json:"first_name"`
-	LastName            string `json:"last_name"`
-	Email               string `json:"email"`
-	PhoneNumber         string `json:"phone_number"`
-	AcademicInstitution string `json:"academic_institution"`
-}
-
-type ImportEventParticipantsParameters struct {
-	EventID      uuid.UUID
-	Participants []Participant
-}
-
-type EventRegistrationInvitationUsecase struct {
-	InboxMessageDg                datagateway.InboxMessageDataGateway
-	EventRegistrationInvitationDg datagateway.EventRegistrationInvitationDataGateway
-	EventDg                       eventdatagateway.EventDataGateway
-}
-
-func NewEventRegistrationInvitationUsecase(
-	inboxMessageDg datagateway.InboxMessageDataGateway,
-	eventRegistrationInvitationDg datagateway.EventRegistrationInvitationDataGateway,
-	eventDg eventdatagateway.EventDataGateway,
-) *EventRegistrationInvitationUsecase {
-	return &EventRegistrationInvitationUsecase{
-		InboxMessageDg:                inboxMessageDg,
-		EventRegistrationInvitationDg: eventRegistrationInvitationDg,
-		EventDg:                       eventDg,
-	}
-}
-
-func (uc *EventRegistrationInvitationUsecase) ImportEventParticipants(ctx context.Context, params ImportEventParticipantsParameters, currentUser *auth.JwtClaims) ([]*entity.EventRegistrationInvitation, error) {
+func (uc *EventRegistrationUsecase) ImportEventParticipants(ctx context.Context, params ImportEventParticipantsParameters, currentUser *auth.JwtClaims) ([]*entity.EventRegistrationInvitation, error) {
 	// Check if user is authorized to import participants for this event
 	// This would typically involve checking if the user is the event owner or has admin privileges
 	// For now, we'll assume the user is authorized if they have a valid JWT token

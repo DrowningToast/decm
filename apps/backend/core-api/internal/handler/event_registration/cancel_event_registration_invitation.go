@@ -1,17 +1,18 @@
-package event_registration_invitation
+package event_registration
 
 import (
+	"errors"
 	"fmt"
 
 	customerror "apps/backend/common/customerror"
 	"apps/backend/common/validatorutils"
-	eventRegistrationInvitationUc "apps/backend/core-api/internal/usecase/event_registration_invitation"
+	eventRegistrationUc "apps/backend/core-api/internal/usecase/event_registration"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
-type CancelEventRegistrationInvitationRequest struct {
+type CancelEventRegistrationInvitationQuery struct {
 	EventRegistrationInvitationID string `json:"event_registration_invitation_id" validate:"required,uuid"`
 }
 
@@ -27,14 +28,14 @@ type CancelEventRegistrationInvitationRequest struct {
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
-// @Router /api/v1/event-registration-invitations/{eventRegistrationInvitationId} [delete]
+// @Router /api/v1/event-registration/invitation [delete]
 func (h *Handler) CancelEventRegistrationInvitation(ctx *fiber.Ctx) error {
 	// 1. Parse and validate request
-	requestBody := CancelEventRegistrationInvitationRequest{}
-	if err := requestBody.Parse(ctx); err != nil {
+	query := CancelEventRegistrationInvitationQuery{}
+	if err := query.Parse(ctx); err != nil {
 		return err
 	}
-	if err := requestBody.IsValid(); err != nil {
+	if err := query.IsValid(); err != nil {
 		return err
 	}
 
@@ -45,18 +46,18 @@ func (h *Handler) CancelEventRegistrationInvitation(ctx *fiber.Ctx) error {
 	}
 
 	// 3. Convert event_registration_invitation_id from string to UUID
-	eventRegistrationInvitationID, err := uuid.Parse(requestBody.EventRegistrationInvitationID)
+	eventRegistrationInvitationID, err := uuid.Parse(query.EventRegistrationInvitationID)
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("invalid event_registration_invitation_id: %w", err))
 	}
 
 	// 4. Prepare parameters for usecase
-	params := eventRegistrationInvitationUc.CancelEventRegistrationInvitationParameters{
+	params := eventRegistrationUc.CancelEventRegistrationInvitationParameters{
 		EventRegistrationInvitationID: eventRegistrationInvitationID,
 	}
 
 	// 5. Call usecase
-	invitation, err := h.EventRegistrationInvitationUc.CancelEventRegistrationInvitation(ctx.UserContext(), params, currentUser)
+	invitation, err := h.EventRegistrationUc.CancelEventRegistrationInvitation(ctx.UserContext(), params, currentUser)
 	if err != nil {
 		return err
 	}
@@ -66,17 +67,17 @@ func (h *Handler) CancelEventRegistrationInvitation(ctx *fiber.Ctx) error {
 }
 
 // Parse - Parse path parameter from request
-func (r *CancelEventRegistrationInvitationRequest) Parse(ctx *fiber.Ctx) error {
+func (r *CancelEventRegistrationInvitationQuery) Parse(ctx *fiber.Ctx) error {
 	// Get event_registration_invitation_id from path parameter
-	eventRegistrationInvitationID := ctx.Params("eventRegistrationInvitationId")
+	eventRegistrationInvitationID := ctx.Query("event_registration_invitation_id")
 	if eventRegistrationInvitationID == "" {
-		return customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("event_registration_invitation_id is required"))
+		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("event_registration_invitation_id is required"))
 	}
 	r.EventRegistrationInvitationID = eventRegistrationInvitationID
 	return nil
 }
 
 // IsValid - Validate request fields
-func (r *CancelEventRegistrationInvitationRequest) IsValid() error {
+func (r *CancelEventRegistrationInvitationQuery) IsValid() error {
 	return validatorutils.ValidateStruct(r)
 }

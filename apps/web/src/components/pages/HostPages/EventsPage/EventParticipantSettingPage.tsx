@@ -6,26 +6,24 @@ import { useUpdateParticipantSetting } from "@/components/forms/ParticipantSetti
 import type { EntityEventType, EventconfigUpdateEventRegistrationConfigRequest } from "@decm/api";
 import { toEventRegistrationConfigStatusNumber } from "@/lib/events/event.utils";
 import { useEventViewModelUsecase } from "@/components/pages/Participant/Events/Detail/useEventViewModelUsecase";
+import { useEventRegistrationConfigUsecase } from "@/hooks/events/useEventRegistrationConfigUsecase";
 
 interface EventParticipantSettingPageProps {
     eventId: string;
 }
 export const EventParticipantSettingPage = ({ eventId }: EventParticipantSettingPageProps) => {
     const { event, isLoading: isLoadingEvent } = useEventViewModelUsecase({ eventId });
+    const { data: eventRegistrationConfig, isLoading: isLoadingEventRegistrationConfig } =
+        useEventRegistrationConfigUsecase({ eventId });
     const { updateParticipantSetting, isUpdatingParticipantSetting } =
         useUpdateParticipantSetting(eventId);
 
-    if (isLoadingEvent) {
+    if (isLoadingEvent || isLoadingEventRegistrationConfig || !eventRegistrationConfig) {
         return <div>Loading event...</div>;
     }
 
     if (!event) {
         return <div>Event not found</div>;
-    }
-
-    const eventRegistrationConfig = event.registrationRequirement;
-    if (!eventRegistrationConfig) {
-        return <div>Event registration config not found</div>;
     }
 
     const onSubmit = async (data: ParticipantSettingsData) => {
@@ -80,12 +78,11 @@ export const EventParticipantSettingPage = ({ eventId }: EventParticipantSetting
                         finalCallRegistrationDate: eventRegistrationConfig.finalCallForRegistration
                             ? new Date(eventRegistrationConfig.finalCallForRegistration)
                             : undefined,
-                        // registrationPassword: event.registrationPassword,
-                        // requireRegistrationPassword: eventRegistrationConfig.registrationPassword !== undefined,
-
-                        // Event
-                        isBookingRequired: event.isBookingRequestRequired,
-                        isTicketTransferable: event.isTicketTransferable,
+                        eventType: event.eventType,
+                        // Add missing required fields from Event object
+                        // isBookingRequired: event.isBookingRequestRequired ?? false,
+                        // requireRegistrationPassword: false, // TODO: Get from backend
+                        registrationPassword: "", // Password not returned from API for security
                     }}
                     showPreview={true}
                 />

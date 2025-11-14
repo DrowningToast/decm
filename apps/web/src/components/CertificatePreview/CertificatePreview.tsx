@@ -23,7 +23,7 @@ export const CertificatePreview = ({
         if (svgPreview) {
             return (
                 <div
-                    className="w-full max-w-4xl [&>svg]:w-full [&>svg]:h-auto [&>svg]:max-h-[500px] [&>svg]:object-contain"
+                    className="w-full [&>svg]:w-full [&>svg]:h-auto [&>svg]:min-h-[300px] [&>svg]:object-contain"
                     dangerouslySetInnerHTML={{
                         __html: DOMPurify.sanitize(svgPreview, {
                             ADD_TAGS: ["pattern", "image", "use", "defs", "clipPath"],
@@ -50,9 +50,10 @@ export const CertificatePreview = ({
                 <img
                     src={imageUrl}
                     alt={alt}
-                    className="w-full max-w-4xl h-auto max-h-[500px] object-contain"
-                    onError={() => {
+                    className="w-full h-auto min-h-[300px] object-contain rounded-md"
+                    onError={(e) => {
                         console.error("Failed to load certificate image:", imageUrl);
+                        e.currentTarget.style.display = "none";
                     }}
                 />
             );

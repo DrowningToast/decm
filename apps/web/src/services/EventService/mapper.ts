@@ -4,6 +4,7 @@ import {
     type EntityEvent,
     type EventEventResponse,
     EntityEventType,
+    type EventEventIssuerResponse,
 } from "@decm/api";
 import type {
     EventViewModelExtended,
@@ -11,8 +12,10 @@ import type {
     EventItem,
     EventType,
     EventViewModel,
+    EventIssuer,
 } from "./EventService";
 import { mapEntityEventRegistrationConfigToEventRegistrationConfiguration } from "../EventRegistration/mapper";
+import { mapProfileViewModel } from "../AuthService/mapper";
 
 export const mapEntityEventStatusToEventStatus = (
     entityEventStatus: EntityEventStatus,
@@ -113,5 +116,19 @@ export const mapEventViewModelExtended = (
         eventContractAddress: eventViewModel.event_contract?.event_contract_address,
         ticketContractAddress: eventViewModel.event_contract?.ticket_contract_address,
         certificateContractAddress: eventViewModel.event_contract?.certificate_contract_address,
+    };
+};
+
+export const mapToEventIssuer = (eventIssuerResponse: EventEventIssuerResponse): EventIssuer => {
+    return {
+        eventId: eventIssuerResponse.event_id,
+        id: eventIssuerResponse.id,
+        isSigned: eventIssuerResponse.is_signed === 1,
+        issuerCredentialId: eventIssuerResponse.issuer_credential_id,
+        issuerProfile: eventIssuerResponse.issuer_profile
+            ? mapProfileViewModel(eventIssuerResponse.issuer_profile)
+            : undefined,
+        signMessage: eventIssuerResponse.sign_message ?? undefined,
+        signature: eventIssuerResponse.signature ?? undefined,
     };
 };

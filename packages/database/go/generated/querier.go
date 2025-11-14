@@ -12,6 +12,7 @@ import (
 )
 
 type Querier interface {
+	AddParticipant(ctx context.Context, arg AddParticipantParams) (EventAttendee, error)
 	CountAuthenticationCredentials(ctx context.Context) (int64, error)
 	CountCredentialsByVerificationStatus(ctx context.Context) (CountCredentialsByVerificationStatusRow, error)
 	CountProfiles(ctx context.Context) (int64, error)
@@ -79,6 +80,8 @@ type Querier interface {
 	ListEventsByEventAttendeeCredentialID(ctx context.Context, arg ListEventsByEventAttendeeCredentialIDParams) ([]ListEventsByEventAttendeeCredentialIDRow, error)
 	ListEventsByOwner(ctx context.Context, ownerCredentialID uuid.UUID) ([]ListEventsByOwnerRow, error)
 	ListEventsByOwnerCredentialID(ctx context.Context, arg ListEventsByOwnerCredentialIDParams) ([]Event, error)
+	ListIssuerAuthenticationCredentialsByWalletAddress(ctx context.Context, arg ListIssuerAuthenticationCredentialsByWalletAddressParams) ([]AuthenticationCredential, error)
+	ListIssuerProfiles(ctx context.Context, arg ListIssuerProfilesParams) ([]Profile, error)
 	ListProfiles(ctx context.Context, arg ListProfilesParams) ([]Profile, error)
 	ListPublicEvents(ctx context.Context) ([]ListPublicEventsRow, error)
 	ListVerifiedIssuerProfiles(ctx context.Context, arg ListVerifiedIssuerProfilesParams) ([]ListVerifiedIssuerProfilesRow, error)

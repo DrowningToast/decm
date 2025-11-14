@@ -759,7 +759,7 @@
             "name": "name",
             "email": "email",
             "phoneNumber": "phone_number",
-            "academicInstitution": "academic_institution",
+            "academicInstitution": "academic_institution_name",
             "firstName": "first_name",
             "lastName": "last_name"
         }
@@ -1132,6 +1132,18 @@
             "action": {
                 "review": "ตรวจสอบ",
                 "view": "ดู"
+            },
+            "actionRequired": "คุณมี {{count}} รายการที่ต้องดำเนินการ",
+            "actionRequired_plural": "คุณมี {{count}} รายการที่ต้องดำเนินการ",
+            "participantServices": "บริการสำหรับผู้เข้าร่วม",
+            "generalServices": "บริการทั่วไป",
+            "services": {
+                "certificates": "ประกาศนียบัตร",
+                "events": "กิจกรรม",
+                "inbox": "กล่องข้อความ",
+                "identities": "ตัวตน",
+                "profile": "โปรไฟล์",
+                "verifyCertificates": "ตรวจสอบใบรับรอง"
             }
         },
         "certificates": {
