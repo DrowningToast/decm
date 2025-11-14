@@ -32,7 +32,11 @@ FROM base AS builder
 # First, copy only package.json files and lockfile (changes less often)
 # This leverages Docker layer caching - if dependencies don't change, this layer is cached
 COPY --from=prepare /app/out/json/ .
-RUN  pnpm install --frozen-lockfile
+
+# Install dependencies with cache mount for pnpm store
+# This caches downloaded packages across builds for faster installations
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # Then copy the full pruned source code
 COPY --from=prepare /app/out/full/ .

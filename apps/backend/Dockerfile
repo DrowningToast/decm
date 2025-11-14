@@ -28,9 +28,20 @@ FROM alpine:3.20 AS runtime
 
 WORKDIR /app
 
-RUN apk add --no-cache ca-certificates tzdata wget
+# Install runtime dependencies including migrate CLI
+RUN apk add --no-cache ca-certificates tzdata wget curl && \
+    wget -O /tmp/migrate.tar.gz https://github.com/golang-migrate/migrate/releases/download/v4.18.1/migrate.linux-amd64.tar.gz && \
+    tar -xzf /tmp/migrate.tar.gz -C /usr/local/bin && \
+    chmod +x /usr/local/bin/migrate && \
+    rm /tmp/migrate.tar.gz
 
+# Copy application binary and migration files
 COPY --from=builder /workspace/apps/backend/bin/decm-backend /app/decm-backend
+COPY --from=builder /workspace/packages/database/migrations /app/migrations
+
+# Create simple entrypoint script
+RUN printf '#!/bin/sh\nset -e\nmigrate -path /app/migrations -database "$DATABASE_URL" up\nexec /app/decm-backend\n' > /app/entrypoint.sh && \
+    chmod +x /app/entrypoint.sh
 
 EXPOSE 8080
 
@@ -40,4 +51,4 @@ ENV PORT=8080 \
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=40s \
     CMD wget --quiet --tries=1 -O /dev/null http://localhost:8080/ready || exit 1
 
-ENTRYPOINT ["/app/decm-backend"]
+ENTRYPOINT ["/app/entrypoint.sh"]

@@ -70,7 +70,9 @@ logs
 
 # Database
 database/backups
-**/migrations
+# Note: packages/database/migrations is needed for backend Docker image
+# Exclude other migration-related files but not the actual migrations directory
+**/node_modules/**/migrations
 
 # Temp files
 temp
