@@ -62,12 +62,6 @@ export const CertificateSettingsPage = ({
     // Handle form submission
     const handleSubmit = async () => {
         try {
-            // TODO: Implement API call to save certificate settings
-            console.log("Event ID:", eventId);
-            console.log("Selected Issuers:", issuerManagement.selectedIssuers);
-            console.log("SVG File:", certificateTemplate.svgFile);
-            console.log("Detected Keywords:", certificateTemplate.detectedKeywords);
-
             const name = certificateTemplate.detectedKeywords.find(
                 (keyword) => keyword.keyword === "{{ name }}",
             );
@@ -82,11 +76,6 @@ export const CertificateSettingsPage = ({
 
             if (certificateTemplate.svgFile && !name) {
                 toast.error(t("certificateSettings.nameNotFound"));
-                return;
-            }
-
-            if (certificateTemplate.svgFile && !eventName) {
-                toast.error(t("certificateSettings.eventNameNotFound"));
                 return;
             }
 

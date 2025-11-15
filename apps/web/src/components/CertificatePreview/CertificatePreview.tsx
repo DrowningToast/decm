@@ -25,7 +25,21 @@ export const CertificatePreview = ({
                 <div
                     className="w-full max-w-4xl [&>svg]:w-full [&>svg]:h-auto [&>svg]:max-h-[500px] [&>svg]:object-contain"
                     dangerouslySetInnerHTML={{
-                        __html: DOMPurify.sanitize(svgPreview),
+                        __html: DOMPurify.sanitize(svgPreview, {
+                            ADD_TAGS: ["pattern", "image", "use", "defs", "clipPath"],
+                            ADD_ATTR: [
+                                "xlink:href",
+                                "patternContentUnits",
+                                "patternTransform",
+                                "width",
+                                "height",
+                                "x",
+                                "y",
+                                "viewBox",
+                                "clip-path",
+                                "id",
+                            ],
+                        }),
                     }}
                 />
             );

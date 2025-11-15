@@ -117,8 +117,8 @@ const UpdateEventCertificateConfig = `-- name: UpdateEventCertificateConfig :one
 UPDATE event_certificate_configs
 SET 
     base_certificate_storage_key = $1,
-    event_name_pos_x = $2,
-    event_name_pos_y = $3,
+    event_name_pos_x = COALESCE($2, event_name_pos_x),
+    event_name_pos_y = COALESCE($3, event_name_pos_y),
     name_pos_x = $4,
     name_pos_y = $5,
     academic_institution_pos_x = $6,

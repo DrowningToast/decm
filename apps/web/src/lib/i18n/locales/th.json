@@ -759,7 +759,7 @@
             "name": "name",
             "email": "email",
             "phoneNumber": "phone_number",
-            "academicInstitution": "academic_institution_name",
+            "academicInstitution": "academic_institution",
             "firstName": "first_name",
             "lastName": "last_name"
         }
@@ -1086,31 +1086,53 @@
         "signInIAM": "เข้าระบบ IAM",
         "register": "ลงทะเบียนกับเรา",
         "sign": {
-            "pageTitle": "ลงนามใบรับรองรับ",
-            "pageDescription": "ตรวจรายการและลงนามใบรับรองรับที่รอดำเนินการสำหรับกิจกรรมที่คุณได้รับมอบหมาย",
-            "pendingTab": "รอการลงนาม",
+            "backToDashboard": "กลับไปยังหน้าควบคุม",
+            "pageTitle": "ลงนามใบรับรองกิจกรรม",
+            "pageDescription": "ตรวจสอบและลงนามใบรับรองสำหรับกิจกรรมนี้",
+            "signingDetails": "รายละเอียดการลงนาม",
+            "signingStatus": "สถานะการลงนาม",
+            "contractAddress": "ที่อยู่สัญญา",
+            "certificatesCount": "ใบรับรอง",
+            "certificatePreview": "ตัวอย่างใบรับรอง",
+            "templateNotAvailable": "ไม่มีเทมเพลตใบรับรอง",
+            "eventDetails": "รายละเอียดกิจกรรม",
+            "signCertificateBatch": "ลงนามชุดใบรับรอง",
+            "signCertificateBatchDescription": "ลงนามใบรับรองที่รอดำเนินการทั้งหมดสำหรับกิจกรรมนี้",
+            "signing": "กำลังลงนาม...",
+            "signAndApprove": "ลงนามและอนุมัติ",
+            "alreadySigned": "ลงนามแล้ว",
+            "notAnIssuer": "ไม่ใช่ผู้ออกใบรับรอง",
+            "certificatesToSign": "ใบรับรองที่รอลงนาม",
+            "signedCertificates": "ใบรับรองที่ลงนามแล้ว",
+            "eventCertificates": "ใบรับรองกิจกรรม",
+            "signatureRequest": "คำขอลงนาม",
+            "signatureRequestDescription": "ป้อน PIN เพื่อลงนามใบรับรอง",
+            "issuersStatus": "สถานะผู้ออกใบรับรอง",
+            "noIssuersFound": "ไม่พบผู้ออกใบรับรองสำหรับกิจกรรมนี้",
+            "issuer": "ผู้ออก",
+            "you": "คุณ",
+            "completed": "เสร็จสิ้น",
+            "status": {
+                "signed": "ลงนามแล้ว",
+                "waiting": "รอการลงนาม"
+            },
+            "pendingTab": "รอดำเนินการ",
             "signedTab": "ลงนามแล้ว",
             "table": {
                 "eventName": "ชื่อกิจกรรม",
-                "host": "ผู้จัดงาน",
-                "hostPlaceholder": "ผู้จัดงานกิจกรรม",
-                "certificates": "ใบรับรองรับ",
+                "host": "ผู้จัด",
+                "certificates": "ใบรับรอง",
                 "status": "สถานะ",
-                "action": "การกระทำ"
+                "action": "การดำเนินการ",
+                "hostPlaceholder": "ชื่อผู้จัด"
             },
-            "actionRequired": "คุณมี {{count}} รายการที่ต้องดำเนินการ",
-            "actionRequired_plural": "คุณมี {{count}} รายการที่ต้องดำเนินการ",
-            "participantServices": "บริการสำหรับผู้เข้าร่วม",
-            "generalServices": "บริการทั่วไป",
-            "services": {
-                "certificates": "ประกาศนียบัตร",
-                "events": "กิจกรรม",
-                "inbox": "กล่องข้อความ",
-                "identities": "ตัวตน",
-                "profile": "โปรไฟล์",
-                "verifyCertificates": "ตรวจสอบใบรับรอง"
+            "pagination": {
+                "rowsPerPage": "จำนวนแถวต่อหน้า"
             },
-            "signedCertificates": "ใบรับรองที่ลงนามแล้ว"
+            "action": {
+                "review": "ตรวจสอบ",
+                "view": "ดู"
+            }
         },
         "certificates": {
             "title": "ประกาศนียบัตร",
