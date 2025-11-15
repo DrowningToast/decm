@@ -355,7 +355,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                         <DataTable
                             columns={CertificateColumns()}
                             data={
-                                eventCertificates.map((cert) => {
+                                eventCertificates?.map((cert) => {
                                     const firstName = cert.name?.split(" ")[0] || "";
                                     const lastName = cert.name?.split(" ").slice(1).join(" ") || "";
 
