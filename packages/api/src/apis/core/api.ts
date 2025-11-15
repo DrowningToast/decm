@@ -1150,12 +1150,12 @@ export interface UpdateEventCertificateConfigPayload {
      * Event name position x
      * @format float64
      */
-    event_name_pos_x: number;
+    event_name_pos_x?: number;
     /**
      * Event name position y
      * @format float64
      */
-    event_name_pos_y: number;
+    event_name_pos_y?: number;
     /**
      * Name position x
      * @format float64

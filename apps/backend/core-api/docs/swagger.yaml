@@ -2371,13 +2371,11 @@ paths:
         format: float64
         in: formData
         name: event_name_pos_x
-        required: true
         type: number
       - description: Event name position y
         format: float64
         in: formData
         name: event_name_pos_y
-        required: true
         type: number
       - description: Name position x
         format: float64

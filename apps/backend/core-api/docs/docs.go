@@ -1255,16 +1255,14 @@ const docTemplate = `{
                         "format": "float64",
                         "description": "Event name position x",
                         "name": "event_name_pos_x",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     },
                     {
                         "type": "number",
                         "format": "float64",
                         "description": "Event name position y",
                         "name": "event_name_pos_y",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     },
                     {
                         "type": "number",
