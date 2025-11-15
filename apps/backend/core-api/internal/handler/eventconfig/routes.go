@@ -2,6 +2,7 @@ package eventconfig
 
 import (
 	"apps/backend/common/log"
+	roleguard "apps/backend/core-api/internal/middleware/role_guard"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -16,7 +17,10 @@ func (h *Handler) Mount(r fiber.Router) {
 	)
 
 	// Event Certificate Config routes
-	eventConfigGroup.Get("/certificate", h.GetEventCertificateConfig)
+	eventConfigGroup.Use(h.RoleGuardMiddleware.RequireRole(
+		roleguard.RoleVerifiedIssuer,
+		roleguard.RoleVerifiedOrganizer,
+	)).Get("/certificate", h.GetEventCertificateConfig)
 
 	eventConfigGroup.Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).Put("/certificate", h.UpdateEventCertificateConfig)
 	eventConfigGroup.Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).Delete("/certificate", h.DeleteEventCertificateConfig)
