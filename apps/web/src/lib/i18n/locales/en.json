@@ -864,7 +864,7 @@
             "name": "name",
             "email": "email",
             "phoneNumber": "phone_number",
-            "academicInstitution": "academic_institution_name",
+            "academicInstitution": "academic_institution",
             "firstName": "first_name",
             "lastName": "last_name"
         }
@@ -1083,6 +1083,57 @@
         "addressRequired": "Address is required",
         "academicEmailRequired": "Academic email is required",
         "academicInstitutionRequired": "Academic institution is required"
+    },
+    "issuer": {
+        "sign": {
+            "backToDashboard": "Back to Dashboard",
+            "pageTitle": "Sign Event Certificates",
+            "pageDescription": "Review and sign certificates for this event",
+            "signingDetails": "Signing Details",
+            "signingStatus": "Signing Status",
+            "contractAddress": "Contract Address",
+            "certificatesCount": "Certificates",
+            "certificatePreview": "Certificate Preview",
+            "templateNotAvailable": "Template not available",
+            "eventDetails": "Event Details",
+            "signCertificateBatch": "Sign Certificate Batch",
+            "signCertificateBatchDescription": "Sign all pending certificates for this event",
+            "signing": "Signing...",
+            "signAndApprove": "Sign and Approve",
+            "alreadySigned": "Already Signed",
+            "notAnIssuer": "Not an Issuer",
+            "certificatesToSign": "Certificates to Sign",
+            "signedCertificates": "Signed Certificates",
+            "eventCertificates": "Event Certificates",
+            "signatureRequest": "Signature Request",
+            "signatureRequestDescription": "Enter your PIN to sign certificates",
+            "issuersStatus": "Issuers Status",
+            "noIssuersFound": "No issuers found for this event",
+            "issuer": "Issuer",
+            "you": "You",
+            "completed": "Completed",
+            "status": {
+                "signed": "Signed",
+                "waiting": "Waiting"
+            },
+            "pendingTab": "Pending",
+            "signedTab": "Signed",
+            "table": {
+                "eventName": "Event Name",
+                "host": "Host",
+                "certificates": "Certificates",
+                "status": "Status",
+                "action": "Action",
+                "hostPlaceholder": "Host Name"
+            },
+            "pagination": {
+                "rowsPerPage": "Rows per page"
+            },
+            "action": {
+                "review": "Review",
+                "view": "View"
+            }
+        }
     },
     "errors": {
         "generic": "Something went wrong. Please try again.",

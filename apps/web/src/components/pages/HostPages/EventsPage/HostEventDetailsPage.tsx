@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
 import { issuerColumns } from "./columns/issuer-columns";
 import type {
+    EntityEventCertificate,
     GetEventCertificateConfigData,
     GetEventContractByEventIdData,
     GetEventIssuersByEventIdData,
@@ -561,45 +562,26 @@ export default function HostEventDetailsPage({
                                                 },
                                             )}
                                             data={
-                                                eventCertificates
-                                                    ?.filter(
-                                                        (
-                                                            cert,
-                                                        ): cert is typeof cert & {
-                                                            created_at: string;
-                                                            event_contract_address: string;
-                                                            event_id: string;
-                                                            id: string;
-                                                        } =>
-                                                            cert.id !== undefined &&
-                                                            cert.event_id !== undefined &&
-                                                            cert.revoked_at === null &&
-                                                            cert.created_at !== undefined &&
-                                                            cert.event_contract_address !==
-                                                                undefined,
-                                                    )
-                                                    .map((cert) => {
-                                                        const firstName =
-                                                            cert.name?.split(" ")[0] || "";
-                                                        const lastName =
-                                                            cert.name
-                                                                ?.split(" ")
-                                                                .slice(1)
-                                                                .join(" ") || "";
+                                                eventCertificates.map((cert) => {
+                                                    const firstName =
+                                                        cert.name?.split(" ")[0] || "";
+                                                    const lastName =
+                                                        cert.name?.split(" ").slice(1).join(" ") ||
+                                                        "";
 
-                                                        return {
-                                                            ...cert,
-                                                            firstName,
-                                                            lastName,
-                                                            email: cert.receiver_email || "",
-                                                            academicInstitution:
-                                                                cert.academic_institution || "",
-                                                            issuedAt: cert.created_at,
-                                                            status: cert.revoked_at
-                                                                ? "rejected"
-                                                                : "received",
-                                                        };
-                                                    }) || []
+                                                    return {
+                                                        ...cert,
+                                                        firstName,
+                                                        lastName,
+                                                        email: cert.receiver_email || "",
+                                                        academicInstitution:
+                                                            cert.academic_institution || "",
+                                                        issuedAt: cert.created_at,
+                                                        status: cert.revoked_at
+                                                            ? "rejected"
+                                                            : "received",
+                                                    } as EntityEventCertificate;
+                                                }) || []
                                             }
                                             totalItems={eventCertificates?.length || 0}
                                             currentPage={1}
