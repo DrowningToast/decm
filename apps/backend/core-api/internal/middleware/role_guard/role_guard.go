@@ -64,7 +64,7 @@ func (m *RoleGuardMiddleware) RequireRole(roles ...Role) fiber.Handler {
 				roleNames[i] = string(role)
 			}
 			errorMsg := fmt.Sprintf("user does not have required role. Required one of: %s", strings.Join(roleNames, ", "))
-			
+
 			return customerror.Parse(
 				&customerror.ErrForbidden,
 				errors.New(errorMsg),

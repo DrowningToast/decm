@@ -36,9 +36,11 @@ const DEFAULT_CERT_WIDTH = 1920;
 const DEFAULT_CERT_HEIGHT = 1080;
 
 const DEFAULT_AVAILABLE_KEYWORDS: AvailableKeyword[] = [
-    { keyword: "{{ eventName }}", mandatory: true },
+    { keyword: "{{ eventName }}", mandatory: false },
     { keyword: "{{ name }}", mandatory: true },
     { keyword: "{{ academicInstitutionName }}", mandatory: false },
+    { keyword: "{{ certificateTitle }}", mandatory: false },
+    { keyword: "{{ certificateSubtitle }}", mandatory: false },
 ];
 
 export const useCertificateTemplate = ({
@@ -66,6 +68,27 @@ export const useCertificateTemplate = ({
             clonedSvgElement.setAttribute("width", certWidth.toString());
             clonedSvgElement.setAttribute("height", certHeight.toString());
             clonedSvgElement.setAttribute("viewBox", `0 0 ${certWidth} ${certHeight}`);
+
+            // Preserve all patterns and images from the original SVG
+            const patterns = originalSvgElement.querySelectorAll("pattern");
+            const images = originalSvgElement.querySelectorAll("image");
+
+            // Ensure patterns and images are preserved in the cloned SVG
+            patterns.forEach((pattern) => {
+                const patternId = pattern.getAttribute("id");
+                if (patternId && !clonedSvgElement.querySelector(`#${patternId}`)) {
+                    const clonedPattern = pattern.cloneNode(true);
+                    clonedSvgElement.appendChild(clonedPattern);
+                }
+            });
+
+            images.forEach((image) => {
+                const imageId = image.getAttribute("id");
+                if (imageId && !clonedSvgElement.querySelector(`#${imageId}`)) {
+                    const clonedImage = image.cloneNode(true);
+                    clonedSvgElement.appendChild(clonedImage);
+                }
+            });
 
             const newDetectedKeywords: DetectedKeyword[] = [];
 
@@ -116,7 +139,14 @@ export const useCertificateTemplate = ({
                     const svgElement = svgDoc.documentElement;
 
                     if (svgElement.tagName.toLowerCase() !== "svg") return;
-                    generateCertificate(svgDoc);
+
+                    // Create a new XMLSerializer to properly serialize the SVG with all elements
+                    const serializer = new XMLSerializer();
+                    const serializedSvg = serializer.serializeToString(svgDoc);
+
+                    // Parse the serialized SVG again to ensure all elements are included
+                    const parsedSvgDoc = parser.parseFromString(serializedSvg, "image/svg+xml");
+                    generateCertificate(parsedSvgDoc);
                 } catch (error) {
                     console.error("[ERROR] SVG Parsing Error:", error);
                 }

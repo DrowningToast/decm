@@ -39,8 +39,8 @@ func (r *UpdateEventCertificateConfigRequest) Parse(ctx *fiber.Ctx) error {
 // @Produce json
 // @Param event_id path string true "Event ID"
 // @Param base_certificate_image formData file false "Base certificate image"
-// @Param event_name_pos_x formData float64 true "Event name position x"
-// @Param event_name_pos_y formData float64 true "Event name position y"
+// @Param event_name_pos_x formData float64 false "Event name position x"
+// @Param event_name_pos_y formData float64 false "Event name position y"
 // @Param name_pos_x formData float64 true "Name position x"
 // @Param name_pos_y formData float64 true "Name position y"
 // @Param academic_institution_pos_x formData float64 false "Academic institution position x"

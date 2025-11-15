@@ -27,7 +27,7 @@ describe("useCertificateTemplate", () => {
         expect(result.current.svgPreview).toBe("");
         expect(result.current.detectedKeywords).toEqual([]);
         expect(result.current.hasMissingMandatory).toBe(true);
-        expect(result.current.missingMandatoryKeywords.length).toBe(2);
+        expect(result.current.missingMandatoryKeywords.length).toBe(1);
     });
 
     it("should have fileInputRef and svgTempRef defined", () => {
@@ -40,18 +40,19 @@ describe("useCertificateTemplate", () => {
     it("should include default available keywords", () => {
         const { result } = renderHook(() => useCertificateTemplate());
 
-        expect(result.current.availableKeywords).toHaveLength(3);
+        expect(result.current.availableKeywords).toHaveLength(5);
         expect(result.current.availableKeywords[0].keyword).toBe("{{ eventName }}");
         expect(result.current.availableKeywords[1].keyword).toBe("{{ name }}");
         expect(result.current.availableKeywords[2].keyword).toBe("{{ academicInstitutionName }}");
+        expect(result.current.availableKeywords[3].keyword).toBe("{{ certificateTitle }}");
+        expect(result.current.availableKeywords[4].keyword).toBe("{{ certificateSubtitle }}");
     });
 
     it("should identify mandatory keywords", () => {
         const { result } = renderHook(() => useCertificateTemplate());
 
         const mandatoryKeywords = result.current.availableKeywords.filter((kw) => kw.mandatory);
-        expect(mandatoryKeywords).toHaveLength(2);
-        expect(mandatoryKeywords.map((kw) => kw.keyword)).toContain("{{ eventName }}");
+        expect(mandatoryKeywords).toHaveLength(1);
         expect(mandatoryKeywords.map((kw) => kw.keyword)).toContain("{{ name }}");
     });
 

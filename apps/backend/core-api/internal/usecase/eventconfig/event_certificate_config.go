@@ -93,10 +93,16 @@ func (uc *EventConfigUsecase) UpdateEventCertificateConfig(ctx context.Context, 
 
 	if params.EventNamePosX != nil {
 		updateParams.EventNamePosX = *params.EventNamePosX
+	} else {
+		// Use existing value if not provided
+		updateParams.EventNamePosX = dbEventCertConfig.EventNamePosX
 	}
 
 	if params.EventNamePosY != nil {
 		updateParams.EventNamePosY = *params.EventNamePosY
+	} else {
+		// Use existing value if not provided
+		updateParams.EventNamePosY = dbEventCertConfig.EventNamePosY
 	}
 
 	if params.NamePosX != nil {
