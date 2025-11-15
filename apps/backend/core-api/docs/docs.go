@@ -368,6 +368,15 @@ const docTemplate = `{
                         "name": "event_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Join event request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event_registration.JoinEventRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -4101,6 +4110,17 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/event_registration.ParticipantRequestItem"
                     }
+                }
+            }
+        },
+        "event_registration.JoinEventRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
                 }
             }
         },

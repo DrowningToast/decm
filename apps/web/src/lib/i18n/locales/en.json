@@ -1246,6 +1246,8 @@
                 "create_account_error": "Failed to authenticate with Google",
                 "create_account_error_duplicate": "The account with this email already exists.",
                 "create_account_error_password": "Password is required to create an account.",
+                "create_account_error_expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
+                "create_account_error_generic": "Failed to create account with Google. Please try again later.",
                 "create_profile_pending": "Updating profile...",
                 "create_profile_success": "Profile updated successfully",
                 "create_profile_error_duplicate": "The profile with this email already exists.",
@@ -1257,12 +1259,41 @@
                 "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
                 "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
                 "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
+            },
+            "wallet": {
+                "create_profile_success": "Profile created successfully",
+                "create_profile_error": "Failed to create profile. Please try again."
+            },
+            "generic": {
+                "unauthenticated_response": "You must be logged in to access this page. Please sign in.",
+                "unauthorized_response": "You don't have permission to access this page. Please contact an administrator.",
+                "sign_out_success": "You have been signed out successfully."
             }
         },
         "api": {
             "error": {
                 "authentication_credential_id_already_exists": "Authentication credential ID already exists"
             }
+        }
+    },
+    "accountExists": {
+        "title": "Welcome back!",
+        "description": "It looks like you already have an account with us. Please sign in to continue.",
+        "signInButton": "Sign in to your account"
+    },
+    "editEvent": {
+        "success": "Event edited successfully"
+    },
+    "deleteEvent": {
+        "success": "Event deleted successfully"
+    },
+    "examples": {
+        "buttonSizes": "Button Sizes",
+        "buttons": {
+            "small": "Small",
+            "default": "Default",
+            "large": "Large",
+            "extraLarge": "Extra Large"
         }
     }
 }

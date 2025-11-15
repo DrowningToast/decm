@@ -9,6 +9,10 @@ import { useAuth } from "@/context/AuthContext";
 import { RegistrationConfirmForm } from "./ConfirmForm";
 import type { RegistrationConfirmDataForm } from "./RegistrationConfirmDataFormSchema";
 import { toast } from "sonner";
+import { useSignPasswordModalStore } from "@/components/providers/SignPasswordModal/store";
+import { useEventContract } from "@/hooks/events/useEventContracts";
+import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
+import { eventRegistrationService, eventService } from "@/services/services";
 
 interface ActionMenuProps {
     eventId: string;
@@ -26,6 +30,11 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
         eventId,
         user?.walletAddress,
     );
+    const { event: eventViewModel } = useEventViewModelUsecase({ eventId });
+    const { mutateAsync: openPasswordPrompt } = usePasswordPrompt();
+
+    const { open: openConfirmSignModal } = useSignPasswordModalStore();
+
     const registrationInvitation = invitation?.registrationInvitation;
 
     // Use invitation data first, then profile data, then empty object
@@ -72,11 +81,18 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
     const handleSubmit = async (data: RegistrationConfirmDataForm) => {
         try {
             setIsSubmiting(true);
-            // TODO: Implement API call to submit PII data
-            console.log("Registration Confirm Data submitted:", data);
+            // password check
+            const password = await openPasswordPrompt({
+                eventContractAddress: eventViewModel?.eventContractAddress ?? "",
+                transactionType: "Registration Confirmation",
+                description: t("participant.events.detail.instruction.signatureRequest"),
+                details: `Confirming registration for ${eventViewModel?.title}`,
+            });
 
             // Simulate API call
             await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            await eventRegistrationService.join;
 
             toast.success(t("events.registration.piiForm.submitSuccess"));
             closePreviewModal();
@@ -93,8 +109,11 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
     };
 
     const showPreviewModal = useMemo(() => {
+        if (openConfirmSignModal) {
+            return;
+        }
         return !isInvitationLoading && invitation !== undefined && _showPreviewModal;
-    }, [_showPreviewModal, invitation, isInvitationLoading]);
+    }, [_showPreviewModal, invitation, isInvitationLoading, openConfirmSignModal]);
 
     // Always show ActionMenu with conditional PII form
     return (

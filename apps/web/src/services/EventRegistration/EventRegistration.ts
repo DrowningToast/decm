@@ -122,6 +122,25 @@ export class EventRegistrationService {
         );
         return;
     }
+
+    public async joinEventWithPassword(
+        eventId: string,
+        eventPassword?: string,
+        accountPassword: string,
+    ): Promise<void> {
+        await this._coreApi.v1.joinEvent({ eventId }, { password: eventPassword });
+        return;
+    }
+
+    public async joinEventWithSignature(
+        eventId: string,
+        eventPassword?: string,
+        originalSignMessage: string,
+        signature: string,
+    ): Promise<void> {
+        await this._coreApi.v1.joinEvent({ eventId }, { signature });
+        return;
+    }
 }
 
 export const defaultEventRegistrationService = new EventRegistrationService(coreApiClient);

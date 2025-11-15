@@ -840,6 +840,13 @@ definitions:
     - event_id
     - participants
     type: object
+  event_registration.JoinEventRequest:
+    properties:
+      password:
+        type: string
+      signature:
+        type: string
+    type: object
   event_registration.ParticipantRequestItem:
     properties:
       academic_institution:
@@ -1844,6 +1851,12 @@ paths:
         name: event_id
         required: true
         type: string
+      - description: Join event request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/event_registration.JoinEventRequest'
       produces:
       - application/json
       responses:

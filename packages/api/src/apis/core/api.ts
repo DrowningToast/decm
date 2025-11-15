@@ -10,14 +10,13 @@
  * ---------------------------------------------------------------
  */
 
-export type CancelEventRegistrationInvitationData =
-  EntityEventRegistrationInvitation;
+export type CancelEventRegistrationInvitationData = EntityEventRegistrationInvitation;
 
 export type CancelEventRegistrationInvitationError = CustomerrorErrResponse;
 
 export interface CancelEventRegistrationInvitationParams {
-  /** Event Registration Invitation ID */
-  eventRegistrationInvitationId: string;
+    /** Event Registration Invitation ID */
+    eventRegistrationInvitationId: string;
 }
 
 export type CheckEventPasswordData = EventconfigCheckEventPasswordResponse;
@@ -25,8 +24,8 @@ export type CheckEventPasswordData = EventconfigCheckEventPasswordResponse;
 export type CheckEventPasswordError = CustomerrorErrResponse;
 
 export interface CheckEventPasswordParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type CheckOnboardStatusData = OnboardCheckOnboardStatusResponse;
@@ -38,105 +37,104 @@ export type CheckRoleData = CheckRoleResponse;
 export type CheckRoleError = CustomerrorErrResponse;
 
 export interface CheckRoleParams {
-  /** Check if user is authenticated */
-  is_authenticated?: boolean;
-  /** Check if user is a verified host/organizer */
-  is_host?: boolean;
-  /** Check if user is a verified issuer */
-  is_issuer?: boolean;
+    /** Check if user is authenticated */
+    is_authenticated?: boolean;
+    /** Check if user is a verified host/organizer */
+    is_host?: boolean;
+    /** Check if user is a verified issuer */
+    is_issuer?: boolean;
 }
 
 /** Role verification response */
 export interface CheckRoleResponse {
-  is_authenticated?: boolean;
-  is_host?: boolean;
-  is_issuer?: boolean;
+    is_authenticated?: boolean;
+    is_host?: boolean;
+    is_issuer?: boolean;
 }
 
 /** @format int32 */
 export enum CommonSolutionStatus {
-  SolutionStatusManaged = 0,
-  SolutionStatusBYOK = 1,
+    SolutionStatusManaged = 0,
+    SolutionStatusBYOK = 1,
 }
 
 export interface CoreApiInternalHandlerEventCertificateSignature {
-  certificate?: EntityEventCertificate;
-  signature: string;
+    certificate?: EntityEventCertificate;
+    signature: string;
 }
 
 export interface CoreApiInternalHandlerEventEventContractResponse {
-  access_manager_contract_address: string;
-  certificate_contract_address?: string;
-  created_at: string;
-  event_contract_address: string;
-  event_id: string;
-  id: string;
-  ticket_contract_address?: string;
-  updated_at: string;
+    access_manager_contract_address: string;
+    certificate_contract_address?: string;
+    created_at: string;
+    event_contract_address: string;
+    event_id: string;
+    id: string;
+    ticket_contract_address?: string;
+    updated_at: string;
 }
 
 export interface CoreApiInternalHandlerEventImportCertificateReceiversRequest {
-  event_id: string;
-  host_pin: string;
-  /** @minItems 1 */
-  receivers: EventImportCertificateReceiverRequest[];
+    event_id: string;
+    host_pin: string;
+    /** @minItems 1 */
+    receivers: EventImportCertificateReceiverRequest[];
 }
 
 export interface CoreApiInternalHandlerEventImportCertificateReceiversResponse {
-  certificates: EntityEventCertificate[];
-  event_certificate_address: string;
-  event_id: string;
+    certificates: EntityEventCertificate[];
+    event_certificate_address: string;
+    event_id: string;
 }
 
 export interface CoreApiInternalHandlerEventRevokeEventCertificatesRequest {
-  /** @minItems 1 */
-  certificate_ids: string[];
+    /** @minItems 1 */
+    certificate_ids: string[];
 }
 
 export interface CoreApiInternalHandlerEventRevokeEventCertificatesResponse {
-  revoked_certificates: EntityEventCertificate[];
+    revoked_certificates: EntityEventCertificate[];
 }
 
 export interface CoreApiInternalHandlerEventSignEventCertificatesRequest {
-  issuer_pin: string;
+    issuer_pin: string;
 }
 
 export interface CoreApiInternalHandlerEventSignEventCertificatesResponse {
-  certificates: CoreApiInternalHandlerEventCertificateSignature[];
+    certificates: CoreApiInternalHandlerEventCertificateSignature[];
 }
 
 export interface CoreApiInternalHandlerEventconfigEventCertificateConfigResponse {
-  academic_institution_pos_x?: number;
-  academic_institution_pos_y?: number;
-  base_certificate_presigned_url: string;
-  base_certificate_storage_key: string;
-  created_at: string;
-  event_id: string;
-  event_name_pos_x: number;
-  event_name_pos_y: number;
-  id: string;
-  name_pos_x: number;
-  name_pos_y: number;
-  updated_at: string;
+    academic_institution_pos_x?: number;
+    academic_institution_pos_y?: number;
+    base_certificate_presigned_url: string;
+    base_certificate_storage_key: string;
+    created_at: string;
+    event_id: string;
+    event_name_pos_x: number;
+    event_name_pos_y: number;
+    id: string;
+    name_pos_x: number;
+    name_pos_y: number;
+    updated_at: string;
 }
 
 export interface CoreApiInternalUsecaseEventEventContractResponse {
-  access_manager_contract_address: string;
-  certificate_contract_address?: string;
-  event_contract_address: string;
-  event_id: string;
-  id: string;
-  ticket_contract_address?: string;
+    access_manager_contract_address: string;
+    certificate_contract_address?: string;
+    event_contract_address: string;
+    event_id: string;
+    id: string;
+    ticket_contract_address?: string;
 }
 
-export type CreateEventContractData =
-  CoreApiInternalHandlerEventEventContractResponse;
+export type CreateEventContractData = CoreApiInternalHandlerEventEventContractResponse;
 
 export type CreateEventContractError = CustomerrorErrResponse;
 
 export interface CreateEventContractParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type CreateEventData = EntityEvent;
@@ -148,53 +146,52 @@ export type CreateEventIssuerData = EventEventIssuerResponse;
 export type CreateEventIssuerError = CustomerrorErrResponse;
 
 export interface CreateEventIssuerParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export interface CreateEventPayload {
-  /**
-   * Event banner image (JPEG, PNG, WebP, max 10MB)
-   * @format binary
-   */
-  banner: File;
-  /** Contact address */
-  contact_address: string;
-  /** Contact number */
-  contact_number: string;
-  /** Event description */
-  description: string;
-  /** End date (RFC3339 format) */
-  end_date: string;
-  /** Google map query */
-  google_map_query: string;
-  /** Host password */
-  host_password: string;
-  /**
-   * Event icon image (JPEG, PNG, WebP, max 10MB)
-   * @format binary
-   */
-  icon: File;
-  /** Location */
-  location: string;
-  /** Event name */
-  name: string;
-  /** Number of seats */
-  seats_count: number;
-  /** Event short description */
-  short_description: string;
-  /** Start date (RFC3339 format) */
-  start_date: string;
+    /**
+     * Event banner image (JPEG, PNG, WebP, max 10MB)
+     * @format binary
+     */
+    banner: File;
+    /** Contact address */
+    contact_address: string;
+    /** Contact number */
+    contact_number: string;
+    /** Event description */
+    description: string;
+    /** End date (RFC3339 format) */
+    end_date: string;
+    /** Google map query */
+    google_map_query: string;
+    /** Host password */
+    host_password: string;
+    /**
+     * Event icon image (JPEG, PNG, WebP, max 10MB)
+     * @format binary
+     */
+    icon: File;
+    /** Location */
+    location: string;
+    /** Event name */
+    name: string;
+    /** Number of seats */
+    seats_count: number;
+    /** Event short description */
+    short_description: string;
+    /** Start date (RFC3339 format) */
+    start_date: string;
 }
 
-export type CreateEventRegistrationConfigData =
-  EventconfigEventRegistrationConfigViewModel;
+export type CreateEventRegistrationConfigData = EventconfigEventRegistrationConfigViewModel;
 
 export type CreateEventRegistrationConfigError = CustomerrorErrResponse;
 
 export interface CreateEventRegistrationConfigParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type CreateProfileData = ProfileCreateProfileResponse;
@@ -203,15 +200,15 @@ export type CreateProfileError = CustomerrorErr;
 
 /** Custom error type */
 export interface CustomerrorErr {
-  code?: string;
-  http_status?: number;
-  message?: string;
-  reasons?: Record<string, string>;
+    code?: string;
+    http_status?: number;
+    message?: string;
+    reasons?: Record<string, string>;
 }
 
 /** Response for the client to sign to register */
 export interface CustomerrorErrResponse {
-  message: string;
+    message: string;
 }
 
 export type DeleteEventByIdData = EventEventResponse;
@@ -219,8 +216,8 @@ export type DeleteEventByIdData = EventEventResponse;
 export type DeleteEventByIdError = CustomerrorErrResponse;
 
 export interface DeleteEventByIdParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type DeleteEventCertificateConfigData = Record<string, string>;
@@ -228,8 +225,8 @@ export type DeleteEventCertificateConfigData = Record<string, string>;
 export type DeleteEventCertificateConfigError = CustomerrorErrResponse;
 
 export interface DeleteEventCertificateConfigParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type DeleteEventContractData = Record<string, string>;
@@ -237,8 +234,8 @@ export type DeleteEventContractData = Record<string, string>;
 export type DeleteEventContractError = CustomerrorErrResponse;
 
 export interface DeleteEventContractParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type DeleteEventIssuerData = Record<string, string>;
@@ -246,10 +243,10 @@ export type DeleteEventIssuerData = Record<string, string>;
 export type DeleteEventIssuerError = CustomerrorErrResponse;
 
 export interface DeleteEventIssuerParams {
-  /** Event ID */
-  eventId: string;
-  /** Issuer ID */
-  issuerId: string;
+    /** Event ID */
+    eventId: string;
+    /** Issuer ID */
+    issuerId: string;
 }
 
 export type DeleteEventRegistrationConfigData = Record<string, string>;
@@ -257,342 +254,347 @@ export type DeleteEventRegistrationConfigData = Record<string, string>;
 export type DeleteEventRegistrationConfigError = CustomerrorErrResponse;
 
 export interface DeleteEventRegistrationConfigParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export interface EntityEvent {
-  attendees_count: number;
-  banner_storage_key: string;
-  chain_id: number;
-  contact_address: string;
-  contact_number: string;
-  created_at: string;
-  end_date: string;
-  event_status: EntityEventStatus;
-  event_type: EntityEventType;
-  google_map_query: string;
-  icon_storage_key: string;
-  id: string;
-  is_booking_request_required: boolean;
-  is_public: boolean;
-  is_ticket_transferable: boolean;
-  is_verified: boolean;
-  location: string;
-  long_description: string;
-  max_attendees: number;
-  owner_credential_id: string;
-  short_description: string;
-  start_date: string;
-  title: string;
-  updated_at: string;
+    attendees_count: number;
+    banner_storage_key: string;
+    chain_id: number;
+    contact_address: string;
+    contact_number: string;
+    created_at: string;
+    end_date: string;
+    event_status: EntityEventStatus;
+    event_type: EntityEventType;
+    google_map_query: string;
+    icon_storage_key: string;
+    id: string;
+    is_booking_request_required: boolean;
+    is_public: boolean;
+    is_ticket_transferable: boolean;
+    is_verified: boolean;
+    location: string;
+    long_description: string;
+    max_attendees: number;
+    owner_credential_id: string;
+    short_description: string;
+    start_date: string;
+    title: string;
+    updated_at: string;
 }
 
 export interface EntityEventCertificate {
-  academic_institution?: string;
-  certificate_subtitle?: string;
-  certificate_title?: string;
-  certificate_token_id?: string;
-  created_at: string;
-  event_certificate_address?: string;
-  event_contract_address: string;
-  event_id: string;
-  id: string;
-  name?: string;
-  receiver_credential_id?: string;
-  receiver_email?: string;
-  revoked_at?: string;
+    academic_institution?: string;
+    certificate_subtitle?: string;
+    certificate_title?: string;
+    certificate_token_id?: string;
+    created_at: string;
+    event_certificate_address?: string;
+    event_contract_address: string;
+    event_id: string;
+    id: string;
+    name?: string;
+    receiver_credential_id?: string;
+    receiver_email?: string;
+    revoked_at?: string;
 }
 
 export interface EntityEventRegistrationInvitation {
-  academic_institution?: string;
-  cancelled_at?: string;
-  code?: string;
-  created_at: string;
-  email?: string;
-  event_id: string;
-  first_name?: string;
-  id: string;
-  inbox_message_id: string;
-  last_name?: string;
-  phone_number?: string;
-  updated_at: string;
-  valid_until?: string;
+    academic_institution?: string;
+    cancelled_at?: string;
+    code?: string;
+    created_at: string;
+    email?: string;
+    event_id: string;
+    first_name?: string;
+    id: string;
+    inbox_message_id: string;
+    last_name?: string;
+    phone_number?: string;
+    updated_at: string;
+    valid_until?: string;
 }
 
 export enum EntityEventStatus {
-  EventStatusActive = "active",
-  EventStatusInactive = "inactive",
-  EventStatusClosed = "closed",
+    EventStatusActive = "active",
+    EventStatusInactive = "inactive",
+    EventStatusClosed = "closed",
 }
 
 export enum EntityEventType {
-  EventTypePrivate = "private",
-  EventTypeInvite = "invite",
+    EventTypePrivate = "private",
+    EventTypeInvite = "invite",
 }
 
 export interface EntityInboxMessage {
-  created_at: string;
-  deleted_at?: string;
-  fallback_message_content?: string;
-  hidden_at?: string;
-  id: string;
-  is_read: number;
-  message_content: string;
-  message_type: number;
-  receiver_credential_id?: string;
-  receiver_email?: string;
-  receiver_wallet_address?: string;
-  sender_credential_id?: string;
-  updated_at: string;
+    created_at: string;
+    deleted_at?: string;
+    fallback_message_content?: string;
+    hidden_at?: string;
+    id: string;
+    is_read: number;
+    message_content: string;
+    message_type: number;
+    receiver_credential_id?: string;
+    receiver_email?: string;
+    receiver_wallet_address?: string;
+    sender_credential_id?: string;
+    updated_at: string;
 }
 
 export enum EntityInboxMessageType {
-  InboxMessageTypeGeneral = 0,
-  InboxMessageTypeEventRegistrationInvitation = 1,
-  InboxMessageTypeEventCertificateInvitation = 2,
+    InboxMessageTypeGeneral = 0,
+    InboxMessageTypeEventRegistrationInvitation = 1,
+    InboxMessageTypeEventCertificateInvitation = 2,
 }
 
 export interface EntityProfile {
-  academic_email?: string;
-  academic_institution?: string;
-  address?: string;
-  authentication_credential_id: string;
-  bio?: string;
-  created_at: string;
-  email?: string;
-  first_name?: string;
-  id: string;
-  is_academic_email_public: boolean;
-  is_academic_institution_public: boolean;
-  is_address_public: boolean;
-  is_bio_public: boolean;
-  is_email_public: boolean;
-  is_first_name_public: boolean;
-  is_last_name_public: boolean;
-  is_phone_number_public: boolean;
-  is_profile_picture_public: boolean;
-  last_name?: string;
-  phone_number?: string;
-  profile_picture_url?: string;
-  updated_at: string;
+    academic_email?: string;
+    academic_institution?: string;
+    address?: string;
+    authentication_credential_id: string;
+    bio?: string;
+    created_at: string;
+    email?: string;
+    first_name?: string;
+    id: string;
+    is_academic_email_public: boolean;
+    is_academic_institution_public: boolean;
+    is_address_public: boolean;
+    is_bio_public: boolean;
+    is_email_public: boolean;
+    is_first_name_public: boolean;
+    is_last_name_public: boolean;
+    is_phone_number_public: boolean;
+    is_profile_picture_public: boolean;
+    last_name?: string;
+    phone_number?: string;
+    profile_picture_url?: string;
+    updated_at: string;
 }
 
 export interface EventCreateEventContractRequest {
-  access_manager_contract_address: string;
-  certificate_contract_address: string;
-  event_contract_address: string;
-  ticket_contract_address: string;
+    access_manager_contract_address: string;
+    certificate_contract_address: string;
+    event_contract_address: string;
+    ticket_contract_address: string;
 }
 
 export interface EventCreateEventIssuerRequest {
-  is_signed: 0 | 1;
-  issuer_credential_id: string;
-  sign_message: string;
-  signature: string;
+    is_signed: 0 | 1;
+    issuer_credential_id: string;
+    sign_message: string;
+    signature: string;
 }
 
 export interface EventDeleteEventRequest {
-  host_password: string;
+    host_password: string;
 }
 
 export interface EventEventIssuerResponse {
-  created_at: string;
-  event_id: string;
-  id: string;
-  is_signed: number;
-  issuer_credential_id: string;
-  issuer_profile?: EntityProfile;
-  sign_message: string;
-  signature: string;
-  updated_at: string;
+    created_at: string;
+    event_id: string;
+    id: string;
+    is_signed: number;
+    issuer_credential_id: string;
+    issuer_profile?: EntityProfile;
+    sign_message: string;
+    signature: string;
+    updated_at: string;
 }
 
 export interface EventEventResponse {
-  attendees_count: number;
-  banner_presigned_url: string;
-  chain_id: number;
-  contact_address: string;
-  contact_number: string;
-  created_at: string;
-  end_date: string;
-  event_status: EntityEventStatus;
-  event_type: EntityEventType;
-  google_map_query: string;
-  icon_presigned_url: string;
-  id: string;
-  is_booking_request_required: boolean;
-  is_public: boolean;
-  is_ticket_transferable: boolean;
-  is_verified: boolean;
-  location: string;
-  long_description: string;
-  max_attendees: number;
-  owner_credential_id: string;
-  short_description: string;
-  start_date: string;
-  title: string;
-  updated_at: string;
+    attendees_count: number;
+    banner_presigned_url: string;
+    chain_id: number;
+    contact_address: string;
+    contact_number: string;
+    created_at: string;
+    end_date: string;
+    event_status: EntityEventStatus;
+    event_type: EntityEventType;
+    google_map_query: string;
+    icon_presigned_url: string;
+    id: string;
+    is_booking_request_required: boolean;
+    is_public: boolean;
+    is_ticket_transferable: boolean;
+    is_verified: boolean;
+    location: string;
+    long_description: string;
+    max_attendees: number;
+    owner_credential_id: string;
+    short_description: string;
+    start_date: string;
+    title: string;
+    updated_at: string;
 }
 
 export interface EventEventViewModel {
-  attendees_count: number;
-  banner_presigned_url: string;
-  chain_id: number;
-  contact_address: string;
-  contact_number: string;
-  created_at: string;
-  end_date: string;
-  event_contract: CoreApiInternalUsecaseEventEventContractResponse;
-  event_status: EntityEventStatus;
-  event_type: EntityEventType;
-  google_map_query: string;
-  icon_presigned_url: string;
-  id: string;
-  is_booking_request_required: boolean;
-  is_full: boolean;
-  is_invited: boolean;
-  is_joined?: boolean;
-  is_public: boolean;
-  is_ticket_transferable: boolean;
-  is_verified: boolean;
-  location: string;
-  long_description: string;
-  max_attendees: number;
-  owner_credential_id: string;
-  registration_config: EventRegistrationConfigResponse;
-  short_description: string;
-  start_date: string;
-  title: string;
-  updated_at: string;
+    attendees_count: number;
+    banner_presigned_url: string;
+    chain_id: number;
+    contact_address: string;
+    contact_number: string;
+    created_at: string;
+    end_date: string;
+    event_contract: CoreApiInternalUsecaseEventEventContractResponse;
+    event_status: EntityEventStatus;
+    event_type: EntityEventType;
+    google_map_query: string;
+    icon_presigned_url: string;
+    id: string;
+    is_booking_request_required: boolean;
+    is_full: boolean;
+    is_invited: boolean;
+    is_joined?: boolean;
+    is_public: boolean;
+    is_ticket_transferable: boolean;
+    is_verified: boolean;
+    location: string;
+    long_description: string;
+    max_attendees: number;
+    owner_credential_id: string;
+    registration_config: EventRegistrationConfigResponse;
+    short_description: string;
+    start_date: string;
+    title: string;
+    updated_at: string;
 }
 
 export interface EventGetEventCertificatesResponse {
-  certificates: EntityEventCertificate[];
+    certificates: EntityEventCertificate[];
 }
 
 export interface EventGetEventListResponse {
-  events: EntityEvent[];
+    events: EntityEvent[];
 }
 
 export interface EventImportCertificateReceiverRequest {
-  academic_institution: string;
-  certificate_subtitle: string;
-  certificate_title: string;
-  first_name: string;
-  last_name: string;
+    academic_institution: string;
+    certificate_subtitle: string;
+    certificate_title: string;
+    first_name: string;
+    last_name: string;
 }
 
 export interface EventRegistrationConfigResponse {
-  academic_email_requirement_status: number;
-  academic_institution_requirement_status: number;
-  address_requirement_status: number;
-  bio_requirement_status: number;
-  email_requirement_status: number;
-  event_id: string;
-  final_call_for_registration?: string;
-  first_name_requirement_status: number;
-  id: string;
-  is_identity_verification_required: boolean;
-  is_registration_password_required: boolean;
-  last_name_requirement_status: number;
-  phone_number_requirement_status: number;
+    academic_email_requirement_status: number;
+    academic_institution_requirement_status: number;
+    address_requirement_status: number;
+    bio_requirement_status: number;
+    email_requirement_status: number;
+    event_id: string;
+    final_call_for_registration?: string;
+    first_name_requirement_status: number;
+    id: string;
+    is_identity_verification_required: boolean;
+    is_registration_password_required: boolean;
+    last_name_requirement_status: number;
+    phone_number_requirement_status: number;
 }
 
 export interface EventRegistrationGetEventRegistrationInvitationByUserAndEventResponse {
-  inbox?: EntityInboxMessage;
-  registration_invitation?: EntityEventRegistrationInvitation;
+    inbox?: EntityInboxMessage;
+    registration_invitation?: EntityEventRegistrationInvitation;
 }
 
 export interface EventRegistrationGetJoinEventSignMessageResponse {
-  sign_message: string;
+    sign_message: string;
 }
 
 export interface EventRegistrationImportEventParticipantsRequest {
-  event_id: string;
-  /** @minItems 1 */
-  participants: EventRegistrationParticipantRequestItem[];
+    event_id: string;
+    /** @minItems 1 */
+    participants: EventRegistrationParticipantRequestItem[];
+}
+
+export interface EventRegistrationJoinEventRequest {
+    password?: string;
+    signature?: string;
 }
 
 export interface EventRegistrationParticipantRequestItem {
-  academic_institution: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  phone_number: string;
+    academic_institution: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    phone_number: string;
 }
 
 export interface EventUpdateEventContractRequest {
-  access_manager_contract_address: string;
-  certificate_contract_address: string;
-  event_contract_address: string;
-  ticket_contract_address: string;
+    access_manager_contract_address: string;
+    certificate_contract_address: string;
+    event_contract_address: string;
+    ticket_contract_address: string;
 }
 
 export interface EventUpdateEventIssuerRequest {
-  event_id: string;
-  issuer_credential_id: string;
+    event_id: string;
+    issuer_credential_id: string;
 }
 
 export interface EventconfigCheckEventPasswordBody {
-  password: string;
+    password: string;
 }
 
 export interface EventconfigCheckEventPasswordResponse {
-  is_valid: boolean;
+    is_valid: boolean;
 }
 
 export interface EventconfigCreateEventRegistrationConfigRequest {
-  academic_email_requirement_status: 0 | 1 | 2;
-  academic_institution_requirement_status: 0 | 1 | 2;
-  address_requirement_status: 0 | 1 | 2;
-  bio_requirement_status: 0 | 1 | 2;
-  email_requirement_status: 0 | 1 | 2;
-  final_call_for_registration?: string;
-  first_name_requirement_status: 0 | 1 | 2;
-  last_name_requirement_status: 0 | 1 | 2;
-  phone_number_requirement_status: 0 | 1 | 2;
-  /** @minLength 8 */
-  registration_password?: string;
+    academic_email_requirement_status: 0 | 1 | 2;
+    academic_institution_requirement_status: 0 | 1 | 2;
+    address_requirement_status: 0 | 1 | 2;
+    bio_requirement_status: 0 | 1 | 2;
+    email_requirement_status: 0 | 1 | 2;
+    final_call_for_registration?: string;
+    first_name_requirement_status: 0 | 1 | 2;
+    last_name_requirement_status: 0 | 1 | 2;
+    phone_number_requirement_status: 0 | 1 | 2;
+    /** @minLength 8 */
+    registration_password?: string;
 }
 
 /** @format int32 */
 export enum EventconfigEventRegistrationConfigRequirementStatus {
-  EventRegistrationConfigRequirementStatusNotRequired = 0,
-  EventRegistrationConfigRequirementStatusRequired = 1,
-  EventRegistrationConfigRequirementStatusOptional = 2,
+    EventRegistrationConfigRequirementStatusNotRequired = 0,
+    EventRegistrationConfigRequirementStatusRequired = 1,
+    EventRegistrationConfigRequirementStatusOptional = 2,
 }
 
 export interface EventconfigEventRegistrationConfigViewModel {
-  academic_email_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
-  academic_institution_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
-  address_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
-  bio_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
-  created_at: string;
-  email_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
-  event_id: string;
-  final_call_for_registration?: string;
-  first_name_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
-  id: string;
-  last_name_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
-  phone_number_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
-  updated_at: string;
+    academic_email_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    academic_institution_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    address_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    bio_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    created_at: string;
+    email_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    event_id: string;
+    final_call_for_registration?: string;
+    first_name_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    id: string;
+    last_name_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    phone_number_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
+    updated_at: string;
 }
 
 export interface EventconfigUpdateEventRegistrationConfigRequest {
-  academic_email_requirement_status: number;
-  academic_institution_requirement_status: number;
-  address_requirement_status: number;
-  bio_requirement_status: number;
-  email_requirement_status: number;
-  event_type?: EntityEventType;
-  final_call_for_registration?: string;
-  first_name_requirement_status: number;
-  is_booking_request_required: boolean;
-  is_ticket_transferable: boolean;
-  last_name_requirement_status: number;
-  phone_number_requirement_status: number;
-  registration_password?: string;
+    academic_email_requirement_status: number;
+    academic_institution_requirement_status: number;
+    address_requirement_status: number;
+    bio_requirement_status: number;
+    email_requirement_status: number;
+    event_type?: EntityEventType;
+    final_call_for_registration?: string;
+    first_name_requirement_status: number;
+    is_booking_request_required: boolean;
+    is_ticket_transferable: boolean;
+    last_name_requirement_status: number;
+    phone_number_requirement_status: number;
+    registration_password?: string;
 }
 
 export type GetEventByIdData = EventEventResponse;
@@ -600,18 +602,18 @@ export type GetEventByIdData = EventEventResponse;
 export type GetEventByIdError = CustomerrorErrResponse;
 
 export interface GetEventByIdParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type GetEventCertificateConfigData =
-  CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
+    CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
 
 export type GetEventCertificateConfigError = CustomerrorErrResponse;
 
 export interface GetEventCertificateConfigParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type GetEventCertificatesData = EventGetEventCertificatesResponse;
@@ -619,18 +621,17 @@ export type GetEventCertificatesData = EventGetEventCertificatesResponse;
 export type GetEventCertificatesError = CustomerrorErrResponse;
 
 export interface GetEventCertificatesParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
-export type GetEventContractByEventIdData =
-  CoreApiInternalHandlerEventEventContractResponse;
+export type GetEventContractByEventIdData = CoreApiInternalHandlerEventEventContractResponse;
 
 export type GetEventContractByEventIdError = CustomerrorErrResponse;
 
 export interface GetEventContractByEventIdParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type GetEventIssuerByIdData = EventEventIssuerResponse;
@@ -638,10 +639,10 @@ export type GetEventIssuerByIdData = EventEventIssuerResponse;
 export type GetEventIssuerByIdError = CustomerrorErrResponse;
 
 export interface GetEventIssuerByIdParams {
-  /** Event ID */
-  eventId: string;
-  /** Issuer ID */
-  issuerId: string;
+    /** Event ID */
+    eventId: string;
+    /** Issuer ID */
+    issuerId: string;
 }
 
 export type GetEventIssuersByEventIdData = EventEventIssuerResponse[];
@@ -649,38 +650,34 @@ export type GetEventIssuersByEventIdData = EventEventIssuerResponse[];
 export type GetEventIssuersByEventIdError = CustomerrorErrResponse;
 
 export interface GetEventIssuersByEventIdParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
-export type GetEventRegistrationConfigData =
-  EventconfigEventRegistrationConfigViewModel;
+export type GetEventRegistrationConfigData = EventconfigEventRegistrationConfigViewModel;
 
 export type GetEventRegistrationConfigError = CustomerrorErrResponse;
 
 export interface GetEventRegistrationConfigParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type GetEventRegistrationInvitationByUserAndEventData =
-  EventRegistrationGetEventRegistrationInvitationByUserAndEventResponse;
+    EventRegistrationGetEventRegistrationInvitationByUserAndEventResponse;
 
-export type GetEventRegistrationInvitationByUserAndEventError =
-  CustomerrorErrResponse;
+export type GetEventRegistrationInvitationByUserAndEventError = CustomerrorErrResponse;
 
 export interface GetEventRegistrationInvitationByUserAndEventParams {
-  eventId: string;
+    eventId: string;
 }
 
-export type GetEventRegistrationInvitationsByEventIdData =
-  EntityEventRegistrationInvitation[];
+export type GetEventRegistrationInvitationsByEventIdData = EntityEventRegistrationInvitation[];
 
-export type GetEventRegistrationInvitationsByEventIdError =
-  CustomerrorErrResponse;
+export type GetEventRegistrationInvitationsByEventIdError = CustomerrorErrResponse;
 
 export interface GetEventRegistrationInvitationsByEventIdParams {
-  eventId: string;
+    eventId: string;
 }
 
 export type GetEventViewmodelByIdData = EventEventViewModel;
@@ -688,8 +685,8 @@ export type GetEventViewmodelByIdData = EventEventViewModel;
 export type GetEventViewmodelByIdError = CustomerrorErrResponse;
 
 export interface GetEventViewmodelByIdParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type GetEventsByOwnerCredentialsIdData = EventEventResponse[];
@@ -697,18 +694,18 @@ export type GetEventsByOwnerCredentialsIdData = EventEventResponse[];
 export type GetEventsByOwnerCredentialsIdError = CustomerrorErrResponse;
 
 export interface GetEventsByOwnerCredentialsIdParams {
-  /**
-   * Limit
-   * @default 10
-   */
-  limit?: number;
-  /**
-   * Offset
-   * @default 0
-   */
-  offset?: number;
-  /** Owner Credentials ID */
-  ownerCredentialId: string;
+    /**
+     * Limit
+     * @default 10
+     */
+    limit?: number;
+    /**
+     * Offset
+     * @default 0
+     */
+    offset?: number;
+    /** Owner Credentials ID */
+    ownerCredentialId: string;
 }
 
 export type GetEventsListData = EventGetEventListResponse;
@@ -716,26 +713,26 @@ export type GetEventsListData = EventGetEventListResponse;
 export type GetEventsListError = CustomerrorErrResponse;
 
 export interface GetEventsListParams {
-  /**
-   * Include active events
-   * @default true
-   */
-  include_active_events?: boolean;
-  /**
-   * Include closed events
-   * @default false
-   */
-  include_closed_events?: boolean;
-  /**
-   * Include inactive events
-   * @default true
-   */
-  include_inactive_events?: boolean;
-  /**
-   * Only user joined events
-   * @default false
-   */
-  only_user_joined_events?: boolean;
+    /**
+     * Include active events
+     * @default true
+     */
+    include_active_events?: boolean;
+    /**
+     * Include closed events
+     * @default false
+     */
+    include_closed_events?: boolean;
+    /**
+     * Include inactive events
+     * @default true
+     */
+    include_inactive_events?: boolean;
+    /**
+     * Only user joined events
+     * @default false
+     */
+    only_user_joined_events?: boolean;
 }
 
 export type GetIssuerEventsData = IssuerIssuerEventResponse[];
@@ -743,28 +740,27 @@ export type GetIssuerEventsData = IssuerIssuerEventResponse[];
 export type GetIssuerEventsError = CustomerrorErrResponse;
 
 export interface GetIssuerEventsParams {
-  /** Issuer credential ID */
-  issuer_credential_id?: string;
-  /**
-   * Limit
-   * @default 10
-   */
-  limit?: number;
-  /**
-   * Offset
-   * @default 0
-   */
-  offset?: number;
+    /** Issuer credential ID */
+    issuer_credential_id?: string;
+    /**
+     * Limit
+     * @default 10
+     */
+    limit?: number;
+    /**
+     * Offset
+     * @default 0
+     */
+    offset?: number;
 }
 
-export type GetJoinEventSignMessageData =
-  EventRegistrationGetJoinEventSignMessageResponse;
+export type GetJoinEventSignMessageData = EventRegistrationGetJoinEventSignMessageResponse;
 
 export type GetJoinEventSignMessageError = CustomerrorErrResponse;
 
 export interface GetJoinEventSignMessageParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type GetMyProfileData = ProfileGetMyProfileViewModel;
@@ -778,21 +774,21 @@ export type GetVerifiedIssuersData = EntityProfile[];
 export type GetVerifiedIssuersError = CustomerrorErr;
 
 export interface GetVerifiedIssuersParams {
-  /** Limit */
-  limit?: number;
-  /** Offset */
-  offset?: number;
-  /** Search query (searches first name, last name, email, academic email, wallet address) */
-  search?: string;
+    /** Limit */
+    limit?: number;
+    /** Offset */
+    offset?: number;
+    /** Search query (searches first name, last name, email, academic email, wallet address) */
+    search?: string;
 }
 
 export type ImportCertificateReceiversData =
-  CoreApiInternalHandlerEventImportCertificateReceiversResponse;
+    CoreApiInternalHandlerEventImportCertificateReceiversResponse;
 
 export type ImportCertificateReceiversError = CustomerrorErrResponse;
 
 export interface ImportCertificateReceiversParams {
-  eventId: string;
+    eventId: string;
 }
 
 export type ImportEventParticipantsData = EntityEventRegistrationInvitation[];
@@ -800,103 +796,103 @@ export type ImportEventParticipantsData = EntityEventRegistrationInvitation[];
 export type ImportEventParticipantsError = CustomerrorErrResponse;
 
 export interface ImportEventParticipantsParams {
-  eventId: string;
+    eventId: string;
 }
 
 export interface InboxInboxMessagesEventRegistrationInvitationViewModel {
-  academic_institution?: string;
-  cancelled_at?: string;
-  code?: string;
-  created_at: string;
-  deleted_at?: string;
-  email?: string;
-  event_id: string;
-  first_name?: string;
-  hidden_at?: string;
-  id: string;
-  is_read: number;
-  last_name?: string;
-  message_content: string;
-  message_type: EntityInboxMessageType;
-  phone_number?: string;
-  receiver_email?: string;
-  receiver_wallet_address?: string;
-  sender_credential_email?: string;
-  sender_credential_wallet_address?: string;
-  updated_at: string;
-  valid_until?: string;
+    academic_institution?: string;
+    cancelled_at?: string;
+    code?: string;
+    created_at: string;
+    deleted_at?: string;
+    email?: string;
+    event_id: string;
+    first_name?: string;
+    hidden_at?: string;
+    id: string;
+    is_read: number;
+    last_name?: string;
+    message_content: string;
+    message_type: EntityInboxMessageType;
+    phone_number?: string;
+    receiver_email?: string;
+    receiver_wallet_address?: string;
+    sender_credential_email?: string;
+    sender_credential_wallet_address?: string;
+    updated_at: string;
+    valid_until?: string;
 }
 
 export interface InboxInboxMessagesViewModel {
-  created_at: string;
-  deleted_at?: string;
-  hidden_at?: string;
-  id: string;
-  is_read: number;
-  message_content: string;
-  message_type: EntityInboxMessageType;
-  receiver_email?: string;
-  receiver_wallet_address?: string;
-  sender_credential_email?: string;
-  sender_credential_wallet_address?: string;
-  updated_at: string;
+    created_at: string;
+    deleted_at?: string;
+    hidden_at?: string;
+    id: string;
+    is_read: number;
+    message_content: string;
+    message_type: EntityInboxMessageType;
+    receiver_email?: string;
+    receiver_wallet_address?: string;
+    sender_credential_email?: string;
+    sender_credential_wallet_address?: string;
+    updated_at: string;
 }
 
 export type InboxMessagesDetailData =
-  InboxmessagesGetInboxMessageEventRegistrationInvitationResponse;
+    InboxmessagesGetInboxMessageEventRegistrationInvitationResponse;
 
 export interface InboxMessagesDetailParams {
-  inboxMessageId: string;
+    inboxMessageId: string;
 }
 
 export type InboxMessagesListData = InboxmessagesGetInboxMessagesResponse;
 
 export interface InboxmessagesGetInboxMessageEventRegistrationInvitationResponse {
-  inbox_message: InboxInboxMessagesEventRegistrationInvitationViewModel;
+    inbox_message: InboxInboxMessagesEventRegistrationInvitationViewModel;
 }
 
 export interface InboxmessagesGetInboxMessageResponse {
-  inbox_message: InboxInboxMessagesViewModel;
+    inbox_message: InboxInboxMessagesViewModel;
 }
 
 export interface InboxmessagesGetInboxMessagesResponse {
-  inbox_messages: InboxInboxMessagesViewModel[];
+    inbox_messages: InboxInboxMessagesViewModel[];
 }
 
 export interface InboxmessagesMarkAllMessagesAsReadResponse {
-  inbox_messages: InboxInboxMessagesViewModel[];
+    inbox_messages: InboxInboxMessagesViewModel[];
 }
 
 export interface InboxmessagesMarkMessageAsReadRequest {
-  message_id: string;
+    message_id: string;
 }
 
 export interface InboxmessagesMarkMessageAsReadResponse {
-  inbox_message: InboxInboxMessagesViewModel;
+    inbox_message: InboxInboxMessagesViewModel;
 }
 
 export interface IssuerIssuerEventResponse {
-  created_at: string;
-  event_end_date: string;
-  event_id: string;
-  event_location: string;
-  event_owner_credential_id: string;
-  event_short_description: string;
-  event_start_date: string;
-  event_title: string;
-  id: string;
-  is_signed: number;
-  issuer_credential_id: string;
-  sign_message: string;
-  signature: string;
-  updated_at: string;
+    created_at: string;
+    event_end_date: string;
+    event_id: string;
+    event_location: string;
+    event_owner_credential_id: string;
+    event_short_description: string;
+    event_start_date: string;
+    event_title: string;
+    id: string;
+    is_signed: number;
+    issuer_credential_id: string;
+    sign_message: string;
+    signature: string;
+    updated_at: string;
 }
 
 export type JoinEventError = CustomerrorErrResponse;
 
 export interface JoinEventParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type LogoutData = Record<string, string>;
@@ -904,216 +900,216 @@ export type LogoutData = Record<string, string>;
 export type LogoutError = CustomerrorErrResponse;
 
 export interface OnboardCheckOnboardStatusRequest {
-  access_token?: string;
-  expires_in?: number;
-  message_signature?: string;
-  method?: "google" | "wallet";
+    access_token?: string;
+    expires_in?: number;
+    message_signature?: string;
+    method?: "google" | "wallet";
 }
 
 export interface OnboardCheckOnboardStatusResponse {
-  authentication_credential_id?: string;
-  profile_id?: string;
+    authentication_credential_id?: string;
+    profile_id?: string;
 }
 
 /** Response for the client to sign to register */
 export interface OnboardGetSignMessageResponse {
-  message: string;
+    message: string;
 }
 
 export interface OnboardRegisterResponse {
-  credential_id: string;
-  jwt: string;
+    credential_id: string;
+    jwt: string;
 }
 
 export interface OnboardRegisterWithGoogleOAuthRequest {
-  access_token: string;
-  /** @minLength 6 */
-  password: string;
+    access_token: string;
+    /** @minLength 6 */
+    password: string;
 }
 
 export interface OnboardRegisterWithWalletRequest {
-  signed_message: string;
+    signed_message: string;
 }
 
 export enum OnboardRegistrationMethod {
-  RegistrationMethodGoogle = "google",
-  RegistrationMethodWallet = "wallet",
+    RegistrationMethodGoogle = "google",
+    RegistrationMethodWallet = "wallet",
 }
 
 export interface ProfileCreateProfileRequest {
-  academic_email?: string;
-  /**
-   * @minLength 3
-   * @maxLength 255
-   */
-  academic_institution?: string;
-  /**
-   * @minLength 10
-   * @maxLength 255
-   */
-  address?: string;
-  authentication_credential_id: string;
-  /**
-   * @minLength 10
-   * @maxLength 255
-   */
-  bio?: string;
-  /** @maxLength 64 */
-  email?: string;
-  /**
-   * @minLength 3
-   * @maxLength 32
-   */
-  first_name?: string;
-  is_academic_email_public?: boolean;
-  is_academic_institution_public?: boolean;
-  is_address_public?: boolean;
-  is_bio_public?: boolean;
-  is_email_public?: boolean;
-  is_first_name_public?: boolean;
-  is_last_name_public?: boolean;
-  is_phone_number_public?: boolean;
-  is_profile_picture_public?: boolean;
-  /**
-   * @minLength 3
-   * @maxLength 32
-   */
-  last_name?: string;
-  phone_number?: string;
-  profile_picture_url?: string;
+    academic_email?: string;
+    /**
+     * @minLength 3
+     * @maxLength 255
+     */
+    academic_institution?: string;
+    /**
+     * @minLength 10
+     * @maxLength 255
+     */
+    address?: string;
+    authentication_credential_id: string;
+    /**
+     * @minLength 10
+     * @maxLength 255
+     */
+    bio?: string;
+    /** @maxLength 64 */
+    email?: string;
+    /**
+     * @minLength 3
+     * @maxLength 32
+     */
+    first_name?: string;
+    is_academic_email_public?: boolean;
+    is_academic_institution_public?: boolean;
+    is_address_public?: boolean;
+    is_bio_public?: boolean;
+    is_email_public?: boolean;
+    is_first_name_public?: boolean;
+    is_last_name_public?: boolean;
+    is_phone_number_public?: boolean;
+    is_profile_picture_public?: boolean;
+    /**
+     * @minLength 3
+     * @maxLength 32
+     */
+    last_name?: string;
+    phone_number?: string;
+    profile_picture_url?: string;
 }
 
 export interface ProfileCreateProfileResponse {
-  academic_email?: string;
-  academic_institution?: string;
-  address?: string;
-  authentication_credential_id: string;
-  bio?: string;
-  created_at: string;
-  email?: string;
-  first_name?: string;
-  id: string;
-  is_academic_email_public: boolean;
-  is_academic_institution_public: boolean;
-  is_address_public: boolean;
-  is_bio_public: boolean;
-  is_email_public: boolean;
-  is_first_name_public: boolean;
-  is_last_name_public: boolean;
-  is_phone_number_public: boolean;
-  is_profile_picture_public: boolean;
-  last_name?: string;
-  phone_number?: string;
-  profile_picture_url?: string;
-  updated_at: string;
+    academic_email?: string;
+    academic_institution?: string;
+    address?: string;
+    authentication_credential_id: string;
+    bio?: string;
+    created_at: string;
+    email?: string;
+    first_name?: string;
+    id: string;
+    is_academic_email_public: boolean;
+    is_academic_institution_public: boolean;
+    is_address_public: boolean;
+    is_bio_public: boolean;
+    is_email_public: boolean;
+    is_first_name_public: boolean;
+    is_last_name_public: boolean;
+    is_phone_number_public: boolean;
+    is_profile_picture_public: boolean;
+    last_name?: string;
+    phone_number?: string;
+    profile_picture_url?: string;
+    updated_at: string;
 }
 
 export interface ProfileGetMyProfileViewModel {
-  academic_email?: string;
-  academic_institution?: string;
-  address?: string;
-  authentication_credential_created_at: string;
-  authentication_credential_id: string;
-  authentication_credential_updated_at: string;
-  bio?: string;
-  email?: string;
-  first_name?: string;
-  github_connector_ref?: string;
-  google_connector_ref?: string;
-  is_academic_email_public: boolean;
-  is_academic_institution_public: boolean;
-  is_address_public: boolean;
-  is_bio_public: boolean;
-  is_email_public: boolean;
-  is_first_name_public: boolean;
-  is_last_name_public: boolean;
-  is_phone_number_public: boolean;
-  is_profile_picture_public: boolean;
-  last_name?: string;
-  phone_number?: string;
-  profile_created_at: string;
-  profile_id: string;
-  profile_picture_url?: string;
-  profile_updated_at: string;
-  solution_status: CommonSolutionStatus;
-  wallet_address: string;
+    academic_email?: string;
+    academic_institution?: string;
+    address?: string;
+    authentication_credential_created_at: string;
+    authentication_credential_id: string;
+    authentication_credential_updated_at: string;
+    bio?: string;
+    email?: string;
+    first_name?: string;
+    github_connector_ref?: string;
+    google_connector_ref?: string;
+    is_academic_email_public: boolean;
+    is_academic_institution_public: boolean;
+    is_address_public: boolean;
+    is_bio_public: boolean;
+    is_email_public: boolean;
+    is_first_name_public: boolean;
+    is_last_name_public: boolean;
+    is_phone_number_public: boolean;
+    is_profile_picture_public: boolean;
+    last_name?: string;
+    phone_number?: string;
+    profile_created_at: string;
+    profile_id: string;
+    profile_picture_url?: string;
+    profile_updated_at: string;
+    solution_status: CommonSolutionStatus;
+    wallet_address: string;
 }
 
 export interface ProfileUpdateProfileRequest {
-  academic_email?: string;
-  /**
-   * @minLength 3
-   * @maxLength 255
-   */
-  academic_institution?: string;
-  /**
-   * @minLength 10
-   * @maxLength 255
-   */
-  address?: string;
-  /**
-   * @minLength 10
-   * @maxLength 255
-   */
-  bio?: string;
-  /** @maxLength 64 */
-  email?: string;
-  /**
-   * @minLength 3
-   * @maxLength 32
-   */
-  first_name?: string;
-  is_academic_email_public?: boolean;
-  is_academic_institution_public?: boolean;
-  is_address_public?: boolean;
-  is_bio_public?: boolean;
-  is_email_public?: boolean;
-  is_first_name_public?: boolean;
-  is_last_name_public?: boolean;
-  is_phone_number_public?: boolean;
-  is_profile_picture_public?: boolean;
-  /**
-   * @minLength 3
-   * @maxLength 32
-   */
-  last_name?: string;
-  phone_number?: string;
-  profile_picture_url?: string;
+    academic_email?: string;
+    /**
+     * @minLength 3
+     * @maxLength 255
+     */
+    academic_institution?: string;
+    /**
+     * @minLength 10
+     * @maxLength 255
+     */
+    address?: string;
+    /**
+     * @minLength 10
+     * @maxLength 255
+     */
+    bio?: string;
+    /** @maxLength 64 */
+    email?: string;
+    /**
+     * @minLength 3
+     * @maxLength 32
+     */
+    first_name?: string;
+    is_academic_email_public?: boolean;
+    is_academic_institution_public?: boolean;
+    is_address_public?: boolean;
+    is_bio_public?: boolean;
+    is_email_public?: boolean;
+    is_first_name_public?: boolean;
+    is_last_name_public?: boolean;
+    is_phone_number_public?: boolean;
+    is_profile_picture_public?: boolean;
+    /**
+     * @minLength 3
+     * @maxLength 32
+     */
+    last_name?: string;
+    phone_number?: string;
+    profile_picture_url?: string;
 }
 
 export interface ProfileUpdateProfileResponse {
-  academic_email?: string;
-  academic_institution?: string;
-  address?: string;
-  authentication_credential_id: string;
-  bio?: string;
-  created_at: string;
-  email?: string;
-  first_name?: string;
-  id: string;
-  is_academic_email_public: boolean;
-  is_academic_institution_public: boolean;
-  is_address_public: boolean;
-  is_bio_public: boolean;
-  is_email_public: boolean;
-  is_first_name_public: boolean;
-  is_last_name_public: boolean;
-  is_phone_number_public: boolean;
-  is_profile_picture_public: boolean;
-  last_name?: string;
-  phone_number?: string;
-  profile_picture_url?: string;
-  updated_at: string;
+    academic_email?: string;
+    academic_institution?: string;
+    address?: string;
+    authentication_credential_id: string;
+    bio?: string;
+    created_at: string;
+    email?: string;
+    first_name?: string;
+    id: string;
+    is_academic_email_public: boolean;
+    is_academic_institution_public: boolean;
+    is_address_public: boolean;
+    is_bio_public: boolean;
+    is_email_public: boolean;
+    is_first_name_public: boolean;
+    is_last_name_public: boolean;
+    is_phone_number_public: boolean;
+    is_profile_picture_public: boolean;
+    last_name?: string;
+    phone_number?: string;
+    profile_picture_url?: string;
+    updated_at: string;
 }
 
 export interface ProfileVerifyPasswordRequest {
-  authentication_credential_id: string;
-  password: string;
+    authentication_credential_id: string;
+    password: string;
 }
 
 export interface ProfileVerifyPasswordResponse {
-  is_success: boolean;
-  message: string;
+    is_success: boolean;
+    message: string;
 }
 
 export type ReadAllUpdateData = InboxmessagesMarkAllMessagesAsReadResponse;
@@ -1121,8 +1117,8 @@ export type ReadAllUpdateData = InboxmessagesMarkAllMessagesAsReadResponse;
 export type ReadUpdateData = InboxmessagesMarkMessageAsReadResponse;
 
 export interface ReadUpdateParams {
-  /** Message ID */
-  messageId: string;
+    /** Message ID */
+    messageId: string;
 }
 
 export type RegisterWithGoogleOauthData = OnboardRegisterResponse;
@@ -1136,78 +1132,76 @@ export type RegisterWithWalletError = CustomerrorErrResponse;
 export type RequestGoogleOauthError = CustomerrorErrResponse;
 
 export type RevokeEventCertificatesData =
-  CoreApiInternalHandlerEventRevokeEventCertificatesResponse;
+    CoreApiInternalHandlerEventRevokeEventCertificatesResponse;
 
 export type RevokeEventCertificatesError = CustomerrorErrResponse;
 
 export interface RevokeEventCertificatesParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
-export type SignEventCertificatesData =
-  CoreApiInternalHandlerEventSignEventCertificatesResponse;
+export type SignEventCertificatesData = CoreApiInternalHandlerEventSignEventCertificatesResponse;
 
 export type SignEventCertificatesError = CustomerrorErrResponse;
 
 export interface SignEventCertificatesParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type UpdateEventCertificateConfigData =
-  CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
+    CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
 
 export type UpdateEventCertificateConfigError = CustomerrorErrResponse;
 
 export interface UpdateEventCertificateConfigParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export interface UpdateEventCertificateConfigPayload {
-  /**
-   * Academic institution position x
-   * @format float64
-   */
-  academic_institution_pos_x?: number;
-  /**
-   * Academic institution position y
-   * @format float64
-   */
-  academic_institution_pos_y?: number;
-  /** Base certificate image */
-  base_certificate_image?: File;
-  /**
-   * Event name position x
-   * @format float64
-   */
-  event_name_pos_x?: number;
-  /**
-   * Event name position y
-   * @format float64
-   */
-  event_name_pos_y?: number;
-  /**
-   * Name position x
-   * @format float64
-   */
-  name_pos_x: number;
-  /**
-   * Name position y
-   * @format float64
-   */
-  name_pos_y: number;
+    /**
+     * Academic institution position x
+     * @format float64
+     */
+    academic_institution_pos_x?: number;
+    /**
+     * Academic institution position y
+     * @format float64
+     */
+    academic_institution_pos_y?: number;
+    /** Base certificate image */
+    base_certificate_image?: File;
+    /**
+     * Event name position x
+     * @format float64
+     */
+    event_name_pos_x?: number;
+    /**
+     * Event name position y
+     * @format float64
+     */
+    event_name_pos_y?: number;
+    /**
+     * Name position x
+     * @format float64
+     */
+    name_pos_x: number;
+    /**
+     * Name position y
+     * @format float64
+     */
+    name_pos_y: number;
 }
 
-export type UpdateEventContractData =
-  CoreApiInternalHandlerEventEventContractResponse;
+export type UpdateEventContractData = CoreApiInternalHandlerEventEventContractResponse;
 
 export type UpdateEventContractError = CustomerrorErrResponse;
 
 export interface UpdateEventContractParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type UpdateEventData = EntityEvent;
@@ -1219,60 +1213,59 @@ export type UpdateEventIssuerData = EventEventIssuerResponse;
 export type UpdateEventIssuerError = CustomerrorErrResponse;
 
 export interface UpdateEventIssuerParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 /** Event issuer data */
 export type UpdateEventIssuerPayload = EventUpdateEventIssuerRequest[];
 
 export interface UpdateEventParams {
-  eventId: string;
+    eventId: string;
 }
 
 export interface UpdateEventPayload {
-  /**
-   * Event banner image (JPEG, PNG, WebP, max 10MB) - optional
-   * @format binary
-   */
-  banner?: File;
-  /** Contact address */
-  contact_address?: string;
-  /** Contact number */
-  contact_number?: string;
-  /** Event description */
-  description?: string;
-  /** End date (RFC3339 format) */
-  end_date: string;
-  /** Google map query */
-  google_map_query?: string;
-  /** Host password (required for contract update) */
-  host_password: string;
-  /**
-   * Event icon image (JPEG, PNG, WebP, max 10MB) - optional
-   * @format binary
-   */
-  icon?: File;
-  /** Location */
-  location?: string;
-  /** Event name */
-  name?: string;
-  /** Number of seats */
-  seats_count: number;
-  /** Event short description */
-  short_description?: string;
-  /** Start date (RFC3339 format) */
-  start_date: string;
+    /**
+     * Event banner image (JPEG, PNG, WebP, max 10MB) - optional
+     * @format binary
+     */
+    banner?: File;
+    /** Contact address */
+    contact_address?: string;
+    /** Contact number */
+    contact_number?: string;
+    /** Event description */
+    description?: string;
+    /** End date (RFC3339 format) */
+    end_date: string;
+    /** Google map query */
+    google_map_query?: string;
+    /** Host password (required for contract update) */
+    host_password: string;
+    /**
+     * Event icon image (JPEG, PNG, WebP, max 10MB) - optional
+     * @format binary
+     */
+    icon?: File;
+    /** Location */
+    location?: string;
+    /** Event name */
+    name?: string;
+    /** Number of seats */
+    seats_count: number;
+    /** Event short description */
+    short_description?: string;
+    /** Start date (RFC3339 format) */
+    start_date: string;
 }
 
-export type UpdateEventRegistrationConfigData =
-  EventconfigEventRegistrationConfigViewModel;
+export type UpdateEventRegistrationConfigData = EventconfigEventRegistrationConfigViewModel;
 
 export type UpdateEventRegistrationConfigError = CustomerrorErrResponse;
 
 export interface UpdateEventRegistrationConfigParams {
-  /** Event ID */
-  eventId: string;
+    /** Event ID */
+    eventId: string;
 }
 
 export type UpdateProfileByCredentialIdData = ProfileUpdateProfileResponse;
@@ -1280,195 +1273,173 @@ export type UpdateProfileByCredentialIdData = ProfileUpdateProfileResponse;
 export type UpdateProfileByCredentialIdError = CustomerrorErr;
 
 export interface UpdateProfileByCredentialIdParams {
-  /** Credential ID */
-  credentialId: string;
+    /** Credential ID */
+    credentialId: string;
 }
 
 export type VerifyGoogleOauthError = CustomerrorErrResponse;
 
 export interface VerifyGoogleOauthParams {
-  code: string;
-  state: string;
+    code: string;
+    state: string;
 }
 
 export type VerifyPasswordData = ProfileVerifyPasswordResponse;
 
 export type VerifyPasswordError = CustomerrorErr;
 
-import type {
-  AxiosInstance,
-  AxiosRequestConfig,
-  HeadersDefaults,
-  ResponseType,
-} from "axios";
+import type { AxiosInstance, AxiosRequestConfig, HeadersDefaults, ResponseType } from "axios";
 import axios from "axios";
 
 export type QueryParamsType = Record<string | number, any>;
 
 export interface FullRequestParams
-  extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
-  /** set parameter to `true` for call `securityWorker` for this request */
-  secure?: boolean;
-  /** request path */
-  path: string;
-  /** content type of request body */
-  type?: ContentType;
-  /** query params */
-  query?: QueryParamsType;
-  /** format of response (i.e. response.json() -> format: "json") */
-  format?: ResponseType;
-  /** request body */
-  body?: unknown;
+    extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
+    /** set parameter to `true` for call `securityWorker` for this request */
+    secure?: boolean;
+    /** request path */
+    path: string;
+    /** content type of request body */
+    type?: ContentType;
+    /** query params */
+    query?: QueryParamsType;
+    /** format of response (i.e. response.json() -> format: "json") */
+    format?: ResponseType;
+    /** request body */
+    body?: unknown;
 }
 
-export type RequestParams = Omit<
-  FullRequestParams,
-  "body" | "method" | "query" | "path"
->;
+export type RequestParams = Omit<FullRequestParams, "body" | "method" | "query" | "path">;
 
 export interface ApiConfig<SecurityDataType = unknown>
-  extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
-  securityWorker?: (
-    securityData: SecurityDataType | null,
-  ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
-  secure?: boolean;
-  format?: ResponseType;
+    extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
+    securityWorker?: (
+        securityData: SecurityDataType | null,
+    ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
+    secure?: boolean;
+    format?: ResponseType;
 }
 
 export enum ContentType {
-  Json = "application/json",
-  JsonApi = "application/vnd.api+json",
-  FormData = "multipart/form-data",
-  UrlEncoded = "application/x-www-form-urlencoded",
-  Text = "text/plain",
+    Json = "application/json",
+    JsonApi = "application/vnd.api+json",
+    FormData = "multipart/form-data",
+    UrlEncoded = "application/x-www-form-urlencoded",
+    Text = "text/plain",
 }
 
 export class HttpClient<SecurityDataType = unknown> {
-  public instance: AxiosInstance;
-  private securityData: SecurityDataType | null = null;
-  private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
-  private secure?: boolean;
-  private format?: ResponseType;
+    public instance: AxiosInstance;
+    private securityData: SecurityDataType | null = null;
+    private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
+    private secure?: boolean;
+    private format?: ResponseType;
 
-  constructor({
-    securityWorker,
-    secure,
-    format,
-    ...axiosConfig
-  }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({
-      ...axiosConfig,
-      baseURL: axiosConfig.baseURL || "//localhost:8080",
-    });
-    this.secure = secure;
-    this.format = format;
-    this.securityWorker = securityWorker;
-  }
+    constructor({
+        securityWorker,
+        secure,
+        format,
+        ...axiosConfig
+    }: ApiConfig<SecurityDataType> = {}) {
+        this.instance = axios.create({
+            ...axiosConfig,
+            baseURL: axiosConfig.baseURL || "//localhost:8080",
+        });
+        this.secure = secure;
+        this.format = format;
+        this.securityWorker = securityWorker;
+    }
 
-  public setSecurityData = (data: SecurityDataType | null) => {
-    this.securityData = data;
-  };
-
-  protected mergeRequestParams(
-    params1: AxiosRequestConfig,
-    params2?: AxiosRequestConfig,
-  ): AxiosRequestConfig {
-    const method = params1.method || (params2 && params2.method);
-
-    return {
-      ...this.instance.defaults,
-      ...params1,
-      ...(params2 || {}),
-      headers: {
-        ...((method &&
-          this.instance.defaults.headers[
-            method.toLowerCase() as keyof HeadersDefaults
-          ]) ||
-          {}),
-        ...(params1.headers || {}),
-        ...((params2 && params2.headers) || {}),
-      },
+    public setSecurityData = (data: SecurityDataType | null) => {
+        this.securityData = data;
     };
-  }
 
-  protected stringifyFormItem(formItem: unknown) {
-    if (typeof formItem === "object" && formItem !== null) {
-      return JSON.stringify(formItem);
-    } else {
-      return `${formItem}`;
-    }
-  }
+    protected mergeRequestParams(
+        params1: AxiosRequestConfig,
+        params2?: AxiosRequestConfig,
+    ): AxiosRequestConfig {
+        const method = params1.method || (params2 && params2.method);
 
-  protected createFormData(input: Record<string, unknown>): FormData {
-    if (input instanceof FormData) {
-      return input;
-    }
-    return Object.keys(input || {}).reduce((formData, key) => {
-      const property = input[key];
-      const propertyContent: any[] =
-        property instanceof Array ? property : [property];
-
-      for (const formItem of propertyContent) {
-        const isFileType = formItem instanceof Blob || formItem instanceof File;
-        formData.append(
-          key,
-          isFileType ? formItem : this.stringifyFormItem(formItem),
-        );
-      }
-
-      return formData;
-    }, new FormData());
-  }
-
-  public request = async <T = any, _E = any>({
-    secure,
-    path,
-    type,
-    query,
-    format,
-    body,
-    ...params
-  }: FullRequestParams): Promise<T> => {
-    const secureParams =
-      ((typeof secure === "boolean" ? secure : this.secure) &&
-        this.securityWorker &&
-        (await this.securityWorker(this.securityData))) ||
-      {};
-    const requestParams = this.mergeRequestParams(params, secureParams);
-    const responseFormat = format || this.format || undefined;
-
-    if (
-      type === ContentType.FormData &&
-      body &&
-      body !== null &&
-      typeof body === "object"
-    ) {
-      body = this.createFormData(body as Record<string, unknown>);
+        return {
+            ...this.instance.defaults,
+            ...params1,
+            ...(params2 || {}),
+            headers: {
+                ...((method &&
+                    this.instance.defaults.headers[
+                        method.toLowerCase() as keyof HeadersDefaults
+                    ]) ||
+                    {}),
+                ...(params1.headers || {}),
+                ...((params2 && params2.headers) || {}),
+            },
+        };
     }
 
-    if (
-      type === ContentType.Text &&
-      body &&
-      body !== null &&
-      typeof body !== "string"
-    ) {
-      body = JSON.stringify(body);
+    protected stringifyFormItem(formItem: unknown) {
+        if (typeof formItem === "object" && formItem !== null) {
+            return JSON.stringify(formItem);
+        } else {
+            return `${formItem}`;
+        }
     }
 
-    return this.instance
-      .request({
-        ...requestParams,
-        headers: {
-          ...(requestParams.headers || {}),
-          ...(type ? { "Content-Type": type } : {}),
-        },
-        params: query,
-        responseType: responseFormat,
-        data: body,
-        url: path,
-      })
-      .then((response) => response.data);
-  };
+    protected createFormData(input: Record<string, unknown>): FormData {
+        if (input instanceof FormData) {
+            return input;
+        }
+        return Object.keys(input || {}).reduce((formData, key) => {
+            const property = input[key];
+            const propertyContent: any[] = property instanceof Array ? property : [property];
+
+            for (const formItem of propertyContent) {
+                const isFileType = formItem instanceof Blob || formItem instanceof File;
+                formData.append(key, isFileType ? formItem : this.stringifyFormItem(formItem));
+            }
+
+            return formData;
+        }, new FormData());
+    }
+
+    public request = async <T = any, _E = any>({
+        secure,
+        path,
+        type,
+        query,
+        format,
+        body,
+        ...params
+    }: FullRequestParams): Promise<T> => {
+        const secureParams =
+            ((typeof secure === "boolean" ? secure : this.secure) &&
+                this.securityWorker &&
+                (await this.securityWorker(this.securityData))) ||
+            {};
+        const requestParams = this.mergeRequestParams(params, secureParams);
+        const responseFormat = format || this.format || undefined;
+
+        if (type === ContentType.FormData && body && body !== null && typeof body === "object") {
+            body = this.createFormData(body as Record<string, unknown>);
+        }
+
+        if (type === ContentType.Text && body && body !== null && typeof body !== "string") {
+            body = JSON.stringify(body);
+        }
+
+        return this.instance
+            .request({
+                ...requestParams,
+                headers: {
+                    ...(requestParams.headers || {}),
+                    ...(type ? { "Content-Type": type } : {}),
+                },
+                params: query,
+                responseType: responseFormat,
+                data: body,
+                url: path,
+            })
+            .then((response) => response.data);
+    };
 }
 
 /**
@@ -1482,1122 +1453,1070 @@ export class HttpClient<SecurityDataType = unknown> {
  * DECM (Decentralized Event Management) platform API for NFT ticketing, digital credentials, and academic identity verification.
  */
 export class Api<SecurityDataType extends unknown> {
-  http: HttpClient<SecurityDataType>;
+    http: HttpClient<SecurityDataType>;
 
-  constructor(http: HttpClient<SecurityDataType>) {
-    this.http = http;
-  }
-
-  /**
-   * @description Get my inbox messages
-   *
-   * @tags Inbox Messages
-   * @name InboxMessagesList
-   * @summary Get my inbox messages
-   * @request GET:/inbox-messages
-   * @secure
-   */
-  inboxMessagesList = (params: RequestParams = {}) =>
-    this.http.request<InboxMessagesListData, any>({
-      path: `/inbox-messages`,
-      method: "GET",
-      secure: true,
-      type: ContentType.Json,
-      format: "json",
-      ...params,
-    });
-
-  v1 = {
-    /**
-     * @description Check if the current user has specific roles (authenticated, host, issuer). Only returns requested fields.
-     *
-     * @tags Auth
-     * @name CheckRole
-     * @summary Check user roles
-     * @request GET:/api/v1/auth/check-role
-     */
-    checkRole: (query: CheckRoleParams, params: RequestParams = {}) =>
-      this.http.request<CheckRoleData, CheckRoleError>({
-        path: `/api/v1/auth/check-role`,
-        method: "GET",
-        query: query,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
+    constructor(http: HttpClient<SecurityDataType>) {
+        this.http = http;
+    }
 
     /**
-     * @description Logout user by clearing session and OAuth cookies
-     *
-     * @tags Auth
-     * @name Logout
-     * @summary Logout
-     * @request POST:/api/v1/auth/logout
-     */
-    logout: (params: RequestParams = {}) =>
-      this.http.request<LogoutData, LogoutError>({
-        path: `/api/v1/auth/logout`,
-        method: "POST",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Request Google OAuth
-     *
-     * @tags Auth
-     * @name RequestGoogleOauth
-     * @summary Request Google OAuth
-     * @request GET:/api/v1/auth/request-google-oauth
-     */
-    requestGoogleOauth: (params: RequestParams = {}) =>
-      this.http.request<any, RequestGoogleOauthError>({
-        path: `/api/v1/auth/request-google-oauth`,
-        method: "GET",
-        type: ContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * @description Verify Google OAuth code
-     *
-     * @tags Auth
-     * @name VerifyGoogleOauth
-     * @summary Verify Google OAuth code
-     * @request GET:/api/v1/auth/verify-google-oauth
-     */
-    verifyGoogleOauth: (
-      query: VerifyGoogleOauthParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<any, VerifyGoogleOauthError>({
-        path: `/api/v1/auth/verify-google-oauth`,
-        method: "GET",
-        query: query,
-        type: ContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * @description Cancel an event registration invitation by ID
-     *
-     * @tags Event Registration Invitation
-     * @name CancelEventRegistrationInvitation
-     * @summary Cancel event registration invitation
-     * @request DELETE:/api/v1/event-registration/invitation
-     */
-    cancelEventRegistrationInvitation: (
-      {
-        eventRegistrationInvitationId,
-        ...query
-      }: CancelEventRegistrationInvitationParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        CancelEventRegistrationInvitationData,
-        CancelEventRegistrationInvitationError
-      >({
-        path: `/api/v1/event-registration/invitation`,
-        method: "DELETE",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Import a list of participants for an event, creating inbox messages and event registration invitations
-     *
-     * @tags Event Registration Invitation
-     * @name ImportEventParticipants
-     * @summary Import event participants
-     * @request POST:/api/v1/event-registration/invitation/:event_id/import
-     */
-    importEventParticipants: (
-      { eventId, ...query }: ImportEventParticipantsParams,
-      request: EventRegistrationImportEventParticipantsRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        ImportEventParticipantsData,
-        ImportEventParticipantsError
-      >({
-        path: `/api/v1/event-registration/invitation/${eventId}/import`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get all event registration invitations for a specific event
-     *
-     * @tags Event Registration Invitation
-     * @name GetEventRegistrationInvitationsByEventId
-     * @summary Get event registration invitations by event ID
-     * @request GET:/api/v1/event-registration/invitation/{eventId}
-     */
-    getEventRegistrationInvitationsByEventId: (
-      { eventId, ...query }: GetEventRegistrationInvitationsByEventIdParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        GetEventRegistrationInvitationsByEventIdData,
-        GetEventRegistrationInvitationsByEventIdError
-      >({
-        path: `/api/v1/event-registration/invitation/${eventId}`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Join an event
-     *
-     * @tags Event Registration
-     * @name JoinEvent
-     * @summary Join event
-     * @request POST:/api/v1/event-registration/join/{event_id}
-     */
-    joinEvent: (
-      { eventId, ...query }: JoinEventParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<any, JoinEventError>({
-        path: `/api/v1/event-registration/join/${eventId}`,
-        method: "POST",
-        type: ContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * @description Get join event sign message
-     *
-     * @tags Event Registration
-     * @name GetJoinEventSignMessage
-     * @summary Get join event sign message
-     * @request GET:/api/v1/event-registration/join/{event_id}/sign-message
-     */
-    getJoinEventSignMessage: (
-      { eventId, ...query }: GetJoinEventSignMessageParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        GetJoinEventSignMessageData,
-        GetJoinEventSignMessageError
-      >({
-        path: `/api/v1/event-registration/join/${eventId}/sign-message`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get event registration invitation of user and by event id
-     *
-     * @tags Event Registration Invitation
-     * @name GetEventRegistrationInvitationByUserAndEvent
-     * @summary Get event registration invitation of user and by event id
-     * @request GET:/api/v1/event-registration/my/{event_id}
-     */
-    getEventRegistrationInvitationByUserAndEvent: (
-      { eventId, ...query }: GetEventRegistrationInvitationByUserAndEventParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        GetEventRegistrationInvitationByUserAndEventData,
-        GetEventRegistrationInvitationByUserAndEventError
-      >({
-        path: `/api/v1/event-registration/my/${eventId}`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get events list
-     *
-     * @tags Event
-     * @name GetEventsList
-     * @summary Get events list
-     * @request GET:/api/v1/events
-     */
-    getEventsList: (query: GetEventsListParams, params: RequestParams = {}) =>
-      this.http.request<GetEventsListData, GetEventsListError>({
-        path: `/api/v1/events`,
-        method: "GET",
-        query: query,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Create a new event with banner image upload. Chain ID is automatically set from environment configuration.
-     *
-     * @tags Event
-     * @name CreateEvent
-     * @summary Create a new event
-     * @request POST:/api/v1/events
-     */
-    createEvent: (data: CreateEventPayload, params: RequestParams = {}) =>
-      this.http.request<CreateEventData, CreateEventError>({
-        path: `/api/v1/events`,
-        method: "POST",
-        body: data,
-        type: ContentType.FormData,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get events by owner credentials ID
-     *
-     * @name GetEventsByOwnerCredentialsId
-     * @summary Get events by owner credentials ID
-     * @request GET:/api/v1/events/owner-credentials/{owner_credential_id}
-     */
-    getEventsByOwnerCredentialsId: (
-      { ownerCredentialId, ...query }: GetEventsByOwnerCredentialsIdParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        GetEventsByOwnerCredentialsIdData,
-        GetEventsByOwnerCredentialsIdError
-      >({
-        path: `/api/v1/events/owner-credentials/${ownerCredentialId}`,
-        method: "GET",
-        query: query,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get event by ID
-     *
-     * @tags Events
-     * @name GetEventById
-     * @summary Get event by ID
-     * @request GET:/api/v1/events/{event_id}
-     */
-    getEventById: (
-      { eventId, ...query }: GetEventByIdParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<GetEventByIdData, GetEventByIdError>({
-        path: `/api/v1/events/${eventId}`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update an existing event with optional banner and icon image upload
-     *
-     * @tags Event
-     * @name UpdateEvent
-     * @summary Update an event
-     * @request PUT:/api/v1/events/{event_id}
-     */
-    updateEvent: (
-      { eventId, ...query }: UpdateEventParams,
-      data: UpdateEventPayload,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<UpdateEventData, UpdateEventError>({
-        path: `/api/v1/events/${eventId}`,
-        method: "PUT",
-        body: data,
-        type: ContentType.FormData,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Delete event by ID
-     *
-     * @tags Event
-     * @name DeleteEventById
-     * @summary Delete event by ID
-     * @request DELETE:/api/v1/events/{event_id}
-     */
-    deleteEventById: (
-      { eventId, ...query }: DeleteEventByIdParams,
-      delete_event_request: EventDeleteEventRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<DeleteEventByIdData, DeleteEventByIdError>({
-        path: `/api/v1/events/${eventId}`,
-        method: "DELETE",
-        body: delete_event_request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Delete event certificate configuration for an event
-     *
-     * @tags EventConfig
-     * @name DeleteEventCertificateConfig
-     * @summary Delete event certificate config
-     * @request DELETE:/api/v1/events/{event_id}/certificate-config
-     */
-    deleteEventCertificateConfig: (
-      { eventId, ...query }: DeleteEventCertificateConfigParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        DeleteEventCertificateConfigData,
-        DeleteEventCertificateConfigError
-      >({
-        path: `/api/v1/events/${eventId}/certificate-config`,
-        method: "DELETE",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get all certificates for an event
-     *
-     * @tags Event Certificates
-     * @name GetEventCertificates
-     * @summary Get event certificates
-     * @request GET:/api/v1/events/{event_id}/certificates
-     */
-    getEventCertificates: (
-      { eventId, ...query }: GetEventCertificatesParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<GetEventCertificatesData, GetEventCertificatesError>({
-        path: `/api/v1/events/${eventId}/certificates`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Import certificate receivers for an event, deploys event certificate contract, and creates certificate records
-     *
-     * @tags Event Certificates
-     * @name ImportCertificateReceivers
-     * @summary Import certificate receivers for an event
-     * @request POST:/api/v1/events/{event_id}/certificates/import
-     */
-    importCertificateReceivers: (
-      { eventId, ...query }: ImportCertificateReceiversParams,
-      request: CoreApiInternalHandlerEventImportCertificateReceiversRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        ImportCertificateReceiversData,
-        ImportCertificateReceiversError
-      >({
-        path: `/api/v1/events/${eventId}/certificates/import`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Revoke event certificates by certificate IDs
-     *
-     * @tags Event Certificates
-     * @name RevokeEventCertificates
-     * @summary Revoke event certificates
-     * @request POST:/api/v1/events/{event_id}/certificates/revoke
-     */
-    revokeEventCertificates: (
-      { eventId, ...query }: RevokeEventCertificatesParams,
-      request: CoreApiInternalHandlerEventRevokeEventCertificatesRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        RevokeEventCertificatesData,
-        RevokeEventCertificatesError
-      >({
-        path: `/api/v1/events/${eventId}/certificates/revoke`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Sign all event certificates for an event by issuer
-     *
-     * @tags Event Certificates
-     * @name SignEventCertificates
-     * @summary Sign event certificates
-     * @request POST:/api/v1/events/{event_id}/certificates/sign
-     */
-    signEventCertificates: (
-      { eventId, ...query }: SignEventCertificatesParams,
-      request: CoreApiInternalHandlerEventSignEventCertificatesRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<SignEventCertificatesData, SignEventCertificatesError>({
-        path: `/api/v1/events/${eventId}/certificates/sign`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get the event certificate configuration for an event
-     *
-     * @name GetEventCertificateConfig
-     * @summary Get event certificate config
-     * @request GET:/api/v1/events/{event_id}/config/certificate
-     */
-    getEventCertificateConfig: (
-      { eventId, ...query }: GetEventCertificateConfigParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        GetEventCertificateConfigData,
-        GetEventCertificateConfigError
-      >({
-        path: `/api/v1/events/${eventId}/config/certificate`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update the event certificate configuration for an event
-     *
-     * @name UpdateEventCertificateConfig
-     * @summary Update event certificate config
-     * @request PUT:/api/v1/events/{event_id}/config/certificate
-     */
-    updateEventCertificateConfig: (
-      { eventId, ...query }: UpdateEventCertificateConfigParams,
-      data: UpdateEventCertificateConfigPayload,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        UpdateEventCertificateConfigData,
-        UpdateEventCertificateConfigError
-      >({
-        path: `/api/v1/events/${eventId}/config/certificate`,
-        method: "PUT",
-        body: data,
-        type: ContentType.FormData,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Check if the password is correct for an event
-     *
-     * @tags Event Config
-     * @name CheckEventPassword
-     * @summary Check event password
-     * @request POST:/api/v1/events/{event_id}/config/password-check
-     */
-    checkEventPassword: (
-      { eventId, ...query }: CheckEventPasswordParams,
-      request: EventconfigCheckEventPasswordBody,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<CheckEventPasswordData, CheckEventPasswordError>({
-        path: `/api/v1/events/${eventId}/config/password-check`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get event registration configuration for an event
-     *
-     * @tags Events
-     * @name GetEventRegistrationConfig
-     * @summary Get event registration config view model
-     * @request GET:/api/v1/events/{event_id}/config/registration
-     */
-    getEventRegistrationConfig: (
-      { eventId, ...query }: GetEventRegistrationConfigParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        GetEventRegistrationConfigData,
-        GetEventRegistrationConfigError
-      >({
-        path: `/api/v1/events/${eventId}/config/registration`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update the event registration configuration for an event
-     *
-     * @name UpdateEventRegistrationConfig
-     * @summary Update event registration config
-     * @request PUT:/api/v1/events/{event_id}/config/registration
-     */
-    updateEventRegistrationConfig: (
-      { eventId, ...query }: UpdateEventRegistrationConfigParams,
-      request: EventconfigUpdateEventRegistrationConfigRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        UpdateEventRegistrationConfigData,
-        UpdateEventRegistrationConfigError
-      >({
-        path: `/api/v1/events/${eventId}/config/registration`,
-        method: "PUT",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get the event contract for an event
-     *
-     * @tags Events
-     * @name GetEventContractByEventId
-     * @summary Get event contract by event ID
-     * @request GET:/api/v1/events/{event_id}/contracts
-     */
-    getEventContractByEventId: (
-      { eventId, ...query }: GetEventContractByEventIdParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        GetEventContractByEventIdData,
-        GetEventContractByEventIdError
-      >({
-        path: `/api/v1/events/${eventId}/contracts`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update the event contract for an event
-     *
-     * @name UpdateEventContract
-     * @summary Update event contract
-     * @request PUT:/api/v1/events/{event_id}/contracts
-     */
-    updateEventContract: (
-      { eventId, ...query }: UpdateEventContractParams,
-      request: EventUpdateEventContractRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<UpdateEventContractData, UpdateEventContractError>({
-        path: `/api/v1/events/${eventId}/contracts`,
-        method: "PUT",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Create a new event contract for an event
-     *
-     * @tags Event
-     * @name CreateEventContract
-     * @summary Create event contract
-     * @request POST:/api/v1/events/{event_id}/contracts
-     */
-    createEventContract: (
-      { eventId, ...query }: CreateEventContractParams,
-      request: EventCreateEventContractRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<CreateEventContractData, CreateEventContractError>({
-        path: `/api/v1/events/${eventId}/contracts`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Delete event contract for an event
-     *
-     * @tags Event Contracts
-     * @name DeleteEventContract
-     * @summary Delete event contract
-     * @request DELETE:/api/v1/events/{event_id}/contracts
-     */
-    deleteEventContract: (
-      { eventId, ...query }: DeleteEventContractParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<DeleteEventContractData, DeleteEventContractError>({
-        path: `/api/v1/events/${eventId}/contracts`,
-        method: "DELETE",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get all event issuers for an event
-     *
-     * @tags Events
-     * @name GetEventIssuersByEventId
-     * @summary Get event issuers by event ID
-     * @request GET:/api/v1/events/{event_id}/issuers
-     */
-    getEventIssuersByEventId: (
-      { eventId, ...query }: GetEventIssuersByEventIdParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        GetEventIssuersByEventIdData,
-        GetEventIssuersByEventIdError
-      >({
-        path: `/api/v1/events/${eventId}/issuers`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update an event issuer
-     *
-     * @name UpdateEventIssuer
-     * @summary Update event issuer
-     * @request PUT:/api/v1/events/{event_id}/issuers
-     */
-    updateEventIssuer: (
-      { eventId, ...query }: UpdateEventIssuerParams,
-      request: UpdateEventIssuerPayload,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<UpdateEventIssuerData, UpdateEventIssuerError>({
-        path: `/api/v1/events/${eventId}/issuers`,
-        method: "PUT",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Create a new event issuer for an event
-     *
-     * @name CreateEventIssuer
-     * @summary Create event issuer
-     * @request POST:/api/v1/events/{event_id}/issuers
-     */
-    createEventIssuer: (
-      { eventId, ...query }: CreateEventIssuerParams,
-      request: EventCreateEventIssuerRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<CreateEventIssuerData, CreateEventIssuerError>({
-        path: `/api/v1/events/${eventId}/issuers`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get an event issuer by its ID
-     *
-     * @name GetEventIssuerById
-     * @summary Get event issuer by ID
-     * @request GET:/api/v1/events/{event_id}/issuers/{issuer_id}
-     */
-    getEventIssuerById: (
-      { eventId, issuerId, ...query }: GetEventIssuerByIdParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<GetEventIssuerByIdData, GetEventIssuerByIdError>({
-        path: `/api/v1/events/${eventId}/issuers/${issuerId}`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Delete an event issuer
-     *
-     * @tags Events
-     * @name DeleteEventIssuer
-     * @summary Delete event issuer
-     * @request DELETE:/api/v1/events/{event_id}/issuers/{issuer_id}
-     */
-    deleteEventIssuer: (
-      { eventId, issuerId, ...query }: DeleteEventIssuerParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<DeleteEventIssuerData, DeleteEventIssuerError>({
-        path: `/api/v1/events/${eventId}/issuers/${issuerId}`,
-        method: "DELETE",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Create a new event registration configuration for an event
-     *
-     * @name CreateEventRegistrationConfig
-     * @summary Create event registration config
-     * @request POST:/api/v1/events/{event_id}/registration-config
-     */
-    createEventRegistrationConfig: (
-      { eventId, ...query }: CreateEventRegistrationConfigParams,
-      request: EventconfigCreateEventRegistrationConfigRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        CreateEventRegistrationConfigData,
-        CreateEventRegistrationConfigError
-      >({
-        path: `/api/v1/events/${eventId}/registration-config`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Delete the event registration configuration for an event
-     *
-     * @name DeleteEventRegistrationConfig
-     * @summary Delete event registration config
-     * @request DELETE:/api/v1/events/{event_id}/registration-config
-     */
-    deleteEventRegistrationConfig: (
-      { eventId, ...query }: DeleteEventRegistrationConfigParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        DeleteEventRegistrationConfigData,
-        DeleteEventRegistrationConfigError
-      >({
-        path: `/api/v1/events/${eventId}/registration-config`,
-        method: "DELETE",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get event viewmodel by ID
-     *
-     * @tags Events
-     * @name GetEventViewmodelById
-     * @summary Get event viewmodel by ID
-     * @request GET:/api/v1/events/{event_id}/viewmodel
-     */
-    getEventViewmodelById: (
-      { eventId, ...query }: GetEventViewmodelByIdParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<GetEventViewmodelByIdData, GetEventViewmodelByIdError>({
-        path: `/api/v1/events/${eventId}/viewmodel`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get verified issuers with optional search query
-     *
-     * @tags Issuer
-     * @name GetVerifiedIssuers
-     * @summary Get verified issuers
-     * @request GET:/api/v1/issuers
-     */
-    getVerifiedIssuers: (
-      query: GetVerifiedIssuersParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<GetVerifiedIssuersData, GetVerifiedIssuersError>({
-        path: `/api/v1/issuers`,
-        method: "GET",
-        query: query,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get events assigned to the authenticated issuer for signing
-     *
-     * @tags Issuer
-     * @name GetIssuerEvents
-     * @summary Get events for issuer signing
-     * @request GET:/api/v1/issuers/events
-     */
-    getIssuerEvents: (
-      query: GetIssuerEventsParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<GetIssuerEventsData, GetIssuerEventsError>({
-        path: `/api/v1/issuers/events`,
-        method: "GET",
-        query: query,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Check onboard status
-     *
-     * @tags Onboard
-     * @name CheckOnboardStatus
-     * @summary Check onboard status
-     * @request POST:/api/v1/onboard/check-onboard-status
-     */
-    checkOnboardStatus: (
-      message_signature: OnboardCheckOnboardStatusRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<CheckOnboardStatusData, CheckOnboardStatusError>({
-        path: `/api/v1/onboard/check-onboard-status`,
-        method: "POST",
-        body: message_signature,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Register a new user with Google OAuth
-     *
-     * @tags Onboard
-     * @name RegisterWithGoogleOauth
-     * @summary Register a new user with Google OAuth
-     * @request POST:/api/v1/onboard/register-with-google-oauth
-     */
-    registerWithGoogleOauth: (
-      password: OnboardRegisterWithGoogleOAuthRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        RegisterWithGoogleOauthData,
-        RegisterWithGoogleOauthError
-      >({
-        path: `/api/v1/onboard/register-with-google-oauth`,
-        method: "POST",
-        body: password,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Register a new user with wallet address
-     *
-     * @tags Onboard
-     * @name RegisterWithWallet
-     * @summary Register a new user with wallet address
-     * @request POST:/api/v1/onboard/register-with-wallet
-     */
-    registerWithWallet: (
-      signed_message: OnboardRegisterWithWalletRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<RegisterWithWalletData, RegisterWithWalletError>({
-        path: `/api/v1/onboard/register-with-wallet`,
-        method: "POST",
-        body: signed_message,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Retrieve preset message for the client to sign to register
-     *
-     * @tags Onboard
-     * @name GetSignMessage
-     * @summary Get preset message for the client to sign to register
-     * @request GET:/api/v1/onboard/sign-message
-     */
-    getSignMessage: (params: RequestParams = {}) =>
-      this.http.request<GetSignMessageData, any>({
-        path: `/api/v1/onboard/sign-message`,
-        method: "GET",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Create a profile
-     *
-     * @tags Profile
-     * @name CreateProfile
-     * @summary Create a profile
-     * @request POST:/api/v1/profile
-     */
-    createProfile: (
-      profile: ProfileCreateProfileRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<CreateProfileData, CreateProfileError>({
-        path: `/api/v1/profile`,
-        method: "POST",
-        body: profile,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update a profile by credential ID
-     *
-     * @tags Profile
-     * @name UpdateProfileByCredentialId
-     * @summary Update a profile by credential ID
-     * @request PATCH:/api/v1/profile/credential/{credential_id}
-     */
-    updateProfileByCredentialId: (
-      { credentialId, ...query }: UpdateProfileByCredentialIdParams,
-      request: ProfileUpdateProfileRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<
-        UpdateProfileByCredentialIdData,
-        UpdateProfileByCredentialIdError
-      >({
-        path: `/api/v1/profile/credential/${credentialId}`,
-        method: "PATCH",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get my profile
-     *
-     * @tags Profile
-     * @name GetMyProfile
-     * @summary Get my profile
-     * @request GET:/api/v1/profile/my
-     */
-    getMyProfile: (params: RequestParams = {}) =>
-      this.http.request<GetMyProfileData, GetMyProfileError>({
-        path: `/api/v1/profile/my`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Verify password
-     *
-     * @tags Profile
-     * @name VerifyPassword
-     * @summary Verify password
-     * @request POST:/api/v1/profile/password/verify
-     */
-    verifyPassword: (
-      verifyPasswordRequest: ProfileVerifyPasswordRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<VerifyPasswordData, VerifyPasswordError>({
-        path: `/api/v1/profile/password/verify`,
-        method: "POST",
-        body: verifyPasswordRequest,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-  };
-  read = {
-    /**
-     * No description
+     * @description Get my inbox messages
      *
      * @tags Inbox Messages
-     * @name ReadUpdate
-     * @request PUT:/inbox-messages/read
+     * @name InboxMessagesList
+     * @summary Get my inbox messages
+     * @request GET:/inbox-messages
      * @secure
      */
-    readUpdate: (
-      { messageId, ...query }: ReadUpdateParams,
-      request: InboxmessagesMarkMessageAsReadRequest,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<ReadUpdateData, any>({
-        path: `/inbox-messages/read`,
-        method: "PUT",
-        body: request,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-  };
-  readAll = {
-    /**
-     * No description
-     *
-     * @tags Inbox Messages
-     * @name ReadAllUpdate
-     * @request PUT:/inbox-messages/read-all
-     * @secure
-     */
-    readAllUpdate: (params: RequestParams = {}) =>
-      this.http.request<ReadAllUpdateData, any>({
-        path: `/inbox-messages/read-all`,
-        method: "PUT",
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-  };
-  inboxMessageId = {
-    /**
-     * @description Get inbox message
-     *
-     * @tags Inbox Messages
-     * @name InboxMessagesDetail
-     * @summary Get inbox message
-     * @request GET:/inbox-messages/{inbox_message_id}
-     * @secure
-     */
-    inboxMessagesDetail: (
-      { inboxMessageId, ...query }: InboxMessagesDetailParams,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<InboxMessagesDetailData, any>({
-        path: `/inbox-messages/${inboxMessageId}`,
-        method: "GET",
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-  };
+    inboxMessagesList = (params: RequestParams = {}) =>
+        this.http.request<InboxMessagesListData, any>({
+            path: `/inbox-messages`,
+            method: "GET",
+            secure: true,
+            type: ContentType.Json,
+            format: "json",
+            ...params,
+        });
+
+    v1 = {
+        /**
+         * @description Check if the current user has specific roles (authenticated, host, issuer). Only returns requested fields.
+         *
+         * @tags Auth
+         * @name CheckRole
+         * @summary Check user roles
+         * @request GET:/api/v1/auth/check-role
+         */
+        checkRole: (query: CheckRoleParams, params: RequestParams = {}) =>
+            this.http.request<CheckRoleData, CheckRoleError>({
+                path: `/api/v1/auth/check-role`,
+                method: "GET",
+                query: query,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Logout user by clearing session and OAuth cookies
+         *
+         * @tags Auth
+         * @name Logout
+         * @summary Logout
+         * @request POST:/api/v1/auth/logout
+         */
+        logout: (params: RequestParams = {}) =>
+            this.http.request<LogoutData, LogoutError>({
+                path: `/api/v1/auth/logout`,
+                method: "POST",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Request Google OAuth
+         *
+         * @tags Auth
+         * @name RequestGoogleOauth
+         * @summary Request Google OAuth
+         * @request GET:/api/v1/auth/request-google-oauth
+         */
+        requestGoogleOauth: (params: RequestParams = {}) =>
+            this.http.request<any, RequestGoogleOauthError>({
+                path: `/api/v1/auth/request-google-oauth`,
+                method: "GET",
+                type: ContentType.Json,
+                ...params,
+            }),
+
+        /**
+         * @description Verify Google OAuth code
+         *
+         * @tags Auth
+         * @name VerifyGoogleOauth
+         * @summary Verify Google OAuth code
+         * @request GET:/api/v1/auth/verify-google-oauth
+         */
+        verifyGoogleOauth: (query: VerifyGoogleOauthParams, params: RequestParams = {}) =>
+            this.http.request<any, VerifyGoogleOauthError>({
+                path: `/api/v1/auth/verify-google-oauth`,
+                method: "GET",
+                query: query,
+                type: ContentType.Json,
+                ...params,
+            }),
+
+        /**
+         * @description Cancel an event registration invitation by ID
+         *
+         * @tags Event Registration Invitation
+         * @name CancelEventRegistrationInvitation
+         * @summary Cancel event registration invitation
+         * @request DELETE:/api/v1/event-registration/invitation
+         */
+        cancelEventRegistrationInvitation: (
+            { eventRegistrationInvitationId, ...query }: CancelEventRegistrationInvitationParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                CancelEventRegistrationInvitationData,
+                CancelEventRegistrationInvitationError
+            >({
+                path: `/api/v1/event-registration/invitation`,
+                method: "DELETE",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Import a list of participants for an event, creating inbox messages and event registration invitations
+         *
+         * @tags Event Registration Invitation
+         * @name ImportEventParticipants
+         * @summary Import event participants
+         * @request POST:/api/v1/event-registration/invitation/:event_id/import
+         */
+        importEventParticipants: (
+            { eventId, ...query }: ImportEventParticipantsParams,
+            request: EventRegistrationImportEventParticipantsRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<ImportEventParticipantsData, ImportEventParticipantsError>({
+                path: `/api/v1/event-registration/invitation/${eventId}/import`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get all event registration invitations for a specific event
+         *
+         * @tags Event Registration Invitation
+         * @name GetEventRegistrationInvitationsByEventId
+         * @summary Get event registration invitations by event ID
+         * @request GET:/api/v1/event-registration/invitation/{eventId}
+         */
+        getEventRegistrationInvitationsByEventId: (
+            { eventId, ...query }: GetEventRegistrationInvitationsByEventIdParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                GetEventRegistrationInvitationsByEventIdData,
+                GetEventRegistrationInvitationsByEventIdError
+            >({
+                path: `/api/v1/event-registration/invitation/${eventId}`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Join an event
+         *
+         * @tags Event Registration
+         * @name JoinEvent
+         * @summary Join event
+         * @request POST:/api/v1/event-registration/join/{event_id}
+         */
+        joinEvent: (
+            { eventId, ...query }: JoinEventParams,
+            request: EventRegistrationJoinEventRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<any, JoinEventError>({
+                path: `/api/v1/event-registration/join/${eventId}`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
+                ...params,
+            }),
+
+        /**
+         * @description Get join event sign message
+         *
+         * @tags Event Registration
+         * @name GetJoinEventSignMessage
+         * @summary Get join event sign message
+         * @request GET:/api/v1/event-registration/join/{event_id}/sign-message
+         */
+        getJoinEventSignMessage: (
+            { eventId, ...query }: GetJoinEventSignMessageParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetJoinEventSignMessageData, GetJoinEventSignMessageError>({
+                path: `/api/v1/event-registration/join/${eventId}/sign-message`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get event registration invitation of user and by event id
+         *
+         * @tags Event Registration Invitation
+         * @name GetEventRegistrationInvitationByUserAndEvent
+         * @summary Get event registration invitation of user and by event id
+         * @request GET:/api/v1/event-registration/my/{event_id}
+         */
+        getEventRegistrationInvitationByUserAndEvent: (
+            { eventId, ...query }: GetEventRegistrationInvitationByUserAndEventParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                GetEventRegistrationInvitationByUserAndEventData,
+                GetEventRegistrationInvitationByUserAndEventError
+            >({
+                path: `/api/v1/event-registration/my/${eventId}`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get events list
+         *
+         * @tags Event
+         * @name GetEventsList
+         * @summary Get events list
+         * @request GET:/api/v1/events
+         */
+        getEventsList: (query: GetEventsListParams, params: RequestParams = {}) =>
+            this.http.request<GetEventsListData, GetEventsListError>({
+                path: `/api/v1/events`,
+                method: "GET",
+                query: query,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Create a new event with banner image upload. Chain ID is automatically set from environment configuration.
+         *
+         * @tags Event
+         * @name CreateEvent
+         * @summary Create a new event
+         * @request POST:/api/v1/events
+         */
+        createEvent: (data: CreateEventPayload, params: RequestParams = {}) =>
+            this.http.request<CreateEventData, CreateEventError>({
+                path: `/api/v1/events`,
+                method: "POST",
+                body: data,
+                type: ContentType.FormData,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get events by owner credentials ID
+         *
+         * @name GetEventsByOwnerCredentialsId
+         * @summary Get events by owner credentials ID
+         * @request GET:/api/v1/events/owner-credentials/{owner_credential_id}
+         */
+        getEventsByOwnerCredentialsId: (
+            { ownerCredentialId, ...query }: GetEventsByOwnerCredentialsIdParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                GetEventsByOwnerCredentialsIdData,
+                GetEventsByOwnerCredentialsIdError
+            >({
+                path: `/api/v1/events/owner-credentials/${ownerCredentialId}`,
+                method: "GET",
+                query: query,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get event by ID
+         *
+         * @tags Events
+         * @name GetEventById
+         * @summary Get event by ID
+         * @request GET:/api/v1/events/{event_id}
+         */
+        getEventById: ({ eventId, ...query }: GetEventByIdParams, params: RequestParams = {}) =>
+            this.http.request<GetEventByIdData, GetEventByIdError>({
+                path: `/api/v1/events/${eventId}`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Update an existing event with optional banner and icon image upload
+         *
+         * @tags Event
+         * @name UpdateEvent
+         * @summary Update an event
+         * @request PUT:/api/v1/events/{event_id}
+         */
+        updateEvent: (
+            { eventId, ...query }: UpdateEventParams,
+            data: UpdateEventPayload,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<UpdateEventData, UpdateEventError>({
+                path: `/api/v1/events/${eventId}`,
+                method: "PUT",
+                body: data,
+                type: ContentType.FormData,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Delete event by ID
+         *
+         * @tags Event
+         * @name DeleteEventById
+         * @summary Delete event by ID
+         * @request DELETE:/api/v1/events/{event_id}
+         */
+        deleteEventById: (
+            { eventId, ...query }: DeleteEventByIdParams,
+            delete_event_request: EventDeleteEventRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<DeleteEventByIdData, DeleteEventByIdError>({
+                path: `/api/v1/events/${eventId}`,
+                method: "DELETE",
+                body: delete_event_request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Delete event certificate configuration for an event
+         *
+         * @tags EventConfig
+         * @name DeleteEventCertificateConfig
+         * @summary Delete event certificate config
+         * @request DELETE:/api/v1/events/{event_id}/certificate-config
+         */
+        deleteEventCertificateConfig: (
+            { eventId, ...query }: DeleteEventCertificateConfigParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<DeleteEventCertificateConfigData, DeleteEventCertificateConfigError>({
+                path: `/api/v1/events/${eventId}/certificate-config`,
+                method: "DELETE",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get all certificates for an event
+         *
+         * @tags Event Certificates
+         * @name GetEventCertificates
+         * @summary Get event certificates
+         * @request GET:/api/v1/events/{event_id}/certificates
+         */
+        getEventCertificates: (
+            { eventId, ...query }: GetEventCertificatesParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetEventCertificatesData, GetEventCertificatesError>({
+                path: `/api/v1/events/${eventId}/certificates`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Import certificate receivers for an event, deploys event certificate contract, and creates certificate records
+         *
+         * @tags Event Certificates
+         * @name ImportCertificateReceivers
+         * @summary Import certificate receivers for an event
+         * @request POST:/api/v1/events/{event_id}/certificates/import
+         */
+        importCertificateReceivers: (
+            { eventId, ...query }: ImportCertificateReceiversParams,
+            request: CoreApiInternalHandlerEventImportCertificateReceiversRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<ImportCertificateReceiversData, ImportCertificateReceiversError>({
+                path: `/api/v1/events/${eventId}/certificates/import`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Revoke event certificates by certificate IDs
+         *
+         * @tags Event Certificates
+         * @name RevokeEventCertificates
+         * @summary Revoke event certificates
+         * @request POST:/api/v1/events/{event_id}/certificates/revoke
+         */
+        revokeEventCertificates: (
+            { eventId, ...query }: RevokeEventCertificatesParams,
+            request: CoreApiInternalHandlerEventRevokeEventCertificatesRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<RevokeEventCertificatesData, RevokeEventCertificatesError>({
+                path: `/api/v1/events/${eventId}/certificates/revoke`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Sign all event certificates for an event by issuer
+         *
+         * @tags Event Certificates
+         * @name SignEventCertificates
+         * @summary Sign event certificates
+         * @request POST:/api/v1/events/{event_id}/certificates/sign
+         */
+        signEventCertificates: (
+            { eventId, ...query }: SignEventCertificatesParams,
+            request: CoreApiInternalHandlerEventSignEventCertificatesRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<SignEventCertificatesData, SignEventCertificatesError>({
+                path: `/api/v1/events/${eventId}/certificates/sign`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get the event certificate configuration for an event
+         *
+         * @name GetEventCertificateConfig
+         * @summary Get event certificate config
+         * @request GET:/api/v1/events/{event_id}/config/certificate
+         */
+        getEventCertificateConfig: (
+            { eventId, ...query }: GetEventCertificateConfigParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetEventCertificateConfigData, GetEventCertificateConfigError>({
+                path: `/api/v1/events/${eventId}/config/certificate`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Update the event certificate configuration for an event
+         *
+         * @name UpdateEventCertificateConfig
+         * @summary Update event certificate config
+         * @request PUT:/api/v1/events/{event_id}/config/certificate
+         */
+        updateEventCertificateConfig: (
+            { eventId, ...query }: UpdateEventCertificateConfigParams,
+            data: UpdateEventCertificateConfigPayload,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<UpdateEventCertificateConfigData, UpdateEventCertificateConfigError>({
+                path: `/api/v1/events/${eventId}/config/certificate`,
+                method: "PUT",
+                body: data,
+                type: ContentType.FormData,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Check if the password is correct for an event
+         *
+         * @tags Event Config
+         * @name CheckEventPassword
+         * @summary Check event password
+         * @request POST:/api/v1/events/{event_id}/config/password-check
+         */
+        checkEventPassword: (
+            { eventId, ...query }: CheckEventPasswordParams,
+            request: EventconfigCheckEventPasswordBody,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<CheckEventPasswordData, CheckEventPasswordError>({
+                path: `/api/v1/events/${eventId}/config/password-check`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get event registration configuration for an event
+         *
+         * @tags Events
+         * @name GetEventRegistrationConfig
+         * @summary Get event registration config view model
+         * @request GET:/api/v1/events/{event_id}/config/registration
+         */
+        getEventRegistrationConfig: (
+            { eventId, ...query }: GetEventRegistrationConfigParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetEventRegistrationConfigData, GetEventRegistrationConfigError>({
+                path: `/api/v1/events/${eventId}/config/registration`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Update the event registration configuration for an event
+         *
+         * @name UpdateEventRegistrationConfig
+         * @summary Update event registration config
+         * @request PUT:/api/v1/events/{event_id}/config/registration
+         */
+        updateEventRegistrationConfig: (
+            { eventId, ...query }: UpdateEventRegistrationConfigParams,
+            request: EventconfigUpdateEventRegistrationConfigRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                UpdateEventRegistrationConfigData,
+                UpdateEventRegistrationConfigError
+            >({
+                path: `/api/v1/events/${eventId}/config/registration`,
+                method: "PUT",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get the event contract for an event
+         *
+         * @tags Events
+         * @name GetEventContractByEventId
+         * @summary Get event contract by event ID
+         * @request GET:/api/v1/events/{event_id}/contracts
+         */
+        getEventContractByEventId: (
+            { eventId, ...query }: GetEventContractByEventIdParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetEventContractByEventIdData, GetEventContractByEventIdError>({
+                path: `/api/v1/events/${eventId}/contracts`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Update the event contract for an event
+         *
+         * @name UpdateEventContract
+         * @summary Update event contract
+         * @request PUT:/api/v1/events/{event_id}/contracts
+         */
+        updateEventContract: (
+            { eventId, ...query }: UpdateEventContractParams,
+            request: EventUpdateEventContractRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<UpdateEventContractData, UpdateEventContractError>({
+                path: `/api/v1/events/${eventId}/contracts`,
+                method: "PUT",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Create a new event contract for an event
+         *
+         * @tags Event
+         * @name CreateEventContract
+         * @summary Create event contract
+         * @request POST:/api/v1/events/{event_id}/contracts
+         */
+        createEventContract: (
+            { eventId, ...query }: CreateEventContractParams,
+            request: EventCreateEventContractRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<CreateEventContractData, CreateEventContractError>({
+                path: `/api/v1/events/${eventId}/contracts`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Delete event contract for an event
+         *
+         * @tags Event Contracts
+         * @name DeleteEventContract
+         * @summary Delete event contract
+         * @request DELETE:/api/v1/events/{event_id}/contracts
+         */
+        deleteEventContract: (
+            { eventId, ...query }: DeleteEventContractParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<DeleteEventContractData, DeleteEventContractError>({
+                path: `/api/v1/events/${eventId}/contracts`,
+                method: "DELETE",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get all event issuers for an event
+         *
+         * @tags Events
+         * @name GetEventIssuersByEventId
+         * @summary Get event issuers by event ID
+         * @request GET:/api/v1/events/{event_id}/issuers
+         */
+        getEventIssuersByEventId: (
+            { eventId, ...query }: GetEventIssuersByEventIdParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetEventIssuersByEventIdData, GetEventIssuersByEventIdError>({
+                path: `/api/v1/events/${eventId}/issuers`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Update an event issuer
+         *
+         * @name UpdateEventIssuer
+         * @summary Update event issuer
+         * @request PUT:/api/v1/events/{event_id}/issuers
+         */
+        updateEventIssuer: (
+            { eventId, ...query }: UpdateEventIssuerParams,
+            request: UpdateEventIssuerPayload,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<UpdateEventIssuerData, UpdateEventIssuerError>({
+                path: `/api/v1/events/${eventId}/issuers`,
+                method: "PUT",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Create a new event issuer for an event
+         *
+         * @name CreateEventIssuer
+         * @summary Create event issuer
+         * @request POST:/api/v1/events/{event_id}/issuers
+         */
+        createEventIssuer: (
+            { eventId, ...query }: CreateEventIssuerParams,
+            request: EventCreateEventIssuerRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<CreateEventIssuerData, CreateEventIssuerError>({
+                path: `/api/v1/events/${eventId}/issuers`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get an event issuer by its ID
+         *
+         * @name GetEventIssuerById
+         * @summary Get event issuer by ID
+         * @request GET:/api/v1/events/{event_id}/issuers/{issuer_id}
+         */
+        getEventIssuerById: (
+            { eventId, issuerId, ...query }: GetEventIssuerByIdParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetEventIssuerByIdData, GetEventIssuerByIdError>({
+                path: `/api/v1/events/${eventId}/issuers/${issuerId}`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Delete an event issuer
+         *
+         * @tags Events
+         * @name DeleteEventIssuer
+         * @summary Delete event issuer
+         * @request DELETE:/api/v1/events/{event_id}/issuers/{issuer_id}
+         */
+        deleteEventIssuer: (
+            { eventId, issuerId, ...query }: DeleteEventIssuerParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<DeleteEventIssuerData, DeleteEventIssuerError>({
+                path: `/api/v1/events/${eventId}/issuers/${issuerId}`,
+                method: "DELETE",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Create a new event registration configuration for an event
+         *
+         * @name CreateEventRegistrationConfig
+         * @summary Create event registration config
+         * @request POST:/api/v1/events/{event_id}/registration-config
+         */
+        createEventRegistrationConfig: (
+            { eventId, ...query }: CreateEventRegistrationConfigParams,
+            request: EventconfigCreateEventRegistrationConfigRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                CreateEventRegistrationConfigData,
+                CreateEventRegistrationConfigError
+            >({
+                path: `/api/v1/events/${eventId}/registration-config`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Delete the event registration configuration for an event
+         *
+         * @name DeleteEventRegistrationConfig
+         * @summary Delete event registration config
+         * @request DELETE:/api/v1/events/{event_id}/registration-config
+         */
+        deleteEventRegistrationConfig: (
+            { eventId, ...query }: DeleteEventRegistrationConfigParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                DeleteEventRegistrationConfigData,
+                DeleteEventRegistrationConfigError
+            >({
+                path: `/api/v1/events/${eventId}/registration-config`,
+                method: "DELETE",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get event viewmodel by ID
+         *
+         * @tags Events
+         * @name GetEventViewmodelById
+         * @summary Get event viewmodel by ID
+         * @request GET:/api/v1/events/{event_id}/viewmodel
+         */
+        getEventViewmodelById: (
+            { eventId, ...query }: GetEventViewmodelByIdParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetEventViewmodelByIdData, GetEventViewmodelByIdError>({
+                path: `/api/v1/events/${eventId}/viewmodel`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get verified issuers with optional search query
+         *
+         * @tags Issuer
+         * @name GetVerifiedIssuers
+         * @summary Get verified issuers
+         * @request GET:/api/v1/issuers
+         */
+        getVerifiedIssuers: (query: GetVerifiedIssuersParams, params: RequestParams = {}) =>
+            this.http.request<GetVerifiedIssuersData, GetVerifiedIssuersError>({
+                path: `/api/v1/issuers`,
+                method: "GET",
+                query: query,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get events assigned to the authenticated issuer for signing
+         *
+         * @tags Issuer
+         * @name GetIssuerEvents
+         * @summary Get events for issuer signing
+         * @request GET:/api/v1/issuers/events
+         */
+        getIssuerEvents: (query: GetIssuerEventsParams, params: RequestParams = {}) =>
+            this.http.request<GetIssuerEventsData, GetIssuerEventsError>({
+                path: `/api/v1/issuers/events`,
+                method: "GET",
+                query: query,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Check onboard status
+         *
+         * @tags Onboard
+         * @name CheckOnboardStatus
+         * @summary Check onboard status
+         * @request POST:/api/v1/onboard/check-onboard-status
+         */
+        checkOnboardStatus: (
+            message_signature: OnboardCheckOnboardStatusRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<CheckOnboardStatusData, CheckOnboardStatusError>({
+                path: `/api/v1/onboard/check-onboard-status`,
+                method: "POST",
+                body: message_signature,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Register a new user with Google OAuth
+         *
+         * @tags Onboard
+         * @name RegisterWithGoogleOauth
+         * @summary Register a new user with Google OAuth
+         * @request POST:/api/v1/onboard/register-with-google-oauth
+         */
+        registerWithGoogleOauth: (
+            password: OnboardRegisterWithGoogleOAuthRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<RegisterWithGoogleOauthData, RegisterWithGoogleOauthError>({
+                path: `/api/v1/onboard/register-with-google-oauth`,
+                method: "POST",
+                body: password,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Register a new user with wallet address
+         *
+         * @tags Onboard
+         * @name RegisterWithWallet
+         * @summary Register a new user with wallet address
+         * @request POST:/api/v1/onboard/register-with-wallet
+         */
+        registerWithWallet: (
+            signed_message: OnboardRegisterWithWalletRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<RegisterWithWalletData, RegisterWithWalletError>({
+                path: `/api/v1/onboard/register-with-wallet`,
+                method: "POST",
+                body: signed_message,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Retrieve preset message for the client to sign to register
+         *
+         * @tags Onboard
+         * @name GetSignMessage
+         * @summary Get preset message for the client to sign to register
+         * @request GET:/api/v1/onboard/sign-message
+         */
+        getSignMessage: (params: RequestParams = {}) =>
+            this.http.request<GetSignMessageData, any>({
+                path: `/api/v1/onboard/sign-message`,
+                method: "GET",
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Create a profile
+         *
+         * @tags Profile
+         * @name CreateProfile
+         * @summary Create a profile
+         * @request POST:/api/v1/profile
+         */
+        createProfile: (profile: ProfileCreateProfileRequest, params: RequestParams = {}) =>
+            this.http.request<CreateProfileData, CreateProfileError>({
+                path: `/api/v1/profile`,
+                method: "POST",
+                body: profile,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Update a profile by credential ID
+         *
+         * @tags Profile
+         * @name UpdateProfileByCredentialId
+         * @summary Update a profile by credential ID
+         * @request PATCH:/api/v1/profile/credential/{credential_id}
+         */
+        updateProfileByCredentialId: (
+            { credentialId, ...query }: UpdateProfileByCredentialIdParams,
+            request: ProfileUpdateProfileRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<UpdateProfileByCredentialIdData, UpdateProfileByCredentialIdError>({
+                path: `/api/v1/profile/credential/${credentialId}`,
+                method: "PATCH",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get my profile
+         *
+         * @tags Profile
+         * @name GetMyProfile
+         * @summary Get my profile
+         * @request GET:/api/v1/profile/my
+         */
+        getMyProfile: (params: RequestParams = {}) =>
+            this.http.request<GetMyProfileData, GetMyProfileError>({
+                path: `/api/v1/profile/my`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Verify password
+         *
+         * @tags Profile
+         * @name VerifyPassword
+         * @summary Verify password
+         * @request POST:/api/v1/profile/password/verify
+         */
+        verifyPassword: (
+            verifyPasswordRequest: ProfileVerifyPasswordRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<VerifyPasswordData, VerifyPasswordError>({
+                path: `/api/v1/profile/password/verify`,
+                method: "POST",
+                body: verifyPasswordRequest,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+    };
+    read = {
+        /**
+         * No description
+         *
+         * @tags Inbox Messages
+         * @name ReadUpdate
+         * @request PUT:/inbox-messages/read
+         * @secure
+         */
+        readUpdate: (
+            { messageId, ...query }: ReadUpdateParams,
+            request: InboxmessagesMarkMessageAsReadRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<ReadUpdateData, any>({
+                path: `/inbox-messages/read`,
+                method: "PUT",
+                body: request,
+                secure: true,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+    };
+    readAll = {
+        /**
+         * No description
+         *
+         * @tags Inbox Messages
+         * @name ReadAllUpdate
+         * @request PUT:/inbox-messages/read-all
+         * @secure
+         */
+        readAllUpdate: (params: RequestParams = {}) =>
+            this.http.request<ReadAllUpdateData, any>({
+                path: `/inbox-messages/read-all`,
+                method: "PUT",
+                secure: true,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+    };
+    inboxMessageId = {
+        /**
+         * @description Get inbox message
+         *
+         * @tags Inbox Messages
+         * @name InboxMessagesDetail
+         * @summary Get inbox message
+         * @request GET:/inbox-messages/{inbox_message_id}
+         * @secure
+         */
+        inboxMessagesDetail: (
+            { inboxMessageId, ...query }: InboxMessagesDetailParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<InboxMessagesDetailData, any>({
+                path: `/inbox-messages/${inboxMessageId}`,
+                method: "GET",
+                secure: true,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+    };
 }

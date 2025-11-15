@@ -15,6 +15,11 @@ import (
 	"github.com/google/uuid"
 )
 
+type JoinEventRequest struct {
+	Password  *string `json:"password,omitempty"`
+	Signature *string `json:"signature,omitempty"`
+}
+
 type GetJoinEventSignMessageResponse struct {
 	SignMessage string `json:"sign_message"`
 }
@@ -106,6 +111,7 @@ func (r *JoinEventBody) Parse(ctx *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param event_id path string true "Event ID"
+// @Param request body JoinEventRequest true "Join event request"
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse

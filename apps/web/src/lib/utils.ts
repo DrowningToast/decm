@@ -5,7 +5,11 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+export const delay = (ms: number): Promise<NodeJS.Timeout> => {
+    return new Promise((resolve) => {
+        const timeoutId = setTimeout(() => resolve(timeoutId), ms);
+    });
+};
 
 export function formatEthereumAddress(address: string): string {
     if (address.length <= 10) {

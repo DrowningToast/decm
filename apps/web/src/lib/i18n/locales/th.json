@@ -1266,7 +1266,36 @@
             "invitationRequired": "ต้องการคำเชิญ"
         },
         "wallet": {
-            "create_profile_error": "ไม่สามารถสร้างโปรไฟล์ได้ กรุณาลองอีกครั้ง"
+            "create_profile_error": "ไม่สามารถสร้างโปรไฟล์ได้ กรุณาลองอีกครั้ง",
+            "create_profile_success": "สร้างโปรไฟล์สำเร็จ"
+        },
+        "generic": {
+            "unauthenticated_response": "คุณต้องเข้าสู่ระบบเพื่อเข้าถึงหน้านี้ กรุณาเข้าสู่ระบบ",
+            "unauthorized_response": "คุณไม่มีสิทธิ์เข้าถึงหน้านี้ โปรดติดต่อผู้ดูแลระบบ",
+            "sign_out_success": "คุณได้ออกจากระบบเรียบร้อยแล้ว"
+        }
+    },
+    "accountExists": {
+        "title": "ยินดีต้อนรับกลับ!",
+        "description": "ดูเหมือนว่าคุณมีบัญชีกับเราอยู่แล้ว กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ",
+        "signInButton": "เข้าสู่ระบบบัญชีของคุณ"
+    },
+    "editEvent": {
+        "success": "แก้ไขกิจกรรมสำเร็จ"
+    },
+    "deleteEvent": {
+        "success": "ลบกิจกรรมสำเร็จ"
+    },
+    "createEvent": {
+        "success": "สร้างกิจกรรมสำเร็จ"
+    },
+    "examples": {
+        "buttonSizes": "ขนาดปุ่ม",
+        "buttons": {
+            "small": "เล็ก",
+            "default": "ค่าเริ่มต้น",
+            "large": "ใหญ่",
+            "extraLarge": "พิเศษขนาดใหญ่"
         }
     }
 }

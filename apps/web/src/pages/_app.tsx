@@ -11,6 +11,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { AppKitProvider } from "@/config/walletConnect";
 import { AuthProvider } from "@/context/AuthContext";
 import { WalletProvider } from "@/context/WalletContext";
+import { SignPasswordModalProvider } from "@/components/providers/SignPasswordModal/SignPasswordModaProvider";
 
 // Lazy load the DevTools to avoid bundle issues
 const ReactQueryDevtools = lazy(() =>
@@ -37,7 +38,9 @@ const Layout = () => {
                         <main className="font-secondary bg-background text-foreground">
                             <HelmetProvider>
                                 <AuthProvider>
-                                    <Outlet />
+                                    <SignPasswordModalProvider>
+                                        <Outlet />
+                                    </SignPasswordModalProvider>
                                     {process.env.NODE_ENV === "development" && (
                                         <Suspense fallback={null}>
                                             <ReactQueryDevtools initialIsOpen={false} />

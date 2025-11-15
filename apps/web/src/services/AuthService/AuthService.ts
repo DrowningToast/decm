@@ -270,6 +270,25 @@ export class AuthService {
         const response = await this._coreApi.v1.getMyProfile();
         return mapProfileWithAuthViewModel(response);
     }
+
+    public async verifyPassword(
+        authenticationCredentialId: string,
+        password: string,
+    ): Promise<{ isSuccess: boolean; message: string }> {
+        try {
+            const response = await this._coreApi.v1.verifyPassword({
+                authentication_credential_id: authenticationCredentialId,
+                password,
+            });
+            return {
+                isSuccess: response.is_success,
+                message: response.message,
+            };
+        } catch (error) {
+            console.error("Password verification failed:", error);
+            throw error;
+        }
+    }
 }
 
 // Default instance
