@@ -80,13 +80,16 @@ export const CertificateSettingsPage = ({
                 (keyword) => keyword.keyword === "{{ academicInstitutionName }}",
             );
 
+            const certificateTitle = certificateTemplate.detectedKeywords.find(
+                (keyword) => keyword.keyword === "{{ certificate_title }}",
+            );
+
+            const certificateSubtitle = certificateTemplate.detectedKeywords.find(
+                (keyword) => keyword.keyword === "{{ certificate_subtitle }}",
+            );
+
             if (certificateTemplate.svgFile && !name) {
                 toast.error(t("certificateSettings.nameNotFound"));
-                return;
-            }
-
-            if (certificateTemplate.svgFile && !eventName) {
-                toast.error(t("certificateSettings.eventNameNotFound"));
                 return;
             }
 
@@ -101,6 +104,14 @@ export const CertificateSettingsPage = ({
             if (acedmicInstitutionName) {
                 req.academic_institution_pos_x = acedmicInstitutionName.x;
                 req.academic_institution_pos_y = acedmicInstitutionName.y;
+            }
+
+            // Log certificate title and subtitle positions for future implementation
+            if (certificateTitle) {
+                console.log("Certificate Title Position:", certificateTitle);
+            }
+            if (certificateSubtitle) {
+                console.log("Certificate Subtitle Position:", certificateSubtitle);
             }
 
             await updateCertificateConfig(req);
