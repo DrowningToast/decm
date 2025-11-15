@@ -62,12 +62,6 @@ export const CertificateSettingsPage = ({
     // Handle form submission
     const handleSubmit = async () => {
         try {
-            // TODO: Implement API call to save certificate settings
-            console.log("Event ID:", eventId);
-            console.log("Selected Issuers:", issuerManagement.selectedIssuers);
-            console.log("SVG File:", certificateTemplate.svgFile);
-            console.log("Detected Keywords:", certificateTemplate.detectedKeywords);
-
             const name = certificateTemplate.detectedKeywords.find(
                 (keyword) => keyword.keyword === "{{ name }}",
             );
@@ -78,14 +72,6 @@ export const CertificateSettingsPage = ({
 
             const acedmicInstitutionName = certificateTemplate.detectedKeywords.find(
                 (keyword) => keyword.keyword === "{{ academicInstitutionName }}",
-            );
-
-            const certificateTitle = certificateTemplate.detectedKeywords.find(
-                (keyword) => keyword.keyword === "{{ certificate_title }}",
-            );
-
-            const certificateSubtitle = certificateTemplate.detectedKeywords.find(
-                (keyword) => keyword.keyword === "{{ certificate_subtitle }}",
             );
 
             if (certificateTemplate.svgFile && !name) {
@@ -104,14 +90,6 @@ export const CertificateSettingsPage = ({
             if (acedmicInstitutionName) {
                 req.academic_institution_pos_x = acedmicInstitutionName.x;
                 req.academic_institution_pos_y = acedmicInstitutionName.y;
-            }
-
-            // Log certificate title and subtitle positions for future implementation
-            if (certificateTitle) {
-                console.log("Certificate Title Position:", certificateTitle);
-            }
-            if (certificateSubtitle) {
-                console.log("Certificate Subtitle Position:", certificateSubtitle);
             }
 
             await updateCertificateConfig(req);
