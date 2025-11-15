@@ -3,6 +3,7 @@ import { coreApiClient } from "@/lib/api/api";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import type { CoreApiInternalHandlerEventSignEventCertificatesResponse } from "@decm/api";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 interface SignEventCertificatesParams {
     eventId: string;
@@ -25,7 +26,7 @@ export function useSignEventCertificates() {
             toast.success(t("issuer.sign.signingSuccess", { count: certificatesCount }));
             // Invalidate related queries to refresh data
             queryClient.invalidateQueries({
-                queryKey: ["issuer", "events"],
+                queryKey: QUERY_KEY.event.all,
             });
         },
         onError: (error) => {
