@@ -68,17 +68,9 @@ func (h *Handler) UpdateEventCertificateConfig(ctx *fiber.Ctx) error {
 
 	if requestBody.EventNamePosX != nil {
 		params.EventNamePosX = requestBody.EventNamePosX
-	} else {
-		// Default to 0 if not provided
-		defaultPosX := 0.0
-		params.EventNamePosX = &defaultPosX
 	}
 	if requestBody.EventNamePosY != nil {
 		params.EventNamePosY = requestBody.EventNamePosY
-	} else {
-		// Default to 0 if not provided
-		defaultPosY := 0.0
-		params.EventNamePosY = &defaultPosY
 	}
 	if requestBody.NamePosX != nil {
 		params.NamePosX = requestBody.NamePosX
