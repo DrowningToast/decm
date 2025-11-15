@@ -93,6 +93,9 @@ export interface EventIssuer {
     issuerProfile?: Profile;
     signMessage?: string;
     signature?: string;
+
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export class EventService {

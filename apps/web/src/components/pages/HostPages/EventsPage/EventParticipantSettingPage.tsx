@@ -3,10 +3,9 @@ import { type ParticipantSettingsData } from "@/lib/schemas/participantSettingsS
 
 import SectionContainer from "@/components/container/SectionContainer";
 import { useUpdateParticipantSetting } from "@/components/forms/ParticipantSettingsForm/useUpdateParticipantSetting";
-import type { EntityEventType, EventconfigUpdateEventRegistrationConfigRequest } from "@decm/api";
-import { toEventRegistrationConfigStatusNumber } from "@/lib/events/event.utils";
 import { useEventViewModelUsecase } from "@/components/pages/Participant/Events/Detail/useEventViewModelUsecase";
 import { useEventRegistrationConfigUsecase } from "@/hooks/events/useEventRegistrationConfigUsecase";
+import type { EventRegistrationConfiguration } from "@/services/EventRegistration/EventRegistration";
 
 interface EventParticipantSettingPageProps {
     eventId: string;
@@ -27,34 +26,39 @@ export const EventParticipantSettingPage = ({ eventId }: EventParticipantSetting
     }
 
     const onSubmit = async (data: ParticipantSettingsData) => {
-        const params: EventconfigUpdateEventRegistrationConfigRequest = {
-            academic_email_requirement_status: toEventRegistrationConfigStatusNumber(
-                data.academicEmail,
-            ),
-            academic_institution_requirement_status: toEventRegistrationConfigStatusNumber(
-                data.academicInstitution,
-            ),
-            address_requirement_status: toEventRegistrationConfigStatusNumber(data.address),
-            bio_requirement_status: toEventRegistrationConfigStatusNumber(data.bio),
-            email_requirement_status: toEventRegistrationConfigStatusNumber(data.email),
-            first_name_requirement_status: toEventRegistrationConfigStatusNumber(data.firstName),
-            last_name_requirement_status: toEventRegistrationConfigStatusNumber(data.lastName),
-            phone_number_requirement_status: toEventRegistrationConfigStatusNumber(
-                data.phoneNumber,
-            ),
-            final_call_for_registration: data.finalCallRegistrationDate
-                ? new Date(data.finalCallRegistrationDate).toISOString()
+        const params: EventRegistrationConfiguration = {
+            academicEmail: data.academicEmail,
+            academicInstitution: data.academicInstitution,
+            address: data.address,
+            bio: data.bio,
+            email: data.email,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            phoneNumber: data.phoneNumber,
+            finalCallForRegistration: data.finalCallRegistrationDate
+                ? new Date(data.finalCallRegistrationDate)
                 : undefined,
-            event_type: data.eventType as EntityEventType,
-            is_booking_request_required: data.isBookingRequired,
-            is_ticket_transferable: data.isTicketTransferable,
+            // TODO: Add these fields
+            // is_booking_request_required: data.isBookingRequired,
+            // is_ticket_transferable: data.isTicketTransferable,
         };
 
         if (data.requireRegistrationPassword) {
-            params.registration_password = data.registrationPassword ?? undefined;
+            params.registrationPassword = data.registrationPassword ?? undefined;
         }
 
-        await updateParticipantSetting(params);
+        await updateParticipantSetting({
+            academicEmail: params.academicEmail,
+            academicInstitution: params.academicInstitution,
+            address: params.address,
+            bio: params.bio,
+            email: params.email,
+            firstName: params.firstName,
+            lastName: params.lastName,
+            phoneNumber: params.phoneNumber,
+            finalCallForRegistration: params.finalCallForRegistration,
+            registrationPassword: params.registrationPassword,
+        });
     };
 
     console.log("eventRegistrationConfig", eventRegistrationConfig);

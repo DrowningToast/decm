@@ -20,11 +20,7 @@ import { CheckCircle2Icon, CloudUploadIcon, ExternalLinkIcon } from "lucide-reac
 import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
 import { issuerColumns } from "./columns/issuer-columns";
-import type {
-    GetEventCertificateConfigData,
-    GetEventContractByEventIdData,
-    GetEventIssuersByEventIdData,
-} from "@decm/api";
+import type { GetEventCertificateConfigData, GetEventContractByEventIdData } from "@decm/api";
 import { formatEthereumAddress } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState, useMemo, useCallback, useEffect } from "react";
@@ -40,14 +36,14 @@ import type {
     EventRegistrationInvitation,
 } from "@/services/EventRegistration/EventRegistration";
 import { EventStatusesViewModel, EventTypesViewModel } from "./ViewModel";
-import type { EventViewModel } from "@/services/EventService/EventService";
+import type { EventIssuer, EventViewModel } from "@/services/EventService/EventService";
 
 interface HostEventDetailsPageProps {
     eventId: string;
     event: EventViewModel;
     eventRegistrationConfig: EventRegistrationConfiguration;
     eventCertificateConfig?: GetEventCertificateConfigData;
-    eventIssuers?: GetEventIssuersByEventIdData;
+    eventIssuers?: EventIssuer[];
     eventContract?: GetEventContractByEventIdData;
     eventInvitations?: EventRegistrationInvitation[];
 }
@@ -162,7 +158,7 @@ export default function HostEventDetailsPage({
 
     // Certificate state logic
     const hasCertificateConfig = !!eventCertificateConfig;
-    const allIssuersSigned = eventIssuers?.every((issuer) => issuer.is_signed === 1) ?? false;
+    const allIssuersSigned = eventIssuers?.every((issuer) => issuer.isSigned);
 
     // Fetch event certificates using the hook
     const { certificates: eventCertificates, isLoading: certificatesLoading } =

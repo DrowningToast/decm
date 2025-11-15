@@ -2,7 +2,6 @@ package eventconfig
 
 import (
 	"apps/backend/common/log"
-	roleguard "apps/backend/core-api/internal/middleware/role_guard"
 
 	"github.com/gofiber/fiber/v2"
 )

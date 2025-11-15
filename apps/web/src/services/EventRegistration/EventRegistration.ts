@@ -4,6 +4,7 @@ import {
     mapEntityEventRegistrationConfigToEventRegistrationConfiguration,
     mapEntityEventRegistrationInvitationToEventRegistrationInvitation,
     mapEntityInboxMessageToInboxMessage,
+    mapRegistrationRequirementStatusToNumber,
 } from "./mapper";
 
 export type RegistrationRequirementStatus = "required" | "optional" | "not_required";
@@ -21,6 +22,7 @@ export interface RegistrationRequirement {
 
 export interface EventRegistrationConfiguration extends RegistrationRequirement {
     finalCallForRegistration?: Date;
+    registrationPassword?: string;
 }
 
 export interface EventRegistrationInvitation {
@@ -82,6 +84,43 @@ export class EventRegistrationService {
                 ),
             inbox: mapEntityInboxMessageToInboxMessage(response.inbox),
         };
+    }
+
+    public async updateConfiguration(
+        eventId: string,
+        configuration: EventRegistrationConfiguration,
+    ): Promise<void> {
+        await this._coreApi.v1.updateEventRegistrationConfig(
+            { eventId },
+            {
+                academic_email_requirement_status: mapRegistrationRequirementStatusToNumber(
+                    configuration.academicEmail,
+                ),
+                academic_institution_requirement_status: mapRegistrationRequirementStatusToNumber(
+                    configuration.academicInstitution,
+                ),
+                address_requirement_status: mapRegistrationRequirementStatusToNumber(
+                    configuration.address,
+                ),
+                bio_requirement_status: mapRegistrationRequirementStatusToNumber(configuration.bio),
+                email_requirement_status: mapRegistrationRequirementStatusToNumber(
+                    configuration.email,
+                ),
+                first_name_requirement_status: mapRegistrationRequirementStatusToNumber(
+                    configuration.firstName,
+                ),
+                last_name_requirement_status: mapRegistrationRequirementStatusToNumber(
+                    configuration.lastName,
+                ),
+                phone_number_requirement_status: mapRegistrationRequirementStatusToNumber(
+                    configuration.phoneNumber,
+                ),
+                // TODO
+                is_booking_request_required: false,
+                is_ticket_transferable: false,
+            },
+        );
+        return;
     }
 }
 

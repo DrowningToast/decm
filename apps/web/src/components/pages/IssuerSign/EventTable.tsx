@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/table";
 import { EventStatusBadge } from "./EventStatusBadge";
 import { EventActions } from "./EventActions";
-import type { GetIssuerEventsData } from "@decm/api";
+import type { IssuerEvent } from "@/services/IssuerService/IssuerService";
 
 interface EventTableProps {
-    events: GetIssuerEventsData;
+    events: IssuerEvent[];
     type: "pending" | "signed";
     onActionClick?: (eventId: string) => void;
 }
@@ -47,7 +47,7 @@ export const EventTable: React.FC<EventTableProps> = ({ events, type, onActionCl
                     {events.map((event) => (
                         <TableRow key={event.id}>
                             <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-primary">
-                                {event.event_title}
+                                {event.eventTitle}
                             </TableCell>
                             <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-primary">
                                 {/* TODO: Get host name from profile API */}
@@ -63,7 +63,7 @@ export const EventTable: React.FC<EventTableProps> = ({ events, type, onActionCl
                             <TableCell className="px-6 py-4 whitespace-nowrap text-sm">
                                 <EventActions
                                     type={type}
-                                    eventId={event.event_id || ""}
+                                    eventId={event.eventId || ""}
                                     onActionClick={onActionClick}
                                 />
                             </TableCell>

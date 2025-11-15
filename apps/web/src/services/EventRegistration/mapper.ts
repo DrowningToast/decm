@@ -17,7 +17,9 @@ export type EventRegistrationConfigResponse = Omit<
     "created_at" | "updated_at"
 >;
 
-export const mapRegistrationRequirementStatus = (status: number): RegistrationRequirementStatus => {
+export const mapToRegistrationRequirementStatus = (
+    status: number,
+): RegistrationRequirementStatus => {
     switch (status) {
         case 0:
             return "not_required";
@@ -29,30 +31,46 @@ export const mapRegistrationRequirementStatus = (status: number): RegistrationRe
     throw new Error(`Invalid registration requirement status: ${status}`);
 };
 
+export const mapRegistrationRequirementStatusToNumber = (
+    status: RegistrationRequirementStatus,
+): number => {
+    switch (status) {
+        case "not_required":
+            return 0;
+        case "required":
+            return 1;
+        case "optional":
+            return 2;
+    }
+    throw new Error(`Invalid registration requirement status: ${status}`);
+};
+
 export const mapEntityEventRegistrationConfigRequirementStatus = (
     entityEventRegistrationConfig: EventRegistrationConfigResponse,
 ): RegistrationRequirement => {
     return {
-        firstName: mapRegistrationRequirementStatus(
+        firstName: mapToRegistrationRequirementStatus(
             entityEventRegistrationConfig.first_name_requirement_status,
         ),
-        lastName: mapRegistrationRequirementStatus(
+        lastName: mapToRegistrationRequirementStatus(
             entityEventRegistrationConfig.last_name_requirement_status,
         ),
-        email: mapRegistrationRequirementStatus(
+        email: mapToRegistrationRequirementStatus(
             entityEventRegistrationConfig.email_requirement_status,
         ),
-        bio: mapRegistrationRequirementStatus(entityEventRegistrationConfig.bio_requirement_status),
-        phoneNumber: mapRegistrationRequirementStatus(
+        bio: mapToRegistrationRequirementStatus(
+            entityEventRegistrationConfig.bio_requirement_status,
+        ),
+        phoneNumber: mapToRegistrationRequirementStatus(
             entityEventRegistrationConfig.phone_number_requirement_status,
         ),
-        address: mapRegistrationRequirementStatus(
+        address: mapToRegistrationRequirementStatus(
             entityEventRegistrationConfig.address_requirement_status,
         ),
-        academicInstitution: mapRegistrationRequirementStatus(
+        academicInstitution: mapToRegistrationRequirementStatus(
             entityEventRegistrationConfig.academic_institution_requirement_status,
         ),
-        academicEmail: mapRegistrationRequirementStatus(
+        academicEmail: mapToRegistrationRequirementStatus(
             entityEventRegistrationConfig.academic_email_requirement_status,
         ),
     };

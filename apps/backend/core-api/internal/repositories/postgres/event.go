@@ -209,7 +209,6 @@ func (r *Repository) ListEventsByOwnerCredentialID(ctx context.Context, ownerCre
 	eventsEntity := make([]*entity.Event, len(events))
 	for i, event := range events {
 		eventsEntity[i] = &entity.Event{
-			ID:                       event.ID,
 			Id:                       event.ID,
 			ChainId:                  int(event.ChainID),
 			ContactNumber:            event.ContactNumber,
@@ -448,7 +447,6 @@ func (r *Repository) ListEvents(ctx context.Context, limitCount *int32, offsetCo
 	eventsEntity := make([]*entity.Event, len(events))
 	for i, event := range events {
 		eventsEntity[i] = &entity.Event{
-			ID:                       event.ID,
 			Id:                       event.ID,
 			EventType:                entity.EventType(event.EventType),
 			ChainId:                  int(event.ChainID),
@@ -499,7 +497,6 @@ func (r *Repository) ListEventsByEventAttendeeCredentialID(ctx context.Context, 
 	eventsEntity := make([]*entity.Event, len(events))
 	for i, event := range events {
 		eventsEntity[i] = &entity.Event{
-			ID:                       event.ID,
 			Id:                       event.ID,
 			EventType:                entity.EventType(event.EventType),
 			ChainId:                  int(event.ChainID),

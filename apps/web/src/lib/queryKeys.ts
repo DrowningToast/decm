@@ -101,13 +101,4 @@ export const QUERY_KEY = {
         list: () => ["inbox", "list"] as const,
         byId: (messageId: string) => ["inbox", messageId] as const,
     },
-
-    // Certificates
-    certificate: {
-        all: ["certificate"] as const,
-        list: (limit: number, offset: number, status?: "completed" | "pending") =>
-            ["certificate", "list", limit, offset, status] as const,
-        byId: (certificateId: string) => ["certificate", certificateId] as const,
-        byEventId: (eventId: string) => ["certificate", "event", eventId] as const,
-    },
 } as const;

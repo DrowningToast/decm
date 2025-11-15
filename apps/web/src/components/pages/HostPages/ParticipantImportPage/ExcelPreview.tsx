@@ -4,11 +4,11 @@ import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTranslation } from "react-i18next";
-import type { EventRegistrationInvitationParticipantRequestItem } from "@decm/api";
+import type { EventRegistrationParticipantRequestItem } from "@decm/api";
 
 interface ExcelPreviewProps {
     file: File;
-    onConfirm: (participants: EventRegistrationInvitationParticipantRequestItem[]) => void;
+    onConfirm: (participants: EventRegistrationParticipantRequestItem[]) => void;
     onCancel: () => void;
     disabled?: boolean;
 }

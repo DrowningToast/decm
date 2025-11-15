@@ -5,11 +5,7 @@ import { useTranslation } from "react-i18next";
 import { ExcelUpload } from "./ExcelUpload";
 import { ExcelPreview } from "./ExcelPreview";
 
-import type {
-    EventEventResponse,
-    EventRegistrationInvitationImportEventParticipantsRequest,
-    EventRegistrationInvitationParticipantRequestItem,
-} from "@decm/api";
+import type { EventEventResponse, EventRegistrationParticipantRequestItem } from "@decm/api";
 import * as XLSX from "xlsx";
 import { useImportParticipants } from "@/hooks/events/useImportParticipants";
 
@@ -35,8 +31,8 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
         setShowPreview(false);
     };
 
-    const handleImport = (participantData: EventRegistrationInvitationParticipantRequestItem[]) => {
-        const request: EventRegistrationInvitationImportEventParticipantsRequest = {
+    const handleImport = (participantData: EventRegistrationParticipantRequestItem[]) => {
+        const request = {
             event_id: eventId,
             participants: participantData,
         };

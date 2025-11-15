@@ -13,7 +13,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { WrappedSelect } from "@/components/forms/WrappedSelect";
-import { WrappedDateSelect } from "@/components/forms/styled-inputs";
 import { Controller } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { RegistrationFormPreview } from "./RegistrationFormPreview";
@@ -88,7 +87,7 @@ export const ParticipantSettingsForm = ({
     const eventType = watch("eventType");
     // const isBookingRequired = watch("isBookingRequired");
 
-    // const requireRegistrationPassword = watch("requireRegistrationPassword");
+    const requireRegistrationPassword = watch("requireRegistrationPassword");
 
     const handleFormSubmit = async (data: ParticipantSettingsData) => {
         console.log("data", data);
@@ -301,8 +300,9 @@ export const ParticipantSettingsForm = ({
                         </>
                     )}
 
+                    {/* TODO */}
                     {/* Final Call Registration Date (conditional) */}
-                    {eventType === "private" && isBookingRequired && (
+                    {/* {eventType === "private" && isBookingRequired && (
                         <div className="space-y-2 pt-2 pb-4">
                             <WrappedDateSelect
                                 control={control}
@@ -322,7 +322,7 @@ export const ParticipantSettingsForm = ({
                                 {t("participantSettings.finalCallRegistrationDateDescription")}
                             </Typography>
                         </div>
-                    )}
+                    )} */}
                 </div>
             </div>
 

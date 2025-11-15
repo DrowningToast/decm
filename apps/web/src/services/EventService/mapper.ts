@@ -42,6 +42,15 @@ export const mapEntityEventTypeToEventType = (entityEventType: EntityEventType):
     }
 };
 
+export const mapEventTypeToEntityEventType = (eventType: EventType): EntityEventType => {
+    switch (eventType) {
+        case "private":
+            return EntityEventType.EventTypePrivate;
+        case "invite":
+            return EntityEventType.EventTypeInvite;
+    }
+};
+
 export const mapEntityEventToEventItem = (entityEvent: EntityEvent): EventItem => {
     return {
         chainId: entityEvent.chain_id,
@@ -49,7 +58,7 @@ export const mapEntityEventToEventItem = (entityEvent: EntityEvent): EventItem =
         contactNumber: entityEvent.contact_number,
         isVerified: entityEvent.is_verified,
         eventStatus: mapEntityEventStatusToEventStatus(entityEvent.event_status),
-        eventType: entityEvent.event_type,
+        eventType: mapEntityEventTypeToEventType(entityEvent.event_type),
         googleMapQuery: entityEvent.google_map_query,
         iconStorageKey: entityEvent.icon_storage_key,
         id: entityEvent.id,
@@ -130,5 +139,8 @@ export const mapToEventIssuer = (eventIssuerResponse: EventEventIssuerResponse):
             : undefined,
         signMessage: eventIssuerResponse.sign_message ?? undefined,
         signature: eventIssuerResponse.signature ?? undefined,
+
+        createdAt: new Date(eventIssuerResponse.created_at),
+        updatedAt: new Date(eventIssuerResponse.updated_at),
     };
 };

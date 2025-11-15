@@ -41,12 +41,12 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
 
     // Get current issuer's information
     const currentIssuer = eventIssuers?.find(
-        (issuer) => issuer.issuer_credential_id === currentUser?.authenticationCredentialId,
+        (issuer) => issuer.issuerCredentialId === currentUser?.authenticationCredentialId,
     );
 
     // Determine if current issuer has already signed
-    const hasCurrentIssuerSigned = currentIssuer && currentIssuer.is_signed === 1;
-    const isCurrentIssuerPending = currentIssuer && currentIssuer.is_signed === 0;
+    const hasCurrentIssuerSigned = currentIssuer && currentIssuer.isSigned;
+    const isCurrentIssuerPending = currentIssuer && !currentIssuer.isSigned;
 
     // Calculate total certificates to be signed
     const certificatesToSign =
@@ -135,8 +135,8 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                 issuers={
                                     eventIssuers?.map((issuer) => ({
                                         id: issuer.id || "",
-                                        issuer_credential_id: issuer.issuer_credential_id || "",
-                                        is_signed: issuer.is_signed || 0,
+                                        issuer_credential_id: issuer.issuerCredentialId || "",
+                                        is_signed: issuer.isSigned ? 1 : 0,
                                     })) || []
                                 }
                                 currentIssuerId={currentUser?.profileId}
@@ -167,7 +167,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                         {currentIssuer ? (
                                             <div className="flex items-center space-x-2">
                                                 <IssuerStatusBadge
-                                                    isSigned={currentIssuer.is_signed || 0}
+                                                    isSigned={!!currentIssuer.isSigned}
                                                 />
                                                 {hasCurrentIssuerSigned && (
                                                     <Typography

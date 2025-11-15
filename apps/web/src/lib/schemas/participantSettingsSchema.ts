@@ -21,7 +21,7 @@ export const participantSettingsSchema = z
         eventType: eventTypeEnum,
         // isBookingRequired: z.boolean(),
         // isTicketTransferable: z.boolean(),
-        // requireRegistrationPassword: z.boolean().default(false),
+        requireRegistrationPassword: z.boolean().default(false),
         registrationPassword: z.string().optional(),
         finalCallRegistrationDate: z.date().optional(),
 
@@ -82,10 +82,10 @@ export type ParticipantSettingsData = z.infer<typeof participantSettingsSchema>;
  */
 export const defaultParticipantSettings: ParticipantSettingsData = {
     eventType: "private",
-    isBookingRequired: false,
-    isTicketTransferable: true,
-    requireRegistrationPassword: false,
-    registrationPassword: "",
+    // isBookingRequired: false,
+    // isTicketTransferable: true,
+    // requireRegistrationPassword: false,
+    registrationPassword: undefined,
     firstName: "not_required",
     lastName: "not_required",
     email: "not_required",
