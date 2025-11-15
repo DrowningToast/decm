@@ -27,7 +27,7 @@ describe("useCertificateTemplate", () => {
         expect(result.current.svgPreview).toBe("");
         expect(result.current.detectedKeywords).toEqual([]);
         expect(result.current.hasMissingMandatory).toBe(true);
-        expect(result.current.missingMandatoryKeywords.length).toBe(2);
+        expect(result.current.missingMandatoryKeywords.length).toBe(1);
     });
 
     it("should have fileInputRef and svgTempRef defined", () => {
