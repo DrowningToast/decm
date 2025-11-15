@@ -36,9 +36,11 @@ const DEFAULT_CERT_WIDTH = 1920;
 const DEFAULT_CERT_HEIGHT = 1080;
 
 const DEFAULT_AVAILABLE_KEYWORDS: AvailableKeyword[] = [
-    { keyword: "{{ eventName }}", mandatory: true },
+    { keyword: "{{ eventName }}", mandatory: false },
     { keyword: "{{ name }}", mandatory: true },
     { keyword: "{{ academicInstitutionName }}", mandatory: false },
+    { keyword: "{{ certificateTitle }}", mandatory: false },
+    { keyword: "{{ certificateSubtitle }}", mandatory: false },
 ];
 
 export const useCertificateTemplate = ({
