@@ -98,7 +98,7 @@ export const CertificateSettingsPage = ({
                     console.log(issuer);
                     return {
                         event_id: eventId,
-                        issuer_credential_id: issuer.id,
+                        issuer_credential_id: issuer.authentication_credential_id,
                     };
                 }),
             );

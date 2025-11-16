@@ -124,7 +124,7 @@ func (q *Queries) GetEventCertificateByID(ctx context.Context, id uuid.UUID) (Ev
 }
 
 const GetEventCertificatesByEventID = `-- name: GetEventCertificatesByEventID :many
-SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at FROM event_certificates WHERE event_id = $1
+SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at FROM event_certificates WHERE event_id = $1 AND revoked_at IS NULL
 `
 
 func (q *Queries) GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error) {

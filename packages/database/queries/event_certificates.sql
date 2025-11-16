@@ -29,7 +29,7 @@ INSERT INTO event_certificates (
 SELECT * FROM event_certificates WHERE id = sqlc.arg('id');
 
 -- name: GetEventCertificatesByEventID :many
-SELECT * FROM event_certificates WHERE event_id = sqlc.arg('event_id');
+SELECT * FROM event_certificates WHERE event_id = sqlc.arg('event_id') AND revoked_at IS NULL;
 
 -- name: UpdateEventCertificate :one
 UPDATE event_certificates
