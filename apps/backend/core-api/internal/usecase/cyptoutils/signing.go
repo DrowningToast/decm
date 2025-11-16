@@ -90,13 +90,18 @@ func VerifySignedMessageByAddress(walletAddress ethCommon.Address, message strin
 }
 
 func VerifySignatureByDigest(walletAddress ethCommon.Address, messageDigest common.Hash, signature []byte) (bool, error) {
+	// Adjust recovery ID from Ethereum format (27/28) to go-ethereum format (0/1)
+	if len(signature) == 65 && (signature[64] == 27 || signature[64] == 28) {
+		signature[64] -= 27
+	}
+
 	usedPublicKey, err := crypto.SigToPub(messageDigest.Bytes(), signature)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to recover public key")
 	}
 
-	targetWalletAddress := crypto.PubkeyToAddress(*usedPublicKey)
-	return targetWalletAddress == walletAddress, nil
+	signatureWallet := crypto.PubkeyToAddress(*usedPublicKey)
+	return signatureWallet.Cmp(walletAddress) == 0, nil
 }
 
 func VerifySignedMessageByPublicKey(publicKey *ecdsa.PublicKey, message string, signature string) (bool, error) {

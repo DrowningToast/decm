@@ -36,7 +36,7 @@ type EventRegistrationUsecase struct {
 	EventUsecase eventUc.EventUsecase
 }
 
-func NewEventRegistrationInvitationUsecase(
+func NewEventRegistrationUsecase(
 	inboxMessageDg datagateway.InboxMessageDataGateway,
 	eventRegistrationInvitationDg datagateway.EventRegistrationInvitationDataGateway,
 	eventDg eventdatagateway.EventDataGateway,

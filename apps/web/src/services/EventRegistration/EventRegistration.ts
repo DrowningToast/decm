@@ -5,7 +5,9 @@ import {
     mapEntityEventRegistrationInvitationToEventRegistrationInvitation,
     mapEntityInboxMessageToInboxMessage,
     mapRegistrationRequirementStatusToNumber,
+    mapRegistrationToJoinEventParticipant,
 } from "./mapper";
+import type { RegistrationConfirmDataForm } from "@/components/pages/Participant/Events/Detail/RegistrationConfirmDataFormSchema";
 
 export type RegistrationRequirementStatus = "required" | "optional" | "not_required";
 
@@ -123,22 +125,47 @@ export class EventRegistrationService {
         return;
     }
 
-    public async joinEventWithPassword(
-        eventId: string,
-        eventPassword?: string,
-        accountPassword: string,
-    ): Promise<void> {
-        await this._coreApi.v1.joinEvent({ eventId }, { password: eventPassword });
+    public async joinEventWithAccountPassword({
+        eventId,
+        eventPassword,
+        accountPassword,
+        registrationData,
+    }: {
+        eventId: string;
+        eventPassword?: string;
+        accountPassword: string;
+        registrationData: RegistrationConfirmDataForm;
+    }): Promise<void> {
+        await this._coreApi.v1.joinEvent(
+            { eventId },
+            {
+                account_password: accountPassword,
+                event_password: eventPassword,
+                registration_data: mapRegistrationToJoinEventParticipant(registrationData),
+            },
+        );
         return;
     }
 
-    public async joinEventWithSignature(
-        eventId: string,
-        eventPassword?: string,
-        originalSignMessage: string,
-        signature: string,
-    ): Promise<void> {
-        await this._coreApi.v1.joinEvent({ eventId }, { signature });
+    public async joinEventWithSignature({
+        eventId,
+        originalSignMessage,
+        signature,
+        registrationData,
+    }: {
+        eventId: string;
+        originalSignMessage: string;
+        signature: string;
+        registrationData: RegistrationConfirmDataForm;
+    }): Promise<void> {
+        await this._coreApi.v1.joinEvent(
+            { eventId },
+            {
+                sign_message: originalSignMessage,
+                signature: signature,
+                registration_data: mapRegistrationToJoinEventParticipant(registrationData),
+            },
+        );
         return;
     }
 }

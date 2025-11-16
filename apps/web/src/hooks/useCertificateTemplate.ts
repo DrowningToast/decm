@@ -174,6 +174,10 @@ export const useCertificateTemplate = ({
     );
     const hasMissingMandatory = missingMandatoryKeywords.length > 0;
 
+    console.log("detectedKeywords", detectedKeywords);
+    console.log("missingMandatoryKeywords", missingMandatoryKeywords);
+    console.log("hasMissingMandatory", hasMissingMandatory);
+
     return {
         svgFile,
         svgPreview,

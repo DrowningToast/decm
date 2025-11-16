@@ -17,6 +17,9 @@ func (u *AuthUsecase) SecuredSignStringForManagedUser(ctx context.Context, auth 
 	if auth == nil {
 		return nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
 	}
+	if auth.UserId == [16]byte{} {
+		return nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("invalid user id"))
+	}
 
 	// check type of user
 	user, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, auth.UserId)
@@ -66,6 +69,9 @@ func (u *AuthUsecase) SecuredSignStringForManagedUser(ctx context.Context, auth 
 func (u *AuthUsecase) SecuredSignActionForManagedUser(ctx context.Context, auth *auth.JwtClaims, password string, hostAddress gocommon.Address, contractAddress gocommon.Address) ([]byte, *gocommon.Hash, error) {
 	if auth == nil {
 		return nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
+	}
+	if auth.UserId == [16]byte{} {
+		return nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("invalid user id"))
 	}
 
 	client, err := cyptoutils.GetEthereumClient()

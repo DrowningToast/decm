@@ -87,6 +87,17 @@ export interface CoreApiInternalHandlerEventImportCertificateReceiversResponse {
     event_id: string;
 }
 
+export interface CoreApiInternalHandlerEventRegistrationJoinEventPayload {
+    academic_email?: string;
+    academic_institution?: string;
+    address?: string;
+    bio?: string;
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+    phone_number?: string;
+}
+
 export interface CoreApiInternalHandlerEventRevokeEventCertificatesRequest {
     /** @minItems 1 */
     certificate_ids: string[];
@@ -282,6 +293,24 @@ export interface EntityEvent {
     short_description: string;
     start_date: string;
     title: string;
+    updated_at: string;
+}
+
+export interface EntityEventAttendee {
+    academic_email?: string;
+    academic_institution?: string;
+    address?: string;
+    attendee_credential_id: string;
+    bio?: string;
+    contract_address: string;
+    created_at: string;
+    email?: string;
+    event_id: string;
+    first_name?: string;
+    id: string;
+    is_attendee_accepted: boolean;
+    last_name?: string;
+    phone_number?: string;
     updated_at: string;
 }
 
@@ -511,8 +540,11 @@ export interface EventRegistrationImportEventParticipantsRequest {
     participants: EventRegistrationParticipantRequestItem[];
 }
 
-export interface EventRegistrationJoinEventRequest {
-    password?: string;
+export interface EventRegistrationJoinEventBody {
+    account_password?: string;
+    event_password?: string;
+    registration_data: CoreApiInternalHandlerEventRegistrationJoinEventPayload;
+    sign_message?: string;
     signature?: string;
 }
 
@@ -887,6 +919,8 @@ export interface IssuerIssuerEventResponse {
     signature: string;
     updated_at: string;
 }
+
+export type JoinEventData = EntityEventAttendee;
 
 export type JoinEventError = CustomerrorErrResponse;
 
@@ -1625,14 +1659,15 @@ export class Api<SecurityDataType extends unknown> {
          */
         joinEvent: (
             { eventId, ...query }: JoinEventParams,
-            request: EventRegistrationJoinEventRequest,
+            joinEventBody: EventRegistrationJoinEventBody,
             params: RequestParams = {},
         ) =>
-            this.http.request<any, JoinEventError>({
+            this.http.request<JoinEventData, JoinEventError>({
                 path: `/api/v1/event-registration/join/${eventId}`,
                 method: "POST",
-                body: request,
+                body: joinEventBody,
                 type: ContentType.Json,
+                format: "json",
                 ...params,
             }),
 

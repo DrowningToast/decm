@@ -120,6 +120,25 @@ definitions:
     required:
     - certificates
     type: object
+  core-api_internal_handler_event_registration.JoinEventPayload:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        type: string
+      address:
+        type: string
+      bio:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      phone_number:
+        type: string
+    type: object
   core-api_internal_handler_eventconfig.EventCertificateConfigResponse:
     properties:
       academic_institution_pos_x:
@@ -274,6 +293,47 @@ definitions:
     - short_description
     - start_date
     - title
+    - updated_at
+    type: object
+  entity.EventAttendee:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        type: string
+      address:
+        type: string
+      attendee_credential_id:
+        type: string
+      bio:
+        type: string
+      contract_address:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      event_id:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      is_attendee_accepted:
+        type: boolean
+      last_name:
+        type: string
+      phone_number:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - attendee_credential_id
+    - contract_address
+    - created_at
+    - event_id
+    - id
+    - is_attendee_accepted
     - updated_at
     type: object
   entity.EventCertificate:
@@ -840,12 +900,20 @@ definitions:
     - event_id
     - participants
     type: object
-  event_registration.JoinEventRequest:
+  event_registration.JoinEventBody:
     properties:
-      password:
+      account_password:
+        type: string
+      event_password:
+        type: string
+      registration_data:
+        $ref: '#/definitions/core-api_internal_handler_event_registration.JoinEventPayload'
+      sign_message:
         type: string
       signature:
         type: string
+    required:
+    - registration_data
     type: object
   event_registration.ParticipantRequestItem:
     properties:
@@ -1851,15 +1919,19 @@ paths:
         name: event_id
         required: true
         type: string
-      - description: Join event request
+      - description: Join event body
         in: body
-        name: request
+        name: joinEventBody
         required: true
         schema:
-          $ref: '#/definitions/event_registration.JoinEventRequest'
+          $ref: '#/definitions/event_registration.JoinEventBody'
       produces:
       - application/json
       responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.EventAttendee'
         "400":
           description: Bad Request
           schema:

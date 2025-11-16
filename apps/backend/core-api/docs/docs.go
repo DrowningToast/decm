@@ -370,16 +370,22 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Join event request",
-                        "name": "request",
+                        "description": "Join event body",
+                        "name": "joinEventBody",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_registration.JoinEventRequest"
+                            "$ref": "#/definitions/event_registration.JoinEventBody"
                         }
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.EventAttendee"
+                        }
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -3099,6 +3105,35 @@ const docTemplate = `{
                 }
             }
         },
+        "core-api_internal_handler_event_registration.JoinEventPayload": {
+            "type": "object",
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                }
+            }
+        },
         "core-api_internal_handler_eventconfig.EventCertificateConfigResponse": {
             "type": "object",
             "required": [
@@ -3310,6 +3345,65 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.EventAttendee": {
+            "type": "object",
+            "required": [
+                "attendee_credential_id",
+                "contract_address",
+                "created_at",
+                "event_id",
+                "id",
+                "is_attendee_accepted",
+                "updated_at"
+            ],
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "attendee_credential_id": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "contract_address": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_attendee_accepted": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -4113,10 +4207,22 @@ const docTemplate = `{
                 }
             }
         },
-        "event_registration.JoinEventRequest": {
+        "event_registration.JoinEventBody": {
             "type": "object",
+            "required": [
+                "registration_data"
+            ],
             "properties": {
-                "password": {
+                "account_password": {
+                    "type": "string"
+                },
+                "event_password": {
+                    "type": "string"
+                },
+                "registration_data": {
+                    "$ref": "#/definitions/core-api_internal_handler_event_registration.JoinEventPayload"
+                },
+                "sign_message": {
                     "type": "string"
                 },
                 "signature": {

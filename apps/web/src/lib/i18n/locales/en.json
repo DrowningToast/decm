@@ -703,7 +703,14 @@
                 "accepted": "Accepted",
                 "seatsCount": "Seats count",
                 "eventContactAddress": "Event Contact Address",
-                "passwordPlaceholder": "Password here"
+                "passwordPlaceholder": "Password here",
+                "instruction": {
+                    "participating": "You are participating in this event",
+                    "invited": "You are invited to join this event",
+                    "invitationRequired": "This event requires an invitation",
+                    "passwordRequired": "This event requires a password to participate",
+                    "signatureRequest": "Please sign the registration request with your wallet"
+                }
             },
             "invitationRequired": "Invitation is required."
         },

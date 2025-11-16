@@ -32,14 +32,14 @@ const (
 type JoinEventWithPasswordUserError string
 
 type JoinEventPayload struct {
-	FirstName           *string `json:"first_name"`
-	LastName            *string `json:"last_name"`
-	Email               *string `json:"email"`
-	PhoneNumber         *string `json:"phone_number"`
-	AcademicInstitution *string `json:"academic_institution"`
-	AcademicEmail       *string `json:"academic_email"`
-	Address             *string `json:"address"`
-	Bio                 *string `json:"bio"`
+	FirstName           *string `json:"first_name,omitempty"`
+	LastName            *string `json:"last_name,omitempty"`
+	Email               *string `json:"email,omitempty"`
+	PhoneNumber         *string `json:"phone_number,omitempty"`
+	AcademicInstitution *string `json:"academic_institution,omitempty"`
+	AcademicEmail       *string `json:"academic_email,omitempty"`
+	Address             *string `json:"address,omitempty"`
+	Bio                 *string `json:"bio,omitempty"`
 }
 
 // returns raw string, then message hash
@@ -83,7 +83,7 @@ func (uc *EventRegistrationUsecase) CheckEventAttendeeAndMaxAttendeeCount(ctx co
 }
 
 type CheckRegistrationEligibilityParams struct {
-	Password *string
+	EventPassword *string
 }
 
 // Performs checks if the user is able to join the event
@@ -93,7 +93,7 @@ func (uc *EventRegistrationUsecase) CheckRegistrationEligibility(ctx context.Con
 	}
 
 	// if password is provided, assume it's a password based registration
-	if params.Password != nil {
+	if params.EventPassword != nil {
 		config, err := uc.EventRegistrationConfigurationDg.GetEventRegistrationConfigPasswordByEventId(ctx, entityEventContract.EventID)
 		if err != nil {
 			return false, customerror.Parse(&customerror.ErrInternalServer, err)
@@ -103,7 +103,7 @@ func (uc *EventRegistrationUsecase) CheckRegistrationEligibility(ctx context.Con
 			return false, customerror.NewWithPreset(&customerror.ErrInternalServer, errors.New("registration password not found"))
 		}
 
-		match, err := hashutils.CompareHash(*params.Password, *config.RegistrationPassword)
+		match, err := hashutils.CompareHash(*params.EventPassword, *config.RegistrationPassword)
 		if err != nil {
 			return false, customerror.Parse(&customerror.ErrInternalServer, err)
 		}

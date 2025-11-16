@@ -6,7 +6,6 @@ import (
 	customerror "apps/backend/common/customerror"
 	"apps/backend/common/validatorutils"
 	"apps/backend/core-api/internal/usecase/cyptoutils"
-
 	event_registration_uc "apps/backend/core-api/internal/usecase/event_registration"
 
 	"github.com/cockroachdb/errors"
@@ -14,11 +13,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
-
-type JoinEventRequest struct {
-	Password  *string `json:"password,omitempty"`
-	Signature *string `json:"signature,omitempty"`
-}
 
 type GetJoinEventSignMessageResponse struct {
 	SignMessage string `json:"sign_message"`
@@ -74,26 +68,24 @@ func (h *Handler) GetJoinEventSignMessage(ctx *fiber.Ctx) error {
 	})
 }
 
-// @name JoinEventBody
-// @description Body for joining an event
-// @Accept json
-// @Produce json
-// @Param password body string false "Password"
-// @Param signature body string false "Signature"
-// @Param sign_message body string false "Sign message"
-// @Param registration_data body event_registration_uc.JoinEventPayload true "Registration data"
-// @Success 200 {object} entity.EventAttendee
-// @Failure 400 {object} customerror.ErrResponse
-// @Failure 401 {object} customerror.ErrResponse
-// @Failure 404 {object} customerror.ErrResponse
-// @Failure 500 {object} customerror.ErrResponse
-// @Router /api/v1/event-registration/join/{event_id} [post]
-type JoinEventBody struct {
-	Password    *string `json:"password,omitempty"`
-	Signature   *string `json:"signature,omitempty"`
-	SignMessage *string `json:"sign_message,omitempty"`
+type JoinEventPayload struct {
+	FirstName           *string `json:"first_name,omitempty"`
+	LastName            *string `json:"last_name,omitempty"`
+	Email               *string `json:"email,omitempty"`
+	PhoneNumber         *string `json:"phone_number,omitempty"`
+	AcademicInstitution *string `json:"academic_institution,omitempty"`
+	AcademicEmail       *string `json:"academic_email,omitempty"`
+	Address             *string `json:"address,omitempty"`
+	Bio                 *string `json:"bio,omitempty"`
+}
 
-	RegistrationData event_registration_uc.JoinEventPayload `json:"registration_data" validate:"required"`
+type JoinEventBody struct {
+	AccountPassword *string `json:"account_password,omitempty"`
+	EventPassword   *string `json:"event_password,omitempty"`
+	Signature       *string `json:"signature,omitempty"`
+	SignMessage     *string `json:"sign_message,omitempty"`
+
+	RegistrationData JoinEventPayload `json:"registration_data" validate:"required"`
 }
 
 func (r *JoinEventBody) IsValid() error {
@@ -111,7 +103,8 @@ func (r *JoinEventBody) Parse(ctx *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param event_id path string true "Event ID"
-// @Param request body JoinEventRequest true "Join event request"
+// @Param joinEventBody body JoinEventBody true "Join event body"
+// @Success 200 {object} entity.EventAttendee
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
@@ -146,7 +139,7 @@ func (h *Handler) JoinEvent(ctx *fiber.Ctx) error {
 	}
 
 	proof := event_registration_uc.CheckRegistrationEligibilityParams{
-		Password: req.Password,
+		EventPassword: req.EventPassword,
 	}
 
 	if req.Signature != nil {
@@ -157,13 +150,13 @@ func (h *Handler) JoinEvent(ctx *fiber.Ctx) error {
 		if req.SignMessage == nil {
 			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("original sign message is required"))
 		}
-		eventAttendee, err := h.EventRegistrationUc.JoinEventWithSignature(ctx.UserContext(), client, currentUser, eventId, proof, req.RegistrationData, signature, *req.SignMessage)
+		eventAttendee, err := h.EventRegistrationUc.JoinEventWithSignature(ctx.UserContext(), client, currentUser, eventId, proof, event_registration_uc.JoinEventPayload(req.RegistrationData), signature, *req.SignMessage)
 		if err != nil {
 			return errors.Wrap(err, "failed to join event with signature")
 		}
 		return ctx.Status(fiber.StatusOK).JSON(eventAttendee)
 	} else {
-		eventAttendee, err := h.EventRegistrationUc.JoinEventWithPin(ctx.UserContext(), client, currentUser, eventId, proof, req.RegistrationData, *req.Password)
+		eventAttendee, err := h.EventRegistrationUc.JoinEventWithPin(ctx.UserContext(), client, currentUser, eventId, proof, event_registration_uc.JoinEventPayload(req.RegistrationData), *req.AccountPassword)
 		if err != nil {
 			return errors.Wrap(err, "failed to join event with pin")
 		}

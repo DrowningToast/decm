@@ -10,9 +10,8 @@ import { RegistrationConfirmForm } from "./ConfirmForm";
 import type { RegistrationConfirmDataForm } from "./RegistrationConfirmDataFormSchema";
 import { toast } from "sonner";
 import { useSignPasswordModalStore } from "@/components/providers/SignPasswordModal/store";
-import { useEventContract } from "@/hooks/events/useEventContracts";
 import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
-import { eventRegistrationService, eventService } from "@/services/services";
+import { eventRegistrationService } from "@/services/services";
 
 interface ActionMenuProps {
     eventId: string;
@@ -33,7 +32,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
     const { event: eventViewModel } = useEventViewModelUsecase({ eventId });
     const { mutateAsync: openPasswordPrompt } = usePasswordPrompt();
 
-    const { open: openConfirmSignModal } = useSignPasswordModalStore();
+    const { isOpen: isPinModalOpen } = useSignPasswordModalStore();
 
     const registrationInvitation = invitation?.registrationInvitation;
 
@@ -81,18 +80,28 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
     const handleSubmit = async (data: RegistrationConfirmDataForm) => {
         try {
             setIsSubmiting(true);
+            console.log("data", data);
             // password check
-            const password = await openPasswordPrompt({
+            const checkedPassword = await openPasswordPrompt({
                 eventContractAddress: eventViewModel?.eventContractAddress ?? "",
                 transactionType: "Registration Confirmation",
+                title: t("participant.events.detail.instruction.passwordRequired"),
                 description: t("participant.events.detail.instruction.signatureRequest"),
                 details: `Confirming registration for ${eventViewModel?.title}`,
             });
 
             // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            console.log("checkedPassword", checkedPassword);
 
-            await eventRegistrationService.join;
+            if (registrationInvitation) {
+                await eventRegistrationService.joinEventWithAccountPassword({
+                    eventId,
+                    accountPassword: checkedPassword,
+                    registrationData: data,
+                });
+            } else {
+                throw new Error("No registration invitation or event password found");
+            }
 
             toast.success(t("events.registration.piiForm.submitSuccess"));
             closePreviewModal();
@@ -109,11 +118,11 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
     };
 
     const showPreviewModal = useMemo(() => {
-        if (openConfirmSignModal) {
-            return;
+        if (isPinModalOpen) {
+            return false;
         }
         return !isInvitationLoading && invitation !== undefined && _showPreviewModal;
-    }, [_showPreviewModal, invitation, isInvitationLoading, openConfirmSignModal]);
+    }, [_showPreviewModal, invitation, isInvitationLoading, isPinModalOpen]);
 
     // Always show ActionMenu with conditional PII form
     return (

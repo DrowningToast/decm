@@ -1,4 +1,5 @@
 import type {
+    CoreApiInternalHandlerEventRegistrationJoinEventPayload,
     EntityEventRegistrationInvitation,
     EntityInboxMessage,
     EventconfigEventRegistrationConfigViewModel,
@@ -11,6 +12,7 @@ import type {
 } from "./EventRegistration";
 import type { InboxMessage } from "../InboxService/InboxService";
 import { mapEntityInboxMessageToInboxMessage as mapInboxMessage } from "../InboxService/mapper";
+import type { RegistrationConfirmDataForm } from "@/components/pages/Participant/Events/Detail/RegistrationConfirmDataFormSchema";
 
 export type EventRegistrationConfigResponse = Omit<
     EventconfigEventRegistrationConfigViewModel,
@@ -115,4 +117,19 @@ export const mapEntityInboxMessageToInboxMessage = (
     entityInboxMessage: EntityInboxMessage,
 ): InboxMessage => {
     return mapInboxMessage(entityInboxMessage);
+};
+
+export const mapRegistrationToJoinEventParticipant = (
+    participantData: RegistrationConfirmDataForm,
+): CoreApiInternalHandlerEventRegistrationJoinEventPayload => {
+    return {
+        first_name: participantData.firstName,
+        last_name: participantData.lastName,
+        email: participantData.email,
+        phone_number: participantData.phoneNumber,
+        academic_institution: participantData.academicInstitution,
+        academic_email: participantData.academicEmail,
+        address: participantData.address,
+        bio: participantData.bio,
+    };
 };
