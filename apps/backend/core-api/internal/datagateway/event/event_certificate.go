@@ -41,6 +41,7 @@ type EventCertificateDataGateway interface {
 	CreateEventCertificate(ctx context.Context, params CreateEventCertificateParameters) (*entity.EventCertificate, error)
 	GetEventCertificateByID(ctx context.Context, id uuid.UUID) (*entity.EventCertificate, error)
 	GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error)
+	GetAllEventCertificateIDsByEventID(ctx context.Context, eventID uuid.UUID) ([]uuid.UUID, error)
 	UpdateEventCertificate(ctx context.Context, id uuid.UUID, params UpdateEventCertificateParameters) (*entity.EventCertificate, error)
 	DeleteEventCertificate(ctx context.Context, id uuid.UUID) error
 }

@@ -144,6 +144,16 @@ func (r *Repository) GetEventCertificatesByEventID(ctx context.Context, eventID 
 	return certificates, nil
 }
 
+func (r *Repository) GetAllEventCertificateIDsByEventID(ctx context.Context, eventID uuid.UUID) ([]uuid.UUID, error) {
+	results, err := r.queries.GetAllEventCertificateIDsByEventID(ctx, eventID)
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	// The query already returns UUIDs directly, so we can return them as-is
+	return results, nil
+}
+
 func (r *Repository) UpdateEventCertificate(ctx context.Context, id uuid.UUID, params datagateway.UpdateEventCertificateParameters) (*entity.EventCertificate, error) {
 	// Encrypt PII fields
 	nameEnc, err := pgmapper.EncryptStringPtrToPgText(params.Name, r.piiEncryptionKey)
