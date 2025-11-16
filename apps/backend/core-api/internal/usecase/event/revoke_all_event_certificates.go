@@ -34,6 +34,10 @@ func (uc *EventUsecase) RevokeAllEventCertificates(ctx context.Context, eventID 
 		return nil, err
 	}
 
+	if credential.Id != event.OwnerCredentialId {
+		return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("user is not owner of the event"))
+	}
+
 	if event == nil {
 		return nil, customerror.Parse(&customerror.ErrNotFound, fmt.Errorf("event not found"))
 	}
