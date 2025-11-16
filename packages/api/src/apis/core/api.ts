@@ -87,6 +87,10 @@ export interface CoreApiInternalHandlerEventImportCertificateReceiversResponse {
     event_id: string;
 }
 
+export interface CoreApiInternalHandlerEventRevokeAllEventCertificatesResponse {
+    revoked_certificates: EntityEventCertificate[];
+}
+
 export interface CoreApiInternalHandlerEventRevokeEventCertificatesRequest {
     /** @minItems 1 */
     certificate_ids: string[];
@@ -1104,6 +1108,16 @@ export type RegisterWithWalletError = CustomerrorErrResponse;
 
 export type RequestGoogleOauthError = CustomerrorErrResponse;
 
+export type RevokeAllEventCertificatesData =
+    CoreApiInternalHandlerEventRevokeAllEventCertificatesResponse;
+
+export type RevokeAllEventCertificatesError = CustomerrorErrResponse;
+
+export interface RevokeAllEventCertificatesParams {
+    /** Event ID */
+    eventId: string;
+}
+
 export type RevokeEventCertificatesData =
     CoreApiInternalHandlerEventRevokeEventCertificatesResponse;
 
@@ -1815,7 +1829,7 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Revoke all certificates for an event
+         * @description Revoke all certificates for an event by event ID
          *
          * @tags Event Certificates
          * @name RevokeAllEventCertificates
@@ -1823,10 +1837,10 @@ export class Api<SecurityDataType extends unknown> {
          * @request POST:/api/v1/events/{event_id}/certificates/revoke-all
          */
         revokeAllEventCertificates: (
-            { eventId, ...query }: { eventId: string },
+            { eventId, ...query }: RevokeAllEventCertificatesParams,
             params: RequestParams = {},
         ) =>
-            this.http.request<any, any>({
+            this.http.request<RevokeAllEventCertificatesData, RevokeAllEventCertificatesError>({
                 path: `/api/v1/events/${eventId}/certificates/revoke-all`,
                 method: "POST",
                 type: ContentType.Json,
