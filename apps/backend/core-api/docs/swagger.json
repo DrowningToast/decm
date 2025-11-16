@@ -1107,6 +1107,63 @@
                 }
             }
         },
+        "/api/v1/events/{event_id}/certificates/revoke-all": {
+            "post": {
+                "description": "Revoke all certificates for an event by event ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Certificates"
+                ],
+                "summary": "Revoke all event certificates",
+                "operationId": "revoke-all-event-certificates",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_event.RevokeAllEventCertificatesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}/certificates/sign": {
             "post": {
                 "description": "Sign all event certificates for an event by issuer",
@@ -3050,6 +3107,20 @@
                 },
                 "event_id": {
                     "type": "string"
+                }
+            }
+        },
+        "core-api_internal_handler_event.RevokeAllEventCertificatesResponse": {
+            "type": "object",
+            "required": [
+                "revoked_certificates"
+            ],
+            "properties": {
+                "revoked_certificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.EventCertificate"
+                    }
                 }
             }
         },

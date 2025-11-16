@@ -49,3 +49,6 @@ RETURNING *;
 
 -- name: DeleteEventCertificate :exec
 DELETE FROM event_certificates WHERE id = sqlc.arg('id');
+
+-- name: GetAllEventCertificateIDsByEventID :many
+SELECT id FROM event_certificates WHERE event_id = sqlc.arg('event_id');

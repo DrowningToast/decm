@@ -1815,6 +1815,26 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Revoke all certificates for an event
+         *
+         * @tags Event Certificates
+         * @name RevokeAllEventCertificates
+         * @summary Revoke all event certificates
+         * @request POST:/api/v1/events/{event_id}/certificates/revoke-all
+         */
+        revokeAllEventCertificates: (
+            { eventId, ...query }: { eventId: string },
+            params: RequestParams = {},
+        ) =>
+            this.http.request<any, any>({
+                path: `/api/v1/events/${eventId}/certificates/revoke-all`,
+                method: "POST",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Sign all event certificates for an event by issuer
          *
          * @tags Event Certificates

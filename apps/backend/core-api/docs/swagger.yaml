@@ -87,6 +87,15 @@ definitions:
     - event_certificate_address
     - event_id
     type: object
+  core-api_internal_handler_event.RevokeAllEventCertificatesResponse:
+    properties:
+      revoked_certificates:
+        items:
+          $ref: '#/definitions/entity.EventCertificate'
+        type: array
+    required:
+    - revoked_certificates
+    type: object
   core-api_internal_handler_event.RevokeEventCertificatesRequest:
     properties:
       certificate_ids:
@@ -2274,6 +2283,44 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Revoke event certificates
+      tags:
+      - Event Certificates
+  /api/v1/events/{event_id}/certificates/revoke-all:
+    post:
+      consumes:
+      - application/json
+      description: Revoke all certificates for an event by event ID
+      operationId: revoke-all-event-certificates
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core-api_internal_handler_event.RevokeAllEventCertificatesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Revoke all event certificates
       tags:
       - Event Certificates
   /api/v1/events/{event_id}/certificates/sign:
