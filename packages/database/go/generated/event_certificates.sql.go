@@ -97,6 +97,30 @@ func (q *Queries) DeleteEventCertificate(ctx context.Context, id uuid.UUID) erro
 	return err
 }
 
+const GetAllEventCertificateIDsByEventID = `-- name: GetAllEventCertificateIDsByEventID :many
+SELECT id FROM event_certificates WHERE event_id = $1
+`
+
+func (q *Queries) GetAllEventCertificateIDsByEventID(ctx context.Context, eventID uuid.UUID) ([]uuid.UUID, error) {
+	rows, err := q.db.Query(ctx, GetAllEventCertificateIDsByEventID, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []uuid.UUID{}
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const GetEventCertificateByID = `-- name: GetEventCertificateByID :one
 SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at FROM event_certificates WHERE id = $1
 `

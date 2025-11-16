@@ -35,6 +35,7 @@ import { CertificateColumns } from "./columns/CertificateColumns";
 import { Separator } from "@/components/ui/separator";
 import { useEventCertificates } from "@/hooks/useEventCertificates";
 import { useRevokeEventCertificate } from "@/hooks/events/useRevokeEventCertificate";
+import { useRevokeAllEventCertificates } from "@/hooks/events/useRevokeAllEventCertificates";
 import { Link } from "@/router";
 import type {
     EventRegistrationConfiguration,
@@ -65,6 +66,7 @@ export default function HostEventDetailsPage({
     const { t } = useTranslation();
 
     const { revokeEventCertificate } = useRevokeEventCertificate();
+    const { revokeAllEventCertificates, isRevokingAll } = useRevokeAllEventCertificates();
 
     // State for client-side data management
     const [searchValue, setSearchValue] = useState("");
@@ -598,6 +600,35 @@ export default function HostEventDetailsPage({
                                             isLoading={certificatesLoading}
                                             disablePagination
                                         />
+
+                                        {eventCertificates && eventCertificates.length > 0 && (
+                                            <div className="mt-4 flex justify-end">
+                                                <Button
+                                                    variant="destructive"
+                                                    size="lg"
+                                                    onClick={() => {
+                                                        if (
+                                                            confirm(
+                                                                t(
+                                                                    "events.hostDetails.certificates.confirmRevokeAll",
+                                                                ),
+                                                            )
+                                                        ) {
+                                                            revokeAllEventCertificates({ eventId });
+                                                        }
+                                                    }}
+                                                    disabled={isRevokingAll}
+                                                >
+                                                    {isRevokingAll
+                                                        ? t(
+                                                              "events.hostDetails.certificates.revokingAll",
+                                                          )
+                                                        : t(
+                                                              "events.hostDetails.certificates.revokeAll",
+                                                          )}
+                                                </Button>
+                                            </div>
+                                        )}
 
                                         <a
                                             href={`/host/events/${eventId}/imports/certificates`}
