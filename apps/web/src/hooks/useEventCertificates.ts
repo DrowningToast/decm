@@ -32,7 +32,7 @@ export const useEventCertificates = (eventId: string): UseEventCertificatesRetur
         error,
         refetch,
     } = useQuery({
-        queryKey: [QUERY_KEY.event.certificates(eventId)],
+        queryKey: QUERY_KEY.event.certificates(eventId),
         queryFn: async () => {
             const response = await coreApiClient.v1.getEventCertificates({ eventId });
             return response;

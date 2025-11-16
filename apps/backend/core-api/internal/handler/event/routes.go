@@ -24,6 +24,7 @@ func (h *Handler) Mount(r fiber.Router) {
 	eventGroup.Post("/:event_id/issuers", h.CreateEventIssuer)
 	eventGroup.Post("/:event_id/certificates/import", h.ImportCertificateReceivers)
 	eventGroup.Post("/:event_id/certificates/revoke", h.RevokeEventCertificates)
+	eventGroup.Post("/:event_id/certificates/revoke-all", h.RevokeAllEventCertificates)
 	eventGroup.Post("/:event_id/certificates/sign", h.SignEventCertificates)
 	eventGroup.Get("/:event_id/certificates", h.GetEventCertificates)
 

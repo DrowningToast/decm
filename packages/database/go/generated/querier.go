@@ -41,6 +41,7 @@ type Querier interface {
 	DeleteEventRegistrationInvitation(ctx context.Context, id uuid.UUID) error
 	DeleteProfile(ctx context.Context, id uuid.UUID) error
 	DeleteProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) error
+	GetAllEventCertificateIDsByEventID(ctx context.Context, eventID uuid.UUID) ([]uuid.UUID, error)
 	GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef pgtype.Text) (AuthenticationCredential, error)
 	GetAuthenticationCredentialById(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
 	GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (AuthenticationCredential, error)
