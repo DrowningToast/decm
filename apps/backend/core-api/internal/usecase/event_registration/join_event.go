@@ -2,6 +2,8 @@ package event_registration
 
 import (
 	"context"
+	"encoding/hex"
+	"strings"
 
 	"apps/backend/common/customerror"
 	"apps/backend/common/hashutils"
@@ -247,14 +249,15 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 		}
 
-		signMessage, _, err := uc.GetJoinEventSignMessage(ctx, client, common.HexToAddress(currentUser.WalletAddress), *currentUser, common.HexToAddress(entityEventContract.EventContractAddress), deadlineBlock)
+		signMessage, messageHashPtr, err := uc.GetJoinEventSignMessage(ctx, client, common.HexToAddress(currentUser.WalletAddress), *currentUser, common.HexToAddress(entityEventContract.EventContractAddress), deadlineBlock)
 		if err != nil {
 			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 		}
 		if signMessage == nil {
 			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("sign message not found"))
 		}
-		messageHash := cyptoutils.HashEthereumMessage(*signMessage)
+		messageHash := *messageHashPtr
+
 		// Compare the message hash with the signature
 		isValidHash, err := cyptoutils.VerifySignatureByDigest(common.HexToAddress(currentUser.WalletAddress), messageHash, signature)
 		if err != nil {
@@ -264,17 +267,139 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 			return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("signature is not valid"))
 		}
 
-		// Add participant on blockchain
-		tx, err := eventContractInstance.AddParticipant(transactor, common.HexToAddress(currentUser.WalletAddress), messageHash.String(), signature)
-		if err != nil {
-			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		// Debug logging before calling AddParticipant
+		participantAddr := common.HexToAddress(currentUser.WalletAddress)
+		println("=== DEBUG AddParticipant ===")
+		println("Participant Address:", participantAddr.Hex())
+		println("Sign Message (RAW):", *signMessage)
+		println("Message Hash:", messageHash.String())
+		println("Signature Length:", len(signature))
+		println("Contract Address:", entityEventContract.EventContractAddress)
+		println("Transactor Address:", transactor.From.Hex())
+
+		// Check current state before adding
+		currentCount, err := eventContractInstance.CurrentSeatsCount(&bind.CallOpts{Context: ctx})
+		if err == nil {
+			println("Current Seats:", currentCount.String())
 		}
+		maxCount, err := eventContractInstance.SeatsCount(&bind.CallOpts{Context: ctx})
+		if err == nil {
+			println("Max Seats:", maxCount.String())
+		}
+		println("========================")
+
+		// Pre-flight check: Try to simulate the call first to get detailed error
+		println("")
+		println("🔍 Pre-flight check: Simulating contract call...")
+		callOpts := &bind.CallOpts{
+			Context: ctx,
+			From:    transactor.From,
+		}
+
+		// Try calling GetParticipants to verify contract is accessible
+		participants, err := eventContractInstance.GetParticipants(callOpts)
+		if err != nil {
+			println("⚠️  Warning: Cannot read contract state:", err.Error())
+		} else {
+			println("✅ Contract is accessible. Current participants:", len(participants))
+			// Check if participant already exists on-chain (double-check)
+			for _, p := range participants {
+				if p.Hex() == participantAddr.Hex() {
+					println("⚠️  WARNING: Participant already exists on-chain!")
+					break
+				}
+			}
+		}
+
+		println("🚀 Attempting to submit transaction...")
+		println("   Passing RAW sign message to contract (not hash)")
+		println("")
+
+		// CRITICAL: Pass the RAW sign message, NOT the hash!
+		// The smart contract will hash it itself using toEthSignedMessageHash
+		tx, err := eventContractInstance.AddParticipant(transactor, participantAddr, *signMessage, signature)
+		if err != nil {
+			// Enhanced error logging - transaction was rejected before submission
+			println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+			println("ERROR: AddParticipant transaction REJECTED")
+			println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+			println("Full Error:", err.Error())
+			println("")
+
+			// Try to extract revert reason from error message
+			errStr := err.Error()
+
+			// Common patterns in go-ethereum errors
+			if strings.Contains(errStr, "execution reverted:") {
+				parts := strings.SplitN(errStr, "execution reverted:", 2)
+				if len(parts) == 2 {
+					revertReason := strings.TrimSpace(parts[1])
+					println("🔴 REVERT REASON:", revertReason)
+				}
+			} else if strings.Contains(errStr, "execution reverted") {
+				println("🔴 Transaction would revert (no specific reason provided)")
+			}
+
+			// Check for common issues
+			println("")
+			println("Possible causes:")
+			if strings.Contains(errStr, "insufficient funds") {
+				println("  ❌ Transactor wallet has insufficient funds for gas")
+			}
+			if strings.Contains(errStr, "nonce") {
+				println("  ❌ Nonce issue - transaction ordering problem")
+			}
+			if strings.Contains(errStr, "gas") && strings.Contains(errStr, "intrinsic") {
+				println("  ❌ Gas limit too low")
+			}
+			if strings.Contains(errStr, "reverted") {
+				println("  ❌ Smart contract rejected the call during gas estimation")
+				println("     This means one of the contract's require/revert statements failed:")
+				println("     - Event__SeatsCountReached: Event is full")
+				println("     - Event__ParticipantIsAlreadyJoined: Already registered")
+				println("     - Event__AddressCannotBeZero: Invalid address")
+				println("     - Access control: Transactor doesn't have HOST/ADMIN role")
+				println("     - Invalid signature: Signature verification failed")
+			}
+
+			println("")
+			println("Transaction Details:")
+			println("  Participant:", participantAddr.Hex())
+			println("  Contract:", entityEventContract.EventContractAddress)
+			println("  Transactor:", transactor.From.Hex())
+			println("  Message Hash:", messageHash.String())
+			println("  Signature:", hex.EncodeToString(signature))
+			println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "failed to add participant to blockchain: wallet=%s, contract=%s", participantAddr.Hex(), entityEventContract.EventContractAddress))
+		}
+
+		println("Transaction submitted:", tx.Hash().Hex())
+
 		receipt, err := bind.WaitMined(ctx, client, tx)
 		if err != nil {
-			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+			println("ERROR: WaitMined failed:", err.Error())
+			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "transaction mining failed: tx=%s", tx.Hash().Hex()))
 		}
+
+		println("Transaction mined. Status:", receipt.Status, "Gas Used:", receipt.GasUsed)
+
 		if receipt.Status != types.ReceiptStatusSuccessful {
-			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New(string(JoinEventUserErrorEventAttendeeFull)))
+			// Try to get revert reason
+			revertReason, err := cyptoutils.GetRevertReason(ctx, client, tx, receipt)
+			if err != nil {
+				println("Failed to get revert reason:", err.Error())
+				revertReason = "failed to decode revert reason: " + err.Error()
+			}
+			println("Revert Reason:", revertReason)
+
+			if len(receipt.Logs) > 0 {
+				println("Transaction logs count:", len(receipt.Logs))
+				for i, log := range receipt.Logs {
+					println("Log", i, "- Topics:", len(log.Topics))
+				}
+			}
+			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Errorf("transaction reverted (tx=%s, gas=%d): %s", tx.Hash().Hex(), receipt.GasUsed, revertReason))
 		}
 	}
 
