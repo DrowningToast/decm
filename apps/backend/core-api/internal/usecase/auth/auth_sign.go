@@ -13,7 +13,7 @@ import (
 	gocommon "github.com/ethereum/go-ethereum/common"
 )
 
-func (u *AuthUsecase) SecuredSignStringForManagedUser(ctx context.Context, auth *auth.JwtClaims, message string, password string) ([]byte, *gocommon.Hash, error) {
+func (u *AuthUsecase) SecuredSignStringForManagedUser(ctx context.Context, auth *auth.JwtClaims, message string, password string, deadlineBlock *uint64) ([]byte, *gocommon.Hash, error) {
 	if auth == nil {
 		return nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
 	}
@@ -66,47 +66,50 @@ func (u *AuthUsecase) SecuredSignStringForManagedUser(ctx context.Context, auth 
 	return signature, &messageHash, nil
 }
 
-func (u *AuthUsecase) SecuredSignActionForManagedUser(ctx context.Context, auth *auth.JwtClaims, password string, hostAddress gocommon.Address, contractAddress gocommon.Address) ([]byte, *gocommon.Hash, error) {
+func (u *AuthUsecase) SecuredSignActionForManagedUser(ctx context.Context, auth *auth.JwtClaims, password string, hostAddress gocommon.Address, contractAddress gocommon.Address, deadlineBlock *uint64) ([]byte, *gocommon.Hash, *uint64, error) {
 	if auth == nil {
-		return nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
+		return nil, nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
 	}
 	if auth.UserId == [16]byte{} {
-		return nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("invalid user id"))
+		return nil, nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("invalid user id"))
 	}
 
 	client, err := cyptoutils.GetEthereumClient()
 	if err != nil {
-		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	calculatedDeadlineBlock, err := cyptoutils.GetCalculatedDeadlineBlock(client)
-	if err != nil {
-		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
+	if deadlineBlock == nil {
+		calculatedDeadlineBlock, err := cyptoutils.GetCalculatedDeadlineBlock(client)
+		if err != nil {
+			return nil, nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		}
+		deadlineBlock = &calculatedDeadlineBlock
 	}
 
-	signMessage, err := cyptoutils.GetSignMessage(hostAddress, contractAddress, calculatedDeadlineBlock)
+	signMessage, err := cyptoutils.GetSignMessage(hostAddress, contractAddress, *deadlineBlock)
 	if err != nil {
-		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	encryptedPrivateKey, err := u.AuthenticationCredentialDg.GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx, auth.UserId)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	if encryptedPrivateKey == nil {
-		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("encrypted private key not found"))
+		return nil, nil, nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("encrypted private key not found"))
 	}
 
 	privateKey, _, err := cyptoutils.DecryptPrivateKey(*encryptedPrivateKey.EncryptedPrivateKey, password)
 	if err != nil {
-		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	messageHash := cyptoutils.HashEthereumMessage(signMessage)
 	signature, err := cyptoutils.Sign(messageHash.Bytes(), privateKey)
 	if err != nil {
-		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	return signature, &messageHash, nil
+	return signature, &messageHash, deadlineBlock, nil
 }

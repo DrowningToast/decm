@@ -58,7 +58,7 @@ func (h *Handler) GetJoinEventSignMessage(ctx *fiber.Ctx) error {
 		return errors.Wrap(err, "failed to get ethereum client")
 	}
 
-	signMessage, _, err := h.EventRegistrationUc.GetJoinEventSignMessage(ctx.UserContext(), client, common.HexToAddress(currentUser.WalletAddress), *currentUser, common.HexToAddress(eventContract.EventContractAddress))
+	signMessage, _, err := h.EventRegistrationUc.GetJoinEventSignMessage(ctx.UserContext(), client, common.HexToAddress(currentUser.WalletAddress), *currentUser, common.HexToAddress(eventContract.EventContractAddress), nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to get join event sign message")
 	}

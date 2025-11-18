@@ -142,3 +142,16 @@ func ValidateSignMessage(signMessage string, signerAddress ethCommon.Address, co
 		return true, nil
 	}
 }
+
+func ExtractDeadlineBlockFromSignMessage(signMessage string) (*uint64, error) {
+	parts := strings.Split(signMessage, ",")
+	if len(parts) != 3 {
+		return nil, customerror.NewWithPreset(&customerror.ErrInvalidArgument, errors.New("invalid sign message"))
+	}
+
+	value, err := strconv.ParseUint(parts[2], 10, 64)
+	if err != nil {
+		return nil, customerror.NewWithPreset(&customerror.ErrInvalidArgument, err)
+	}
+	return &value, nil
+}
