@@ -151,12 +151,22 @@ func (uc *EventRegistrationUsecase) JoinEventWithPin(ctx context.Context, client
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("user is not eligible to join the event"))
 	}
 
-	signature, _, deadlineBlock, err := uc.AuthUsecase.SecuredSignActionForManagedUser(ctx, currentUser, password, common.HexToAddress(currentUser.WalletAddress), common.HexToAddress(entityEventContract.EventContractAddress), nil)
+	deadlineBlock, err := cyptoutils.GetCalculatedDeadlineBlock(client)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	return uc.joinEvent(ctx, client, currentUser, *entityEventContract, joinPayload, signature, deadlineBlock)
+	signMessage, err := cyptoutils.GetSignMessage(common.HexToAddress(currentUser.WalletAddress), common.HexToAddress(entityEventContract.EventContractAddress), deadlineBlock)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+	}
+
+	signature, _, err := uc.AuthUsecase.SecuredSignStringForManagedUser(ctx, currentUser, signMessage, password, &deadlineBlock)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+	}
+
+	return uc.joinEvent(ctx, client, currentUser, *entityEventContract, joinPayload, signature, signMessage, &deadlineBlock)
 }
 
 func (uc *EventRegistrationUsecase) JoinEventWithSignature(ctx context.Context, client *ethclient.Client, currentUser *auth.JwtClaims, eventId uuid.UUID, eligibilityProof CheckRegistrationEligibilityParams, joinPayload JoinEventPayload, signature []byte, signMessage string) (*entity.EventAttendee, error) {
@@ -203,10 +213,10 @@ func (uc *EventRegistrationUsecase) JoinEventWithSignature(ctx context.Context, 
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("user is not eligible to join the event"))
 	}
 
-	return uc.joinEvent(ctx, client, currentUser, *entityEventContract, joinPayload, signature, deadlineBlock)
+	return uc.joinEvent(ctx, client, currentUser, *entityEventContract, joinPayload, signature, signMessage, deadlineBlock)
 }
 
-func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethclient.Client, currentUser *auth.JwtClaims, entityEventContract entity.EventContract, joinEventPayload JoinEventPayload, signature []byte, deadlineBlock *uint64) (*entity.EventAttendee, error) {
+func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethclient.Client, currentUser *auth.JwtClaims, entityEventContract entity.EventContract, joinEventPayload JoinEventPayload, signature []byte, signMessage string, deadlineBlock *uint64) (*entity.EventAttendee, error) {
 	if currentUser == nil {
 		return nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
 	}
@@ -249,14 +259,8 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 		}
 
-		signMessage, messageHashPtr, err := uc.GetJoinEventSignMessage(ctx, client, common.HexToAddress(currentUser.WalletAddress), *currentUser, common.HexToAddress(entityEventContract.EventContractAddress), deadlineBlock)
-		if err != nil {
-			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
-		}
-		if signMessage == nil {
-			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("sign message not found"))
-		}
-		messageHash := *messageHashPtr
+		// Use the original signMessage that was used to create the signature
+		messageHash := cyptoutils.HashEthereumMessage(signMessage)
 
 		// Compare the message hash with the signature
 		isValidHash, err := cyptoutils.VerifySignatureByDigest(common.HexToAddress(currentUser.WalletAddress), messageHash, signature)
@@ -271,7 +275,7 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 		participantAddr := common.HexToAddress(currentUser.WalletAddress)
 		println("=== DEBUG AddParticipant ===")
 		println("Participant Address:", participantAddr.Hex())
-		println("Sign Message (RAW):", *signMessage)
+		println("Sign Message (RAW):", signMessage)
 		println("Message Hash:", messageHash.String())
 		println("Signature Length:", len(signature))
 		println("Contract Address:", entityEventContract.EventContractAddress)
@@ -317,7 +321,7 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 
 		// CRITICAL: Pass the RAW sign message, NOT the hash!
 		// The smart contract will hash it itself using toEthSignedMessageHash
-		tx, err := eventContractInstance.AddParticipant(transactor, participantAddr, *signMessage, signature)
+		tx, err := eventContractInstance.AddParticipant(transactor, participantAddr, signMessage, signature)
 		if err != nil {
 			// Enhanced error logging - transaction was rejected before submission
 			println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
