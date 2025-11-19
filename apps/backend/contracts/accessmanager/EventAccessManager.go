@@ -35,8 +35,8 @@ var (
 
 // EventAccessManagerMetaData contains all meta data concerning the EventAccessManager contract.
 var EventAccessManagerMetaData = &bind.MetaData{
-	ABI: "[{\"type\":\"constructor\",\"inputs\":[{\"name\":\"decmAccessManagerAddr\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"hostAddress\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"DECM_ACCESS_MANAGER\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"contractDecmAccessManager\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"DEFAULT_ADMIN_ROLE\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"addAllowedMsgSender\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"allowedMsgSenders\",\"inputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsAllowedMsgSender\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsHost\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsHostOrAdmin\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsIssuer\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsParticipant\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getRoleAdmin\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"grantHostRole\",\"inputs\":[{\"name\":\"host\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantIssuerRole\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantParticipantRole\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"hasRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"recoverSigner\",\"inputs\":[{\"name\":\"signedMessageDigest\",\"type\":\"string\",\"internalType\":\"string\"},{\"name\":\"signature\",\"type\":\"bytes\",\"internalType\":\"bytes\"}],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"removeAllowedMsgSender\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"renounceRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"callerConfirmation\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"requireAdmin\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireAllowedMsgSender\",\"inputs\":[],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireHostOrAdmin\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireHostOrAdminOrParticipant\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireParticipant\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"revokeIssuerRole\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"revokeParticipantRole\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"revokeRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"supportsInterface\",\"inputs\":[{\"name\":\"interfaceId\",\"type\":\"bytes4\",\"internalType\":\"bytes4\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"usedSignatures\",\"inputs\":[{\"name\":\"\",\"type\":\"bytes\",\"internalType\":\"bytes\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"event\",\"name\":\"HostRoleGranted\",\"inputs\":[{\"name\":\"host\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"IssuerRoleGranted\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"IssuerRoleRevoked\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"revoker\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"MsgSenderAllowed\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"MsgSenderDisallowed\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"revoker\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"ParticipantRoleGranted\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"ParticipantRoleRevoked\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"revoker\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleAdminChanged\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"previousAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"newAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleGranted\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleRevoked\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"error\",\"name\":\"AccessControlBadConfirmation\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"AccessControlUnauthorizedAccount\",\"inputs\":[{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"neededRole\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}]},{\"type\":\"error\",\"name\":\"ECDSAInvalidSignature\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"ECDSAInvalidSignatureLength\",\"inputs\":[{\"name\":\"length\",\"type\":\"uint256\",\"internalType\":\"uint256\"}]},{\"type\":\"error\",\"name\":\"ECDSAInvalidSignatureS\",\"inputs\":[{\"name\":\"s\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}]},{\"type\":\"error\",\"name\":\"EventAccessManager__AccessManagerCannotBeZeroAddress\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__AccountCannotBeZeroAddress\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotAdmin\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotAllowedMsgSender\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotHostOrAdmin\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotHostOrAdminOrParticipant\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotParticipant\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"Themis__InvalidSignature\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"Themis__SignatureAlreadyUsed\",\"inputs\":[]}]",
-	Bin: "0x60a03461012f57601f6117de38819003918201601f19168301916001600160401b0383118484101761013357808492604094855283398101031261012f57610052602061004b83610147565b9201610147565b906001600160a01b03168015610120576001600160a01b0382169182156101115761009691608052335f52600260205260405f20600160ff1982541617905561015b565b506040519033337fcafff2e98645ec2da6e513226c1a9e43cd3c576a07ac0f5ae021ed56785035e35f80a333907f40075578d30899d27664f80f0c7ba1dce6ef3e6d7af222f8e53acbc9e0f995c15f80a36115b79081610207823960805181818161046301528181610d2b01528181610dbc0152610eee0152f35b630b7d120360e41b5f5260045ffd5b63af83b44360e01b5f5260045ffd5b5f80fd5b634e487b7160e01b5f52604160045260245ffd5b51906001600160a01b038216820361012f57565b6001600160a01b0381165f9081525f5160206117be5f395f51905f52602052604090205460ff16610201576001600160a01b03165f8181525f5160206117be5f395f51905f5260205260408120805460ff191660011790553391907fffea912cee438c2ace68bb665a205db5afc1aaf31713688b377348fe4bfc04f5907f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d9080a4600190565b505f9056fe60806040526004361015610011575f80fd5b5f3560e01c8062fd49841461092057806301d060b0146108e357806301ffc9a71461088d57806317148e6e14610826578063248a9ca3146107f45780632a7226591461078d5780632f2ff15d1461075057806336568abe1461070c5780634f5af5d7146106e95780635577210a146106c85780635b8c77721461067a57806365e16e961461062c57806390d0d188146105c557806391d148541461057d578063972d3e871461052f5780639794985014610513578063a1d0e826146104ac578063a217fddf14610492578063a4189e891461044e578063aa2d9078146103de578063b08646b314610366578063c15e0b4d146102f9578063c91e2adb1461027e578063d547741f1461023c578063e53938551461020a578063e8b98395146101e7578063e949580e1461018c5763fa59a3841461014c575f80fd5b34610188575f36600319011261018857610172335f52600260205260ff60405f20541690565b1561017957005b636579d15160e01b5f5260045ffd5b5f80fd5b346101885760203660031901126101885760043567ffffffffffffffff81116101885760ff6020806101c381943690600401610c6c565b604051928184925191829101835e8101600181520301902054166040519015158152f35b3461018857602036600319011261018857610208610203610c8a565b610e87565b005b34610188575f366003190112610188576020610232335f52600260205260ff60405f20541690565b6040519015158152f35b346101885760403660031901126101885761020860043561025b610ca0565b90610279610274825f525f602052600160405f20015490565b611399565b6110eb565b3461018857604036600319011261018857610297610c8a565b6102a76102a2610ca0565b610e45565b6001600160a01b0381169081156102ea576102c190611297565b5033907f09fee57db8b9faf221b6b0eb8db28bc36e2b660ebf83a5bda0a5c2a96ec1039a5f80a3005b630b7d120360e41b5f5260045ffd5b3461018857602036600319011261018857610312610c8a565b61031b33610d92565b6001600160a01b031680156102ea57805f52600260205260405f2060ff19815416905533907ffe0eafd64726b7e9467641e45715fd6d43ef445f0383079f7b2863034e01ac865f80a3005b346101885760203660031901126101885761037f610c8a565b6001600160a01b03165f9081525f5160206115625f395f51905f52602090815260408083205433845260029092529091205460ff918216159116816103d5575b506103c657005b631778965560e31b5f5260045ffd5b905015816103bf565b34610188576020366003190112610188576103f7610c8a565b61040033610d92565b6001600160a01b031680156102ea57805f52600260205260405f20600160ff1982541617905533907fcafff2e98645ec2da6e513226c1a9e43cd3c576a07ac0f5ae021ed56785035e35f80a3005b34610188575f366003190112610188576040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b34610188575f3660031901126101885760206040515f8152f35b34610188576040366003190112610188576104c5610c8a565b6104d06102a2610ca0565b6001600160a01b0381169081156102ea576104ea90611204565b5033907f40075578d30899d27664f80f0c7ba1dce6ef3e6d7af222f8e53acbc9e0f995c15f80a3005b34610188576020366003190112610188576102086102a2610c8a565b3461018857602036600319011261018857610548610c8a565b6001600160a01b03165f9081525f5160206115425f395f51905f52602090815260409182902054915160ff9092161515825290f35b3461018857604036600319011261018857610596610ca0565b6004355f525f60205260405f209060018060a01b03165f52602052602060ff60405f2054166040519015158152f35b34610188576040366003190112610188576105de610c8a565b6105e9610203610ca0565b6001600160a01b0381169081156102ea5761060390611047565b5033907f8f2034f4c7c42ef02cdc073ff41e6444ec47bbbf4401c2f1b32427bc7c5fcd8d5f80a3005b3461018857602036600319011261018857610645610c8a565b6001600160a01b03165f9081525f5160206115625f395f51905f52602090815260409182902054915160ff9092161515825290f35b3461018857602036600319011261018857610693610c8a565b6001600160a01b03165f9081525f5160206115225f395f51905f52602090815260409182902054915160ff9092161515825290f35b34610188576020366003190112610188576102086106e4610c8a565b610d92565b34610188576020366003190112610188576020610232610707610c8a565b610cce565b3461018857604036600319011261018857610725610ca0565b336001600160a01b0382160361074157610208906004356110eb565b63334bd91960e11b5f5260045ffd5b346101885760403660031901126101885761020860043561076f610ca0565b90610788610274825f525f602052600160405f20015490565b61132a565b34610188576040366003190112610188576107a6610c8a565b6107b16102a2610ca0565b6001600160a01b0381169081156102ea576107cb90611171565b5033907fe9ec21f7a07fec3a8ece7bac8da7d00b6774fef25832b06f901c6f88b717bcba5f80a3005b3461018857602036600319011261018857602061081e6004355f525f602052600160405f20015490565b604051908152f35b346101885760403660031901126101885761083f610c8a565b61084a6102a2610ca0565b6001600160a01b0381169081156102ea5761086490610f9e565b5033907f311633f976ae39ac301202033af2019f5ad0cefb41e4856eb443b0fdd57ec58b5f80a3005b346101885760203660031901126101885760043563ffffffff60e01b811680910361018857602090637965db0b60e01b81149081156108d2575b506040519015158152f35b6301ffc9a760e01b149050826108c7565b34610188576020366003190112610188576001600160a01b03610904610c8a565b165f526002602052602060ff60405f2054166040519015158152f35b346101885760403660031901126101885760043567ffffffffffffffff8111610188573660238201121561018857610962903690602481600401359101610c36565b60243567ffffffffffffffff811161018857610982903690600401610c6c565b815190915f8272184f03e93ff9f4daa797ed6e38ed64bf6a1f0160401b811015610bc1575b806d04ee2d6d415b85acef8100000000600a921015610ba6575b662386f26fc10000811015610b92575b6305f5e100811015610b81575b612710811015610b72575b6064811015610b64575b1015610b5c575b6001810192600a6021610a25610a0f87610c1a565b96610a1d6040519889610be4565b808852610c1a565b602087019490601f19013686378601015b5f1901916f181899199a1a9b1b9c1cb0b131b232b360811b8282061a83530490858215610a665750600a90610a36565b610ae0610ad7828888610acf89603a6020604051948593828501977f19457468657265756d205369676e6564204d6573736167653a0a00000000000089525180918587015e8401908382015f8152815193849201905e01015f815203601f198101835282610be4565b5190206113d1565b9092919261140b565b6001600160a01b03168015610b4d5760405160ff835191602081818701948086835e810160018152030190205416610b3e5760208093604051928391518091835e81016001815203019020600160ff19825416179055604051908152f35b63f632d4a960e01b5f5260045ffd5b6353c789ab60e01b5f5260045ffd5b6001016109fa565b6064600291049201916109f3565b612710600491049201916109e9565b6305f5e100600891049201916109de565b662386f26fc10000601091049201916109d1565b6d04ee2d6d415b85acef8100000000602091049201916109c1565b506040905072184f03e93ff9f4daa797ed6e38ed64bf6a1f0160401b83046109a7565b90601f8019910116810190811067ffffffffffffffff821117610c0657604052565b634e487b7160e01b5f52604160045260245ffd5b67ffffffffffffffff8111610c0657601f01601f191660200190565b929192610c4282610c1a565b91610c506040519384610be4565b829481845281830111610188578281602093845f960137010152565b9080601f8301121561018857816020610c8793359101610c36565b90565b600435906001600160a01b038216820361018857565b602435906001600160a01b038216820361018857565b90816020910312610188575180151581036101885790565b6001600160a01b0381165f9081525f5160206115425f395f51905f52602052604090205460ff16908115610d00575090565b60405163d953689d60e01b81526001600160a01b0391821660048201529150602090829060249082907f0000000000000000000000000000000000000000000000000000000000000000165afa908115610d87575f91610d5e575090565b610c87915060203d602011610d80575b610d788183610be4565b810190610cb6565b503d610d6e565b6040513d5f823e3d90fd5b60405163d953689d60e01b81526001600160a01b03918216600482015290602090829060249082907f0000000000000000000000000000000000000000000000000000000000000000165afa908115610d87575f91610e26575b501580610e09575b610dfa57565b63ed19117b60e01b5f5260045ffd5b50610e20335f52600260205260ff60405f20541690565b15610df4565b610e3f915060203d602011610d8057610d788183610be4565b5f610dec565b610e4e90610cce565b1580610e6a575b610e5b57565b631101e68b60e21b5f5260045ffd5b50610e81335f52600260205260ff60405f20541690565b15610e55565b6001600160a01b039081165f8181525f5160206115425f395f51905f5260209081526040808320545f5160206115625f395f51905f5283529281902054905163d953689d60e01b81526004810194909452929360ff928316939290921691849060249082907f0000000000000000000000000000000000000000000000000000000000000000165afa928315610d87575f93610f7d575b50610f35335f52600260205260ff60405f20541690565b91159283610f74575b5082610f6b575b5081610f62575b50610f5357565b63450d904960e01b5f5260045ffd5b9050155f610f4c565b1591505f610f45565b1592505f610f3e565b610f9791935060203d602011610d8057610d788183610be4565b915f610f1e565b6001600160a01b0381165f9081525f5160206115225f395f51905f52602052604090205460ff1615611042576001600160a01b03165f8181525f5160206115225f395f51905f5260205260408120805460ff191690553391907f114e74f6ea3bd819998f78687bfcb11b140da08e9b7d222fa9c1f1ba1f2aa122907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9080a4600190565b505f90565b6001600160a01b0381165f9081525f5160206115625f395f51905f52602052604090205460ff1615611042576001600160a01b03165f8181525f5160206115625f395f51905f5260205260408120805460ff191690553391907f938c45fe3baa5cbd047f2473358a27f57db22291e9af95379a15ad016886dfb7907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9080a4600190565b5f818152602081815260408083206001600160a01b038616845290915290205460ff161561116b575f818152602081815260408083206001600160a01b0395909516808452949091528120805460ff19169055339291907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9080a4600190565b50505f90565b6001600160a01b0381165f9081525f5160206115625f395f51905f52602052604090205460ff16611042576001600160a01b03165f8181525f5160206115625f395f51905f5260205260408120805460ff191660011790553391907f938c45fe3baa5cbd047f2473358a27f57db22291e9af95379a15ad016886dfb7905f5160206115025f395f51905f529080a4600190565b6001600160a01b0381165f9081525f5160206115425f395f51905f52602052604090205460ff16611042576001600160a01b03165f8181525f5160206115425f395f51905f5260205260408120805460ff191660011790553391907fffea912cee438c2ace68bb665a205db5afc1aaf31713688b377348fe4bfc04f5905f5160206115025f395f51905f529080a4600190565b6001600160a01b0381165f9081525f5160206115225f395f51905f52602052604090205460ff16611042576001600160a01b03165f8181525f5160206115225f395f51905f5260205260408120805460ff191660011790553391907f114e74f6ea3bd819998f78687bfcb11b140da08e9b7d222fa9c1f1ba1f2aa122905f5160206115025f395f51905f529080a4600190565b5f818152602081815260408083206001600160a01b038616845290915290205460ff1661116b575f818152602081815260408083206001600160a01b0395909516808452949091528120805460ff19166001179055339291905f5160206115025f395f51905f529080a4600190565b5f8181526020818152604080832033845290915290205460ff16156113bb5750565b63e2517d3f60e01b5f523360045260245260445ffd5b8151919060418303611401576113fa9250602082015190606060408401519301515f1a9061147f565b9192909190565b50505f9160029190565b600481101561146b578061141d575050565b600181036114345763f645eedf60e01b5f5260045ffd5b6002810361144f575063fce698f760e01b5f5260045260245ffd5b6003146114595750565b6335e2f38360e21b5f5260045260245ffd5b634e487b7160e01b5f52602160045260245ffd5b91907f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a084116114f6579160209360809260ff5f9560405194855216868401526040830152606082015282805260015afa15610d87575f516001600160a01b038116156114ec57905f905f90565b505f906001905f90565b5050505f916003919056fe2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0df9c002f57bb53b4d861ae1ef1369a8087d06c8210e4846f897918d0e534663ce05d0266d92a165c0409de8243ef44328a30b31530682f3bbbd3cd3f1cea0fb64b5f694e3faed4d17d5a46a3ff72aafb68b3688701fac8b3fb7781179f7ead0fba264697066735822122077f614a317175d78a661f5cf4878e175740f5c93ee3477c33c559af8c01341cb64736f6c634300081c003305d0266d92a165c0409de8243ef44328a30b31530682f3bbbd3cd3f1cea0fb64",
+	ABI: "[{\"type\":\"constructor\",\"inputs\":[{\"name\":\"decmAccessManagerAddr\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"hostAddress\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"DECM_ACCESS_MANAGER\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"contractDecmAccessManager\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"DEFAULT_ADMIN_ROLE\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"addAllowedMsgSender\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"allowedMsgSenders\",\"inputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsAllowedMsgSender\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsHost\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsHostOrAdmin\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsIssuer\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsParticipant\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getRoleAdmin\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"grantHostRole\",\"inputs\":[{\"name\":\"host\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantIssuerRole\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantParticipantRole\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantParticipantRoleUsingAllowedMsgSender\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"hasRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"recoverSigner\",\"inputs\":[{\"name\":\"signedMessageDigest\",\"type\":\"string\",\"internalType\":\"string\"},{\"name\":\"signature\",\"type\":\"bytes\",\"internalType\":\"bytes\"}],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"removeAllowedMsgSender\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"renounceRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"callerConfirmation\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"requireAdmin\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireAllowedMsgSender\",\"inputs\":[],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireHostOrAdmin\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireHostOrAdminOrParticipant\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireParticipant\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"revokeIssuerRole\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"revokeParticipantRole\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"revokeRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"supportsInterface\",\"inputs\":[{\"name\":\"interfaceId\",\"type\":\"bytes4\",\"internalType\":\"bytes4\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"usedSignatures\",\"inputs\":[{\"name\":\"\",\"type\":\"bytes\",\"internalType\":\"bytes\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"event\",\"name\":\"HostRoleGranted\",\"inputs\":[{\"name\":\"host\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"IssuerRoleGranted\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"IssuerRoleRevoked\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"revoker\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"MsgSenderAllowed\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"MsgSenderDisallowed\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"revoker\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"ParticipantRoleGranted\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"ParticipantRoleRevoked\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"revoker\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleAdminChanged\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"previousAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"newAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleGranted\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleRevoked\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"error\",\"name\":\"AccessControlBadConfirmation\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"AccessControlUnauthorizedAccount\",\"inputs\":[{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"neededRole\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}]},{\"type\":\"error\",\"name\":\"ECDSAInvalidSignature\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"ECDSAInvalidSignatureLength\",\"inputs\":[{\"name\":\"length\",\"type\":\"uint256\",\"internalType\":\"uint256\"}]},{\"type\":\"error\",\"name\":\"ECDSAInvalidSignatureS\",\"inputs\":[{\"name\":\"s\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}]},{\"type\":\"error\",\"name\":\"EventAccessManager__AccessManagerCannotBeZeroAddress\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__AccountCannotBeZeroAddress\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotAdmin\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotAllowedMsgSender\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotHostOrAdmin\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotHostOrAdminOrParticipant\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotParticipant\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"Themis__InvalidSignature\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"Themis__SignatureAlreadyUsed\",\"inputs\":[]}]",
+	Bin: "0x60a03461012f57601f61186a38819003918201601f19168301916001600160401b0383118484101761013357808492604094855283398101031261012f57610052602061004b83610147565b9201610147565b906001600160a01b03168015610120576001600160a01b0382169182156101115761009691608052335f52600260205260405f20600160ff1982541617905561015b565b506040519033337fcafff2e98645ec2da6e513226c1a9e43cd3c576a07ac0f5ae021ed56785035e35f80a333907f40075578d30899d27664f80f0c7ba1dce6ef3e6d7af222f8e53acbc9e0f995c15f80a3611643908161020782396080518181816104ec01528181610d8b01528181610e1c0152610f4e0152f35b630b7d120360e41b5f5260045ffd5b63af83b44360e01b5f5260045ffd5b5f80fd5b634e487b7160e01b5f52604160045260245ffd5b51906001600160a01b038216820361012f57565b6001600160a01b0381165f9081525f51602061184a5f395f51905f52602052604090205460ff16610201576001600160a01b03165f8181525f51602061184a5f395f51905f5260205260408120805460ff191660011790553391907fffea912cee438c2ace68bb665a205db5afc1aaf31713688b377348fe4bfc04f5907f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d9080a4600190565b505f9056fe60806040526004361015610011575f80fd5b5f3560e01c8062fd49841461098057806301d060b01461094357806301ffc9a7146108ed57806317148e6e14610886578063248a9ca3146108545780632a722659146108165780632f2ff15d146107d957806336568abe146107955780634f5af5d7146107725780635577210a146107515780635b8c77721461070357806365e16e96146106b557806390d0d1881461064e57806391d1485414610606578063972d3e87146105b8578063979498501461059c578063a1d0e82614610535578063a217fddf1461051b578063a4189e89146104d7578063aa2d907814610467578063b08646b3146103ef578063c15e0b4d14610382578063c91e2adb14610307578063cb0c63a914610265578063d547741f14610223578063e5393855146101f1578063e8b98395146101d0578063e949580e146101755763fa59a38414610157575f80fd5b34610171575f3660031901126101715761016f610ffe565b005b5f80fd5b346101715760203660031901126101715760043567ffffffffffffffff81116101715760ff6020806101ac81943690600401610ccc565b604051928184925191829101835e8101600181520301902054166040519015158152f35b346101715760203660031901126101715761016f6101ec610cea565b610ee7565b34610171575f366003190112610171576020610219335f52600260205260ff60405f20541690565b6040519015158152f35b346101715760403660031901126101715761016f600435610242610d00565b9061026061025b825f525f602052600160405f20015490565b611425565b611177565b346101715760203660031901126101715761027e610cea565b610286610ffe565b6001600160a01b0381169081156102c9576102a0906111fd565b5033907fe9ec21f7a07fec3a8ece7bac8da7d00b6774fef25832b06f901c6f88b717bcba5f80a3005b60405162461bcd60e51b81526020600482015260166024820152754163636f756e742063616e6e6f74206265207a65726f60501b6044820152606490fd5b3461017157604036600319011261017157610320610cea565b61033061032b610d00565b610ea5565b6001600160a01b0381169081156103735761034a90611323565b5033907f09fee57db8b9faf221b6b0eb8db28bc36e2b660ebf83a5bda0a5c2a96ec1039a5f80a3005b630b7d120360e41b5f5260045ffd5b346101715760203660031901126101715761039b610cea565b6103a433610df2565b6001600160a01b0316801561037357805f52600260205260405f2060ff19815416905533907ffe0eafd64726b7e9467641e45715fd6d43ef445f0383079f7b2863034e01ac865f80a3005b3461017157602036600319011261017157610408610cea565b6001600160a01b03165f9081525f5160206115ee5f395f51905f52602090815260408083205433845260029092529091205460ff9182161591168161045e575b5061044f57005b631778965560e31b5f5260045ffd5b90501581610448565b3461017157602036600319011261017157610480610cea565b61048933610df2565b6001600160a01b0316801561037357805f52600260205260405f20600160ff1982541617905533907fcafff2e98645ec2da6e513226c1a9e43cd3c576a07ac0f5ae021ed56785035e35f80a3005b34610171575f366003190112610171576040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b34610171575f3660031901126101715760206040515f8152f35b346101715760403660031901126101715761054e610cea565b61055961032b610d00565b6001600160a01b0381169081156103735761057390611290565b5033907f40075578d30899d27664f80f0c7ba1dce6ef3e6d7af222f8e53acbc9e0f995c15f80a3005b346101715760203660031901126101715761016f61032b610cea565b34610171576020366003190112610171576105d1610cea565b6001600160a01b03165f9081525f5160206115ce5f395f51905f52602090815260409182902054915160ff9092161515825290f35b346101715760403660031901126101715761061f610d00565b6004355f525f60205260405f209060018060a01b03165f52602052602060ff60405f2054166040519015158152f35b3461017157604036600319011261017157610667610cea565b6106726101ec610d00565b6001600160a01b0381169081156103735761068c906110d3565b5033907f8f2034f4c7c42ef02cdc073ff41e6444ec47bbbf4401c2f1b32427bc7c5fcd8d5f80a3005b34610171576020366003190112610171576106ce610cea565b6001600160a01b03165f9081525f5160206115ee5f395f51905f52602090815260409182902054915160ff9092161515825290f35b346101715760203660031901126101715761071c610cea565b6001600160a01b03165f9081525f5160206115ae5f395f51905f52602090815260409182902054915160ff9092161515825290f35b346101715760203660031901126101715761016f61076d610cea565b610df2565b34610171576020366003190112610171576020610219610790610cea565b610d2e565b34610171576040366003190112610171576107ae610d00565b336001600160a01b038216036107ca5761016f90600435611177565b63334bd91960e11b5f5260045ffd5b346101715760403660031901126101715761016f6004356107f8610d00565b9061081161025b825f525f602052600160405f20015490565b6113b6565b346101715760403660031901126101715761082f610cea565b61083a61032b610d00565b6001600160a01b038116908115610373576102a0906111fd565b3461017157602036600319011261017157602061087e6004355f525f602052600160405f20015490565b604051908152f35b346101715760403660031901126101715761089f610cea565b6108aa61032b610d00565b6001600160a01b038116908115610373576108c49061102a565b5033907f311633f976ae39ac301202033af2019f5ad0cefb41e4856eb443b0fdd57ec58b5f80a3005b346101715760203660031901126101715760043563ffffffff60e01b811680910361017157602090637965db0b60e01b8114908115610932575b506040519015158152f35b6301ffc9a760e01b14905082610927565b34610171576020366003190112610171576001600160a01b03610964610cea565b165f526002602052602060ff60405f2054166040519015158152f35b346101715760403660031901126101715760043567ffffffffffffffff81116101715736602382011215610171576109c2903690602481600401359101610c96565b60243567ffffffffffffffff8111610171576109e2903690600401610ccc565b815190915f8272184f03e93ff9f4daa797ed6e38ed64bf6a1f0160401b811015610c21575b806d04ee2d6d415b85acef8100000000600a921015610c06575b662386f26fc10000811015610bf2575b6305f5e100811015610be1575b612710811015610bd2575b6064811015610bc4575b1015610bbc575b6001810192600a6021610a85610a6f87610c7a565b96610a7d6040519889610c44565b808852610c7a565b602087019490601f19013686378601015b5f1901916f181899199a1a9b1b9c1cb0b131b232b360811b8282061a83530490858215610ac65750600a90610a96565b610b40610b37828888610b2f89603a6020604051948593828501977f19457468657265756d205369676e6564204d6573736167653a0a00000000000089525180918587015e8401908382015f8152815193849201905e01015f815203601f198101835282610c44565b51902061145d565b90929192611497565b6001600160a01b03168015610bad5760405160ff835191602081818701948086835e810160018152030190205416610b9e5760208093604051928391518091835e81016001815203019020600160ff19825416179055604051908152f35b63f632d4a960e01b5f5260045ffd5b6353c789ab60e01b5f5260045ffd5b600101610a5a565b606460029104920191610a53565b61271060049104920191610a49565b6305f5e10060089104920191610a3e565b662386f26fc1000060109104920191610a31565b6d04ee2d6d415b85acef810000000060209104920191610a21565b506040905072184f03e93ff9f4daa797ed6e38ed64bf6a1f0160401b8304610a07565b90601f8019910116810190811067ffffffffffffffff821117610c6657604052565b634e487b7160e01b5f52604160045260245ffd5b67ffffffffffffffff8111610c6657601f01601f191660200190565b929192610ca282610c7a565b91610cb06040519384610c44565b829481845281830111610171578281602093845f960137010152565b9080601f8301121561017157816020610ce793359101610c96565b90565b600435906001600160a01b038216820361017157565b602435906001600160a01b038216820361017157565b90816020910312610171575180151581036101715790565b6001600160a01b0381165f9081525f5160206115ce5f395f51905f52602052604090205460ff16908115610d60575090565b60405163d953689d60e01b81526001600160a01b0391821660048201529150602090829060249082907f0000000000000000000000000000000000000000000000000000000000000000165afa908115610de7575f91610dbe575090565b610ce7915060203d602011610de0575b610dd88183610c44565b810190610d16565b503d610dce565b6040513d5f823e3d90fd5b60405163d953689d60e01b81526001600160a01b03918216600482015290602090829060249082907f0000000000000000000000000000000000000000000000000000000000000000165afa908115610de7575f91610e86575b501580610e69575b610e5a57565b63ed19117b60e01b5f5260045ffd5b50610e80335f52600260205260ff60405f20541690565b15610e54565b610e9f915060203d602011610de057610dd88183610c44565b5f610e4c565b610eae90610d2e565b1580610eca575b610ebb57565b631101e68b60e21b5f5260045ffd5b50610ee1335f52600260205260ff60405f20541690565b15610eb5565b6001600160a01b039081165f8181525f5160206115ce5f395f51905f5260209081526040808320545f5160206115ee5f395f51905f5283529281902054905163d953689d60e01b81526004810194909452929360ff928316939290921691849060249082907f0000000000000000000000000000000000000000000000000000000000000000165afa928315610de7575f93610fdd575b50610f95335f52600260205260ff60405f20541690565b91159283610fd4575b5082610fcb575b5081610fc2575b50610fb357565b63450d904960e01b5f5260045ffd5b9050155f610fac565b1591505f610fa5565b1592505f610f9e565b610ff791935060203d602011610de057610dd88183610c44565b915f610f7e565b611014335f52600260205260ff60405f20541690565b1561101b57565b636579d15160e01b5f5260045ffd5b6001600160a01b0381165f9081525f5160206115ae5f395f51905f52602052604090205460ff16156110ce576001600160a01b03165f8181525f5160206115ae5f395f51905f5260205260408120805460ff191690553391907f114e74f6ea3bd819998f78687bfcb11b140da08e9b7d222fa9c1f1ba1f2aa122907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9080a4600190565b505f90565b6001600160a01b0381165f9081525f5160206115ee5f395f51905f52602052604090205460ff16156110ce576001600160a01b03165f8181525f5160206115ee5f395f51905f5260205260408120805460ff191690553391907f938c45fe3baa5cbd047f2473358a27f57db22291e9af95379a15ad016886dfb7907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9080a4600190565b5f818152602081815260408083206001600160a01b038616845290915290205460ff16156111f7575f818152602081815260408083206001600160a01b0395909516808452949091528120805460ff19169055339291907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9080a4600190565b50505f90565b6001600160a01b0381165f9081525f5160206115ee5f395f51905f52602052604090205460ff166110ce576001600160a01b03165f8181525f5160206115ee5f395f51905f5260205260408120805460ff191660011790553391907f938c45fe3baa5cbd047f2473358a27f57db22291e9af95379a15ad016886dfb7905f51602061158e5f395f51905f529080a4600190565b6001600160a01b0381165f9081525f5160206115ce5f395f51905f52602052604090205460ff166110ce576001600160a01b03165f8181525f5160206115ce5f395f51905f5260205260408120805460ff191660011790553391907fffea912cee438c2ace68bb665a205db5afc1aaf31713688b377348fe4bfc04f5905f51602061158e5f395f51905f529080a4600190565b6001600160a01b0381165f9081525f5160206115ae5f395f51905f52602052604090205460ff166110ce576001600160a01b03165f8181525f5160206115ae5f395f51905f5260205260408120805460ff191660011790553391907f114e74f6ea3bd819998f78687bfcb11b140da08e9b7d222fa9c1f1ba1f2aa122905f51602061158e5f395f51905f529080a4600190565b5f818152602081815260408083206001600160a01b038616845290915290205460ff166111f7575f818152602081815260408083206001600160a01b0395909516808452949091528120805460ff19166001179055339291905f51602061158e5f395f51905f529080a4600190565b5f8181526020818152604080832033845290915290205460ff16156114475750565b63e2517d3f60e01b5f523360045260245260445ffd5b815191906041830361148d576114869250602082015190606060408401519301515f1a9061150b565b9192909190565b50505f9160029190565b60048110156114f757806114a9575050565b600181036114c05763f645eedf60e01b5f5260045ffd5b600281036114db575063fce698f760e01b5f5260045260245ffd5b6003146114e55750565b6335e2f38360e21b5f5260045260245ffd5b634e487b7160e01b5f52602160045260245ffd5b91907f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a08411611582579160209360809260ff5f9560405194855216868401526040830152606082015282805260015afa15610de7575f516001600160a01b0381161561157857905f905f90565b505f906001905f90565b5050505f916003919056fe2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0df9c002f57bb53b4d861ae1ef1369a8087d06c8210e4846f897918d0e534663ce05d0266d92a165c0409de8243ef44328a30b31530682f3bbbd3cd3f1cea0fb64b5f694e3faed4d17d5a46a3ff72aafb68b3688701fac8b3fb7781179f7ead0fba264697066735822122001316909b952d87af84408dda6d485ba661c8698480239e56fd248e1d22f607d64736f6c634300081c003305d0266d92a165c0409de8243ef44328a30b31530682f3bbbd3cd3f1cea0fb64",
 }
 
 // EventAccessManagerABI is the input ABI used to generate the binding from.
@@ -212,6 +212,7 @@ func (_EventAccessManager *EventAccessManagerTransactorRaw) Transact(opts *bind.
 func (_EventAccessManager *EventAccessManagerCaller) DECMACCESSMANAGER(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "DECM_ACCESS_MANAGER")
+
 	if err != nil {
 		return *new(common.Address), err
 	}
@@ -219,6 +220,7 @@ func (_EventAccessManager *EventAccessManagerCaller) DECMACCESSMANAGER(opts *bin
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
+
 }
 
 // DECMACCESSMANAGER is a free data retrieval call binding the contract method 0xa4189e89.
@@ -241,6 +243,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) DECMACCESSMANAGER() 
 func (_EventAccessManager *EventAccessManagerCaller) DEFAULTADMINROLE(opts *bind.CallOpts) ([32]byte, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "DEFAULT_ADMIN_ROLE")
+
 	if err != nil {
 		return *new([32]byte), err
 	}
@@ -248,6 +251,7 @@ func (_EventAccessManager *EventAccessManagerCaller) DEFAULTADMINROLE(opts *bind
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
+
 }
 
 // DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
@@ -270,6 +274,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) DEFAULTADMINROLE() (
 func (_EventAccessManager *EventAccessManagerCaller) AllowedMsgSenders(opts *bind.CallOpts, arg0 common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "allowedMsgSenders", arg0)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -277,6 +282,7 @@ func (_EventAccessManager *EventAccessManagerCaller) AllowedMsgSenders(opts *bin
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // AllowedMsgSenders is a free data retrieval call binding the contract method 0x01d060b0.
@@ -299,6 +305,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) AllowedMsgSenders(ar
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsAllowedMsgSender(opts *bind.CallOpts) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "checkIsAllowedMsgSender")
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -306,6 +313,7 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsAllowedMsgSender(opt
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsAllowedMsgSender is a free data retrieval call binding the contract method 0xe5393855.
@@ -328,6 +336,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsAllowedMsgSen
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsHost(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "checkIsHost", addr)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -335,6 +344,7 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsHost(opts *bind.Call
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsHost is a free data retrieval call binding the contract method 0x972d3e87.
@@ -357,6 +367,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsHost(addr com
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsHostOrAdmin(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "checkIsHostOrAdmin", addr)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -364,6 +375,7 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsHostOrAdmin(opts *bi
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsHostOrAdmin is a free data retrieval call binding the contract method 0x4f5af5d7.
@@ -386,6 +398,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsHostOrAdmin(a
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsIssuer(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "checkIsIssuer", addr)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -393,6 +406,7 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsIssuer(opts *bind.Ca
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsIssuer is a free data retrieval call binding the contract method 0x5b8c7772.
@@ -415,6 +429,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsIssuer(addr c
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsParticipant(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "checkIsParticipant", addr)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -422,6 +437,7 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsParticipant(opts *bi
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsParticipant is a free data retrieval call binding the contract method 0x65e16e96.
@@ -444,6 +460,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsParticipant(a
 func (_EventAccessManager *EventAccessManagerCaller) GetRoleAdmin(opts *bind.CallOpts, role [32]byte) ([32]byte, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "getRoleAdmin", role)
+
 	if err != nil {
 		return *new([32]byte), err
 	}
@@ -451,6 +468,7 @@ func (_EventAccessManager *EventAccessManagerCaller) GetRoleAdmin(opts *bind.Cal
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
+
 }
 
 // GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
@@ -473,6 +491,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) GetRoleAdmin(role [3
 func (_EventAccessManager *EventAccessManagerCaller) HasRole(opts *bind.CallOpts, role [32]byte, account common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "hasRole", role, account)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -480,6 +499,7 @@ func (_EventAccessManager *EventAccessManagerCaller) HasRole(opts *bind.CallOpts
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // HasRole is a free data retrieval call binding the contract method 0x91d14854.
@@ -502,11 +522,13 @@ func (_EventAccessManager *EventAccessManagerCallerSession) HasRole(role [32]byt
 func (_EventAccessManager *EventAccessManagerCaller) RequireAdmin(opts *bind.CallOpts, addr common.Address) error {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "requireAdmin", addr)
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
 // RequireAdmin is a free data retrieval call binding the contract method 0x5577210a.
@@ -529,11 +551,13 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireAdmin(addr co
 func (_EventAccessManager *EventAccessManagerCaller) RequireAllowedMsgSender(opts *bind.CallOpts) error {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "requireAllowedMsgSender")
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
 // RequireAllowedMsgSender is a free data retrieval call binding the contract method 0xfa59a384.
@@ -556,11 +580,13 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireAllowedMsgSen
 func (_EventAccessManager *EventAccessManagerCaller) RequireHostOrAdmin(opts *bind.CallOpts, addr common.Address) error {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "requireHostOrAdmin", addr)
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
 // RequireHostOrAdmin is a free data retrieval call binding the contract method 0x97949850.
@@ -583,11 +609,13 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireHostOrAdmin(a
 func (_EventAccessManager *EventAccessManagerCaller) RequireHostOrAdminOrParticipant(opts *bind.CallOpts, addr common.Address) error {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "requireHostOrAdminOrParticipant", addr)
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
 // RequireHostOrAdminOrParticipant is a free data retrieval call binding the contract method 0xe8b98395.
@@ -610,11 +638,13 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireHostOrAdminOr
 func (_EventAccessManager *EventAccessManagerCaller) RequireParticipant(opts *bind.CallOpts, addr common.Address) error {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "requireParticipant", addr)
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
 // RequireParticipant is a free data retrieval call binding the contract method 0xb08646b3.
@@ -637,6 +667,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireParticipant(a
 func (_EventAccessManager *EventAccessManagerCaller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "supportsInterface", interfaceId)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -644,6 +675,7 @@ func (_EventAccessManager *EventAccessManagerCaller) SupportsInterface(opts *bin
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
@@ -666,6 +698,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) SupportsInterface(in
 func (_EventAccessManager *EventAccessManagerCaller) UsedSignatures(opts *bind.CallOpts, arg0 []byte) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "usedSignatures", arg0)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -673,6 +706,7 @@ func (_EventAccessManager *EventAccessManagerCaller) UsedSignatures(opts *bind.C
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // UsedSignatures is a free data retrieval call binding the contract method 0xe949580e.
@@ -771,6 +805,27 @@ func (_EventAccessManager *EventAccessManagerSession) GrantParticipantRole(parti
 // Solidity: function grantParticipantRole(address participant, address signer) returns()
 func (_EventAccessManager *EventAccessManagerTransactorSession) GrantParticipantRole(participant common.Address, signer common.Address) (*types.Transaction, error) {
 	return _EventAccessManager.Contract.GrantParticipantRole(&_EventAccessManager.TransactOpts, participant, signer)
+}
+
+// GrantParticipantRoleUsingAllowedMsgSender is a paid mutator transaction binding the contract method 0xcb0c63a9.
+//
+// Solidity: function grantParticipantRoleUsingAllowedMsgSender(address participant) returns()
+func (_EventAccessManager *EventAccessManagerTransactor) GrantParticipantRoleUsingAllowedMsgSender(opts *bind.TransactOpts, participant common.Address) (*types.Transaction, error) {
+	return _EventAccessManager.contract.Transact(opts, "grantParticipantRoleUsingAllowedMsgSender", participant)
+}
+
+// GrantParticipantRoleUsingAllowedMsgSender is a paid mutator transaction binding the contract method 0xcb0c63a9.
+//
+// Solidity: function grantParticipantRoleUsingAllowedMsgSender(address participant) returns()
+func (_EventAccessManager *EventAccessManagerSession) GrantParticipantRoleUsingAllowedMsgSender(participant common.Address) (*types.Transaction, error) {
+	return _EventAccessManager.Contract.GrantParticipantRoleUsingAllowedMsgSender(&_EventAccessManager.TransactOpts, participant)
+}
+
+// GrantParticipantRoleUsingAllowedMsgSender is a paid mutator transaction binding the contract method 0xcb0c63a9.
+//
+// Solidity: function grantParticipantRoleUsingAllowedMsgSender(address participant) returns()
+func (_EventAccessManager *EventAccessManagerTransactorSession) GrantParticipantRoleUsingAllowedMsgSender(participant common.Address) (*types.Transaction, error) {
+	return _EventAccessManager.Contract.GrantParticipantRoleUsingAllowedMsgSender(&_EventAccessManager.TransactOpts, participant)
 }
 
 // GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
@@ -998,6 +1053,7 @@ type EventAccessManagerHostRoleGranted struct {
 //
 // Solidity: event HostRoleGranted(address indexed host, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterHostRoleGranted(opts *bind.FilterOpts, host []common.Address, granter []common.Address) (*EventAccessManagerHostRoleGrantedIterator, error) {
+
 	var hostRule []interface{}
 	for _, hostItem := range host {
 		hostRule = append(hostRule, hostItem)
@@ -1018,6 +1074,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterHostRoleGranted(opt
 //
 // Solidity: event HostRoleGranted(address indexed host, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchHostRoleGranted(opts *bind.WatchOpts, sink chan<- *EventAccessManagerHostRoleGranted, host []common.Address, granter []common.Address) (event.Subscription, error) {
+
 	var hostRule []interface{}
 	for _, hostItem := range host {
 		hostRule = append(hostRule, hostItem)
@@ -1149,6 +1206,7 @@ type EventAccessManagerIssuerRoleGranted struct {
 //
 // Solidity: event IssuerRoleGranted(address indexed issuer, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterIssuerRoleGranted(opts *bind.FilterOpts, issuer []common.Address, granter []common.Address) (*EventAccessManagerIssuerRoleGrantedIterator, error) {
+
 	var issuerRule []interface{}
 	for _, issuerItem := range issuer {
 		issuerRule = append(issuerRule, issuerItem)
@@ -1169,6 +1227,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterIssuerRoleGranted(o
 //
 // Solidity: event IssuerRoleGranted(address indexed issuer, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchIssuerRoleGranted(opts *bind.WatchOpts, sink chan<- *EventAccessManagerIssuerRoleGranted, issuer []common.Address, granter []common.Address) (event.Subscription, error) {
+
 	var issuerRule []interface{}
 	for _, issuerItem := range issuer {
 		issuerRule = append(issuerRule, issuerItem)
@@ -1300,6 +1359,7 @@ type EventAccessManagerIssuerRoleRevoked struct {
 //
 // Solidity: event IssuerRoleRevoked(address indexed issuer, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterIssuerRoleRevoked(opts *bind.FilterOpts, issuer []common.Address, revoker []common.Address) (*EventAccessManagerIssuerRoleRevokedIterator, error) {
+
 	var issuerRule []interface{}
 	for _, issuerItem := range issuer {
 		issuerRule = append(issuerRule, issuerItem)
@@ -1320,6 +1380,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterIssuerRoleRevoked(o
 //
 // Solidity: event IssuerRoleRevoked(address indexed issuer, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchIssuerRoleRevoked(opts *bind.WatchOpts, sink chan<- *EventAccessManagerIssuerRoleRevoked, issuer []common.Address, revoker []common.Address) (event.Subscription, error) {
+
 	var issuerRule []interface{}
 	for _, issuerItem := range issuer {
 		issuerRule = append(issuerRule, issuerItem)
@@ -1451,6 +1512,7 @@ type EventAccessManagerMsgSenderAllowed struct {
 //
 // Solidity: event MsgSenderAllowed(address indexed sender, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterMsgSenderAllowed(opts *bind.FilterOpts, sender []common.Address, granter []common.Address) (*EventAccessManagerMsgSenderAllowedIterator, error) {
+
 	var senderRule []interface{}
 	for _, senderItem := range sender {
 		senderRule = append(senderRule, senderItem)
@@ -1471,6 +1533,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterMsgSenderAllowed(op
 //
 // Solidity: event MsgSenderAllowed(address indexed sender, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchMsgSenderAllowed(opts *bind.WatchOpts, sink chan<- *EventAccessManagerMsgSenderAllowed, sender []common.Address, granter []common.Address) (event.Subscription, error) {
+
 	var senderRule []interface{}
 	for _, senderItem := range sender {
 		senderRule = append(senderRule, senderItem)
@@ -1602,6 +1665,7 @@ type EventAccessManagerMsgSenderDisallowed struct {
 //
 // Solidity: event MsgSenderDisallowed(address indexed sender, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterMsgSenderDisallowed(opts *bind.FilterOpts, sender []common.Address, revoker []common.Address) (*EventAccessManagerMsgSenderDisallowedIterator, error) {
+
 	var senderRule []interface{}
 	for _, senderItem := range sender {
 		senderRule = append(senderRule, senderItem)
@@ -1622,6 +1686,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterMsgSenderDisallowed
 //
 // Solidity: event MsgSenderDisallowed(address indexed sender, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchMsgSenderDisallowed(opts *bind.WatchOpts, sink chan<- *EventAccessManagerMsgSenderDisallowed, sender []common.Address, revoker []common.Address) (event.Subscription, error) {
+
 	var senderRule []interface{}
 	for _, senderItem := range sender {
 		senderRule = append(senderRule, senderItem)
@@ -1753,6 +1818,7 @@ type EventAccessManagerParticipantRoleGranted struct {
 //
 // Solidity: event ParticipantRoleGranted(address indexed participant, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterParticipantRoleGranted(opts *bind.FilterOpts, participant []common.Address, granter []common.Address) (*EventAccessManagerParticipantRoleGrantedIterator, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -1773,6 +1839,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterParticipantRoleGran
 //
 // Solidity: event ParticipantRoleGranted(address indexed participant, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchParticipantRoleGranted(opts *bind.WatchOpts, sink chan<- *EventAccessManagerParticipantRoleGranted, participant []common.Address, granter []common.Address) (event.Subscription, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -1904,6 +1971,7 @@ type EventAccessManagerParticipantRoleRevoked struct {
 //
 // Solidity: event ParticipantRoleRevoked(address indexed participant, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterParticipantRoleRevoked(opts *bind.FilterOpts, participant []common.Address, revoker []common.Address) (*EventAccessManagerParticipantRoleRevokedIterator, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -1924,6 +1992,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterParticipantRoleRevo
 //
 // Solidity: event ParticipantRoleRevoked(address indexed participant, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchParticipantRoleRevoked(opts *bind.WatchOpts, sink chan<- *EventAccessManagerParticipantRoleRevoked, participant []common.Address, revoker []common.Address) (event.Subscription, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -2056,6 +2125,7 @@ type EventAccessManagerRoleAdminChanged struct {
 //
 // Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleAdminChanged(opts *bind.FilterOpts, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (*EventAccessManagerRoleAdminChangedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2080,6 +2150,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleAdminChanged(op
 //
 // Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchRoleAdminChanged(opts *bind.WatchOpts, sink chan<- *EventAccessManagerRoleAdminChanged, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2216,6 +2287,7 @@ type EventAccessManagerRoleGranted struct {
 //
 // Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleGranted(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*EventAccessManagerRoleGrantedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2240,6 +2312,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleGranted(opts *b
 //
 // Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchRoleGranted(opts *bind.WatchOpts, sink chan<- *EventAccessManagerRoleGranted, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2376,6 +2449,7 @@ type EventAccessManagerRoleRevoked struct {
 //
 // Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleRevoked(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*EventAccessManagerRoleRevokedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2400,6 +2474,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleRevoked(opts *b
 //
 // Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchRoleRevoked(opts *bind.WatchOpts, sink chan<- *EventAccessManagerRoleRevoked, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)

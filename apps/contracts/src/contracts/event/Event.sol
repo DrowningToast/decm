@@ -129,24 +129,26 @@ contract Event is ThemisUtils {
         bytes memory signature
     ) external {
         address signer = recoverSigner(signedMessageDigest, signature);
-        EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
 
         // Pre Conditions
         if (participantAddress == address(0)) {
-            revert Event__AddressCannotBeZero();
+            // revert Event__AddressCannotBeZero();
+            require(false, "Address cannot be zero");
         }
 
-        if (currentSeatsCount >= seatsCount) {
-            revert Event__SeatsCountReached();
+        if (currentSeatsCount >= seatsCount) {   
+            // revert Event__SeatsCountReached();
+            require(false, "Seats count reached");
         }
 
         // 1. Validate Participant
         if (isParticipant[participantAddress]) {
-            revert Event__ParticipantIsAlreadyJoined();
+            // revert Event__ParticipantIsAlreadyJoined();
+            require(false, "Participant is already joined");
         }
 
         // 2. Add Participant
-        _addParticipant(participantAddress, signer);
+        _addParticipant(participantAddress);
 
         // 3. Emit Event
         emit AddedParticipant(participantAddress);
@@ -247,14 +249,14 @@ contract Event is ThemisUtils {
         );
     }
 
-    function _addParticipant(address participantAddress, address signer) private {
+    function _addParticipant(address participantAddress) private {
         // 1. Add Participant
         participantIndex[participantAddress] = participants.length;
         participants.push(participantAddress);
         isParticipant[participantAddress] = true;
 
         // 2. Grant Participant Role
-        EVENT_ACCESS_MANAGER.grantParticipantRole(participantAddress, signer);
+        // EVENT_ACCESS_MANAGER.grantParticipantRoleUsingAllowedMsgSender(participantAddress);
 
         // 3. Current SeatsCount Increment
         currentSeatsCount++;

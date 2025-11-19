@@ -241,6 +241,19 @@ export const EventAccessManagerABI = [
     },
     {
         type: "function",
+        name: "grantParticipantRoleUsingAllowedMsgSender",
+        inputs: [
+            {
+                name: "participant",
+                type: "address",
+                internalType: "address",
+            },
+        ],
+        outputs: [],
+        stateMutability: "nonpayable",
+    },
+    {
+        type: "function",
         name: "grantRole",
         inputs: [
             {

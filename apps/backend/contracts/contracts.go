@@ -5,18 +5,18 @@
 package contracts
 
 import (
-	"apps/backend/contracts/accessmanager"
-	"apps/backend/contracts/certificate"
-	"apps/backend/contracts/decm"
-	"apps/backend/contracts/event"
-	"apps/backend/contracts/ticket"
+    "apps/backend/contracts/event"
+    "apps/backend/contracts/accessmanager"
+    "apps/backend/contracts/ticket"
+    "apps/backend/contracts/certificate"
+    "apps/backend/contracts/decm"
 )
 
 // ContractBindings holds all contract bindings
 type ContractBindings struct {
-	Event              *event.Event
-	EventAccessManager *accessmanager.EventAccessManager
-	EventTicket        *ticket.EventTicket
-	EventCertificate   *certificate.EventCertificate
-	DecmAccessManager  *decm.DecmAccessManager
+    Event              *event.Event
+    EventAccessManager *accessmanager.EventAccessManager
+    EventTicket        *ticket.EventTicket
+    EventCertificate   *certificate.EventCertificate
+    DecmAccessManager  *decm.DecmAccessManager
 }

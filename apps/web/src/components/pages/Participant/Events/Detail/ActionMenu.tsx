@@ -94,9 +94,9 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
             console.log("checkedPassword", checkedPassword);
 
             if (registrationInvitation) {
-                await eventRegistrationService.joinEventWithAccountPassword({
+                await eventRegistrationService.fuckJoinEvent({
                     eventId,
-                    accountPassword: checkedPassword,
+                    pinCode: checkedPassword,
                     registrationData: data,
                 });
             } else {

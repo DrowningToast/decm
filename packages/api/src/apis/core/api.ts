@@ -525,6 +525,18 @@ export interface EventRegistrationConfigResponse {
     phone_number_requirement_status: number;
 }
 
+export interface EventRegistrationFuckJoinEventPayload {
+    academic_email?: string;
+    academic_institution?: string;
+    address?: string;
+    bio?: string;
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+    phone_number?: string;
+    pin_code?: string;
+}
+
 export interface EventRegistrationGetEventRegistrationInvitationByUserAndEventResponse {
     inbox?: EntityInboxMessage;
     registration_invitation?: EntityEventRegistrationInvitation;
@@ -627,6 +639,15 @@ export interface EventconfigUpdateEventRegistrationConfigRequest {
     last_name_requirement_status: number;
     phone_number_requirement_status: number;
     registration_password?: string;
+}
+
+export type FuckJoinEventData = EntityEventAttendee;
+
+export type FuckJoinEventError = CustomerrorErrResponse;
+
+export interface FuckJoinEventParams {
+    /** Event ID */
+    eventId: string;
 }
 
 export type GetEventByIdData = EventEventResponse;
@@ -1666,6 +1687,28 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/event-registration/join/${eventId}`,
                 method: "POST",
                 body: joinEventBody,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Fuck join event
+         *
+         * @tags Event Registration
+         * @name FuckJoinEvent
+         * @summary Fuck join event
+         * @request POST:/api/v1/event-registration/join/{event_id}/fuck
+         */
+        fuckJoinEvent: (
+            { eventId, ...query }: FuckJoinEventParams,
+            fuckJoinEventPayload: EventRegistrationFuckJoinEventPayload,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<FuckJoinEventData, FuckJoinEventError>({
+                path: `/api/v1/event-registration/join/${eventId}/fuck`,
+                method: "POST",
+                body: fuckJoinEventPayload,
                 type: ContentType.Json,
                 format: "json",
                 ...params,

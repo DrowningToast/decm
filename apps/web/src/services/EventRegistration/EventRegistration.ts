@@ -147,6 +147,31 @@ export class EventRegistrationService {
         return;
     }
 
+    public async fuckJoinEvent({
+        eventId,
+        pinCode,
+        registrationData,
+    }: {
+        eventId: string;
+        pinCode: string;
+        registrationData: RegistrationConfirmDataForm;
+    }): Promise<void> {
+        await this._coreApi.v1.fuckJoinEvent(
+            { eventId },
+            {
+                pin_code: pinCode,
+                academic_email: registrationData.academicEmail,
+                academic_institution: registrationData.academicInstitution,
+                address: registrationData.address,
+                bio: registrationData.bio,
+                email: registrationData.email,
+                first_name: registrationData.firstName,
+                last_name: registrationData.lastName,
+                phone_number: registrationData.phoneNumber,
+            },
+        );
+    }
+
     public async joinEventWithSignature({
         eventId,
         originalSignMessage,

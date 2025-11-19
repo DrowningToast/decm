@@ -873,6 +873,27 @@ definitions:
     - event_id
     - issuer_credential_id
     type: object
+  event_registration.FuckJoinEventPayload:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        type: string
+      address:
+        type: string
+      bio:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      phone_number:
+        type: string
+      pin_code:
+        type: string
+    type: object
   event_registration.GetEventRegistrationInvitationByUserAndEventResponse:
     properties:
       inbox:
@@ -1949,6 +1970,50 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Join event
+      tags:
+      - Event Registration
+  /api/v1/event-registration/join/{event_id}/fuck:
+    post:
+      consumes:
+      - application/json
+      description: Fuck join event
+      operationId: fuck-join-event
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Fuck join event payload
+        in: body
+        name: fuckJoinEventPayload
+        required: true
+        schema:
+          $ref: '#/definitions/event_registration.FuckJoinEventPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.EventAttendee'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Fuck join event
       tags:
       - Event Registration
   /api/v1/event-registration/join/{event_id}/sign-message:

@@ -91,6 +91,17 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         emit ParticipantRoleRevoked(participant, msg.sender);
     }
 
+    function grantParticipantRoleUsingAllowedMsgSender(address participant) public {
+        requireAllowedMsgSender();
+
+        if (participant == address(0)) {
+            // revert EventAccessManager__AccountCannotBeZeroAddress();
+            require(false, "Account cannot be zero");
+        }
+        _grantRole(Constants.PARTICIPANT_ROLE, participant);
+        emit ParticipantRoleGranted(participant, msg.sender);
+    }
+
     function grantHostRole(address host, address signer) public {
         requireHostOrAdmin(signer);
 
