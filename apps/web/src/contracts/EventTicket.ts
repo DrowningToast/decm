@@ -794,36 +794,6 @@ export const EventTicketABI = [
     },
     {
         type: "error",
-        name: "EventTicket__AccessManagerCannotBeZeroAddress",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventTicket__EventAddressCannotBeZeroAddress",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventTicket__InvalidReceiver",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventTicket__NotHost",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventTicket__NotHostOrAdmin",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventTicket__TokenIdOutOfBounds",
-        inputs: [],
-    },
-    {
-        type: "error",
         name: "ReentrancyGuardReentrantCall",
         inputs: [],
     },

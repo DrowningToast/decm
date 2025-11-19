@@ -42,7 +42,58 @@ export const DecmAccessManagerABI = [
     },
     {
         type: "function",
+        name: "addAllowedMsgSender",
+        inputs: [
+            {
+                name: "msgSender",
+                type: "address",
+                internalType: "address",
+            },
+        ],
+        outputs: [],
+        stateMutability: "nonpayable",
+    },
+    {
+        type: "function",
+        name: "allowedMsgSenders",
+        inputs: [
+            {
+                name: "",
+                type: "address",
+                internalType: "address",
+            },
+        ],
+        outputs: [
+            {
+                name: "",
+                type: "bool",
+                internalType: "bool",
+            },
+        ],
+        stateMutability: "view",
+    },
+    {
+        type: "function",
         name: "checkIsAdmin",
+        inputs: [
+            {
+                name: "addr",
+                type: "address",
+                internalType: "address",
+            },
+        ],
+        outputs: [
+            {
+                name: "",
+                type: "bool",
+                internalType: "bool",
+            },
+        ],
+        stateMutability: "view",
+    },
+    {
+        type: "function",
+        name: "checkIsAllowedMsgSender",
         inputs: [
             {
                 name: "addr",
@@ -132,6 +183,19 @@ export const DecmAccessManagerABI = [
             },
         ],
         stateMutability: "view",
+    },
+    {
+        type: "function",
+        name: "removeAllowedMsgSender",
+        inputs: [
+            {
+                name: "msgSender",
+                type: "address",
+                internalType: "address",
+            },
+        ],
+        outputs: [],
+        stateMutability: "nonpayable",
     },
     {
         type: "function",
@@ -334,11 +398,6 @@ export const DecmAccessManagerABI = [
                 internalType: "bytes32",
             },
         ],
-    },
-    {
-        type: "error",
-        name: "DecmAccessManager__AdminCannotBeZeroAddress",
-        inputs: [],
     },
 ] as const;
 

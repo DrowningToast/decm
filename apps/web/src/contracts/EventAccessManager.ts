@@ -47,40 +47,14 @@ export const EventAccessManagerABI = [
     },
     {
         type: "function",
-        name: "addAllowedMsgSender",
-        inputs: [
-            {
-                name: "sender",
-                type: "address",
-                internalType: "address",
-            },
-        ],
-        outputs: [],
-        stateMutability: "nonpayable",
-    },
-    {
-        type: "function",
-        name: "allowedMsgSenders",
-        inputs: [
-            {
-                name: "",
-                type: "address",
-                internalType: "address",
-            },
-        ],
-        outputs: [
-            {
-                name: "",
-                type: "bool",
-                internalType: "bool",
-            },
-        ],
-        stateMutability: "view",
-    },
-    {
-        type: "function",
         name: "checkIsAllowedMsgSender",
-        inputs: [],
+        inputs: [
+            {
+                name: "addr",
+                type: "address",
+                internalType: "address",
+            },
+        ],
         outputs: [
             {
                 name: "",
@@ -248,6 +222,11 @@ export const EventAccessManagerABI = [
                 type: "address",
                 internalType: "address",
             },
+            {
+                name: "msgSender",
+                type: "address",
+                internalType: "address",
+            },
         ],
         outputs: [],
         stateMutability: "nonpayable",
@@ -320,19 +299,6 @@ export const EventAccessManagerABI = [
     },
     {
         type: "function",
-        name: "removeAllowedMsgSender",
-        inputs: [
-            {
-                name: "sender",
-                type: "address",
-                internalType: "address",
-            },
-        ],
-        outputs: [],
-        stateMutability: "nonpayable",
-    },
-    {
-        type: "function",
         name: "renounceRole",
         inputs: [
             {
@@ -358,6 +324,11 @@ export const EventAccessManagerABI = [
                 type: "address",
                 internalType: "address",
             },
+            {
+                name: "msgSender",
+                type: "address",
+                internalType: "address",
+            },
         ],
         outputs: [],
         stateMutability: "view",
@@ -365,7 +336,13 @@ export const EventAccessManagerABI = [
     {
         type: "function",
         name: "requireAllowedMsgSender",
-        inputs: [],
+        inputs: [
+            {
+                name: "addr",
+                type: "address",
+                internalType: "address",
+            },
+        ],
         outputs: [],
         stateMutability: "view",
     },
@@ -375,6 +352,11 @@ export const EventAccessManagerABI = [
         inputs: [
             {
                 name: "addr",
+                type: "address",
+                internalType: "address",
+            },
+            {
+                name: "msgSender",
                 type: "address",
                 internalType: "address",
             },
@@ -391,6 +373,11 @@ export const EventAccessManagerABI = [
                 type: "address",
                 internalType: "address",
             },
+            {
+                name: "msgSender",
+                type: "address",
+                internalType: "address",
+            },
         ],
         outputs: [],
         stateMutability: "view",
@@ -401,6 +388,11 @@ export const EventAccessManagerABI = [
         inputs: [
             {
                 name: "addr",
+                type: "address",
+                internalType: "address",
+            },
+            {
+                name: "msgSender",
                 type: "address",
                 internalType: "address",
             },
@@ -755,41 +747,6 @@ export const EventAccessManagerABI = [
                 internalType: "bytes32",
             },
         ],
-    },
-    {
-        type: "error",
-        name: "EventAccessManager__AccessManagerCannotBeZeroAddress",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventAccessManager__AccountCannotBeZeroAddress",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventAccessManager__NotAdmin",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventAccessManager__NotAllowedMsgSender",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventAccessManager__NotHostOrAdmin",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventAccessManager__NotHostOrAdminOrParticipant",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventAccessManager__NotParticipant",
-        inputs: [],
     },
     {
         type: "error",

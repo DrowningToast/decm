@@ -34,13 +34,6 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
     // State Variables
     uint256 private tokenCounter;
 
-    // Errors
-    error EventCertificate__NotHostOrAdmin();
-    error EventCertificate__TokenIdOutOfBounds();
-    error EventCertificate__NotHost();
-    error EventCertificate__CertificateNotValid();
-    error EventCertificate__NotParticipant();
-
     // Events
     event CertificateRevoked(uint256 indexed tokenId);
     event ParticipantSignedCertificate(uint256 indexed tokenId, address indexed receiverAddress);
@@ -58,11 +51,11 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
     mapping(uint256 => CertificateStatus) private tokenIdToStatus;
     mapping(uint256 => address) private tokenIdToParticipantSignedAddress;
 
-    function requireHostOrAdmin(address signer) private view {
-        bool isAllowedMsgSender = EVENT_ACCESS_MANAGER.checkIsAllowedMsgSender();
+    function requireHostOrAdmin(address signer, address msgSender) private view {
+        bool isAllowedMsgSender = EVENT_ACCESS_MANAGER.checkIsAllowedMsgSender(msgSender);
         bool isHostOrAdmin = EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(signer);
         if (!isHostOrAdmin && !isAllowedMsgSender) {
-            revert EventCertificate__NotHostOrAdmin();
+            require(false, "Not host or admin or allowed msg sender");
         }
     }
     
@@ -98,7 +91,7 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         CertificateVCStructs.IssuerProof[] memory issuerProofs
     ) external nonReentrant {
         address signer = recoverSigner(signedMessageDigest, signature);
-        requireHostOrAdmin(signer);
+        requireHostOrAdmin(signer, msg.sender);
 
         uint256 tokenId = tokenCounter;
         
@@ -150,14 +143,14 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         uint256 tokenId
     ) external nonReentrant {
         if (tokenIdToStatus[tokenId] != CertificateStatus.VALID) {
-            revert EventCertificate__CertificateNotValid();
+            require(false, "Certificate not valid");
         }
 
         CertificateVCStructs.CertificateVcData memory vc = tokenIdToData[tokenId];
 
         bool isAllowToSign = vc.data.receiverAddress == msg.sender;
         if (!isAllowToSign) {
-            revert EventCertificate__NotParticipant();
+            require(false, "Not participant");
         }
 
         tokenIdToParticipantSignedAddress[tokenId] = msg.sender;
@@ -183,7 +176,7 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         uint256 tokenId
     ) public view returns (string memory) {
         if (tokenId >= tokenCounter) {
-            revert EventCertificate__TokenIdOutOfBounds();
+            require(false, "Token id out of bounds");
         }
             
         CertificateVCStructs.CertificateVcData memory vc = tokenIdToData[
@@ -241,7 +234,7 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
 
     function revokeCertificate(uint256 tokenId, string memory signedMessageDigest, bytes memory signature) external nonReentrant {
         address signer = recoverSigner(signedMessageDigest, signature);
-        requireHostOrAdmin(signer);
+        requireHostOrAdmin(signer, msg.sender);
 
         tokenIdToStatus[tokenId] = CertificateStatus.REVOKED;
         emit CertificateRevoked(tokenId);
@@ -263,7 +256,7 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         override
         returns (string memory) {
         if (tokenId >= tokenCounter) {
-            revert EventCertificate__TokenIdOutOfBounds();
+            require(false, "Token id out of bounds");
         }
         return getTokenData(tokenId);
     }

@@ -818,31 +818,6 @@ export const EventCertificateABI = [
     },
     {
         type: "error",
-        name: "EventCertificate__CertificateNotValid",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventCertificate__NotHost",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventCertificate__NotHostOrAdmin",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventCertificate__NotParticipant",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "EventCertificate__TokenIdOutOfBounds",
-        inputs: [],
-    },
-    {
-        type: "error",
         name: "ReentrancyGuardReentrantCall",
         inputs: [],
     },
