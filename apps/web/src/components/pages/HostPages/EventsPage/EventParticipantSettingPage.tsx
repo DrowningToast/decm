@@ -35,10 +35,12 @@ export const EventParticipantSettingPage = ({ eventId }: EventParticipantSetting
             firstName: data.firstName,
             lastName: data.lastName,
             phoneNumber: data.phoneNumber,
+            eventType: data.eventType,
             finalCallForRegistration: data.finalCallRegistrationDate
                 ? new Date(data.finalCallRegistrationDate)
                 : undefined,
             // TODO: Add these fields
+            // password
             // is_booking_request_required: data.isBookingRequired,
             // is_ticket_transferable: data.isTicketTransferable,
         };
@@ -56,6 +58,7 @@ export const EventParticipantSettingPage = ({ eventId }: EventParticipantSetting
             firstName: params.firstName,
             lastName: params.lastName,
             phoneNumber: params.phoneNumber,
+            eventType: params.eventType,
             finalCallForRegistration: params.finalCallForRegistration,
             registrationPassword: params.registrationPassword,
         });

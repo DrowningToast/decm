@@ -14,7 +14,7 @@ interface ExcelPreviewProps {
 }
 
 interface PreviewData {
-    [key: string]: string;
+    [key: string]: string | number;
 }
 
 // Fixed column names that Excel files must have
@@ -90,11 +90,11 @@ export const ExcelPreview = ({
         if (validationError) return;
 
         const request = previewData.map((row) => ({
-            first_name: row.first_name,
-            last_name: row.last_name,
-            email: row.email,
-            phone_number: row.phone_number,
-            academic_institution: row.academic_institution,
+            first_name: String(row.first_name),
+            last_name: String(row.last_name),
+            email: String(row.email),
+            phone_number: String(row.phone_number),
+            academic_institution: String(row.academic_institution),
         }));
 
         onConfirm(request);
@@ -210,7 +210,7 @@ export const ExcelPreview = ({
                                             key={column}
                                             className="border border-border p-2 text-sm"
                                         >
-                                            {row[column] || ""}
+                                            {row[column] !== undefined ? String(row[column]) : ""}
                                         </td>
                                     ))}
                                 </tr>

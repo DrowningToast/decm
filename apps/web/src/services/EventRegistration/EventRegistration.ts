@@ -4,6 +4,7 @@ import {
     mapEntityEventRegistrationConfigToEventRegistrationConfiguration,
     mapEntityEventRegistrationInvitationToEventRegistrationInvitation,
     mapEntityInboxMessageToInboxMessage,
+    mapEventTypeToEntityEventType,
     mapRegistrationRequirementStatusToNumber,
     mapRegistrationToJoinEventParticipant,
 } from "./mapper";
@@ -22,9 +23,12 @@ export interface RegistrationRequirement {
     academicEmail: RegistrationRequirementStatus;
 }
 
+export type EventType = "private" | "invite";
+
 export interface EventRegistrationConfiguration extends RegistrationRequirement {
     finalCallForRegistration?: Date;
     registrationPassword?: string;
+    eventType: EventType;
 }
 
 export interface EventRegistrationInvitation {
@@ -117,6 +121,7 @@ export class EventRegistrationService {
                 phone_number_requirement_status: mapRegistrationRequirementStatusToNumber(
                     configuration.phoneNumber,
                 ),
+                event_type: mapEventTypeToEntityEventType(configuration.eventType),
                 // TODO
                 is_booking_request_required: false,
                 is_ticket_transferable: false,

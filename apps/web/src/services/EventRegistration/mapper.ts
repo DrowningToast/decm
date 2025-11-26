@@ -1,12 +1,14 @@
-import type {
-    CoreApiInternalHandlerEventRegistrationJoinEventPayload,
-    EntityEventRegistrationInvitation,
-    EntityInboxMessage,
-    EventconfigEventRegistrationConfigViewModel,
+import {
+    EntityEventType,
+    type CoreApiInternalHandlerEventRegistrationJoinEventPayload,
+    type EntityEventRegistrationInvitation,
+    type EntityInboxMessage,
+    type EventconfigEventRegistrationConfigViewModel,
 } from "@decm/api";
 import type {
     EventRegistrationConfiguration,
     EventRegistrationInvitation,
+    EventType,
     RegistrationRequirement,
     RegistrationRequirementStatus,
 } from "./EventRegistration";
@@ -45,6 +47,16 @@ export const mapRegistrationRequirementStatusToNumber = (
             return 2;
     }
     throw new Error(`Invalid registration requirement status: ${status}`);
+};
+
+export const mapEventTypeToEntityEventType = (eventType: EventType): EntityEventType => {
+    switch (eventType) {
+        case "private":
+            return EntityEventType.EventTypePrivate;
+        case "invite":
+            return EntityEventType.EventTypeInvite;
+    }
+    throw new Error(`Invalid event type: ${eventType}`);
 };
 
 export const mapEntityEventRegistrationConfigRequirementStatus = (
