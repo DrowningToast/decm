@@ -95,6 +95,8 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string memory signMessage,
         string memory userEncryptedProof,
         string memory backendEncryptedProof,
+        string memory certificateTitle,
+        string memory certificateSubtitle,
         CertificateVCStructs.IssuerProof[] memory issuerProofs
     ) external nonReentrant {
         address signer = recoverSigner(signedMessageDigest, signature);
@@ -118,7 +120,9 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                 signMessage,
                 userEncryptedProof,
                 backendEncryptedProof,
-                issuerProofs
+                issuerProofs,
+                certificateTitle,
+                certificateSubtitle
             );
 
         _safeMint(receiverAddress, tokenId);
@@ -177,6 +181,8 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string signMessage;
         string userEncryptedProof;
         string backendEncryptedProof;
+        string certificateTitle;
+        string certificateSubtitle;
     }
 
     function getTokenData(
@@ -217,6 +223,8 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                         '"receiverAddress": "', _addressToString(vc.data.receiverAddress), '",',
                         '"encryptedUserData": "', vc.data.encryptedUserData, '",',
                         '"backendEncryptedUserData": "', vc.data.backendEncryptedUserData, '",',
+                        '"certificateTitle": "', vc.data.certificateTitle, '",',
+                        '"certificateSubtitle": "', vc.data.certificateSubtitle, '",',
                         '"status": "', statusString, '"',
                     "},",
                     '"proof": {',
@@ -277,7 +285,9 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string memory encryptedUserData,
         string memory backendEncryptedUserData,
         address[] memory issuerAddresses,
-        uint256 issuedAt
+        uint256 issuedAt,
+        string memory certificateTitle,
+        string memory certificateSubtitle
     ) private view returns (CertificateVCStructs.CertificateVcData memory) {
         // Create empty issuer proofs array for now
         CertificateVCStructs.IssuerProof[] memory emptyIssuerProofs = new CertificateVCStructs.IssuerProof[](0);
@@ -302,7 +312,9 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                     issuerAddresses: issuerAddresses,
                     receiverAddress: receiverAddress,
                     encryptedUserData: encryptedUserData,
-                    backendEncryptedUserData: backendEncryptedUserData
+                    backendEncryptedUserData: backendEncryptedUserData,
+                    certificateTitle: certificateTitle,
+                    certificateSubtitle: certificateSubtitle
                 }),
                 proof: CertificateVCStructs.Proof({
                     encryptedByUserRawData: "",
@@ -333,7 +345,9 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string memory signMessage,
         string memory userEncryptedProof,
         string memory backendEncryptedProof,
-        CertificateVCStructs.IssuerProof[] memory issuerProofs
+        CertificateVCStructs.IssuerProof[] memory issuerProofs,
+        string memory certificateTitle,
+        string memory certificateSubtitle
     ) private view returns (CertificateVCStructs.CertificateVcData memory) {
         return
             CertificateVCStructs.CertificateVcData({
@@ -355,7 +369,9 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                     issuerAddresses: issuerAddresses,
                     receiverAddress: receiverAddress,
                     encryptedUserData: encryptedUserData,
-                    backendEncryptedUserData: backendEncryptedUserData
+                    backendEncryptedUserData: backendEncryptedUserData,
+                    certificateTitle: certificateTitle,
+                    certificateSubtitle: certificateSubtitle
                 }),
                 proof: CertificateVCStructs.Proof({
                     encryptedByUserRawData: userEncryptedProof,
