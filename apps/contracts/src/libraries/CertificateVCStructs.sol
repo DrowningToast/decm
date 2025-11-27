@@ -22,6 +22,8 @@ library CertificateVCStructs {
         address receiverAddress;
         string encryptedUserData;
         string backendEncryptedUserData;
+        string certificateTitle;
+        string certificateSubtitle;
     }
 
     struct HostProof {
