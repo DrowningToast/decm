@@ -39,7 +39,7 @@ type MarkMessageAsReadResponse struct {
 // @Accept json
 // @Produce json
 // @Success 200 {object} inboxmessages.MarkMessageAsReadResponse
-// @Router /inbox-messages/read [put]
+// @Router /api/v1/inbox-messages/read [put]
 // @Security ApiKeyAuth
 // @Param message_id path string true "Message ID"
 // @Param request body inboxmessages.MarkMessageAsReadRequest true "Request body"
@@ -84,7 +84,7 @@ type MarkAllMessagesAsReadResponse struct {
 // @Accept json
 // @Produce json
 // @Success 200 {object} inboxmessages.MarkAllMessagesAsReadResponse
-// @Router /inbox-messages/read-all [put]
+// @Router /api/v1/inbox-messages/read-all [put]
 // @Security ApiKeyAuth
 func (h *Handler) MarkAllMessagesAsRead(c *fiber.Ctx) error {
 	user, err := h.AuthService.GetUserContext(c)

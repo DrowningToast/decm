@@ -5,14 +5,17 @@ import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { useInboxDetailUsecase } from "./useInboxDetailUsecase";
 import { useInboxNavStore } from "@/components/BottomNav/stores/inbox";
 import { useNavigate } from "@/router";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, Calendar, Award, ArrowRight } from "lucide-react";
+import { formatInboxMessage, type SupportedLanguage } from "@/lib/inbox";
+import { Button } from "@/components/ui/button";
 
 interface InboxDetailPageProps {
     inboxId: string;
 }
 
 export const InboxDetailPage: React.FC<InboxDetailPageProps> = ({ inboxId }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const currentLanguage = (i18n.language as SupportedLanguage) || "en";
     const navigate = useNavigate();
     const { inboxDetail, isLoading, error } = useInboxDetailUsecase({ inboxId });
     const { setOnViewEventCallback, setOnViewCertificateCallback } = useInboxNavStore();
@@ -107,7 +110,7 @@ export const InboxDetailPage: React.FC<InboxDetailPageProps> = ({ inboxId }) => 
         <section className="relative z-10 w-full">
             <div className="relative w-full overflow-hidden pb-24">
                 {/* Background image */}
-                <div className="absolute bottom-0 right-0 -translate-x-1/2 aspect-auto w-[229px] h-auto opacity-30 pointer-events-none">
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 aspect-auto w-[229px] h-auto opacity-30 pointer-events-none">
                     <img
                         src="/assets/mailbox.webp"
                         alt=""
@@ -169,6 +172,74 @@ export const InboxDetailPage: React.FC<InboxDetailPageProps> = ({ inboxId }) => 
                         {/* Divider */}
                         <div className="h-px bg-border" />
 
+                        {/* Action Status - Only show for event invitation or certificate types */}
+                        {(inboxDetail.contentType === "event-invitation" ||
+                            inboxDetail.contentType === "certificate") && (
+                            <>
+                                <div className="flex items-center justify-between px-0">
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        color="muted"
+                                        className="text-xs"
+                                    >
+                                        {t("participant.inbox.actionLabel", "Action")}
+                                    </Typography>
+                                    {inboxDetail.contentType === "event-invitation" ? (
+                                        inboxDetail.acceptedAt ? (
+                                            <Typography
+                                                variant="text"
+                                                tag="p"
+                                                color="primary"
+                                                className="text-xs font-medium"
+                                            >
+                                                {t(
+                                                    "participant.inbox.actionStatus.accepted",
+                                                    "Accepted",
+                                                )}
+                                            </Typography>
+                                        ) : (
+                                            <Typography
+                                                variant="text"
+                                                tag="p"
+                                                color="muted"
+                                                className="text-xs"
+                                            >
+                                                {t(
+                                                    "participant.inbox.actionStatus.notAccepted",
+                                                    "Not Accepted",
+                                                )}
+                                            </Typography>
+                                        )
+                                    ) : inboxDetail.tokenId ? (
+                                        <Typography
+                                            variant="text"
+                                            tag="p"
+                                            color="primary"
+                                            className="text-xs font-medium"
+                                        >
+                                            {t("participant.inbox.actionStatus.claimed", "Claimed")}
+                                        </Typography>
+                                    ) : (
+                                        <Typography
+                                            variant="text"
+                                            tag="p"
+                                            color="muted"
+                                            className="text-xs"
+                                        >
+                                            {t(
+                                                "participant.inbox.actionStatus.notClaimed",
+                                                "Not Claimed",
+                                            )}
+                                        </Typography>
+                                    )}
+                                </div>
+
+                                {/* Divider */}
+                                <div className="h-px bg-border" />
+                            </>
+                        )}
+
                         {/* Description */}
                         <Typography
                             variant="text"
@@ -176,8 +247,68 @@ export const InboxDetailPage: React.FC<InboxDetailPageProps> = ({ inboxId }) => 
                             color="foreground"
                             className="text-base leading-relaxed pt-4"
                         >
-                            {inboxDetail.description}
+                            {formatInboxMessage(
+                                inboxDetail.description,
+                                currentLanguage,
+                                t("participant.inbox.noDescription", "No description available"),
+                            )}
                         </Typography>
+
+                        {/* Navigation Button - Event or Certificate */}
+                        {inboxDetail.contentType === "event-invitation" && inboxDetail.eventId && (
+                            <Button
+                                variant="primary"
+                                size="lg"
+                                className="mt-6 w-full"
+                                onClick={() =>
+                                    navigate("/app/events/:id", {
+                                        params: { id: inboxDetail.eventId! },
+                                    })
+                                }
+                            >
+                                <Calendar className="w-5 h-5" />
+                                {t("participant.inbox.viewEvent", "View Event")}
+                                <ArrowRight className="w-5 h-5" />
+                            </Button>
+                        )}
+
+                        {inboxDetail.contentType === "certificate" &&
+                            inboxDetail.certificateId &&
+                            inboxDetail.isUserInEvent && (
+                                <Button
+                                    variant="primary"
+                                    size="lg"
+                                    className="mt-6 w-full"
+                                    onClick={() =>
+                                        navigate("/app/certificates/:id", {
+                                            params: { id: inboxDetail.certificateId! },
+                                        })
+                                    }
+                                >
+                                    <Award className="w-5 h-5" />
+                                    {t("participant.inbox.viewCertificate", "View Certificate")}
+                                    <ArrowRight className="w-5 h-5" />
+                                </Button>
+                            )}
+
+                        {/* Message when user hasn't joined the event for certificate */}
+                        {inboxDetail.contentType === "certificate" &&
+                            inboxDetail.certificateId &&
+                            !inboxDetail.isUserInEvent && (
+                                <div className="mt-6 p-4 rounded-lg bg-muted/20 border border-border">
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        color="muted"
+                                        className="text-sm text-center"
+                                    >
+                                        {t(
+                                            "participant.inbox.mustJoinEventFirst",
+                                            "You must join the event first before you can claim this certificate.",
+                                        )}
+                                    </Typography>
+                                </div>
+                            )}
                     </div>
                 </div>
             </div>

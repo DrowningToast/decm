@@ -4,79 +4,53 @@ description: "Database security patterns and PII encryption for DECM platform"
 
 # Database Security & PII Encryption
 
-## 🔐 Core Security Rules
-
-### PII Fields MUST Be Encrypted at Repository Layer
-
-All Personally Identifiable Information encrypted with **AES-GCM at the repository layer** using `encryptutils`:
+## PII Fields (Must Be Encrypted)
 
 - **Auth**: `google_connector_ref`, `github_connector_ref`
 - **Profiles**: `first_name`, `last_name`, `email`, `phone_number`, `address`, `bio`, `profile_picture_url`, `academic_institution`, `academic_email`
 - **Event Attendees**: `first_name`, `last_name`, `email`, `bio`, `phone_number`, `address`, `academic_institution`, `academic_email`
 
-### Encryption Architecture
+## Encryption Architecture
 
-- **Database Layer**: Stores encrypted data as `TEXT` columns
-- **Repository Layer**: Handles encryption/decryption using [encryptutils](mdc:apps/backend/common/encryptutils/encryption.go)
-- **Encryption Algorithm**: AES-256-GCM (secure authenticated encryption)
-- **Key Management**: PII encryption key from environment variables only
+- **Database**: Stores encrypted data as `TEXT` columns
+- **Repository Layer**: Handles encryption/decryption via [encryptutils](mdc:apps/backend/common/encryptutils/encryption.go)
+- **Algorithm**: AES-256-GCM
+- **Key**: From `PII_ENCRYPTION_KEY` environment variable only
 
-### Encryption Key Management
+## Key Rules
 
 - ✅ Use `r.piiEncryptionKey` from repository struct
-- ✅ Keys from environment variables only (`PII_ENCRYPTION_KEY`)
+- ✅ Keys from environment variables only
 - ❌ NEVER hardcode encryption keys
 - ❌ NEVER pass encryption keys in SQL queries
 
-## 📊 Database Schema Patterns
-
-### PII Column Types
+## Database Schema
 
 ```sql
--- ✅ Correct: Use TEXT for encrypted PII
+-- ✅ Use TEXT for encrypted PII
 google_connector_ref TEXT,
 first_name TEXT,
 email TEXT,
 
--- ❌ Incorrect: Don't use BYTEA (old pattern - DEPRECATED)
+-- ❌ Don't use BYTEA (deprecated)
 google_connector_ref BYTEA,
 ```
 
-### Encrypted Fields Storage
+## SQL Query Patterns
+
+No encryption in SQL - encrypt at repository layer:
 
 ```sql
--- All PII fields stored as encrypted TEXT
-email TEXT,                  -- Encrypted with AES-GCM
-google_connector_ref TEXT,   -- Encrypted with AES-GCM
-first_name TEXT,             -- Encrypted with AES-GCM
-
--- Note: Searching encrypted fields requires encrypting the search term and doing direct comparison
--- This is less efficient than hash-based searching but provides better security
-```
-
-## 🔄 SQL Query Patterns
-
-### Simple Queries (No Encryption in SQL)
-
-```sql
--- ✅ Correct: Direct SELECT/INSERT without encryption
--- Encryption is handled in repository layer
 -- name: CreateProfile :one
-INSERT INTO profiles (
-    first_name,
-    last_name,
-    email,
-    email_hash
-) VALUES (
-    sqlc.narg(first_name),
-    sqlc.narg(last_name),
-    sqlc.narg(email),
-    sqlc.narg(email_hash)
-) RETURNING *;
+INSERT INTO profiles (first_name, last_name, email, email_hash)
+VALUES (sqlc.narg(first_name), sqlc.narg(last_name), sqlc.narg(email), sqlc.narg(email_hash))
+RETURNING *;
 
 -- name: GetProfileByID :one
-SELECT * FROM profiles
-WHERE id = sqlc.arg(id);
+SELECT * FROM profiles WHERE id = sqlc.arg(id);
+
+-- name: GetProfileByEmail :one
+SELECT * FROM profiles WHERE email_hash = sqlc.arg(email_hash);
 
 -- name: UpdateProfile :one
 UPDATE profiles SET
@@ -87,49 +61,23 @@ WHERE id = sqlc.arg(id)
 RETURNING *;
 ```
 
-### Search by Hash
+## Repository Layer
 
-```sql
--- ✅ Correct: Search using hash column
--- name: GetProfileByEmail :one
-SELECT * FROM profiles
-WHERE email_hash = sqlc.arg(email_hash);
-
--- ❌ Incorrect: Don't try to decrypt in SQL (old pattern)
-SELECT * FROM profiles
-WHERE pgp_sym_decrypt(email, ...) = sqlc.arg(email);
-```
-
-## 🏗️ Repository Layer Patterns
-
-Reference implementations:
-
-- [authentication_credentials.go](mdc:apps/backend/core-api/internal/repositories/postgres/authentication_credentials.go)
-- [profile.go](mdc:apps/backend/core-api/internal/repositories/postgres/profile.go)
-
-### Helper Functions (From pgmapper Package)
-
-All encryption/decryption helpers are centralized in [pgmapper](mdc:apps/backend/common/pgmapper/pgmapper.go):
+Use [pgmapper](mdc:apps/backend/common/pgmapper/pgmapper.go) helpers:
 
 ```go
 import "apps/backend/common/pgmapper"
 
-// Encrypt/Decrypt string
 pgmapper.EncryptPII(plaintext, encryptionKey) (string, error)
 pgmapper.DecryptPII(ciphertext, encryptionKey) (string, error)
-
-// Encrypt/Decrypt string pointer to pgtype.Text (MOST COMMONLY USED)
 pgmapper.EncryptStringPtrToPgText(field, encryptionKey) (pgtype.Text, error)
 pgmapper.DecryptPgTextToStringPtr(field, encryptionKey) (*string, error)
 ```
 
-**Important**: Use these pgmapper functions directly in repositories. Do NOT create local encryption helper methods.
-
-### CREATE Pattern
+### CREATE Example
 
 ```go
 func (r *Repository) CreateProfile(ctx context.Context, profile entity.Profile) (*entity.Profile, error) {
-    // 1. Encrypt PII fields before insert using pgmapper
     firstNameEnc, err := pgmapper.EncryptStringPtrToPgText(profile.FirstName, r.piiEncryptionKey)
     if err != nil {
         return nil, err
@@ -139,7 +87,6 @@ func (r *Repository) CreateProfile(ctx context.Context, profile entity.Profile) 
         return nil, err
     }
 
-    // 2. Insert encrypted data
     query, err := r.queries.CreateProfile(ctx, generated.CreateProfileParams{
         FirstName: firstNameEnc,
         Email:     emailEnc,
@@ -148,214 +95,57 @@ func (r *Repository) CreateProfile(ctx context.Context, profile entity.Profile) 
         return nil, pgerrutils.ParsePgError(err)
     }
 
-    // 3. Decrypt for return using pgmapper
-    firstNameDec, err := pgmapper.DecryptPgTextToStringPtr(query.FirstName, r.piiEncryptionKey)
-    if err != nil {
-        return nil, err
-    }
-    emailDec, err := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
-    if err != nil {
-        return nil, err
-    }
+    firstNameDec, _ := pgmapper.DecryptPgTextToStringPtr(query.FirstName, r.piiEncryptionKey)
+    emailDec, _ := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
 
-    return &entity.Profile{
-        ID:        query.ID,
-        FirstName: firstNameDec,
-        Email:     emailDec,
-    }, nil
+    return &entity.Profile{ID: query.ID, FirstName: firstNameDec, Email: emailDec}, nil
 }
 ```
 
-### GET Pattern
+### GET Example
 
 ```go
 func (r *Repository) GetProfileById(ctx context.Context, id uuid.UUID) (*entity.Profile, error) {
-    // 1. Query database (gets encrypted data)
     query, err := r.queries.GetProfileByID(ctx, id)
     if err != nil {
         return nil, pgerrutils.ParsePgError(err)
     }
 
-    // 2. Decrypt PII fields using pgmapper
-    firstName, err := pgmapper.DecryptPgTextToStringPtr(query.FirstName, r.piiEncryptionKey)
-    if err != nil {
-        return nil, err
-    }
-    email, err := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
-    if err != nil {
-        return nil, err
-    }
+    firstName, _ := pgmapper.DecryptPgTextToStringPtr(query.FirstName, r.piiEncryptionKey)
+    email, _ := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
 
-    // 3. Return decrypted entity
-    return &entity.Profile{
-        ID:        query.ID,
-        FirstName: firstName,
-        Email:     email,
-    }, nil
+    return &entity.Profile{ID: query.ID, FirstName: firstName, Email: email}, nil
 }
 ```
 
-### SEARCH BY ENCRYPTED FIELD Pattern
+### SEARCH Example
 
 ```go
 func (r *Repository) GetProfileByEmail(ctx context.Context, email string) (*entity.Profile, error) {
-    // 1. Encrypt the search term (database stores encrypted values)
     encryptedEmail, err := pgmapper.EncryptPII(email, r.piiEncryptionKey)
     if err != nil {
         return nil, err
     }
 
-    // 2. Query by encrypted value (linear scan - less efficient but more secure)
-    query, err := r.queries.GetProfileByEmail(ctx, pgtype.Text{
-        String: encryptedEmail,
-        Valid:  true,
-    })
+    query, err := r.queries.GetProfileByEmail(ctx, pgtype.Text{String: encryptedEmail, Valid: true})
     if err != nil {
         return nil, pgerrutils.ParsePgError(err)
     }
 
-    // 3. Decrypt PII fields from result using pgmapper
-    emailDec, err := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
-    if err != nil {
-        return nil, err
-    }
-
-    return &entity.Profile{
-        ID:    query.ID,
-        Email: emailDec,
-    }, nil
+    emailDec, _ := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
+    return &entity.Profile{ID: query.ID, Email: emailDec}, nil
 }
 ```
 
-**Note**: Searching encrypted fields without hashes requires encrypting the search term and comparing directly. This is less efficient (linear scan) but eliminates the hash columns and provides better security.
+## Checklist
 
-### UPDATE Pattern
+- [ ] PII fields stored as `TEXT`
+- [ ] Encrypted/decrypted at repository layer
+- [ ] No `pgp_sym_encrypt` in SQL
+- [ ] No encryption keys in SQL
+- [ ] `PII_ENCRYPTION_KEY` set in environment
 
-```go
-func (r *Repository) UpdateProfile(ctx context.Context, id uuid.UUID, params UpdateParams) (*entity.Profile, error) {
-    // 1. Encrypt PII fields before update using pgmapper
-    firstNameEnc, err := pgmapper.EncryptStringPtrToPgText(params.FirstName, r.piiEncryptionKey)
-    if err != nil {
-        return nil, err
-    }
+## References
 
-    // 2. Update with encrypted data
-    query, err := r.queries.UpdateProfile(ctx, generated.UpdateProfileParams{
-        ID:        id,
-        FirstName: firstNameEnc,
-        Email:     emailEnc,
-    })
-    if err != nil {
-        return nil, pgerrutils.ParsePgError(err)
-    }
-
-    // 3. Decrypt for return using pgmapper
-    firstNameDec, err := pgmapper.DecryptPgTextToStringPtr(query.FirstName, r.piiEncryptionKey)
-    if err != nil {
-        return nil, err
-    }
-
-    return &entity.Profile{
-        ID:        query.ID,
-        FirstName: firstNameDec,
-    }, nil
-}
-```
-
-## 🎯 Generated Go Types
-
-With the new pattern, sqlc generates clean types:
-
-**SQL Query:**
-
-```sql
--- name: GetProfileByID :one
-SELECT * FROM profiles WHERE id = sqlc.arg(id);
-```
-
-**Generated Go:**
-
-```go
-type GetProfileByIDRow struct {
-    ID        uuid.UUID   `json:"id"`
-    FirstName pgtype.Text `json:"first_name"` // Encrypted TEXT -> pgtype.Text
-    Email     pgtype.Text `json:"email"`      // Encrypted TEXT -> pgtype.Text
-    EmailHash pgtype.Text `json:"email_hash"` // Hash for searching
-}
-```
-
-## ✅ Development Checklist
-
-Before committing database/repository changes:
-
-- [ ] PII fields stored as `TEXT` in [database schema](mdc:packages/database/migrations/000002_create_core_tables.up.sql)
-- [ ] PII fields encrypted/decrypted at repository layer
-- [ ] Encrypted fields can be searched by encrypting the search term first
-- [ ] No `pgp_sym_encrypt` or `pgp_sym_decrypt` in SQL queries
-- [ ] No `encryption_key` parameter in SQL queries
-- [ ] Test generation: `pnpm db:generate`
-- [ ] Verify repository encrypt/decrypt logic
-- [ ] Environment variable `PII_ENCRYPTION_KEY` configured
-
-## 🚨 Security Red Flags
-
-- PII stored unencrypted in database
-- Hardcoded encryption keys
-- Encryption keys in SQL queries
-- Missing encryption/decryption in repository layer
-- Using old pgcrypto patterns (DEPRECATED)
-- Not encrypting search terms when querying encrypted fields
-
-## 🛠️ Development Commands
-
-```bash
-pnpm db:generate     # SQL → Go code generation
-pnpm db:migrate      # Run migrations
-pnpm compose:up      # Start PostgreSQL
-pnpm dev:core        # Start backend with auto-migrations
-```
-
-## 📦 Dependencies
-
-- **Encryption**: [encryptutils](mdc:apps/backend/common/encryptutils/encryption.go) (AES-GCM)
-- **Database**: PostgreSQL with TEXT columns for encrypted data
-- **Extensions**: uuid-ossp, pg_trgm, citext (pgcrypto NO LONGER REQUIRED)
-
-## 🌍 Environment Variables
-
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=decm
-DB_USER=decm_user
-DB_PASSWORD=your-password
-PII_ENCRYPTION_KEY=your-256-bit-encryption-key-from-env
-```
-
-## 📋 Migration Notes
-
-### Old Pattern (DEPRECATED - DO NOT USE)
-
-```sql
--- ❌ Don't use pgcrypto
-google_connector_ref BYTEA,
-pgp_sym_encrypt(sqlc.narg(google_connector_ref), sqlc.arg(encryption_key))
-pgp_sym_decrypt(google_connector_ref, sqlc.arg(encryption_key))
-```
-
-### New Pattern (Current - USE THIS)
-
-```sql
--- ✅ Use TEXT and encrypt in repository
-google_connector_ref TEXT,
-google_connector_ref_hash VARCHAR(64),
--- Encryption handled in Go repository layer via encryptutils
-```
-
-## Summary
-
-**Encryption Layer**: Database → Repository  
-**Encryption Method**: pgcrypto → AES-GCM  
-**Data Type**: BYTEA → TEXT  
-**Key Management**: SQL parameter → Go repository struct  
-**Benefits**: Better separation of concerns, easier testing, more flexible encryption
+- [authentication_credentials.go](mdc:apps/backend/core-api/internal/repositories/postgres/authentication_credentials.go)
+- [profile.go](mdc:apps/backend/core-api/internal/repositories/postgres/profile.go)

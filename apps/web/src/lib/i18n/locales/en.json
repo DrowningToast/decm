@@ -29,6 +29,7 @@
         "no": "No",
         "required": "Required",
         "optional": "Optional",
+        "locked": "Locked",
         "saving": "Saving...",
         "submitting": "Submitting...",
         "notRequired": "Not Required",
@@ -42,7 +43,8 @@
         "signingOut": "Signing out...",
         "notAvailable": "N/A",
         "networkError": "Network error. Please check your connection.",
-        "comingSoon": "Coming Soon"
+        "comingSoon": "Coming Soon",
+        "empty": "(empty)"
     },
     "nav": {
         "home": "Home",
@@ -570,6 +572,7 @@
                 "confirmEvent": "Confirm Event",
                 "editEvent": "Edit Event",
                 "publishCertificates": "Publish Certificates",
+                "publishingCertificates": "Publishing...",
                 "waitingForSignatures": "Waiting for All Signatures",
                 "importReceivers": "Import Receivers"
             },
@@ -582,7 +585,29 @@
                 "contact": "Contact"
             },
             "participants": {
-                "searchPlaceholder": "Search participants..."
+                "description": "Invite users to the event directly by their email.",
+                "searchPlaceholder": "Search invitations...",
+                "cancelWarning": "Note: Revoking an invitation only prevents future registration. Participants who have already joined will retain their seats.",
+                "revokeInvitation": "Revoke",
+                "revokeInvitationTitle": "Revoke Invitation",
+                "revokeInvitationMessage": "Are you sure you want to revoke this invitation? This will only prevent future registration and will not remove participants who have already joined.",
+                "alreadyAccepted": "Invitation already accepted - cannot revoke",
+                "statusHeader": "Status",
+                "statusAccepted": "Accepted",
+                "statusPending": "Pending"
+            },
+            "attendees": {
+                "title": "Event Attendees",
+                "description": "List of participants who have joined this event",
+                "searchPlaceholder": "Search attendees...",
+                "firstName": "First Name",
+                "lastName": "Last Name",
+                "email": "Email",
+                "phoneNumber": "Phone Number",
+                "academicInstitution": "Academic Institution",
+                "walletAddress": "Wallet Address",
+                "noAttendees": "No attendees yet",
+                "noAttendeesDescription": "No participants have joined this event yet."
             },
             "certificates": {
                 "summaryDescription": "Certificate template and rules are configured for this event. Manage issuers and publish certificates when ready.",
@@ -594,11 +619,30 @@
                 "revokingAll": "Revoking All...",
                 "confirmRevokeAll": "Are you sure you want to revoke all certificates for this event? This action cannot be undone.",
                 "eventCertificatesTitle": "Event Certificates ({{count}})",
+                "eventCertificatesDescription": "The {{ name }} template text on the certificate will be a concatenation of first name and last name in order.",
                 "searchCertificatesPlaceholder": "Search certificates...",
                 "importSectionTitle": "Import Certificate Receivers",
                 "noIssuersConfigured": "No issuers configured for this event. Please add issuers in certificate settings.",
                 "noConfigTitle": "Add event's certificate configuration",
-                "noConfigDescription": "Set up a certificate template and rules for this event. Participants will receive certificates based on your configuration."
+                "noConfigDescription": "Set up a certificate template and rules for this event. Participants will receive certificates based on your configuration.",
+                "publishedStatus": "Certificates Published ({{count}}/{{total}})",
+                "notPublishedStatus": "Certificates Not Published",
+                "publishedConfigStatus": "✅ Certificate Configuration Published",
+                "notPublishedConfigStatus": "Certificate Configuration Not Published",
+                "notPublishedConfigDescription": "Publishing the configuration will allow certificates to be minted and distributed to participants.",
+                "publishButton": "Publish Configuration",
+                "unpublishButton": "Unpublish Configuration",
+                "publishedWarning": "⚠️ Certificate configuration has been published. Any changes will require re-approval from all issuers.",
+                "mintReady": "✅ Ready to Publish Certificates",
+                "mintNotReady": "Certificate Publishing Requirements",
+                "configStatus": "Certificate configuration set up",
+                "issuersSignedStatus": "All issuers signed ({{signed}}/{{total}})",
+                "contractStatus": "Certificate contract deployed",
+                "missingRequirements": "Missing requirements",
+                "publishSuccess": "Successfully published {{count}} certificate(s) and created {{messagesCount}} inbox message(s)!",
+                "publishError": "Failed to publish certificates: {{error}}",
+                "editDisabledMessage": "Editing is disabled because the certificate configuration has been published",
+                "alreadyPublished": "Already Published"
             }
         }
     },
@@ -678,7 +722,7 @@
             "passwordPlaceholder": "Enter event password",
             "inviteOnly": "Invite only",
             "nolongerAccepting": "No longer accepting request",
-            "participating": "Participating",
+            "participating": "You've already joined this event",
             "invited": "Yay. You're invited! Click here to accept.",
             "filters": {
                 "seatsCount": "Seats Available",
@@ -694,6 +738,9 @@
                 "description": "Try adjusting your search or filters"
             },
             "detail": {
+                "loadingDetails": "Loading event details...",
+                "loadError": "Failed to load event details",
+                "notFoundError": "Event not found",
                 "status": "Status",
                 "acceptingRequests": "Accepting requests",
                 "closed": "No longer accepting request",
@@ -706,7 +753,23 @@
                 "accepted": "Accepted",
                 "seatsCount": "Seats count",
                 "eventContactAddress": "Event Contact Address",
-                "passwordPlaceholder": "Password here"
+                "passwordPlaceholder": "Password here",
+                "shortDescription": "Short description",
+                "longDescription": "Description",
+                "location": "Location",
+                "noLocation": "No location specified",
+                "eventContractAddress": "Event Contract Address",
+                "noContractAddress": "No contract address",
+                "googleMap": "Map",
+                "active": "Active",
+                "inactive": "Inactive",
+                "instruction": {
+                    "participating": "You are participating in this event",
+                    "invited": "You are invited to join this event",
+                    "invitationRequired": "This event requires an invitation",
+                    "passwordRequired": "This event requires a password to participate",
+                    "signatureRequest": "Please sign the registration request with your wallet"
+                }
             },
             "invitationRequired": "Invitation is required."
         },
@@ -741,7 +804,19 @@
             "viewCertificate": "View Certificate",
             "mustBeInEvent": "Must be in the event first",
             "loadingDetails": "Loading inbox details...",
-            "failedToLoadDetails": "Failed to load inbox details"
+            "failedToLoadDetails": "Failed to load inbox details",
+            "actionLabel": "Action",
+            "actionStatus": {
+                "accepted": "Accepted",
+                "notAccepted": "Not Accepted",
+                "claimed": "Claimed",
+                "notClaimed": "Not Claimed"
+            },
+            "messageType": {
+                "eventRegistrationInvitation": "Event Registration Invitation",
+                "certificateInvitation": "Certificate Invitation",
+                "general": "Message"
+            }
         }
     },
     "createEvent": {
@@ -854,11 +929,13 @@
         "invalidFileType": "Invalid file type. Please select an Excel file.",
         "fileTooLarge": "File size exceeds 10MB limit.",
         "missingColumns": "Missing required columns: {{columns}}. Please ensure your Excel file contains these columns.",
+        "missingColumnsTitle": "Your Excel file is missing required columns:",
         "emptyFile": "The Excel file appears to be empty or has no data.",
         "parseError": "Failed to parse the Excel file. Please check the file format.",
         "requiredFormat": "Required Excel Format",
         "requiredFormatDescription": "Your Excel file must contain these exact column headers:",
-        "columnHeader": "Column Header",
+        "columnHeader": "Required Column",
+        "optionalColumn": "Optional Column",
         "downloadTemplate": "Download Template",
         "downloadTemplateDescription": "Download a template Excel file with the correct format.",
         "templateSheetName": "Participants",
@@ -908,17 +985,22 @@
         "missingColumns": "Missing required columns: {{columns}}. Please ensure your Excel file contains these columns.",
         "emptyFile": "The Excel file appears to be empty or has no data.",
         "parseError": "Failed to parse Excel file. Please check file format.",
+        "missingEmailError": "Email is required. Missing in rows: {{rows}}",
+        "columnsDescription": "Email is required. Other columns are optional.",
         "requiredFormat": "Required Excel Format",
         "requiredFormatDescription": "Your Excel file must contain these exact column headers:",
-        "columnHeader": "Column Header",
+        "columnHeader": "Required Column",
+        "optionalColumn": "Optional Column",
         "downloadTemplate": "Download Template",
         "downloadTemplateDescription": "Download a template Excel file with correct format.",
+        "availableColumns": "Available Columns",
+        "allColumnsOptional": "All columns are optional. You can include any combination of these columns in your Excel file:",
         "templateSheetName": "Certificates",
         "templateFileName": "certificate_import_template",
         "templateColumns": {
+            "email": "email",
             "firstName": "first_name",
             "lastName": "last_name",
-            "email": "email",
             "academicInstitution": "academic_institution",
             "certificateTitle": "certificate_title",
             "certificateSubtitle": "certificate_subtitle"
@@ -926,24 +1008,34 @@
         "hostPin": "Host PIN",
         "hostPinDescription": "Enter your host PIN to authorize certificate import. This PIN is used to sign the certificate data on the blockchain.",
         "hostPinPlaceholder": "Enter your host PIN",
-        "hostPinRequired": "Host PIN is required to import certificates"
+        "hostPinRequired": "Host PIN is required to import certificates",
+        "reuploadFile": "Re-upload File",
+        "receiverReplacementWarning": "Warning: Uploading new receivers will automatically revoke the existing receiver list. Please review carefully before confirming."
     },
     "certificateSettings": {
         "pageTitle": "Certificate Settings",
-        "pageDescription": "Configure certificate issuers and design your certificate template",
+        "pageDescription": "Configure certificate issuers and design your certificate template. Note: An event can only have a single certificate template, but the text content inside can be changed as needed.",
         "eventNameNotFound": "Event name not found",
         "removeIssuerSuccess": "Issuer removed successfully",
         "removeIssuerError": "Failed to remove issuer",
+        "searchIssuerError": "Failed to search issuers. Please try again.",
+        "noIssuersError": "At least one issuer is required to save certificate settings.",
         "step1": {
             "title": "Step 1: Issuer Settings",
             "description": "Search and select certificate issuers for this event",
             "searchLabel": "Search Issuers",
             "searchPlaceholder": "Enter name, email, or organization...",
             "searchButton": "Search",
+            "searchNote": "Note: Search query must exactly match the issuer's first name, last name, or OAuth email.",
             "selectedIssuers": "Selected Issuers",
+            "savedIssuers": "Saved Issuers",
+            "unsavedIssuers": "Unsaved Changes",
             "table": {
                 "name": "Name",
                 "email": "Email",
+                "contactEmail": "Contact Email",
+                "googleOAuthEmail": "Google OAuth Email",
+                "phoneNumber": "Telephone Number",
                 "organization": "Organization",
                 "actions": "Actions"
             },
@@ -961,7 +1053,8 @@
             },
             "removeIssuer": {
                 "title": "Remove Issuer",
-                "description": "Are you sure you want to remove this issuer?"
+                "description": "Are you sure you want to remove this issuer? The issuer will be removed immediately without needing to click save.",
+                "minimumIssuerRequired": "At least one issuer is required for the certificate"
             }
         },
         "step2": {
@@ -984,7 +1077,11 @@
             },
             "keywords": {
                 "title": "Available Keywords",
-                "description": "Use these special keywords in your SVG template. They will be automatically replaced with actual data:"
+                "description": "Use these special keywords in your SVG template. They will be automatically replaced with actual data. Important: Text elements must contain ONLY the template keyword with no additional characters, or the replacement may not work correctly."
+            },
+            "exactMatchWarning": {
+                "title": "Important: Exact Text Match Required",
+                "description": "The template text must exactly match the keywords provided. Text elements must contain ONLY the keyword (e.g., {{ eventName }}) with no additional characters, spaces, or formatting. Any extra characters will prevent the system from detecting and replacing the keyword correctly."
             },
             "upload": {
                 "label": "Certificate Template (SVG)",
@@ -1096,12 +1193,16 @@
             "signingStatus": "Signing Status",
             "contractAddress": "Contract Address",
             "certificatesCount": "Certificates",
+            "certificates": "certificates",
             "certificatePreview": "Certificate Preview",
             "templateNotAvailable": "Template not available",
             "eventDetails": "Event Details",
             "signCertificateBatch": "Sign Certificate Batch",
             "signCertificateBatchDescription": "Sign all pending certificates for this event",
             "signing": "Signing...",
+            "signingSuccess": "Successfully signed {{count}} certificate",
+            "signingSuccess_plural": "Successfully signed {{count}} certificates",
+            "signingError": "Failed to sign certificates. Please check your PIN and try again.",
             "signAndApprove": "Sign and Approve",
             "alreadySigned": "Already Signed",
             "notAnIssuer": "Not an Issuer",
@@ -1135,6 +1236,16 @@
             "action": {
                 "review": "Review",
                 "view": "View"
+            },
+            "empty": {
+                "pending": {
+                    "title": "No Pending Events",
+                    "description": "You don't have any pending events to sign at the moment."
+                },
+                "signed": {
+                    "title": "No Signed Events",
+                    "description": "You haven't signed any events yet."
+                }
             }
         }
     },
@@ -1249,6 +1360,8 @@
                 "create_account_error": "Failed to authenticate with Google",
                 "create_account_error_duplicate": "The account with this email already exists.",
                 "create_account_error_password": "Password is required to create an account.",
+                "create_account_error_expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
+                "create_account_error_generic": "Failed to create account with Google. Please try again later.",
                 "create_profile_pending": "Updating profile...",
                 "create_profile_success": "Profile updated successfully",
                 "create_profile_error_duplicate": "The profile with this email already exists.",
@@ -1260,12 +1373,41 @@
                 "unauthenticated_response": "You're unauthorized to access this resource. Please login again.",
                 "expired_token": "The authorization link has expired. You have been signed out. Please login through your chosen OAuth provider again.",
                 "internal_error_response": "Our server encountered an error. Please try again later. If the problem persists, please contact support."
+            },
+            "wallet": {
+                "create_profile_success": "Profile created successfully",
+                "create_profile_error": "Failed to create profile. Please try again."
+            },
+            "generic": {
+                "unauthenticated_response": "You must be logged in to access this page. Please sign in.",
+                "unauthorized_response": "You don't have permission to access this page. Please contact an administrator.",
+                "sign_out_success": "You have been signed out successfully."
             }
         },
         "api": {
             "error": {
                 "authentication_credential_id_already_exists": "Authentication credential ID already exists"
             }
+        }
+    },
+    "accountExists": {
+        "title": "Welcome back!",
+        "description": "It looks like you already have an account with us. Please sign in to continue.",
+        "signInButton": "Sign in to your account"
+    },
+    "editEvent": {
+        "success": "Event edited successfully"
+    },
+    "deleteEvent": {
+        "success": "Event deleted successfully"
+    },
+    "examples": {
+        "buttonSizes": "Button Sizes",
+        "buttons": {
+            "small": "Small",
+            "default": "Default",
+            "large": "Large",
+            "extraLarge": "Extra Large"
         }
     }
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ThemisBlack, ThemisWhite } from "../icons";
 import { cn } from "@/lib/utils";
@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Typography } from "@/components/typography/typography";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { BadgeCheck } from "lucide-react";
 
 export interface StaggeredMenuItem {
     label: string;
@@ -84,6 +85,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     const colorTweenRef = useRef<gsap.core.Tween | null>(null);
 
     const toggleBtnRef = useRef<HTMLButtonElement | null>(null);
+    const headerRef = useRef<HTMLElement | null>(null);
     const busyRef = useRef(false);
 
     const itemEntranceTweenRef = useRef<gsap.core.Tween | null>(null);
@@ -403,6 +405,37 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         animateText(target);
     }, [playOpen, playClose, animateIcon, animateColor, animateText, onMenuOpen, onMenuClose]);
 
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (!openRef.current) return;
+
+            const target = event.target as Node;
+            const panel = panelRef.current;
+            const header = headerRef.current;
+
+            // Check if click is inside the panel or header
+            const isInsidePanel = panel && panel.contains(target);
+            const isInsideHeader = header && header.contains(target);
+
+            if (!isInsidePanel && !isInsideHeader) {
+                // Click is outside, close the menu
+                openRef.current = false;
+                setOpen(false);
+                onMenuClose?.();
+                playClose();
+                animateIcon(false);
+                animateColor(false);
+                animateText(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [playClose, animateIcon, animateColor, animateText, onMenuClose]);
+
     return (
         <div
             className={`sm-scope z-40 ${isFixed ? "fixed top-0 left-0 w-screen h-screen overflow-hidden pointer-events-none" : "w-full h-full"}`}
@@ -448,6 +481,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 </div>
 
                 <header
+                    ref={headerRef}
                     className="staggered-menu-header absolute top-0 left-0 w-full flex items-center justify-between px-3 md:px-6 py-1.5 pointer-events-auto z-20 transition-all backdrop-blur-[2px] shadow-[0px_4px_16px_0px_rgba(0,0,0,0.1)] overflow-hidden bg-[rgba(217,217,217,0.1)]"
                     aria-label="Main navigation header"
                 >
@@ -498,14 +532,17 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                             </div>
                         </Link>
                         {roleLabel && (
-                            <Typography
-                                variant="text"
-                                tag="span"
-                                color="foreground-alt"
-                                className="text-sm hidden md:block"
-                            >
-                                {roleLabel}
-                            </Typography>
+                            <div className="flex items-center gap-1.5">
+                                <BadgeCheck className="size-3 md:size-4 text-foreground-alt flex-shrink-0" />
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="foreground-alt"
+                                    className="text-[10px] md:text-sm"
+                                >
+                                    {roleLabel}
+                                </Typography>
+                            </div>
                         )}
                     </div>
 

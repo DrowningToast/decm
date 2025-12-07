@@ -51,6 +51,7 @@ SELECT
     event_registration_invitations.created_at as event_registration_invitation_created_at,
     event_registration_invitations.updated_at as event_registration_invitation_updated_at,
     event_registration_invitations.cancelled_at as event_registration_invitation_cancelled_at,
+    event_registration_invitations.accepted_at as event_registration_invitation_accepted_at,
     inbox_messages.id as inbox_message_id,
     inbox_messages.id as sender_credential_id,
     inbox_messages.receiver_credential_id as receiver_credential_id,
@@ -86,6 +87,15 @@ SET
     email = sqlc.narg(email),
     phone_number = sqlc.narg(phone_number),
     academic_institution = sqlc.narg(academic_institution),
+    accepted_at = sqlc.narg(accepted_at),
+    updated_at = NOW()
+WHERE id = sqlc.arg(id)
+RETURNING *;
+
+-- name: UpdateEventRegistrationInvitationAcceptedStatus :one
+UPDATE event_registration_invitations 
+SET 
+    accepted_at = sqlc.narg(accepted_at),
     updated_at = NOW()
 WHERE id = sqlc.arg(id)
 RETURNING *;

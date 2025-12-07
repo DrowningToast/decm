@@ -193,26 +193,54 @@ export const EditProfilePage: React.FC = () => {
 
     const onSubmit = async (data: EditProfileSchema) => {
         try {
-            await updateProfile({
-                first_name: data.first_name || undefined,
-                is_first_name_public: data.is_first_name_public,
-                last_name: data.last_name || undefined,
-                is_last_name_public: data.is_last_name_public,
-                bio: data.bio || undefined,
-                is_bio_public: data.is_bio_public,
-                email: data.email || undefined,
-                is_email_public: data.is_email_public,
-                phone_number: data.phone_number || undefined,
-                is_phone_number_public: data.is_phone_number_public,
-                address: data.address || undefined,
-                is_address_public: data.is_address_public,
-                academic_email: data.academic_email || undefined,
-                is_academic_email_public: data.is_academic_email_public,
-                academic_institution: data.academic_institution || undefined,
-                is_academic_institution_public: data.is_academic_institution_public,
-                profile_picture_url: data.profile_picture_url || undefined,
-                is_profile_picture_public: data.is_profile_picture_public,
-            });
+            // Get all form values explicitly to ensure nothing is missed
+            const allFormValues = form.getValues();
+
+            // Helper to normalize string values
+            // Returns the trimmed value, or undefined if value is null/undefined/empty
+            // Empty strings are converted to undefined to avoid sending empty values to backend
+            const normalizeString = (value: string | undefined | null): string | undefined => {
+                if (value === undefined || value === null) return undefined;
+                const trimmed = value.trim();
+                return trimmed === "" ? undefined : trimmed;
+            };
+
+            // Log the form data for debugging
+            console.log("Form data from onSubmit parameter:", data);
+            console.log("All form values from getValues():", allFormValues);
+
+            // Use allFormValues to ensure we capture everything, fallback to data parameter
+            const formData = { ...allFormValues, ...data };
+
+            // Build profile data - only include fields with actual values
+            // Empty fields are converted to undefined and filtered out by the service layer
+            const profileData = {
+                // String fields - only include if they have values (normalized to undefined if empty)
+                first_name: normalizeString(formData.first_name),
+                last_name: normalizeString(formData.last_name),
+                bio: normalizeString(formData.bio),
+                email: normalizeString(formData.email),
+                phone_number: normalizeString(formData.phone_number),
+                address: normalizeString(formData.address),
+                academic_email: normalizeString(formData.academic_email),
+                academic_institution: normalizeString(formData.academic_institution),
+                profile_picture_url: normalizeString(formData.profile_picture_url),
+                // Boolean fields - always include with explicit values
+                is_first_name_public: formData.is_first_name_public ?? false,
+                is_last_name_public: formData.is_last_name_public ?? false,
+                is_bio_public: formData.is_bio_public ?? false,
+                is_email_public: formData.is_email_public ?? false,
+                is_phone_number_public: formData.is_phone_number_public ?? false,
+                is_address_public: formData.is_address_public ?? false,
+                is_academic_email_public: formData.is_academic_email_public ?? false,
+                is_academic_institution_public: formData.is_academic_institution_public ?? false,
+                is_profile_picture_public: formData.is_profile_picture_public ?? false,
+            };
+
+            // Log the transformed data
+            console.log("Profile data being sent:", profileData);
+
+            await updateProfile(profileData);
             toast.success(t("profile.updateSuccess"));
         } catch (error) {
             console.error("Failed to update profile:", error);

@@ -21,10 +21,23 @@ const EventDetailRoute = () => {
     }
 
     if (error || !event) {
+        // Determine error type
+        const isNotFound =
+            error &&
+            "response" in error &&
+            error.response &&
+            typeof error.response === "object" &&
+            "status" in error.response &&
+            error.response.status === 404;
+
+        const errorMessage = isNotFound
+            ? t("participant.events.detail.notFoundError")
+            : t("participant.events.detail.loadError");
+
         return (
             <PageContainer className="relative z-10 w-full min-h-screen flex items-center justify-center">
                 <Typography variant="text" tag="p" color="destructive">
-                    {t("participant.events.detail.loadError")}
+                    {errorMessage}
                 </Typography>
             </PageContainer>
         );

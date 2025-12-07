@@ -51,7 +51,7 @@ func (r *Repository) CreateEvent(ctx context.Context, params datagateway.CreateE
 	}
 
 	return &entity.Event{
-		ID:                       result.ID,
+		Id:                       result.ID,
 		ChainId:                  int(result.ChainID),
 		ContactNumber:            result.ContactNumber,
 		ContactAddress:           result.ContactAddress,
@@ -83,7 +83,7 @@ func (r *Repository) GetEventById(ctx context.Context, id uuid.UUID) (*entity.Ev
 	}
 
 	return &entity.Event{
-		ID:                       result.ID,
+		Id:                       result.ID,
 		ChainId:                  int(result.ChainID),
 		ContactNumber:            result.ContactNumber,
 		ContactAddress:           result.ContactAddress,
@@ -98,6 +98,7 @@ func (r *Repository) GetEventById(ctx context.Context, id uuid.UUID) (*entity.Ev
 		Location:                 result.Location,
 		GoogleMapQuery:           result.GoogleMapQuery,
 		MaxAttendees:             int(result.MaxAttendees),
+		AttendeesCount:           int(result.AttendeesCount),
 		IsPublic:                 result.IsPublic.Int32 == 1,
 		IsBookingRequestRequired: result.IsBookingRequestRequired.Int32 == 1,
 		IsVerified:               result.IsVerified.Int32 == 1,
@@ -116,7 +117,7 @@ func (r *Repository) GetViewModelById(ctx context.Context, id uuid.UUID) (*entit
 
 	// Convert Event fields
 	event := &entity.Event{
-		ID:                       result.ID,
+		Id:                       result.ID,
 		EventType:                entity.EventType(result.EventType),
 		ChainId:                  int(result.ChainID),
 		ContactNumber:            result.ContactNumber,
@@ -209,7 +210,7 @@ func (r *Repository) ListEventsByOwnerCredentialID(ctx context.Context, ownerCre
 	eventsEntity := make([]*entity.Event, len(events))
 	for i, event := range events {
 		eventsEntity[i] = &entity.Event{
-			ID:                       event.ID,
+			Id:                       event.ID,
 			ChainId:                  int(event.ChainID),
 			ContactNumber:            event.ContactNumber,
 			ContactAddress:           event.ContactAddress,
@@ -244,7 +245,7 @@ func (r *Repository) DeleteEvent(ctx context.Context, id uuid.UUID) (*entity.Eve
 	}
 
 	return &entity.Event{
-		ID:                       result.ID,
+		Id:                       result.ID,
 		EventType:                entity.EventType(result.EventType),
 		ChainId:                  int(result.ChainID),
 		ContactNumber:            result.ContactNumber,
@@ -400,7 +401,7 @@ func (r *Repository) UpdateEvent(ctx context.Context, id uuid.UUID, params datag
 	}
 
 	return &entity.Event{
-		ID:                       result.ID,
+		Id:                       result.ID,
 		EventType:                entity.EventType(result.EventType),
 		ChainId:                  int(result.ChainID),
 		ContactNumber:            result.ContactNumber,
@@ -447,7 +448,7 @@ func (r *Repository) ListEvents(ctx context.Context, limitCount *int32, offsetCo
 	eventsEntity := make([]*entity.Event, len(events))
 	for i, event := range events {
 		eventsEntity[i] = &entity.Event{
-			ID:                       event.ID,
+			Id:                       event.ID,
 			EventType:                entity.EventType(event.EventType),
 			ChainId:                  int(event.ChainID),
 			ContactNumber:            event.ContactNumber,
@@ -497,7 +498,7 @@ func (r *Repository) ListEventsByEventAttendeeCredentialID(ctx context.Context, 
 	eventsEntity := make([]*entity.Event, len(events))
 	for i, event := range events {
 		eventsEntity[i] = &entity.Event{
-			ID:                       event.ID,
+			Id:                       event.ID,
 			EventType:                entity.EventType(event.EventType),
 			ChainId:                  int(event.ChainID),
 			ContactNumber:            event.ContactNumber,

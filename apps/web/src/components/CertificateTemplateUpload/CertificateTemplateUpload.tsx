@@ -3,7 +3,7 @@ import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Upload, Info, Image as ImageIcon } from "lucide-react";
+import { Upload, Info, Image as ImageIcon, AlertTriangle } from "lucide-react";
 import type { AvailableKeyword } from "@/hooks/useCertificateTemplate";
 
 export interface CertificateTemplateUploadProps {
@@ -65,17 +65,17 @@ export const CertificateTemplateUpload = ({
                 <AlertTitle>{t("certificateSettings.step2.keywords.title")}</AlertTitle>
                 <AlertDescription>
                     <div className="mt-2">
-                        <Typography variant="text" tag="p" className="text-xs mb-2 text-blue-700">
+                        <Typography variant="text" tag="p" className="text-xs mb-2">
                             {t("certificateSettings.step2.keywords.description")}
                         </Typography>
                         <div className="flex flex-wrap gap-2">
                             {availableKeywords.map((kw) => (
                                 <div key={kw.keyword} className="inline-flex items-center gap-1">
-                                    <code className="px-2 py-1 bg-blue-100 text-blue-700 dark:text-blue-400 rounded text-xs font-mono">
+                                    <code className="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-100 rounded text-xs font-mono select-text">
                                         {kw.keyword}
                                     </code>
                                     {kw.mandatory && (
-                                        <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-semibold">
+                                        <span className="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-900 dark:text-red-100 rounded text-[10px] font-semibold select-text">
                                             {t("common.required")}
                                         </span>
                                     )}
@@ -83,6 +83,17 @@ export const CertificateTemplateUpload = ({
                             ))}
                         </div>
                     </div>
+                </AlertDescription>
+            </Alert>
+
+            {/* Exact Match Warning */}
+            <Alert variant="warning">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>{t("certificateSettings.step2.exactMatchWarning.title")}</AlertTitle>
+                <AlertDescription>
+                    <Typography variant="text" tag="p" className="text-xs">
+                        {t("certificateSettings.step2.exactMatchWarning.description")}
+                    </Typography>
                 </AlertDescription>
             </Alert>
 
@@ -112,7 +123,8 @@ export const CertificateTemplateUpload = ({
                         <Typography
                             variant="text"
                             tag="span"
-                            className="font-medium text-foreground"
+                            color="current"
+                            className="font-medium"
                         >
                             {svgFile ? svgFile.name : t("certificateSettings.step2.upload.button")}
                         </Typography>

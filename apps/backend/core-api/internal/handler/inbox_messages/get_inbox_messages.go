@@ -18,7 +18,7 @@ type GetInboxMessagesResponse struct {
 // @Accept json
 // @Produce json
 // @Success 200 {object} GetInboxMessagesResponse
-// @Router /inbox-messages [get]
+// @Router /api/v1/inbox-messages [get]
 // @Security ApiKeyAuth
 func (h *Handler) GetMyInboxMessages(c *fiber.Ctx) error {
 	user, err := h.AuthService.GetUserContext(c)

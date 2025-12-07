@@ -12,7 +12,7 @@ func (h *Handler) Mount(r fiber.Router) {
 
 	inboxMessagesGroup := r.Group("/inbox-messages")
 	inboxMessagesGroup.Use(h.AuthenticationGuardMiddleware.Middleware)
-	inboxMessagesGroup.Get("/my", h.GetMyInboxMessages)
+	inboxMessagesGroup.Get("/", h.GetMyInboxMessages)
 	inboxMessagesGroup.Get("/:inbox_message_id", h.GetInboxMessage)
 	inboxMessagesGroup.Put("/read", h.MarkMessageAsRead)
 	inboxMessagesGroup.Put("/read-all", h.MarkAllMessagesAsRead)

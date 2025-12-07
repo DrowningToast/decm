@@ -181,7 +181,7 @@ func (u *EventUsecase) GetEventViewModelByEventId(ctx context.Context, eventId u
 	}, nil
 }
 
-func (u *EventUsecase) GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID, currentUser *auth.JwtClaims) ([]*entity.EventCertificate, error) {
+func (u *EventUsecase) GetEventCertificatesByEventId(ctx context.Context, eventID uuid.UUID, currentUser *auth.JwtClaims) ([]*entity.EventCertificate, error) {
 	// Get certificates for the event
 	certificates, err := u.EventCertificateDataGateway.GetEventCertificatesByEventID(ctx, eventID)
 	if err != nil {

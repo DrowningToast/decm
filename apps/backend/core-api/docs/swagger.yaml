@@ -48,12 +48,10 @@ definitions:
         type: string
     required:
     - access_manager_contract_address
-    - certificate_contract_address
     - created_at
     - event_contract_address
     - event_id
     - id
-    - ticket_contract_address
     - updated_at
     type: object
   core-api_internal_handler_event.ImportCertificateReceiversRequest:
@@ -86,6 +84,22 @@ definitions:
     - certificates
     - event_certificate_address
     - event_id
+    type: object
+  core-api_internal_handler_event.PublishEventCertificatesResponse:
+    properties:
+      event_id:
+        type: string
+      inbox_messages_created:
+        type: integer
+      is_published:
+        type: boolean
+      published_count:
+        type: integer
+    required:
+    - event_id
+    - inbox_messages_created
+    - is_published
+    - published_count
     type: object
   core-api_internal_handler_event.RevokeAllEventCertificatesResponse:
     properties:
@@ -131,6 +145,60 @@ definitions:
     required:
     - certificates
     type: object
+  core-api_internal_handler_event_registration.JoinEventPayload:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        type: string
+      address:
+        type: string
+      bio:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      phone_number:
+        type: string
+    type: object
+  core-api_internal_handler_eventconfig.CertificateMintReadinessResponse:
+    properties:
+      all_issuers_have_signed:
+        example: true
+        type: boolean
+      certificate_contract_address:
+        example: "0x1234567890abcdef"
+        type: string
+      has_certificate_config:
+        example: true
+        type: boolean
+      has_certificate_contract:
+        example: true
+        type: boolean
+      is_ready:
+        example: true
+        type: boolean
+      missing_requirements:
+        items:
+          type: string
+        type: array
+      signed_issuers_count:
+        example: 2
+        type: integer
+      total_issuers_count:
+        example: 2
+        type: integer
+    required:
+    - all_issuers_have_signed
+    - has_certificate_config
+    - has_certificate_contract
+    - is_ready
+    - signed_issuers_count
+    - total_issuers_count
+    type: object
   core-api_internal_handler_eventconfig.EventCertificateConfigResponse:
     properties:
       academic_institution_pos_x:
@@ -151,6 +219,10 @@ definitions:
         type: number
       id:
         type: string
+      is_published:
+        type: boolean
+      mint_readiness:
+        $ref: '#/definitions/core-api_internal_handler_eventconfig.MintReadinessInfo'
       name_pos_x:
         type: number
       name_pos_y:
@@ -165,9 +237,38 @@ definitions:
     - event_name_pos_x
     - event_name_pos_y
     - id
+    - is_published
     - name_pos_x
     - name_pos_y
     - updated_at
+    type: object
+  core-api_internal_handler_eventconfig.MintReadinessInfo:
+    properties:
+      all_issuers_have_signed:
+        type: boolean
+      certificate_contract_address:
+        type: string
+      has_certificate_config:
+        type: boolean
+      has_certificate_contract:
+        type: boolean
+      is_ready:
+        type: boolean
+      missing_requirements:
+        items:
+          type: string
+        type: array
+      signed_issuers_count:
+        type: integer
+      total_issuers_count:
+        type: integer
+    required:
+    - all_issuers_have_signed
+    - has_certificate_config
+    - has_certificate_contract
+    - is_ready
+    - signed_issuers_count
+    - total_issuers_count
     type: object
   core-api_internal_usecase_event.EventContractResponse:
     properties:
@@ -287,6 +388,50 @@ definitions:
     - title
     - updated_at
     type: object
+  entity.EventAttendee:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        type: string
+      address:
+        type: string
+      attendee_credential_id:
+        type: string
+      bio:
+        type: string
+      contract_address:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      event_id:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      is_attendee_accepted:
+        type: boolean
+      last_name:
+        type: string
+      phone_number:
+        type: string
+      updated_at:
+        type: string
+      wallet_address:
+        type: string
+    required:
+    - attendee_credential_id
+    - contract_address
+    - created_at
+    - event_id
+    - id
+    - is_attendee_accepted
+    - updated_at
+    - wallet_address
+    type: object
   entity.EventCertificate:
     properties:
       academic_institution:
@@ -307,6 +452,8 @@ definitions:
         type: string
       id:
         type: string
+      inbox_message_id:
+        type: string
       name:
         type: string
       receiver_credential_id:
@@ -324,6 +471,8 @@ definitions:
   entity.EventRegistrationInvitation:
     properties:
       academic_institution:
+        type: string
+      accepted_at:
         type: string
       cancelled_at:
         type: string
@@ -350,6 +499,7 @@ definitions:
       valid_until:
         type: string
     required:
+    - accepted_at
     - created_at
     - event_id
     - id
@@ -391,7 +541,7 @@ definitions:
       message_content:
         type: string
       message_type:
-        type: integer
+        $ref: '#/definitions/entity.InboxMessageType'
       receiver_credential_id:
         type: string
       receiver_email:
@@ -438,6 +588,11 @@ definitions:
         type: string
       first_name:
         type: string
+      github_connector_ref:
+        type: string
+      google_connector_ref:
+        description: Connector references (from authentication_credentials table)
+        type: string
       id:
         type: string
       is_academic_email_public:
@@ -465,6 +620,8 @@ definitions:
       profile_picture_url:
         type: string
       updated_at:
+        type: string
+      wallet_address:
         type: string
     required:
     - authentication_credential_id
@@ -552,6 +709,44 @@ definitions:
     - sign_message
     - signature
     - updated_at
+    type: object
+  event.EventParticipantResponse:
+    properties:
+      academic_institution:
+        type: string
+      attendee_credential_id:
+        type: string
+      contract_address:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      event_id:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      is_attendee_accepted:
+        type: boolean
+      last_name:
+        type: string
+      phone_number:
+        type: string
+      updated_at:
+        type: string
+      wallet_address:
+        type: string
+    required:
+    - attendee_credential_id
+    - contract_address
+    - created_at
+    - event_id
+    - id
+    - is_attendee_accepted
+    - updated_at
+    - wallet_address
     type: object
   event.EventResponse:
     properties:
@@ -745,6 +940,8 @@ definitions:
         type: string
       certificate_title:
         type: string
+      email:
+        type: string
       first_name:
         type: string
       last_name:
@@ -753,6 +950,7 @@ definitions:
     - academic_institution
     - certificate_subtitle
     - certificate_title
+    - email
     - first_name
     - last_name
     type: object
@@ -824,27 +1022,49 @@ definitions:
     - event_id
     - issuer_credential_id
     type: object
-  event_registration_invitation.GetEventRegistrationInvitationByUserAndEventResponse:
+  event_registration.GetEventRegistrationInvitationByUserAndEventResponse:
     properties:
       inbox:
         $ref: '#/definitions/entity.InboxMessage'
       registration_invitation:
         $ref: '#/definitions/entity.EventRegistrationInvitation'
     type: object
-  event_registration_invitation.ImportEventParticipantsRequest:
+  event_registration.GetJoinEventSignMessageResponse:
+    properties:
+      sign_message:
+        type: string
+    required:
+    - sign_message
+    type: object
+  event_registration.ImportEventParticipantsRequest:
     properties:
       event_id:
         type: string
       participants:
         items:
-          $ref: '#/definitions/event_registration_invitation.ParticipantRequestItem'
+          $ref: '#/definitions/event_registration.ParticipantRequestItem'
         minItems: 1
         type: array
     required:
     - event_id
     - participants
     type: object
-  event_registration_invitation.ParticipantRequestItem:
+  event_registration.JoinEventBody:
+    properties:
+      account_password:
+        type: string
+      event_password:
+        type: string
+      registration_data:
+        $ref: '#/definitions/core-api_internal_handler_event_registration.JoinEventPayload'
+      sign_message:
+        type: string
+      signature:
+        type: string
+    required:
+    - registration_data
+    type: object
+  event_registration.ParticipantRequestItem:
     properties:
       academic_institution:
         type: string
@@ -857,11 +1077,9 @@ definitions:
       phone_number:
         type: string
     required:
-    - academic_institution
     - email
     - first_name
     - last_name
-    - phone_number
     type: object
   eventconfig.CheckEventPasswordBody:
     properties:
@@ -880,24 +1098,57 @@ definitions:
   eventconfig.CreateEventRegistrationConfigRequest:
     properties:
       academic_email_requirement_status:
+        enum:
+        - 0
+        - 1
+        - 2
         type: integer
       academic_institution_requirement_status:
+        enum:
+        - 0
+        - 1
+        - 2
         type: integer
       address_requirement_status:
+        enum:
+        - 0
+        - 1
+        - 2
         type: integer
       bio_requirement_status:
+        enum:
+        - 0
+        - 1
+        - 2
         type: integer
       email_requirement_status:
+        enum:
+        - 0
+        - 1
+        - 2
         type: integer
       final_call_for_registration:
         type: string
       first_name_requirement_status:
+        enum:
+        - 0
+        - 1
+        - 2
         type: integer
       last_name_requirement_status:
+        enum:
+        - 0
+        - 1
+        - 2
         type: integer
       phone_number_requirement_status:
+        enum:
+        - 0
+        - 1
+        - 2
         type: integer
       registration_password:
+        minLength: 8
         type: string
     required:
     - academic_email_requirement_status
@@ -920,7 +1171,7 @@ definitions:
     - EventRegistrationConfigRequirementStatusNotRequired
     - EventRegistrationConfigRequirementStatusRequired
     - EventRegistrationConfigRequirementStatusOptional
-  eventconfig.EventRegistrationConfigResponse:
+  eventconfig.EventRegistrationConfigViewModel:
     properties:
       academic_email_requirement_status:
         $ref: '#/definitions/eventconfig.EventRegistrationConfigRequirementStatus'
@@ -946,8 +1197,6 @@ definitions:
         $ref: '#/definitions/eventconfig.EventRegistrationConfigRequirementStatus'
       phone_number_requirement_status:
         $ref: '#/definitions/eventconfig.EventRegistrationConfigRequirementStatus'
-      registration_password:
-        type: string
       updated_at:
         type: string
     required:
@@ -963,6 +1212,13 @@ definitions:
     - last_name_requirement_status
     - phone_number_requirement_status
     - updated_at
+    type: object
+  eventconfig.ToggleCertificatePublishedRequest:
+    properties:
+      is_published:
+        type: boolean
+    required:
+    - is_published
     type: object
   eventconfig.UpdateEventRegistrationConfigRequest:
     properties:
@@ -998,15 +1254,73 @@ definitions:
     - address_requirement_status
     - bio_requirement_status
     - email_requirement_status
+    - event_type
     - first_name_requirement_status
     - is_booking_request_required
     - is_ticket_transferable
     - last_name_requirement_status
     - phone_number_requirement_status
     type: object
+  inbox.InboxMessageCertificateInvitationViewModel:
+    properties:
+      certificate_id:
+        type: string
+      certificate_title:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      event_id:
+        type: string
+      event_name:
+        type: string
+      has_participant_joined_event:
+        type: boolean
+      hidden_at:
+        type: string
+      id:
+        type: string
+      is_read:
+        type: integer
+      message_content:
+        type: string
+      message_content_fallback:
+        type: string
+      message_type:
+        $ref: '#/definitions/entity.InboxMessageType'
+      receiver_email:
+        type: string
+      receiver_wallet_address:
+        type: string
+      revoked_at:
+        type: string
+      sender_credential_email:
+        type: string
+      sender_credential_wallet_address:
+        type: string
+      token_id:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - certificate_id
+    - created_at
+    - created_at
+    - event_id
+    - event_name
+    - has_participant_joined_event
+    - id
+    - is_read
+    - message_content
+    - message_type
+    - updated_at
+    type: object
   inbox.InboxMessagesEventRegistrationInvitationViewModel:
     properties:
       academic_institution:
+        type: string
+      accepted_at:
         type: string
       cancelled_at:
         type: string
@@ -1031,6 +1345,8 @@ definitions:
       last_name:
         type: string
       message_content:
+        type: string
+      message_content_fallback:
         type: string
       message_type:
         $ref: '#/definitions/entity.InboxMessageType'
@@ -1073,6 +1389,8 @@ definitions:
         type: integer
       message_content:
         type: string
+      message_content_fallback:
+        type: string
       message_type:
         $ref: '#/definitions/entity.InboxMessageType'
       receiver_email:
@@ -1093,19 +1411,19 @@ definitions:
     - message_type
     - updated_at
     type: object
-  inboxmessages.GetInboxMessageEventRegistrationInvitationResponse:
-    properties:
-      inbox_message:
-        $ref: '#/definitions/inbox.InboxMessagesEventRegistrationInvitationViewModel'
-    required:
-    - inbox_message
-    type: object
   inboxmessages.GetInboxMessageResponse:
     properties:
+      event_certificate:
+        $ref: '#/definitions/inbox.InboxMessageCertificateInvitationViewModel'
+      event_registration_invitation:
+        $ref: '#/definitions/inbox.InboxMessagesEventRegistrationInvitationViewModel'
       inbox_message:
         $ref: '#/definitions/inbox.InboxMessagesViewModel'
+      inbox_message_type:
+        $ref: '#/definitions/entity.InboxMessageType'
     required:
     - inbox_message
+    - inbox_message_type
     type: object
   inboxmessages.GetInboxMessagesResponse:
     properties:
@@ -1183,6 +1501,61 @@ definitions:
     - issuer_credential_id
     - sign_message
     - signature
+    - updated_at
+    type: object
+  issuer.IssuerEventViewModel:
+    properties:
+      certificate_count:
+        type: integer
+      created_at:
+        type: string
+      event_end_date:
+        type: string
+      event_id:
+        type: string
+      event_location:
+        type: string
+      event_owner_credential_id:
+        type: string
+      event_short_description:
+        type: string
+      event_start_date:
+        type: string
+      event_title:
+        type: string
+      id:
+        type: string
+      is_signed:
+        type: boolean
+      issuer_credential_id:
+        type: string
+      owner_email:
+        type: string
+      owner_google_email:
+        type: string
+      owner_name:
+        type: string
+      owner_wallet_address:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - certificate_count
+    - created_at
+    - event_end_date
+    - event_id
+    - event_location
+    - event_owner_credential_id
+    - event_short_description
+    - event_start_date
+    - event_title
+    - id
+    - is_signed
+    - issuer_credential_id
+    - owner_email
+    - owner_google_email
+    - owner_name
+    - owner_wallet_address
     - updated_at
     type: object
   onboard.CheckOnboardStatusRequest:
@@ -1323,6 +1696,11 @@ definitions:
         type: string
       first_name:
         type: string
+      github_connector_ref:
+        type: string
+      google_connector_ref:
+        description: Connector references (from authentication_credentials table)
+        type: string
       id:
         type: string
       is_academic_email_public:
@@ -1350,6 +1728,8 @@ definitions:
       profile_picture_url:
         type: string
       updated_at:
+        type: string
+      wallet_address:
         type: string
     required:
     - authentication_credential_id
@@ -1511,6 +1891,11 @@ definitions:
         type: string
       first_name:
         type: string
+      github_connector_ref:
+        type: string
+      google_connector_ref:
+        description: Connector references (from authentication_credentials table)
+        type: string
       id:
         type: string
       is_academic_email_public:
@@ -1538,6 +1923,8 @@ definitions:
       profile_picture_url:
         type: string
       updated_at:
+        type: string
+      wallet_address:
         type: string
     required:
     - authentication_credential_id
@@ -1695,7 +2082,83 @@ paths:
       summary: Verify Google OAuth code
       tags:
       - Auth
-  /api/v1/event-registration-invitations/{eventId}:
+  /api/v1/event-registration/invitation:
+    delete:
+      consumes:
+      - application/json
+      description: Cancel an event registration invitation by ID
+      operationId: cancel-event-registration-invitation
+      parameters:
+      - description: Event Registration Invitation ID
+        in: query
+        name: event_registration_invitation_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.EventRegistrationInvitation'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Cancel event registration invitation
+      tags:
+      - Event Registration Invitation
+  /api/v1/event-registration/invitation/:event_id/import:
+    post:
+      consumes:
+      - application/json
+      description: Import a list of participants for an event, creating inbox messages
+        and event registration invitations
+      operationId: import-event-participants
+      parameters:
+      - description: Import participants request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/event_registration.ImportEventParticipantsRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/entity.EventRegistrationInvitation'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Import event participants
+      tags:
+      - Event Registration Invitation
+  /api/v1/event-registration/invitation/{eventId}:
     get:
       consumes:
       - application/json
@@ -1729,25 +2192,31 @@ paths:
       summary: Get event registration invitations by event ID
       tags:
       - Event Registration Invitation
-  /api/v1/event-registration-invitations/{eventRegistrationInvitationId}:
-    delete:
+  /api/v1/event-registration/join/{event_id}:
+    post:
       consumes:
       - application/json
-      description: Cancel an event registration invitation by ID
-      operationId: cancel-event-registration-invitation
+      description: Join an event
+      operationId: join-event
       parameters:
-      - description: Event Registration Invitation ID
+      - description: Event ID
         in: path
-        name: eventRegistrationInvitationID
+        name: event_id
         required: true
         type: string
+      - description: Join event body
+        in: body
+        name: joinEventBody
+        required: true
+        schema:
+          $ref: '#/definitions/event_registration.JoinEventBody'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entity.EventRegistrationInvitation'
+            $ref: '#/definitions/entity.EventAttendee'
         "400":
           description: Bad Request
           schema:
@@ -1764,32 +2233,28 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
-      summary: Cancel event registration invitation
+      summary: Join event
       tags:
-      - Event Registration Invitation
-  /api/v1/event-registration-invitations/import/{eventId}:
-    post:
+      - Event Registration
+  /api/v1/event-registration/join/{event_id}/sign-message:
+    get:
       consumes:
       - application/json
-      description: Import a list of participants for an event, creating inbox messages
-        and event registration invitations
-      operationId: import-event-participants
+      description: Get join event sign message
+      operationId: get-join-event-sign-message
       parameters:
-      - description: Import participants request
-        in: body
-        name: request
+      - description: Event ID
+        in: path
+        name: event_id
         required: true
-        schema:
-          $ref: '#/definitions/event_registration_invitation.ImportEventParticipantsRequest'
+        type: string
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
-            items:
-              $ref: '#/definitions/entity.EventRegistrationInvitation'
-            type: array
+            $ref: '#/definitions/event_registration.GetJoinEventSignMessageResponse'
         "400":
           description: Bad Request
           schema:
@@ -1798,14 +2263,18 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
-      summary: Import event participants
+      summary: Get join event sign message
       tags:
-      - Event Registration Invitation
-  /api/v1/event-registration-invitations/my/{event_id}:
+      - Event Registration
+  /api/v1/event-registration/my/{event_id}:
     get:
       consumes:
       - application/json
@@ -1817,7 +2286,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/event_registration_invitation.GetEventRegistrationInvitationByUserAndEventResponse'
+            $ref: '#/definitions/event_registration.GetEventRegistrationInvitationByUserAndEventResponse'
         "400":
           description: Bad Request
           schema:
@@ -2241,6 +2710,45 @@ paths:
       summary: Import certificate receivers for an event
       tags:
       - Event Certificates
+  /api/v1/events/{event_id}/certificates/publish:
+    post:
+      consumes:
+      - application/json
+      description: Publish certificates for an event. This will create inbox messages
+        for all certificate receivers. All issuers must have signed before publishing.
+      operationId: publish-event-certificates
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core-api_internal_handler_event.PublishEventCertificatesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      security:
+      - Bearer: []
+      summary: Publish event certificates
   /api/v1/events/{event_id}/certificates/revoke:
     post:
       consumes:
@@ -2371,7 +2879,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get the event certificate configuration for an event
+      description: Get the event certificate configuration for an event. Accessible
+        by verified organizers or issuers assigned to the event.
       operationId: get-event-certificate-config
       parameters:
       - description: Event ID
@@ -2388,6 +2897,10 @@ paths:
             $ref: '#/definitions/core-api_internal_handler_eventconfig.EventCertificateConfigResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
         "404":
@@ -2466,6 +2979,80 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Update event certificate config
+  /api/v1/events/{event_id}/config/certificate/mint-readiness:
+    get:
+      consumes:
+      - application/json
+      description: Check if an event certificate is ready to be minted. Returns detailed
+        status about configuration, signed issuers, and contract deployment. Accessible
+        by verified organizers or issuers assigned to the event.
+      operationId: check-certificate-mint-readiness
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core-api_internal_handler_eventconfig.CertificateMintReadinessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Check certificate mint readiness
+  /api/v1/events/{event_id}/config/certificate/published:
+    patch:
+      consumes:
+      - application/json
+      description: Toggle the published status of event certificate configuration.
+        When setting to published, inbox messages will be created for all certificate
+        receivers. Only accessible by verified organizers.
+      operationId: toggle-certificate-published
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Toggle published request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/eventconfig.ToggleCertificatePublishedRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core-api_internal_handler_eventconfig.EventCertificateConfigResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Toggle certificate published status
   /api/v1/events/{event_id}/config/password-check:
     post:
       consumes:
@@ -2520,7 +3107,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eventconfig.EventRegistrationConfigResponse'
+            $ref: '#/definitions/eventconfig.EventRegistrationConfigViewModel'
         "400":
           description: Bad Request
           schema:
@@ -2533,7 +3120,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
-      summary: Get event registration config
+      summary: Get event registration config view model
       tags:
       - Events
     put:
@@ -2559,7 +3146,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eventconfig.EventRegistrationConfigResponse'
+            $ref: '#/definitions/eventconfig.EventRegistrationConfigViewModel'
         "400":
           description: Bad Request
           schema:
@@ -2923,6 +3510,50 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get event issuer by ID
+  /api/v1/events/{event_id}/participants:
+    get:
+      consumes:
+      - application/json
+      description: Get all participants (attendees) for an event
+      operationId: get-event-participants
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/event.EventParticipantResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get event participants
+      tags:
+      - Events
   /api/v1/events/{event_id}/registration-config:
     delete:
       consumes:
@@ -2980,7 +3611,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/eventconfig.EventRegistrationConfigResponse'
+            $ref: '#/definitions/eventconfig.EventRegistrationConfigViewModel'
         "400":
           description: Bad Request
           schema:
@@ -3068,11 +3699,87 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get events by owner credentials ID
+  /api/v1/inbox-messages:
+    get:
+      consumes:
+      - application/json
+      description: Get my inbox messages
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/inboxmessages.GetInboxMessagesResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get my inbox messages
+      tags:
+      - Inbox Messages
+  /api/v1/inbox-messages/{inbox_message_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get inbox message
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/inboxmessages.GetInboxMessageResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get inbox message
+      tags:
+      - Inbox Messages
+  /api/v1/inbox-messages/read:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Message ID
+        in: path
+        name: message_id
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/inboxmessages.MarkMessageAsReadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/inboxmessages.MarkMessageAsReadResponse'
+      security:
+      - ApiKeyAuth: []
+      tags:
+      - Inbox Messages
+  /api/v1/inbox-messages/read-all:
+    put:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/inboxmessages.MarkAllMessagesAsReadResponse'
+      security:
+      - ApiKeyAuth: []
+      tags:
+      - Inbox Messages
   /api/v1/issuers:
     get:
       consumes:
       - application/json
-      description: Get verified issuers
+      description: Get verified issuers with optional search query
       operationId: get-verified-issuers
       parameters:
       - description: Limit
@@ -3083,6 +3790,11 @@ paths:
         in: query
         name: offset
         type: integer
+      - description: Search query (searches first name, last name, email, academic
+          email, wallet address)
+        in: query
+        name: search
+        type: string
       produces:
       - application/json
       responses:
@@ -3146,6 +3858,52 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get events for issuer signing
+      tags:
+      - Issuer
+  /api/v1/issuers/events/viewmodel:
+    get:
+      consumes:
+      - application/json
+      description: Get events assigned to the authenticated issuer for signing with
+        view model data
+      operationId: get-issuer-events-viewmodel
+      parameters:
+      - default: 10
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Issuer credential ID
+        in: query
+        name: issuer_credential_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/issuer.IssuerEventViewModel'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get issuer events view model
       tags:
       - Issuer
   /api/v1/onboard/check-onboard-status:
@@ -3318,99 +4076,9 @@ paths:
         name: credential_id
         required: true
         type: string
-      - description: Is Profile Picture Public
+      - description: Profile update request
         in: body
-        name: IsProfilePicturePublic
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: Profile Picture URL
-        in: body
-        name: ProfilePictureUrl
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: Is First Name Public
-        in: body
-        name: IsFirstNamePublic
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: First Name
-        in: body
-        name: FirstName
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: Is Last Name Public
-        in: body
-        name: IsLastNamePublic
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: Last Name
-        in: body
-        name: LastName
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: Is Email Public
-        in: body
-        name: IsEmailPublic
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: Email
-        in: body
-        name: Email
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: Is Phone Number Public
-        in: body
-        name: IsPhoneNumberPublic
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: Phone Number
-        in: body
-        name: PhoneNumber
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: Is Address Public
-        in: body
-        name: IsAddressPublic
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: Address
-        in: body
-        name: Address
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: Is Academic Institution Public
-        in: body
-        name: IsAcademicInstitutionPublic
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: Academic Institution
-        in: body
-        name: AcademicInstitution
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: Is Academic Email Public
-        in: body
-        name: IsAcademicEmailPublic
-        required: true
-        schema:
-          $ref: '#/definitions/profile.UpdateProfileRequest'
-      - description: Academic Email
-        in: body
-        name: AcademicEmail
+        name: request
         required: true
         schema:
           $ref: '#/definitions/profile.UpdateProfileRequest'
@@ -3495,80 +4163,4 @@ paths:
       summary: Verify password
       tags:
       - Profile
-  /inbox-messages:
-    get:
-      consumes:
-      - application/json
-      description: Get my inbox messages
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/inboxmessages.GetInboxMessagesResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Get my inbox messages
-      tags:
-      - Inbox Messages
-  /inbox-messages/{inbox_message_id}:
-    get:
-      consumes:
-      - application/json
-      description: Get inbox message
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/inboxmessages.GetInboxMessageEventRegistrationInvitationResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Get inbox message
-      tags:
-      - Inbox Messages
-  /inbox-messages/read:
-    put:
-      consumes:
-      - application/json
-      parameters:
-      - description: Message ID
-        in: path
-        name: message_id
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/inboxmessages.MarkMessageAsReadRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/inboxmessages.MarkMessageAsReadResponse'
-      security:
-      - ApiKeyAuth: []
-      tags:
-      - Inbox Messages
-  /inbox-messages/read-all:
-    put:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/inboxmessages.MarkAllMessagesAsReadResponse'
-      security:
-      - ApiKeyAuth: []
-      tags:
-      - Inbox Messages
 swagger: "2.0"

@@ -16,7 +16,17 @@ export type CancelEventRegistrationInvitationError = CustomerrorErrResponse;
 
 export interface CancelEventRegistrationInvitationParams {
     /** Event Registration Invitation ID */
-    eventRegistrationInvitationId: string;
+    event_registration_invitation_id: string;
+}
+
+export type CheckCertificateMintReadinessData =
+    CoreApiInternalHandlerEventconfigCertificateMintReadinessResponse;
+
+export type CheckCertificateMintReadinessError = CustomerrorErrResponse;
+
+export interface CheckCertificateMintReadinessParams {
+    /** Event ID */
+    eventId: string;
 }
 
 export type CheckEventPasswordData = EventconfigCheckEventPasswordResponse;
@@ -65,12 +75,12 @@ export interface CoreApiInternalHandlerEventCertificateSignature {
 
 export interface CoreApiInternalHandlerEventEventContractResponse {
     access_manager_contract_address: string;
-    certificate_contract_address: string;
+    certificate_contract_address?: string;
     created_at: string;
     event_contract_address: string;
     event_id: string;
     id: string;
-    ticket_contract_address: string;
+    ticket_contract_address?: string;
     updated_at: string;
 }
 
@@ -85,6 +95,24 @@ export interface CoreApiInternalHandlerEventImportCertificateReceiversResponse {
     certificates: EntityEventCertificate[];
     event_certificate_address: string;
     event_id: string;
+}
+
+export interface CoreApiInternalHandlerEventPublishEventCertificatesResponse {
+    event_id: string;
+    inbox_messages_created: number;
+    is_published: boolean;
+    published_count: number;
+}
+
+export interface CoreApiInternalHandlerEventRegistrationJoinEventPayload {
+    academic_email?: string;
+    academic_institution?: string;
+    address?: string;
+    bio?: string;
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+    phone_number?: string;
 }
 
 export interface CoreApiInternalHandlerEventRevokeAllEventCertificatesResponse {
@@ -108,6 +136,24 @@ export interface CoreApiInternalHandlerEventSignEventCertificatesResponse {
     certificates: CoreApiInternalHandlerEventCertificateSignature[];
 }
 
+export interface CoreApiInternalHandlerEventconfigCertificateMintReadinessResponse {
+    /** @example true */
+    all_issuers_have_signed: boolean;
+    /** @example "0x1234567890abcdef" */
+    certificate_contract_address?: string;
+    /** @example true */
+    has_certificate_config: boolean;
+    /** @example true */
+    has_certificate_contract: boolean;
+    /** @example true */
+    is_ready: boolean;
+    missing_requirements?: string[];
+    /** @example 2 */
+    signed_issuers_count: number;
+    /** @example 2 */
+    total_issuers_count: number;
+}
+
 export interface CoreApiInternalHandlerEventconfigEventCertificateConfigResponse {
     academic_institution_pos_x?: number;
     academic_institution_pos_y?: number;
@@ -118,9 +164,22 @@ export interface CoreApiInternalHandlerEventconfigEventCertificateConfigResponse
     event_name_pos_x: number;
     event_name_pos_y: number;
     id: string;
+    is_published: boolean;
+    mint_readiness?: CoreApiInternalHandlerEventconfigMintReadinessInfo;
     name_pos_x: number;
     name_pos_y: number;
     updated_at: string;
+}
+
+export interface CoreApiInternalHandlerEventconfigMintReadinessInfo {
+    all_issuers_have_signed: boolean;
+    certificate_contract_address?: string;
+    has_certificate_config: boolean;
+    has_certificate_contract: boolean;
+    is_ready: boolean;
+    missing_requirements?: string[];
+    signed_issuers_count: number;
+    total_issuers_count: number;
 }
 
 export interface CoreApiInternalUsecaseEventEventContractResponse {
@@ -189,7 +248,7 @@ export interface CreateEventPayload {
     start_date: string;
 }
 
-export type CreateEventRegistrationConfigData = EventconfigEventRegistrationConfigResponse;
+export type CreateEventRegistrationConfigData = EventconfigEventRegistrationConfigViewModel;
 
 export type CreateEventRegistrationConfigError = CustomerrorErrResponse;
 
@@ -289,6 +348,25 @@ export interface EntityEvent {
     updated_at: string;
 }
 
+export interface EntityEventAttendee {
+    academic_email?: string;
+    academic_institution?: string;
+    address?: string;
+    attendee_credential_id: string;
+    bio?: string;
+    contract_address: string;
+    created_at: string;
+    email?: string;
+    event_id: string;
+    first_name?: string;
+    id: string;
+    is_attendee_accepted: boolean;
+    last_name?: string;
+    phone_number?: string;
+    updated_at: string;
+    wallet_address: string;
+}
+
 export interface EntityEventCertificate {
     academic_institution?: string;
     certificate_subtitle?: string;
@@ -299,6 +377,7 @@ export interface EntityEventCertificate {
     event_contract_address: string;
     event_id: string;
     id: string;
+    inbox_message_id?: string;
     name?: string;
     receiver_credential_id?: string;
     receiver_email?: string;
@@ -307,6 +386,7 @@ export interface EntityEventCertificate {
 
 export interface EntityEventRegistrationInvitation {
     academic_institution?: string;
+    accepted_at: string;
     cancelled_at?: string;
     code?: string;
     created_at: string;
@@ -340,7 +420,7 @@ export interface EntityInboxMessage {
     id: string;
     is_read: number;
     message_content: string;
-    message_type: number;
+    message_type: EntityInboxMessageType;
     receiver_credential_id?: string;
     receiver_email?: string;
     receiver_wallet_address?: string;
@@ -363,6 +443,9 @@ export interface EntityProfile {
     created_at: string;
     email?: string;
     first_name?: string;
+    github_connector_ref?: string;
+    /** Connector references (from authentication_credentials table) */
+    google_connector_ref?: string;
     id: string;
     is_academic_email_public: boolean;
     is_academic_institution_public: boolean;
@@ -377,6 +460,7 @@ export interface EntityProfile {
     phone_number?: string;
     profile_picture_url?: string;
     updated_at: string;
+    wallet_address?: string;
 }
 
 export interface EventCreateEventContractRequest {
@@ -407,6 +491,22 @@ export interface EventEventIssuerResponse {
     sign_message: string;
     signature: string;
     updated_at: string;
+}
+
+export interface EventEventParticipantResponse {
+    academic_institution?: string;
+    attendee_credential_id: string;
+    contract_address: string;
+    created_at: string;
+    email?: string;
+    event_id: string;
+    first_name?: string;
+    id: string;
+    is_attendee_accepted: boolean;
+    last_name?: string;
+    phone_number?: string;
+    updated_at: string;
+    wallet_address: string;
 }
 
 export interface EventEventResponse {
@@ -480,6 +580,7 @@ export interface EventImportCertificateReceiverRequest {
     academic_institution: string;
     certificate_subtitle: string;
     certificate_title: string;
+    email: string;
     first_name: string;
     last_name: string;
 }
@@ -500,23 +601,35 @@ export interface EventRegistrationConfigResponse {
     phone_number_requirement_status: number;
 }
 
-export interface EventRegistrationInvitationGetEventRegistrationInvitationByUserAndEventResponse {
+export interface EventRegistrationGetEventRegistrationInvitationByUserAndEventResponse {
     inbox?: EntityInboxMessage;
     registration_invitation?: EntityEventRegistrationInvitation;
 }
 
-export interface EventRegistrationInvitationImportEventParticipantsRequest {
-    event_id: string;
-    /** @minItems 1 */
-    participants: EventRegistrationInvitationParticipantRequestItem[];
+export interface EventRegistrationGetJoinEventSignMessageResponse {
+    sign_message: string;
 }
 
-export interface EventRegistrationInvitationParticipantRequestItem {
-    academic_institution: string;
+export interface EventRegistrationImportEventParticipantsRequest {
+    event_id: string;
+    /** @minItems 1 */
+    participants: EventRegistrationParticipantRequestItem[];
+}
+
+export interface EventRegistrationJoinEventBody {
+    account_password?: string;
+    event_password?: string;
+    registration_data: CoreApiInternalHandlerEventRegistrationJoinEventPayload;
+    sign_message?: string;
+    signature?: string;
+}
+
+export interface EventRegistrationParticipantRequestItem {
+    academic_institution?: string;
     email: string;
     first_name: string;
     last_name: string;
-    phone_number: string;
+    phone_number?: string;
 }
 
 export interface EventUpdateEventContractRequest {
@@ -540,15 +653,16 @@ export interface EventconfigCheckEventPasswordResponse {
 }
 
 export interface EventconfigCreateEventRegistrationConfigRequest {
-    academic_email_requirement_status: number;
-    academic_institution_requirement_status: number;
-    address_requirement_status: number;
-    bio_requirement_status: number;
-    email_requirement_status: number;
+    academic_email_requirement_status: 0 | 1 | 2;
+    academic_institution_requirement_status: 0 | 1 | 2;
+    address_requirement_status: 0 | 1 | 2;
+    bio_requirement_status: 0 | 1 | 2;
+    email_requirement_status: 0 | 1 | 2;
     final_call_for_registration?: string;
-    first_name_requirement_status: number;
-    last_name_requirement_status: number;
-    phone_number_requirement_status: number;
+    first_name_requirement_status: 0 | 1 | 2;
+    last_name_requirement_status: 0 | 1 | 2;
+    phone_number_requirement_status: 0 | 1 | 2;
+    /** @minLength 8 */
     registration_password?: string;
 }
 
@@ -559,7 +673,7 @@ export enum EventconfigEventRegistrationConfigRequirementStatus {
     EventRegistrationConfigRequirementStatusOptional = 2,
 }
 
-export interface EventconfigEventRegistrationConfigResponse {
+export interface EventconfigEventRegistrationConfigViewModel {
     academic_email_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
     academic_institution_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
     address_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
@@ -572,8 +686,11 @@ export interface EventconfigEventRegistrationConfigResponse {
     id: string;
     last_name_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
     phone_number_requirement_status: EventconfigEventRegistrationConfigRequirementStatus;
-    registration_password?: string;
     updated_at: string;
+}
+
+export interface EventconfigToggleCertificatePublishedRequest {
+    is_published: boolean;
 }
 
 export interface EventconfigUpdateEventRegistrationConfigRequest {
@@ -582,7 +699,7 @@ export interface EventconfigUpdateEventRegistrationConfigRequest {
     address_requirement_status: number;
     bio_requirement_status: number;
     email_requirement_status: number;
-    event_type?: EntityEventType;
+    event_type: EntityEventType;
     final_call_for_registration?: string;
     first_name_requirement_status: number;
     is_booking_request_required: boolean;
@@ -649,7 +766,16 @@ export interface GetEventIssuersByEventIdParams {
     eventId: string;
 }
 
-export type GetEventRegistrationConfigData = EventconfigEventRegistrationConfigResponse;
+export type GetEventParticipantsData = EventEventParticipantResponse[];
+
+export type GetEventParticipantsError = CustomerrorErrResponse;
+
+export interface GetEventParticipantsParams {
+    /** Event ID */
+    eventId: string;
+}
+
+export type GetEventRegistrationConfigData = EventconfigEventRegistrationConfigViewModel;
 
 export type GetEventRegistrationConfigError = CustomerrorErrResponse;
 
@@ -659,7 +785,7 @@ export interface GetEventRegistrationConfigParams {
 }
 
 export type GetEventRegistrationInvitationByUserAndEventData =
-    EventRegistrationInvitationGetEventRegistrationInvitationByUserAndEventResponse;
+    EventRegistrationGetEventRegistrationInvitationByUserAndEventResponse;
 
 export type GetEventRegistrationInvitationByUserAndEventError = CustomerrorErrResponse;
 
@@ -749,6 +875,34 @@ export interface GetIssuerEventsParams {
     offset?: number;
 }
 
+export type GetIssuerEventsViewmodelData = IssuerIssuerEventViewModel[];
+
+export type GetIssuerEventsViewmodelError = CustomerrorErrResponse;
+
+export interface GetIssuerEventsViewmodelParams {
+    /** Issuer credential ID */
+    issuer_credential_id?: string;
+    /**
+     * Limit
+     * @default 10
+     */
+    limit?: number;
+    /**
+     * Offset
+     * @default 0
+     */
+    offset?: number;
+}
+
+export type GetJoinEventSignMessageData = EventRegistrationGetJoinEventSignMessageResponse;
+
+export type GetJoinEventSignMessageError = CustomerrorErrResponse;
+
+export interface GetJoinEventSignMessageParams {
+    /** Event ID */
+    eventId: string;
+}
+
 export type GetMyProfileData = ProfileGetMyProfileViewModel;
 
 export type GetMyProfileError = CustomerrorErr;
@@ -764,6 +918,8 @@ export interface GetVerifiedIssuersParams {
     limit?: number;
     /** Offset */
     offset?: number;
+    /** Search query (searches first name, last name, email, academic email, wallet address) */
+    search?: string;
 }
 
 export type ImportCertificateReceiversData =
@@ -783,8 +939,32 @@ export interface ImportEventParticipantsParams {
     eventId: string;
 }
 
+export interface InboxInboxMessageCertificateInvitationViewModel {
+    certificate_id: string;
+    certificate_title?: string;
+    created_at: string;
+    deleted_at?: string;
+    event_id: string;
+    event_name: string;
+    has_participant_joined_event: boolean;
+    hidden_at?: string;
+    id: string;
+    is_read: number;
+    message_content: string;
+    message_content_fallback?: string;
+    message_type: EntityInboxMessageType;
+    receiver_email?: string;
+    receiver_wallet_address?: string;
+    revoked_at?: string;
+    sender_credential_email?: string;
+    sender_credential_wallet_address?: string;
+    token_id?: string;
+    updated_at: string;
+}
+
 export interface InboxInboxMessagesEventRegistrationInvitationViewModel {
     academic_institution?: string;
+    accepted_at?: string;
     cancelled_at?: string;
     code?: string;
     created_at: string;
@@ -797,6 +977,7 @@ export interface InboxInboxMessagesEventRegistrationInvitationViewModel {
     is_read: number;
     last_name?: string;
     message_content: string;
+    message_content_fallback?: string;
     message_type: EntityInboxMessageType;
     phone_number?: string;
     receiver_email?: string;
@@ -814,6 +995,7 @@ export interface InboxInboxMessagesViewModel {
     id: string;
     is_read: number;
     message_content: string;
+    message_content_fallback?: string;
     message_type: EntityInboxMessageType;
     receiver_email?: string;
     receiver_wallet_address?: string;
@@ -822,21 +1004,11 @@ export interface InboxInboxMessagesViewModel {
     updated_at: string;
 }
 
-export type InboxMessagesDetailData =
-    InboxmessagesGetInboxMessageEventRegistrationInvitationResponse;
-
-export interface InboxMessagesDetailParams {
-    inboxMessageId: string;
-}
-
-export type InboxMessagesListData = InboxmessagesGetInboxMessagesResponse;
-
-export interface InboxmessagesGetInboxMessageEventRegistrationInvitationResponse {
-    inbox_message: InboxInboxMessagesEventRegistrationInvitationViewModel;
-}
-
 export interface InboxmessagesGetInboxMessageResponse {
+    event_certificate?: InboxInboxMessageCertificateInvitationViewModel;
+    event_registration_invitation?: InboxInboxMessagesEventRegistrationInvitationViewModel;
     inbox_message: InboxInboxMessagesViewModel;
+    inbox_message_type: EntityInboxMessageType;
 }
 
 export interface InboxmessagesGetInboxMessagesResponse {
@@ -870,6 +1042,35 @@ export interface IssuerIssuerEventResponse {
     sign_message: string;
     signature: string;
     updated_at: string;
+}
+
+export interface IssuerIssuerEventViewModel {
+    certificate_count: number;
+    created_at: string;
+    event_end_date: string;
+    event_id: string;
+    event_location: string;
+    event_owner_credential_id: string;
+    event_short_description: string;
+    event_start_date: string;
+    event_title: string;
+    id: string;
+    is_signed: boolean;
+    issuer_credential_id: string;
+    owner_email: string;
+    owner_google_email: string;
+    owner_name: string;
+    owner_wallet_address: string;
+    updated_at: string;
+}
+
+export type JoinEventData = EntityEventAttendee;
+
+export type JoinEventError = CustomerrorErrResponse;
+
+export interface JoinEventParams {
+    /** Event ID */
+    eventId: string;
 }
 
 export type LogoutData = Record<string, string>;
@@ -965,6 +1166,9 @@ export interface ProfileCreateProfileResponse {
     created_at: string;
     email?: string;
     first_name?: string;
+    github_connector_ref?: string;
+    /** Connector references (from authentication_credentials table) */
+    google_connector_ref?: string;
     id: string;
     is_academic_email_public: boolean;
     is_academic_institution_public: boolean;
@@ -979,6 +1183,7 @@ export interface ProfileCreateProfileResponse {
     phone_number?: string;
     profile_picture_url?: string;
     updated_at: string;
+    wallet_address?: string;
 }
 
 export interface ProfileGetMyProfileViewModel {
@@ -1063,6 +1268,9 @@ export interface ProfileUpdateProfileResponse {
     created_at: string;
     email?: string;
     first_name?: string;
+    github_connector_ref?: string;
+    /** Connector references (from authentication_credentials table) */
+    google_connector_ref?: string;
     id: string;
     is_academic_email_public: boolean;
     is_academic_institution_public: boolean;
@@ -1077,6 +1285,7 @@ export interface ProfileUpdateProfileResponse {
     phone_number?: string;
     profile_picture_url?: string;
     updated_at: string;
+    wallet_address?: string;
 }
 
 export interface ProfileVerifyPasswordRequest {
@@ -1089,13 +1298,14 @@ export interface ProfileVerifyPasswordResponse {
     message: string;
 }
 
-export type ReadAllUpdateData = InboxmessagesMarkAllMessagesAsReadResponse;
+export type PublishEventCertificatesData =
+    CoreApiInternalHandlerEventPublishEventCertificatesResponse;
 
-export type ReadUpdateData = InboxmessagesMarkMessageAsReadResponse;
+export type PublishEventCertificatesError = CustomerrorErrResponse;
 
-export interface ReadUpdateParams {
-    /** Message ID */
-    messageId: string;
+export interface PublishEventCertificatesParams {
+    /** Event ID */
+    eventId: string;
 }
 
 export type RegisterWithGoogleOauthData = OnboardRegisterResponse;
@@ -1133,6 +1343,16 @@ export type SignEventCertificatesData = CoreApiInternalHandlerEventSignEventCert
 export type SignEventCertificatesError = CustomerrorErrResponse;
 
 export interface SignEventCertificatesParams {
+    /** Event ID */
+    eventId: string;
+}
+
+export type ToggleCertificatePublishedData =
+    CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
+
+export type ToggleCertificatePublishedError = CustomerrorErrResponse;
+
+export interface ToggleCertificatePublishedParams {
     /** Event ID */
     eventId: string;
 }
@@ -1246,7 +1466,7 @@ export interface UpdateEventPayload {
     start_date: string;
 }
 
-export type UpdateEventRegistrationConfigData = EventconfigEventRegistrationConfigResponse;
+export type UpdateEventRegistrationConfigData = EventconfigEventRegistrationConfigViewModel;
 
 export type UpdateEventRegistrationConfigError = CustomerrorErrResponse;
 
@@ -1262,6 +1482,23 @@ export type UpdateProfileByCredentialIdError = CustomerrorErr;
 export interface UpdateProfileByCredentialIdParams {
     /** Credential ID */
     credentialId: string;
+}
+
+export type V1InboxMessagesDetailData = InboxmessagesGetInboxMessageResponse;
+
+export interface V1InboxMessagesDetailParams {
+    inboxMessageId: string;
+}
+
+export type V1InboxMessagesListData = InboxmessagesGetInboxMessagesResponse;
+
+export type V1InboxMessagesReadAllUpdateData = InboxmessagesMarkAllMessagesAsReadResponse;
+
+export type V1InboxMessagesReadUpdateData = InboxmessagesMarkMessageAsReadResponse;
+
+export interface V1InboxMessagesReadUpdateParams {
+    /** Message ID */
+    messageId: string;
 }
 
 export type VerifyGoogleOauthError = CustomerrorErrResponse;
@@ -1446,25 +1683,6 @@ export class Api<SecurityDataType extends unknown> {
         this.http = http;
     }
 
-    /**
-     * @description Get my inbox messages
-     *
-     * @tags Inbox Messages
-     * @name InboxMessagesList
-     * @summary Get my inbox messages
-     * @request GET:/inbox-messages
-     * @secure
-     */
-    inboxMessagesList = (params: RequestParams = {}) =>
-        this.http.request<InboxMessagesListData, any>({
-            path: `/inbox-messages`,
-            method: "GET",
-            secure: true,
-            type: ContentType.Json,
-            format: "json",
-            ...params,
-        });
-
     v1 = {
         /**
          * @description Check if the current user has specific roles (authenticated, host, issuer). Only returns requested fields.
@@ -1535,45 +1753,46 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Import a list of participants for an event, creating inbox messages and event registration invitations
+         * @description Cancel an event registration invitation by ID
          *
          * @tags Event Registration Invitation
-         * @name ImportEventParticipants
-         * @summary Import event participants
-         * @request POST:/api/v1/event-registration-invitations/import/{eventId}
+         * @name CancelEventRegistrationInvitation
+         * @summary Cancel event registration invitation
+         * @request DELETE:/api/v1/event-registration/invitation
          */
-        importEventParticipants: (
-            { eventId, ...query }: ImportEventParticipantsParams,
-            request: EventRegistrationInvitationImportEventParticipantsRequest,
+        cancelEventRegistrationInvitation: (
+            query: CancelEventRegistrationInvitationParams,
             params: RequestParams = {},
         ) =>
-            this.http.request<ImportEventParticipantsData, ImportEventParticipantsError>({
-                path: `/api/v1/event-registration-invitations/import/${eventId}`,
-                method: "POST",
-                body: request,
+            this.http.request<
+                CancelEventRegistrationInvitationData,
+                CancelEventRegistrationInvitationError
+            >({
+                path: `/api/v1/event-registration/invitation`,
+                method: "DELETE",
+                query: query,
                 type: ContentType.Json,
                 format: "json",
                 ...params,
             }),
 
         /**
-         * @description Get event registration invitation of user and by event id
+         * @description Import a list of participants for an event, creating inbox messages and event registration invitations
          *
          * @tags Event Registration Invitation
-         * @name GetEventRegistrationInvitationByUserAndEvent
-         * @summary Get event registration invitation of user and by event id
-         * @request GET:/api/v1/event-registration-invitations/my/{event_id}
+         * @name ImportEventParticipants
+         * @summary Import event participants
+         * @request POST:/api/v1/event-registration/invitation/:event_id/import
          */
-        getEventRegistrationInvitationByUserAndEvent: (
-            { eventId, ...query }: GetEventRegistrationInvitationByUserAndEventParams,
+        importEventParticipants: (
+            { eventId, ...query }: ImportEventParticipantsParams,
+            request: EventRegistrationImportEventParticipantsRequest,
             params: RequestParams = {},
         ) =>
-            this.http.request<
-                GetEventRegistrationInvitationByUserAndEventData,
-                GetEventRegistrationInvitationByUserAndEventError
-            >({
-                path: `/api/v1/event-registration-invitations/my/${eventId}`,
-                method: "GET",
+            this.http.request<ImportEventParticipantsData, ImportEventParticipantsError>({
+                path: `/api/v1/event-registration/invitation/${eventId}/import`,
+                method: "POST",
+                body: request,
                 type: ContentType.Json,
                 format: "json",
                 ...params,
@@ -1585,7 +1804,7 @@ export class Api<SecurityDataType extends unknown> {
          * @tags Event Registration Invitation
          * @name GetEventRegistrationInvitationsByEventId
          * @summary Get event registration invitations by event ID
-         * @request GET:/api/v1/event-registration-invitations/{eventId}
+         * @request GET:/api/v1/event-registration/invitation/{eventId}
          */
         getEventRegistrationInvitationsByEventId: (
             { eventId, ...query }: GetEventRegistrationInvitationsByEventIdParams,
@@ -1595,7 +1814,7 @@ export class Api<SecurityDataType extends unknown> {
                 GetEventRegistrationInvitationsByEventIdData,
                 GetEventRegistrationInvitationsByEventIdError
             >({
-                path: `/api/v1/event-registration-invitations/${eventId}`,
+                path: `/api/v1/event-registration/invitation/${eventId}`,
                 method: "GET",
                 type: ContentType.Json,
                 format: "json",
@@ -1603,23 +1822,65 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Cancel an event registration invitation by ID
+         * @description Join an event
+         *
+         * @tags Event Registration
+         * @name JoinEvent
+         * @summary Join event
+         * @request POST:/api/v1/event-registration/join/{event_id}
+         */
+        joinEvent: (
+            { eventId, ...query }: JoinEventParams,
+            joinEventBody: EventRegistrationJoinEventBody,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<JoinEventData, JoinEventError>({
+                path: `/api/v1/event-registration/join/${eventId}`,
+                method: "POST",
+                body: joinEventBody,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get join event sign message
+         *
+         * @tags Event Registration
+         * @name GetJoinEventSignMessage
+         * @summary Get join event sign message
+         * @request GET:/api/v1/event-registration/join/{event_id}/sign-message
+         */
+        getJoinEventSignMessage: (
+            { eventId, ...query }: GetJoinEventSignMessageParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetJoinEventSignMessageData, GetJoinEventSignMessageError>({
+                path: `/api/v1/event-registration/join/${eventId}/sign-message`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get event registration invitation of user and by event id
          *
          * @tags Event Registration Invitation
-         * @name CancelEventRegistrationInvitation
-         * @summary Cancel event registration invitation
-         * @request DELETE:/api/v1/event-registration-invitations/{eventRegistrationInvitationId}
+         * @name GetEventRegistrationInvitationByUserAndEvent
+         * @summary Get event registration invitation of user and by event id
+         * @request GET:/api/v1/event-registration/my/{event_id}
          */
-        cancelEventRegistrationInvitation: (
-            { eventRegistrationInvitationId, ...query }: CancelEventRegistrationInvitationParams,
+        getEventRegistrationInvitationByUserAndEvent: (
+            { eventId, ...query }: GetEventRegistrationInvitationByUserAndEventParams,
             params: RequestParams = {},
         ) =>
             this.http.request<
-                CancelEventRegistrationInvitationData,
-                CancelEventRegistrationInvitationError
+                GetEventRegistrationInvitationByUserAndEventData,
+                GetEventRegistrationInvitationByUserAndEventError
             >({
-                path: `/api/v1/event-registration-invitations/${eventRegistrationInvitationId}`,
-                method: "DELETE",
+                path: `/api/v1/event-registration/my/${eventId}`,
+                method: "GET",
                 type: ContentType.Json,
                 format: "json",
                 ...params,
@@ -1807,6 +2068,27 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Publish certificates for an event. This will create inbox messages for all certificate receivers. All issuers must have signed before publishing.
+         *
+         * @name PublishEventCertificates
+         * @summary Publish event certificates
+         * @request POST:/api/v1/events/{event_id}/certificates/publish
+         * @secure
+         */
+        publishEventCertificates: (
+            { eventId, ...query }: PublishEventCertificatesParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<PublishEventCertificatesData, PublishEventCertificatesError>({
+                path: `/api/v1/events/${eventId}/certificates/publish`,
+                method: "POST",
+                secure: true,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Revoke event certificates by certificate IDs
          *
          * @tags Event Certificates
@@ -1871,7 +2153,7 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Get the event certificate configuration for an event
+         * @description Get the event certificate configuration for an event. Accessible by verified organizers or issuers assigned to the event.
          *
          * @name GetEventCertificateConfig
          * @summary Get event certificate config
@@ -1911,6 +2193,49 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Check if an event certificate is ready to be minted. Returns detailed status about configuration, signed issuers, and contract deployment. Accessible by verified organizers or issuers assigned to the event.
+         *
+         * @name CheckCertificateMintReadiness
+         * @summary Check certificate mint readiness
+         * @request GET:/api/v1/events/{event_id}/config/certificate/mint-readiness
+         */
+        checkCertificateMintReadiness: (
+            { eventId, ...query }: CheckCertificateMintReadinessParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                CheckCertificateMintReadinessData,
+                CheckCertificateMintReadinessError
+            >({
+                path: `/api/v1/events/${eventId}/config/certificate/mint-readiness`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Toggle the published status of event certificate configuration. When setting to published, inbox messages will be created for all certificate receivers. Only accessible by verified organizers.
+         *
+         * @name ToggleCertificatePublished
+         * @summary Toggle certificate published status
+         * @request PATCH:/api/v1/events/{event_id}/config/certificate/published
+         */
+        toggleCertificatePublished: (
+            { eventId, ...query }: ToggleCertificatePublishedParams,
+            request: EventconfigToggleCertificatePublishedRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<ToggleCertificatePublishedData, ToggleCertificatePublishedError>({
+                path: `/api/v1/events/${eventId}/config/certificate/published`,
+                method: "PATCH",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Check if the password is correct for an event
          *
          * @tags Event Config
@@ -1937,7 +2262,7 @@ export class Api<SecurityDataType extends unknown> {
          *
          * @tags Events
          * @name GetEventRegistrationConfig
-         * @summary Get event registration config
+         * @summary Get event registration config view model
          * @request GET:/api/v1/events/{event_id}/config/registration
          */
         getEventRegistrationConfig: (
@@ -2161,6 +2486,26 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Get all participants (attendees) for an event
+         *
+         * @tags Events
+         * @name GetEventParticipants
+         * @summary Get event participants
+         * @request GET:/api/v1/events/{event_id}/participants
+         */
+        getEventParticipants: (
+            { eventId, ...query }: GetEventParticipantsParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetEventParticipantsData, GetEventParticipantsError>({
+                path: `/api/v1/events/${eventId}/participants`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Create a new event registration configuration for an event
          *
          * @name CreateEventRegistrationConfig
@@ -2227,7 +2572,89 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Get verified issuers
+         * @description Get my inbox messages
+         *
+         * @tags Inbox Messages
+         * @name V1InboxMessagesList
+         * @summary Get my inbox messages
+         * @request GET:/api/v1/inbox-messages
+         * @secure
+         */
+        v1InboxMessagesList: (params: RequestParams = {}) =>
+            this.http.request<V1InboxMessagesListData, any>({
+                path: `/api/v1/inbox-messages`,
+                method: "GET",
+                secure: true,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * No description
+         *
+         * @tags Inbox Messages
+         * @name V1InboxMessagesReadUpdate
+         * @request PUT:/api/v1/inbox-messages/read
+         * @secure
+         */
+        v1InboxMessagesReadUpdate: (
+            { messageId, ...query }: V1InboxMessagesReadUpdateParams,
+            request: InboxmessagesMarkMessageAsReadRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<V1InboxMessagesReadUpdateData, any>({
+                path: `/api/v1/inbox-messages/read`,
+                method: "PUT",
+                body: request,
+                secure: true,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * No description
+         *
+         * @tags Inbox Messages
+         * @name V1InboxMessagesReadAllUpdate
+         * @request PUT:/api/v1/inbox-messages/read-all
+         * @secure
+         */
+        v1InboxMessagesReadAllUpdate: (params: RequestParams = {}) =>
+            this.http.request<V1InboxMessagesReadAllUpdateData, any>({
+                path: `/api/v1/inbox-messages/read-all`,
+                method: "PUT",
+                secure: true,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get inbox message
+         *
+         * @tags Inbox Messages
+         * @name V1InboxMessagesDetail
+         * @summary Get inbox message
+         * @request GET:/api/v1/inbox-messages/{inbox_message_id}
+         * @secure
+         */
+        v1InboxMessagesDetail: (
+            { inboxMessageId, ...query }: V1InboxMessagesDetailParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<V1InboxMessagesDetailData, any>({
+                path: `/api/v1/inbox-messages/${inboxMessageId}`,
+                method: "GET",
+                secure: true,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get verified issuers with optional search query
          *
          * @tags Issuer
          * @name GetVerifiedIssuers
@@ -2255,6 +2682,27 @@ export class Api<SecurityDataType extends unknown> {
         getIssuerEvents: (query: GetIssuerEventsParams, params: RequestParams = {}) =>
             this.http.request<GetIssuerEventsData, GetIssuerEventsError>({
                 path: `/api/v1/issuers/events`,
+                method: "GET",
+                query: query,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get events assigned to the authenticated issuer for signing with view model data
+         *
+         * @tags Issuer
+         * @name GetIssuerEventsViewmodel
+         * @summary Get issuer events view model
+         * @request GET:/api/v1/issuers/events/viewmodel
+         */
+        getIssuerEventsViewmodel: (
+            query: GetIssuerEventsViewmodelParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetIssuerEventsViewmodelData, GetIssuerEventsViewmodelError>({
+                path: `/api/v1/issuers/events/viewmodel`,
                 method: "GET",
                 query: query,
                 type: ContentType.Json,
@@ -2369,13 +2817,13 @@ export class Api<SecurityDataType extends unknown> {
          */
         updateProfileByCredentialId: (
             { credentialId, ...query }: UpdateProfileByCredentialIdParams,
-            AcademicEmail: ProfileUpdateProfileRequest,
+            request: ProfileUpdateProfileRequest,
             params: RequestParams = {},
         ) =>
             this.http.request<UpdateProfileByCredentialIdData, UpdateProfileByCredentialIdError>({
                 path: `/api/v1/profile/credential/${credentialId}`,
                 method: "PATCH",
-                body: AcademicEmail,
+                body: request,
                 type: ContentType.Json,
                 format: "json",
                 ...params,
@@ -2414,72 +2862,6 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/profile/password/verify`,
                 method: "POST",
                 body: verifyPasswordRequest,
-                type: ContentType.Json,
-                format: "json",
-                ...params,
-            }),
-    };
-    read = {
-        /**
-         * No description
-         *
-         * @tags Inbox Messages
-         * @name ReadUpdate
-         * @request PUT:/inbox-messages/read
-         * @secure
-         */
-        readUpdate: (
-            { messageId, ...query }: ReadUpdateParams,
-            request: InboxmessagesMarkMessageAsReadRequest,
-            params: RequestParams = {},
-        ) =>
-            this.http.request<ReadUpdateData, any>({
-                path: `/inbox-messages/read`,
-                method: "PUT",
-                body: request,
-                secure: true,
-                type: ContentType.Json,
-                format: "json",
-                ...params,
-            }),
-    };
-    readAll = {
-        /**
-         * No description
-         *
-         * @tags Inbox Messages
-         * @name ReadAllUpdate
-         * @request PUT:/inbox-messages/read-all
-         * @secure
-         */
-        readAllUpdate: (params: RequestParams = {}) =>
-            this.http.request<ReadAllUpdateData, any>({
-                path: `/inbox-messages/read-all`,
-                method: "PUT",
-                secure: true,
-                type: ContentType.Json,
-                format: "json",
-                ...params,
-            }),
-    };
-    inboxMessageId = {
-        /**
-         * @description Get inbox message
-         *
-         * @tags Inbox Messages
-         * @name InboxMessagesDetail
-         * @summary Get inbox message
-         * @request GET:/inbox-messages/{inbox_message_id}
-         * @secure
-         */
-        inboxMessagesDetail: (
-            { inboxMessageId, ...query }: InboxMessagesDetailParams,
-            params: RequestParams = {},
-        ) =>
-            this.http.request<InboxMessagesDetailData, any>({
-                path: `/inbox-messages/${inboxMessageId}`,
-                method: "GET",
-                secure: true,
                 type: ContentType.Json,
                 format: "json",
                 ...params,

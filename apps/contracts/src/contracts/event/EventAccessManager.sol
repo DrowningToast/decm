@@ -21,30 +21,17 @@ contract EventAccessManager is AccessControl, ThemisUtils {
     event MsgSenderAllowed(address indexed sender, address indexed granter);
     event MsgSenderDisallowed(address indexed sender, address indexed revoker);
 
-    // Errors
-    error EventAccessManager__AccessManagerCannotBeZeroAddress();
-    error EventAccessManager__AccountCannotBeZeroAddress();
-    error EventAccessManager__NotAdmin();
-    error EventAccessManager__NotHostOrAdmin();
-    error EventAccessManager__NotParticipant();
-    error EventAccessManager__NotHostOrAdminOrParticipant();
-    error EventAccessManager__NotAllowedMsgSender();
-
-    // States
-    mapping(address => bool) public allowedMsgSenders;
-
     constructor(address decmAccessManagerAddr, address hostAddress) {
         if (decmAccessManagerAddr == address(0)) {
-            revert EventAccessManager__AccessManagerCannotBeZeroAddress();
+            require(false, "Access manager cannot be zero address");
         }
 
         if (hostAddress == address(0)) {
-            revert EventAccessManager__AccountCannotBeZeroAddress();
+            require(false, "Account cannot be zero");
         }
 
         DECM_ACCESS_MANAGER = DecmAccessManager(decmAccessManagerAddr);
 
-        allowedMsgSenders[msg.sender] = true;
         _grantRole(Constants.HOST_ROLE, hostAddress);
 
         emit MsgSenderAllowed(msg.sender, msg.sender);
@@ -52,75 +39,67 @@ contract EventAccessManager is AccessControl, ThemisUtils {
     }
 
     function grantIssuerRole(address issuer, address signer) public {
-        requireHostOrAdmin(signer);
+        requireHostOrAdmin(signer, msg.sender);
 
         if (issuer == address(0)) {
-            revert EventAccessManager__AccountCannotBeZeroAddress();
+            require(false, "Account cannot be zero");
         }
         _grantRole(Constants.ISSUER_ROLE, issuer);
         emit IssuerRoleGranted(issuer, msg.sender);
     }
 
     function revokeIssuerRole(address issuer, address signer) public {
-        requireHostOrAdmin(signer);
+        requireHostOrAdmin(signer, msg.sender);
 
         if (issuer == address(0)) {
-            revert EventAccessManager__AccountCannotBeZeroAddress();
+            require(false, "Account cannot be zero");
         }
         _revokeRole(Constants.ISSUER_ROLE, issuer);
         emit IssuerRoleRevoked(issuer, msg.sender);
     }
 
     function grantParticipantRole(address participant, address signer) public {
-        requireHostOrAdmin(signer);
+        requireHostOrAdmin(signer, msg.sender);
 
         if (participant == address(0)) {
-            revert EventAccessManager__AccountCannotBeZeroAddress();
+            require(false, "Account cannot be zero");
         }
+
         _grantRole(Constants.PARTICIPANT_ROLE, participant);
         emit ParticipantRoleGranted(participant, msg.sender);
     }
 
     function revokeParticipantRole(address participant, address signer) public {
-        requireHostOrAdminOrParticipant(signer);
+        requireHostOrAdminOrParticipant(signer, msg.sender);
 
         if (participant == address(0)) {
-            revert EventAccessManager__AccountCannotBeZeroAddress();
+            require(false, "Account cannot be zero");
         }
+
         _revokeRole(Constants.PARTICIPANT_ROLE, participant);
         emit ParticipantRoleRevoked(participant, msg.sender);
     }
 
+    function grantParticipantRoleUsingAllowedMsgSender(address participant, address msgSender) public {
+        requireAllowedMsgSender(msgSender);
+
+        if (participant == address(0)) {
+            require(false, "Account cannot be zero");
+        }
+
+        _grantRole(Constants.PARTICIPANT_ROLE, participant);
+        emit ParticipantRoleGranted(participant, msgSender);
+    }
+
     function grantHostRole(address host, address signer) public {
-        requireHostOrAdmin(signer);
+        requireHostOrAdmin(signer, msg.sender);
 
         if (host == address(0)) {
-            revert EventAccessManager__AccountCannotBeZeroAddress();
+            require(false, "Account cannot be zero");
         }
+
         _grantRole(Constants.HOST_ROLE, host);
         emit HostRoleGranted(host, msg.sender);
-    }
-
-    function addAllowedMsgSender(address sender) public {
-        requireAdmin(msg.sender);
-        
-        if (sender == address(0)) {
-            revert EventAccessManager__AccountCannotBeZeroAddress();
-        }
-
-        allowedMsgSenders[sender] = true;
-        emit MsgSenderAllowed(sender, msg.sender);
-    }
-
-    function removeAllowedMsgSender(address sender) public {
-        requireAdmin(msg.sender);
-        
-        if (sender == address(0)) {
-            revert EventAccessManager__AccountCannotBeZeroAddress();
-        }
-        
-        allowedMsgSenders[sender] = false;
-        emit MsgSenderDisallowed(sender, msg.sender);
     }
 
     function checkIsHost(address addr) public view returns (bool) {
@@ -139,43 +118,47 @@ contract EventAccessManager is AccessControl, ThemisUtils {
         return checkIsHost(addr) || DECM_ACCESS_MANAGER.checkIsAdmin(addr);
     }
 
-    function checkIsAllowedMsgSender() public view returns (bool) {
-        return allowedMsgSenders[msg.sender];
+    function checkIsAllowedMsgSender(address addr) public view returns (bool) {
+        return DECM_ACCESS_MANAGER.checkIsAllowedMsgSender(addr);
     }
 
-    function requireAllowedMsgSender() public view {
-        if (!checkIsAllowedMsgSender()) {
-            revert EventAccessManager__NotAllowedMsgSender();
+    function requireAllowedMsgSender(address addr) public view {
+        if (!checkIsAllowedMsgSender(addr)) {
+            require(false, "Not allowed msg sender");
         }
     }
 
-    function requireHostOrAdmin(address addr) public view {
-        if (!checkIsHostOrAdmin(addr) && !checkIsAllowedMsgSender()) {
-            revert EventAccessManager__NotHostOrAdmin();
+    function requireHostOrAdmin(address addr, address msgSender) public view {
+        bool isHostOrAdmin = checkIsHostOrAdmin(addr);
+        bool isAllowedMsgSender = checkIsAllowedMsgSender(msgSender);
+        if (!isHostOrAdmin && !isAllowedMsgSender) {
+            require(false, "Not host or admin or allowed msg sender");
         }
     }
 
-    function requireAdmin(address addr) public view {
-        if (!DECM_ACCESS_MANAGER.checkIsAdmin(addr) && !checkIsAllowedMsgSender()) {
-            revert EventAccessManager__NotAdmin();
+    function requireAdmin(address addr, address msgSender) public view {
+        bool isAdmin = DECM_ACCESS_MANAGER.checkIsAdmin(addr);
+        bool isAllowedMsgSender = checkIsAllowedMsgSender(msgSender);
+        if (!isAdmin && !isAllowedMsgSender) {
+            require(false, "Not admin or allowed msg sender");
         }
     }
 
-    function requireHostOrAdminOrParticipant(address addr) public view {
+    function requireHostOrAdminOrParticipant(address addr, address msgSender) public view {
         bool hasHostRole = checkIsHost(addr);
         bool hasParticipantRole = checkIsParticipant(addr);
         bool hasAdminRole = DECM_ACCESS_MANAGER.checkIsAdmin(addr);
-        bool isAllowedMsgSender = checkIsAllowedMsgSender();
+        bool isAllowedMsgSender = checkIsAllowedMsgSender(msgSender);
         if (!hasHostRole && !hasAdminRole && !hasParticipantRole && !isAllowedMsgSender) {
-            revert EventAccessManager__NotHostOrAdminOrParticipant();
+            require(false, "Not host or admin or participant or allowed msg sender");
         }
     }
 
-    function requireParticipant(address addr) public view {
+    function requireParticipant(address addr, address msgSender) public view {
         bool hasParticipantRole = checkIsParticipant(addr);
-        bool isAllowedMsgSender = checkIsAllowedMsgSender();
+        bool isAllowedMsgSender = checkIsAllowedMsgSender(msgSender);
         if (!hasParticipantRole && !isAllowedMsgSender) {
-            revert EventAccessManager__NotParticipant();
+            require(false, "Not participant or allowed msg sender");
         }
     }
 }

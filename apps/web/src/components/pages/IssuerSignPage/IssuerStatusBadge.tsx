@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 
 interface IssuerStatusBadgeProps {
-    isSigned: number;
+    isSigned: boolean;
     className?: string;
 }
 

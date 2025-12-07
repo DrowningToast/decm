@@ -137,7 +137,7 @@ func (h *Handler) CreateEvent(ctx *fiber.Ctx) error {
 		AcademicEmailRequirementStatus:       pgmapper.Int32ToPgInt4(0),
 	}
 
-	_, err = h.EventConfigUc.CreateEventRegistrationConfig(ctx.UserContext(), event.ID, eventConfigParams)
+	_, err = h.EventConfigUc.CreateEventRegistrationConfig(ctx.UserContext(), event.Id, eventConfigParams)
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func (h *Handler) CreateEvent(ctx *fiber.Ctx) error {
 		AccessManagerContractAddress: eventAccessManagerAddress.Hex(),
 	}
 
-	_, err = h.EventUc.CreateEventContract(ctx.UserContext(), event.ID, createEventContractParams)
+	_, err = h.EventUc.CreateEventContract(ctx.UserContext(), event.Id, createEventContractParams)
 	if err != nil {
 		return err
 	}

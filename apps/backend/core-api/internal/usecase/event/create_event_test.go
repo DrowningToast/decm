@@ -96,6 +96,10 @@ func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByGoogleConn
 	return nil, errors.New("not implemented")
 }
 
+func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx context.Context, params authDg.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters) (*entity.AuthenticationCredential, error) {
+	return nil, errors.New("not implemented")
+}
+
 func (m *MockAuthenticationCredentialDg) CreateAuthenticationCredential(ctx context.Context, credential entity.AuthenticationCredential) (*entity.AuthenticationCredential, error) {
 	return nil, errors.New("not implemented")
 }
@@ -134,8 +138,8 @@ func (m *MockS3Service) GetS3UploadRequestObject(storageKeyType interface{}, ent
 func createMockConfig() *config.Config {
 	return &config.Config{
 		Blockchain: blockchain.BlockchainConfig{
-			ChainID:                    1,
-			DecmAccessManagerAddress:   "0x1234567890123456789012345678901234567890",
+			ChainID:                  1,
+			DecmAccessManagerAddress: "0x1234567890123456789012345678901234567890",
 		},
 	}
 }
@@ -301,7 +305,7 @@ func TestCreateEvent(t *testing.T) {
 
 		mockEventDg := new(MockEventDataGateway)
 		expectedEvent := &entity.Event{
-			ID:           uuid.New(),
+			Id:           uuid.New(),
 			Title:        "Test Event",
 			CreatedAt:    time.Now(),
 			MaxAttendees: 100,
@@ -339,7 +343,7 @@ func TestCreateEvent(t *testing.T) {
 		// Assert
 		require.NoError(t, err)
 		assert.NotNil(t, event)
-		assert.Equal(t, expectedEvent.ID, event.ID)
+		assert.Equal(t, expectedEvent.Id, event.Id)
 		mockAuthDg.AssertExpectations(t)
 		mockEventDg.AssertExpectations(t)
 	})

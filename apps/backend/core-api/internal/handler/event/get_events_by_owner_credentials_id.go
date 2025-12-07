@@ -58,9 +58,6 @@ func (h *Handler) GetEventsByOwnerCredentialsId(ctx *fiber.Ctx) error {
 			return customerror.Parse(&customerror.ErrInternalServer, err)
 		}
 		result[i] = eventResponse
-		if err != nil {
-			return customerror.Parse(&customerror.ErrInternalServer, err)
-		}
 	}
 
 	return ctx.Status(http.StatusOK).JSON(result)

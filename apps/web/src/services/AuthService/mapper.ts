@@ -1,5 +1,9 @@
-import { CommonSolutionStatus, type ProfileGetMyProfileViewModel } from "@decm/api";
-import type { Profile, SolutionStatus } from "./AuthService";
+import {
+    CommonSolutionStatus,
+    type EntityProfile,
+    type ProfileGetMyProfileViewModel,
+} from "@decm/api";
+import type { Profile, ProfileWithAuth, SolutionStatus } from "./AuthService";
 
 export const mapSolutionStatus = (solutionStatus: CommonSolutionStatus): SolutionStatus => {
     if (solutionStatus === CommonSolutionStatus.SolutionStatusBYOK) {
@@ -8,8 +12,47 @@ export const mapSolutionStatus = (solutionStatus: CommonSolutionStatus): Solutio
     return "SYSTEM_MANAGED";
 };
 
-export const mapProfileViewModel = (profile: ProfileGetMyProfileViewModel): Profile => {
+export const mapProfileViewModel = (profile: EntityProfile): Profile => {
+    // The backend actually returns VerifiedIssuerViewModel which includes google_connector_ref and wallet_address
+    // but the OpenAPI spec says EntityProfile, so we need to access it via type assertion
+    const profileWithExtras = profile as EntityProfile & {
+        google_connector_ref?: string;
+        wallet_address?: string;
+    };
+
     return {
+        id: profile.id,
+        authenticationCredentialId: profile.authentication_credential_id,
+        isProfilePicturePublic: profile.is_profile_picture_public,
+        academicEmail: profile.academic_email,
+        academicInstitution: profile.academic_institution,
+        address: profile.address,
+        bio: profile.bio,
+        email: profile.email,
+        firstName: profile.first_name,
+        lastName: profile.last_name,
+        phoneNumber: profile.phone_number,
+        profilePictureUrl: profile.profile_picture_url,
+        isAcademicEmailPublic: profile.is_academic_email_public,
+        isAcademicInstitutionPublic: profile.is_academic_institution_public,
+        isAddressPublic: profile.is_address_public,
+        isBioPublic: profile.is_bio_public,
+        isEmailPublic: profile.is_email_public,
+        isFirstNamePublic: profile.is_first_name_public,
+        isLastNamePublic: profile.is_last_name_public,
+        isPhoneNumberPublic: profile.is_phone_number_public,
+        googleConnectorRef: profileWithExtras.google_connector_ref,
+        walletAddress: profileWithExtras.wallet_address,
+    };
+};
+
+export const mapProfileWithAuthViewModel = (
+    profile: ProfileGetMyProfileViewModel,
+): ProfileWithAuth => {
+    return {
+        id: profile.profile_id,
+        authenticationCredentialId: profile.authentication_credential_id,
+        isProfilePicturePublic: profile.is_profile_picture_public,
         academicEmail: profile.academic_email,
         academicInstitution: profile.academic_institution,
         address: profile.address,
@@ -34,6 +77,5 @@ export const mapProfileViewModel = (profile: ProfileGetMyProfileViewModel): Prof
         githubConnectorRef: profile.github_connector_ref,
 
         profileId: profile.profile_id,
-        authenticationCredentialId: profile.authentication_credential_id,
     };
 };

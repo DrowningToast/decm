@@ -1,10 +1,12 @@
 import { coreApiClient, type CoreApiType } from "@/lib/api/api";
 import {
     mapEntityEventToEventItem,
+    mapToEventIssuer,
     mapEventResponseToViewModel,
     mapEventViewModelExtended,
 } from "./mapper";
 import type { EventRegistrationConfiguration } from "../EventRegistration/EventRegistration";
+import type { Profile } from "../AuthService/AuthService";
 
 interface GetEventsListParams {
     includeActiveEvents?: boolean;
@@ -83,6 +85,19 @@ export interface EventViewModelExtended extends EventViewModel {
     certificateContractAddress?: string;
 }
 
+export interface EventIssuer {
+    eventId: string;
+    id: string;
+    isSigned: boolean;
+    issuerCredentialId: string;
+    issuerProfile?: Profile;
+    signMessage?: string;
+    signature?: string;
+
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 export class EventService {
     private _coreApi: CoreApiType;
 
@@ -119,6 +134,15 @@ export class EventService {
         });
 
         return response.map(mapEventResponseToViewModel);
+    }
+
+    public async getEventIssuersByEventId(eventId: string): Promise<EventIssuer[]> {
+        const response = await coreApiClient.v1.getEventIssuersByEventId({ eventId });
+        return response.map(mapToEventIssuer);
+    }
+
+    public async publishEventCertificates(eventId: string) {
+        return await coreApiClient.v1.publishEventCertificates({ eventId });
     }
 }
 

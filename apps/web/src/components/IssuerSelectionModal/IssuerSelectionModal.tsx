@@ -24,8 +24,33 @@ export interface Issuer {
     id: string;
     name: string;
     email: string;
+    googleOAuthEmail?: string;
+    phoneNumber?: string;
     organization?: string;
 }
+
+// Helper to render cell content with "(empty)" fallback
+const renderCellContent = (value: string | null | undefined, className?: string) => {
+    const isEmpty =
+        value === null ||
+        value === undefined ||
+        value === "undefined" ||
+        (typeof value === "string" && value.trim() === "");
+
+    if (isEmpty) {
+        return (
+            <Typography variant="text" tag="span" className={className} color="muted-foreground">
+                <span className="italic">(empty)</span>
+            </Typography>
+        );
+    }
+
+    return (
+        <Typography variant="text" tag="span" className={className}>
+            {value}
+        </Typography>
+    );
+};
 
 export interface IssuerSelectionModalProps {
     isOpen: boolean;
@@ -79,7 +104,7 @@ export const IssuerSelectionModal = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="!max-w-[90vw] sm:!max-w-[90vw] max-h-[80vh] overflow-y-auto w-[90vw]">
                 <DialogHeader>
                     <DialogTitle>
                         <Typography variant="header" tag="h2" className="text-xl font-bold">
@@ -128,7 +153,15 @@ export const IssuerSelectionModal = ({
                                                 {t("certificateSettings.step1.table.name")}
                                             </TableHead>
                                             <TableHead>
-                                                {t("certificateSettings.step1.table.email")}
+                                                {t("certificateSettings.step1.table.contactEmail")}
+                                            </TableHead>
+                                            <TableHead>
+                                                {t(
+                                                    "certificateSettings.step1.table.googleOAuthEmail",
+                                                )}
+                                            </TableHead>
+                                            <TableHead>
+                                                {t("certificateSettings.step1.table.phoneNumber")}
                                             </TableHead>
                                             <TableHead>
                                                 {t("certificateSettings.step1.table.organization")}
@@ -154,10 +187,20 @@ export const IssuerSelectionModal = ({
                                                     />
                                                 </TableCell>
                                                 <TableCell className="font-medium">
-                                                    {issuer.name}
+                                                    {renderCellContent(issuer.name)}
                                                 </TableCell>
-                                                <TableCell>{issuer.email}</TableCell>
-                                                <TableCell>{issuer.organization || "-"}</TableCell>
+                                                <TableCell>
+                                                    {renderCellContent(issuer.email)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {renderCellContent(issuer.googleOAuthEmail)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {renderCellContent(issuer.phoneNumber)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {renderCellContent(issuer.organization)}
+                                                </TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>

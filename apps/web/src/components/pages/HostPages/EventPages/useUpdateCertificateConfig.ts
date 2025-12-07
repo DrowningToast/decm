@@ -20,6 +20,11 @@ export function useUpdateCertificateConfig(eventId: string) {
                 data,
             ),
         onSuccess: () => {
+            // Invalidate certificate config query
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEY.event.certificate.config(eventId),
+            });
+            // Invalidate all event queries to refresh event details page
             queryClient.invalidateQueries({ queryKey: QUERY_KEY.event.all });
         },
     });

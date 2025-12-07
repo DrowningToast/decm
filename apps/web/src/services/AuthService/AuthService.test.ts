@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { OnboardRegistrationMethod } from "@decm/api";
+import { OnboardRegistrationMethod, CommonSolutionStatus } from "@decm/api";
 import type { CoreApiType } from "@/lib/api/api";
 import type { OnboardService } from "../OnboardService/OnboardService";
 import type { QueryClient } from "@tanstack/react-query";
@@ -30,6 +30,9 @@ vi.mock("@/lib/api/api", () => ({
             createProfile: vi.fn(),
             updateProfileByCredentialId: vi.fn(),
             logout: vi.fn(),
+            checkRole: vi.fn(),
+            getMyProfile: vi.fn(),
+            verifyPassword: vi.fn(),
         },
     },
 }));
@@ -259,7 +262,7 @@ describe("AuthService", () => {
     });
 
     describe("updateProfile", () => {
-        it("should update profile successfully", async () => {
+        it("should update profile with only non-empty string fields and explicit boolean values", async () => {
             const mockResponse = { id: "updated-profile-id" };
             (
                 mockCoreApi.v1.updateProfileByCredentialId as ReturnType<typeof vi.fn>
@@ -269,6 +272,8 @@ describe("AuthService", () => {
                 firstName: "Jane",
                 lastName: "Smith",
                 bio: "Updated bio",
+                isFirstNamePublic: true,
+                isLastNamePublic: false,
             };
 
             const result = await authService.updateProfile("cred-id", updateData);
@@ -279,24 +284,101 @@ describe("AuthService", () => {
                     first_name: "Jane",
                     last_name: "Smith",
                     bio: "Updated bio",
-                    academic_email: undefined,
-                    academic_institution: undefined,
-                    address: undefined,
-                    phone_number: undefined,
-                    profile_picture_url: undefined,
-                    is_academic_email_public: undefined,
-                    is_academic_institution_public: undefined,
-                    is_address_public: undefined,
-                    is_bio_public: undefined,
-                    is_email_public: undefined,
-                    is_first_name_public: undefined,
-                    is_last_name_public: undefined,
-                    is_phone_number_public: undefined,
-                    is_profile_picture_public: undefined,
+                    is_first_name_public: true,
+                    is_last_name_public: false,
+                    is_academic_email_public: false,
+                    is_academic_institution_public: false,
+                    is_address_public: false,
+                    is_bio_public: false,
+                    is_email_public: false,
+                    is_phone_number_public: false,
+                    is_profile_picture_public: false,
                 },
             );
             expect(result).toEqual(mockResponse);
             expect(mockQueryClient.invalidateQueries).toHaveBeenCalled();
+        });
+
+        it("should exclude empty string fields from update request", async () => {
+            const mockResponse = { id: "updated-profile-id" };
+            (
+                mockCoreApi.v1.updateProfileByCredentialId as ReturnType<typeof vi.fn>
+            ).mockResolvedValue(mockResponse);
+
+            const updateData = {
+                firstName: "Jane",
+                lastName: "",
+                email: "",
+                bio: "Test bio",
+            };
+
+            const result = await authService.updateProfile("cred-id", updateData);
+
+            expect(mockCoreApi.v1.updateProfileByCredentialId).toHaveBeenCalledWith(
+                { credentialId: "cred-id" },
+                {
+                    first_name: "Jane",
+                    bio: "Test bio",
+                    is_academic_email_public: false,
+                    is_academic_institution_public: false,
+                    is_address_public: false,
+                    is_bio_public: false,
+                    is_email_public: false,
+                    is_first_name_public: false,
+                    is_last_name_public: false,
+                    is_phone_number_public: false,
+                    is_profile_picture_public: false,
+                },
+            );
+            expect(result).toEqual(mockResponse);
+        });
+
+        it("should handle all string fields being provided", async () => {
+            const mockResponse = { id: "updated-profile-id" };
+            (
+                mockCoreApi.v1.updateProfileByCredentialId as ReturnType<typeof vi.fn>
+            ).mockResolvedValue(mockResponse);
+
+            const updateData = {
+                email: "new@example.com",
+                firstName: "Jane",
+                lastName: "Smith",
+                phoneNumber: "+9876543210",
+                bio: "New bio",
+                address: "456 New St",
+                academicEmail: "jane@university.edu",
+                academicInstitution: "New University",
+                profilePictureUrl: "https://example.com/new.jpg",
+                isEmailPublic: true,
+                isProfilePicturePublic: true,
+            };
+
+            const result = await authService.updateProfile("cred-id", updateData);
+
+            expect(mockCoreApi.v1.updateProfileByCredentialId).toHaveBeenCalledWith(
+                { credentialId: "cred-id" },
+                {
+                    email: "new@example.com",
+                    first_name: "Jane",
+                    last_name: "Smith",
+                    phone_number: "+9876543210",
+                    bio: "New bio",
+                    address: "456 New St",
+                    academic_email: "jane@university.edu",
+                    academic_institution: "New University",
+                    profile_picture_url: "https://example.com/new.jpg",
+                    is_email_public: true,
+                    is_profile_picture_public: true,
+                    is_academic_email_public: false,
+                    is_academic_institution_public: false,
+                    is_address_public: false,
+                    is_bio_public: false,
+                    is_first_name_public: false,
+                    is_last_name_public: false,
+                    is_phone_number_public: false,
+                },
+            );
+            expect(result).toEqual(mockResponse);
         });
     });
 
@@ -324,6 +406,169 @@ describe("AuthService", () => {
             expect(mockQueryClient.invalidateQueries).toHaveBeenCalled();
             expect(getAccount).toHaveBeenCalledWith(mockWagmiConfig);
             expect(disconnect).toHaveBeenCalledWith(mockWagmiConfig);
+        });
+    });
+
+    describe("checkRoles", () => {
+        it("should check roles with all params", async () => {
+            const mockResponse = {
+                is_authenticated: true,
+                is_host: true,
+                is_issuer: false,
+            };
+            (coreApiClient.v1.checkRole as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockResolvedValue(mockResponse);
+
+            const result = await authService.checkRoles({
+                isAuthenticated: true,
+                requireHost: true,
+                requireIssuer: false,
+            });
+
+            expect(coreApiClient.v1.checkRole).toHaveBeenCalledWith({
+                is_authenticated: true,
+                is_host: true,
+                is_issuer: undefined,
+            });
+            expect(result).toEqual(mockResponse);
+        });
+
+        it("should check roles with only authentication", async () => {
+            const mockResponse = {
+                is_authenticated: true,
+            };
+            (coreApiClient.v1.checkRole as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockResolvedValue(mockResponse);
+
+            const result = await authService.checkRoles({
+                isAuthenticated: true,
+            });
+
+            expect(coreApiClient.v1.checkRole).toHaveBeenCalledWith({
+                is_authenticated: true,
+                is_host: undefined,
+                is_issuer: undefined,
+            });
+            expect(result).toEqual(mockResponse);
+        });
+    });
+
+    describe("getMyProfile", () => {
+        it("should fetch and map user profile", async () => {
+            const mockApiResponse = {
+                profile_id: "profile-123",
+                authentication_credential_id: "auth-456",
+                email: "test@example.com",
+                first_name: "John",
+                last_name: "Doe",
+                phone_number: "+1234567890",
+                bio: "Test bio",
+                address: "123 Test St",
+                academic_email: "john@university.edu",
+                academic_institution: "Test University",
+                profile_picture_url: "https://example.com/pic.jpg",
+                is_email_public: true,
+                is_first_name_public: true,
+                is_last_name_public: false,
+                is_phone_number_public: false,
+                is_bio_public: true,
+                is_address_public: false,
+                is_academic_email_public: false,
+                is_academic_institution_public: false,
+                is_profile_picture_public: true,
+                wallet_address: "0x1234567890abcdef",
+                solution_status: CommonSolutionStatus.SolutionStatusBYOK,
+                google_connector_ref: "google-123",
+                github_connector_ref: "github-456",
+            };
+
+            (coreApiClient.v1.getMyProfile as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockResolvedValue(mockApiResponse);
+
+            const result = await authService.getMyProfile();
+
+            expect(coreApiClient.v1.getMyProfile).toHaveBeenCalled();
+            expect(result).toEqual({
+                id: "profile-123",
+                profileId: "profile-123",
+                authenticationCredentialId: "auth-456",
+                email: "test@example.com",
+                firstName: "John",
+                lastName: "Doe",
+                phoneNumber: "+1234567890",
+                bio: "Test bio",
+                address: "123 Test St",
+                academicEmail: "john@university.edu",
+                academicInstitution: "Test University",
+                profilePictureUrl: "https://example.com/pic.jpg",
+                isEmailPublic: true,
+                isFirstNamePublic: true,
+                isLastNamePublic: false,
+                isPhoneNumberPublic: false,
+                isBioPublic: true,
+                isAddressPublic: false,
+                isAcademicEmailPublic: false,
+                isAcademicInstitutionPublic: false,
+                isProfilePicturePublic: true,
+                walletAddress: "0x1234567890abcdef",
+                solutionStatus: "BYOK",
+                googleConnectorRef: "google-123",
+                githubConnectorRef: "github-456",
+            });
+        });
+    });
+
+    describe("verifyPassword", () => {
+        it("should verify password successfully", async () => {
+            const mockResponse = {
+                is_success: true,
+                message: "Password verified",
+            };
+            (coreApiClient.v1.verifyPassword as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockResolvedValue(mockResponse);
+
+            const result = await authService.verifyPassword("auth-123", "correct-password");
+
+            expect(coreApiClient.v1.verifyPassword).toHaveBeenCalledWith({
+                authentication_credential_id: "auth-123",
+                password: "correct-password",
+            });
+            expect(result).toEqual({
+                isSuccess: true,
+                message: "Password verified",
+            });
+        });
+
+        it("should handle incorrect password", async () => {
+            const mockResponse = {
+                is_success: false,
+                message: "Invalid password",
+            };
+            (coreApiClient.v1.verifyPassword as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockResolvedValue(mockResponse);
+
+            const result = await authService.verifyPassword("auth-123", "wrong-password");
+
+            expect(result).toEqual({
+                isSuccess: false,
+                message: "Invalid password",
+            });
+        });
+
+        it("should throw error on verification failure", async () => {
+            const error = new Error("Verification failed");
+            (coreApiClient.v1.verifyPassword as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockRejectedValue(error);
+
+            await expect(authService.verifyPassword("auth-123", "password")).rejects.toThrow(
+                "Verification failed",
+            );
         });
     });
 });

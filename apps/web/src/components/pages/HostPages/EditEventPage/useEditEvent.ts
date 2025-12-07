@@ -23,6 +23,7 @@ export function useEditEvent(eventId: string) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: QUERY_KEY.event.all });
+            queryClient.invalidateQueries({ queryKey: QUERY_KEY.event.byId(eventId) });
         },
     });
 

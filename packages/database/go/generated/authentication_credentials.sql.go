@@ -160,6 +160,43 @@ func (q *Queries) GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Co
 	return i, err
 }
 
+const GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress = `-- name: GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress :one
+SELECT id, solution_status, hashed_password, encrypted_private_key, wallet_address, google_connector_ref, github_connector_ref, is_verified_organizer, is_verified_issuer, is_verified_student, created_at, updated_at FROM authentication_credentials 
+WHERE (
+    ($1::text IS NOT NULL AND google_connector_ref = $1)
+    OR 
+    ($2::text IS NOT NULL AND wallet_address = $2)
+)
+LIMIT 1
+`
+
+type GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParams struct {
+	GoogleConnectorRef pgtype.Text `json:"google_connector_ref"`
+	WalletAddress      pgtype.Text `json:"wallet_address"`
+}
+
+// Fetch authentication credential by Google OAuth email OR wallet address
+// At least one parameter must be provided (non-null)
+func (q *Queries) GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx context.Context, arg GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParams) (AuthenticationCredential, error) {
+	row := q.db.QueryRow(ctx, GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress, arg.GoogleConnectorRef, arg.WalletAddress)
+	var i AuthenticationCredential
+	err := row.Scan(
+		&i.ID,
+		&i.SolutionStatus,
+		&i.HashedPassword,
+		&i.EncryptedPrivateKey,
+		&i.WalletAddress,
+		&i.GoogleConnectorRef,
+		&i.GithubConnectorRef,
+		&i.IsVerifiedOrganizer,
+		&i.IsVerifiedIssuer,
+		&i.IsVerifiedStudent,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const GetAuthenticationCredentialById = `-- name: GetAuthenticationCredentialById :one
 SELECT id, solution_status, hashed_password, encrypted_private_key, wallet_address, google_connector_ref, github_connector_ref, is_verified_organizer, is_verified_issuer, is_verified_student, created_at, updated_at FROM authentication_credentials 
 WHERE id = $1
@@ -258,19 +295,19 @@ func (q *Queries) GetCredentialsBySolutionStatus(ctx context.Context, arg GetCre
 
 const GetCredentialsByVerificationStatus = `-- name: GetCredentialsByVerificationStatus :many
 SELECT id, solution_status, hashed_password, encrypted_private_key, wallet_address, google_connector_ref, github_connector_ref, is_verified_organizer, is_verified_issuer, is_verified_student, created_at, updated_at FROM authentication_credentials 
-WHERE ($1 IS NULL OR is_verified_organizer = $1)
-  AND ($2 IS NULL OR is_verified_student = $2)
-  AND ($3 IS NULL OR is_verified_issuer = $3)
+WHERE ($1::INTEGER IS NULL OR is_verified_organizer = $1::INTEGER)
+  AND ($2::INTEGER IS NULL OR is_verified_student = $2::INTEGER)
+  AND ($3::INTEGER IS NULL OR is_verified_issuer = $3::INTEGER)
 ORDER BY created_at DESC
-LIMIT $5 OFFSET $4
+LIMIT $5::INTEGER OFFSET $4::INTEGER
 `
 
 type GetCredentialsByVerificationStatusParams struct {
-	IsVerifiedOrganizer interface{} `json:"is_verified_organizer"`
-	IsVerifiedStudent   interface{} `json:"is_verified_student"`
-	IsVerifiedIssuer    interface{} `json:"is_verified_issuer"`
-	OffsetCount         int32       `json:"offset_count"`
-	LimitCount          int32       `json:"limit_count"`
+	IsVerifiedOrganizer pgtype.Int4 `json:"is_verified_organizer"`
+	IsVerifiedStudent   pgtype.Int4 `json:"is_verified_student"`
+	IsVerifiedIssuer    pgtype.Int4 `json:"is_verified_issuer"`
+	OffsetCount         pgtype.Int4 `json:"offset_count"`
+	LimitCount          pgtype.Int4 `json:"limit_count"`
 }
 
 func (q *Queries) GetCredentialsByVerificationStatus(ctx context.Context, arg GetCredentialsByVerificationStatusParams) ([]AuthenticationCredential, error) {
@@ -325,6 +362,53 @@ type ListAuthenticationCredentialsParams struct {
 
 func (q *Queries) ListAuthenticationCredentials(ctx context.Context, arg ListAuthenticationCredentialsParams) ([]AuthenticationCredential, error) {
 	rows, err := q.db.Query(ctx, ListAuthenticationCredentials, arg.OffsetCount, arg.LimitCount)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AuthenticationCredential{}
+	for rows.Next() {
+		var i AuthenticationCredential
+		if err := rows.Scan(
+			&i.ID,
+			&i.SolutionStatus,
+			&i.HashedPassword,
+			&i.EncryptedPrivateKey,
+			&i.WalletAddress,
+			&i.GoogleConnectorRef,
+			&i.GithubConnectorRef,
+			&i.IsVerifiedOrganizer,
+			&i.IsVerifiedIssuer,
+			&i.IsVerifiedStudent,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const ListIssuerAuthenticationCredentialsByWalletAddress = `-- name: ListIssuerAuthenticationCredentialsByWalletAddress :many
+SELECT id, solution_status, hashed_password, encrypted_private_key, wallet_address, google_connector_ref, github_connector_ref, is_verified_organizer, is_verified_issuer, is_verified_student, created_at, updated_at FROM authentication_credentials 
+WHERE is_verified_issuer = 1
+  AND LOWER(wallet_address) LIKE '%' || LOWER($1) || '%'
+ORDER BY created_at DESC
+LIMIT $3 OFFSET $2
+`
+
+type ListIssuerAuthenticationCredentialsByWalletAddressParams struct {
+	SearchQuery pgtype.Text `json:"search_query"`
+	OffsetCount int32       `json:"offset_count"`
+	LimitCount  int32       `json:"limit_count"`
+}
+
+func (q *Queries) ListIssuerAuthenticationCredentialsByWalletAddress(ctx context.Context, arg ListIssuerAuthenticationCredentialsByWalletAddressParams) ([]AuthenticationCredential, error) {
+	rows, err := q.db.Query(ctx, ListIssuerAuthenticationCredentialsByWalletAddress, arg.SearchQuery, arg.OffsetCount, arg.LimitCount)
 	if err != nil {
 		return nil, err
 	}

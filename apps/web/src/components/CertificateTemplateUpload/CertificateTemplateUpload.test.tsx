@@ -51,7 +51,7 @@ describe("CertificateTemplateUpload Component", () => {
     const mockOnFileSelect = vi.fn();
     const availableKeywords = [
         { keyword: "{{ name }}", mandatory: true },
-        { keyword: "{{ eventName }}", mandatory: true },
+        { keyword: "{{ eventName }}", mandatory: false },
         { keyword: "{{ academicInstitutionName }}", mandatory: false },
     ];
 

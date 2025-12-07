@@ -57,7 +57,7 @@ func (h *Handler) DeleteEvent(ctx *fiber.Ctx) error {
 
 	// Map domain event to EventResponse DTO
 	response := event_uc.EventResponse{
-		Id:                       event.ID,
+		Id:                       event.Id,
 		ChainID:                  int32(event.ChainId),
 		ContactNumber:            event.ContactNumber,
 		OwnerCredentialID:        event.OwnerCredentialId,

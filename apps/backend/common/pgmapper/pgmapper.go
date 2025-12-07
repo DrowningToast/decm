@@ -1,6 +1,7 @@
 package pgmapper
 
 import (
+	"strings"
 	"time"
 
 	"apps/backend/common/encryptutils"
@@ -148,12 +149,24 @@ func EncryptStringPtrToPgText(field *string, encryptionKey string) (pgtype.Text,
 
 // DecryptPgTextToStringPtr decrypts a pgtype.Text field and returns a nullable string pointer
 // Returns nil if the pgtype.Text is invalid
+// If the data is not encrypted (legacy data), returns the original value
 func DecryptPgTextToStringPtr(field pgtype.Text, encryptionKey string) (*string, error) {
 	if !field.Valid {
 		return nil, nil
 	}
 	decrypted, err := DecryptPII(field.String, encryptionKey)
 	if err != nil {
+		// Check if this is an error indicating unencrypted legacy data:
+		// - "illegal base64" - data is not base64 encoded
+		// - "ciphertext too short" - data is too short to be valid encrypted data
+		// - "message authentication failed" - decryption failed (wrong key or corrupted data)
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "illegal base64") ||
+			strings.Contains(errMsg, "base64") ||
+			strings.Contains(errMsg, "ciphertext too short") {
+			// Return original value for legacy unencrypted data
+			return &field.String, nil
+		}
 		return nil, err
 	}
 	return &decrypted, nil

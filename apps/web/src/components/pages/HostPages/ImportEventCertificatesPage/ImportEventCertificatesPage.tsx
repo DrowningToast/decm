@@ -22,17 +22,26 @@ export const ImportEventCertificatesPage = ({
     const { t } = useTranslation();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [showPreview, setShowPreview] = useState(false);
-
-    const { importCertificates, isImportingCertificates } = useImportCertificates(eventId);
-
-    const handleFileSelect = (file: File) => {
-        setSelectedFile(file);
-        setShowPreview(true);
-    };
+    const [importError, setImportError] = useState<string | null>(null);
 
     const handleCancel = () => {
         setSelectedFile(null);
         setShowPreview(false);
+        setImportError(null);
+    };
+
+    const { importCertificates, isImportingCertificates } = useImportCertificates(eventId, {
+        onError: (error: Error) => {
+            // On error, keep the preview open so user can see the error and re-upload
+            // The ExcelPreview component will show a "Re-upload File" button
+            setImportError(error.message || "An error occurred during import");
+        },
+    });
+
+    const handleFileSelect = (file: File) => {
+        setSelectedFile(file);
+        setShowPreview(true);
+        setImportError(null); // Clear any previous errors when selecting a new file
     };
 
     const handleImport = (
@@ -47,15 +56,10 @@ export const ImportEventCertificatesPage = ({
 
     const downloadTemplate = () => {
         // Create a simple Excel template with the required columns
+        // First row is headers, second row is demo data
         const templateData = [
             {
-                [t("certificateImport.templateColumns.firstName")]: "",
-                [t("certificateImport.templateColumns.lastName")]: "",
-                [t("certificateImport.templateColumns.academicInstitution")]: "",
-                [t("certificateImport.templateColumns.certificateTitle")]: "",
-                [t("certificateImport.templateColumns.certificateSubtitle")]: "",
-            },
-            {
+                [t("certificateImport.templateColumns.email")]: "john.doe@example.com",
                 [t("certificateImport.templateColumns.firstName")]: "John",
                 [t("certificateImport.templateColumns.lastName")]: "Doe",
                 [t("certificateImport.templateColumns.academicInstitution")]: "Example University",
@@ -68,7 +72,19 @@ export const ImportEventCertificatesPage = ({
 
         // Create a new workbook and worksheet
         const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(templateData);
+        const ws = XLSX.utils.json_to_sheet(templateData, { header: Object.keys(templateData[0]) });
+
+        // Set column widths for better spacing
+        const columnWidths = [
+            { wch: 30 }, // email
+            { wch: 15 }, // first_name
+            { wch: 15 }, // last_name
+            { wch: 25 }, // academic_institution
+            { wch: 30 }, // certificate_title
+            { wch: 40 }, // certificate_subtitle
+        ];
+        ws["!cols"] = columnWidths;
+
         XLSX.utils.book_append_sheet(wb, ws, t("certificateImport.templateSheetName"));
 
         // Generate Excel file and download
@@ -196,6 +212,233 @@ export const ImportEventCertificatesPage = ({
                     </div>
                 </div>
 
+                {/* Required Format Info Section */}
+                <div className="bg-card rounded-lg p-6 mb-8 shadow-sm">
+                    <Typography
+                        variant="header"
+                        tag="h2"
+                        color="background"
+                        className="text-xl font-semibold mb-4"
+                    >
+                        {t("certificateImport.requiredFormat")}
+                    </Typography>
+                    <Typography
+                        variant="text"
+                        tag="p"
+                        color="background-alt"
+                        className="text-sm mb-4"
+                    >
+                        {t("certificateImport.requiredFormatDescription")}
+                    </Typography>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        {/* Required Field - Email */}
+                        <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="foreground"
+                                    className="text-sm font-bold"
+                                >
+                                    ✓
+                                </Typography>
+                            </div>
+                            <div>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background"
+                                    className="font-semibold"
+                                >
+                                    {t("certificateImport.templateColumns.email")}
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="primary"
+                                    className="text-xs font-medium"
+                                >
+                                    {t("certificateImport.columnHeader")}
+                                </Typography>
+                            </div>
+                        </div>
+
+                        {/* Optional Fields */}
+                        <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg border border-border">
+                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="background"
+                                    className="text-sm font-bold"
+                                >
+                                    ~
+                                </Typography>
+                            </div>
+                            <div>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background"
+                                    className="font-semibold"
+                                >
+                                    {t("certificateImport.templateColumns.firstName")}
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background-alt"
+                                    className="text-xs font-medium"
+                                >
+                                    {t("certificateImport.optionalColumn")}
+                                </Typography>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg border border-border">
+                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="background"
+                                    className="text-sm font-bold"
+                                >
+                                    ~
+                                </Typography>
+                            </div>
+                            <div>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background"
+                                    className="font-semibold"
+                                >
+                                    {t("certificateImport.templateColumns.lastName")}
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background-alt"
+                                    className="text-xs font-medium"
+                                >
+                                    {t("certificateImport.optionalColumn")}
+                                </Typography>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg border border-border">
+                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="background"
+                                    className="text-sm font-bold"
+                                >
+                                    ~
+                                </Typography>
+                            </div>
+                            <div>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background"
+                                    className="font-semibold"
+                                >
+                                    {t("certificateImport.templateColumns.academicInstitution")}
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background-alt"
+                                    className="text-xs font-medium"
+                                >
+                                    {t("certificateImport.optionalColumn")}
+                                </Typography>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg border border-border">
+                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="background"
+                                    className="text-sm font-bold"
+                                >
+                                    ~
+                                </Typography>
+                            </div>
+                            <div>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background"
+                                    className="font-semibold"
+                                >
+                                    {t("certificateImport.templateColumns.certificateTitle")}
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background-alt"
+                                    className="text-xs font-medium"
+                                >
+                                    {t("certificateImport.optionalColumn")}
+                                </Typography>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg border border-border">
+                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="background"
+                                    className="text-sm font-bold"
+                                >
+                                    ~
+                                </Typography>
+                            </div>
+                            <div>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background"
+                                    className="font-semibold"
+                                >
+                                    {t("certificateImport.templateColumns.certificateSubtitle")}
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background-alt"
+                                    className="text-xs font-medium"
+                                >
+                                    {t("certificateImport.optionalColumn")}
+                                </Typography>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <Button variant="secondary-light" onClick={downloadTemplate}>
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                color="background"
+                                className="font-medium"
+                            >
+                                {t("certificateImport.downloadTemplate")}
+                            </Typography>
+                        </Button>
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="background-alt"
+                            className="text-sm"
+                        >
+                            {t("certificateImport.downloadTemplateDescription")}
+                        </Typography>
+                    </div>
+                </div>
+
                 {/* File Upload Section */}
                 {!showPreview ? (
                     <div className="bg-card rounded-lg p-6 shadow-sm">
@@ -207,31 +450,6 @@ export const ImportEventCertificatesPage = ({
                         >
                             {t("certificateImport.uploadFile")}
                         </Typography>
-
-                        <div className="mb-4">
-                            <Typography
-                                variant="text"
-                                tag="p"
-                                color="background"
-                                className="text-sm mb-2"
-                            >
-                                {t("certificateImport.downloadTemplateDescription")}
-                            </Typography>
-                            <Button
-                                variant="secondary-light"
-                                onClick={downloadTemplate}
-                                className="mb-4"
-                            >
-                                <Typography
-                                    variant="text"
-                                    tag="span"
-                                    color="background"
-                                    className="font-medium"
-                                >
-                                    {t("certificateImport.downloadTemplate")}
-                                </Typography>
-                            </Button>
-                        </div>
 
                         <ExcelUpload
                             onFileSelect={handleFileSelect}
@@ -245,6 +463,7 @@ export const ImportEventCertificatesPage = ({
                         onConfirm={handleImport}
                         onCancel={handleCancel}
                         disabled={isImportingCertificates}
+                        importError={importError}
                     />
                 )}
             </div>

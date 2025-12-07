@@ -5,78 +5,46 @@ description: "Unified code standards for Go backend and TypeScript/React fronten
 
 # Code Standards - Go & TypeScript
 
-## Go Backend Standards
+## Go Backend
 
-### Naming Conventions
-
-**Variable & Field Naming - "Id" vs "ID"**
-
-Always use `Id` (with lowercase 'd') in camelCase variable names, not `ID` (all caps).
+### Naming: Use `Id` NOT `ID`
 
 ```go
-// ✅ CORRECT - Use "Id" in camelCase
+// ✅ CORRECT
 userId := uuid.New()
 eventId := "event-123"
-credentialId := user.AuthenticationCredentialId
-
 type Event struct {
-    Id                  uuid.UUID
-    OwnerCredentialId   uuid.UUID
-    EventId            string
+    Id                uuid.UUID
+    OwnerCredentialId uuid.UUID
 }
+func GetEventById(ctx context.Context, eventId uuid.UUID) (*Event, error)
 
-func GetEventById(ctx context.Context, eventId uuid.UUID) (*Event, error) {
-    // ...
-}
-
-// ❌ WRONG - Don't use "ID" (all caps)
+// ❌ WRONG
 userID := uuid.New()
-eventID := "event-123"
-credentialID := user.AuthenticationCredentialID
-
 type Event struct {
-    ID                  uuid.UUID
-    OwnerCredentialID   uuid.UUID
-}
-
-func GetEventByID(ctx context.Context, eventID uuid.UUID) (*Event, error) {
-    // ...
+    ID                uuid.UUID
+    OwnerCredentialID uuid.UUID
 }
 ```
 
-**Rationale**: Consistent camelCase naming improves readability and follows the project's established patterns across entities, functions, and variables.
+### Handler Pattern
 
-### Package Structure
 ```go
-package handlers
-
-import (
-    "decm-backend/internal/config"
-    "decm-backend/internal/models"
-    "github.com/gofiber/fiber/v2"
-)
-```
-
-### Swagger Documentation (Required)
-```go
-// createEvent godoc
-// @Summary Create a new event
-// @Description Create event with NFT tickets
-// @Tags events
-// @Accept json
-// @Produce json
-// @Param event body models.Event true "Event data"
-// @Success 201 {object} models.Event
-// @Failure 400 {object} models.APIResponse
-// @Router /events [post]
-func createEvent(c *fiber.Ctx) error {
-    // Implementation
+func (h Handler) HandleRequest(ctx *fiber.Ctx) error {
+    requestBody := requestStruct{}
+    if err := requestBody.Parse(ctx); err != nil {
+        return *err
+    }
+    if err := requestBody.IsValid(); err != nil {
+        return *err
+    }
+    // Call usecase...
 }
 ```
 
-### Error Handling & Patterns
+### Request Validation
+
 ```go
-// Custom error types with validation
 type requestStruct struct {
     Field string `json:"field"`
 }
@@ -90,176 +58,105 @@ func (r *requestStruct) Parse(ctx *fiber.Ctx) *customerror.Err {
 
 func (r *requestStruct) IsValid() *customerror.Err {
     if len(r.Field) == 0 {
-        return customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, errors.New("field is required"))
+        return customerror.TryParseAsCustomErr(&customerror.ErrInvalidArgument, errors.New("field required"))
     }
     return nil
 }
-
-// Handler with validation pattern
-func (h Handler) HandleRequest(ctx *fiber.Ctx) error {
-    requestBody := requestStruct{}
-    if err := requestBody.Parse(ctx); err != nil {
-        return *err // Custom error handler manages response
-    }
-    if err := requestBody.IsValid(); err != nil {
-        return *err
-    }
-    // Business logic here...
-}
-
-// Context with timeout (required for DB operations)
-ctx, cancel := context.WithTimeout(c.Context(), 30*time.Second)
-defer cancel()
 ```
 
-### API Structure
-- All routes under `/api/v1` group
-- Environment-based configuration from `../../.env`
-- CORS configured for frontend at `localhost:3000`
-- Error codes: 400 (validation), 404 (not found), 409 (conflict), 500 (server)
+### Swagger Documentation (Required)
 
-## TypeScript & React Standards
+```go
+// @Summary Create a new event
+// @Description Create event with NFT tickets
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param event body models.Event true "Event data"
+// @Success 201 {object} models.Event
+// @Failure 400 {object} customerror.ErrResponse
+// @Router /events [post]
+func createEvent(c *fiber.Ctx) error {}
+```
 
-### Naming Convention: API Key Transformation
-**Critical Rule**: Convert API keys from **snake_case** to **camelCase** at the service layer.
+## TypeScript & React
+
+### API Key Transformation
+
+Convert snake_case → camelCase at service level:
 
 ```typescript
-// ❌ WRONG - Using snake_case from API directly in components
-const event = await api.getEvent(); // Returns { event_id, created_at, updated_at }
-<Component eventId={event.event_id} /> // Direct snake_case usage
+// ❌ WRONG - snake_case in component
+<Component eventId={event.event_id} />
 
 // ✅ CORRECT - Transform at service level
 // apps/web/src/services/EventService.ts
 export async function getEventById(eventId: string) {
   const response = await api.getEvent({ id: eventId });
-  
-  // Transform snake_case → camelCase
   return {
     eventId: response.event_id,
     createdAt: response.created_at,
     updatedAt: response.updated_at,
-    // ... rest of transformed fields
   };
 }
-
 // Component receives camelCase
 <Component eventId={eventData.eventId} />
 ```
 
-**Flow**: Backend (snake_case) → Service (transform) → Frontend (camelCase)
-
 ### Component Structure
+
 ```tsx
 interface ComponentProps {
-  title: string;
-  optional?: boolean;
+    title: string;
+    optional?: boolean;
 }
 
 export function Component({ title, optional = false }: ComponentProps) {
-  return <div>{title}</div>;
+    return <div>{title}</div>;
 }
-```
-
-### Import Patterns
-```tsx
-import React from 'react';
-import { ComponentProps } from 'react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-```
-
-### Hooks Usage
-```tsx
-const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-  // handler logic
-}, [dependencies]);
 ```
 
 ### TypeScript Rules
-- Use **interfaces** over types for object shapes
-- Provide explicit return types for functions
-- Use proper generics for reusable components
-- Functional components with hooks (no class components)
 
-## DECM-Specific Patterns
+- NO `any` type
+- Explicit return types
+- Interfaces for object shapes
+- Generics for reusable components
+- Functional components with hooks
 
-### Go Backend - Authentication & Validation
-```go
-// Ethereum wallet address validation
-var ethAddressRegex = regexp.MustCompile(`^0x[a-fA-F0-9]{40}$`)
+### Import Patterns
 
-func validateEthAddress(address string) bool {
-    return ethAddressRegex.MatchString(address)
-}
-
-// JWT session management with cookies  
-func setSessionCookie(ctx *fiber.Ctx, jwt string, expiration time.Duration) {
-    cookie := &fiber.Cookie{
-        Name:    "session",
-        Value:   jwt,
-        Expires: time.Now().Add(expiration),
-    }
-    ctx.Cookie(cookie)
-}
-
-// Academic authentication middleware
-app.Use(middleware.AcademicAuth())
-
-// Blockchain wallet verification
-app.Use(middleware.BlockchainAuth())
+```tsx
+import { ComponentProps } from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 ```
 
-### TypeScript - API Client Usage
+## API Client Usage
+
 ```typescript
-import { DefaultApi } from '@decm/api';
+import { DefaultApi } from "@decm/api";
 
 const api = new DefaultApi({
-  basePath: 'http://localhost:8080/api/v1'
+    basePath: "http://localhost:8080/api/v1",
 });
 
-// Type-safe API calls with error handling
 try {
-  const events = await api.getEvents();
-  const signMessage = await api.getRegisterSignMessage();
-  
-  // Authentication flow
-  await api.registerWithWallet({
-    signed_message: signedWalletMessage,
-    wallet_address: userWalletAddress
-  });
-  
+    const events = await api.getEvents();
+    await api.registerWithWallet({
+        signed_message: signedWalletMessage,
+        wallet_address: userWalletAddress,
+    });
 } catch (error) {
-  // Automatically typed error responses
-  console.error('API call failed:', error);
+    console.error("API call failed:", error);
 }
 ```
 
-### Configuration Management
-- **Go**: Load from `../../.env` in backend
-- **TypeScript**: Environment variables through build system
-- **Database**: Connection via environment variables only
-
-## Documentation Requirements
-
-### Go Endpoints
-- All endpoints must have Swagger annotations
-- Generate docs: `bun backend:docs`
-- Interactive docs: http://localhost:8080/swagger/
-
-### TypeScript Components
-- Props interfaces for all components
-- JSDoc comments for complex functions
-- Type imports from `@types/react` when needed
-
 ## Code Generation
-```bash
-bun db:generate    # SQL → Go structs
-bun gen-api       # OpenAPI → TypeScript client
-bun backend:docs  # Generate Swagger docs
-```
 
-## Validation & Testing
 ```bash
-pnpm lint         # ESLint + TypeScript check
-go build cmd/main.go  # Go compilation check
+pnpm db:generate   # SQL → Go structs
+pnpm gen-api:core  # OpenAPI → TypeScript client
+pnpm docs:core     # Generate Swagger docs
+pnpm lint          # ESLint + TypeScript check
 ```

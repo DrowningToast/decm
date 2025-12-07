@@ -9,6 +9,11 @@ import { useAuth } from "@/context/AuthContext";
 import { RegistrationConfirmForm } from "./ConfirmForm";
 import type { RegistrationConfirmDataForm } from "./RegistrationConfirmDataFormSchema";
 import { toast } from "sonner";
+import { useSignPasswordModalStore } from "@/components/providers/SignPasswordModal/store";
+import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
+import { eventRegistrationService } from "@/services/services";
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 interface ActionMenuProps {
     eventId: string;
@@ -18,13 +23,21 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
     const { t } = useTranslation();
     const { user } = useAuth();
     const [isSubmiting, setIsSubmiting] = useState(false);
+    const queryClient = useQueryClient();
 
     const { bottomNavVariant } = useEventViewModelUsecase({ eventId });
-    const { showPreviewModal, closePreviewModal } = usePreviewRegistrationUsecase(eventId);
-    const { invitation } = useEventInvitationByUserAndEvent(eventId, user?.walletAddress);
-    const registrationInvitation = invitation?.registrationInvitation;
+    const { showPreviewModal: _showPreviewModal, closePreviewModal } =
+        usePreviewRegistrationUsecase(eventId);
+    const { invitation, isLoading: isInvitationLoading } = useEventInvitationByUserAndEvent(
+        eventId,
+        user?.walletAddress,
+    );
+    const { event: eventViewModel } = useEventViewModelUsecase({ eventId });
+    const { mutateAsync: openPasswordPrompt } = usePasswordPrompt();
 
-    console.log("registrationInvitation", registrationInvitation);
+    const { isOpen: isPinModalOpen } = useSignPasswordModalStore();
+
+    const registrationInvitation = invitation?.registrationInvitation;
 
     // Use invitation data first, then profile data, then empty object
     const prefilledProfile = useMemo<RegistrationConfirmDataForm>(() => {
@@ -70,11 +83,29 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
     const handleSubmit = async (data: RegistrationConfirmDataForm) => {
         try {
             setIsSubmiting(true);
-            // TODO: Implement API call to submit PII data
-            console.log("Registration Confirm Data submitted:", data);
+            // password check
+            const checkedPassword = await openPasswordPrompt({
+                eventContractAddress: eventViewModel?.eventContractAddress ?? "",
+                transactionType: "Registration Confirmation",
+                title: t("participant.events.detail.instruction.passwordRequired"),
+                description: t("participant.events.detail.instruction.signatureRequest"),
+                details: `Confirming registration for ${eventViewModel?.title}`,
+            });
 
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            if (registrationInvitation) {
+                await eventRegistrationService.joinEventWithAccountPassword({
+                    eventId,
+                    accountPassword: checkedPassword,
+                    registrationData: data,
+                });
+            } else {
+                throw new Error("No registration invitation or event password found");
+            }
+
+            // Invalidate event viewmodel query to refetch participant status
+            await queryClient.invalidateQueries({
+                queryKey: [QUERY_KEY.event.viewmodel(eventId, user?.authenticationCredentialId)],
+            });
 
             toast.success(t("events.registration.piiForm.submitSuccess"));
             closePreviewModal();
@@ -90,8 +121,12 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
         closePreviewModal();
     };
 
-    console.log("prefilledProfile", prefilledProfile);
-    console.log("showPreviewModal", showPreviewModal);
+    const showPreviewModal = useMemo(() => {
+        if (isPinModalOpen) {
+            return false;
+        }
+        return !isInvitationLoading && invitation !== undefined && _showPreviewModal;
+    }, [_showPreviewModal, invitation, isInvitationLoading, isPinModalOpen]);
 
     // Always show ActionMenu with conditional PII form
     return (
@@ -104,7 +139,8 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
                         onSubmit={handleSubmit}
                         onCancel={handleCancel}
                         isSubmitting={isSubmiting}
-                        initialData={prefilledProfile}
+                        profileData={prefilledProfile}
+                        invitationData={registrationInvitation}
                     />
                 )}
 

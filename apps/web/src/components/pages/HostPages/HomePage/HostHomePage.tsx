@@ -5,7 +5,7 @@ import { Link, type Path } from "@/router";
 
 export default function HostHomePage() {
     return (
-        <div title="Host Dashboard">
+        <div className="flex flex-col gap-y-4" title="Host Dashboard">
             <img
                 src="/justice.png"
                 alt="Host Dashboard Background"
@@ -23,8 +23,6 @@ export default function HostHomePage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 lg:gap-6 lg:mt-6">
                     <MenuItem title="Event" to="/host/events" />
-                    <MenuItem title="Inbox" to="/host/home" />
-                    <MenuItem title="Profile" to="/host/home" />
                 </div>
             </SectionContainer>
 
