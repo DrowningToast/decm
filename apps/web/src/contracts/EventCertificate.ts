@@ -219,6 +219,21 @@ export const EventCertificateABI = [
                 internalType: "string",
             },
             {
+                name: "certificateTitle",
+                type: "string",
+                internalType: "string",
+            },
+            {
+                name: "certificateSubtitle",
+                type: "string",
+                internalType: "string",
+            },
+            {
+                name: "hash",
+                type: "string",
+                internalType: "string",
+            },
+            {
                 name: "issuerProofs",
                 type: "tuple[]",
                 internalType: "struct CertificateVCStructs.IssuerProof[]",

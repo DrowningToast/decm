@@ -212,6 +212,7 @@ func (_EventAccessManager *EventAccessManagerTransactorRaw) Transact(opts *bind.
 func (_EventAccessManager *EventAccessManagerCaller) DECMACCESSMANAGER(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "DECM_ACCESS_MANAGER")
+
 	if err != nil {
 		return *new(common.Address), err
 	}
@@ -219,6 +220,7 @@ func (_EventAccessManager *EventAccessManagerCaller) DECMACCESSMANAGER(opts *bin
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
+
 }
 
 // DECMACCESSMANAGER is a free data retrieval call binding the contract method 0xa4189e89.
@@ -241,6 +243,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) DECMACCESSMANAGER() 
 func (_EventAccessManager *EventAccessManagerCaller) DEFAULTADMINROLE(opts *bind.CallOpts) ([32]byte, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "DEFAULT_ADMIN_ROLE")
+
 	if err != nil {
 		return *new([32]byte), err
 	}
@@ -248,6 +251,7 @@ func (_EventAccessManager *EventAccessManagerCaller) DEFAULTADMINROLE(opts *bind
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
+
 }
 
 // DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
@@ -270,6 +274,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) DEFAULTADMINROLE() (
 func (_EventAccessManager *EventAccessManagerCaller) AllowedMsgSenders(opts *bind.CallOpts, arg0 common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "allowedMsgSenders", arg0)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -277,6 +282,7 @@ func (_EventAccessManager *EventAccessManagerCaller) AllowedMsgSenders(opts *bin
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // AllowedMsgSenders is a free data retrieval call binding the contract method 0x01d060b0.
@@ -299,6 +305,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) AllowedMsgSenders(ar
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsAllowedMsgSender(opts *bind.CallOpts) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "checkIsAllowedMsgSender")
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -306,6 +313,7 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsAllowedMsgSender(opt
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsAllowedMsgSender is a free data retrieval call binding the contract method 0xe5393855.
@@ -328,6 +336,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsAllowedMsgSen
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsHost(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "checkIsHost", addr)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -335,6 +344,7 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsHost(opts *bind.Call
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsHost is a free data retrieval call binding the contract method 0x972d3e87.
@@ -357,6 +367,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsHost(addr com
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsHostOrAdmin(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "checkIsHostOrAdmin", addr)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -364,6 +375,7 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsHostOrAdmin(opts *bi
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsHostOrAdmin is a free data retrieval call binding the contract method 0x4f5af5d7.
@@ -386,6 +398,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsHostOrAdmin(a
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsIssuer(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "checkIsIssuer", addr)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -393,6 +406,7 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsIssuer(opts *bind.Ca
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsIssuer is a free data retrieval call binding the contract method 0x5b8c7772.
@@ -415,6 +429,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsIssuer(addr c
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsParticipant(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "checkIsParticipant", addr)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -422,6 +437,7 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsParticipant(opts *bi
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsParticipant is a free data retrieval call binding the contract method 0x65e16e96.
@@ -444,6 +460,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsParticipant(a
 func (_EventAccessManager *EventAccessManagerCaller) GetRoleAdmin(opts *bind.CallOpts, role [32]byte) ([32]byte, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "getRoleAdmin", role)
+
 	if err != nil {
 		return *new([32]byte), err
 	}
@@ -451,6 +468,7 @@ func (_EventAccessManager *EventAccessManagerCaller) GetRoleAdmin(opts *bind.Cal
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
+
 }
 
 // GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
@@ -473,6 +491,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) GetRoleAdmin(role [3
 func (_EventAccessManager *EventAccessManagerCaller) HasRole(opts *bind.CallOpts, role [32]byte, account common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "hasRole", role, account)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -480,6 +499,7 @@ func (_EventAccessManager *EventAccessManagerCaller) HasRole(opts *bind.CallOpts
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // HasRole is a free data retrieval call binding the contract method 0x91d14854.
@@ -502,11 +522,13 @@ func (_EventAccessManager *EventAccessManagerCallerSession) HasRole(role [32]byt
 func (_EventAccessManager *EventAccessManagerCaller) RequireAdmin(opts *bind.CallOpts, addr common.Address) error {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "requireAdmin", addr)
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
 // RequireAdmin is a free data retrieval call binding the contract method 0x5577210a.
@@ -529,11 +551,13 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireAdmin(addr co
 func (_EventAccessManager *EventAccessManagerCaller) RequireAllowedMsgSender(opts *bind.CallOpts) error {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "requireAllowedMsgSender")
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
 // RequireAllowedMsgSender is a free data retrieval call binding the contract method 0xfa59a384.
@@ -556,11 +580,13 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireAllowedMsgSen
 func (_EventAccessManager *EventAccessManagerCaller) RequireHostOrAdmin(opts *bind.CallOpts, addr common.Address) error {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "requireHostOrAdmin", addr)
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
 // RequireHostOrAdmin is a free data retrieval call binding the contract method 0x97949850.
@@ -583,11 +609,13 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireHostOrAdmin(a
 func (_EventAccessManager *EventAccessManagerCaller) RequireHostOrAdminOrParticipant(opts *bind.CallOpts, addr common.Address) error {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "requireHostOrAdminOrParticipant", addr)
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
 // RequireHostOrAdminOrParticipant is a free data retrieval call binding the contract method 0xe8b98395.
@@ -610,11 +638,13 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireHostOrAdminOr
 func (_EventAccessManager *EventAccessManagerCaller) RequireParticipant(opts *bind.CallOpts, addr common.Address) error {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "requireParticipant", addr)
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
 // RequireParticipant is a free data retrieval call binding the contract method 0xb08646b3.
@@ -637,6 +667,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireParticipant(a
 func (_EventAccessManager *EventAccessManagerCaller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "supportsInterface", interfaceId)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -644,6 +675,7 @@ func (_EventAccessManager *EventAccessManagerCaller) SupportsInterface(opts *bin
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
@@ -666,6 +698,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) SupportsInterface(in
 func (_EventAccessManager *EventAccessManagerCaller) UsedSignatures(opts *bind.CallOpts, arg0 []byte) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "usedSignatures", arg0)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -673,6 +706,7 @@ func (_EventAccessManager *EventAccessManagerCaller) UsedSignatures(opts *bind.C
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // UsedSignatures is a free data retrieval call binding the contract method 0xe949580e.
@@ -998,6 +1032,7 @@ type EventAccessManagerHostRoleGranted struct {
 //
 // Solidity: event HostRoleGranted(address indexed host, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterHostRoleGranted(opts *bind.FilterOpts, host []common.Address, granter []common.Address) (*EventAccessManagerHostRoleGrantedIterator, error) {
+
 	var hostRule []interface{}
 	for _, hostItem := range host {
 		hostRule = append(hostRule, hostItem)
@@ -1018,6 +1053,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterHostRoleGranted(opt
 //
 // Solidity: event HostRoleGranted(address indexed host, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchHostRoleGranted(opts *bind.WatchOpts, sink chan<- *EventAccessManagerHostRoleGranted, host []common.Address, granter []common.Address) (event.Subscription, error) {
+
 	var hostRule []interface{}
 	for _, hostItem := range host {
 		hostRule = append(hostRule, hostItem)
@@ -1149,6 +1185,7 @@ type EventAccessManagerIssuerRoleGranted struct {
 //
 // Solidity: event IssuerRoleGranted(address indexed issuer, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterIssuerRoleGranted(opts *bind.FilterOpts, issuer []common.Address, granter []common.Address) (*EventAccessManagerIssuerRoleGrantedIterator, error) {
+
 	var issuerRule []interface{}
 	for _, issuerItem := range issuer {
 		issuerRule = append(issuerRule, issuerItem)
@@ -1169,6 +1206,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterIssuerRoleGranted(o
 //
 // Solidity: event IssuerRoleGranted(address indexed issuer, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchIssuerRoleGranted(opts *bind.WatchOpts, sink chan<- *EventAccessManagerIssuerRoleGranted, issuer []common.Address, granter []common.Address) (event.Subscription, error) {
+
 	var issuerRule []interface{}
 	for _, issuerItem := range issuer {
 		issuerRule = append(issuerRule, issuerItem)
@@ -1300,6 +1338,7 @@ type EventAccessManagerIssuerRoleRevoked struct {
 //
 // Solidity: event IssuerRoleRevoked(address indexed issuer, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterIssuerRoleRevoked(opts *bind.FilterOpts, issuer []common.Address, revoker []common.Address) (*EventAccessManagerIssuerRoleRevokedIterator, error) {
+
 	var issuerRule []interface{}
 	for _, issuerItem := range issuer {
 		issuerRule = append(issuerRule, issuerItem)
@@ -1320,6 +1359,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterIssuerRoleRevoked(o
 //
 // Solidity: event IssuerRoleRevoked(address indexed issuer, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchIssuerRoleRevoked(opts *bind.WatchOpts, sink chan<- *EventAccessManagerIssuerRoleRevoked, issuer []common.Address, revoker []common.Address) (event.Subscription, error) {
+
 	var issuerRule []interface{}
 	for _, issuerItem := range issuer {
 		issuerRule = append(issuerRule, issuerItem)
@@ -1451,6 +1491,7 @@ type EventAccessManagerMsgSenderAllowed struct {
 //
 // Solidity: event MsgSenderAllowed(address indexed sender, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterMsgSenderAllowed(opts *bind.FilterOpts, sender []common.Address, granter []common.Address) (*EventAccessManagerMsgSenderAllowedIterator, error) {
+
 	var senderRule []interface{}
 	for _, senderItem := range sender {
 		senderRule = append(senderRule, senderItem)
@@ -1471,6 +1512,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterMsgSenderAllowed(op
 //
 // Solidity: event MsgSenderAllowed(address indexed sender, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchMsgSenderAllowed(opts *bind.WatchOpts, sink chan<- *EventAccessManagerMsgSenderAllowed, sender []common.Address, granter []common.Address) (event.Subscription, error) {
+
 	var senderRule []interface{}
 	for _, senderItem := range sender {
 		senderRule = append(senderRule, senderItem)
@@ -1602,6 +1644,7 @@ type EventAccessManagerMsgSenderDisallowed struct {
 //
 // Solidity: event MsgSenderDisallowed(address indexed sender, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterMsgSenderDisallowed(opts *bind.FilterOpts, sender []common.Address, revoker []common.Address) (*EventAccessManagerMsgSenderDisallowedIterator, error) {
+
 	var senderRule []interface{}
 	for _, senderItem := range sender {
 		senderRule = append(senderRule, senderItem)
@@ -1622,6 +1665,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterMsgSenderDisallowed
 //
 // Solidity: event MsgSenderDisallowed(address indexed sender, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchMsgSenderDisallowed(opts *bind.WatchOpts, sink chan<- *EventAccessManagerMsgSenderDisallowed, sender []common.Address, revoker []common.Address) (event.Subscription, error) {
+
 	var senderRule []interface{}
 	for _, senderItem := range sender {
 		senderRule = append(senderRule, senderItem)
@@ -1753,6 +1797,7 @@ type EventAccessManagerParticipantRoleGranted struct {
 //
 // Solidity: event ParticipantRoleGranted(address indexed participant, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterParticipantRoleGranted(opts *bind.FilterOpts, participant []common.Address, granter []common.Address) (*EventAccessManagerParticipantRoleGrantedIterator, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -1773,6 +1818,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterParticipantRoleGran
 //
 // Solidity: event ParticipantRoleGranted(address indexed participant, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchParticipantRoleGranted(opts *bind.WatchOpts, sink chan<- *EventAccessManagerParticipantRoleGranted, participant []common.Address, granter []common.Address) (event.Subscription, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -1904,6 +1950,7 @@ type EventAccessManagerParticipantRoleRevoked struct {
 //
 // Solidity: event ParticipantRoleRevoked(address indexed participant, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterParticipantRoleRevoked(opts *bind.FilterOpts, participant []common.Address, revoker []common.Address) (*EventAccessManagerParticipantRoleRevokedIterator, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -1924,6 +1971,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterParticipantRoleRevo
 //
 // Solidity: event ParticipantRoleRevoked(address indexed participant, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchParticipantRoleRevoked(opts *bind.WatchOpts, sink chan<- *EventAccessManagerParticipantRoleRevoked, participant []common.Address, revoker []common.Address) (event.Subscription, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -2056,6 +2104,7 @@ type EventAccessManagerRoleAdminChanged struct {
 //
 // Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleAdminChanged(opts *bind.FilterOpts, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (*EventAccessManagerRoleAdminChangedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2080,6 +2129,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleAdminChanged(op
 //
 // Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchRoleAdminChanged(opts *bind.WatchOpts, sink chan<- *EventAccessManagerRoleAdminChanged, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2216,6 +2266,7 @@ type EventAccessManagerRoleGranted struct {
 //
 // Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleGranted(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*EventAccessManagerRoleGrantedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2240,6 +2291,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleGranted(opts *b
 //
 // Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchRoleGranted(opts *bind.WatchOpts, sink chan<- *EventAccessManagerRoleGranted, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2376,6 +2428,7 @@ type EventAccessManagerRoleRevoked struct {
 //
 // Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleRevoked(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*EventAccessManagerRoleRevokedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2400,6 +2453,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleRevoked(opts *b
 //
 // Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchRoleRevoked(opts *bind.WatchOpts, sink chan<- *EventAccessManagerRoleRevoked, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
