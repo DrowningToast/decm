@@ -273,7 +273,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) DEFAULTADMINROLE() (
 // Solidity: function checkIsAllowedMsgSender(address addr) view returns(bool)
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsAllowedMsgSender(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
-	err := _EventAccessManager.contract.Call(opts, &out, "checkIsAllowedMsgSender", addr)
+	err := _EventAccessManager.contract.Call(opts, &out, "allowedMsgSenders", arg0)
 
 	if err != nil {
 		return *new(bool), err
@@ -282,6 +282,8 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsAllowedMsgSender(opt
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
+}
 
 }
 
@@ -294,9 +296,19 @@ func (_EventAccessManager *EventAccessManagerSession) CheckIsAllowedMsgSender(ad
 
 // CheckIsAllowedMsgSender is a free data retrieval call binding the contract method 0x23327b9c.
 //
-// Solidity: function checkIsAllowedMsgSender(address addr) view returns(bool)
-func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsAllowedMsgSender(addr common.Address) (bool, error) {
-	return _EventAccessManager.Contract.CheckIsAllowedMsgSender(&_EventAccessManager.CallOpts, addr)
+// Solidity: function checkIsAllowedMsgSender() view returns(bool)
+func (_EventAccessManager *EventAccessManagerCaller) CheckIsAllowedMsgSender(opts *bind.CallOpts) (bool, error) {
+	var out []interface{}
+	err := _EventAccessManager.contract.Call(opts, &out, "checkIsAllowedMsgSender")
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // CheckIsHost is a free data retrieval call binding the contract method 0x972d3e87.
@@ -490,7 +502,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) HasRole(role [32]byt
 // Solidity: function requireAdmin(address addr, address msgSender) view returns()
 func (_EventAccessManager *EventAccessManagerCaller) RequireAdmin(opts *bind.CallOpts, addr common.Address, msgSender common.Address) error {
 	var out []interface{}
-	err := _EventAccessManager.contract.Call(opts, &out, "requireAdmin", addr, msgSender)
+	err := _EventAccessManager.contract.Call(opts, &out, "requireAdmin", addr)
 
 	if err != nil {
 		return err
@@ -519,7 +531,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireAdmin(addr co
 // Solidity: function requireAllowedMsgSender(address addr) view returns()
 func (_EventAccessManager *EventAccessManagerCaller) RequireAllowedMsgSender(opts *bind.CallOpts, addr common.Address) error {
 	var out []interface{}
-	err := _EventAccessManager.contract.Call(opts, &out, "requireAllowedMsgSender", addr)
+	err := _EventAccessManager.contract.Call(opts, &out, "requireAllowedMsgSender")
 
 	if err != nil {
 		return err
@@ -548,7 +560,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireAllowedMsgSen
 // Solidity: function requireHostOrAdmin(address addr, address msgSender) view returns()
 func (_EventAccessManager *EventAccessManagerCaller) RequireHostOrAdmin(opts *bind.CallOpts, addr common.Address, msgSender common.Address) error {
 	var out []interface{}
-	err := _EventAccessManager.contract.Call(opts, &out, "requireHostOrAdmin", addr, msgSender)
+	err := _EventAccessManager.contract.Call(opts, &out, "requireHostOrAdmin", addr)
 
 	if err != nil {
 		return err
@@ -577,7 +589,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireHostOrAdmin(a
 // Solidity: function requireHostOrAdminOrParticipant(address addr, address msgSender) view returns()
 func (_EventAccessManager *EventAccessManagerCaller) RequireHostOrAdminOrParticipant(opts *bind.CallOpts, addr common.Address, msgSender common.Address) error {
 	var out []interface{}
-	err := _EventAccessManager.contract.Call(opts, &out, "requireHostOrAdminOrParticipant", addr, msgSender)
+	err := _EventAccessManager.contract.Call(opts, &out, "requireHostOrAdminOrParticipant", addr)
 
 	if err != nil {
 		return err
@@ -606,7 +618,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireHostOrAdminOr
 // Solidity: function requireParticipant(address addr, address msgSender) view returns()
 func (_EventAccessManager *EventAccessManagerCaller) RequireParticipant(opts *bind.CallOpts, addr common.Address, msgSender common.Address) error {
 	var out []interface{}
-	err := _EventAccessManager.contract.Call(opts, &out, "requireParticipant", addr, msgSender)
+	err := _EventAccessManager.contract.Call(opts, &out, "requireParticipant", addr)
 
 	if err != nil {
 		return err

@@ -90,6 +90,7 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string memory backendEncryptedProof,
         string memory certificateTitle,
         string memory certificateSubtitle,
+        string memory hash,
         CertificateVCStructs.IssuerProof[] memory issuerProofs
     ) external nonReentrant {
         address signer = recoverSigner(signedMessageDigest, signature);
@@ -115,7 +116,8 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                 backendEncryptedProof,
                 issuerProofs,
                 certificateTitle,
-                certificateSubtitle
+                certificateSubtitle,
+                hash
             );
 
         _safeMint(receiverAddress, tokenId);
@@ -176,6 +178,7 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string backendEncryptedProof;
         string certificateTitle;
         string certificateSubtitle;
+        string hash;
     }
 
     function getTokenData(
@@ -340,7 +343,8 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
         string memory backendEncryptedProof,
         CertificateVCStructs.IssuerProof[] memory issuerProofs,
         string memory certificateTitle,
-        string memory certificateSubtitle
+        string memory certificateSubtitle,
+        string memory hash
     ) private view returns (CertificateVCStructs.CertificateVcData memory) {
         return
             CertificateVCStructs.CertificateVcData({
@@ -369,7 +373,7 @@ contract EventCertificate is ERC721, ThemisUtils, ReentrancyGuard {
                 proof: CertificateVCStructs.Proof({
                     encryptedByUserRawData: userEncryptedProof,
                     encryptedByBackendRawData: backendEncryptedProof,
-                    hash: "",
+                    hash: hash,
                     signMessage: signMessage,
                     host: CertificateVCStructs.HostProof({
                         signature: hostSignature,
