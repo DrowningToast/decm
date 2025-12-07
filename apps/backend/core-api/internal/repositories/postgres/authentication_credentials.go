@@ -296,3 +296,53 @@ func (r *Repository) DeleteAuthenticationCredential(ctx context.Context, id uuid
 	}
 	return nil
 }
+
+func (r *Repository) GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx context.Context, params datagateway.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters) (*entity.AuthenticationCredential, error) {
+	// Build query parameters
+	queryParams := generated.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParams{}
+
+	// Encrypt Google connector ref for searching if provided
+	if params.GoogleConnectorRef != nil && *params.GoogleConnectorRef != "" {
+		encryptedRef, err := pgmapper.EncryptPII(*params.GoogleConnectorRef, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+		queryParams.GoogleConnectorRef = pgtype.Text{String: encryptedRef, Valid: true}
+	}
+
+	// Set wallet address if provided
+	if params.WalletAddress != nil && *params.WalletAddress != "" {
+		queryParams.WalletAddress = pgtype.Text{String: *params.WalletAddress, Valid: true}
+	}
+
+	query, err := r.queries.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx, queryParams)
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	// Decrypt PII fields
+	googleConnectorRef, err := pgmapper.DecryptPgTextToStringPtr(query.GoogleConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	githubConnectorRef, err := pgmapper.DecryptPgTextToStringPtr(query.GithubConnectorRef, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity.AuthenticationCredential{
+		Id:                  query.ID,
+		SolutionStatus:      common.SolutionStatus(query.SolutionStatus),
+		HashedPassword:      pgmapper.PgTextToStringPtr(query.HashedPassword),
+		EncryptedPrivateKey: nil, // EncryptedPrivateKey is []byte, not decrypted - kept as nil for security
+		WalletAddress:       query.WalletAddress,
+		GoogleConnectorRef:  googleConnectorRef,
+		GithubConnectorRef:  githubConnectorRef,
+		IsVerifiedOrganizer: query.IsVerifiedOrganizer == 1,
+		IsVerifiedStudent:   query.IsVerifiedStudent == 1,
+		IsVerifiedIssuer:    query.IsVerifiedIssuer == 1,
+		CreatedAt:           query.CreatedAt.Time,
+		UpdatedAt:           query.UpdatedAt.Time,
+	}, nil
+}

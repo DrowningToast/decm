@@ -3,9 +3,12 @@ package cyptoutils
 import (
 	"crypto/ecdsa"
 	"fmt"
+	"strconv"
+	"strings"
 
 	customerror "apps/backend/common/customerror"
 
+	"github.com/ethereum/go-ethereum/common"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -86,6 +89,21 @@ func VerifySignedMessageByAddress(walletAddress ethCommon.Address, message strin
 	return recoveredAddress == walletAddress, nil
 }
 
+func VerifySignatureByDigest(walletAddress ethCommon.Address, messageDigest common.Hash, signature []byte) (bool, error) {
+	// Adjust recovery ID from Ethereum format (27/28) to go-ethereum format (0/1)
+	if len(signature) == 65 && (signature[64] == 27 || signature[64] == 28) {
+		signature[64] -= 27
+	}
+
+	usedPublicKey, err := crypto.SigToPub(messageDigest.Bytes(), signature)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to recover public key")
+	}
+
+	signatureWallet := crypto.PubkeyToAddress(*usedPublicKey)
+	return signatureWallet.Cmp(walletAddress) == 0, nil
+}
+
 func VerifySignedMessageByPublicKey(publicKey *ecdsa.PublicKey, message string, signature string) (bool, error) {
 	recoveredAddress := crypto.PubkeyToAddress(*publicKey)
 
@@ -95,4 +113,45 @@ func VerifySignedMessageByPublicKey(publicKey *ecdsa.PublicKey, message string, 
 func GetSignMessage(signerAddress ethCommon.Address, contractAddress ethCommon.Address, deadlineBlock uint64) (string, error) {
 	rawSignMessage := fmt.Sprintf("%s,%s,%d", signerAddress.Hex(), contractAddress.Hex(), deadlineBlock)
 	return rawSignMessage, nil
+}
+
+func ValidateSignMessage(signMessage string, signerAddress ethCommon.Address, contractAddress ethCommon.Address, deadlineBlock *uint64) (bool, error) {
+	// split strings into 3 parts
+	parts := strings.Split(signMessage, ",")
+	if len(parts) != 3 {
+		return false, customerror.NewWithPreset(&customerror.ErrInvalidArgument, errors.New("invalid sign message"))
+	}
+
+	if parts[0] != signerAddress.Hex() {
+		return false, customerror.NewWithPreset(&customerror.ErrInvalidArgument, errors.New("invalid signer address"))
+	}
+
+	if parts[1] != contractAddress.Hex() {
+		return false, customerror.NewWithPreset(&customerror.ErrInvalidArgument, errors.New("invalid contract address"))
+	}
+
+	if deadlineBlock != nil && parts[2] != strconv.FormatUint(*deadlineBlock, 10) {
+		return false, customerror.NewWithPreset(&customerror.ErrInvalidArgument, errors.New("invalid deadline block"))
+	} else {
+		// validate if the value is int or not
+		value, err := strconv.ParseUint(parts[2], 10, 64)
+		if err != nil {
+			return false, customerror.NewWithPreset(&customerror.ErrInvalidArgument, err)
+		}
+		*deadlineBlock = value
+		return true, nil
+	}
+}
+
+func ExtractDeadlineBlockFromSignMessage(signMessage string) (*uint64, error) {
+	parts := strings.Split(signMessage, ",")
+	if len(parts) != 3 {
+		return nil, customerror.NewWithPreset(&customerror.ErrInvalidArgument, errors.New("invalid sign message"))
+	}
+
+	value, err := strconv.ParseUint(parts[2], 10, 64)
+	if err != nil {
+		return nil, customerror.NewWithPreset(&customerror.ErrInvalidArgument, err)
+	}
+	return &value, nil
 }

@@ -35,8 +35,8 @@ var (
 
 // EventAccessManagerMetaData contains all meta data concerning the EventAccessManager contract.
 var EventAccessManagerMetaData = &bind.MetaData{
-	ABI: "[{\"type\":\"constructor\",\"inputs\":[{\"name\":\"decmAccessManagerAddr\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"hostAddress\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"DECM_ACCESS_MANAGER\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"contractDecmAccessManager\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"DEFAULT_ADMIN_ROLE\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"addAllowedMsgSender\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"allowedMsgSenders\",\"inputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsAllowedMsgSender\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsHost\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsHostOrAdmin\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsIssuer\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsParticipant\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getRoleAdmin\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"grantHostRole\",\"inputs\":[{\"name\":\"host\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantIssuerRole\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantParticipantRole\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"hasRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"recoverSigner\",\"inputs\":[{\"name\":\"signedMessageDigest\",\"type\":\"string\",\"internalType\":\"string\"},{\"name\":\"signature\",\"type\":\"bytes\",\"internalType\":\"bytes\"}],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"removeAllowedMsgSender\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"renounceRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"callerConfirmation\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"requireAdmin\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireAllowedMsgSender\",\"inputs\":[],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireHostOrAdmin\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireHostOrAdminOrParticipant\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireParticipant\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"revokeIssuerRole\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"revokeParticipantRole\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"revokeRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"supportsInterface\",\"inputs\":[{\"name\":\"interfaceId\",\"type\":\"bytes4\",\"internalType\":\"bytes4\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"usedSignatures\",\"inputs\":[{\"name\":\"\",\"type\":\"bytes\",\"internalType\":\"bytes\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"event\",\"name\":\"HostRoleGranted\",\"inputs\":[{\"name\":\"host\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"IssuerRoleGranted\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"IssuerRoleRevoked\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"revoker\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"MsgSenderAllowed\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"MsgSenderDisallowed\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"revoker\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"ParticipantRoleGranted\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"ParticipantRoleRevoked\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"revoker\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleAdminChanged\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"previousAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"newAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleGranted\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleRevoked\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"error\",\"name\":\"AccessControlBadConfirmation\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"AccessControlUnauthorizedAccount\",\"inputs\":[{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"neededRole\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}]},{\"type\":\"error\",\"name\":\"ECDSAInvalidSignature\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"ECDSAInvalidSignatureLength\",\"inputs\":[{\"name\":\"length\",\"type\":\"uint256\",\"internalType\":\"uint256\"}]},{\"type\":\"error\",\"name\":\"ECDSAInvalidSignatureS\",\"inputs\":[{\"name\":\"s\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}]},{\"type\":\"error\",\"name\":\"EventAccessManager__AccessManagerCannotBeZeroAddress\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__AccountCannotBeZeroAddress\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotAdmin\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotAllowedMsgSender\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotHostOrAdmin\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotHostOrAdminOrParticipant\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EventAccessManager__NotParticipant\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"Themis__InvalidSignature\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"Themis__SignatureAlreadyUsed\",\"inputs\":[]}]",
-	Bin: "0x60a03461012f57601f6117de38819003918201601f19168301916001600160401b0383118484101761013357808492604094855283398101031261012f57610052602061004b83610147565b9201610147565b906001600160a01b03168015610120576001600160a01b0382169182156101115761009691608052335f52600260205260405f20600160ff1982541617905561015b565b506040519033337fcafff2e98645ec2da6e513226c1a9e43cd3c576a07ac0f5ae021ed56785035e35f80a333907f40075578d30899d27664f80f0c7ba1dce6ef3e6d7af222f8e53acbc9e0f995c15f80a36115b79081610207823960805181818161046301528181610d2b01528181610dbc0152610eee0152f35b630b7d120360e41b5f5260045ffd5b63af83b44360e01b5f5260045ffd5b5f80fd5b634e487b7160e01b5f52604160045260245ffd5b51906001600160a01b038216820361012f57565b6001600160a01b0381165f9081525f5160206117be5f395f51905f52602052604090205460ff16610201576001600160a01b03165f8181525f5160206117be5f395f51905f5260205260408120805460ff191660011790553391907fffea912cee438c2ace68bb665a205db5afc1aaf31713688b377348fe4bfc04f5907f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d9080a4600190565b505f9056fe60806040526004361015610011575f80fd5b5f3560e01c8062fd49841461092057806301d060b0146108e357806301ffc9a71461088d57806317148e6e14610826578063248a9ca3146107f45780632a7226591461078d5780632f2ff15d1461075057806336568abe1461070c5780634f5af5d7146106e95780635577210a146106c85780635b8c77721461067a57806365e16e961461062c57806390d0d188146105c557806391d148541461057d578063972d3e871461052f5780639794985014610513578063a1d0e826146104ac578063a217fddf14610492578063a4189e891461044e578063aa2d9078146103de578063b08646b314610366578063c15e0b4d146102f9578063c91e2adb1461027e578063d547741f1461023c578063e53938551461020a578063e8b98395146101e7578063e949580e1461018c5763fa59a3841461014c575f80fd5b34610188575f36600319011261018857610172335f52600260205260ff60405f20541690565b1561017957005b636579d15160e01b5f5260045ffd5b5f80fd5b346101885760203660031901126101885760043567ffffffffffffffff81116101885760ff6020806101c381943690600401610c6c565b604051928184925191829101835e8101600181520301902054166040519015158152f35b3461018857602036600319011261018857610208610203610c8a565b610e87565b005b34610188575f366003190112610188576020610232335f52600260205260ff60405f20541690565b6040519015158152f35b346101885760403660031901126101885761020860043561025b610ca0565b90610279610274825f525f602052600160405f20015490565b611399565b6110eb565b3461018857604036600319011261018857610297610c8a565b6102a76102a2610ca0565b610e45565b6001600160a01b0381169081156102ea576102c190611297565b5033907f09fee57db8b9faf221b6b0eb8db28bc36e2b660ebf83a5bda0a5c2a96ec1039a5f80a3005b630b7d120360e41b5f5260045ffd5b3461018857602036600319011261018857610312610c8a565b61031b33610d92565b6001600160a01b031680156102ea57805f52600260205260405f2060ff19815416905533907ffe0eafd64726b7e9467641e45715fd6d43ef445f0383079f7b2863034e01ac865f80a3005b346101885760203660031901126101885761037f610c8a565b6001600160a01b03165f9081525f5160206115625f395f51905f52602090815260408083205433845260029092529091205460ff918216159116816103d5575b506103c657005b631778965560e31b5f5260045ffd5b905015816103bf565b34610188576020366003190112610188576103f7610c8a565b61040033610d92565b6001600160a01b031680156102ea57805f52600260205260405f20600160ff1982541617905533907fcafff2e98645ec2da6e513226c1a9e43cd3c576a07ac0f5ae021ed56785035e35f80a3005b34610188575f366003190112610188576040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b34610188575f3660031901126101885760206040515f8152f35b34610188576040366003190112610188576104c5610c8a565b6104d06102a2610ca0565b6001600160a01b0381169081156102ea576104ea90611204565b5033907f40075578d30899d27664f80f0c7ba1dce6ef3e6d7af222f8e53acbc9e0f995c15f80a3005b34610188576020366003190112610188576102086102a2610c8a565b3461018857602036600319011261018857610548610c8a565b6001600160a01b03165f9081525f5160206115425f395f51905f52602090815260409182902054915160ff9092161515825290f35b3461018857604036600319011261018857610596610ca0565b6004355f525f60205260405f209060018060a01b03165f52602052602060ff60405f2054166040519015158152f35b34610188576040366003190112610188576105de610c8a565b6105e9610203610ca0565b6001600160a01b0381169081156102ea5761060390611047565b5033907f8f2034f4c7c42ef02cdc073ff41e6444ec47bbbf4401c2f1b32427bc7c5fcd8d5f80a3005b3461018857602036600319011261018857610645610c8a565b6001600160a01b03165f9081525f5160206115625f395f51905f52602090815260409182902054915160ff9092161515825290f35b3461018857602036600319011261018857610693610c8a565b6001600160a01b03165f9081525f5160206115225f395f51905f52602090815260409182902054915160ff9092161515825290f35b34610188576020366003190112610188576102086106e4610c8a565b610d92565b34610188576020366003190112610188576020610232610707610c8a565b610cce565b3461018857604036600319011261018857610725610ca0565b336001600160a01b0382160361074157610208906004356110eb565b63334bd91960e11b5f5260045ffd5b346101885760403660031901126101885761020860043561076f610ca0565b90610788610274825f525f602052600160405f20015490565b61132a565b34610188576040366003190112610188576107a6610c8a565b6107b16102a2610ca0565b6001600160a01b0381169081156102ea576107cb90611171565b5033907fe9ec21f7a07fec3a8ece7bac8da7d00b6774fef25832b06f901c6f88b717bcba5f80a3005b3461018857602036600319011261018857602061081e6004355f525f602052600160405f20015490565b604051908152f35b346101885760403660031901126101885761083f610c8a565b61084a6102a2610ca0565b6001600160a01b0381169081156102ea5761086490610f9e565b5033907f311633f976ae39ac301202033af2019f5ad0cefb41e4856eb443b0fdd57ec58b5f80a3005b346101885760203660031901126101885760043563ffffffff60e01b811680910361018857602090637965db0b60e01b81149081156108d2575b506040519015158152f35b6301ffc9a760e01b149050826108c7565b34610188576020366003190112610188576001600160a01b03610904610c8a565b165f526002602052602060ff60405f2054166040519015158152f35b346101885760403660031901126101885760043567ffffffffffffffff8111610188573660238201121561018857610962903690602481600401359101610c36565b60243567ffffffffffffffff811161018857610982903690600401610c6c565b815190915f8272184f03e93ff9f4daa797ed6e38ed64bf6a1f0160401b811015610bc1575b806d04ee2d6d415b85acef8100000000600a921015610ba6575b662386f26fc10000811015610b92575b6305f5e100811015610b81575b612710811015610b72575b6064811015610b64575b1015610b5c575b6001810192600a6021610a25610a0f87610c1a565b96610a1d6040519889610be4565b808852610c1a565b602087019490601f19013686378601015b5f1901916f181899199a1a9b1b9c1cb0b131b232b360811b8282061a83530490858215610a665750600a90610a36565b610ae0610ad7828888610acf89603a6020604051948593828501977f19457468657265756d205369676e6564204d6573736167653a0a00000000000089525180918587015e8401908382015f8152815193849201905e01015f815203601f198101835282610be4565b5190206113d1565b9092919261140b565b6001600160a01b03168015610b4d5760405160ff835191602081818701948086835e810160018152030190205416610b3e5760208093604051928391518091835e81016001815203019020600160ff19825416179055604051908152f35b63f632d4a960e01b5f5260045ffd5b6353c789ab60e01b5f5260045ffd5b6001016109fa565b6064600291049201916109f3565b612710600491049201916109e9565b6305f5e100600891049201916109de565b662386f26fc10000601091049201916109d1565b6d04ee2d6d415b85acef8100000000602091049201916109c1565b506040905072184f03e93ff9f4daa797ed6e38ed64bf6a1f0160401b83046109a7565b90601f8019910116810190811067ffffffffffffffff821117610c0657604052565b634e487b7160e01b5f52604160045260245ffd5b67ffffffffffffffff8111610c0657601f01601f191660200190565b929192610c4282610c1a565b91610c506040519384610be4565b829481845281830111610188578281602093845f960137010152565b9080601f8301121561018857816020610c8793359101610c36565b90565b600435906001600160a01b038216820361018857565b602435906001600160a01b038216820361018857565b90816020910312610188575180151581036101885790565b6001600160a01b0381165f9081525f5160206115425f395f51905f52602052604090205460ff16908115610d00575090565b60405163d953689d60e01b81526001600160a01b0391821660048201529150602090829060249082907f0000000000000000000000000000000000000000000000000000000000000000165afa908115610d87575f91610d5e575090565b610c87915060203d602011610d80575b610d788183610be4565b810190610cb6565b503d610d6e565b6040513d5f823e3d90fd5b60405163d953689d60e01b81526001600160a01b03918216600482015290602090829060249082907f0000000000000000000000000000000000000000000000000000000000000000165afa908115610d87575f91610e26575b501580610e09575b610dfa57565b63ed19117b60e01b5f5260045ffd5b50610e20335f52600260205260ff60405f20541690565b15610df4565b610e3f915060203d602011610d8057610d788183610be4565b5f610dec565b610e4e90610cce565b1580610e6a575b610e5b57565b631101e68b60e21b5f5260045ffd5b50610e81335f52600260205260ff60405f20541690565b15610e55565b6001600160a01b039081165f8181525f5160206115425f395f51905f5260209081526040808320545f5160206115625f395f51905f5283529281902054905163d953689d60e01b81526004810194909452929360ff928316939290921691849060249082907f0000000000000000000000000000000000000000000000000000000000000000165afa928315610d87575f93610f7d575b50610f35335f52600260205260ff60405f20541690565b91159283610f74575b5082610f6b575b5081610f62575b50610f5357565b63450d904960e01b5f5260045ffd5b9050155f610f4c565b1591505f610f45565b1592505f610f3e565b610f9791935060203d602011610d8057610d788183610be4565b915f610f1e565b6001600160a01b0381165f9081525f5160206115225f395f51905f52602052604090205460ff1615611042576001600160a01b03165f8181525f5160206115225f395f51905f5260205260408120805460ff191690553391907f114e74f6ea3bd819998f78687bfcb11b140da08e9b7d222fa9c1f1ba1f2aa122907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9080a4600190565b505f90565b6001600160a01b0381165f9081525f5160206115625f395f51905f52602052604090205460ff1615611042576001600160a01b03165f8181525f5160206115625f395f51905f5260205260408120805460ff191690553391907f938c45fe3baa5cbd047f2473358a27f57db22291e9af95379a15ad016886dfb7907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9080a4600190565b5f818152602081815260408083206001600160a01b038616845290915290205460ff161561116b575f818152602081815260408083206001600160a01b0395909516808452949091528120805460ff19169055339291907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9080a4600190565b50505f90565b6001600160a01b0381165f9081525f5160206115625f395f51905f52602052604090205460ff16611042576001600160a01b03165f8181525f5160206115625f395f51905f5260205260408120805460ff191660011790553391907f938c45fe3baa5cbd047f2473358a27f57db22291e9af95379a15ad016886dfb7905f5160206115025f395f51905f529080a4600190565b6001600160a01b0381165f9081525f5160206115425f395f51905f52602052604090205460ff16611042576001600160a01b03165f8181525f5160206115425f395f51905f5260205260408120805460ff191660011790553391907fffea912cee438c2ace68bb665a205db5afc1aaf31713688b377348fe4bfc04f5905f5160206115025f395f51905f529080a4600190565b6001600160a01b0381165f9081525f5160206115225f395f51905f52602052604090205460ff16611042576001600160a01b03165f8181525f5160206115225f395f51905f5260205260408120805460ff191660011790553391907f114e74f6ea3bd819998f78687bfcb11b140da08e9b7d222fa9c1f1ba1f2aa122905f5160206115025f395f51905f529080a4600190565b5f818152602081815260408083206001600160a01b038616845290915290205460ff1661116b575f818152602081815260408083206001600160a01b0395909516808452949091528120805460ff19166001179055339291905f5160206115025f395f51905f529080a4600190565b5f8181526020818152604080832033845290915290205460ff16156113bb5750565b63e2517d3f60e01b5f523360045260245260445ffd5b8151919060418303611401576113fa9250602082015190606060408401519301515f1a9061147f565b9192909190565b50505f9160029190565b600481101561146b578061141d575050565b600181036114345763f645eedf60e01b5f5260045ffd5b6002810361144f575063fce698f760e01b5f5260045260245ffd5b6003146114595750565b6335e2f38360e21b5f5260045260245ffd5b634e487b7160e01b5f52602160045260245ffd5b91907f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a084116114f6579160209360809260ff5f9560405194855216868401526040830152606082015282805260015afa15610d87575f516001600160a01b038116156114ec57905f905f90565b505f906001905f90565b5050505f916003919056fe2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0df9c002f57bb53b4d861ae1ef1369a8087d06c8210e4846f897918d0e534663ce05d0266d92a165c0409de8243ef44328a30b31530682f3bbbd3cd3f1cea0fb64b5f694e3faed4d17d5a46a3ff72aafb68b3688701fac8b3fb7781179f7ead0fba264697066735822122077f614a317175d78a661f5cf4878e175740f5c93ee3477c33c559af8c01341cb64736f6c634300081c003305d0266d92a165c0409de8243ef44328a30b31530682f3bbbd3cd3f1cea0fb64",
+	ABI: "[{\"type\":\"constructor\",\"inputs\":[{\"name\":\"decmAccessManagerAddr\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"hostAddress\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"DECM_ACCESS_MANAGER\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"contractDecmAccessManager\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"DEFAULT_ADMIN_ROLE\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsAllowedMsgSender\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsHost\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsHostOrAdmin\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsIssuer\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsParticipant\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getRoleAdmin\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"grantHostRole\",\"inputs\":[{\"name\":\"host\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantIssuerRole\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantParticipantRole\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantParticipantRoleUsingAllowedMsgSender\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"msgSender\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"hasRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"recoverSigner\",\"inputs\":[{\"name\":\"signedMessageDigest\",\"type\":\"string\",\"internalType\":\"string\"},{\"name\":\"signature\",\"type\":\"bytes\",\"internalType\":\"bytes\"}],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"renounceRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"callerConfirmation\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"requireAdmin\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"msgSender\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireAllowedMsgSender\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireHostOrAdmin\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"msgSender\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireHostOrAdminOrParticipant\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"msgSender\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"requireParticipant\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"msgSender\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"revokeIssuerRole\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"revokeParticipantRole\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"signer\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"revokeRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"supportsInterface\",\"inputs\":[{\"name\":\"interfaceId\",\"type\":\"bytes4\",\"internalType\":\"bytes4\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"usedSignatures\",\"inputs\":[{\"name\":\"\",\"type\":\"bytes\",\"internalType\":\"bytes\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"event\",\"name\":\"HostRoleGranted\",\"inputs\":[{\"name\":\"host\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"IssuerRoleGranted\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"IssuerRoleRevoked\",\"inputs\":[{\"name\":\"issuer\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"revoker\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"MsgSenderAllowed\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"MsgSenderDisallowed\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"revoker\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"ParticipantRoleGranted\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"ParticipantRoleRevoked\",\"inputs\":[{\"name\":\"participant\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"revoker\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleAdminChanged\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"previousAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"newAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleGranted\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleRevoked\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"error\",\"name\":\"AccessControlBadConfirmation\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"AccessControlUnauthorizedAccount\",\"inputs\":[{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"neededRole\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}]},{\"type\":\"error\",\"name\":\"ECDSAInvalidSignature\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"ECDSAInvalidSignatureLength\",\"inputs\":[{\"name\":\"length\",\"type\":\"uint256\",\"internalType\":\"uint256\"}]},{\"type\":\"error\",\"name\":\"ECDSAInvalidSignatureS\",\"inputs\":[{\"name\":\"s\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}]},{\"type\":\"error\",\"name\":\"Themis__InvalidSignature\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"Themis__SignatureAlreadyUsed\",\"inputs\":[]}]",
+	Bin: "0x60a03461019957601f61197238819003918201601f19168301916001600160401b0383118484101761019d57808492604094855283398101031261019957610052602061004b836101b1565b92016101b1565b906001600160a01b03168015610146576001600160a01b0382169182156101015761007f916080526101c5565b506040519033337fcafff2e98645ec2da6e513226c1a9e43cd3c576a07ac0f5ae021ed56785035e35f80a333907f40075578d30899d27664f80f0c7ba1dce6ef3e6d7af222f8e53acbc9e0f995c15f80a36116e190816102718239608051818181610320015281816105dc01528181610dba01528181610e630152610f9e0152f35b60405162461bcd60e51b815260206004820152601660248201527f4163636f756e742063616e6e6f74206265207a65726f000000000000000000006044820152606490fd5b60405162461bcd60e51b815260206004820152602560248201527f416363657373206d616e616765722063616e6e6f74206265207a65726f206164604482015264647265737360d81b6064820152608490fd5b5f80fd5b634e487b7160e01b5f52604160045260245ffd5b51906001600160a01b038216820361019957565b6001600160a01b0381165f9081525f5160206119525f395f51905f52602052604090205460ff1661026b576001600160a01b03165f8181525f5160206119525f395f51905f5260205260408120805460ff191660011790553391907fffea912cee438c2ace68bb665a205db5afc1aaf31713688b377348fe4bfc04f5907f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d9080a4600190565b505f9056fe60806040526004361015610011575f80fd5b5f3560e01c8062fd4984146109a457806301ffc9a71461094e57806315c1f293146108d957806317148e6e1461087257806323327b9c1461084f578063248a9ca31461081d57806327690c15146107f35780632a7226591461078c5780632f2ff15d1461074f57806336568abe1461070b5780634f5af5d7146106de57806353586f4c146106b457806354dc2716146105915780635b8c77721461054357806365e16e96146104f557806387d38952146104d457806390d0d1881461046657806391d148541461041e578063972d3e87146103d0578063a1d0e82614610369578063a217fddf1461034f578063a4189e891461030b578063c91e2adb14610298578063d547741f14610254578063e81e8461146101955763e949580e14610136575f80fd5b346101915760203660031901126101915760043567ffffffffffffffff81116101915760ff60208061016d81943690600401610cf0565b604051928184925191829101835e8101600181520301902054166040519015158152f35b5f80fd5b34610191576040366003190112610191576101ae610d0e565b6101b6610d24565b6001600160a01b039091165f9081525f51602061168c5f395f51905f52602052604090205460ff16906101e890610d90565b9015908161024b575b506101f857005b60405162461bcd60e51b815260206004820152602560248201527f4e6f74207061727469636970616e74206f7220616c6c6f776564206d7367207360448201526432b73232b960d91b6064820152608490fd5b905015816101f1565b3461019157604036600319011261019157610296600435610273610d24565b9061029161028c825f525f602052600160405f20015490565b6114c3565b611443565b005b34610191576040366003190112610191576102b1610d0e565b6102c36102bc610d24565b3390610fd1565b6001600160a01b038116908115610306576102dd906111f3565b5033907f09fee57db8b9faf221b6b0eb8db28bc36e2b660ebf83a5bda0a5c2a96ec1039a5f80a3005b610d3a565b34610191575f366003190112610191576040517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b34610191575f3660031901126101915760206040515f8152f35b3461019157604036600319011261019157610382610d0e565b61038d6102bc610d24565b6001600160a01b038116908115610306576103a790611160565b5033907f40075578d30899d27664f80f0c7ba1dce6ef3e6d7af222f8e53acbc9e0f995c15f80a3005b34610191576020366003190112610191576103e9610d0e565b6001600160a01b03165f9081525f51602061166c5f395f51905f52602090815260409182902054915160ff9092161515825290f35b3461019157604036600319011261019157610437610d24565b6004355f525f60205260405f209060018060a01b03165f52602052602060ff60405f2054166040519015158152f35b346101915760403660031901126101915761047f610d0e565b61049161048a610d24565b3390610e06565b6001600160a01b038116908115610306576104ab9061139f565b5033907f8f2034f4c7c42ef02cdc073ff41e6444ec47bbbf4401c2f1b32427bc7c5fcd8d5f80a3005b34610191576020366003190112610191576102966104f0610d0e565b611051565b346101915760203660031901126101915761050e610d0e565b6001600160a01b03165f9081525f51602061168c5f395f51905f52602090815260409182902054915160ff9092161515825290f35b346101915760203660031901126101915761055c610d0e565b6001600160a01b03165f9081525f51602061164c5f395f51905f52602090815260409182902054915160ff9092161515825290f35b34610191576040366003190112610191576105aa610d0e565b6105b2610d24565b60405163d953689d60e01b81526001600160a01b03928316600482015291602090839060249082907f0000000000000000000000000000000000000000000000000000000000000000165afa9182156106a9575f92610674575b5061061690610d90565b9015908161066b575b5061062657005b60405162461bcd60e51b815260206004820152601f60248201527f4e6f742061646d696e206f7220616c6c6f776564206d73672073656e646572006044820152606490fd5b9050158161061f565b61061691925061069b9060203d6020116106a2575b6106938183610c68565b810190610d78565b919061060c565b503d610689565b6040513d5f823e3d90fd5b34610191576040366003190112610191576102966106d0610d0e565b6106d8610d24565b90610fd1565b346101915760203660031901126101915760206107016106fc610d0e565b610f5f565b6040519015158152f35b3461019157604036600319011261019157610724610d24565b336001600160a01b038216036107405761029690600435611443565b63334bd91960e11b5f5260045ffd5b346101915760403660031901126101915761029660043561076e610d24565b9061078761028c825f525f602052600160405f20015490565b611286565b34610191576040366003190112610191576107a5610d0e565b6107b06102bc610d24565b6001600160a01b038116908115610306576107ca906110c8565b5033907fe9ec21f7a07fec3a8ece7bac8da7d00b6774fef25832b06f901c6f88b717bcba5f80a3005b346101915760403660031901126101915761029661080f610d0e565b610817610d24565b90610e06565b346101915760203660031901126101915760206108476004355f525f602052600160405f20015490565b604051908152f35b3461019157602036600319011261019157602061070161086d610d0e565b610d90565b346101915760403660031901126101915761088b610d0e565b6108966102bc610d24565b6001600160a01b038116908115610306576108b0906112fb565b5033907f311633f976ae39ac301202033af2019f5ad0cefb41e4856eb443b0fdd57ec58b5f80a3005b34610191576040366003190112610191576108f2610d0e565b6108fa610d24565b61090381611051565b6001600160a01b0382169182156103065761091d906110c8565b506001600160a01b0316907fe9ec21f7a07fec3a8ece7bac8da7d00b6774fef25832b06f901c6f88b717bcba5f80a3005b346101915760203660031901126101915760043563ffffffff60e01b811680910361019157602090637965db0b60e01b8114908115610993575b506040519015158152f35b6301ffc9a760e01b14905082610988565b346101915760403660031901126101915760043567ffffffffffffffff81116101915736602382011215610191576109e6903690602481600401359101610cba565b60243567ffffffffffffffff811161019157610a06903690600401610cf0565b815190915f8272184f03e93ff9f4daa797ed6e38ed64bf6a1f0160401b811015610c45575b806d04ee2d6d415b85acef8100000000600a921015610c2a575b662386f26fc10000811015610c16575b6305f5e100811015610c05575b612710811015610bf6575b6064811015610be8575b1015610be0575b6001810192600a6021610aa9610a9387610c9e565b96610aa16040519889610c68565b808852610c9e565b602087019490601f19013686378601015b5f1901916f181899199a1a9b1b9c1cb0b131b232b360811b8282061a83530490858215610aea5750600a90610aba565b610b64610b5b828888610b5389603a6020604051948593828501977f19457468657265756d205369676e6564204d6573736167653a0a00000000000089525180918587015e8401908382015f8152815193849201905e01015f815203601f198101835282610c68565b5190206114fb565b90929192611535565b6001600160a01b03168015610bd15760405160ff835191602081818701948086835e810160018152030190205416610bc25760208093604051928391518091835e81016001815203019020600160ff19825416179055604051908152f35b63f632d4a960e01b5f5260045ffd5b6353c789ab60e01b5f5260045ffd5b600101610a7e565b606460029104920191610a77565b61271060049104920191610a6d565b6305f5e10060089104920191610a62565b662386f26fc1000060109104920191610a55565b6d04ee2d6d415b85acef810000000060209104920191610a45565b506040905072184f03e93ff9f4daa797ed6e38ed64bf6a1f0160401b8304610a2b565b90601f8019910116810190811067ffffffffffffffff821117610c8a57604052565b634e487b7160e01b5f52604160045260245ffd5b67ffffffffffffffff8111610c8a57601f01601f191660200190565b929192610cc682610c9e565b91610cd46040519384610c68565b829481845281830111610191578281602093845f960137010152565b9080601f8301121561019157816020610d0b93359101610cba565b90565b600435906001600160a01b038216820361019157565b602435906001600160a01b038216820361019157565b60405162461bcd60e51b81526020600482015260166024820152754163636f756e742063616e6e6f74206265207a65726f60501b6044820152606490fd5b90816020910312610191575180151581036101915790565b6040516308cc9ee760e21b81526001600160a01b03918216600482015290602090829060249082907f0000000000000000000000000000000000000000000000000000000000000000165afa9081156106a9575f91610ded575090565b610d0b915060203d6020116106a2576106938183610c68565b90610e108261109f565b6001600160a01b039283165f8181525f51602061168c5f395f51905f52602090815260409182902054915163d953689d60e01b815260048101939093529194929360ff90911692909190859060249082907f0000000000000000000000000000000000000000000000000000000000000000165afa9384156106a9575f94610f3a575b50610e9d90610d90565b91159283610f31575b5082610f28575b5081610f1f575b50610ebb57565b60405162461bcd60e51b815260206004820152603660248201527f4e6f7420686f7374206f722061646d696e206f72207061727469636970616e746044820152751037b91030b63637bbb2b21036b9b39039b2b73232b960511b6064820152608490fd5b9050155f610eb4565b1591505f610ead565b1592505f610ea6565b610e9d919450610f589060203d6020116106a2576106938183610c68565b9390610e93565b610f688161109f565b908115610f73575090565b60405163d953689d60e01b81526001600160a01b0391821660048201529150602090829060249082907f0000000000000000000000000000000000000000000000000000000000000000165afa9081156106a9575f91610ded575090565b610fdd610fe391610f5f565b91610d90565b90159081611048575b50610ff357565b60405162461bcd60e51b815260206004820152602760248201527f4e6f7420686f7374206f722061646d696e206f7220616c6c6f776564206d73676044820152661039b2b73232b960c91b6064820152608490fd5b9050155f610fec565b61105a90610d90565b1561106157565b60405162461bcd60e51b81526020600482015260166024820152752737ba1030b63637bbb2b21036b9b39039b2b73232b960511b6044820152606490fd5b6001600160a01b03165f9081525f51602061166c5f395f51905f52602052604090205460ff1690565b6001600160a01b0381165f9081525f51602061168c5f395f51905f52602052604090205460ff1661115b576001600160a01b03165f8181525f51602061168c5f395f51905f5260205260408120805460ff191660011790553391907f938c45fe3baa5cbd047f2473358a27f57db22291e9af95379a15ad016886dfb7905f51602061162c5f395f51905f529080a4600190565b505f90565b6001600160a01b0381165f9081525f51602061166c5f395f51905f52602052604090205460ff1661115b576001600160a01b03165f8181525f51602061166c5f395f51905f5260205260408120805460ff191660011790553391907fffea912cee438c2ace68bb665a205db5afc1aaf31713688b377348fe4bfc04f5905f51602061162c5f395f51905f529080a4600190565b6001600160a01b0381165f9081525f51602061164c5f395f51905f52602052604090205460ff1661115b576001600160a01b03165f8181525f51602061164c5f395f51905f5260205260408120805460ff191660011790553391907f114e74f6ea3bd819998f78687bfcb11b140da08e9b7d222fa9c1f1ba1f2aa122905f51602061162c5f395f51905f529080a4600190565b5f818152602081815260408083206001600160a01b038616845290915290205460ff166112f5575f818152602081815260408083206001600160a01b0395909516808452949091528120805460ff19166001179055339291905f51602061162c5f395f51905f529080a4600190565b50505f90565b6001600160a01b0381165f9081525f51602061164c5f395f51905f52602052604090205460ff161561115b576001600160a01b03165f8181525f51602061164c5f395f51905f5260205260408120805460ff191690553391907f114e74f6ea3bd819998f78687bfcb11b140da08e9b7d222fa9c1f1ba1f2aa122907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9080a4600190565b6001600160a01b0381165f9081525f51602061168c5f395f51905f52602052604090205460ff161561115b576001600160a01b03165f8181525f51602061168c5f395f51905f5260205260408120805460ff191690553391907f938c45fe3baa5cbd047f2473358a27f57db22291e9af95379a15ad016886dfb7907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9080a4600190565b5f818152602081815260408083206001600160a01b038616845290915290205460ff16156112f5575f818152602081815260408083206001600160a01b0395909516808452949091528120805460ff19169055339291907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9080a4600190565b5f8181526020818152604080832033845290915290205460ff16156114e55750565b63e2517d3f60e01b5f523360045260245260445ffd5b815191906041830361152b576115249250602082015190606060408401519301515f1a906115a9565b9192909190565b50505f9160029190565b60048110156115955780611547575050565b6001810361155e5763f645eedf60e01b5f5260045ffd5b60028103611579575063fce698f760e01b5f5260045260245ffd5b6003146115835750565b6335e2f38360e21b5f5260045260245ffd5b634e487b7160e01b5f52602160045260245ffd5b91907f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a08411611620579160209360809260ff5f9560405194855216868401526040830152606082015282805260015afa156106a9575f516001600160a01b0381161561161657905f905f90565b505f906001905f90565b5050505f916003919056fe2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0df9c002f57bb53b4d861ae1ef1369a8087d06c8210e4846f897918d0e534663ce05d0266d92a165c0409de8243ef44328a30b31530682f3bbbd3cd3f1cea0fb64b5f694e3faed4d17d5a46a3ff72aafb68b3688701fac8b3fb7781179f7ead0fba2646970667358221220e3614ec1e49b2eeaed7dddc7fc7f0bdf62912508b0eef607d1fc977e7033993d64736f6c634300081c003305d0266d92a165c0409de8243ef44328a30b31530682f3bbbd3cd3f1cea0fb64",
 }
 
 // EventAccessManagerABI is the input ABI used to generate the binding from.
@@ -212,6 +212,7 @@ func (_EventAccessManager *EventAccessManagerTransactorRaw) Transact(opts *bind.
 func (_EventAccessManager *EventAccessManagerCaller) DECMACCESSMANAGER(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "DECM_ACCESS_MANAGER")
+
 	if err != nil {
 		return *new(common.Address), err
 	}
@@ -219,6 +220,7 @@ func (_EventAccessManager *EventAccessManagerCaller) DECMACCESSMANAGER(opts *bin
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
+
 }
 
 // DECMACCESSMANAGER is a free data retrieval call binding the contract method 0xa4189e89.
@@ -241,6 +243,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) DECMACCESSMANAGER() 
 func (_EventAccessManager *EventAccessManagerCaller) DEFAULTADMINROLE(opts *bind.CallOpts) ([32]byte, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "DEFAULT_ADMIN_ROLE")
+
 	if err != nil {
 		return *new([32]byte), err
 	}
@@ -248,6 +251,7 @@ func (_EventAccessManager *EventAccessManagerCaller) DEFAULTADMINROLE(opts *bind
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
+
 }
 
 // DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
@@ -264,12 +268,13 @@ func (_EventAccessManager *EventAccessManagerCallerSession) DEFAULTADMINROLE() (
 	return _EventAccessManager.Contract.DEFAULTADMINROLE(&_EventAccessManager.CallOpts)
 }
 
-// AllowedMsgSenders is a free data retrieval call binding the contract method 0x01d060b0.
+// CheckIsAllowedMsgSender is a free data retrieval call binding the contract method 0x23327b9c.
 //
-// Solidity: function allowedMsgSenders(address ) view returns(bool)
-func (_EventAccessManager *EventAccessManagerCaller) AllowedMsgSenders(opts *bind.CallOpts, arg0 common.Address) (bool, error) {
+// Solidity: function checkIsAllowedMsgSender(address addr) view returns(bool)
+func (_EventAccessManager *EventAccessManagerCaller) CheckIsAllowedMsgSender(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
-	err := _EventAccessManager.contract.Call(opts, &out, "allowedMsgSenders", arg0)
+	err := _EventAccessManager.contract.Call(opts, &out, "checkIsAllowedMsgSender", addr)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -277,49 +282,21 @@ func (_EventAccessManager *EventAccessManagerCaller) AllowedMsgSenders(opts *bin
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
-// AllowedMsgSenders is a free data retrieval call binding the contract method 0x01d060b0.
+// CheckIsAllowedMsgSender is a free data retrieval call binding the contract method 0x23327b9c.
 //
-// Solidity: function allowedMsgSenders(address ) view returns(bool)
-func (_EventAccessManager *EventAccessManagerSession) AllowedMsgSenders(arg0 common.Address) (bool, error) {
-	return _EventAccessManager.Contract.AllowedMsgSenders(&_EventAccessManager.CallOpts, arg0)
+// Solidity: function checkIsAllowedMsgSender(address addr) view returns(bool)
+func (_EventAccessManager *EventAccessManagerSession) CheckIsAllowedMsgSender(addr common.Address) (bool, error) {
+	return _EventAccessManager.Contract.CheckIsAllowedMsgSender(&_EventAccessManager.CallOpts, addr)
 }
 
-// AllowedMsgSenders is a free data retrieval call binding the contract method 0x01d060b0.
+// CheckIsAllowedMsgSender is a free data retrieval call binding the contract method 0x23327b9c.
 //
-// Solidity: function allowedMsgSenders(address ) view returns(bool)
-func (_EventAccessManager *EventAccessManagerCallerSession) AllowedMsgSenders(arg0 common.Address) (bool, error) {
-	return _EventAccessManager.Contract.AllowedMsgSenders(&_EventAccessManager.CallOpts, arg0)
-}
-
-// CheckIsAllowedMsgSender is a free data retrieval call binding the contract method 0xe5393855.
-//
-// Solidity: function checkIsAllowedMsgSender() view returns(bool)
-func (_EventAccessManager *EventAccessManagerCaller) CheckIsAllowedMsgSender(opts *bind.CallOpts) (bool, error) {
-	var out []interface{}
-	err := _EventAccessManager.contract.Call(opts, &out, "checkIsAllowedMsgSender")
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-}
-
-// CheckIsAllowedMsgSender is a free data retrieval call binding the contract method 0xe5393855.
-//
-// Solidity: function checkIsAllowedMsgSender() view returns(bool)
-func (_EventAccessManager *EventAccessManagerSession) CheckIsAllowedMsgSender() (bool, error) {
-	return _EventAccessManager.Contract.CheckIsAllowedMsgSender(&_EventAccessManager.CallOpts)
-}
-
-// CheckIsAllowedMsgSender is a free data retrieval call binding the contract method 0xe5393855.
-//
-// Solidity: function checkIsAllowedMsgSender() view returns(bool)
-func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsAllowedMsgSender() (bool, error) {
-	return _EventAccessManager.Contract.CheckIsAllowedMsgSender(&_EventAccessManager.CallOpts)
+// Solidity: function checkIsAllowedMsgSender(address addr) view returns(bool)
+func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsAllowedMsgSender(addr common.Address) (bool, error) {
+	return _EventAccessManager.Contract.CheckIsAllowedMsgSender(&_EventAccessManager.CallOpts, addr)
 }
 
 // CheckIsHost is a free data retrieval call binding the contract method 0x972d3e87.
@@ -328,6 +305,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsAllowedMsgSen
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsHost(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "checkIsHost", addr)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -335,6 +313,7 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsHost(opts *bind.Call
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsHost is a free data retrieval call binding the contract method 0x972d3e87.
@@ -357,6 +336,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsHost(addr com
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsHostOrAdmin(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "checkIsHostOrAdmin", addr)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -364,6 +344,7 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsHostOrAdmin(opts *bi
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsHostOrAdmin is a free data retrieval call binding the contract method 0x4f5af5d7.
@@ -386,6 +367,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsHostOrAdmin(a
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsIssuer(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "checkIsIssuer", addr)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -393,6 +375,7 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsIssuer(opts *bind.Ca
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsIssuer is a free data retrieval call binding the contract method 0x5b8c7772.
@@ -415,6 +398,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsIssuer(addr c
 func (_EventAccessManager *EventAccessManagerCaller) CheckIsParticipant(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "checkIsParticipant", addr)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -422,6 +406,7 @@ func (_EventAccessManager *EventAccessManagerCaller) CheckIsParticipant(opts *bi
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsParticipant is a free data retrieval call binding the contract method 0x65e16e96.
@@ -444,6 +429,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) CheckIsParticipant(a
 func (_EventAccessManager *EventAccessManagerCaller) GetRoleAdmin(opts *bind.CallOpts, role [32]byte) ([32]byte, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "getRoleAdmin", role)
+
 	if err != nil {
 		return *new([32]byte), err
 	}
@@ -451,6 +437,7 @@ func (_EventAccessManager *EventAccessManagerCaller) GetRoleAdmin(opts *bind.Cal
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
+
 }
 
 // GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
@@ -473,6 +460,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) GetRoleAdmin(role [3
 func (_EventAccessManager *EventAccessManagerCaller) HasRole(opts *bind.CallOpts, role [32]byte, account common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "hasRole", role, account)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -480,6 +468,7 @@ func (_EventAccessManager *EventAccessManagerCaller) HasRole(opts *bind.CallOpts
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // HasRole is a free data retrieval call binding the contract method 0x91d14854.
@@ -496,139 +485,149 @@ func (_EventAccessManager *EventAccessManagerCallerSession) HasRole(role [32]byt
 	return _EventAccessManager.Contract.HasRole(&_EventAccessManager.CallOpts, role, account)
 }
 
-// RequireAdmin is a free data retrieval call binding the contract method 0x5577210a.
+// RequireAdmin is a free data retrieval call binding the contract method 0x54dc2716.
 //
-// Solidity: function requireAdmin(address addr) view returns()
-func (_EventAccessManager *EventAccessManagerCaller) RequireAdmin(opts *bind.CallOpts, addr common.Address) error {
+// Solidity: function requireAdmin(address addr, address msgSender) view returns()
+func (_EventAccessManager *EventAccessManagerCaller) RequireAdmin(opts *bind.CallOpts, addr common.Address, msgSender common.Address) error {
 	var out []interface{}
-	err := _EventAccessManager.contract.Call(opts, &out, "requireAdmin", addr)
+	err := _EventAccessManager.contract.Call(opts, &out, "requireAdmin", addr, msgSender)
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
-// RequireAdmin is a free data retrieval call binding the contract method 0x5577210a.
+// RequireAdmin is a free data retrieval call binding the contract method 0x54dc2716.
 //
-// Solidity: function requireAdmin(address addr) view returns()
-func (_EventAccessManager *EventAccessManagerSession) RequireAdmin(addr common.Address) error {
-	return _EventAccessManager.Contract.RequireAdmin(&_EventAccessManager.CallOpts, addr)
+// Solidity: function requireAdmin(address addr, address msgSender) view returns()
+func (_EventAccessManager *EventAccessManagerSession) RequireAdmin(addr common.Address, msgSender common.Address) error {
+	return _EventAccessManager.Contract.RequireAdmin(&_EventAccessManager.CallOpts, addr, msgSender)
 }
 
-// RequireAdmin is a free data retrieval call binding the contract method 0x5577210a.
+// RequireAdmin is a free data retrieval call binding the contract method 0x54dc2716.
 //
-// Solidity: function requireAdmin(address addr) view returns()
-func (_EventAccessManager *EventAccessManagerCallerSession) RequireAdmin(addr common.Address) error {
-	return _EventAccessManager.Contract.RequireAdmin(&_EventAccessManager.CallOpts, addr)
+// Solidity: function requireAdmin(address addr, address msgSender) view returns()
+func (_EventAccessManager *EventAccessManagerCallerSession) RequireAdmin(addr common.Address, msgSender common.Address) error {
+	return _EventAccessManager.Contract.RequireAdmin(&_EventAccessManager.CallOpts, addr, msgSender)
 }
 
-// RequireAllowedMsgSender is a free data retrieval call binding the contract method 0xfa59a384.
+// RequireAllowedMsgSender is a free data retrieval call binding the contract method 0x87d38952.
 //
-// Solidity: function requireAllowedMsgSender() view returns()
-func (_EventAccessManager *EventAccessManagerCaller) RequireAllowedMsgSender(opts *bind.CallOpts) error {
+// Solidity: function requireAllowedMsgSender(address addr) view returns()
+func (_EventAccessManager *EventAccessManagerCaller) RequireAllowedMsgSender(opts *bind.CallOpts, addr common.Address) error {
 	var out []interface{}
-	err := _EventAccessManager.contract.Call(opts, &out, "requireAllowedMsgSender")
+	err := _EventAccessManager.contract.Call(opts, &out, "requireAllowedMsgSender", addr)
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
-// RequireAllowedMsgSender is a free data retrieval call binding the contract method 0xfa59a384.
+// RequireAllowedMsgSender is a free data retrieval call binding the contract method 0x87d38952.
 //
-// Solidity: function requireAllowedMsgSender() view returns()
-func (_EventAccessManager *EventAccessManagerSession) RequireAllowedMsgSender() error {
-	return _EventAccessManager.Contract.RequireAllowedMsgSender(&_EventAccessManager.CallOpts)
+// Solidity: function requireAllowedMsgSender(address addr) view returns()
+func (_EventAccessManager *EventAccessManagerSession) RequireAllowedMsgSender(addr common.Address) error {
+	return _EventAccessManager.Contract.RequireAllowedMsgSender(&_EventAccessManager.CallOpts, addr)
 }
 
-// RequireAllowedMsgSender is a free data retrieval call binding the contract method 0xfa59a384.
+// RequireAllowedMsgSender is a free data retrieval call binding the contract method 0x87d38952.
 //
-// Solidity: function requireAllowedMsgSender() view returns()
-func (_EventAccessManager *EventAccessManagerCallerSession) RequireAllowedMsgSender() error {
-	return _EventAccessManager.Contract.RequireAllowedMsgSender(&_EventAccessManager.CallOpts)
+// Solidity: function requireAllowedMsgSender(address addr) view returns()
+func (_EventAccessManager *EventAccessManagerCallerSession) RequireAllowedMsgSender(addr common.Address) error {
+	return _EventAccessManager.Contract.RequireAllowedMsgSender(&_EventAccessManager.CallOpts, addr)
 }
 
-// RequireHostOrAdmin is a free data retrieval call binding the contract method 0x97949850.
+// RequireHostOrAdmin is a free data retrieval call binding the contract method 0x53586f4c.
 //
-// Solidity: function requireHostOrAdmin(address addr) view returns()
-func (_EventAccessManager *EventAccessManagerCaller) RequireHostOrAdmin(opts *bind.CallOpts, addr common.Address) error {
+// Solidity: function requireHostOrAdmin(address addr, address msgSender) view returns()
+func (_EventAccessManager *EventAccessManagerCaller) RequireHostOrAdmin(opts *bind.CallOpts, addr common.Address, msgSender common.Address) error {
 	var out []interface{}
-	err := _EventAccessManager.contract.Call(opts, &out, "requireHostOrAdmin", addr)
+	err := _EventAccessManager.contract.Call(opts, &out, "requireHostOrAdmin", addr, msgSender)
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
-// RequireHostOrAdmin is a free data retrieval call binding the contract method 0x97949850.
+// RequireHostOrAdmin is a free data retrieval call binding the contract method 0x53586f4c.
 //
-// Solidity: function requireHostOrAdmin(address addr) view returns()
-func (_EventAccessManager *EventAccessManagerSession) RequireHostOrAdmin(addr common.Address) error {
-	return _EventAccessManager.Contract.RequireHostOrAdmin(&_EventAccessManager.CallOpts, addr)
+// Solidity: function requireHostOrAdmin(address addr, address msgSender) view returns()
+func (_EventAccessManager *EventAccessManagerSession) RequireHostOrAdmin(addr common.Address, msgSender common.Address) error {
+	return _EventAccessManager.Contract.RequireHostOrAdmin(&_EventAccessManager.CallOpts, addr, msgSender)
 }
 
-// RequireHostOrAdmin is a free data retrieval call binding the contract method 0x97949850.
+// RequireHostOrAdmin is a free data retrieval call binding the contract method 0x53586f4c.
 //
-// Solidity: function requireHostOrAdmin(address addr) view returns()
-func (_EventAccessManager *EventAccessManagerCallerSession) RequireHostOrAdmin(addr common.Address) error {
-	return _EventAccessManager.Contract.RequireHostOrAdmin(&_EventAccessManager.CallOpts, addr)
+// Solidity: function requireHostOrAdmin(address addr, address msgSender) view returns()
+func (_EventAccessManager *EventAccessManagerCallerSession) RequireHostOrAdmin(addr common.Address, msgSender common.Address) error {
+	return _EventAccessManager.Contract.RequireHostOrAdmin(&_EventAccessManager.CallOpts, addr, msgSender)
 }
 
-// RequireHostOrAdminOrParticipant is a free data retrieval call binding the contract method 0xe8b98395.
+// RequireHostOrAdminOrParticipant is a free data retrieval call binding the contract method 0x27690c15.
 //
-// Solidity: function requireHostOrAdminOrParticipant(address addr) view returns()
-func (_EventAccessManager *EventAccessManagerCaller) RequireHostOrAdminOrParticipant(opts *bind.CallOpts, addr common.Address) error {
+// Solidity: function requireHostOrAdminOrParticipant(address addr, address msgSender) view returns()
+func (_EventAccessManager *EventAccessManagerCaller) RequireHostOrAdminOrParticipant(opts *bind.CallOpts, addr common.Address, msgSender common.Address) error {
 	var out []interface{}
-	err := _EventAccessManager.contract.Call(opts, &out, "requireHostOrAdminOrParticipant", addr)
+	err := _EventAccessManager.contract.Call(opts, &out, "requireHostOrAdminOrParticipant", addr, msgSender)
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
-// RequireHostOrAdminOrParticipant is a free data retrieval call binding the contract method 0xe8b98395.
+// RequireHostOrAdminOrParticipant is a free data retrieval call binding the contract method 0x27690c15.
 //
-// Solidity: function requireHostOrAdminOrParticipant(address addr) view returns()
-func (_EventAccessManager *EventAccessManagerSession) RequireHostOrAdminOrParticipant(addr common.Address) error {
-	return _EventAccessManager.Contract.RequireHostOrAdminOrParticipant(&_EventAccessManager.CallOpts, addr)
+// Solidity: function requireHostOrAdminOrParticipant(address addr, address msgSender) view returns()
+func (_EventAccessManager *EventAccessManagerSession) RequireHostOrAdminOrParticipant(addr common.Address, msgSender common.Address) error {
+	return _EventAccessManager.Contract.RequireHostOrAdminOrParticipant(&_EventAccessManager.CallOpts, addr, msgSender)
 }
 
-// RequireHostOrAdminOrParticipant is a free data retrieval call binding the contract method 0xe8b98395.
+// RequireHostOrAdminOrParticipant is a free data retrieval call binding the contract method 0x27690c15.
 //
-// Solidity: function requireHostOrAdminOrParticipant(address addr) view returns()
-func (_EventAccessManager *EventAccessManagerCallerSession) RequireHostOrAdminOrParticipant(addr common.Address) error {
-	return _EventAccessManager.Contract.RequireHostOrAdminOrParticipant(&_EventAccessManager.CallOpts, addr)
+// Solidity: function requireHostOrAdminOrParticipant(address addr, address msgSender) view returns()
+func (_EventAccessManager *EventAccessManagerCallerSession) RequireHostOrAdminOrParticipant(addr common.Address, msgSender common.Address) error {
+	return _EventAccessManager.Contract.RequireHostOrAdminOrParticipant(&_EventAccessManager.CallOpts, addr, msgSender)
 }
 
-// RequireParticipant is a free data retrieval call binding the contract method 0xb08646b3.
+// RequireParticipant is a free data retrieval call binding the contract method 0xe81e8461.
 //
-// Solidity: function requireParticipant(address addr) view returns()
-func (_EventAccessManager *EventAccessManagerCaller) RequireParticipant(opts *bind.CallOpts, addr common.Address) error {
+// Solidity: function requireParticipant(address addr, address msgSender) view returns()
+func (_EventAccessManager *EventAccessManagerCaller) RequireParticipant(opts *bind.CallOpts, addr common.Address, msgSender common.Address) error {
 	var out []interface{}
-	err := _EventAccessManager.contract.Call(opts, &out, "requireParticipant", addr)
+	err := _EventAccessManager.contract.Call(opts, &out, "requireParticipant", addr, msgSender)
+
 	if err != nil {
 		return err
 	}
 
 	return err
+
 }
 
-// RequireParticipant is a free data retrieval call binding the contract method 0xb08646b3.
+// RequireParticipant is a free data retrieval call binding the contract method 0xe81e8461.
 //
-// Solidity: function requireParticipant(address addr) view returns()
-func (_EventAccessManager *EventAccessManagerSession) RequireParticipant(addr common.Address) error {
-	return _EventAccessManager.Contract.RequireParticipant(&_EventAccessManager.CallOpts, addr)
+// Solidity: function requireParticipant(address addr, address msgSender) view returns()
+func (_EventAccessManager *EventAccessManagerSession) RequireParticipant(addr common.Address, msgSender common.Address) error {
+	return _EventAccessManager.Contract.RequireParticipant(&_EventAccessManager.CallOpts, addr, msgSender)
 }
 
-// RequireParticipant is a free data retrieval call binding the contract method 0xb08646b3.
+// RequireParticipant is a free data retrieval call binding the contract method 0xe81e8461.
 //
-// Solidity: function requireParticipant(address addr) view returns()
-func (_EventAccessManager *EventAccessManagerCallerSession) RequireParticipant(addr common.Address) error {
-	return _EventAccessManager.Contract.RequireParticipant(&_EventAccessManager.CallOpts, addr)
+// Solidity: function requireParticipant(address addr, address msgSender) view returns()
+func (_EventAccessManager *EventAccessManagerCallerSession) RequireParticipant(addr common.Address, msgSender common.Address) error {
+	return _EventAccessManager.Contract.RequireParticipant(&_EventAccessManager.CallOpts, addr, msgSender)
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
@@ -637,6 +636,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) RequireParticipant(a
 func (_EventAccessManager *EventAccessManagerCaller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "supportsInterface", interfaceId)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -644,6 +644,7 @@ func (_EventAccessManager *EventAccessManagerCaller) SupportsInterface(opts *bin
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
@@ -666,6 +667,7 @@ func (_EventAccessManager *EventAccessManagerCallerSession) SupportsInterface(in
 func (_EventAccessManager *EventAccessManagerCaller) UsedSignatures(opts *bind.CallOpts, arg0 []byte) (bool, error) {
 	var out []interface{}
 	err := _EventAccessManager.contract.Call(opts, &out, "usedSignatures", arg0)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -673,6 +675,7 @@ func (_EventAccessManager *EventAccessManagerCaller) UsedSignatures(opts *bind.C
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // UsedSignatures is a free data retrieval call binding the contract method 0xe949580e.
@@ -687,27 +690,6 @@ func (_EventAccessManager *EventAccessManagerSession) UsedSignatures(arg0 []byte
 // Solidity: function usedSignatures(bytes ) view returns(bool)
 func (_EventAccessManager *EventAccessManagerCallerSession) UsedSignatures(arg0 []byte) (bool, error) {
 	return _EventAccessManager.Contract.UsedSignatures(&_EventAccessManager.CallOpts, arg0)
-}
-
-// AddAllowedMsgSender is a paid mutator transaction binding the contract method 0xaa2d9078.
-//
-// Solidity: function addAllowedMsgSender(address sender) returns()
-func (_EventAccessManager *EventAccessManagerTransactor) AddAllowedMsgSender(opts *bind.TransactOpts, sender common.Address) (*types.Transaction, error) {
-	return _EventAccessManager.contract.Transact(opts, "addAllowedMsgSender", sender)
-}
-
-// AddAllowedMsgSender is a paid mutator transaction binding the contract method 0xaa2d9078.
-//
-// Solidity: function addAllowedMsgSender(address sender) returns()
-func (_EventAccessManager *EventAccessManagerSession) AddAllowedMsgSender(sender common.Address) (*types.Transaction, error) {
-	return _EventAccessManager.Contract.AddAllowedMsgSender(&_EventAccessManager.TransactOpts, sender)
-}
-
-// AddAllowedMsgSender is a paid mutator transaction binding the contract method 0xaa2d9078.
-//
-// Solidity: function addAllowedMsgSender(address sender) returns()
-func (_EventAccessManager *EventAccessManagerTransactorSession) AddAllowedMsgSender(sender common.Address) (*types.Transaction, error) {
-	return _EventAccessManager.Contract.AddAllowedMsgSender(&_EventAccessManager.TransactOpts, sender)
 }
 
 // GrantHostRole is a paid mutator transaction binding the contract method 0xa1d0e826.
@@ -773,6 +755,27 @@ func (_EventAccessManager *EventAccessManagerTransactorSession) GrantParticipant
 	return _EventAccessManager.Contract.GrantParticipantRole(&_EventAccessManager.TransactOpts, participant, signer)
 }
 
+// GrantParticipantRoleUsingAllowedMsgSender is a paid mutator transaction binding the contract method 0x15c1f293.
+//
+// Solidity: function grantParticipantRoleUsingAllowedMsgSender(address participant, address msgSender) returns()
+func (_EventAccessManager *EventAccessManagerTransactor) GrantParticipantRoleUsingAllowedMsgSender(opts *bind.TransactOpts, participant common.Address, msgSender common.Address) (*types.Transaction, error) {
+	return _EventAccessManager.contract.Transact(opts, "grantParticipantRoleUsingAllowedMsgSender", participant, msgSender)
+}
+
+// GrantParticipantRoleUsingAllowedMsgSender is a paid mutator transaction binding the contract method 0x15c1f293.
+//
+// Solidity: function grantParticipantRoleUsingAllowedMsgSender(address participant, address msgSender) returns()
+func (_EventAccessManager *EventAccessManagerSession) GrantParticipantRoleUsingAllowedMsgSender(participant common.Address, msgSender common.Address) (*types.Transaction, error) {
+	return _EventAccessManager.Contract.GrantParticipantRoleUsingAllowedMsgSender(&_EventAccessManager.TransactOpts, participant, msgSender)
+}
+
+// GrantParticipantRoleUsingAllowedMsgSender is a paid mutator transaction binding the contract method 0x15c1f293.
+//
+// Solidity: function grantParticipantRoleUsingAllowedMsgSender(address participant, address msgSender) returns()
+func (_EventAccessManager *EventAccessManagerTransactorSession) GrantParticipantRoleUsingAllowedMsgSender(participant common.Address, msgSender common.Address) (*types.Transaction, error) {
+	return _EventAccessManager.Contract.GrantParticipantRoleUsingAllowedMsgSender(&_EventAccessManager.TransactOpts, participant, msgSender)
+}
+
 // GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
 //
 // Solidity: function grantRole(bytes32 role, address account) returns()
@@ -813,27 +816,6 @@ func (_EventAccessManager *EventAccessManagerSession) RecoverSigner(signedMessag
 // Solidity: function recoverSigner(string signedMessageDigest, bytes signature) returns(address)
 func (_EventAccessManager *EventAccessManagerTransactorSession) RecoverSigner(signedMessageDigest string, signature []byte) (*types.Transaction, error) {
 	return _EventAccessManager.Contract.RecoverSigner(&_EventAccessManager.TransactOpts, signedMessageDigest, signature)
-}
-
-// RemoveAllowedMsgSender is a paid mutator transaction binding the contract method 0xc15e0b4d.
-//
-// Solidity: function removeAllowedMsgSender(address sender) returns()
-func (_EventAccessManager *EventAccessManagerTransactor) RemoveAllowedMsgSender(opts *bind.TransactOpts, sender common.Address) (*types.Transaction, error) {
-	return _EventAccessManager.contract.Transact(opts, "removeAllowedMsgSender", sender)
-}
-
-// RemoveAllowedMsgSender is a paid mutator transaction binding the contract method 0xc15e0b4d.
-//
-// Solidity: function removeAllowedMsgSender(address sender) returns()
-func (_EventAccessManager *EventAccessManagerSession) RemoveAllowedMsgSender(sender common.Address) (*types.Transaction, error) {
-	return _EventAccessManager.Contract.RemoveAllowedMsgSender(&_EventAccessManager.TransactOpts, sender)
-}
-
-// RemoveAllowedMsgSender is a paid mutator transaction binding the contract method 0xc15e0b4d.
-//
-// Solidity: function removeAllowedMsgSender(address sender) returns()
-func (_EventAccessManager *EventAccessManagerTransactorSession) RemoveAllowedMsgSender(sender common.Address) (*types.Transaction, error) {
-	return _EventAccessManager.Contract.RemoveAllowedMsgSender(&_EventAccessManager.TransactOpts, sender)
 }
 
 // RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
@@ -998,6 +980,7 @@ type EventAccessManagerHostRoleGranted struct {
 //
 // Solidity: event HostRoleGranted(address indexed host, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterHostRoleGranted(opts *bind.FilterOpts, host []common.Address, granter []common.Address) (*EventAccessManagerHostRoleGrantedIterator, error) {
+
 	var hostRule []interface{}
 	for _, hostItem := range host {
 		hostRule = append(hostRule, hostItem)
@@ -1018,6 +1001,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterHostRoleGranted(opt
 //
 // Solidity: event HostRoleGranted(address indexed host, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchHostRoleGranted(opts *bind.WatchOpts, sink chan<- *EventAccessManagerHostRoleGranted, host []common.Address, granter []common.Address) (event.Subscription, error) {
+
 	var hostRule []interface{}
 	for _, hostItem := range host {
 		hostRule = append(hostRule, hostItem)
@@ -1149,6 +1133,7 @@ type EventAccessManagerIssuerRoleGranted struct {
 //
 // Solidity: event IssuerRoleGranted(address indexed issuer, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterIssuerRoleGranted(opts *bind.FilterOpts, issuer []common.Address, granter []common.Address) (*EventAccessManagerIssuerRoleGrantedIterator, error) {
+
 	var issuerRule []interface{}
 	for _, issuerItem := range issuer {
 		issuerRule = append(issuerRule, issuerItem)
@@ -1169,6 +1154,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterIssuerRoleGranted(o
 //
 // Solidity: event IssuerRoleGranted(address indexed issuer, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchIssuerRoleGranted(opts *bind.WatchOpts, sink chan<- *EventAccessManagerIssuerRoleGranted, issuer []common.Address, granter []common.Address) (event.Subscription, error) {
+
 	var issuerRule []interface{}
 	for _, issuerItem := range issuer {
 		issuerRule = append(issuerRule, issuerItem)
@@ -1300,6 +1286,7 @@ type EventAccessManagerIssuerRoleRevoked struct {
 //
 // Solidity: event IssuerRoleRevoked(address indexed issuer, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterIssuerRoleRevoked(opts *bind.FilterOpts, issuer []common.Address, revoker []common.Address) (*EventAccessManagerIssuerRoleRevokedIterator, error) {
+
 	var issuerRule []interface{}
 	for _, issuerItem := range issuer {
 		issuerRule = append(issuerRule, issuerItem)
@@ -1320,6 +1307,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterIssuerRoleRevoked(o
 //
 // Solidity: event IssuerRoleRevoked(address indexed issuer, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchIssuerRoleRevoked(opts *bind.WatchOpts, sink chan<- *EventAccessManagerIssuerRoleRevoked, issuer []common.Address, revoker []common.Address) (event.Subscription, error) {
+
 	var issuerRule []interface{}
 	for _, issuerItem := range issuer {
 		issuerRule = append(issuerRule, issuerItem)
@@ -1451,6 +1439,7 @@ type EventAccessManagerMsgSenderAllowed struct {
 //
 // Solidity: event MsgSenderAllowed(address indexed sender, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterMsgSenderAllowed(opts *bind.FilterOpts, sender []common.Address, granter []common.Address) (*EventAccessManagerMsgSenderAllowedIterator, error) {
+
 	var senderRule []interface{}
 	for _, senderItem := range sender {
 		senderRule = append(senderRule, senderItem)
@@ -1471,6 +1460,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterMsgSenderAllowed(op
 //
 // Solidity: event MsgSenderAllowed(address indexed sender, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchMsgSenderAllowed(opts *bind.WatchOpts, sink chan<- *EventAccessManagerMsgSenderAllowed, sender []common.Address, granter []common.Address) (event.Subscription, error) {
+
 	var senderRule []interface{}
 	for _, senderItem := range sender {
 		senderRule = append(senderRule, senderItem)
@@ -1602,6 +1592,7 @@ type EventAccessManagerMsgSenderDisallowed struct {
 //
 // Solidity: event MsgSenderDisallowed(address indexed sender, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterMsgSenderDisallowed(opts *bind.FilterOpts, sender []common.Address, revoker []common.Address) (*EventAccessManagerMsgSenderDisallowedIterator, error) {
+
 	var senderRule []interface{}
 	for _, senderItem := range sender {
 		senderRule = append(senderRule, senderItem)
@@ -1622,6 +1613,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterMsgSenderDisallowed
 //
 // Solidity: event MsgSenderDisallowed(address indexed sender, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchMsgSenderDisallowed(opts *bind.WatchOpts, sink chan<- *EventAccessManagerMsgSenderDisallowed, sender []common.Address, revoker []common.Address) (event.Subscription, error) {
+
 	var senderRule []interface{}
 	for _, senderItem := range sender {
 		senderRule = append(senderRule, senderItem)
@@ -1753,6 +1745,7 @@ type EventAccessManagerParticipantRoleGranted struct {
 //
 // Solidity: event ParticipantRoleGranted(address indexed participant, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterParticipantRoleGranted(opts *bind.FilterOpts, participant []common.Address, granter []common.Address) (*EventAccessManagerParticipantRoleGrantedIterator, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -1773,6 +1766,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterParticipantRoleGran
 //
 // Solidity: event ParticipantRoleGranted(address indexed participant, address indexed granter)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchParticipantRoleGranted(opts *bind.WatchOpts, sink chan<- *EventAccessManagerParticipantRoleGranted, participant []common.Address, granter []common.Address) (event.Subscription, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -1904,6 +1898,7 @@ type EventAccessManagerParticipantRoleRevoked struct {
 //
 // Solidity: event ParticipantRoleRevoked(address indexed participant, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterParticipantRoleRevoked(opts *bind.FilterOpts, participant []common.Address, revoker []common.Address) (*EventAccessManagerParticipantRoleRevokedIterator, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -1924,6 +1919,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterParticipantRoleRevo
 //
 // Solidity: event ParticipantRoleRevoked(address indexed participant, address indexed revoker)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchParticipantRoleRevoked(opts *bind.WatchOpts, sink chan<- *EventAccessManagerParticipantRoleRevoked, participant []common.Address, revoker []common.Address) (event.Subscription, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -2056,6 +2052,7 @@ type EventAccessManagerRoleAdminChanged struct {
 //
 // Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleAdminChanged(opts *bind.FilterOpts, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (*EventAccessManagerRoleAdminChangedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2080,6 +2077,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleAdminChanged(op
 //
 // Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchRoleAdminChanged(opts *bind.WatchOpts, sink chan<- *EventAccessManagerRoleAdminChanged, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2216,6 +2214,7 @@ type EventAccessManagerRoleGranted struct {
 //
 // Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleGranted(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*EventAccessManagerRoleGrantedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2240,6 +2239,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleGranted(opts *b
 //
 // Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchRoleGranted(opts *bind.WatchOpts, sink chan<- *EventAccessManagerRoleGranted, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2376,6 +2376,7 @@ type EventAccessManagerRoleRevoked struct {
 //
 // Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
 func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleRevoked(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*EventAccessManagerRoleRevokedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -2400,6 +2401,7 @@ func (_EventAccessManager *EventAccessManagerFilterer) FilterRoleRevoked(opts *b
 //
 // Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
 func (_EventAccessManager *EventAccessManagerFilterer) WatchRoleRevoked(opts *bind.WatchOpts, sink chan<- *EventAccessManagerRoleRevoked, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)

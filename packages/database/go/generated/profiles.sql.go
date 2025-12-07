@@ -386,6 +386,62 @@ func (q *Queries) GetProfileByID(ctx context.Context, id uuid.UUID) (Profile, er
 	return i, err
 }
 
+const ListIssuerProfiles = `-- name: ListIssuerProfiles :many
+SELECT profiles.id, profiles.authentication_credential_id, profiles.is_profile_picture_public, profiles.profile_picture_url, profiles.is_first_name_public, profiles.first_name, profiles.is_last_name_public, profiles.last_name, profiles.is_email_public, profiles.email, profiles.is_bio_public, profiles.bio, profiles.is_phone_number_public, profiles.phone_number, profiles.is_address_public, profiles.address, profiles.is_academic_institution_public, profiles.academic_institution, profiles.is_academic_email_public, profiles.academic_email, profiles.created_at, profiles.updated_at FROM profiles 
+INNER JOIN authentication_credentials ON profiles.authentication_credential_id = authentication_credentials.id
+WHERE authentication_credentials.is_verified_issuer = 1
+ORDER BY profiles.created_at DESC
+LIMIT $2 OFFSET $1
+`
+
+type ListIssuerProfilesParams struct {
+	OffsetCount int32 `json:"offset_count"`
+	LimitCount  int32 `json:"limit_count"`
+}
+
+func (q *Queries) ListIssuerProfiles(ctx context.Context, arg ListIssuerProfilesParams) ([]Profile, error) {
+	rows, err := q.db.Query(ctx, ListIssuerProfiles, arg.OffsetCount, arg.LimitCount)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Profile{}
+	for rows.Next() {
+		var i Profile
+		if err := rows.Scan(
+			&i.ID,
+			&i.AuthenticationCredentialID,
+			&i.IsProfilePicturePublic,
+			&i.ProfilePictureUrl,
+			&i.IsFirstNamePublic,
+			&i.FirstName,
+			&i.IsLastNamePublic,
+			&i.LastName,
+			&i.IsEmailPublic,
+			&i.Email,
+			&i.IsBioPublic,
+			&i.Bio,
+			&i.IsPhoneNumberPublic,
+			&i.PhoneNumber,
+			&i.IsAddressPublic,
+			&i.Address,
+			&i.IsAcademicInstitutionPublic,
+			&i.AcademicInstitution,
+			&i.IsAcademicEmailPublic,
+			&i.AcademicEmail,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const ListProfiles = `-- name: ListProfiles :many
 SELECT id, authentication_credential_id, is_profile_picture_public, profile_picture_url, is_first_name_public, first_name, is_last_name_public, last_name, is_email_public, email, is_bio_public, bio, is_phone_number_public, phone_number, is_address_public, address, is_academic_institution_public, academic_institution, is_academic_email_public, academic_email, created_at, updated_at FROM profiles 
 ORDER BY created_at DESC

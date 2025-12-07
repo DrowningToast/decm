@@ -52,3 +52,12 @@ DELETE FROM event_certificates WHERE id = sqlc.arg('id');
 
 -- name: GetAllEventCertificateIDsByEventID :many
 SELECT id FROM event_certificates WHERE event_id = sqlc.arg('event_id');
+
+-- name: GetEventCertificateByInboxMessageID :one
+SELECT * FROM event_certificates WHERE inbox_message_id = sqlc.arg('inbox_message_id');
+
+-- name: UpdateEventCertificateInboxMessageID :one
+UPDATE event_certificates
+SET inbox_message_id = sqlc.arg('inbox_message_id')
+WHERE id = sqlc.arg('id')
+RETURNING *;

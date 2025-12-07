@@ -120,16 +120,18 @@ func (h *Handler) UpdateEventCertificateConfig(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(http.StatusOK).JSON(EventCertificateConfigResponse{
-		ID:                        dbEventCertConfig.ID,
-		EventID:                   dbEventCertConfig.EventID,
-		BaseCertificateStorageKey: dbEventCertConfig.BaseCertificateStorageKey,
-		EventNamePosX:             dbEventCertConfig.EventNamePosX,
-		EventNamePosY:             dbEventCertConfig.EventNamePosY,
-		NamePosX:                  dbEventCertConfig.NamePosX,
-		NamePosY:                  dbEventCertConfig.NamePosY,
-		AcademicInstitutionPosX:   dbEventCertConfig.AcademicInstitutionPosX,
-		AcademicInstitutionPosY:   dbEventCertConfig.AcademicInstitutionPosY,
-		CreatedAt:                 dbEventCertConfig.CreatedAt,
-		UpdatedAt:                 dbEventCertConfig.UpdatedAt,
+		ID:                          dbEventCertConfig.ID,
+		EventID:                     dbEventCertConfig.EventID,
+		BaseCertificateStorageKey:   dbEventCertConfig.BaseCertificateStorageKey,
+		BaseCertificatePresignedURL: dbEventCertConfig.BaseCertificatePresignedURL,
+		EventNamePosX:               dbEventCertConfig.EventNamePosX,
+		EventNamePosY:               dbEventCertConfig.EventNamePosY,
+		NamePosX:                    dbEventCertConfig.NamePosX,
+		NamePosY:                    dbEventCertConfig.NamePosY,
+		AcademicInstitutionPosX:     dbEventCertConfig.AcademicInstitutionPosX,
+		AcademicInstitutionPosY:     dbEventCertConfig.AcademicInstitutionPosY,
+		IsPublished:                 dbEventCertConfig.IsPublished,
+		CreatedAt:                   dbEventCertConfig.CreatedAt,
+		UpdatedAt:                   dbEventCertConfig.UpdatedAt,
 	})
 }

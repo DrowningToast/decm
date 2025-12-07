@@ -126,6 +126,13 @@ WHERE authentication_credentials.is_verified_issuer = 1
 ORDER BY profiles.created_at DESC
 LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);
 
+-- name: ListIssuerProfiles :many
+SELECT profiles.* FROM profiles 
+INNER JOIN authentication_credentials ON profiles.authentication_credential_id = authentication_credentials.id
+WHERE authentication_credentials.is_verified_issuer = 1
+ORDER BY profiles.created_at DESC
+LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);
+
 -- name: GetProfileAndCredentialWithCredentialId :one
 SELECT
  authentication_credentials.ID as authentication_credential_id,

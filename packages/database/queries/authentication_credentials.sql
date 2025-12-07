@@ -110,11 +110,11 @@ RETURNING *;
 
 -- name: GetCredentialsByVerificationStatus :many
 SELECT * FROM authentication_credentials 
-WHERE (sqlc.narg(is_verified_organizer) IS NULL OR is_verified_organizer = sqlc.narg(is_verified_organizer))
-  AND (sqlc.narg(is_verified_student) IS NULL OR is_verified_student = sqlc.narg(is_verified_student))
-  AND (sqlc.narg(is_verified_issuer) IS NULL OR is_verified_issuer = sqlc.narg(is_verified_issuer))
+WHERE (sqlc.narg(is_verified_organizer)::INTEGER IS NULL OR is_verified_organizer = sqlc.narg(is_verified_organizer)::INTEGER)
+  AND (sqlc.narg(is_verified_student)::INTEGER IS NULL OR is_verified_student = sqlc.narg(is_verified_student)::INTEGER)
+  AND (sqlc.narg(is_verified_issuer)::INTEGER IS NULL OR is_verified_issuer = sqlc.narg(is_verified_issuer)::INTEGER)
 ORDER BY created_at DESC
-LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);
+LIMIT sqlc.narg(limit_count)::INTEGER OFFSET sqlc.narg(offset_count)::INTEGER;
 
 -- name: GetCredentialsBySolutionStatus :many
 SELECT * FROM authentication_credentials 
@@ -135,6 +135,13 @@ SELECT
     COUNT(*) FILTER (WHERE is_verified_issuer = 1) as verified_issuers
 FROM authentication_credentials;
 
+-- name: ListIssuerAuthenticationCredentialsByWalletAddress :many
+SELECT * FROM authentication_credentials 
+WHERE is_verified_issuer = 1
+  AND LOWER(wallet_address) LIKE '%' || LOWER(sqlc.arg(search_query)) || '%'
+ORDER BY created_at DESC
+LIMIT sqlc.arg(limit_count) OFFSET sqlc.arg(offset_count);
+
 -- name: DeleteAuthenticationCredential :exec
 DELETE FROM authentication_credentials WHERE id = sqlc.arg(id);
 
@@ -147,3 +154,14 @@ UPDATE authentication_credentials SET
     updated_at = NOW()
 WHERE id = sqlc.arg(id) 
 RETURNING *;
+
+-- name: GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress :one
+-- Fetch authentication credential by Google OAuth email OR wallet address
+-- At least one parameter must be provided (non-null)
+SELECT * FROM authentication_credentials 
+WHERE (
+    (sqlc.narg(google_connector_ref)::text IS NOT NULL AND google_connector_ref = sqlc.narg(google_connector_ref))
+    OR 
+    (sqlc.narg(wallet_address)::text IS NOT NULL AND wallet_address = sqlc.narg(wallet_address))
+)
+LIMIT 1;

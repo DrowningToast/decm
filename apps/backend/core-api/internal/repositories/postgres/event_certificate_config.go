@@ -39,3 +39,11 @@ func (r *Repository) UpdateEventCertificateConfig(ctx context.Context, params ge
 func (r *Repository) DeleteEventCertificateConfig(ctx context.Context, eventID uuid.UUID) error {
 	return r.queries.DeleteEventCertificateConfig(ctx, eventID)
 }
+
+func (r *Repository) ToggleEventCertificateConfigPublished(ctx context.Context, params generated.ToggleEventCertificateConfigPublishedParams) (*generated.EventCertificateConfig, error) {
+	result, err := r.queries.ToggleEventCertificateConfigPublished(ctx, params)
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+	return &result, nil
+}

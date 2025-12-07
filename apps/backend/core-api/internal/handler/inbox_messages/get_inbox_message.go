@@ -11,11 +11,11 @@ import (
 )
 
 type GetInboxMessageResponse struct {
-	InboxMessage inbox.InboxMessagesViewModel `json:"inbox_message"`
-}
+	InboxMessageType entity.InboxMessageType      `json:"inbox_message_type"`
+	InboxMessage     inbox.InboxMessagesViewModel `json:"inbox_message"`
 
-type GetInboxMessageEventRegistrationInvitationResponse struct {
-	InboxMessage inbox.InboxMessagesEventRegistrationInvitationViewModel `json:"inbox_message"`
+	EventRegistrationInvitation *inbox.InboxMessagesEventRegistrationInvitationViewModel `json:"event_registration_invitation,omitempty"`
+	EventCertificate            *inbox.InboxMessageCertificateInvitationViewModel        `json:"event_certificate,omitempty"`
 }
 
 // @Summary Get inbox message
@@ -25,8 +25,7 @@ type GetInboxMessageEventRegistrationInvitationResponse struct {
 // @Accept json
 // @Produce json
 // @Success 200 {object} inboxmessages.GetInboxMessageResponse
-// @Success 200 {object} inboxmessages.GetInboxMessageEventRegistrationInvitationResponse
-// @Router /inbox-messages/{inbox_message_id} [get]
+// @Router /api/v1/inbox-messages/{inbox_message_id} [get]
 // @Security ApiKeyAuth
 func (h *Handler) GetInboxMessage(c *fiber.Ctx) error {
 	user, err := h.AuthService.GetUserContext(c)
@@ -58,18 +57,31 @@ func (h *Handler) GetInboxMessage(c *fiber.Ctx) error {
 	switch inboxMessageViewModel.MessageType {
 	case entity.InboxMessageTypeGeneral:
 		return c.Status(fiber.StatusOK).JSON(GetInboxMessageResponse{
-			InboxMessage: *inboxMessageViewModel,
+			InboxMessageType: entity.InboxMessageTypeGeneral,
+			InboxMessage:     *inboxMessageViewModel,
 		})
 	case entity.InboxMessageTypeEventRegistrationInvitation:
 		if result.EventRegistrationInvitation == nil || result.Event == nil {
 			return customerror.Parse(&customerror.ErrNotFound, errors.New("event registration invitation or event not found"))
 		}
-		eventRegistrationInvitationViewModel, err := h.InboxUc.ToWithEventRegistrationInvitationViewModel(c.Context(), result.InboxMessage, *result.EventRegistrationInvitation, *result.Event)
+		eventRegistrationInvitationViewModel, err := h.InboxUc.ToWithEventRegistrationInvitationViewModel(c.Context(), result.InboxMessage, *result.EventRegistrationInvitation, *result.Event, result.EventAttendee)
 		if err != nil {
 			return errors.Wrap(err, "failed to convert event registration invitation to view model")
 		}
-		return c.Status(fiber.StatusOK).JSON(GetInboxMessageEventRegistrationInvitationResponse{
-			InboxMessage: *eventRegistrationInvitationViewModel,
+		return c.Status(fiber.StatusOK).JSON(GetInboxMessageResponse{
+			InboxMessageType:            entity.InboxMessageTypeEventRegistrationInvitation,
+			InboxMessage:                *inboxMessageViewModel,
+			EventRegistrationInvitation: eventRegistrationInvitationViewModel,
+		})
+	case entity.InboxMessageTypeEventCertificateInvitation:
+		eventCertificateViewModel, err := h.InboxUc.ToWithCertificateInvitationViewModel(c.Context(), result.InboxMessage, *result.EventCertificate, *user)
+		if err != nil {
+			return errors.Wrap(err, "failed to convert event certificate to view model")
+		}
+		return c.Status(fiber.StatusOK).JSON(GetInboxMessageResponse{
+			InboxMessageType: entity.InboxMessageTypeEventCertificateInvitation,
+			InboxMessage:     *inboxMessageViewModel,
+			EventCertificate: eventCertificateViewModel,
 		})
 	default:
 		return customerror.Parse(&customerror.ErrNotFound, errors.New("inbox message not found"))

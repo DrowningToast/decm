@@ -20,4 +20,5 @@ type EventRegistrationInvitation struct {
 	CreatedAt           time.Time  `json:"created_at"`
 	UpdatedAt           time.Time  `json:"updated_at"`
 	CancelledAt         *time.Time `json:"cancelled_at,omitempty"`
+	AcceptedAt          *time.Time `json:"accepted_at"`
 }

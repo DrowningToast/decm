@@ -25,9 +25,9 @@ type UpdateEventRegistrationConfigRequest struct {
 	AddressRequirementStatus             int32            `json:"address_requirement_status" valid:"required,range(0|2)"`
 	AcademicInstitutionRequirementStatus int32            `json:"academic_institution_requirement_status" valid:"required,range(0|2)"`
 	AcademicEmailRequirementStatus       int32            `json:"academic_email_requirement_status" valid:"required,range(0|2)"`
-	IsBookingRequestRequired             bool             `json:"is_booking_request_required" valid:"required"`
-	IsTicketTransferable                 bool             `json:"is_ticket_transferable" valid:"required"`
-	EventType                            entity.EventType `json:"event_type,omitempty" valid:"omitempty,oneof=public private invite"`
+	IsBookingRequestRequired             bool             `json:"is_booking_request_required"`
+	IsTicketTransferable                 bool             `json:"is_ticket_transferable"`
+	EventType                            entity.EventType `json:"event_type" valid:"required,oneof=public private invite"`
 }
 
 func (r *UpdateEventRegistrationConfigRequest) IsValid() error {
@@ -42,7 +42,7 @@ func (r *UpdateEventRegistrationConfigRequest) IsValid() error {
 // @Produce json
 // @Param event_id path string true "Event ID"
 // @Param request body UpdateEventRegistrationConfigRequest true "Event registration config data"
-// @Success 200 {object} EventRegistrationConfigResponse
+// @Success 200 {object} EventRegistrationConfigViewModel
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
@@ -93,11 +93,10 @@ func (h *Handler) UpdateEventRegistrationConfig(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	return ctx.Status(http.StatusOK).JSON(EventRegistrationConfigResponse{
+	return ctx.Status(http.StatusOK).JSON(EventRegistrationConfigViewModel{
 		ID:                                   config.ID,
 		EventID:                              config.EventID,
 		FinalCallForRegistration:             config.FinalCallForRegistration,
-		RegistrationPassword:                 config.RegistrationPassword,
 		FirstNameRequirementStatus:           EventRegistrationConfigRequirementStatus(config.FirstNameRequirementStatus),
 		LastNameRequirementStatus:            EventRegistrationConfigRequirementStatus(config.LastNameRequirementStatus),
 		EmailRequirementStatus:               EventRegistrationConfigRequirementStatus(config.EmailRequirementStatus),

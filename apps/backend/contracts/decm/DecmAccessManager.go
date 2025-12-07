@@ -35,8 +35,8 @@ var (
 
 // DecmAccessManagerMetaData contains all meta data concerning the DecmAccessManager contract.
 var DecmAccessManagerMetaData = &bind.MetaData{
-	ABI: "[{\"type\":\"constructor\",\"inputs\":[{\"name\":\"initialAdmins\",\"type\":\"address[]\",\"internalType\":\"address[]\"}],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"ADMIN_ROLE\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"DEFAULT_ADMIN_ROLE\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsAdmin\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getRoleAdmin\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"grantAdminRole\",\"inputs\":[{\"name\":\"admin\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"hasRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"renounceRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"callerConfirmation\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"revokeAdminRole\",\"inputs\":[{\"name\":\"admin\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"revokeRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"supportsInterface\",\"inputs\":[{\"name\":\"interfaceId\",\"type\":\"bytes4\",\"internalType\":\"bytes4\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"event\",\"name\":\"AdminGranted\",\"inputs\":[{\"name\":\"admin\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"AdminRevoked\",\"inputs\":[{\"name\":\"admin\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"revoker\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleAdminChanged\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"previousAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"newAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleGranted\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleRevoked\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"error\",\"name\":\"AccessControlBadConfirmation\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"AccessControlUnauthorizedAccount\",\"inputs\":[{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"neededRole\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}]},{\"type\":\"error\",\"name\":\"DecmAccessManager__AdminCannotBeZeroAddress\",\"inputs\":[]}]",
-	Bin: "0x608060405234610119576108a08038038061001981610131565b928339810190602081830312610119578051906001600160401b038211610119570181601f82011215610119578051916001600160401b03831161011d578260051b9160208061006a818601610131565b80968152019382010191821161011957602001915b8183106100f957836100903361017e565b505f5b81518110156100ea576001600160a01b036100ae8284610156565b5116156100db576001906100d46001600160a01b036100cd8386610156565b511661017e565b5001610093565b635802408160e01b5f5260045ffd5b60405161067890816102088239f35b82516001600160a01b03811681036101195781526020928301920161007f565b5f80fd5b634e487b7160e01b5f52604160045260245ffd5b6040519190601f01601f191682016001600160401b0381118382101761011d57604052565b805182101561016a5760209160051b010190565b634e487b7160e01b5f52603260045260245ffd5b6001600160a01b0381165f9081525f5160206108805f395f51905f52602052604090205460ff16610202576001600160a01b03165f8181525f5160206108805f395f51905f5260205260408120805460ff191660011790553391907f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d8180a4600190565b505f9056fe6080806040526004361015610012575f80fd5b5f3560e01c90816301ffc9a71461030257508063248a9ca3146102d05780632f2ff15d1461029357806336568abe1461024f57806375b238fc1461019e57806391d14854146102075780639a19c7b0146101a3578063a217fddf1461019e578063c634b78e1461012b578063d547741f146100e75763d953689d14610095575f80fd5b346100e35760203660031901126100e3576100ae61036b565b6001600160a01b03165f9081525f5160206106235f395f51905f52602090815260409182902054915160ff9092161515825290f35b5f80fd5b346100e35760403660031901126100e357610129600435610106610355565b9061012461011f825f525f602052600160405f20015490565b6103d7565b6105a2565b005b346100e35760203660031901126100e35761014461036b565b61014c61039b565b6001600160a01b03811690811561018f576101669061040f565b5033907fe9b6cdfbd875b86ee149f6212b6245d0956fccd53cbbc382ad2bb44ed32a2ca85f80a3005b635802408160e01b5f5260045ffd5b610381565b346100e35760203660031901126100e3576101bc61036b565b6101c461039b565b6001600160a01b03811690811561018f576101de90610520565b5033907f7c0c3c84c67c85fcac635147348bfe374c24a1a93d0366d1cfe9d8853cbf89d55f80a3005b346100e35760403660031901126100e357610220610355565b6004355f525f60205260405f209060018060a01b03165f52602052602060ff60405f2054166040519015158152f35b346100e35760403660031901126100e357610268610355565b336001600160a01b0382160361028457610129906004356105a2565b63334bd91960e11b5f5260045ffd5b346100e35760403660031901126100e3576101296004356102b2610355565b906102cb61011f825f525f602052600160405f20015490565b610498565b346100e35760203660031901126100e35760206102fa6004355f525f602052600160405f20015490565b604051908152f35b346100e35760203660031901126100e3576004359063ffffffff60e01b82168092036100e357602091637965db0b60e01b8114908115610344575b5015158152f35b6301ffc9a760e01b1490508361033d565b602435906001600160a01b03821682036100e357565b600435906001600160a01b03821682036100e357565b346100e3575f3660031901126100e35760206040515f8152f35b335f9081525f5160206106235f395f51905f52602052604090205460ff16156103c057565b63e2517d3f60e01b5f52336004525f60245260445ffd5b5f8181526020818152604080832033845290915290205460ff16156103f95750565b63e2517d3f60e01b5f523360045260245260445ffd5b6001600160a01b0381165f9081525f5160206106235f395f51905f52602052604090205460ff16610493576001600160a01b03165f8181525f5160206106235f395f51905f5260205260408120805460ff191660011790553391907f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d8180a4600190565b505f90565b5f818152602081815260408083206001600160a01b038616845290915290205460ff1661051a575f818152602081815260408083206001600160a01b0395909516808452949091528120805460ff19166001179055339291907f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d9080a4600190565b50505f90565b6001600160a01b0381165f9081525f5160206106235f395f51905f52602052604090205460ff1615610493576001600160a01b03165f8181525f5160206106235f395f51905f5260205260408120805460ff191690553391907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b8180a4600190565b5f818152602081815260408083206001600160a01b038616845290915290205460ff161561051a575f818152602081815260408083206001600160a01b0395909516808452949091528120805460ff19169055339291907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9080a460019056fead3228b676f7d3cd4284a5443f17f1962b36e491b30a40b2405849e597ba5fb5a26469706673582212204c6e5dd7a1a7c399124715958a48f3a73d406661ab97ecbeec8e5e8dc9af737d64736f6c634300081c0033ad3228b676f7d3cd4284a5443f17f1962b36e491b30a40b2405849e597ba5fb5",
+	ABI: "[{\"type\":\"constructor\",\"inputs\":[{\"name\":\"initialAdmins\",\"type\":\"address[]\",\"internalType\":\"address[]\"}],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"ADMIN_ROLE\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"DEFAULT_ADMIN_ROLE\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"addAllowedMsgSender\",\"inputs\":[{\"name\":\"msgSender\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"allowedMsgSenders\",\"inputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsAdmin\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"checkIsAllowedMsgSender\",\"inputs\":[{\"name\":\"addr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getRoleAdmin\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"grantAdminRole\",\"inputs\":[{\"name\":\"admin\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"grantRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"hasRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"removeAllowedMsgSender\",\"inputs\":[{\"name\":\"msgSender\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"renounceRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"callerConfirmation\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"revokeAdminRole\",\"inputs\":[{\"name\":\"admin\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"revokeRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"supportsInterface\",\"inputs\":[{\"name\":\"interfaceId\",\"type\":\"bytes4\",\"internalType\":\"bytes4\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"event\",\"name\":\"AdminGranted\",\"inputs\":[{\"name\":\"admin\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"granter\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"AdminRevoked\",\"inputs\":[{\"name\":\"admin\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"revoker\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleAdminChanged\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"previousAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"newAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleGranted\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleRevoked\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"error\",\"name\":\"AccessControlBadConfirmation\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"AccessControlUnauthorizedAccount\",\"inputs\":[{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"neededRole\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}]}]",
+	Bin: "0x60806040523461014f57610a3e8038038061001981610167565b92833981019060208183031261014f578051906001600160401b03821161014f570181601f8201121561014f578051916001600160401b038311610153578260051b9160208061006a818601610167565b80968152019382010191821161014f57602001915b81831061012f5783610090336101b4565b505f5b8151811015610120576001600160a01b036100ae828461018c565b5116156100db576001906100d46001600160a01b036100cd838661018c565b51166101b4565b5001610093565b60405162461bcd60e51b815260206004820152601c60248201527f41646d696e2063616e6e6f74206265207a65726f2061646472657373000000006044820152606490fd5b6040516107e0908161023e8239f35b82516001600160a01b038116810361014f5781526020928301920161007f565b5f80fd5b634e487b7160e01b5f52604160045260245ffd5b6040519190601f01601f191682016001600160401b0381118382101761015357604052565b80518210156101a05760209160051b010190565b634e487b7160e01b5f52603260045260245ffd5b6001600160a01b0381165f9081525f516020610a1e5f395f51905f52602052604090205460ff16610238576001600160a01b03165f8181525f516020610a1e5f395f51905f5260205260408120805460ff191660011790553391907f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d8180a4600190565b505f9056fe6080806040526004361015610012575f80fd5b5f3560e01c90816301d060b01461043f5750806301ffc9a7146103e957806323327b9c146103ac578063248a9ca31461037a5780632f2ff15d1461033d57806336568abe146102f957806375b238fc1461024857806391d14854146102b15780639a19c7b01461024d578063a217fddf14610248578063aa2d907814610201578063c15e0b4d146101c0578063c634b78e14610157578063d547741f146101135763d953689d146100c1575f80fd5b3461010f57602036600319011261010f576100da610478565b6001600160a01b03165f9081525f51602061078b5f395f51905f52602090815260409182902054915160ff9092161515825290f35b5f80fd5b3461010f57604036600319011261010f5761015560043561013261048e565b9061015061014b825f525f602052600160405f20015490565b61053f565b61070a565b005b3461010f57602036600319011261010f57610170610478565b610178610503565b6001600160a01b0381169081156101bb5761019290610577565b5033907fe9b6cdfbd875b86ee149f6212b6245d0956fccd53cbbc382ad2bb44ed32a2ca85f80a3005b6104be565b3461010f57602036600319011261010f576101d9610478565b6101e1610503565b6001600160a01b03165f908152600160205260409020805460ff19169055005b3461010f57602036600319011261010f5761021a610478565b610222610503565b6001600160a01b03165f908152600160208190526040909120805460ff19169091179055005b6104a4565b3461010f57602036600319011261010f57610266610478565b61026e610503565b6001600160a01b0381169081156101bb5761028890610688565b5033907f7c0c3c84c67c85fcac635147348bfe374c24a1a93d0366d1cfe9d8853cbf89d55f80a3005b3461010f57604036600319011261010f576102ca61048e565b6004355f525f60205260405f209060018060a01b03165f52602052602060ff60405f2054166040519015158152f35b3461010f57604036600319011261010f5761031261048e565b336001600160a01b0382160361032e576101559060043561070a565b63334bd91960e11b5f5260045ffd5b3461010f57604036600319011261010f5761015560043561035c61048e565b9061037561014b825f525f602052600160405f20015490565b610600565b3461010f57602036600319011261010f5760206103a46004355f525f602052600160405f20015490565b604051908152f35b3461010f57602036600319011261010f576001600160a01b036103cd610478565b165f526001602052602060ff60405f2054166040519015158152f35b3461010f57602036600319011261010f5760043563ffffffff60e01b811680910361010f57602090637965db0b60e01b811490811561042e575b506040519015158152f35b6301ffc9a760e01b14905082610423565b3461010f57602036600319011261010f576020906001600160a01b03610463610478565b165f526001825260ff60405f20541615158152f35b600435906001600160a01b038216820361010f57565b602435906001600160a01b038216820361010f57565b3461010f575f36600319011261010f5760206040515f8152f35b60405162461bcd60e51b815260206004820152601c60248201527f41646d696e2063616e6e6f74206265207a65726f2061646472657373000000006044820152606490fd5b335f9081525f51602061078b5f395f51905f52602052604090205460ff161561052857565b63e2517d3f60e01b5f52336004525f60245260445ffd5b5f8181526020818152604080832033845290915290205460ff16156105615750565b63e2517d3f60e01b5f523360045260245260445ffd5b6001600160a01b0381165f9081525f51602061078b5f395f51905f52602052604090205460ff166105fb576001600160a01b03165f8181525f51602061078b5f395f51905f5260205260408120805460ff191660011790553391907f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d8180a4600190565b505f90565b5f818152602081815260408083206001600160a01b038616845290915290205460ff16610682575f818152602081815260408083206001600160a01b0395909516808452949091528120805460ff19166001179055339291907f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d9080a4600190565b50505f90565b6001600160a01b0381165f9081525f51602061078b5f395f51905f52602052604090205460ff16156105fb576001600160a01b03165f8181525f51602061078b5f395f51905f5260205260408120805460ff191690553391907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b8180a4600190565b5f818152602081815260408083206001600160a01b038616845290915290205460ff1615610682575f818152602081815260408083206001600160a01b0395909516808452949091528120805460ff19169055339291907ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9080a460019056fead3228b676f7d3cd4284a5443f17f1962b36e491b30a40b2405849e597ba5fb5a2646970667358221220c67bc4ff0ead6f3f4a50f8962df7141fcf6eaa82c6edd22df1e43270202db9eb64736f6c634300081c0033ad3228b676f7d3cd4284a5443f17f1962b36e491b30a40b2405849e597ba5fb5",
 }
 
 // DecmAccessManagerABI is the input ABI used to generate the binding from.
@@ -212,6 +212,7 @@ func (_DecmAccessManager *DecmAccessManagerTransactorRaw) Transact(opts *bind.Tr
 func (_DecmAccessManager *DecmAccessManagerCaller) ADMINROLE(opts *bind.CallOpts) ([32]byte, error) {
 	var out []interface{}
 	err := _DecmAccessManager.contract.Call(opts, &out, "ADMIN_ROLE")
+
 	if err != nil {
 		return *new([32]byte), err
 	}
@@ -219,6 +220,7 @@ func (_DecmAccessManager *DecmAccessManagerCaller) ADMINROLE(opts *bind.CallOpts
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
+
 }
 
 // ADMINROLE is a free data retrieval call binding the contract method 0x75b238fc.
@@ -241,6 +243,7 @@ func (_DecmAccessManager *DecmAccessManagerCallerSession) ADMINROLE() ([32]byte,
 func (_DecmAccessManager *DecmAccessManagerCaller) DEFAULTADMINROLE(opts *bind.CallOpts) ([32]byte, error) {
 	var out []interface{}
 	err := _DecmAccessManager.contract.Call(opts, &out, "DEFAULT_ADMIN_ROLE")
+
 	if err != nil {
 		return *new([32]byte), err
 	}
@@ -248,6 +251,7 @@ func (_DecmAccessManager *DecmAccessManagerCaller) DEFAULTADMINROLE(opts *bind.C
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
+
 }
 
 // DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
@@ -264,12 +268,13 @@ func (_DecmAccessManager *DecmAccessManagerCallerSession) DEFAULTADMINROLE() ([3
 	return _DecmAccessManager.Contract.DEFAULTADMINROLE(&_DecmAccessManager.CallOpts)
 }
 
-// CheckIsAdmin is a free data retrieval call binding the contract method 0xd953689d.
+// AllowedMsgSenders is a free data retrieval call binding the contract method 0x01d060b0.
 //
-// Solidity: function checkIsAdmin(address addr) view returns(bool)
-func (_DecmAccessManager *DecmAccessManagerCaller) CheckIsAdmin(opts *bind.CallOpts, addr common.Address) (bool, error) {
+// Solidity: function allowedMsgSenders(address ) view returns(bool)
+func (_DecmAccessManager *DecmAccessManagerCaller) AllowedMsgSenders(opts *bind.CallOpts, arg0 common.Address) (bool, error) {
 	var out []interface{}
-	err := _DecmAccessManager.contract.Call(opts, &out, "checkIsAdmin", addr)
+	err := _DecmAccessManager.contract.Call(opts, &out, "allowedMsgSenders", arg0)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -277,6 +282,38 @@ func (_DecmAccessManager *DecmAccessManagerCaller) CheckIsAdmin(opts *bind.CallO
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
+}
+
+// AllowedMsgSenders is a free data retrieval call binding the contract method 0x01d060b0.
+//
+// Solidity: function allowedMsgSenders(address ) view returns(bool)
+func (_DecmAccessManager *DecmAccessManagerSession) AllowedMsgSenders(arg0 common.Address) (bool, error) {
+	return _DecmAccessManager.Contract.AllowedMsgSenders(&_DecmAccessManager.CallOpts, arg0)
+}
+
+// AllowedMsgSenders is a free data retrieval call binding the contract method 0x01d060b0.
+//
+// Solidity: function allowedMsgSenders(address ) view returns(bool)
+func (_DecmAccessManager *DecmAccessManagerCallerSession) AllowedMsgSenders(arg0 common.Address) (bool, error) {
+	return _DecmAccessManager.Contract.AllowedMsgSenders(&_DecmAccessManager.CallOpts, arg0)
+}
+
+// CheckIsAdmin is a free data retrieval call binding the contract method 0xd953689d.
+//
+// Solidity: function checkIsAdmin(address addr) view returns(bool)
+func (_DecmAccessManager *DecmAccessManagerCaller) CheckIsAdmin(opts *bind.CallOpts, addr common.Address) (bool, error) {
+	var out []interface{}
+	err := _DecmAccessManager.contract.Call(opts, &out, "checkIsAdmin", addr)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
 // CheckIsAdmin is a free data retrieval call binding the contract method 0xd953689d.
@@ -293,12 +330,44 @@ func (_DecmAccessManager *DecmAccessManagerCallerSession) CheckIsAdmin(addr comm
 	return _DecmAccessManager.Contract.CheckIsAdmin(&_DecmAccessManager.CallOpts, addr)
 }
 
+// CheckIsAllowedMsgSender is a free data retrieval call binding the contract method 0x23327b9c.
+//
+// Solidity: function checkIsAllowedMsgSender(address addr) view returns(bool)
+func (_DecmAccessManager *DecmAccessManagerCaller) CheckIsAllowedMsgSender(opts *bind.CallOpts, addr common.Address) (bool, error) {
+	var out []interface{}
+	err := _DecmAccessManager.contract.Call(opts, &out, "checkIsAllowedMsgSender", addr)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// CheckIsAllowedMsgSender is a free data retrieval call binding the contract method 0x23327b9c.
+//
+// Solidity: function checkIsAllowedMsgSender(address addr) view returns(bool)
+func (_DecmAccessManager *DecmAccessManagerSession) CheckIsAllowedMsgSender(addr common.Address) (bool, error) {
+	return _DecmAccessManager.Contract.CheckIsAllowedMsgSender(&_DecmAccessManager.CallOpts, addr)
+}
+
+// CheckIsAllowedMsgSender is a free data retrieval call binding the contract method 0x23327b9c.
+//
+// Solidity: function checkIsAllowedMsgSender(address addr) view returns(bool)
+func (_DecmAccessManager *DecmAccessManagerCallerSession) CheckIsAllowedMsgSender(addr common.Address) (bool, error) {
+	return _DecmAccessManager.Contract.CheckIsAllowedMsgSender(&_DecmAccessManager.CallOpts, addr)
+}
+
 // GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
 //
 // Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
 func (_DecmAccessManager *DecmAccessManagerCaller) GetRoleAdmin(opts *bind.CallOpts, role [32]byte) ([32]byte, error) {
 	var out []interface{}
 	err := _DecmAccessManager.contract.Call(opts, &out, "getRoleAdmin", role)
+
 	if err != nil {
 		return *new([32]byte), err
 	}
@@ -306,6 +375,7 @@ func (_DecmAccessManager *DecmAccessManagerCaller) GetRoleAdmin(opts *bind.CallO
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
+
 }
 
 // GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
@@ -328,6 +398,7 @@ func (_DecmAccessManager *DecmAccessManagerCallerSession) GetRoleAdmin(role [32]
 func (_DecmAccessManager *DecmAccessManagerCaller) HasRole(opts *bind.CallOpts, role [32]byte, account common.Address) (bool, error) {
 	var out []interface{}
 	err := _DecmAccessManager.contract.Call(opts, &out, "hasRole", role, account)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -335,6 +406,7 @@ func (_DecmAccessManager *DecmAccessManagerCaller) HasRole(opts *bind.CallOpts, 
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // HasRole is a free data retrieval call binding the contract method 0x91d14854.
@@ -357,6 +429,7 @@ func (_DecmAccessManager *DecmAccessManagerCallerSession) HasRole(role [32]byte,
 func (_DecmAccessManager *DecmAccessManagerCaller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
 	var out []interface{}
 	err := _DecmAccessManager.contract.Call(opts, &out, "supportsInterface", interfaceId)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -364,6 +437,7 @@ func (_DecmAccessManager *DecmAccessManagerCaller) SupportsInterface(opts *bind.
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
@@ -378,6 +452,27 @@ func (_DecmAccessManager *DecmAccessManagerSession) SupportsInterface(interfaceI
 // Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
 func (_DecmAccessManager *DecmAccessManagerCallerSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
 	return _DecmAccessManager.Contract.SupportsInterface(&_DecmAccessManager.CallOpts, interfaceId)
+}
+
+// AddAllowedMsgSender is a paid mutator transaction binding the contract method 0xaa2d9078.
+//
+// Solidity: function addAllowedMsgSender(address msgSender) returns()
+func (_DecmAccessManager *DecmAccessManagerTransactor) AddAllowedMsgSender(opts *bind.TransactOpts, msgSender common.Address) (*types.Transaction, error) {
+	return _DecmAccessManager.contract.Transact(opts, "addAllowedMsgSender", msgSender)
+}
+
+// AddAllowedMsgSender is a paid mutator transaction binding the contract method 0xaa2d9078.
+//
+// Solidity: function addAllowedMsgSender(address msgSender) returns()
+func (_DecmAccessManager *DecmAccessManagerSession) AddAllowedMsgSender(msgSender common.Address) (*types.Transaction, error) {
+	return _DecmAccessManager.Contract.AddAllowedMsgSender(&_DecmAccessManager.TransactOpts, msgSender)
+}
+
+// AddAllowedMsgSender is a paid mutator transaction binding the contract method 0xaa2d9078.
+//
+// Solidity: function addAllowedMsgSender(address msgSender) returns()
+func (_DecmAccessManager *DecmAccessManagerTransactorSession) AddAllowedMsgSender(msgSender common.Address) (*types.Transaction, error) {
+	return _DecmAccessManager.Contract.AddAllowedMsgSender(&_DecmAccessManager.TransactOpts, msgSender)
 }
 
 // GrantAdminRole is a paid mutator transaction binding the contract method 0xc634b78e.
@@ -420,6 +515,27 @@ func (_DecmAccessManager *DecmAccessManagerSession) GrantRole(role [32]byte, acc
 // Solidity: function grantRole(bytes32 role, address account) returns()
 func (_DecmAccessManager *DecmAccessManagerTransactorSession) GrantRole(role [32]byte, account common.Address) (*types.Transaction, error) {
 	return _DecmAccessManager.Contract.GrantRole(&_DecmAccessManager.TransactOpts, role, account)
+}
+
+// RemoveAllowedMsgSender is a paid mutator transaction binding the contract method 0xc15e0b4d.
+//
+// Solidity: function removeAllowedMsgSender(address msgSender) returns()
+func (_DecmAccessManager *DecmAccessManagerTransactor) RemoveAllowedMsgSender(opts *bind.TransactOpts, msgSender common.Address) (*types.Transaction, error) {
+	return _DecmAccessManager.contract.Transact(opts, "removeAllowedMsgSender", msgSender)
+}
+
+// RemoveAllowedMsgSender is a paid mutator transaction binding the contract method 0xc15e0b4d.
+//
+// Solidity: function removeAllowedMsgSender(address msgSender) returns()
+func (_DecmAccessManager *DecmAccessManagerSession) RemoveAllowedMsgSender(msgSender common.Address) (*types.Transaction, error) {
+	return _DecmAccessManager.Contract.RemoveAllowedMsgSender(&_DecmAccessManager.TransactOpts, msgSender)
+}
+
+// RemoveAllowedMsgSender is a paid mutator transaction binding the contract method 0xc15e0b4d.
+//
+// Solidity: function removeAllowedMsgSender(address msgSender) returns()
+func (_DecmAccessManager *DecmAccessManagerTransactorSession) RemoveAllowedMsgSender(msgSender common.Address) (*types.Transaction, error) {
+	return _DecmAccessManager.Contract.RemoveAllowedMsgSender(&_DecmAccessManager.TransactOpts, msgSender)
 }
 
 // RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
@@ -563,6 +679,7 @@ type DecmAccessManagerAdminGranted struct {
 //
 // Solidity: event AdminGranted(address indexed admin, address indexed granter)
 func (_DecmAccessManager *DecmAccessManagerFilterer) FilterAdminGranted(opts *bind.FilterOpts, admin []common.Address, granter []common.Address) (*DecmAccessManagerAdminGrantedIterator, error) {
+
 	var adminRule []interface{}
 	for _, adminItem := range admin {
 		adminRule = append(adminRule, adminItem)
@@ -583,6 +700,7 @@ func (_DecmAccessManager *DecmAccessManagerFilterer) FilterAdminGranted(opts *bi
 //
 // Solidity: event AdminGranted(address indexed admin, address indexed granter)
 func (_DecmAccessManager *DecmAccessManagerFilterer) WatchAdminGranted(opts *bind.WatchOpts, sink chan<- *DecmAccessManagerAdminGranted, admin []common.Address, granter []common.Address) (event.Subscription, error) {
+
 	var adminRule []interface{}
 	for _, adminItem := range admin {
 		adminRule = append(adminRule, adminItem)
@@ -714,6 +832,7 @@ type DecmAccessManagerAdminRevoked struct {
 //
 // Solidity: event AdminRevoked(address indexed admin, address indexed revoker)
 func (_DecmAccessManager *DecmAccessManagerFilterer) FilterAdminRevoked(opts *bind.FilterOpts, admin []common.Address, revoker []common.Address) (*DecmAccessManagerAdminRevokedIterator, error) {
+
 	var adminRule []interface{}
 	for _, adminItem := range admin {
 		adminRule = append(adminRule, adminItem)
@@ -734,6 +853,7 @@ func (_DecmAccessManager *DecmAccessManagerFilterer) FilterAdminRevoked(opts *bi
 //
 // Solidity: event AdminRevoked(address indexed admin, address indexed revoker)
 func (_DecmAccessManager *DecmAccessManagerFilterer) WatchAdminRevoked(opts *bind.WatchOpts, sink chan<- *DecmAccessManagerAdminRevoked, admin []common.Address, revoker []common.Address) (event.Subscription, error) {
+
 	var adminRule []interface{}
 	for _, adminItem := range admin {
 		adminRule = append(adminRule, adminItem)
@@ -866,6 +986,7 @@ type DecmAccessManagerRoleAdminChanged struct {
 //
 // Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
 func (_DecmAccessManager *DecmAccessManagerFilterer) FilterRoleAdminChanged(opts *bind.FilterOpts, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (*DecmAccessManagerRoleAdminChangedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -890,6 +1011,7 @@ func (_DecmAccessManager *DecmAccessManagerFilterer) FilterRoleAdminChanged(opts
 //
 // Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
 func (_DecmAccessManager *DecmAccessManagerFilterer) WatchRoleAdminChanged(opts *bind.WatchOpts, sink chan<- *DecmAccessManagerRoleAdminChanged, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -1026,6 +1148,7 @@ type DecmAccessManagerRoleGranted struct {
 //
 // Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
 func (_DecmAccessManager *DecmAccessManagerFilterer) FilterRoleGranted(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*DecmAccessManagerRoleGrantedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -1050,6 +1173,7 @@ func (_DecmAccessManager *DecmAccessManagerFilterer) FilterRoleGranted(opts *bin
 //
 // Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
 func (_DecmAccessManager *DecmAccessManagerFilterer) WatchRoleGranted(opts *bind.WatchOpts, sink chan<- *DecmAccessManagerRoleGranted, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -1186,6 +1310,7 @@ type DecmAccessManagerRoleRevoked struct {
 //
 // Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
 func (_DecmAccessManager *DecmAccessManagerFilterer) FilterRoleRevoked(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*DecmAccessManagerRoleRevokedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -1210,6 +1335,7 @@ func (_DecmAccessManager *DecmAccessManagerFilterer) FilterRoleRevoked(opts *bin
 //
 // Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
 func (_DecmAccessManager *DecmAccessManagerFilterer) WatchRoleRevoked(opts *bind.WatchOpts, sink chan<- *DecmAccessManagerRoleRevoked, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)

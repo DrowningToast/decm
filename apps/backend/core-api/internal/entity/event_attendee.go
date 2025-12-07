@@ -10,6 +10,7 @@ type EventAttendee struct {
 	Id                   uuid.UUID `json:"id"`
 	EventId              uuid.UUID `json:"event_id"`
 	AttendeeCredentialId uuid.UUID `json:"attendee_credential_id"`
+	WalletAddress        string    `json:"wallet_address"`
 	ContractAddress      string    `json:"contract_address"`
 	IsAttendeeAccepted   bool      `json:"is_attendee_accepted"`
 	FirstName            *string   `json:"first_name,omitempty"`

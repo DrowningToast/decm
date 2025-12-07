@@ -13,6 +13,25 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const AllIssuersHaveSigned = `-- name: AllIssuersHaveSigned :one
+SELECT 
+    CASE 
+        WHEN COUNT(*) = 0 THEN false
+        WHEN COUNT(*) = COUNT(*) FILTER (WHERE is_signed = 1) THEN true
+        ELSE false
+    END AS all_issuers_signed
+FROM event_issuers
+WHERE event_id = $1
+  AND deleted_at IS NULL
+`
+
+func (q *Queries) AllIssuersHaveSigned(ctx context.Context, eventID uuid.UUID) (bool, error) {
+	row := q.db.QueryRow(ctx, AllIssuersHaveSigned, eventID)
+	var all_issuers_signed bool
+	err := row.Scan(&all_issuers_signed)
+	return all_issuers_signed, err
+}
+
 const CreateEventIssuer = `-- name: CreateEventIssuer :one
 INSERT INTO event_issuers (
     event_id,
@@ -71,7 +90,9 @@ func (q *Queries) DeleteEventIssuer(ctx context.Context, id uuid.UUID) error {
 
 const GetEventIssuerByEventIDAndIssuerCredentialID = `-- name: GetEventIssuerByEventIDAndIssuerCredentialID :one
 SELECT id, event_id, issuer_credential_id, is_signed, signature, sign_message_digest, created_at, updated_at, deleted_at FROM event_issuers 
-WHERE event_id = $1 AND issuer_credential_id = $2
+WHERE event_id = $1 
+  AND issuer_credential_id = $2
+  AND deleted_at IS NULL
 `
 
 type GetEventIssuerByEventIDAndIssuerCredentialIDParams struct {
@@ -230,6 +251,159 @@ func (q *Queries) GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUI
 		return nil, err
 	}
 	return items, nil
+}
+
+const GetIssuerEventsWithDetails = `-- name: GetIssuerEventsWithDetails :many
+SELECT 
+    ei.id,
+    ei.event_id as event_id,
+    ei.issuer_credential_id,
+    ei.is_signed,
+    ei.signature,
+    ei.sign_message_digest,
+    ei.created_at,
+    ei.updated_at,
+    e.title as event_title,
+    e.short_description as event_short_description,
+    e.start_date as event_start_date,
+    e.end_date as event_end_date,
+    e.location as event_location,
+    e.owner_credential_id as event_owner_credential_id,
+    p.first_name as owner_first_name,
+    p.last_name as owner_last_name,
+    p.email as owner_email,
+    ac.wallet_address as owner_wallet_address,
+    ac.google_connector_ref as owner_google_connector_ref,
+    COALESCE(
+        (SELECT COUNT(ec.id) 
+         FROM event_certificates ec 
+         WHERE ec.event_id = e.id 
+           AND ec.revoked_at IS NULL
+        ), 
+    0)::INTEGER AS certificate_count
+FROM event_issuers ei
+INNER JOIN events e ON ei.event_id = e.id
+LEFT JOIN profiles p ON e.owner_credential_id = p.authentication_credential_id
+LEFT JOIN authentication_credentials ac ON e.owner_credential_id = ac.id
+WHERE ei.issuer_credential_id = $1
+ORDER BY e.created_at DESC
+LIMIT $3 OFFSET $2
+`
+
+type GetIssuerEventsWithDetailsParams struct {
+	IssuerCredentialID uuid.UUID `json:"issuer_credential_id"`
+	OffsetCount        int32     `json:"offset_count"`
+	LimitCount         int32     `json:"limit_count"`
+}
+
+type GetIssuerEventsWithDetailsRow struct {
+	ID                      uuid.UUID          `json:"id"`
+	EventID                 uuid.UUID          `json:"event_id"`
+	IssuerCredentialID      uuid.UUID          `json:"issuer_credential_id"`
+	IsSigned                int32              `json:"is_signed"`
+	Signature               pgtype.Text        `json:"signature"`
+	SignMessageDigest       pgtype.Text        `json:"sign_message_digest"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt               pgtype.Timestamptz `json:"updated_at"`
+	EventTitle              string             `json:"event_title"`
+	EventShortDescription   string             `json:"event_short_description"`
+	EventStartDate          time.Time          `json:"event_start_date"`
+	EventEndDate            time.Time          `json:"event_end_date"`
+	EventLocation           string             `json:"event_location"`
+	EventOwnerCredentialID  uuid.UUID          `json:"event_owner_credential_id"`
+	OwnerFirstName          pgtype.Text        `json:"owner_first_name"`
+	OwnerLastName           pgtype.Text        `json:"owner_last_name"`
+	OwnerEmail              pgtype.Text        `json:"owner_email"`
+	OwnerWalletAddress      pgtype.Text        `json:"owner_wallet_address"`
+	OwnerGoogleConnectorRef pgtype.Text        `json:"owner_google_connector_ref"`
+	CertificateCount        int32              `json:"certificate_count"`
+}
+
+func (q *Queries) GetIssuerEventsWithDetails(ctx context.Context, arg GetIssuerEventsWithDetailsParams) ([]GetIssuerEventsWithDetailsRow, error) {
+	rows, err := q.db.Query(ctx, GetIssuerEventsWithDetails, arg.IssuerCredentialID, arg.OffsetCount, arg.LimitCount)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetIssuerEventsWithDetailsRow{}
+	for rows.Next() {
+		var i GetIssuerEventsWithDetailsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.EventID,
+			&i.IssuerCredentialID,
+			&i.IsSigned,
+			&i.Signature,
+			&i.SignMessageDigest,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.EventTitle,
+			&i.EventShortDescription,
+			&i.EventStartDate,
+			&i.EventEndDate,
+			&i.EventLocation,
+			&i.EventOwnerCredentialID,
+			&i.OwnerFirstName,
+			&i.OwnerLastName,
+			&i.OwnerEmail,
+			&i.OwnerWalletAddress,
+			&i.OwnerGoogleConnectorRef,
+			&i.CertificateCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const GetSignedIssuersCount = `-- name: GetSignedIssuersCount :one
+SELECT COUNT(*) AS count
+FROM event_issuers 
+WHERE event_id = $1 
+  AND is_signed = 1
+  AND deleted_at IS NULL
+`
+
+func (q *Queries) GetSignedIssuersCount(ctx context.Context, eventID uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, GetSignedIssuersCount, eventID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const GetTotalIssuersCount = `-- name: GetTotalIssuersCount :one
+SELECT COUNT(*) AS count
+FROM event_issuers 
+WHERE event_id = $1 
+  AND deleted_at IS NULL
+`
+
+func (q *Queries) GetTotalIssuersCount(ctx context.Context, eventID uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, GetTotalIssuersCount, eventID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const HasSignedIssuers = `-- name: HasSignedIssuers :one
+SELECT EXISTS(
+    SELECT 1 
+    FROM event_issuers 
+    WHERE event_id = $1 
+      AND is_signed = 1
+      AND deleted_at IS NULL
+) AS has_signed_issuers
+`
+
+func (q *Queries) HasSignedIssuers(ctx context.Context, eventID uuid.UUID) (bool, error) {
+	row := q.db.QueryRow(ctx, HasSignedIssuers, eventID)
+	var has_signed_issuers bool
+	err := row.Scan(&has_signed_issuers)
+	return has_signed_issuers, err
 }
 
 const ResetAllEventIssuersSigningStatus = `-- name: ResetAllEventIssuersSigningStatus :exec

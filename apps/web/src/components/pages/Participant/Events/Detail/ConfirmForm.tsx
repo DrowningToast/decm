@@ -1,10 +1,16 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { FormField, FormItem, FormControl, FormMessage, Form } from "@/components/ui/form";
+import {
+    FormField,
+    FormItem,
+    FormLabel,
+    FormControl,
+    FormMessage,
+    Form,
+} from "@/components/ui/form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
     AlertDialog,
@@ -20,38 +26,49 @@ import type { RegistrationConfirmDataForm } from "./RegistrationConfirmDataFormS
 import { useTranslation } from "react-i18next";
 import { Loader2, Info } from "lucide-react";
 import { useEventViewModelUsecase } from "./useEventViewModelUsecase";
-import type { RegistrationRequirement } from "@/services/EventRegistration/EventRegistration";
+import type {
+    EventRegistrationInvitation,
+    RegistrationRequirement,
+    RegistrationRequirementStatus,
+} from "@/services/EventRegistration/EventRegistration";
+import { FieldRequirementBadge } from "./components/FieldRequirementBadge";
 
 interface RegistrationConfirmFormProps {
     eventId: string;
     onSubmit: (data: RegistrationConfirmDataForm) => Promise<void>;
     onCancel: () => void;
     isSubmitting?: boolean;
-    initialData?: RegistrationConfirmDataForm;
+    // if optional or required, will autofill
+    profileData: RegistrationConfirmDataForm;
+    // If provide, the field is counted as required and locked
+    invitationData?: EventRegistrationInvitation;
 }
 
-type FieldRequirement = "required" | "optional" | "not_needed";
+export type FieldStatus = RegistrationRequirementStatus | "locked";
+type Invite = Omit<
+    EventRegistrationInvitation,
+    | "code"
+    | "id"
+    | "eventId"
+    | "inboxMessageId"
+    | "validUntil"
+    | "createdAt"
+    | "updatedAt"
+    | "cancelledAt"
+>;
 
-// Helper component for field requirement indicator
-const FieldRequirementBadge: React.FC<{
-    requirement: FieldRequirement;
-    t: (key: string) => string;
-}> = ({ requirement, t }) => {
-    if (requirement === "required") {
-        return (
-            <span className="ml-2 inline-flex items-center rounded-md bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive ring-1 ring-inset ring-destructive/20">
-                {t("common.required")}
-            </span>
-        );
+const mapFieldRequirementToStatus = (
+    key: keyof RegistrationRequirement,
+    requirement: RegistrationRequirement,
+    invitation?: Invite,
+): FieldStatus => {
+    if (!invitation) {
+        return requirement[key];
     }
-    if (requirement === "optional") {
-        return (
-            <span className="ml-2 inline-flex items-center rounded-md bg-secondary/50 px-2 py-0.5 text-xs font-medium text-muted-foreground ring-1 ring-inset ring-border">
-                {t("common.optional")}
-            </span>
-        );
+    if (key in invitation && invitation[key as keyof Invite] !== undefined) {
+        return "locked";
     }
-    return null;
+    return requirement[key];
 };
 
 export const RegistrationConfirmForm: React.FC<RegistrationConfirmFormProps> = ({
@@ -59,7 +76,8 @@ export const RegistrationConfirmForm: React.FC<RegistrationConfirmFormProps> = (
     onSubmit,
     onCancel,
     isSubmitting = false,
-    initialData,
+    profileData,
+    invitationData,
 }) => {
     const { t } = useTranslation();
 
@@ -67,6 +85,42 @@ export const RegistrationConfirmForm: React.FC<RegistrationConfirmFormProps> = (
     const formRequirements = event?.registrationRequirement;
 
     const formSchema = createRegistrationConfirmDataFormSchema(t, formRequirements);
+    const initialData = useMemo<RegistrationConfirmDataForm>(() => {
+        return {
+            firstName:
+                invitationData?.firstName ??
+                (formRequirements?.firstName === "not_required"
+                    ? undefined
+                    : profileData?.firstName),
+            lastName:
+                invitationData?.lastName ??
+                (formRequirements?.lastName === "not_required" ? undefined : profileData?.lastName),
+            bio:
+                profileData?.bio ??
+                (formRequirements?.bio === "not_required" ? undefined : profileData?.bio),
+            email:
+                invitationData?.email ??
+                (formRequirements?.email === "not_required" ? undefined : profileData?.email),
+            phoneNumber:
+                invitationData?.phoneNumber ??
+                (formRequirements?.phoneNumber === "not_required"
+                    ? undefined
+                    : profileData?.phoneNumber),
+            address:
+                profileData?.address ??
+                (formRequirements?.address === "not_required" ? undefined : profileData?.address),
+            academicEmail:
+                profileData?.academicEmail ??
+                (formRequirements?.academicEmail === "not_required"
+                    ? undefined
+                    : profileData?.academicEmail),
+            academicInstitution:
+                invitationData?.academicInstitution ??
+                (formRequirements?.academicInstitution === "not_required"
+                    ? undefined
+                    : profileData?.academicInstitution),
+        };
+    }, [invitationData, profileData, formRequirements]);
 
     const form = useForm({
         resolver: zodResolver(formSchema),
@@ -75,17 +129,19 @@ export const RegistrationConfirmForm: React.FC<RegistrationConfirmFormProps> = (
     });
 
     // Helper function to get field requirement status
-    const getFieldRequirement = (fieldName: keyof RegistrationRequirement): FieldRequirement => {
-        const value = formRequirements?.[fieldName];
-        if (value === "required") return "required";
-        if (value === "optional") return "optional";
-        return "not_needed";
+    const getFieldStatus = (
+        fieldName: keyof RegistrationRequirement | keyof Invite,
+    ): FieldStatus => {
+        if (!formRequirements) {
+            return "not_required";
+        }
+        return mapFieldRequirementToStatus(fieldName, formRequirements, invitationData);
     };
 
     // Helper function to check if field should be shown
     const shouldShowField = (fieldName: keyof RegistrationRequirement): boolean => {
-        const requirement = getFieldRequirement(fieldName);
-        return requirement === "required" || requirement === "optional";
+        const requirement = getFieldStatus(fieldName);
+        return requirement === "required" || requirement === "optional" || requirement === "locked";
     };
 
     // Helper function to check if any field in a section should be shown
@@ -107,8 +163,8 @@ export const RegistrationConfirmForm: React.FC<RegistrationConfirmFormProps> = (
 
     return (
         <AlertDialog open={true} onOpenChange={() => handleCancel()}>
-            <AlertDialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <AlertDialogHeader>
+            <AlertDialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+                <AlertDialogHeader className="flex-shrink-0">
                     <AlertDialogTitle>
                         <Typography
                             variant="header"
@@ -132,384 +188,385 @@ export const RegistrationConfirmForm: React.FC<RegistrationConfirmFormProps> = (
                 </AlertDialogHeader>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-                        {/* Info Alert */}
-                        <Alert variant="info" className="bg-background/50 border-muted">
-                            <Info className="h-4 w-4" />
-                            <AlertTitle>{t("events.registration.piiForm.privacyTitle")}</AlertTitle>
-                            <AlertDescription>
-                                {t("events.registration.piiForm.privacyDescription")}
-                            </AlertDescription>
-                        </Alert>
+                    <form
+                        onSubmit={form.handleSubmit(handleSubmit)}
+                        className="flex flex-col flex-1 min-h-0"
+                    >
+                        <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+                            {/* Info Alert */}
+                            <Alert variant="info" className="bg-background/50 border-muted">
+                                <Info className="h-4 w-4" />
+                                <AlertTitle>
+                                    {t("events.registration.piiForm.privacyTitle")}
+                                </AlertTitle>
+                                <AlertDescription>
+                                    {t("events.registration.piiForm.privacyDescription")}
+                                </AlertDescription>
+                            </Alert>
 
-                        {/* Personal Information Section */}
-                        {shouldShowSection(["firstName", "lastName", "bio"]) && (
-                            <div className="flex flex-col gap-y-3">
-                                <Typography
-                                    variant="header"
-                                    tag="h2"
-                                    color="primary"
-                                    className="text-xl"
-                                >
-                                    {t("profile.personalInfo")}
-                                </Typography>
+                            {/* Personal Information Section */}
+                            {shouldShowSection(["firstName", "lastName", "bio"]) && (
+                                <div className="flex flex-col gap-y-3">
+                                    <Typography
+                                        variant="header"
+                                        tag="h2"
+                                        color="primary"
+                                        className="text-xl"
+                                    >
+                                        {t("profile.personalInfo")}
+                                    </Typography>
 
-                                <div className="space-y-2.5">
-                                    {/* First Name */}
-                                    {shouldShowField("firstName") && (
-                                        <div className="space-y-1.5">
+                                    <div className="space-y-2.5">
+                                        {/* First Name */}
+                                        {shouldShowField("firstName") && (
                                             <FormField
                                                 control={form.control}
                                                 name="firstName"
                                                 render={({ field }) => (
                                                     <FormItem>
+                                                        <div className="flex items-center gap-2">
+                                                            <FormLabel className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground/70">
+                                                                {t("profile.firstName")}
+                                                            </FormLabel>
+                                                            <FieldRequirementBadge
+                                                                status={getFieldStatus("firstName")}
+                                                                t={t}
+                                                            />
+                                                        </div>
                                                         <FormControl>
-                                                            <div className="flex flex-col gap-y-2">
-                                                                <div className="flex items-center">
-                                                                    <Label
-                                                                        htmlFor={field.name}
-                                                                        className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground/70"
-                                                                    >
-                                                                        {t("profile.firstName")}
-                                                                    </Label>
-                                                                    <FieldRequirementBadge
-                                                                        requirement={getFieldRequirement(
-                                                                            "firstName",
-                                                                        )}
-                                                                        t={t}
-                                                                    />
-                                                                </div>
-                                                                <Input
-                                                                    {...field}
-                                                                    type="text"
-                                                                    id={field.name}
-                                                                    className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
-                                                                />
-                                                            </div>
+                                                            <Input
+                                                                {...field}
+                                                                type="text"
+                                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
+                                                                readOnly={
+                                                                    getFieldStatus("firstName") ===
+                                                                    "locked"
+                                                                }
+                                                                disabled={
+                                                                    getFieldStatus("firstName") ===
+                                                                    "locked"
+                                                                }
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {/* Last Name */}
-                                    {shouldShowField("lastName") && (
-                                        <div className="space-y-1.5">
+                                        {/* Last Name */}
+                                        {shouldShowField("lastName") && (
                                             <FormField
                                                 control={form.control}
                                                 name="lastName"
                                                 render={({ field }) => (
                                                     <FormItem>
+                                                        <div className="flex items-center gap-2">
+                                                            <FormLabel className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground/70">
+                                                                {t("profile.lastName")}
+                                                            </FormLabel>
+                                                            <FieldRequirementBadge
+                                                                status={getFieldStatus("lastName")}
+                                                                t={t}
+                                                            />
+                                                        </div>
                                                         <FormControl>
-                                                            <div className="flex flex-col gap-y-2">
-                                                                <div className="flex items-center">
-                                                                    <Label
-                                                                        htmlFor={field.name}
-                                                                        className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground/70"
-                                                                    >
-                                                                        {t("profile.lastName")}
-                                                                    </Label>
-                                                                    <FieldRequirementBadge
-                                                                        requirement={getFieldRequirement(
-                                                                            "lastName",
-                                                                        )}
-                                                                        t={t}
-                                                                    />
-                                                                </div>
-                                                                <Input
-                                                                    {...field}
-                                                                    type="text"
-                                                                    id={field.name}
-                                                                    className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
-                                                                />
-                                                            </div>
+                                                            <Input
+                                                                {...field}
+                                                                type="text"
+                                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
+                                                                readOnly={
+                                                                    getFieldStatus("lastName") ===
+                                                                    "locked"
+                                                                }
+                                                                disabled={
+                                                                    getFieldStatus("lastName") ===
+                                                                    "locked"
+                                                                }
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {/* Bio */}
-                                    {shouldShowField("bio") && (
-                                        <div className="space-y-1.5">
+                                        {/* Bio */}
+                                        {shouldShowField("bio") && (
                                             <FormField
                                                 control={form.control}
                                                 name="bio"
                                                 render={({ field }) => (
                                                     <FormItem>
+                                                        <div className="flex items-center gap-2">
+                                                            <FormLabel className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground-alt/70">
+                                                                {t("profile.bio")}
+                                                            </FormLabel>
+                                                            <FieldRequirementBadge
+                                                                status={getFieldStatus("bio")}
+                                                                t={t}
+                                                            />
+                                                        </div>
                                                         <FormControl>
-                                                            <div className="flex flex-col gap-y-2">
-                                                                <div className="flex items-center">
-                                                                    <Label
-                                                                        htmlFor={field.name}
-                                                                        className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground-alt/70"
-                                                                    >
-                                                                        {t("profile.bio")}
-                                                                    </Label>
-                                                                    <FieldRequirementBadge
-                                                                        requirement={getFieldRequirement(
-                                                                            "bio",
-                                                                        )}
-                                                                        t={t}
-                                                                    />
-                                                                </div>
-                                                                <Textarea
-                                                                    {...field}
-                                                                    id={field.name}
-                                                                    className="w-full min-h-24 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
-                                                                    placeholder={t(
-                                                                        "profile.bioPlaceholder",
-                                                                    )}
-                                                                />
-                                                            </div>
+                                                            <Textarea
+                                                                {...field}
+                                                                className="w-full min-h-24 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
+                                                                placeholder={t(
+                                                                    "profile.bioPlaceholder",
+                                                                )}
+                                                                readOnly={
+                                                                    getFieldStatus("bio") ===
+                                                                    "locked"
+                                                                }
+                                                                disabled={
+                                                                    getFieldStatus("bio") ===
+                                                                    "locked"
+                                                                }
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {/* Contact Information Section */}
-                        {shouldShowSection(["email", "phoneNumber", "address"]) && (
-                            <div className="flex flex-col gap-y-3">
-                                <Typography
-                                    variant="header"
-                                    tag="h2"
-                                    color="primary"
-                                    className="text-xl"
-                                >
-                                    {t("profile.contactInfo")}
-                                </Typography>
+                            {/* Contact Information Section */}
+                            {shouldShowSection(["email", "phoneNumber", "address"]) && (
+                                <div className="flex flex-col gap-y-3">
+                                    <Typography
+                                        variant="header"
+                                        tag="h2"
+                                        color="primary"
+                                        className="text-xl"
+                                    >
+                                        {t("profile.contactInfo")}
+                                    </Typography>
 
-                                <div className="space-y-2.5">
-                                    {/* Email */}
-                                    {shouldShowField("email") && (
-                                        <div className="space-y-1.5">
+                                    <div className="space-y-2.5">
+                                        {/* Email */}
+                                        {shouldShowField("email") && (
                                             <FormField
                                                 control={form.control}
                                                 name="email"
                                                 render={({ field }) => (
                                                     <FormItem>
+                                                        <div className="flex items-center gap-2">
+                                                            <FormLabel className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground/70">
+                                                                {t("profile.email")}
+                                                            </FormLabel>
+                                                            <FieldRequirementBadge
+                                                                status={getFieldStatus("email")}
+                                                                t={t}
+                                                            />
+                                                        </div>
                                                         <FormControl>
-                                                            <div className="flex flex-col gap-y-2">
-                                                                <div className="flex items-center">
-                                                                    <Label
-                                                                        htmlFor={field.name}
-                                                                        className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground/70"
-                                                                    >
-                                                                        {t("profile.email")}
-                                                                    </Label>
-                                                                    <FieldRequirementBadge
-                                                                        requirement={getFieldRequirement(
-                                                                            "email",
-                                                                        )}
-                                                                        t={t}
-                                                                    />
-                                                                </div>
-                                                                <Input
-                                                                    {...field}
-                                                                    type="email"
-                                                                    id={field.name}
-                                                                    className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
-                                                                />
-                                                            </div>
+                                                            <Input
+                                                                {...field}
+                                                                type="email"
+                                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
+                                                                readOnly={
+                                                                    getFieldStatus("email") ===
+                                                                    "locked"
+                                                                }
+                                                                disabled={
+                                                                    getFieldStatus("email") ===
+                                                                    "locked"
+                                                                }
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {/* Phone Number */}
-                                    {shouldShowField("phoneNumber") && (
-                                        <div className="space-y-1.5">
+                                        {/* Phone Number */}
+                                        {shouldShowField("phoneNumber") && (
                                             <FormField
                                                 control={form.control}
                                                 name="phoneNumber"
                                                 render={({ field }) => (
                                                     <FormItem>
+                                                        <div className="flex items-center gap-2">
+                                                            <FormLabel className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground/70">
+                                                                {t("profile.phoneNumber")}
+                                                            </FormLabel>
+                                                            <FieldRequirementBadge
+                                                                status={getFieldStatus(
+                                                                    "phoneNumber",
+                                                                )}
+                                                                t={t}
+                                                            />
+                                                        </div>
                                                         <FormControl>
-                                                            <div className="flex flex-col gap-y-2">
-                                                                <div className="flex items-center">
-                                                                    <Label
-                                                                        htmlFor={field.name}
-                                                                        className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground/70"
-                                                                    >
-                                                                        {t("profile.phoneNumber")}
-                                                                    </Label>
-                                                                    <FieldRequirementBadge
-                                                                        requirement={getFieldRequirement(
-                                                                            "phoneNumber",
-                                                                        )}
-                                                                        t={t}
-                                                                    />
-                                                                </div>
-                                                                <Input
-                                                                    {...field}
-                                                                    type="tel"
-                                                                    id={field.name}
-                                                                    className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
-                                                                />
-                                                            </div>
+                                                            <Input
+                                                                {...field}
+                                                                type="tel"
+                                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
+                                                                readOnly={
+                                                                    getFieldStatus(
+                                                                        "phoneNumber",
+                                                                    ) === "locked"
+                                                                }
+                                                                disabled={
+                                                                    getFieldStatus(
+                                                                        "phoneNumber",
+                                                                    ) === "locked"
+                                                                }
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {/* Address */}
-                                    {shouldShowField("address") && (
-                                        <div className="space-y-1.5">
+                                        {/* Address */}
+                                        {shouldShowField("address") && (
                                             <FormField
                                                 control={form.control}
                                                 name="address"
                                                 render={({ field }) => (
                                                     <FormItem>
+                                                        <div className="flex items-center gap-2">
+                                                            <FormLabel className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground/70">
+                                                                {t("profile.address")}
+                                                            </FormLabel>
+                                                            <FieldRequirementBadge
+                                                                status={getFieldStatus("address")}
+                                                                t={t}
+                                                            />
+                                                        </div>
                                                         <FormControl>
-                                                            <div className="flex flex-col gap-y-2">
-                                                                <div className="flex items-center">
-                                                                    <Label
-                                                                        htmlFor={field.name}
-                                                                        className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground/70"
-                                                                    >
-                                                                        {t("profile.address")}
-                                                                    </Label>
-                                                                    <FieldRequirementBadge
-                                                                        requirement={getFieldRequirement(
-                                                                            "address",
-                                                                        )}
-                                                                        t={t}
-                                                                    />
-                                                                </div>
-                                                                <Textarea
-                                                                    {...field}
-                                                                    id={field.name}
-                                                                    className="w-full min-h-20 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
-                                                                    placeholder={t(
-                                                                        "profile.addressPlaceholder",
-                                                                    )}
-                                                                />
-                                                            </div>
+                                                            <Textarea
+                                                                {...field}
+                                                                className="w-full min-h-20 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
+                                                                placeholder={t(
+                                                                    "profile.addressPlaceholder",
+                                                                )}
+                                                                readOnly={
+                                                                    getFieldStatus("address") ===
+                                                                    "locked"
+                                                                }
+                                                                disabled={
+                                                                    getFieldStatus("address") ===
+                                                                    "locked"
+                                                                }
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {/* Academic Information Section */}
-                        {shouldShowSection(["academicEmail", "academicInstitution"]) && (
-                            <div className="flex flex-col gap-y-3">
-                                <Typography
-                                    variant="header"
-                                    tag="h2"
-                                    color="primary"
-                                    className="text-xl"
-                                >
-                                    {t("profile.academicInfo")}
-                                </Typography>
+                            {/* Academic Information Section */}
+                            {shouldShowSection(["academicEmail", "academicInstitution"]) && (
+                                <div className="flex flex-col gap-y-3">
+                                    <Typography
+                                        variant="header"
+                                        tag="h2"
+                                        color="primary"
+                                        className="text-xl"
+                                    >
+                                        {t("profile.academicInfo")}
+                                    </Typography>
 
-                                <div className="space-y-2.5">
-                                    {/* Academic Email */}
-                                    {shouldShowField("academicEmail") && (
-                                        <div className="space-y-1.5">
+                                    <div className="space-y-2.5">
+                                        {/* Academic Email */}
+                                        {shouldShowField("academicEmail") && (
                                             <FormField
                                                 control={form.control}
                                                 name="academicEmail"
                                                 render={({ field }) => (
                                                     <FormItem>
+                                                        <div className="flex items-center gap-2">
+                                                            <FormLabel className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground/70">
+                                                                {t("profile.academicEmail")}
+                                                            </FormLabel>
+                                                            <FieldRequirementBadge
+                                                                status={getFieldStatus(
+                                                                    "academicEmail",
+                                                                )}
+                                                                t={t}
+                                                            />
+                                                        </div>
                                                         <FormControl>
-                                                            <div className="flex flex-col gap-y-2">
-                                                                <div className="flex items-center">
-                                                                    <Label
-                                                                        htmlFor={field.name}
-                                                                        className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground/70"
-                                                                    >
-                                                                        {t("profile.academicEmail")}
-                                                                    </Label>
-                                                                    <FieldRequirementBadge
-                                                                        requirement={getFieldRequirement(
-                                                                            "academicEmail",
-                                                                        )}
-                                                                        t={t}
-                                                                    />
-                                                                </div>
-                                                                <Input
-                                                                    {...field}
-                                                                    type="email"
-                                                                    id={field.name}
-                                                                    className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
-                                                                />
-                                                            </div>
+                                                            <Input
+                                                                {...field}
+                                                                type="email"
+                                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
+                                                                readOnly={
+                                                                    getFieldStatus(
+                                                                        "academicEmail",
+                                                                    ) === "locked"
+                                                                }
+                                                                disabled={
+                                                                    getFieldStatus(
+                                                                        "academicEmail",
+                                                                    ) === "locked"
+                                                                }
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {/* Academic Institution */}
-                                    {shouldShowField("academicInstitution") && (
-                                        <div className="space-y-1.5">
+                                        {/* Academic Institution */}
+                                        {shouldShowField("academicInstitution") && (
                                             <FormField
                                                 control={form.control}
                                                 name="academicInstitution"
                                                 render={({ field }) => (
                                                     <FormItem>
+                                                        <div className="flex items-center gap-2">
+                                                            <FormLabel className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground/70">
+                                                                {t("profile.academicInstitution")}
+                                                            </FormLabel>
+                                                            <FieldRequirementBadge
+                                                                status={getFieldStatus(
+                                                                    "academicInstitution",
+                                                                )}
+                                                                t={t}
+                                                            />
+                                                        </div>
                                                         <FormControl>
-                                                            <div className="flex flex-col gap-y-2">
-                                                                <div className="flex items-center">
-                                                                    <Label
-                                                                        htmlFor={field.name}
-                                                                        className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-foreground/70"
-                                                                    >
-                                                                        {t(
-                                                                            "profile.academicInstitution",
-                                                                        )}
-                                                                    </Label>
-                                                                    <FieldRequirementBadge
-                                                                        requirement={getFieldRequirement(
-                                                                            "academicInstitution",
-                                                                        )}
-                                                                        t={t}
-                                                                    />
-                                                                </div>
-                                                                <Input
-                                                                    {...field}
-                                                                    type="text"
-                                                                    id={field.name}
-                                                                    className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
-                                                                />
-                                                            </div>
+                                                            <Input
+                                                                {...field}
+                                                                type="text"
+                                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-background/50 border-border border-[0.5px] rounded-[12px] text-foreground placeholder:text-muted-foreground"
+                                                                readOnly={
+                                                                    getFieldStatus(
+                                                                        "academicInstitution",
+                                                                    ) === "locked"
+                                                                }
+                                                                disabled={
+                                                                    getFieldStatus(
+                                                                        "academicInstitution",
+                                                                    ) === "locked"
+                                                                }
+                                                            />
                                                         </FormControl>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
 
-                        {/* Action Buttons Section */}
-                        <div className="flex gap-3 pt-4">
+                        {/* Action Buttons Section - Sticky at bottom */}
+                        <div className="flex gap-3 pt-4 flex-shrink-0 border-t border-border mt-4 bg-background">
                             {/* Cancel Button */}
                             <Button
                                 type="button"

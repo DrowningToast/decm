@@ -72,3 +72,23 @@ func (r *Repository) UpdateEventIssuerSigningStatus(ctx context.Context, eventID
 func (r *Repository) ResetAllEventIssuersSigningStatus(ctx context.Context, eventID uuid.UUID) error {
 	return r.queries.ResetAllEventIssuersSigningStatus(ctx, eventID)
 }
+
+// HasSignedIssuers checks if the event has at least one signed issuer
+func (r *Repository) HasSignedIssuers(ctx context.Context, eventID uuid.UUID) (bool, error) {
+	return r.queries.HasSignedIssuers(ctx, eventID)
+}
+
+// GetSignedIssuersCount returns the count of signed issuers for an event
+func (r *Repository) GetSignedIssuersCount(ctx context.Context, eventID uuid.UUID) (int64, error) {
+	return r.queries.GetSignedIssuersCount(ctx, eventID)
+}
+
+// GetTotalIssuersCount returns the total count of issuers for an event
+func (r *Repository) GetTotalIssuersCount(ctx context.Context, eventID uuid.UUID) (int64, error) {
+	return r.queries.GetTotalIssuersCount(ctx, eventID)
+}
+
+// AllIssuersHaveSigned checks if all assigned issuers have signed
+func (r *Repository) AllIssuersHaveSigned(ctx context.Context, eventID uuid.UUID) (bool, error) {
+	return r.queries.AllIssuersHaveSigned(ctx, eventID)
+}

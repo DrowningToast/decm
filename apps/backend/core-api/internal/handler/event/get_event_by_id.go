@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"apps/backend/common/customerror"
-	event_uc "apps/backend/core-api/internal/usecase/event"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -44,36 +43,10 @@ func (h *Handler) GetEventById(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrNotFound, nil)
 	}
 
-	bannerPresignedURL, err := h.EventUc.S3Service.GetPresignedURL(ctxWithTimeout, event.BannerStorageKey)
-	if err != nil {
-		return customerror.Parse(&customerror.ErrInternalServer, err)
-	}
-	iconPresignedURL, err := h.EventUc.S3Service.GetPresignedURL(ctxWithTimeout, event.IconStorageKey)
+	eventResponse, err := h.EventUc.ToEventResponse(ctxWithTimeout, event)
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	return ctx.JSON(event_uc.EventResponse{
-		Id:                       event.ID,
-		ChainID:                  int32(event.ChainId),
-		ContactNumber:            event.ContactNumber,
-		OwnerCredentialID:        event.OwnerCredentialId,
-		BannerPresignedURL:       bannerPresignedURL,
-		IconPresignedURL:         iconPresignedURL,
-		Title:                    event.Title,
-		ShortDescription:         event.ShortDescription,
-		LongDescription:          event.LongDescription,
-		StartDate:                event.StartDate,
-		EndDate:                  event.EndDate,
-		Location:                 event.Location,
-		GoogleMapQuery:           event.GoogleMapQuery,
-		MaxAttendees:             int32(event.MaxAttendees),
-		IsPublic:                 event.IsPublic,
-		IsBookingRequestRequired: event.IsBookingRequestRequired,
-		IsVerified:               event.IsVerified,
-		IsTicketTransferable:     event.IsTicketTransferable,
-		CreatedAt:                event.CreatedAt,
-		UpdatedAt:                event.UpdatedAt,
-		EventStatus:              event.EventStatus,
-	})
+	return ctx.JSON(eventResponse)
 }

@@ -63,6 +63,9 @@ export const QUERY_KEY = {
             ofUserAndEventId: (eventId: string, userId: string) =>
                 ["event", eventId, "invitations", "ofUserAndEventId", userId] as const,
         },
+        attendees: {
+            byEventId: (eventId: string) => ["event", eventId, "attendees"] as const,
+        },
         viewmodel: (eventId: string, userId: string | undefined) =>
             ["event", eventId, "viewmodel", userId ?? "me"] as const,
     },
@@ -76,14 +79,14 @@ export const QUERY_KEY = {
 
     // Issuers
     issuers: {
-        verified: ["issuers"] as const,
-    },
-
-    // Inbox
-    inbox: {
-        all: ["inbox"] as const,
-        list: () => ["inbox", "list"] as const,
-        byId: (messageId: string) => ["inbox", messageId] as const,
+        search: (search?: string, limit?: number, offset?: number) =>
+            ["issuers", "search", search ?? "", limit, offset] as const,
+        taskedEvents: (issuerCredentialId: string, limit?: number, offset?: number) =>
+            ["issuers", "tasked", issuerCredentialId, limit, offset] as const,
+        signedEvents: (issuerCredentialId: string, limit?: number, offset?: number) =>
+            ["issuers", "signed", issuerCredentialId, limit, offset] as const,
+        pendingEvents: (issuerCredentialId: string, limit?: number, offset?: number) =>
+            ["issuers", "pending", issuerCredentialId, limit, offset] as const,
     },
 
     // Certificates
@@ -93,5 +96,12 @@ export const QUERY_KEY = {
             ["certificate", "list", limit, offset, status] as const,
         byId: (certificateId: string) => ["certificate", certificateId] as const,
         byEventId: (eventId: string) => ["certificate", "event", eventId] as const,
+    },
+
+    // Inbox
+    inbox: {
+        all: ["inbox"] as const,
+        list: () => ["inbox", "list"] as const,
+        byId: (messageId: string) => ["inbox", messageId] as const,
     },
 } as const;

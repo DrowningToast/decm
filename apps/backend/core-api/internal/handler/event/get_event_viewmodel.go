@@ -6,6 +6,7 @@ import (
 
 	"apps/backend/common/customerror"
 
+	"github.com/cockroachdb/errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
@@ -45,7 +46,7 @@ func (h *Handler) GetEventViewModel(ctx *fiber.Ctx) error {
 
 	event, err := h.EventUc.GetEventViewModelByEventId(ctxWithTimeout, eventId, currentUser)
 	if err != nil {
-		return customerror.Parse(&customerror.ErrInternalServer, err)
+		return errors.Wrap(err, "failed to get event viewmodel by event id")
 	}
 	if event == nil {
 		return customerror.Parse(&customerror.ErrNotFound, nil)

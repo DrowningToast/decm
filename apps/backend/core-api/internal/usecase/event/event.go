@@ -21,9 +21,11 @@ type EventUsecase struct {
 	EventIssuerDataGateway               eventdatagateway.EventIssuerDataGateway
 	EventCertificateDataGateway          eventdatagateway.EventCertificateDataGateway
 	EventCertificateSignatureDataGateway eventdatagateway.EventCertificateSignatureDataGateway
+	EventCertificateConfigDg             eventdatagateway.EventCertificateConfigDataGateway
 	AuthenticationCredentialDg           authDg.AuthenticationCredentialDataGateway
 	EventRegistrationInvitationDg        datagateway.EventRegistrationInvitationDataGateway
 	EventAttendeeDg                      datagateway.EventAttendeeDataGateway
+	InboxMessageDg                       datagateway.InboxMessageDataGateway
 	S3Service                            *s3.S3Service
 	logger                               *slog.Logger
 	authService                          *auth.AuthService
@@ -32,7 +34,7 @@ type EventUsecase struct {
 	UploadEventIcon                      func(ctx context.Context, entityID uuid.UUID, iconFile *multipart.FileHeader) (string, error)
 }
 
-func NewEventUsecase(eventDataGateway eventdatagateway.EventDataGateway, eventContractDataGateway eventdatagateway.EventContractDataGateway, eventIssuerDataGateway eventdatagateway.EventIssuerDataGateway, eventCertificateDataGateway eventdatagateway.EventCertificateDataGateway, eventCertificateSignatureDataGateway eventdatagateway.EventCertificateSignatureDataGateway, authenticationCredentialDg authDg.AuthenticationCredentialDataGateway, eventRegistrationInvitationDg datagateway.EventRegistrationInvitationDataGateway, eventAttendeeDg datagateway.EventAttendeeDataGateway, s3Service *s3.S3Service, logger *slog.Logger, authService *auth.AuthService, cfg *config.Config) *EventUsecase {
+func NewEventUsecase(eventDataGateway eventdatagateway.EventDataGateway, eventContractDataGateway eventdatagateway.EventContractDataGateway, eventIssuerDataGateway eventdatagateway.EventIssuerDataGateway, eventCertificateDataGateway eventdatagateway.EventCertificateDataGateway, eventCertificateSignatureDataGateway eventdatagateway.EventCertificateSignatureDataGateway, eventCertificateConfigDg eventdatagateway.EventCertificateConfigDataGateway, authenticationCredentialDg authDg.AuthenticationCredentialDataGateway, eventRegistrationInvitationDg datagateway.EventRegistrationInvitationDataGateway, eventAttendeeDg datagateway.EventAttendeeDataGateway, inboxMessageDg datagateway.InboxMessageDataGateway, s3Service *s3.S3Service, logger *slog.Logger, authService *auth.AuthService, cfg *config.Config) *EventUsecase {
 	uc := &EventUsecase{
 		EventDataGateway:                     eventDataGateway,
 		EventContractDataGateway:             eventContractDataGateway,
@@ -40,8 +42,10 @@ func NewEventUsecase(eventDataGateway eventdatagateway.EventDataGateway, eventCo
 		EventAttendeeDg:                      eventAttendeeDg,
 		EventCertificateDataGateway:          eventCertificateDataGateway,
 		EventCertificateSignatureDataGateway: eventCertificateSignatureDataGateway,
+		EventCertificateConfigDg:             eventCertificateConfigDg,
 		AuthenticationCredentialDg:           authenticationCredentialDg,
 		EventRegistrationInvitationDg:        eventRegistrationInvitationDg,
+		InboxMessageDg:                       inboxMessageDg,
 		S3Service:                            s3Service,
 		logger:                               logger,
 		authService:                          authService,

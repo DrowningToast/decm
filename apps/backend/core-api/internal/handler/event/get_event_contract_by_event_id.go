@@ -2,6 +2,7 @@ package event
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -38,9 +39,9 @@ func (h *Handler) GetEventContractByEventID(ctx *fiber.Ctx) error {
 		EventID:                      contract.EventID,
 		AccessManagerContractAddress: contract.AccessManagerContractAddress,
 		EventContractAddress:         contract.EventContractAddress,
-		TicketContractAddress:        contract.TicketContractAddress.String,
-		CertificateContractAddress:   contract.CertificateContractAddress.String,
-		CreatedAt:                    contract.CreatedAt.Time.String(),
-		UpdatedAt:                    contract.UpdatedAt.Time.String(),
+		TicketContractAddress:        contract.TicketContractAddress,
+		CertificateContractAddress:   contract.CertificateContractAddress,
+		CreatedAt:                    contract.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:                    contract.UpdatedAt.Format(time.RFC3339),
 	})
 }

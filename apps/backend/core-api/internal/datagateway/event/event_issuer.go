@@ -16,4 +16,8 @@ type EventIssuerDataGateway interface {
 	GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Context, eventID uuid.UUID, issuerCredentialID uuid.UUID) (generated.EventIssuer, error)
 	UpdateEventIssuerSigningStatus(ctx context.Context, eventID uuid.UUID, issuerCredentialID uuid.UUID, isSigned int32) error
 	ResetAllEventIssuersSigningStatus(ctx context.Context, eventID uuid.UUID) error
+	HasSignedIssuers(ctx context.Context, eventID uuid.UUID) (bool, error)
+	GetSignedIssuersCount(ctx context.Context, eventID uuid.UUID) (int64, error)
+	GetTotalIssuersCount(ctx context.Context, eventID uuid.UUID) (int64, error)
+	AllIssuersHaveSigned(ctx context.Context, eventID uuid.UUID) (bool, error)
 }

@@ -85,7 +85,7 @@ export const defaultParticipantSettings: ParticipantSettingsData = {
     isBookingRequired: false,
     isTicketTransferable: true,
     requireRegistrationPassword: false,
-    registrationPassword: "",
+    registrationPassword: undefined,
     firstName: "not_required",
     lastName: "not_required",
     email: "not_required",
