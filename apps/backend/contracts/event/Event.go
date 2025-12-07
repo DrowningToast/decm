@@ -212,6 +212,7 @@ func (_Event *EventTransactorRaw) Transact(opts *bind.TransactOpts, method strin
 func (_Event *EventCaller) EVENTACCESSMANAGER(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
 	err := _Event.contract.Call(opts, &out, "EVENT_ACCESS_MANAGER")
+
 	if err != nil {
 		return *new(common.Address), err
 	}
@@ -219,6 +220,7 @@ func (_Event *EventCaller) EVENTACCESSMANAGER(opts *bind.CallOpts) (common.Addre
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
+
 }
 
 // EVENTACCESSMANAGER is a free data retrieval call binding the contract method 0x76ab2ddb.
@@ -241,6 +243,7 @@ func (_Event *EventCallerSession) EVENTACCESSMANAGER() (common.Address, error) {
 func (_Event *EventCaller) CurrentSeatsCount(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
 	err := _Event.contract.Call(opts, &out, "currentSeatsCount")
+
 	if err != nil {
 		return *new(*big.Int), err
 	}
@@ -248,6 +251,7 @@ func (_Event *EventCaller) CurrentSeatsCount(opts *bind.CallOpts) (*big.Int, err
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
 	return out0, err
+
 }
 
 // CurrentSeatsCount is a free data retrieval call binding the contract method 0x990a6a20.
@@ -270,6 +274,7 @@ func (_Event *EventCallerSession) CurrentSeatsCount() (*big.Int, error) {
 func (_Event *EventCaller) EventDescription(opts *bind.CallOpts) (string, error) {
 	var out []interface{}
 	err := _Event.contract.Call(opts, &out, "eventDescription")
+
 	if err != nil {
 		return *new(string), err
 	}
@@ -277,6 +282,7 @@ func (_Event *EventCaller) EventDescription(opts *bind.CallOpts) (string, error)
 	out0 := *abi.ConvertType(out[0], new(string)).(*string)
 
 	return out0, err
+
 }
 
 // EventDescription is a free data retrieval call binding the contract method 0x9434571b.
@@ -299,6 +305,7 @@ func (_Event *EventCallerSession) EventDescription() (string, error) {
 func (_Event *EventCaller) EventName(opts *bind.CallOpts) (string, error) {
 	var out []interface{}
 	err := _Event.contract.Call(opts, &out, "eventName")
+
 	if err != nil {
 		return *new(string), err
 	}
@@ -306,6 +313,7 @@ func (_Event *EventCaller) EventName(opts *bind.CallOpts) (string, error) {
 	out0 := *abi.ConvertType(out[0], new(string)).(*string)
 
 	return out0, err
+
 }
 
 // EventName is a free data retrieval call binding the contract method 0x8043c9c0.
@@ -328,6 +336,7 @@ func (_Event *EventCallerSession) EventName() (string, error) {
 func (_Event *EventCaller) EventStatus(opts *bind.CallOpts) (uint8, error) {
 	var out []interface{}
 	err := _Event.contract.Call(opts, &out, "eventStatus")
+
 	if err != nil {
 		return *new(uint8), err
 	}
@@ -335,6 +344,7 @@ func (_Event *EventCaller) EventStatus(opts *bind.CallOpts) (uint8, error) {
 	out0 := *abi.ConvertType(out[0], new(uint8)).(*uint8)
 
 	return out0, err
+
 }
 
 // EventStatus is a free data retrieval call binding the contract method 0x9851fd9a.
@@ -357,6 +367,7 @@ func (_Event *EventCallerSession) EventStatus() (uint8, error) {
 func (_Event *EventCaller) GetEventDescription(opts *bind.CallOpts) (string, error) {
 	var out []interface{}
 	err := _Event.contract.Call(opts, &out, "getEventDescription")
+
 	if err != nil {
 		return *new(string), err
 	}
@@ -364,6 +375,7 @@ func (_Event *EventCaller) GetEventDescription(opts *bind.CallOpts) (string, err
 	out0 := *abi.ConvertType(out[0], new(string)).(*string)
 
 	return out0, err
+
 }
 
 // GetEventDescription is a free data retrieval call binding the contract method 0xa21145b6.
@@ -386,6 +398,7 @@ func (_Event *EventCallerSession) GetEventDescription() (string, error) {
 func (_Event *EventCaller) GetEventName(opts *bind.CallOpts) (string, error) {
 	var out []interface{}
 	err := _Event.contract.Call(opts, &out, "getEventName")
+
 	if err != nil {
 		return *new(string), err
 	}
@@ -393,6 +406,7 @@ func (_Event *EventCaller) GetEventName(opts *bind.CallOpts) (string, error) {
 	out0 := *abi.ConvertType(out[0], new(string)).(*string)
 
 	return out0, err
+
 }
 
 // GetEventName is a free data retrieval call binding the contract method 0xb81e43fc.
@@ -415,6 +429,7 @@ func (_Event *EventCallerSession) GetEventName() (string, error) {
 func (_Event *EventCaller) GetParticipants(opts *bind.CallOpts) ([]common.Address, error) {
 	var out []interface{}
 	err := _Event.contract.Call(opts, &out, "getParticipants")
+
 	if err != nil {
 		return *new([]common.Address), err
 	}
@@ -422,6 +437,7 @@ func (_Event *EventCaller) GetParticipants(opts *bind.CallOpts) ([]common.Addres
 	out0 := *abi.ConvertType(out[0], new([]common.Address)).(*[]common.Address)
 
 	return out0, err
+
 }
 
 // GetParticipants is a free data retrieval call binding the contract method 0x5aa68ac0.
@@ -444,6 +460,7 @@ func (_Event *EventCallerSession) GetParticipants() ([]common.Address, error) {
 func (_Event *EventCaller) SeatsCount(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
 	err := _Event.contract.Call(opts, &out, "seatsCount")
+
 	if err != nil {
 		return *new(*big.Int), err
 	}
@@ -451,6 +468,7 @@ func (_Event *EventCaller) SeatsCount(opts *bind.CallOpts) (*big.Int, error) {
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
 	return out0, err
+
 }
 
 // SeatsCount is a free data retrieval call binding the contract method 0xbedecc06.
@@ -473,6 +491,7 @@ func (_Event *EventCallerSession) SeatsCount() (*big.Int, error) {
 func (_Event *EventCaller) UsedSignatures(opts *bind.CallOpts, arg0 []byte) (bool, error) {
 	var out []interface{}
 	err := _Event.contract.Call(opts, &out, "usedSignatures", arg0)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -480,6 +499,7 @@ func (_Event *EventCaller) UsedSignatures(opts *bind.CallOpts, arg0 []byte) (boo
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // UsedSignatures is a free data retrieval call binding the contract method 0xe949580e.
@@ -699,6 +719,7 @@ type EventAddedParticipant struct {
 //
 // Solidity: event AddedParticipant(address indexed participant)
 func (_Event *EventFilterer) FilterAddedParticipant(opts *bind.FilterOpts, participant []common.Address) (*EventAddedParticipantIterator, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -715,6 +736,7 @@ func (_Event *EventFilterer) FilterAddedParticipant(opts *bind.FilterOpts, parti
 //
 // Solidity: event AddedParticipant(address indexed participant)
 func (_Event *EventFilterer) WatchAddedParticipant(opts *bind.WatchOpts, sink chan<- *EventAddedParticipant, participant []common.Address) (event.Subscription, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -840,6 +862,7 @@ type EventEventConfirmed struct {
 //
 // Solidity: event EventConfirmed()
 func (_Event *EventFilterer) FilterEventConfirmed(opts *bind.FilterOpts) (*EventEventConfirmedIterator, error) {
+
 	logs, sub, err := _Event.contract.FilterLogs(opts, "EventConfirmed")
 	if err != nil {
 		return nil, err
@@ -851,6 +874,7 @@ func (_Event *EventFilterer) FilterEventConfirmed(opts *bind.FilterOpts) (*Event
 //
 // Solidity: event EventConfirmed()
 func (_Event *EventFilterer) WatchEventConfirmed(opts *bind.WatchOpts, sink chan<- *EventEventConfirmed) (event.Subscription, error) {
+
 	logs, sub, err := _Event.contract.WatchLogs(opts, "EventConfirmed")
 	if err != nil {
 		return nil, err
@@ -975,6 +999,7 @@ type EventEventUpdated struct {
 //
 // Solidity: event EventUpdated(string eventName, string eventDescription, uint256 seatsCount, uint8 eventStatus)
 func (_Event *EventFilterer) FilterEventUpdated(opts *bind.FilterOpts) (*EventEventUpdatedIterator, error) {
+
 	logs, sub, err := _Event.contract.FilterLogs(opts, "EventUpdated")
 	if err != nil {
 		return nil, err
@@ -986,6 +1011,7 @@ func (_Event *EventFilterer) FilterEventUpdated(opts *bind.FilterOpts) (*EventEv
 //
 // Solidity: event EventUpdated(string eventName, string eventDescription, uint256 seatsCount, uint8 eventStatus)
 func (_Event *EventFilterer) WatchEventUpdated(opts *bind.WatchOpts, sink chan<- *EventEventUpdated) (event.Subscription, error) {
+
 	logs, sub, err := _Event.contract.WatchLogs(opts, "EventUpdated")
 	if err != nil {
 		return nil, err
@@ -1108,6 +1134,7 @@ type EventParticipantSigned struct {
 //
 // Solidity: event ParticipantSigned(address indexed participant, bytes32 signature)
 func (_Event *EventFilterer) FilterParticipantSigned(opts *bind.FilterOpts, participant []common.Address) (*EventParticipantSignedIterator, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -1124,6 +1151,7 @@ func (_Event *EventFilterer) FilterParticipantSigned(opts *bind.FilterOpts, part
 //
 // Solidity: event ParticipantSigned(address indexed participant, bytes32 signature)
 func (_Event *EventFilterer) WatchParticipantSigned(opts *bind.WatchOpts, sink chan<- *EventParticipantSigned, participant []common.Address) (event.Subscription, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -1250,6 +1278,7 @@ type EventRemovedParticipant struct {
 //
 // Solidity: event RemovedParticipant(address indexed participant)
 func (_Event *EventFilterer) FilterRemovedParticipant(opts *bind.FilterOpts, participant []common.Address) (*EventRemovedParticipantIterator, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -1266,6 +1295,7 @@ func (_Event *EventFilterer) FilterRemovedParticipant(opts *bind.FilterOpts, par
 //
 // Solidity: event RemovedParticipant(address indexed participant)
 func (_Event *EventFilterer) WatchRemovedParticipant(opts *bind.WatchOpts, sink chan<- *EventRemovedParticipant, participant []common.Address) (event.Subscription, error) {
+
 	var participantRule []interface{}
 	for _, participantItem := range participant {
 		participantRule = append(participantRule, participantItem)
@@ -1398,6 +1428,7 @@ type EventSignatureUsed struct {
 //
 // Solidity: event SignatureUsed(address transactor, address signer, address contractAddress, string functionName, string signedMessageDigest, bytes signature, uint256 timestamp)
 func (_Event *EventFilterer) FilterSignatureUsed(opts *bind.FilterOpts) (*EventSignatureUsedIterator, error) {
+
 	logs, sub, err := _Event.contract.FilterLogs(opts, "SignatureUsed")
 	if err != nil {
 		return nil, err
@@ -1409,6 +1440,7 @@ func (_Event *EventFilterer) FilterSignatureUsed(opts *bind.FilterOpts) (*EventS
 //
 // Solidity: event SignatureUsed(address transactor, address signer, address contractAddress, string functionName, string signedMessageDigest, bytes signature, uint256 timestamp)
 func (_Event *EventFilterer) WatchSignatureUsed(opts *bind.WatchOpts, sink chan<- *EventSignatureUsed) (event.Subscription, error) {
+
 	logs, sub, err := _Event.contract.WatchLogs(opts, "SignatureUsed")
 	if err != nil {
 		return nil, err

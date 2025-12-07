@@ -212,6 +212,7 @@ func (_DecmAccessManager *DecmAccessManagerTransactorRaw) Transact(opts *bind.Tr
 func (_DecmAccessManager *DecmAccessManagerCaller) ADMINROLE(opts *bind.CallOpts) ([32]byte, error) {
 	var out []interface{}
 	err := _DecmAccessManager.contract.Call(opts, &out, "ADMIN_ROLE")
+
 	if err != nil {
 		return *new([32]byte), err
 	}
@@ -219,6 +220,7 @@ func (_DecmAccessManager *DecmAccessManagerCaller) ADMINROLE(opts *bind.CallOpts
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
+
 }
 
 // ADMINROLE is a free data retrieval call binding the contract method 0x75b238fc.
@@ -241,6 +243,7 @@ func (_DecmAccessManager *DecmAccessManagerCallerSession) ADMINROLE() ([32]byte,
 func (_DecmAccessManager *DecmAccessManagerCaller) DEFAULTADMINROLE(opts *bind.CallOpts) ([32]byte, error) {
 	var out []interface{}
 	err := _DecmAccessManager.contract.Call(opts, &out, "DEFAULT_ADMIN_ROLE")
+
 	if err != nil {
 		return *new([32]byte), err
 	}
@@ -248,6 +251,7 @@ func (_DecmAccessManager *DecmAccessManagerCaller) DEFAULTADMINROLE(opts *bind.C
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
+
 }
 
 // DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
@@ -270,6 +274,7 @@ func (_DecmAccessManager *DecmAccessManagerCallerSession) DEFAULTADMINROLE() ([3
 func (_DecmAccessManager *DecmAccessManagerCaller) CheckIsAdmin(opts *bind.CallOpts, addr common.Address) (bool, error) {
 	var out []interface{}
 	err := _DecmAccessManager.contract.Call(opts, &out, "checkIsAdmin", addr)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -277,6 +282,7 @@ func (_DecmAccessManager *DecmAccessManagerCaller) CheckIsAdmin(opts *bind.CallO
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // CheckIsAdmin is a free data retrieval call binding the contract method 0xd953689d.
@@ -299,6 +305,7 @@ func (_DecmAccessManager *DecmAccessManagerCallerSession) CheckIsAdmin(addr comm
 func (_DecmAccessManager *DecmAccessManagerCaller) GetRoleAdmin(opts *bind.CallOpts, role [32]byte) ([32]byte, error) {
 	var out []interface{}
 	err := _DecmAccessManager.contract.Call(opts, &out, "getRoleAdmin", role)
+
 	if err != nil {
 		return *new([32]byte), err
 	}
@@ -306,6 +313,7 @@ func (_DecmAccessManager *DecmAccessManagerCaller) GetRoleAdmin(opts *bind.CallO
 	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
+
 }
 
 // GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
@@ -328,6 +336,7 @@ func (_DecmAccessManager *DecmAccessManagerCallerSession) GetRoleAdmin(role [32]
 func (_DecmAccessManager *DecmAccessManagerCaller) HasRole(opts *bind.CallOpts, role [32]byte, account common.Address) (bool, error) {
 	var out []interface{}
 	err := _DecmAccessManager.contract.Call(opts, &out, "hasRole", role, account)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -335,6 +344,7 @@ func (_DecmAccessManager *DecmAccessManagerCaller) HasRole(opts *bind.CallOpts, 
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // HasRole is a free data retrieval call binding the contract method 0x91d14854.
@@ -357,6 +367,7 @@ func (_DecmAccessManager *DecmAccessManagerCallerSession) HasRole(role [32]byte,
 func (_DecmAccessManager *DecmAccessManagerCaller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
 	var out []interface{}
 	err := _DecmAccessManager.contract.Call(opts, &out, "supportsInterface", interfaceId)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -364,6 +375,7 @@ func (_DecmAccessManager *DecmAccessManagerCaller) SupportsInterface(opts *bind.
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
@@ -563,6 +575,7 @@ type DecmAccessManagerAdminGranted struct {
 //
 // Solidity: event AdminGranted(address indexed admin, address indexed granter)
 func (_DecmAccessManager *DecmAccessManagerFilterer) FilterAdminGranted(opts *bind.FilterOpts, admin []common.Address, granter []common.Address) (*DecmAccessManagerAdminGrantedIterator, error) {
+
 	var adminRule []interface{}
 	for _, adminItem := range admin {
 		adminRule = append(adminRule, adminItem)
@@ -583,6 +596,7 @@ func (_DecmAccessManager *DecmAccessManagerFilterer) FilterAdminGranted(opts *bi
 //
 // Solidity: event AdminGranted(address indexed admin, address indexed granter)
 func (_DecmAccessManager *DecmAccessManagerFilterer) WatchAdminGranted(opts *bind.WatchOpts, sink chan<- *DecmAccessManagerAdminGranted, admin []common.Address, granter []common.Address) (event.Subscription, error) {
+
 	var adminRule []interface{}
 	for _, adminItem := range admin {
 		adminRule = append(adminRule, adminItem)
@@ -714,6 +728,7 @@ type DecmAccessManagerAdminRevoked struct {
 //
 // Solidity: event AdminRevoked(address indexed admin, address indexed revoker)
 func (_DecmAccessManager *DecmAccessManagerFilterer) FilterAdminRevoked(opts *bind.FilterOpts, admin []common.Address, revoker []common.Address) (*DecmAccessManagerAdminRevokedIterator, error) {
+
 	var adminRule []interface{}
 	for _, adminItem := range admin {
 		adminRule = append(adminRule, adminItem)
@@ -734,6 +749,7 @@ func (_DecmAccessManager *DecmAccessManagerFilterer) FilterAdminRevoked(opts *bi
 //
 // Solidity: event AdminRevoked(address indexed admin, address indexed revoker)
 func (_DecmAccessManager *DecmAccessManagerFilterer) WatchAdminRevoked(opts *bind.WatchOpts, sink chan<- *DecmAccessManagerAdminRevoked, admin []common.Address, revoker []common.Address) (event.Subscription, error) {
+
 	var adminRule []interface{}
 	for _, adminItem := range admin {
 		adminRule = append(adminRule, adminItem)
@@ -866,6 +882,7 @@ type DecmAccessManagerRoleAdminChanged struct {
 //
 // Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
 func (_DecmAccessManager *DecmAccessManagerFilterer) FilterRoleAdminChanged(opts *bind.FilterOpts, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (*DecmAccessManagerRoleAdminChangedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -890,6 +907,7 @@ func (_DecmAccessManager *DecmAccessManagerFilterer) FilterRoleAdminChanged(opts
 //
 // Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
 func (_DecmAccessManager *DecmAccessManagerFilterer) WatchRoleAdminChanged(opts *bind.WatchOpts, sink chan<- *DecmAccessManagerRoleAdminChanged, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -1026,6 +1044,7 @@ type DecmAccessManagerRoleGranted struct {
 //
 // Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
 func (_DecmAccessManager *DecmAccessManagerFilterer) FilterRoleGranted(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*DecmAccessManagerRoleGrantedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -1050,6 +1069,7 @@ func (_DecmAccessManager *DecmAccessManagerFilterer) FilterRoleGranted(opts *bin
 //
 // Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
 func (_DecmAccessManager *DecmAccessManagerFilterer) WatchRoleGranted(opts *bind.WatchOpts, sink chan<- *DecmAccessManagerRoleGranted, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -1186,6 +1206,7 @@ type DecmAccessManagerRoleRevoked struct {
 //
 // Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
 func (_DecmAccessManager *DecmAccessManagerFilterer) FilterRoleRevoked(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*DecmAccessManagerRoleRevokedIterator, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)
@@ -1210,6 +1231,7 @@ func (_DecmAccessManager *DecmAccessManagerFilterer) FilterRoleRevoked(opts *bin
 //
 // Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
 func (_DecmAccessManager *DecmAccessManagerFilterer) WatchRoleRevoked(opts *bind.WatchOpts, sink chan<- *DecmAccessManagerRoleRevoked, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
 	var roleRule []interface{}
 	for _, roleItem := range role {
 		roleRule = append(roleRule, roleItem)

@@ -223,6 +223,7 @@ func (_EventTicket *EventTicketTransactorRaw) Transact(opts *bind.TransactOpts, 
 func (_EventTicket *EventTicketCaller) EVENT(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
 	err := _EventTicket.contract.Call(opts, &out, "EVENT")
+
 	if err != nil {
 		return *new(common.Address), err
 	}
@@ -230,6 +231,7 @@ func (_EventTicket *EventTicketCaller) EVENT(opts *bind.CallOpts) (common.Addres
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
+
 }
 
 // EVENT is a free data retrieval call binding the contract method 0xbfa96e22.
@@ -252,6 +254,7 @@ func (_EventTicket *EventTicketCallerSession) EVENT() (common.Address, error) {
 func (_EventTicket *EventTicketCaller) EVENTACCESSMANAGER(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
 	err := _EventTicket.contract.Call(opts, &out, "EVENT_ACCESS_MANAGER")
+
 	if err != nil {
 		return *new(common.Address), err
 	}
@@ -259,6 +262,7 @@ func (_EventTicket *EventTicketCaller) EVENTACCESSMANAGER(opts *bind.CallOpts) (
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
+
 }
 
 // EVENTACCESSMANAGER is a free data retrieval call binding the contract method 0x76ab2ddb.
@@ -281,6 +285,7 @@ func (_EventTicket *EventTicketCallerSession) EVENTACCESSMANAGER() (common.Addre
 func (_EventTicket *EventTicketCaller) BalanceOf(opts *bind.CallOpts, owner common.Address) (*big.Int, error) {
 	var out []interface{}
 	err := _EventTicket.contract.Call(opts, &out, "balanceOf", owner)
+
 	if err != nil {
 		return *new(*big.Int), err
 	}
@@ -288,6 +293,7 @@ func (_EventTicket *EventTicketCaller) BalanceOf(opts *bind.CallOpts, owner comm
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
 	return out0, err
+
 }
 
 // BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
@@ -310,6 +316,7 @@ func (_EventTicket *EventTicketCallerSession) BalanceOf(owner common.Address) (*
 func (_EventTicket *EventTicketCaller) GetApproved(opts *bind.CallOpts, tokenId *big.Int) (common.Address, error) {
 	var out []interface{}
 	err := _EventTicket.contract.Call(opts, &out, "getApproved", tokenId)
+
 	if err != nil {
 		return *new(common.Address), err
 	}
@@ -317,6 +324,7 @@ func (_EventTicket *EventTicketCaller) GetApproved(opts *bind.CallOpts, tokenId 
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
+
 }
 
 // GetApproved is a free data retrieval call binding the contract method 0x081812fc.
@@ -339,6 +347,7 @@ func (_EventTicket *EventTicketCallerSession) GetApproved(tokenId *big.Int) (com
 func (_EventTicket *EventTicketCaller) GetTokenCounter(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
 	err := _EventTicket.contract.Call(opts, &out, "getTokenCounter")
+
 	if err != nil {
 		return *new(*big.Int), err
 	}
@@ -346,6 +355,7 @@ func (_EventTicket *EventTicketCaller) GetTokenCounter(opts *bind.CallOpts) (*bi
 	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
 
 	return out0, err
+
 }
 
 // GetTokenCounter is a free data retrieval call binding the contract method 0x6e02007d.
@@ -368,6 +378,7 @@ func (_EventTicket *EventTicketCallerSession) GetTokenCounter() (*big.Int, error
 func (_EventTicket *EventTicketCaller) GetTokenData(opts *bind.CallOpts, tokenId *big.Int) (string, error) {
 	var out []interface{}
 	err := _EventTicket.contract.Call(opts, &out, "getTokenData", tokenId)
+
 	if err != nil {
 		return *new(string), err
 	}
@@ -375,6 +386,7 @@ func (_EventTicket *EventTicketCaller) GetTokenData(opts *bind.CallOpts, tokenId
 	out0 := *abi.ConvertType(out[0], new(string)).(*string)
 
 	return out0, err
+
 }
 
 // GetTokenData is a free data retrieval call binding the contract method 0xb09afec1.
@@ -397,6 +409,7 @@ func (_EventTicket *EventTicketCallerSession) GetTokenData(tokenId *big.Int) (st
 func (_EventTicket *EventTicketCaller) IsApprovedForAll(opts *bind.CallOpts, owner common.Address, operator common.Address) (bool, error) {
 	var out []interface{}
 	err := _EventTicket.contract.Call(opts, &out, "isApprovedForAll", owner, operator)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -404,6 +417,7 @@ func (_EventTicket *EventTicketCaller) IsApprovedForAll(opts *bind.CallOpts, own
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // IsApprovedForAll is a free data retrieval call binding the contract method 0xe985e9c5.
@@ -426,6 +440,7 @@ func (_EventTicket *EventTicketCallerSession) IsApprovedForAll(owner common.Addr
 func (_EventTicket *EventTicketCaller) Name(opts *bind.CallOpts) (string, error) {
 	var out []interface{}
 	err := _EventTicket.contract.Call(opts, &out, "name")
+
 	if err != nil {
 		return *new(string), err
 	}
@@ -433,6 +448,7 @@ func (_EventTicket *EventTicketCaller) Name(opts *bind.CallOpts) (string, error)
 	out0 := *abi.ConvertType(out[0], new(string)).(*string)
 
 	return out0, err
+
 }
 
 // Name is a free data retrieval call binding the contract method 0x06fdde03.
@@ -455,6 +471,7 @@ func (_EventTicket *EventTicketCallerSession) Name() (string, error) {
 func (_EventTicket *EventTicketCaller) OwnerOf(opts *bind.CallOpts, tokenId *big.Int) (common.Address, error) {
 	var out []interface{}
 	err := _EventTicket.contract.Call(opts, &out, "ownerOf", tokenId)
+
 	if err != nil {
 		return *new(common.Address), err
 	}
@@ -462,6 +479,7 @@ func (_EventTicket *EventTicketCaller) OwnerOf(opts *bind.CallOpts, tokenId *big
 	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
+
 }
 
 // OwnerOf is a free data retrieval call binding the contract method 0x6352211e.
@@ -484,6 +502,7 @@ func (_EventTicket *EventTicketCallerSession) OwnerOf(tokenId *big.Int) (common.
 func (_EventTicket *EventTicketCaller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
 	var out []interface{}
 	err := _EventTicket.contract.Call(opts, &out, "supportsInterface", interfaceId)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -491,6 +510,7 @@ func (_EventTicket *EventTicketCaller) SupportsInterface(opts *bind.CallOpts, in
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
@@ -513,6 +533,7 @@ func (_EventTicket *EventTicketCallerSession) SupportsInterface(interfaceId [4]b
 func (_EventTicket *EventTicketCaller) Symbol(opts *bind.CallOpts) (string, error) {
 	var out []interface{}
 	err := _EventTicket.contract.Call(opts, &out, "symbol")
+
 	if err != nil {
 		return *new(string), err
 	}
@@ -520,6 +541,7 @@ func (_EventTicket *EventTicketCaller) Symbol(opts *bind.CallOpts) (string, erro
 	out0 := *abi.ConvertType(out[0], new(string)).(*string)
 
 	return out0, err
+
 }
 
 // Symbol is a free data retrieval call binding the contract method 0x95d89b41.
@@ -542,6 +564,7 @@ func (_EventTicket *EventTicketCallerSession) Symbol() (string, error) {
 func (_EventTicket *EventTicketCaller) TokenURI(opts *bind.CallOpts, tokenId *big.Int) (string, error) {
 	var out []interface{}
 	err := _EventTicket.contract.Call(opts, &out, "tokenURI", tokenId)
+
 	if err != nil {
 		return *new(string), err
 	}
@@ -549,6 +572,7 @@ func (_EventTicket *EventTicketCaller) TokenURI(opts *bind.CallOpts, tokenId *bi
 	out0 := *abi.ConvertType(out[0], new(string)).(*string)
 
 	return out0, err
+
 }
 
 // TokenURI is a free data retrieval call binding the contract method 0xc87b56dd.
@@ -571,6 +595,7 @@ func (_EventTicket *EventTicketCallerSession) TokenURI(tokenId *big.Int) (string
 func (_EventTicket *EventTicketCaller) UsedSignatures(opts *bind.CallOpts, arg0 []byte) (bool, error) {
 	var out []interface{}
 	err := _EventTicket.contract.Call(opts, &out, "usedSignatures", arg0)
+
 	if err != nil {
 		return *new(bool), err
 	}
@@ -578,6 +603,7 @@ func (_EventTicket *EventTicketCaller) UsedSignatures(opts *bind.CallOpts, arg0 
 	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
+
 }
 
 // UsedSignatures is a free data retrieval call binding the contract method 0xe949580e.
@@ -841,6 +867,7 @@ type EventTicketApproval struct {
 //
 // Solidity: event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)
 func (_EventTicket *EventTicketFilterer) FilterApproval(opts *bind.FilterOpts, owner []common.Address, approved []common.Address, tokenId []*big.Int) (*EventTicketApprovalIterator, error) {
+
 	var ownerRule []interface{}
 	for _, ownerItem := range owner {
 		ownerRule = append(ownerRule, ownerItem)
@@ -865,6 +892,7 @@ func (_EventTicket *EventTicketFilterer) FilterApproval(opts *bind.FilterOpts, o
 //
 // Solidity: event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)
 func (_EventTicket *EventTicketFilterer) WatchApproval(opts *bind.WatchOpts, sink chan<- *EventTicketApproval, owner []common.Address, approved []common.Address, tokenId []*big.Int) (event.Subscription, error) {
+
 	var ownerRule []interface{}
 	for _, ownerItem := range owner {
 		ownerRule = append(ownerRule, ownerItem)
@@ -1001,6 +1029,7 @@ type EventTicketApprovalForAll struct {
 //
 // Solidity: event ApprovalForAll(address indexed owner, address indexed operator, bool approved)
 func (_EventTicket *EventTicketFilterer) FilterApprovalForAll(opts *bind.FilterOpts, owner []common.Address, operator []common.Address) (*EventTicketApprovalForAllIterator, error) {
+
 	var ownerRule []interface{}
 	for _, ownerItem := range owner {
 		ownerRule = append(ownerRule, ownerItem)
@@ -1021,6 +1050,7 @@ func (_EventTicket *EventTicketFilterer) FilterApprovalForAll(opts *bind.FilterO
 //
 // Solidity: event ApprovalForAll(address indexed owner, address indexed operator, bool approved)
 func (_EventTicket *EventTicketFilterer) WatchApprovalForAll(opts *bind.WatchOpts, sink chan<- *EventTicketApprovalForAll, owner []common.Address, operator []common.Address) (event.Subscription, error) {
+
 	var ownerRule []interface{}
 	for _, ownerItem := range owner {
 		ownerRule = append(ownerRule, ownerItem)
@@ -1157,6 +1187,7 @@ type EventTicketSignatureUsed struct {
 //
 // Solidity: event SignatureUsed(address indexed transactor, address indexed signer, address contractAddress, string functionName, string signedMessageDigest, bytes signature, uint256 timestamp)
 func (_EventTicket *EventTicketFilterer) FilterSignatureUsed(opts *bind.FilterOpts, transactor []common.Address, signer []common.Address) (*EventTicketSignatureUsedIterator, error) {
+
 	var transactorRule []interface{}
 	for _, transactorItem := range transactor {
 		transactorRule = append(transactorRule, transactorItem)
@@ -1177,6 +1208,7 @@ func (_EventTicket *EventTicketFilterer) FilterSignatureUsed(opts *bind.FilterOp
 //
 // Solidity: event SignatureUsed(address indexed transactor, address indexed signer, address contractAddress, string functionName, string signedMessageDigest, bytes signature, uint256 timestamp)
 func (_EventTicket *EventTicketFilterer) WatchSignatureUsed(opts *bind.WatchOpts, sink chan<- *EventTicketSignatureUsed, transactor []common.Address, signer []common.Address) (event.Subscription, error) {
+
 	var transactorRule []interface{}
 	for _, transactorItem := range transactor {
 		transactorRule = append(transactorRule, transactorItem)
@@ -1310,6 +1342,7 @@ type EventTicketTicketMinted struct {
 //
 // Solidity: event TicketMinted(uint256 indexed tokenId, address indexed issuer, address indexed receiver, string ticketId)
 func (_EventTicket *EventTicketFilterer) FilterTicketMinted(opts *bind.FilterOpts, tokenId []*big.Int, issuer []common.Address, receiver []common.Address) (*EventTicketTicketMintedIterator, error) {
+
 	var tokenIdRule []interface{}
 	for _, tokenIdItem := range tokenId {
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
@@ -1334,6 +1367,7 @@ func (_EventTicket *EventTicketFilterer) FilterTicketMinted(opts *bind.FilterOpt
 //
 // Solidity: event TicketMinted(uint256 indexed tokenId, address indexed issuer, address indexed receiver, string ticketId)
 func (_EventTicket *EventTicketFilterer) WatchTicketMinted(opts *bind.WatchOpts, sink chan<- *EventTicketTicketMinted, tokenId []*big.Int, issuer []common.Address, receiver []common.Address) (event.Subscription, error) {
+
 	var tokenIdRule []interface{}
 	for _, tokenIdItem := range tokenId {
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
@@ -1469,6 +1503,7 @@ type EventTicketTicketStatusUpdated struct {
 //
 // Solidity: event TicketStatusUpdated(uint256 indexed tokenId, uint8 status)
 func (_EventTicket *EventTicketFilterer) FilterTicketStatusUpdated(opts *bind.FilterOpts, tokenId []*big.Int) (*EventTicketTicketStatusUpdatedIterator, error) {
+
 	var tokenIdRule []interface{}
 	for _, tokenIdItem := range tokenId {
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
@@ -1485,6 +1520,7 @@ func (_EventTicket *EventTicketFilterer) FilterTicketStatusUpdated(opts *bind.Fi
 //
 // Solidity: event TicketStatusUpdated(uint256 indexed tokenId, uint8 status)
 func (_EventTicket *EventTicketFilterer) WatchTicketStatusUpdated(opts *bind.WatchOpts, sink chan<- *EventTicketTicketStatusUpdated, tokenId []*big.Int) (event.Subscription, error) {
+
 	var tokenIdRule []interface{}
 	for _, tokenIdItem := range tokenId {
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
@@ -1613,6 +1649,7 @@ type EventTicketTransfer struct {
 //
 // Solidity: event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
 func (_EventTicket *EventTicketFilterer) FilterTransfer(opts *bind.FilterOpts, from []common.Address, to []common.Address, tokenId []*big.Int) (*EventTicketTransferIterator, error) {
+
 	var fromRule []interface{}
 	for _, fromItem := range from {
 		fromRule = append(fromRule, fromItem)
@@ -1637,6 +1674,7 @@ func (_EventTicket *EventTicketFilterer) FilterTransfer(opts *bind.FilterOpts, f
 //
 // Solidity: event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
 func (_EventTicket *EventTicketFilterer) WatchTransfer(opts *bind.WatchOpts, sink chan<- *EventTicketTransfer, from []common.Address, to []common.Address, tokenId []*big.Int) (event.Subscription, error) {
+
 	var fromRule []interface{}
 	for _, fromItem := range from {
 		fromRule = append(fromRule, fromItem)
