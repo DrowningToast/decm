@@ -1,10 +1,13 @@
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
+import { CertificateList } from "./CertificateList";
+import { useMyCertificatesListViewModel } from "@/hooks/useMyCertificatesListViewModel";
 
 export const CertificateListPage = () => {
     const { t } = useTranslation();
-    // const { certificates, isLoading } = useCertificatesListUsecase();
+    const { claimedCertificates, unclaimedCertificates, isLoading } =
+        useMyCertificatesListViewModel();
 
     return (
         <div className="relative w-full overflow-hidden">
@@ -31,7 +34,11 @@ export const CertificateListPage = () => {
                 </div>
 
                 {/* Certificate List */}
-                {/* <CertificateList certificates={certificates} isLoading={isLoading} /> */}
+                <CertificateList
+                    claimedCertificates={claimedCertificates}
+                    unclaimedCertificates={unclaimedCertificates}
+                    isLoading={isLoading}
+                />
             </div>
 
             {/* Bottom Navigation */}

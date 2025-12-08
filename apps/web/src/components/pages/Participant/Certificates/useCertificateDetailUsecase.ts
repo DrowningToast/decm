@@ -1,5 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useCertificateDetailNavStore } from "@/components/BottomNav/stores/certificates";
+import { useMyCertificatesListViewModel } from "@/hooks/useMyCertificatesListViewModel";
+import type { EntityEventCertificate } from "@decm/api";
 
 interface Certificate {
     id: string;
@@ -8,52 +10,49 @@ interface Certificate {
     eventId: string;
     issuedAt: string;
     status: "completed" | "pending";
-    description?: string;
+    certificateTitle?: string;
+    certificateSubtitle?: string;
+    academicInstitution?: string;
     certificateImageUrl?: string;
     certificateContractAddress?: string;
     eventContractAddress?: string;
     verifiableCredentialUrl?: string;
 }
 
-// Mock data - TODO: Replace with API call
-const mockCertificates: Record<string, Certificate> = {
-    "1": {
-        id: "1",
-        name: "Participation award",
-        event: "ToBeIT69",
-        eventId: "1",
-        issuedAt: "2024-09-24",
-        status: "completed",
-        description:
-            "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum ",
-        certificateImageUrl: undefined, // Placeholder for certificate image
-        certificateContractAddress: "0x0000...0000",
-        eventContractAddress: "0x0000...0000",
-        verifiableCredentialUrl: "#",
-    },
-    "2": {
-        id: "2",
-        name: "Winning team award",
-        event: "ToBeIT69",
-        eventId: "1",
-        issuedAt: "2024-09-24",
-        status: "pending",
-        description:
-            "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum ",
-        certificateImageUrl: undefined,
-        certificateContractAddress: "0x0000...0000",
-        eventContractAddress: "0x0000...0000",
-        verifiableCredentialUrl: "#",
-    },
+const mapEventCertificateToViewModel = (cert: EntityEventCertificate): Certificate => {
+    return {
+        id: cert.id || "",
+        name: cert.name || "Untitled Certificate",
+        event: cert.event_name || "Unknown Event",
+        eventId: cert.event_id || "",
+        issuedAt: cert.created_at || new Date().toISOString(),
+        status: cert.certificate_token_id ? "completed" : "pending",
+        certificateTitle: cert.certificate_title || undefined,
+        certificateSubtitle: cert.certificate_subtitle || undefined,
+        academicInstitution: cert.academic_institution || undefined,
+        certificateImageUrl: undefined, // TODO: Add when image field is available
+        certificateContractAddress: cert.event_certificate_address || undefined,
+        eventContractAddress: cert.event_contract_address || undefined,
+        verifiableCredentialUrl: undefined, // TODO: Add when VC URL is available
+    };
 };
 
 export const useCertificateDetailUsecase = (certificateId: string) => {
     const { setCertificateId } = useCertificateDetailNavStore();
+    const { claimedCertificates, unclaimedCertificates, isLoading, isError } =
+        useMyCertificatesListViewModel();
 
     const certificate = useMemo(() => {
-        // TODO: Fetch from API based on certificateId
-        return mockCertificates[certificateId] || null;
-    }, [certificateId]);
+        // Combine claimed and unclaimed certificates
+        const allCertificates = [...(claimedCertificates || []), ...(unclaimedCertificates || [])];
+
+        // Find certificate by ID
+        const foundCert = allCertificates.find((cert) => cert.id === certificateId);
+
+        if (!foundCert) return null;
+
+        return mapEventCertificateToViewModel(foundCert);
+    }, [certificateId, claimedCertificates, unclaimedCertificates]);
 
     const formattedDate = useMemo(() => {
         if (!certificate) return "";
@@ -65,7 +64,7 @@ export const useCertificateDetailUsecase = (certificateId: string) => {
     }, [certificate]);
 
     // Set the certificate ID in the nav store when component mounts
-    useMemo(() => {
+    useEffect(() => {
         setCertificateId(certificateId);
         return () => {
             setCertificateId(null);
@@ -75,5 +74,7 @@ export const useCertificateDetailUsecase = (certificateId: string) => {
     return {
         certificate,
         formattedDate,
+        isLoading,
+        isError,
     };
 };

@@ -450,6 +450,8 @@ definitions:
         type: string
       event_id:
         type: string
+      event_name:
+        type: string
       id:
         type: string
       inbox_message_id:
@@ -914,6 +916,20 @@ definitions:
     - title
     - updated_at
     type: object
+  event.GetCertificatesListViewModelResponse:
+    properties:
+      claimed_certificates: {}
+      total_claimed:
+        type: integer
+      total_unclaimed:
+        type: integer
+      unclaimed_certificates: {}
+    required:
+    - claimed_certificates
+    - total_claimed
+    - total_unclaimed
+    - unclaimed_certificates
+    type: object
   event.GetEventCertificatesResponse:
     properties:
       certificates:
@@ -931,6 +947,20 @@ definitions:
         type: array
     required:
     - events
+    type: object
+  event.GetMyCertificatesListViewModelResponse:
+    properties:
+      claimed_certificates: {}
+      total_claimed:
+        type: integer
+      total_unclaimed:
+        type: integer
+      unclaimed_certificates: {}
+    required:
+    - claimed_certificates
+    - total_claimed
+    - total_unclaimed
+    - unclaimed_certificates
     type: object
   event.ImportCertificateReceiverRequest:
     properties:
@@ -2082,6 +2112,33 @@ paths:
       summary: Verify Google OAuth code
       tags:
       - Auth
+  /api/v1/certificates/my-list-viewmodel:
+    get:
+      consumes:
+      - application/json
+      description: Get current user's certificates separated by claimed and unclaimed
+        status. Claimed certificates have token_id populated, unclaimed certificates
+        have token_id null and certificate config is published. Returns all certificates
+        for the authenticated user across all events.
+      operationId: get-my-certificates-list-viewmodel
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event.GetMyCertificatesListViewModelResponse'
+        "401":
+          description: Unauthorized - missing or invalid authentication
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get my certificates list viewmodel
+      tags:
+      - Certificates
   /api/v1/event-registration/invitation:
     delete:
       consumes:
@@ -2708,6 +2765,51 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Import certificate receivers for an event
+      tags:
+      - Event Certificates
+  /api/v1/events/{event_id}/certificates/list-viewmodel:
+    get:
+      consumes:
+      - application/json
+      description: Get event certificates separated by claimed and unclaimed status.
+        Claimed certificates have token_id populated, unclaimed certificates have
+        token_id null and certificate config is published. Only event hosts and issuers
+        can access this endpoint.
+      operationId: get-certificates-list-viewmodel
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event.GetCertificatesListViewModelResponse'
+        "400":
+          description: Invalid event ID
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized - missing or invalid authentication
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden - user is not host or issuer of this event
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Event not found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get certificates list viewmodel
       tags:
       - Event Certificates
   /api/v1/events/{event_id}/certificates/publish:

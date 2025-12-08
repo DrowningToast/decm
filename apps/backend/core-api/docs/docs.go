@@ -183,6 +183,42 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/certificates/my-list-viewmodel": {
+            "get": {
+                "description": "Get current user's certificates separated by claimed and unclaimed status. Claimed certificates have token_id populated, unclaimed certificates have token_id null and certificate config is published. Returns all certificates for the authenticated user across all events.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Certificates"
+                ],
+                "summary": "Get my certificates list viewmodel",
+                "operationId": "get-my-certificates-list-viewmodel",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/event.GetMyCertificatesListViewModelResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - missing or invalid authentication",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/event-registration/invitation": {
             "delete": {
                 "description": "Cancel an event registration invitation by ID",
@@ -1163,6 +1199,69 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{event_id}/certificates/list-viewmodel": {
+            "get": {
+                "description": "Get event certificates separated by claimed and unclaimed status. Claimed certificates have token_id populated, unclaimed certificates have token_id null and certificate config is published. Only event hosts and issuers can access this endpoint.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Certificates"
+                ],
+                "summary": "Get certificates list viewmodel",
+                "operationId": "get-certificates-list-viewmodel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/event.GetCertificatesListViewModelResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid event ID",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - missing or invalid authentication",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - user is not host or issuer of this event",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Event not found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
@@ -3939,6 +4038,9 @@ const docTemplate = `{
                 "event_id": {
                     "type": "string"
                 },
+                "event_name": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -4581,6 +4683,25 @@ const docTemplate = `{
                 }
             }
         },
+        "event.GetCertificatesListViewModelResponse": {
+            "type": "object",
+            "required": [
+                "claimed_certificates",
+                "total_claimed",
+                "total_unclaimed",
+                "unclaimed_certificates"
+            ],
+            "properties": {
+                "claimed_certificates": {},
+                "total_claimed": {
+                    "type": "integer"
+                },
+                "total_unclaimed": {
+                    "type": "integer"
+                },
+                "unclaimed_certificates": {}
+            }
+        },
         "event.GetEventCertificatesResponse": {
             "type": "object",
             "required": [
@@ -4607,6 +4728,25 @@ const docTemplate = `{
                         "$ref": "#/definitions/entity.Event"
                     }
                 }
+            }
+        },
+        "event.GetMyCertificatesListViewModelResponse": {
+            "type": "object",
+            "required": [
+                "claimed_certificates",
+                "total_claimed",
+                "total_unclaimed",
+                "unclaimed_certificates"
+            ],
+            "properties": {
+                "claimed_certificates": {},
+                "total_claimed": {
+                    "type": "integer"
+                },
+                "total_unclaimed": {
+                    "type": "integer"
+                },
+                "unclaimed_certificates": {}
             }
         },
         "event.ImportCertificateReceiverRequest": {
