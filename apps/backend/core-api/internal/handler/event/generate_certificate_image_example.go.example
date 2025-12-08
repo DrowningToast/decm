@@ -154,3 +154,5 @@ func (h *Handler) GenerateCertificateImageForParticipant(ctx *fiber.Ctx) error {
 //     events.Get("/:eventId/participants/:participantId/certificate-image", handler.GenerateCertificateImageForParticipant)
 // }
 
+
+

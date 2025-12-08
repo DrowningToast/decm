@@ -11,3 +11,5 @@ ADD COLUMN certificate_title_font_weight INTEGER,
 ADD COLUMN certificate_subtitle_font_family VARCHAR(100),
 ADD COLUMN certificate_subtitle_font_weight INTEGER;
 
+
+
