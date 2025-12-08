@@ -10,8 +10,7 @@ export function useCertificateFontFamilies() {
     } = useQuery({
         queryKey: QUERY_KEY.event.certificate.fontFamilies,
         queryFn: async () => {
-            const response =
-                await coreApiClient.certificateFontFamilies.getEventCertificateFontFamilies();
+            const response = await coreApiClient.v1.getEventCertificateFontFamilies();
             return response.font_families || [];
         },
         staleTime: Infinity, // Font families don't change often

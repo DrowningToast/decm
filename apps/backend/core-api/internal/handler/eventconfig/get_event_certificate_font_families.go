@@ -29,7 +29,7 @@ type FontFamilyItem struct {
 // @Produce json
 // @Success 200 {object} GetEventCertificateFontFamiliesResponse "List of available font families"
 // @Failure 500 {object} customerror.ErrResponse "Internal server error"
-// @Router /eventconfig/certificate-font-families [get]
+// @Router /api/v1/eventconfig/certificate-font-families [get]
 func (h *Handler) GetEventCertificateFontFamilies(ctx *fiber.Ctx) error {
 	// Get all font families from usecase
 	fontFamilies, err := h.EventConfigUc.GetAllEventCertificateFontFamilies(ctx.Context())
@@ -57,4 +57,3 @@ func (h *Handler) GetEventCertificateFontFamilies(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(response)
 }
-

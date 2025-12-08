@@ -180,19 +180,19 @@ export const LandingPage = () => {
                     </div>
                 </div>
 
-                {/* Get Started Section */}
-                <div id="get-started" className="max-w-[1384px] mx-auto">
+                {/* Get Started Section - Commented out until routes are implemented */}
+                {/* <div id="get-started" className="max-w-[1384px] mx-auto">
                     <div className="flex flex-col gap-6 md:gap-12">
                         <Typography
                             variant="header"
                             tag="h2"
-                            className="text-base md:text-base text-foreground font-primary font-semibold tracking-[0.06px]"
+                            className="text-2xl md:text-4xl text-foreground font-primary font-semibold tracking-[0.06px]"
                         >
                             {t("landing.getStarted.title")}
                         </Typography>
 
                         {/* Mobile Links */}
-                        <div className="md:hidden flex flex-col gap-6">
+                {/* <div className="md:hidden flex flex-col gap-6">
                             <ul className="list-disc list-inside space-y-1">
                                 <li>
                                     <Typography
@@ -222,12 +222,12 @@ export const LandingPage = () => {
                                     </Typography>
                                 </li>
                             </ul>
-                        </div>
+                        </div> */}
 
-                        {/* Desktop Links Grid */}
-                        <div className="hidden md:grid md:grid-cols-5 gap-8">
-                            {/* Public */}
-                            <div className="flex flex-col gap-3">
+                {/* Desktop Links Grid */}
+                {/* <div className="hidden md:grid md:grid-cols-5 gap-8"> */}
+                {/* Public */}
+                {/* <div className="flex flex-col gap-3">
                                 <Typography
                                     variant="text"
                                     tag="h3"
@@ -255,10 +255,10 @@ export const LandingPage = () => {
                                         </Typography>
                                     </li>
                                 </ul>
-                            </div>
+                            </div> */}
 
-                            {/* Students */}
-                            <div className="flex flex-col gap-3">
+                {/* Students */}
+                {/* <div className="flex flex-col gap-3">
                                 <Typography
                                     variant="text"
                                     tag="h3"
@@ -322,10 +322,10 @@ export const LandingPage = () => {
                                         </Typography>
                                     </li>
                                 </ul>
-                            </div>
+                            </div> */}
 
-                            {/* Organizer */}
-                            <div className="flex flex-col gap-3">
+                {/* Organizer */}
+                {/* <div className="flex flex-col gap-3">
                                 <Typography
                                     variant="text"
                                     tag="h3"
@@ -362,10 +362,10 @@ export const LandingPage = () => {
                                         </Typography>
                                     </li>
                                 </ul>
-                            </div>
+                            </div> */}
 
-                            {/* Issuer */}
-                            <div className="flex flex-col gap-3">
+                {/* Issuer */}
+                {/* <div className="flex flex-col gap-3">
                                 <Typography
                                     variant="text"
                                     tag="h3"
@@ -393,10 +393,10 @@ export const LandingPage = () => {
                                         </Typography>
                                     </li>
                                 </ul>
-                            </div>
+                            </div> */}
 
-                            {/* Developer */}
-                            <div className="flex flex-col gap-3">
+                {/* Developer */}
+                {/* <div className="flex flex-col gap-3">
                                 <Typography
                                     variant="text"
                                     tag="h3"
@@ -433,10 +433,10 @@ export const LandingPage = () => {
                                         </Typography>
                                     </li>
                                 </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                            </div> */}
+                {/* </div> */}
+                {/* </div> */}
+                {/* </div> */}
             </section>
         </div>
     );

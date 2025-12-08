@@ -2116,6 +2116,25 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Retrieves all font families that can be used in certificate templates, including their available weights and italic support
+         *
+         * @name GetEventCertificateFontFamilies
+         * @summary Get all available font families for certificates
+         * @request GET:/api/v1/eventconfig/certificate-font-families
+         */
+        getEventCertificateFontFamilies: (params: RequestParams = {}) =>
+            this.http.request<
+                GetEventCertificateFontFamiliesData,
+                GetEventCertificateFontFamiliesError
+            >({
+                path: `/api/v1/eventconfig/certificate-font-families`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Get events list
          *
          * @tags Event
@@ -3135,26 +3154,6 @@ export class Api<SecurityDataType extends unknown> {
                 method: "GET",
                 secure: true,
                 format: "blob",
-                ...params,
-            }),
-    };
-    certificateFontFamilies = {
-        /**
-         * @description Retrieves all font families that can be used in certificate templates, including their available weights and italic support
-         *
-         * @name GetEventCertificateFontFamilies
-         * @summary Get all available font families for certificates
-         * @request GET:/eventconfig/certificate-font-families
-         */
-        getEventCertificateFontFamilies: (params: RequestParams = {}) =>
-            this.http.request<
-                GetEventCertificateFontFamiliesData,
-                GetEventCertificateFontFamiliesError
-            >({
-                path: `/eventconfig/certificate-font-families`,
-                method: "GET",
-                type: ContentType.Json,
-                format: "json",
                 ...params,
             }),
     };

@@ -106,7 +106,7 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
 
     if (isLoadingFonts) {
         return (
-            <div className="space-y-6 rounded-lg border p-6">
+            <div className="space-y-4 rounded-lg border p-4">
                 <Typography variant="text" tag="p" className="text-sm text-muted-foreground">
                     {t("common.loading", "Loading...")}
                 </Typography>
@@ -115,9 +115,9 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
     }
 
     return (
-        <div className="space-y-6 rounded-lg border p-6">
-            <div className="space-y-2">
-                <Typography variant="header" tag="h3" className="text-lg font-semibold">
+        <div className="space-y-4 rounded-lg border p-4">
+            <div className="space-y-1">
+                <Typography variant="header" tag="h3" className="text-base font-semibold">
                     {t("certificateSettings.fontSettings.title", "Font Settings")}
                 </Typography>
                 <Typography variant="text" tag="p" className="text-sm text-muted-foreground">
@@ -128,15 +128,15 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                 </Typography>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
                 {/* Event Name Font */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                     <Typography variant="text" tag="h4" className="text-sm font-medium">
                         {t("certificateSettings.fontSettings.eventName", "Event Name")}
                     </Typography>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="event-name-font-family">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="event-name-font-family" className="text-xs">
                                 {t("certificateSettings.fontSettings.fontFamily", "Font Family")}
                             </Label>
                             <Select
@@ -165,8 +165,8 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="event-name-font-weight">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="event-name-font-weight" className="text-xs">
                                 {t("certificateSettings.fontSettings.fontWeight", "Font Weight")}
                             </Label>
                             <Select
@@ -201,13 +201,13 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                 </div>
 
                 {/* Participant Name Font */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                     <Typography variant="text" tag="h4" className="text-sm font-medium">
                         {t("certificateSettings.fontSettings.participantName", "Participant Name")}
                     </Typography>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="name-font-family">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="name-font-family" className="text-xs">
                                 {t("certificateSettings.fontSettings.fontFamily", "Font Family")}
                             </Label>
                             <Select
@@ -236,8 +236,8 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="name-font-weight">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="name-font-weight" className="text-xs">
                                 {t("certificateSettings.fontSettings.fontWeight", "Font Weight")}
                             </Label>
                             <Select
@@ -272,16 +272,16 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                 </div>
 
                 {/* Academic Institution Font */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                     <Typography variant="text" tag="h4" className="text-sm font-medium">
                         {t(
                             "certificateSettings.fontSettings.academicInstitution",
                             "Academic Institution",
                         )}
                     </Typography>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="academic-institution-font-family">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="academic-institution-font-family" className="text-xs">
                                 {t("certificateSettings.fontSettings.fontFamily", "Font Family")}
                             </Label>
                             <Select
@@ -310,8 +310,8 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="academic-institution-font-weight">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="academic-institution-font-weight" className="text-xs">
                                 {t("certificateSettings.fontSettings.fontWeight", "Font Weight")}
                             </Label>
                             <Select
@@ -346,16 +346,16 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                 </div>
 
                 {/* Certificate Title Font */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                     <Typography variant="text" tag="h4" className="text-sm font-medium">
                         {t(
                             "certificateSettings.fontSettings.certificateTitle",
                             "Certificate Title",
                         )}
                     </Typography>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="certificate-title-font-family">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="certificate-title-font-family" className="text-xs">
                                 {t("certificateSettings.fontSettings.fontFamily", "Font Family")}
                             </Label>
                             <Select
@@ -384,8 +384,8 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="certificate-title-font-weight">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="certificate-title-font-weight" className="text-xs">
                                 {t("certificateSettings.fontSettings.fontWeight", "Font Weight")}
                             </Label>
                             <Select
@@ -420,16 +420,16 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                 </div>
 
                 {/* Certificate Subtitle Font */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                     <Typography variant="text" tag="h4" className="text-sm font-medium">
                         {t(
                             "certificateSettings.fontSettings.certificateSubtitle",
                             "Certificate Subtitle",
                         )}
                     </Typography>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="certificate-subtitle-font-family">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="certificate-subtitle-font-family" className="text-xs">
                                 {t("certificateSettings.fontSettings.fontFamily", "Font Family")}
                             </Label>
                             <Select
@@ -458,8 +458,8 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="certificate-subtitle-font-weight">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="certificate-subtitle-font-weight" className="text-xs">
                                 {t("certificateSettings.fontSettings.fontWeight", "Font Weight")}
                             </Label>
                             <Select

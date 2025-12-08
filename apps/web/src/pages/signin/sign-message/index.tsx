@@ -16,7 +16,6 @@ import { TOAST_USECASE_VIEWMODEL } from "@/constants/toast";
 import { useSignout } from "@/components/useSignout";
 import { queryClient } from "@/lib/api/queryClient";
 import { QUERY_KEY } from "@/lib/queryKeys";
-import { onboardService } from "@/services/services";
 
 const VerifyMessagePage = () => {
     const { t } = useTranslation();
@@ -32,6 +31,7 @@ const VerifyMessagePage = () => {
 
     const {
         onboardStatus,
+        checkOnboardStatus,
         isQueryFetching: isOnboardStatusLoading,
         error,
     } = useCheckOnboardStatus(
@@ -70,7 +70,7 @@ const VerifyMessagePage = () => {
             const hasAuthenticationCredentialId = !!onboardStatus?.authentication_credential_id;
             const hasProfileId = !!onboardStatus?.profile_id;
             if (hasAuthenticationCredentialId && hasProfileId) {
-                await onboardService.checkOnboardStatus({
+                await checkOnboardStatus({
                     method: OnboardRegistrationMethod.RegistrationMethodWallet,
                     signSignature: authSignSignature ?? "",
                 });
@@ -104,6 +104,7 @@ const VerifyMessagePage = () => {
         signout,
         address,
         authSignSignature,
+        checkOnboardStatus,
     ]);
 
     return (

@@ -1,42 +1,30 @@
-import type { CoreApiType } from "@/lib/api/api";
-import { coreApiClient } from "@/lib/api/api";
-import { env } from "@/config/env";
-import { mapBlobToCertificateImage } from "./mapper";
-import type { CertificateImage } from "./mapper";
+import { coreApiClient, type CoreApiType } from "@/lib/api/api";
+import { mapBlobToCertificateImage, type CertificateImage } from "./mapper";
 
 export class CertificateService {
     private _coreApi: CoreApiType;
-    private _baseUrl: string;
 
-    constructor(coreApi: CoreApiType, baseUrl: string = env.VITE_CORE_BACKEND_API) {
+    constructor(coreApi: CoreApiType) {
         this._coreApi = coreApi;
-        this._baseUrl = baseUrl;
-    }
-
-    public async getMyCertificates(eventId: string) {
-        const response = await this._coreApi.v1.getEventCertificates({ eventId });
-        return response;
     }
 
     /**
-     * Fetch certificate image with authentication
-     * Returns a blob URL that can be used as an image src
+     * Fetches certificate image for the given certificate ID
+     * @param certificateId - The ID of the certificate
+     * @returns CertificateImage with object URL
+     * @throws Error if the image cannot be fetched
      */
     public async getCertificateImage(certificateId: string): Promise<CertificateImage> {
-        const response = await fetch(
-            `${this._baseUrl}/api/v1/certificates/${certificateId}/image`,
-            {
-                method: "GET",
-                credentials: "include", // Include cookies for authentication
-            },
-        );
+        const response = await this._coreApi.v1.generateCertificateImage({
+            certificateId,
+        });
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch certificate image: ${response.statusText}`);
+        // The response is a File/Blob
+        if (!(response instanceof Blob)) {
+            throw new Error("Invalid response: expected Blob");
         }
 
-        const blob = await response.blob();
-        return mapBlobToCertificateImage(blob, certificateId);
+        return mapBlobToCertificateImage(response);
     }
 }
 
