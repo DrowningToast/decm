@@ -58,6 +58,9 @@ export const CertificateSettingsPage = ({
     // Check if certificate is published - if so, disable issuer editing
     const isCertificatePublished = eventCertificateConfig?.is_published ?? false;
 
+    // Track font settings changes
+    const [fontSettings, setFontSettings] = React.useState<CertificateFontConfig | null>(null);
+
     // Use custom hooks for state management
     // Extract issuer profiles from event issuers
     const selectedIssuerProfiles = eventIssuers?.map((issuer) => issuer);
@@ -291,6 +294,11 @@ export const CertificateSettingsPage = ({
                         };
                     }),
                 );
+            }
+
+            // Update font settings if they have changed
+            if (fontSettings && eventCertificateConfig) {
+                await updateCertificateTextConfig(fontSettings);
             }
 
             // Refetch all queries to ensure the page is up to date
@@ -561,26 +569,9 @@ export const CertificateSettingsPage = ({
 
                             <CertificateFontSettings
                                 eventCertificateConfig={eventCertificateConfig}
-                                onUpdate={async (fontConfig: CertificateFontConfig) => {
-                                    try {
-                                        await updateCertificateTextConfig(fontConfig);
-                                        toast.success(
-                                            t(
-                                                "certificateSettings.fontSettings.updateSuccess",
-                                                "Font settings updated successfully",
-                                            ),
-                                        );
-                                    } catch (error) {
-                                        console.error("Error updating font settings:", error);
-                                        toast.error(
-                                            t(
-                                                "certificateSettings.fontSettings.updateError",
-                                                "Failed to update font settings",
-                                            ),
-                                        );
-                                    }
+                                onChange={(fontConfig: CertificateFontConfig) => {
+                                    setFontSettings(fontConfig);
                                 }}
-                                isUpdating={isUpdatingCertificateTextConfig}
                             />
                         </div>
                     )}

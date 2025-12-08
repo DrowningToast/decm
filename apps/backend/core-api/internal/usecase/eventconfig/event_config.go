@@ -15,6 +15,7 @@ type EventConfigUsecase struct {
 	EventCertificateDg                   eventDg.EventCertificateConfigDataGateway
 	EventCertificateDataGateway          eventDg.EventCertificateDataGateway
 	EventCertificateSignatureDataGateway eventDg.EventCertificateSignatureDataGateway
+	EventCertificateFontFamilyDg         eventDg.EventCertificateFontFamilyDataGateway
 	EventRegistrationDg                  eventDg.EventRegistrationConfigDataGateway
 	EventIssuerDg                        eventDg.EventIssuerDataGateway
 	EventContractDg                      eventDg.EventContractDataGateway
@@ -30,6 +31,7 @@ func NewEventConfigUsecase(
 	eventCertificateDg eventDg.EventCertificateConfigDataGateway,
 	eventCertificateDataGateway eventDg.EventCertificateDataGateway,
 	eventCertificateSignatureDataGateway eventDg.EventCertificateSignatureDataGateway,
+	eventCertificateFontFamilyDg eventDg.EventCertificateFontFamilyDataGateway,
 	eventRegistrationDg eventDg.EventRegistrationConfigDataGateway,
 	eventIssuerDg eventDg.EventIssuerDataGateway,
 	eventContractDg eventDg.EventContractDataGateway,
@@ -44,6 +46,7 @@ func NewEventConfigUsecase(
 		EventCertificateDg:                   eventCertificateDg,
 		EventCertificateDataGateway:          eventCertificateDataGateway,
 		EventCertificateSignatureDataGateway: eventCertificateSignatureDataGateway,
+		EventCertificateFontFamilyDg:         eventCertificateFontFamilyDg,
 		EventRegistrationDg:                  eventRegistrationDg,
 		EventIssuerDg:                        eventIssuerDg,
 		EventContractDg:                      eventContractDg,

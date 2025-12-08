@@ -80,7 +80,7 @@ func (u *EventUsecase) GenerateCertificateImage(ctx context.Context, certificate
 
 	// 6. Add text overlays to SVG using absolute positions from config
 	originalSVG := string(svgBytes)
-	processedSVG := addTextOverlaysToSVG(originalSVG, certificateData, certificateConfig)
+	processedSVG := u.addTextOverlaysToSVG(ctx, originalSVG, certificateData, certificateConfig)
 
 	u.logger.Debug("text overlays added to certificate",
 		"original_length", len(originalSVG),
@@ -100,45 +100,46 @@ func (u *EventUsecase) GenerateCertificateImage(ctx context.Context, certificate
 // addTextOverlaysToSVG adds new text elements to the SVG with absolute positioning
 // from the database, instead of replacing template strings. This provides precise
 // control over text positioning and styling.
-func addTextOverlaysToSVG(svgContent string, data CertificateData, config *entity.EventCertificateConfig) string {
+func (uc *EventUsecase) addTextOverlaysToSVG(ctx context.Context, svgContent string, data CertificateData, config *entity.EventCertificateConfig) string {
 	// Remove or hide existing template text elements to avoid duplicates
 	result := hideTemplatePlaceholders(svgContent)
 
 	// Build text overlay elements with absolute positioning from config
 	var textOverlays strings.Builder
 
-	// TODO: Enhance to fetch font family names from event_certificate_font_families table using IDs
-	// For now, using default font family "Inter"
-	defaultFontFamily := "Inter"
-
 	// Add name text (required field, always has position)
 	if data.Name != "" {
+		fontFamily := uc.getFontFamilyName(ctx, config.NameFontFamilyID)
 		fontWeight := int32PtrToString(config.NameFontWeight, "bold")
-		textOverlays.WriteString(createTextElement(data.Name, config.NamePosX, config.NamePosY, defaultFontFamily, fontWeight, 16))
+		textOverlays.WriteString(createTextElement(data.Name, config.NamePosX, config.NamePosY, fontFamily, fontWeight, 16))
 	}
 
 	// Add event name text (required field, always has position)
 	if data.EventName != "" {
+		fontFamily := uc.getFontFamilyName(ctx, config.EventNameFontFamilyID)
 		fontWeight := int32PtrToString(config.EventNameFontWeight, "bold")
-		textOverlays.WriteString(createTextElement(data.EventName, config.EventNamePosX, config.EventNamePosY, defaultFontFamily, fontWeight, 16))
+		textOverlays.WriteString(createTextElement(data.EventName, config.EventNamePosX, config.EventNamePosY, fontFamily, fontWeight, 16))
 	}
 
 	// Add academic institution text (optional field)
 	if config.AcademicInstitutionPosX != nil && config.AcademicInstitutionPosY != nil && data.AcademicInstitution != "" {
+		fontFamily := uc.getFontFamilyName(ctx, config.AcademicInstitutionFontFamilyID)
 		fontWeight := int32PtrToString(config.AcademicInstitutionFontWeight, "bold")
-		textOverlays.WriteString(createTextElement(data.AcademicInstitution, *config.AcademicInstitutionPosX, *config.AcademicInstitutionPosY, defaultFontFamily, fontWeight, 16))
+		textOverlays.WriteString(createTextElement(data.AcademicInstitution, *config.AcademicInstitutionPosX, *config.AcademicInstitutionPosY, fontFamily, fontWeight, 16))
 	}
 
 	// Add certificate title text (optional field)
 	if config.CertificateTitlePosX != nil && config.CertificateTitlePosY != nil && data.CertificateTitle != "" {
+		fontFamily := uc.getFontFamilyName(ctx, config.CertificateTitleFontFamilyID)
 		fontWeight := int32PtrToString(config.CertificateTitleFontWeight, "bold")
-		textOverlays.WriteString(createTextElement(data.CertificateTitle, *config.CertificateTitlePosX, *config.CertificateTitlePosY, defaultFontFamily, fontWeight, 16))
+		textOverlays.WriteString(createTextElement(data.CertificateTitle, *config.CertificateTitlePosX, *config.CertificateTitlePosY, fontFamily, fontWeight, 16))
 	}
 
 	// Add certificate subtitle text (optional field)
 	if config.CertificateSubtitlePosX != nil && config.CertificateSubtitlePosY != nil && data.CertificateSubtitle != "" {
+		fontFamily := uc.getFontFamilyName(ctx, config.CertificateSubtitleFontFamilyID)
 		fontWeight := int32PtrToString(config.CertificateSubtitleFontWeight, "bold")
-		textOverlays.WriteString(createTextElement(data.CertificateSubtitle, *config.CertificateSubtitlePosX, *config.CertificateSubtitlePosY, defaultFontFamily, fontWeight, 16))
+		textOverlays.WriteString(createTextElement(data.CertificateSubtitle, *config.CertificateSubtitlePosX, *config.CertificateSubtitlePosY, fontFamily, fontWeight, 16))
 	}
 
 	// Insert text overlays before closing </svg> tag
@@ -149,6 +150,28 @@ func addTextOverlaysToSVG(svgContent string, data CertificateData, config *entit
 	}
 
 	return result[:closingSvgIndex] + textOverlays.String() + result[closingSvgIndex:]
+}
+
+// getFontFamilyName fetches the CSS font name from the database by font family ID.
+// Returns "Inter" as default if the ID is nil or if fetching fails.
+func (uc *EventUsecase) getFontFamilyName(ctx context.Context, fontFamilyID *int32) string {
+	// If no font family ID specified, use default
+	if fontFamilyID == nil {
+		return "Inter"
+	}
+
+	// Fetch font family from database
+	fontFamily, err := uc.EventCertificateFontFamilyDg.GetEventCertificateFontFamilyByID(ctx, *fontFamilyID)
+	if err != nil {
+		uc.logger.Warn("failed to get font family by ID, using default",
+			"font_family_id", *fontFamilyID,
+			"error", err,
+		)
+		return "Inter"
+	}
+
+	// Return the CSS font name (e.g., "Inter", "Prompt", "Sarabun")
+	return fontFamily.CssFontName
 }
 
 // hideTemplatePlaceholders hides or removes template placeholder text elements

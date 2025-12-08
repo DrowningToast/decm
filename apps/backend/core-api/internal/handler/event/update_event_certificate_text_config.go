@@ -75,33 +75,33 @@ func (r *UpdateEventCertificateTextConfigRequest) IsValid() *customerror.Err {
 
 // UpdateEventCertificateTextConfigResponse represents the response for updating certificate text configuration
 type UpdateEventCertificateTextConfigResponse struct {
-	ID                            string   `json:"id"`
-	EventID                       string   `json:"event_id"`
-	BaseCertificateStorageKey     string   `json:"base_certificate_storage_key"`
-	BaseCertificatePresignedURL   string   `json:"base_certificate_presigned_url"`
-	EventNamePosX                 float64  `json:"event_name_pos_x"`
-	EventNamePosY                 float64  `json:"event_name_pos_y"`
-	NamePosX                      float64  `json:"name_pos_x"`
-	NamePosY                      float64  `json:"name_pos_y"`
-	AcademicInstitutionPosX       *float64 `json:"academic_institution_pos_x,omitempty"`
-	AcademicInstitutionPosY       *float64 `json:"academic_institution_pos_y,omitempty"`
-	CertificateTitlePosX          *float64 `json:"certificate_title_pos_x,omitempty"`
-	CertificateTitlePosY          *float64 `json:"certificate_title_pos_y,omitempty"`
-	CertificateSubtitlePosX       *float64 `json:"certificate_subtitle_pos_x,omitempty"`
-	CertificateSubtitlePosY       *float64 `json:"certificate_subtitle_pos_y,omitempty"`
-	EventNameFontFamily           *string  `json:"event_name_font_family,omitempty"`
-	EventNameFontWeight           *int32   `json:"event_name_font_weight,omitempty"`
-	NameFontFamily                *string  `json:"name_font_family,omitempty"`
-	NameFontWeight                *int32   `json:"name_font_weight,omitempty"`
-	AcademicInstitutionFontFamily *string  `json:"academic_institution_font_family,omitempty"`
-	AcademicInstitutionFontWeight *int32   `json:"academic_institution_font_weight,omitempty"`
-	CertificateTitleFontFamily    *string  `json:"certificate_title_font_family,omitempty"`
-	CertificateTitleFontWeight    *int32   `json:"certificate_title_font_weight,omitempty"`
-	CertificateSubtitleFontFamily *string  `json:"certificate_subtitle_font_family,omitempty"`
-	CertificateSubtitleFontWeight *int32   `json:"certificate_subtitle_font_weight,omitempty"`
-	IsPublished                   bool     `json:"is_published"`
-	CreatedAt                     string   `json:"created_at"`
-	UpdatedAt                     string   `json:"updated_at"`
+	ID                              string   `json:"id"`
+	EventID                         string   `json:"event_id"`
+	BaseCertificateStorageKey       string   `json:"base_certificate_storage_key"`
+	BaseCertificatePresignedURL     string   `json:"base_certificate_presigned_url"`
+	EventNamePosX                   float64  `json:"event_name_pos_x"`
+	EventNamePosY                   float64  `json:"event_name_pos_y"`
+	NamePosX                        float64  `json:"name_pos_x"`
+	NamePosY                        float64  `json:"name_pos_y"`
+	AcademicInstitutionPosX         *float64 `json:"academic_institution_pos_x,omitempty"`
+	AcademicInstitutionPosY         *float64 `json:"academic_institution_pos_y,omitempty"`
+	CertificateTitlePosX            *float64 `json:"certificate_title_pos_x,omitempty"`
+	CertificateTitlePosY            *float64 `json:"certificate_title_pos_y,omitempty"`
+	CertificateSubtitlePosX         *float64 `json:"certificate_subtitle_pos_x,omitempty"`
+	CertificateSubtitlePosY         *float64 `json:"certificate_subtitle_pos_y,omitempty"`
+	EventNameFontFamilyID           *int32   `json:"event_name_font_family_id,omitempty"`
+	EventNameFontWeight             *int32   `json:"event_name_font_weight,omitempty"`
+	NameFontFamilyID                *int32   `json:"name_font_family_id,omitempty"`
+	NameFontWeight                  *int32   `json:"name_font_weight,omitempty"`
+	AcademicInstitutionFontFamilyID *int32   `json:"academic_institution_font_family_id,omitempty"`
+	AcademicInstitutionFontWeight   *int32   `json:"academic_institution_font_weight,omitempty"`
+	CertificateTitleFontFamilyID    *int32   `json:"certificate_title_font_family_id,omitempty"`
+	CertificateTitleFontWeight      *int32   `json:"certificate_title_font_weight,omitempty"`
+	CertificateSubtitleFontFamilyID *int32   `json:"certificate_subtitle_font_family_id,omitempty"`
+	CertificateSubtitleFontWeight   *int32   `json:"certificate_subtitle_font_weight,omitempty"`
+	IsPublished                     bool     `json:"is_published"`
+	CreatedAt                       string   `json:"created_at"`
+	UpdatedAt                       string   `json:"updated_at"`
 }
 
 // UpdateEventCertificateTextConfig godoc

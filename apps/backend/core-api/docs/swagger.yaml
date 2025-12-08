@@ -648,6 +648,17 @@ definitions:
     - is_profile_picture_public
     - updated_at
     type: object
+  event.ClaimCertificateBody:
+    properties:
+      account_password:
+        type: string
+      certificate_password:
+        type: string
+      sign_message:
+        type: string
+      signature:
+        type: string
+    type: object
   event.CreateEventContractRequest:
     properties:
       access_manager_contract_address:
@@ -938,6 +949,13 @@ definitions:
     - total_unclaimed
     - unclaimed_certificates
     type: object
+  event.GetClaimCertificateSignMessageResponse:
+    properties:
+      sign_message:
+        type: string
+    required:
+    - sign_message
+    type: object
   event.GetEventCertificatesResponse:
     properties:
       certificates:
@@ -1036,42 +1054,42 @@ definitions:
     type: object
   event.UpdateEventCertificateTextConfigRequest:
     properties:
-      academic_institution_font_family:
-        type: string
+      academic_institution_font_family_id:
+        type: integer
       academic_institution_font_weight:
         type: integer
-      certificate_subtitle_font_family:
-        type: string
+      certificate_subtitle_font_family_id:
+        type: integer
       certificate_subtitle_font_weight:
         type: integer
-      certificate_title_font_family:
-        type: string
+      certificate_title_font_family_id:
+        type: integer
       certificate_title_font_weight:
         type: integer
-      event_name_font_family:
-        type: string
+      event_name_font_family_id:
+        type: integer
       event_name_font_weight:
         type: integer
-      name_font_family:
-        type: string
+      name_font_family_id:
+        type: integer
       name_font_weight:
         type: integer
     required:
-    - academic_institution_font_family
+    - academic_institution_font_family_id
     - academic_institution_font_weight
-    - certificate_subtitle_font_family
+    - certificate_subtitle_font_family_id
     - certificate_subtitle_font_weight
-    - certificate_title_font_family
+    - certificate_title_font_family_id
     - certificate_title_font_weight
-    - event_name_font_family
+    - event_name_font_family_id
     - event_name_font_weight
-    - name_font_family
+    - name_font_family_id
     - name_font_weight
     type: object
   event.UpdateEventCertificateTextConfigResponse:
     properties:
-      academic_institution_font_family:
-        type: string
+      academic_institution_font_family_id:
+        type: integer
       academic_institution_font_weight:
         type: integer
       academic_institution_pos_x:
@@ -1082,16 +1100,16 @@ definitions:
         type: string
       base_certificate_storage_key:
         type: string
-      certificate_subtitle_font_family:
-        type: string
+      certificate_subtitle_font_family_id:
+        type: integer
       certificate_subtitle_font_weight:
         type: integer
       certificate_subtitle_pos_x:
         type: number
       certificate_subtitle_pos_y:
         type: number
-      certificate_title_font_family:
-        type: string
+      certificate_title_font_family_id:
+        type: integer
       certificate_title_font_weight:
         type: integer
       certificate_title_pos_x:
@@ -1102,8 +1120,8 @@ definitions:
         type: string
       event_id:
         type: string
-      event_name_font_family:
-        type: string
+      event_name_font_family_id:
+        type: integer
       event_name_font_weight:
         type: integer
       event_name_pos_x:
@@ -1114,8 +1132,8 @@ definitions:
         type: string
       is_published:
         type: boolean
-      name_font_family:
-        type: string
+      name_font_family_id:
+        type: integer
       name_font_weight:
         type: integer
       name_pos_x:
@@ -1353,6 +1371,39 @@ definitions:
     - last_name_requirement_status
     - phone_number_requirement_status
     - updated_at
+    type: object
+  eventconfig.FontFamilyItem:
+    properties:
+      available_font_weights:
+        items:
+          type: integer
+        type: array
+      css_font_name:
+        type: string
+      font_family_name:
+        type: string
+      id:
+        type: integer
+      is_default:
+        type: boolean
+      is_support_italic:
+        type: boolean
+    required:
+    - available_font_weights
+    - css_font_name
+    - font_family_name
+    - id
+    - is_default
+    - is_support_italic
+    type: object
+  eventconfig.GetEventCertificateFontFamiliesResponse:
+    properties:
+      font_families:
+        items:
+          $ref: '#/definitions/eventconfig.FontFamilyItem'
+        type: array
+    required:
+    - font_families
     type: object
   eventconfig.ToggleCertificatePublishedRequest:
     properties:
@@ -2223,6 +2274,88 @@ paths:
       summary: Verify Google OAuth code
       tags:
       - Auth
+  /api/v1/certificates/claim/{certificate_id}:
+    post:
+      consumes:
+      - application/json
+      description: Claim a certificate by signing with wallet
+      operationId: claim-certificate
+      parameters:
+      - description: Certificate ID
+        in: path
+        name: certificate_id
+        required: true
+        type: string
+      - description: Claim certificate body
+        in: body
+        name: claimCertificateBody
+        required: true
+        schema:
+          $ref: '#/definitions/event.ClaimCertificateBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.EventCertificate'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Claim certificate
+      tags:
+      - Certificates
+  /api/v1/certificates/claim/{certificate_id}/sign-message:
+    get:
+      consumes:
+      - application/json
+      description: Get sign message for claiming a certificate
+      operationId: get-claim-certificate-sign-message
+      parameters:
+      - description: Certificate ID
+        in: path
+        name: certificate_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/event.GetClaimCertificateSignMessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get claim certificate sign message
+      tags:
+      - Certificates
   /api/v1/certificates/my-list-viewmodel:
     get:
       consumes:
@@ -4436,6 +4569,25 @@ paths:
       summary: Generate certificate image for participant
       tags:
       - certificates
+  /eventconfig/certificate-font-families:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all font families that can be used in certificate templates,
+        including their available weights and italic support
+      operationId: get-event-certificate-font-families
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of available font families
+          schema:
+            $ref: '#/definitions/eventconfig.GetEventCertificateFontFamiliesResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get all available font families for certificates
   /events/{event_id}/certificates/text-config:
     put:
       consumes:
