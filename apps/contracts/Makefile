@@ -34,7 +34,7 @@ endif
 ifeq ($(findstring --network polygon,$(ARGS)),--network polygon)
 	NETWORK_ARGS := --rpc-url $(POLYGON_RPC_URL) --private-key $(POLYGON_PRIVATE_KEY) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
 endif
- 
+
 deployDecmAccessManager:
 	@forge script script/DeployDecmAccessManager.s.sol:DeployDecmAccessManager $(NETWORK_ARGS)
 
@@ -49,6 +49,7 @@ deployEventCertificate:
 
 # Example
 # make deployDecmAccessManager ARGS="--network sepolia"
+# make deployDecmAccessManager ARGS="--network polygon"
 # make deployEvent ARGS="--network sepolia"
 # make deployEventTicket ARGS="--network sepolia"
 # make deployEventCertificate ARGS="--network sepolia"
