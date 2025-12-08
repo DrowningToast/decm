@@ -20,7 +20,7 @@ import (
 // @Failure 404 {object} customerror.ErrResponse "Certificate not found"
 // @Failure 500 {object} customerror.ErrResponse "Internal server error"
 // @Security CookieAuth
-// @Router /certificates/{certificate_id}/image [get]
+// @Router /api/v1/certificates/{certificate_id}/image [get]
 func (h *Handler) GenerateCertificateImage(ctx *fiber.Ctx) error {
 	// 1. Get current user from context (set by authentication middleware)
 	currentUser := ctx.Locals("user").(*auth.JwtClaims)

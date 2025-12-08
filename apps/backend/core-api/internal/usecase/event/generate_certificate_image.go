@@ -153,11 +153,11 @@ func (uc *EventUsecase) addTextOverlaysToSVG(ctx context.Context, svgContent str
 }
 
 // getFontFamilyName fetches the CSS font name from the database by font family ID.
-// Returns "Inter" as default if the ID is nil or if fetching fails.
+// Returns "Prompt" as default if the ID is nil or if fetching fails.
 func (uc *EventUsecase) getFontFamilyName(ctx context.Context, fontFamilyID *int32) string {
 	// If no font family ID specified, use default
 	if fontFamilyID == nil {
-		return "Inter"
+		return "Prompt"
 	}
 
 	// Fetch font family from database
@@ -167,7 +167,7 @@ func (uc *EventUsecase) getFontFamilyName(ctx context.Context, fontFamilyID *int
 			"font_family_id", *fontFamilyID,
 			"error", err,
 		)
-		return "Inter"
+		return "Prompt"
 	}
 
 	// Return the CSS font name (e.g., "Inter", "Prompt", "Sarabun")
@@ -260,20 +260,23 @@ func renderSVGToPNG(svgContent string) ([]byte, error) {
 
 	var buf []byte
 
-	// Wrap SVG in HTML for proper rendering
+	// Wrap SVG in HTML for proper rendering with Google Fonts
 	html := fmt.Sprintf(`<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Inter:ital,wght@0,100..900;1,100..900&family=Noto+Sans+Thai:wght@100..900&family=Sarabun:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <style>
-        body { 
-            margin: 0; 
-            padding: 0; 
+        body {
+            margin: 0;
+            padding: 0;
             overflow: hidden;
             width: %dpx;
             height: %dpx;
         }
-        svg { 
+        svg {
             display: block;
             width: 100%%;
             height: 100%%;

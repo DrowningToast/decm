@@ -1,49 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
-import { coreApiClient } from "@/lib/api/api";
+import { certificateService } from "@/services/services";
 import { QUERY_KEY } from "@/lib/queryKeys";
-
-export interface EventCertificate {
-    id?: string;
-    event_id?: string;
-    receiver_credential_id?: string;
-    receiver_email?: string;
-    name?: string;
-    academic_institution?: string;
-    certificate_title?: string;
-    certificate_subtitle?: string;
-    event_contract_address?: string;
-    event_certificate_address?: string;
-    certificate_token_id?: string;
-    created_at?: string;
-    revoked_at?: string;
-}
+import type { Certificate } from "@/services/CertificateService/mapper";
 
 interface UseEventCertificatesReturn {
-    certificates: EventCertificate[];
+    certificates: Certificate[];
     isLoading: boolean;
     error: Error | null;
     refetch: () => void;
 }
 
 export const useEventCertificates = (eventId: string): UseEventCertificatesReturn => {
-    const {
-        data: response,
-        isLoading,
-        error,
-        refetch,
-    } = useQuery({
+    const { data, isLoading, error, refetch } = useQuery({
         queryKey: QUERY_KEY.event.certificates(eventId),
-        queryFn: async () => {
-            const response = await coreApiClient.v1.getEventCertificates({ eventId });
-            return response;
-        },
+        queryFn: () => certificateService.getEventCertificates(eventId),
         enabled: !!eventId,
     });
 
     return {
-        certificates: response?.certificates || [],
+        certificates: data || [],
         isLoading,
-        error,
+        error: error as Error | null,
         refetch,
     };
 };

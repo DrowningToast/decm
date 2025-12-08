@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { coreApiClient } from "@/lib/api/api";
+import { certificateService } from "@/services/services";
 import { toast } from "sonner";
 import { QUERY_KEY } from "@/lib/queryKeys";
 
@@ -12,12 +12,8 @@ export const useToggleCertificatePublished = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ eventId, isPublished }: ToggleCertificatePublishedParams) => {
-            return await coreApiClient.v1.toggleCertificatePublished(
-                { eventId },
-                { is_published: isPublished },
-            );
-        },
+        mutationFn: ({ eventId, isPublished }: ToggleCertificatePublishedParams) =>
+            certificateService.toggleCertificatePublished(eventId, isPublished),
         onSuccess: (_data, variables) => {
             // Invalidate and refetch certificate config
             queryClient.invalidateQueries({

@@ -1,9 +1,9 @@
 import { useMemo, useEffect } from "react";
 import { useCertificateDetailNavStore } from "@/components/BottomNav/stores/certificates";
 import { useMyCertificatesListViewModel } from "@/hooks/useMyCertificatesListViewModel";
-import type { EntityEventCertificate } from "@decm/api";
+import type { Certificate as CertificateData } from "@/services/CertificateService/mapper";
 
-interface Certificate {
+interface CertificateViewModel {
     id: string;
     name: string;
     event: string;
@@ -19,20 +19,20 @@ interface Certificate {
     verifiableCredentialUrl?: string;
 }
 
-const mapEventCertificateToViewModel = (cert: EntityEventCertificate): Certificate => {
+const mapCertificateToViewModel = (cert: CertificateData): CertificateViewModel => {
     return {
-        id: cert.id || "",
+        id: cert.id,
         name: cert.name || "Untitled Certificate",
-        event: cert.event_name || "Unknown Event",
-        eventId: cert.event_id || "",
-        issuedAt: cert.created_at || new Date().toISOString(),
-        status: cert.certificate_token_id ? "completed" : "pending",
-        certificateTitle: cert.certificate_title || undefined,
-        certificateSubtitle: cert.certificate_subtitle || undefined,
-        academicInstitution: cert.academic_institution || undefined,
+        event: cert.eventName || "Unknown Event",
+        eventId: cert.eventId,
+        issuedAt: cert.createdAt,
+        status: cert.certificateTokenId ? "completed" : "pending",
+        certificateTitle: cert.certificateTitle,
+        certificateSubtitle: cert.certificateSubtitle,
+        academicInstitution: cert.academicInstitution,
         certificateImageUrl: undefined, // Fetched separately via useCertificateImage hook
-        certificateContractAddress: cert.event_certificate_address || undefined,
-        eventContractAddress: cert.event_contract_address || undefined,
+        certificateContractAddress: cert.eventCertificateAddress,
+        eventContractAddress: cert.eventContractAddress,
         verifiableCredentialUrl: undefined, // TODO: Add when VC URL is available
     };
 };
@@ -44,14 +44,14 @@ export const useCertificateDetailUsecase = (certificateId: string) => {
 
     const certificate = useMemo(() => {
         // Combine claimed and unclaimed certificates
-        const allCertificates = [...(claimedCertificates || []), ...(unclaimedCertificates || [])];
+        const allCertificates = [...claimedCertificates, ...unclaimedCertificates];
 
         // Find certificate by ID
         const foundCert = allCertificates.find((cert) => cert.id === certificateId);
 
         if (!foundCert) return null;
 
-        return mapEventCertificateToViewModel(foundCert);
+        return mapCertificateToViewModel(foundCert);
     }, [certificateId, claimedCertificates, unclaimedCertificates]);
 
     const formattedDate = useMemo(() => {
