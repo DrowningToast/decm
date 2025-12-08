@@ -29,6 +29,18 @@ type Profile struct {
 	IsAcademicEmailPublic       bool    `json:"is_academic_email_public"`
 	AcademicEmail               *string `json:"academic_email,omitempty"`
 
+	// Connector references (from authentication_credentials table)
+	GoogleConnectorRef *string `json:"google_connector_ref,omitempty"`
+	GithubConnectorRef *string `json:"github_connector_ref,omitempty"`
+	WalletAddress      string  `json:"wallet_address,omitempty"`
+
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// ProfileWithCredentials includes Profile data plus authentication credential fields for searching
+type ProfileWithCredentials struct {
+	Profile
+	WalletAddress      string  `json:"wallet_address"`
+	GoogleConnectorRef *string `json:"google_connector_ref,omitempty"`
 }

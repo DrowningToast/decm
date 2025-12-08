@@ -40,8 +40,10 @@ type UpdateEventCertificateParameters struct {
 type EventCertificateDataGateway interface {
 	CreateEventCertificate(ctx context.Context, params CreateEventCertificateParameters) (*entity.EventCertificate, error)
 	GetEventCertificateByID(ctx context.Context, id uuid.UUID) (*entity.EventCertificate, error)
+	GetEventCertificateByInboxMessageID(ctx context.Context, inboxMessageID uuid.UUID) (*entity.EventCertificate, error)
 	GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error)
 	GetAllEventCertificateIDsByEventID(ctx context.Context, eventID uuid.UUID) ([]uuid.UUID, error)
 	UpdateEventCertificate(ctx context.Context, id uuid.UUID, params UpdateEventCertificateParameters) (*entity.EventCertificate, error)
+	UpdateEventCertificateInboxMessageID(ctx context.Context, id uuid.UUID, inboxMessageID uuid.UUID) (*entity.EventCertificate, error)
 	DeleteEventCertificate(ctx context.Context, id uuid.UUID) error
 }

@@ -82,6 +82,8 @@ export function DataTable<TData, TValue>({
         pageCount: Math.ceil(totalItems / pageSize),
     });
 
+    console.log(data);
+
     return (
         <div className="space-y-4">
             <DataTableToolbar
@@ -140,11 +142,7 @@ export function DataTable<TData, TValue>({
                         {isLoading ? (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    <Typography
-                                        variant="text"
-                                        tag="p"
-                                        className="text-muted-foreground"
-                                    >
+                                    <Typography variant="text" tag="p" color="background">
                                         Loading...
                                     </Typography>
                                 </TableCell>
@@ -169,11 +167,7 @@ export function DataTable<TData, TValue>({
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    <Typography
-                                        variant="text"
-                                        tag="p"
-                                        className="text-muted-foreground"
-                                    >
+                                    <Typography variant="text" tag="p" color="background-alt">
                                         No results found.
                                     </Typography>
                                 </TableCell>

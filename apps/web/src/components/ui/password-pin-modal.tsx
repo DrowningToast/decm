@@ -381,7 +381,7 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
                     <Button
                         variant="ghost"
                         onClick={handleCancel}
-                        className=" h-12 text-foreground hover:text-background-alt rounded-xl text-base font-normal"
+                        className=" h-12 text-black hover:text-black/80 rounded-xl text-base font-normal"
                     >
                         {t("common.cancel")}
                     </Button>

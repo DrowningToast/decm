@@ -2,12 +2,13 @@ package event
 
 import (
 	"context"
-	"decm-database/go/generated"
+
+	"apps/backend/core-api/internal/entity"
 
 	"github.com/google/uuid"
 )
 
-func (u *EventUsecase) GetEventContractByEventID(ctx context.Context, eventID uuid.UUID) (*generated.EventContract, error) {
+func (u *EventUsecase) GetEventContractByEventID(ctx context.Context, eventID uuid.UUID) (*entity.EventContract, error) {
 	return u.EventContractDataGateway.GetEventContractByEventID(ctx, eventID)
 }
 

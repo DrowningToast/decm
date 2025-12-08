@@ -9,11 +9,17 @@ import (
 )
 
 type EventConfigUsecase struct {
-	AuthenticationCredentialDg datagateway.AuthenticationCredentialDataGateway
-	EventDg                    eventDg.EventDataGateway
-	EventCertificateDg         eventDg.EventCertificateConfigDataGateway
-	EventRegistrationDg        eventDg.EventRegistrationConfigDataGateway
-	S3Service                  s3.S3Service
+	AuthenticationCredentialDg           datagateway.AuthenticationCredentialDataGateway
+	EventDg                              eventDg.EventDataGateway
+	EventDataGateway                     eventDg.EventDataGateway
+	EventCertificateDg                   eventDg.EventCertificateConfigDataGateway
+	EventCertificateDataGateway          eventDg.EventCertificateDataGateway
+	EventCertificateSignatureDataGateway eventDg.EventCertificateSignatureDataGateway
+	EventRegistrationDg                  eventDg.EventRegistrationConfigDataGateway
+	EventIssuerDg                        eventDg.EventIssuerDataGateway
+	EventContractDg                      eventDg.EventContractDataGateway
+	InboxMessageDg                       datagateway.InboxMessageDataGateway
+	S3Service                            s3.S3Service
 
 	logger *slog.Logger
 }
@@ -22,16 +28,27 @@ func NewEventConfigUsecase(
 	authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway,
 	eventDg eventDg.EventDataGateway,
 	eventCertificateDg eventDg.EventCertificateConfigDataGateway,
+	eventCertificateDataGateway eventDg.EventCertificateDataGateway,
+	eventCertificateSignatureDataGateway eventDg.EventCertificateSignatureDataGateway,
 	eventRegistrationDg eventDg.EventRegistrationConfigDataGateway,
+	eventIssuerDg eventDg.EventIssuerDataGateway,
+	eventContractDg eventDg.EventContractDataGateway,
+	inboxMessageDg datagateway.InboxMessageDataGateway,
 	s3Service s3.S3Service,
 	logger *slog.Logger,
 ) *EventConfigUsecase {
 	return &EventConfigUsecase{
-		AuthenticationCredentialDg: authenticationCredentialDg,
-		EventDg:                    eventDg,
-		EventCertificateDg:         eventCertificateDg,
-		EventRegistrationDg:        eventRegistrationDg,
-		S3Service:                  s3Service,
-		logger:                     logger,
+		AuthenticationCredentialDg:           authenticationCredentialDg,
+		EventDg:                              eventDg,
+		EventDataGateway:                     eventDg,
+		EventCertificateDg:                   eventCertificateDg,
+		EventCertificateDataGateway:          eventCertificateDataGateway,
+		EventCertificateSignatureDataGateway: eventCertificateSignatureDataGateway,
+		EventRegistrationDg:                  eventRegistrationDg,
+		EventIssuerDg:                        eventIssuerDg,
+		EventContractDg:                      eventContractDg,
+		InboxMessageDg:                       inboxMessageDg,
+		S3Service:                            s3Service,
+		logger:                               logger,
 	}
 }

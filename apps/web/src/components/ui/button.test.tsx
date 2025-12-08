@@ -85,7 +85,9 @@ describe("Button", () => {
         const button = screen.getByRole("button");
         expect(button).toBeDisabled();
 
-        // Check for loading spinner (Loader2 icon)
+        // Check for loading spinner (Loader2 icon) by class name
+        expect(button).toHaveAttribute("disabled");
+        // Verify loading spinner presence by checking for animate-spin class
         const spinner = button.querySelector(".animate-spin");
         expect(spinner).toBeInTheDocument();
     });

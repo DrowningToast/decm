@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
-import { HelmetProvider } from "react-helmet-async";
+import { HelmetProvider, Helmet } from "react-helmet-async";
 import { queryClient } from "@/lib/api/queryClient";
 import "../index.css";
 import { ErrorBoundary } from "react-error-boundary";
@@ -11,6 +11,8 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { AppKitProvider } from "@/config/walletConnect";
 import { AuthProvider } from "@/context/AuthContext";
 import { WalletProvider } from "@/context/WalletContext";
+import { SignPasswordModalProvider } from "@/components/providers/SignPasswordModal/SignPasswordModaProvider";
+import { useTranslation } from "react-i18next";
 
 // Lazy load the DevTools to avoid bundle issues
 const ReactQueryDevtools = lazy(() =>
@@ -21,6 +23,7 @@ const ReactQueryDevtools = lazy(() =>
 
 const Layout = () => {
     const isMobile = useMediaQuery("(max-width: 768px)");
+    const { t } = useTranslation();
 
     return (
         <QueryClientProvider client={queryClient}>
@@ -36,8 +39,13 @@ const Layout = () => {
                     <WalletProvider>
                         <main className="font-secondary bg-background text-foreground">
                             <HelmetProvider>
+                                <Helmet>
+                                    <title>{t("common.appName")}</title>
+                                </Helmet>
                                 <AuthProvider>
-                                    <Outlet />
+                                    <SignPasswordModalProvider>
+                                        <Outlet />
+                                    </SignPasswordModalProvider>
                                     {process.env.NODE_ENV === "development" && (
                                         <Suspense fallback={null}>
                                             <ReactQueryDevtools initialIsOpen={false} />

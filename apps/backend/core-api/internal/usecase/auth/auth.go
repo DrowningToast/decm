@@ -15,8 +15,10 @@ type AuthUsecase struct {
 	AuthenticationCredentialDg datagateway.AuthenticationCredentialDataGateway
 }
 
-func NewAuthUsecase() *AuthUsecase {
-	return &AuthUsecase{}
+func NewAuthUsecase(authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway) *AuthUsecase {
+	return &AuthUsecase{
+		AuthenticationCredentialDg: authenticationCredentialDg,
+	}
 }
 
 // CheckRoleResult contains the role check results

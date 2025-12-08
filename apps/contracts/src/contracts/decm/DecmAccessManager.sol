@@ -11,17 +11,17 @@ contract DecmAccessManager is AccessControl {
     event AdminGranted(address indexed admin, address indexed granter);
     event AdminRevoked(address indexed admin, address indexed revoker);
 
-    // Errors
-    error DecmAccessManager__AdminCannotBeZeroAddress();
-
     bytes32 public constant ADMIN_ROLE = DEFAULT_ADMIN_ROLE;
+
+    // States
+    mapping(address => bool) public allowedMsgSenders;
 
     constructor(address[] memory initialAdmins) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
         for (uint256 i = 0; i < initialAdmins.length; i++) {
             if (initialAdmins[i] == address(0)) {
-                revert DecmAccessManager__AdminCannotBeZeroAddress();
+                require(false, "Admin cannot be zero address");
             }
             _grantRole(ADMIN_ROLE, initialAdmins[i]);
         }
@@ -31,7 +31,7 @@ contract DecmAccessManager is AccessControl {
         address admin
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (admin == address(0)) {
-            revert DecmAccessManager__AdminCannotBeZeroAddress();
+            require(false, "Admin cannot be zero address");
         }
         _grantRole(ADMIN_ROLE, admin);
         emit AdminGranted(admin, msg.sender);
@@ -41,7 +41,7 @@ contract DecmAccessManager is AccessControl {
         address admin
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (admin == address(0)) {
-            revert DecmAccessManager__AdminCannotBeZeroAddress();
+            require(false, "Admin cannot be zero address");
         }
         _revokeRole(ADMIN_ROLE, admin);
         emit AdminRevoked(admin, msg.sender);
@@ -50,4 +50,17 @@ contract DecmAccessManager is AccessControl {
     function checkIsAdmin(address addr) external view returns (bool) {
         return hasRole(ADMIN_ROLE, addr);
     }
+
+    function addAllowedMsgSender(address msgSender) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        allowedMsgSenders[msgSender] = true;
+    }
+
+    function removeAllowedMsgSender(address msgSender) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        allowedMsgSenders[msgSender] = false;
+    }
+
+    function checkIsAllowedMsgSender(address addr) public view returns (bool) {
+        return allowedMsgSenders[addr];
+    } 
 }
+ 

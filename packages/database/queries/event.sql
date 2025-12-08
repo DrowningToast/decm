@@ -65,9 +65,16 @@ SELECT
     is_ticket_transferable,
     created_at,
     updated_at,
-    event_status
+    event_status,
+    COALESCE(
+        (SELECT COUNT(event_attendees.id) 
+         FROM event_attendees 
+         WHERE event_attendees.event_id = events.id 
+           AND event_attendees.is_attendee_accepted::INTEGER = 1
+        ), 
+    0)::INTEGER AS attendees_count
 FROM events
-WHERE id = sqlc.arg(id);
+WHERE events.id = sqlc.arg(id);
 
 -- name: GetEventViewModelById :one
 SELECT 
@@ -78,7 +85,7 @@ SELECT
         (SELECT COUNT(event_attendees.id) 
          FROM event_attendees 
          WHERE event_attendees.event_id = events.id 
-           AND event_attendees.is_attendee_accepted = 1
+           AND event_attendees.is_attendee_accepted::INTEGER = 1
         ), 
     0)::INTEGER AS attendees_count
 FROM events

@@ -60,8 +60,8 @@ describe("useSignEventCertificates", () => {
     const mockIssuerPin = "1234";
     const mockResponse = {
         certificates: [
-            { id: "cert-1", event_id: mockEventId },
-            { id: "cert-2", event_id: mockEventId },
+            { id: "cert-1", event_id: mockEventId, signature: "sig-1" },
+            { id: "cert-2", event_id: mockEventId, signature: "sig-2" },
         ],
     };
 
@@ -169,7 +169,7 @@ describe("useSignEventCertificates", () => {
 
     it("should handle null certificates response", async () => {
         const nullResponse = {
-            certificates: null,
+            certificates: [],
         };
         vi.mocked(coreApiClient.v1.signEventCertificates).mockResolvedValue(nullResponse);
 

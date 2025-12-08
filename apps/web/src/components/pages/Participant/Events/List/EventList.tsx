@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
-import { Lock, Mail, X, Loader2, SearchX } from "lucide-react";
+import { Lock, Mail, X, Loader2, SearchX, Check } from "lucide-react";
 import { EventEmptyState } from "./EventEmptyState";
 import { Link } from "@/router";
 import { useSearchEventNavStore } from "@/components/BottomNav/stores/events";
@@ -113,6 +113,9 @@ export const EventList = ({ events = [], isLoading, filterType }: EventListProps
 const EventItem = ({ event }: { event: EventItemType | EventViewModelExtended }) => {
     const { t } = useTranslation();
 
+    // Check if event has isJoined property (from EventViewModelExtended)
+    const isJoined = "isJoined" in event && event.isJoined === true;
+
     const getAccessIcon = (): {
         icon: React.ElementType;
         label: string;
@@ -172,13 +175,28 @@ const EventItem = ({ event }: { event: EventItemType | EventViewModelExtended })
                     {event.title}
                 </Typography>
 
-                <Typography
-                    variant="text"
-                    tag="span"
-                    className="text-xs md:text-sm whitespace-nowrap [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
-                >
-                    {formattedDate}
-                </Typography>
+                <div className="flex items-center gap-2">
+                    {isJoined && (
+                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+                            <Check className="w-3 h-3 text-primary" />
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                color="primary"
+                                className="text-xs font-medium"
+                            >
+                                {t("participant.events.detail.joined")}
+                            </Typography>
+                        </div>
+                    )}
+                    <Typography
+                        variant="text"
+                        tag="span"
+                        className="text-xs md:text-sm whitespace-nowrap [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                    >
+                        {formattedDate}
+                    </Typography>
+                </div>
             </div>
 
             {/* Short description */}

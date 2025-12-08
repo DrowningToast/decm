@@ -4,18 +4,26 @@ import { QUERY_KEY } from "@/lib/queryKeys";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+interface CancelEventInvitationParams {
+    eventInvitationId: string;
+    eventId: string;
+}
+
 export function useCancelEventInvitation() {
     const {
         mutate: cancelEventInvitation,
         isPending: isCancelling,
         error: cancelError,
     } = useMutation({
-        mutationFn: (eventInvitationId: string) =>
+        mutationFn: ({ eventInvitationId }: CancelEventInvitationParams) =>
             coreApiClient.v1.cancelEventRegistrationInvitation({
-                eventRegistrationInvitationId: eventInvitationId,
+                event_registration_invitation_id: eventInvitationId,
             }),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [QUERY_KEY.event.all] });
+        onSuccess: (_, { eventId }) => {
+            // Invalidate the specific event invitations query
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEY.event.invitations.byEventId(eventId),
+            });
             toast.success("Invitation cancelled successfully");
         },
     });

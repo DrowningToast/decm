@@ -82,7 +82,7 @@ describe("useEventsListUsecase", () => {
         expect(result.current.events).toBeDefined();
         expect(Array.isArray(result.current.events)).toBe(true);
         result.current.events.forEach((event) => {
-            expect(event.name.toLowerCase()).toContain("tobelt");
+            expect(event.title.toLowerCase()).toContain("tobelt");
         });
     });
 
@@ -128,9 +128,9 @@ describe("useEventsListUsecase", () => {
             expect(result.current.isLoading).toBe(false);
         });
 
-        // All returned events should have participationStatus defined
+        // All returned events should have eventStatus defined
         result.current.events.forEach((event) => {
-            expect(event.participationStatus).toBeDefined();
+            expect(event.eventStatus).toBeDefined();
         });
     });
 
@@ -169,8 +169,8 @@ describe("useEventsListUsecase", () => {
 
         // Should apply both search and filter
         result.current.events.forEach((event) => {
-            expect(event.name.toLowerCase()).toContain("tobelt");
-            expect(event.participationStatus).toBeDefined();
+            expect(event.title.toLowerCase()).toContain("tobelt");
+            expect(event.eventStatus).toBeDefined();
         });
     });
 
@@ -183,7 +183,7 @@ describe("useEventsListUsecase", () => {
 
         // Skip status check if no events returned
         if (result.current.events && result.current.events.length > 0) {
-            const statuses = result.current.events.map((event) => event.status);
+            const statuses = result.current.events.map((event) => event.eventStatus);
             const uniqueStatuses = new Set(statuses);
             expect(uniqueStatuses.size).toBeGreaterThan(0);
         } else {
@@ -201,7 +201,7 @@ describe("useEventsListUsecase", () => {
 
         // Skip access types check if no events returned
         if (result.current.events && result.current.events.length > 1) {
-            const accessTypes = result.current.events.map((event) => event.accessType);
+            const accessTypes = result.current.events.map((event) => event.isPublic);
             const uniqueAccessTypes = new Set(accessTypes);
             expect(uniqueAccessTypes.size).toBeGreaterThan(0);
             expect(Array.from(uniqueAccessTypes)).toEqual(

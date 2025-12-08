@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { getIssuerEvents } from "@/services/IssuerService/IssuerService";
-import type { GetIssuerEventsData } from "@decm/api";
+import { issuerService } from "@/services/services";
+import type { IssuerEvent, IssuerEventViewModel } from "@/services/IssuerService/IssuerService";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 interface UseIssuerEventsOptions {
     limit?: number;
@@ -17,9 +18,10 @@ interface UseIssuerEventsOptions {
 export const useIssuerEvents = (options: UseIssuerEventsOptions = { issuer_credential_id: "" }) => {
     const { limit = 10, offset = 0, issuer_credential_id } = options;
 
-    return useQuery<GetIssuerEventsData>({
-        queryKey: ["issuer", "events", limit, offset],
-        queryFn: () => getIssuerEvents(issuer_credential_id, limit || 10, offset || 0),
+    return useQuery<IssuerEvent[]>({
+        queryKey: QUERY_KEY.issuers.taskedEvents(issuer_credential_id, limit, offset),
+        queryFn: () =>
+            issuerService.getTaskedEvents(issuer_credential_id, limit || 10, offset || 0),
         enabled: !!issuer_credential_id,
         staleTime: 5 * 60 * 1000, // 5 minutes
     });
@@ -35,12 +37,12 @@ export const usePendingEvents = (
 ) => {
     const { limit = 10, offset = 0, issuer_credential_id } = options;
 
-    return useQuery<GetIssuerEventsData>({
-        queryKey: ["issuer", "events", "pending", limit, offset],
+    return useQuery<IssuerEventViewModel[]>({
+        queryKey: QUERY_KEY.issuers.pendingEvents(issuer_credential_id, limit, offset),
         queryFn: () =>
-            getIssuerEvents(issuer_credential_id, limit || 10, offset || 0).then((events) =>
-                events.filter((event) => event.is_signed === 0),
-            ),
+            issuerService
+                .getIssuerEventsViewModel(issuer_credential_id, limit || 10, offset || 0)
+                .then((events) => events.filter((event) => !event.isSigned)),
         enabled: !!issuer_credential_id,
         staleTime: 5 * 60 * 1000, // 5 minutes
     });
@@ -54,12 +56,12 @@ export const usePendingEvents = (
 export const useSignedEvents = (options: UseIssuerEventsOptions = { issuer_credential_id: "" }) => {
     const { limit = 10, offset = 0, issuer_credential_id } = options;
 
-    return useQuery<GetIssuerEventsData>({
-        queryKey: ["issuer", "events", "signed", limit, offset],
+    return useQuery<IssuerEventViewModel[]>({
+        queryKey: QUERY_KEY.issuers.signedEvents(issuer_credential_id, limit, offset),
         queryFn: () =>
-            getIssuerEvents(issuer_credential_id, limit || 10, offset || 0).then((events) =>
-                events.filter((event) => event.is_signed === 1),
-            ),
+            issuerService
+                .getIssuerEventsViewModel(issuer_credential_id, limit || 10, offset || 0)
+                .then((events) => events.filter((event) => event.isSigned)),
         enabled: !!issuer_credential_id,
         staleTime: 5 * 60 * 1000, // 5 minutes
     });

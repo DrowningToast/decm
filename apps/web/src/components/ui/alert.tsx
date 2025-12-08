@@ -4,16 +4,16 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const alertVariants = cva(
-    "relative w-full rounded-lg border px-4 py-3 text-sm [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7",
+    "relative w-full rounded-lg border px-4 py-3 text-sm [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7 select-text",
     {
         variants: {
             variant: {
                 default: "bg-background text-foreground",
                 destructive:
-                    "border-destructive/50 text-destructive bg-destructive/10 dark:border-destructive [&>svg]:text-destructive",
+                    "border-destructive/50 text-destructive bg-white dark:border-destructive [&>svg]:text-destructive",
                 warning:
-                    "border-yellow-500/50 text-yellow-700 dark:text-yellow-500 bg-yellow-50 dark:bg-yellow-900/10 [&>svg]:text-yellow-700 dark:[&>svg]:text-yellow-500",
-                info: "border-blue-500/50 text-muted-foreground bg-muted [&>svg]:text-primary",
+                    "border-yellow-500/50 text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 [&>svg]:text-yellow-700 dark:[&>svg]:text-yellow-400",
+                info: "border-blue-500/50 text-blue-900 dark:text-blue-100 bg-blue-50 dark:bg-blue-900/20 [&>svg]:text-blue-600 dark:[&>svg]:text-blue-400",
             },
         },
         defaultVariants: {

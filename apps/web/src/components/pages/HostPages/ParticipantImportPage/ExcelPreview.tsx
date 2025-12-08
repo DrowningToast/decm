@@ -4,17 +4,17 @@ import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTranslation } from "react-i18next";
-import type { EventRegistrationInvitationParticipantRequestItem } from "@decm/api";
+import type { EventRegistrationParticipantRequestItem } from "@decm/api";
 
 interface ExcelPreviewProps {
     file: File;
-    onConfirm: (participants: EventRegistrationInvitationParticipantRequestItem[]) => void;
+    onConfirm: (participants: EventRegistrationParticipantRequestItem[]) => void;
     onCancel: () => void;
     disabled?: boolean;
 }
 
 interface PreviewData {
-    [key: string]: string;
+    [key: string]: string | number;
 }
 
 // Fixed column names that Excel files must have
@@ -22,8 +22,46 @@ const REQUIRED_COLUMNS = {
     firstName: "first_name",
     lastName: "last_name",
     email: "email",
+};
+
+// Optional columns that can be included in Excel files
+const OPTIONAL_COLUMNS = {
     phoneNumber: "phone_number",
     academicInstitution: "academic_institution",
+};
+
+// All columns for display purposes
+const ALL_COLUMNS = {
+    ...REQUIRED_COLUMNS,
+    ...OPTIONAL_COLUMNS,
+};
+
+// Helper to normalize optional field: returns undefined if empty/null/whitespace
+const normalizeOptional = (value: unknown): string | undefined => {
+    if (value == null) return undefined;
+    const trimmed = String(value).trim();
+    return trimmed || undefined;
+};
+
+// Helper to build participant from Excel row data
+const buildParticipant = (row: PreviewData): EventRegistrationParticipantRequestItem => {
+    const participant: EventRegistrationParticipantRequestItem = {
+        first_name: String(row.first_name),
+        last_name: String(row.last_name),
+        email: String(row.email),
+    };
+
+    const phoneNumber = normalizeOptional(row.phone_number);
+    const academicInstitution = normalizeOptional(row.academic_institution);
+
+    if (phoneNumber) {
+        participant.phone_number = phoneNumber;
+    }
+    if (academicInstitution) {
+        participant.academic_institution = academicInstitution;
+    }
+
+    return participant;
 };
 
 export const ExcelPreview = ({
@@ -35,12 +73,14 @@ export const ExcelPreview = ({
     const { t } = useTranslation();
     const [previewData, setPreviewData] = useState<PreviewData[]>([]);
     const [validationError, setValidationError] = useState<string | null>(null);
+    const [missingColumns, setMissingColumns] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (file) {
             setIsLoading(true);
             setValidationError(null);
+            setMissingColumns([]);
             const reader = new FileReader();
 
             reader.onload = (e) => {
@@ -55,20 +95,18 @@ export const ExcelPreview = ({
                         const excelColumns = Object.keys(jsonData[0]);
 
                         // Validate that all required columns exist
-                        const missingColumns = Object.values(REQUIRED_COLUMNS).filter(
+                        const missing = Object.values(REQUIRED_COLUMNS).filter(
                             (col) => !excelColumns.includes(col),
                         );
 
-                        if (missingColumns.length > 0) {
+                        if (missing.length > 0) {
+                            setMissingColumns(missing);
                             setValidationError(
                                 t("participantImport.missingColumns", {
-                                    columns: missingColumns.join(", "),
+                                    columns: missing.join(", "),
                                 }),
                             );
                         } else {
-                            // Show only first 10 rows for preview
-                            // const preview = jsonData.slice(0, 10);
-                            console.log(jsonData);
                             setPreviewData(jsonData);
                         }
                     } else {
@@ -88,15 +126,7 @@ export const ExcelPreview = ({
 
     const handleConfirm = () => {
         if (validationError) return;
-
-        const request = previewData.map((row) => ({
-            first_name: row.first_name,
-            last_name: row.last_name,
-            email: row.email,
-            phone_number: row.phone_number,
-            academic_institution: row.academic_institution,
-        }));
-
+        const request = previewData.map(buildParticipant);
         onConfirm(request);
     };
 
@@ -121,61 +151,48 @@ export const ExcelPreview = ({
                 {t("participantImport.previewData")}
             </Typography>
 
-            {/* Validation Error */}
-            {validationError && (
+            {/* Missing Columns Error with Visual Indicator */}
+            {missingColumns.length > 0 && (
+                <Alert variant="destructive" className="mb-6">
+                    <AlertDescription>
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="destructive"
+                            className="font-semibold mb-3"
+                        >
+                            {t("participantImport.missingColumnsTitle")}
+                        </Typography>
+                        <div className="flex flex-wrap gap-2">
+                            {Object.values(REQUIRED_COLUMNS).map((col) => {
+                                const isMissing = missingColumns.includes(col);
+                                return (
+                                    <div
+                                        key={col}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-md border ${
+                                            isMissing
+                                                ? "bg-destructive/10 border-destructive text-destructive"
+                                                : "bg-primary/10 border-primary/30"
+                                        }`}
+                                    >
+                                        <span className="text-sm font-medium">
+                                            {isMissing ? "✗" : "✓"}
+                                        </span>
+                                        <span className="text-sm font-mono">{col}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </AlertDescription>
+                </Alert>
+            )}
+
+            {/* Other Validation Errors */}
+            {validationError && missingColumns.length === 0 && (
                 <Alert variant="destructive" className="mb-4">
                     <AlertDescription>{validationError}</AlertDescription>
                 </Alert>
             )}
-
-            {/* Required Format Info */}
-            <div className="mb-6 p-4 bg-muted/30 rounded-md">
-                <Typography
-                    variant="header"
-                    tag="h3"
-                    color="background"
-                    className="text-lg font-medium mb-2"
-                >
-                    {t("participantImport.requiredFormat")}
-                </Typography>
-                <Typography variant="text" tag="p" color="background" className="text-sm mb-2">
-                    {t("participantImport.requiredFormatDescription")}
-                </Typography>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(REQUIRED_COLUMNS).map(([key, value]) => (
-                        <div key={key} className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded-full bg-primary/10 flex items-center justify-center">
-                                <Typography
-                                    variant="text"
-                                    tag="span"
-                                    color="primary"
-                                    className="text-xs font-bold"
-                                >
-                                    {key.charAt(0).toUpperCase()}
-                                </Typography>
-                            </div>
-                            <div>
-                                <Typography
-                                    variant="text"
-                                    tag="p"
-                                    color="background"
-                                    className="font-medium"
-                                >
-                                    {value}
-                                </Typography>
-                                <Typography
-                                    variant="text"
-                                    tag="p"
-                                    color="background-alt"
-                                    className="text-xs"
-                                >
-                                    {t("participantImport.columnHeader")}
-                                </Typography>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
 
             {/* Preview Table */}
             {!validationError && (
@@ -192,7 +209,7 @@ export const ExcelPreview = ({
                     <table className="w-full border-collapse border border-border">
                         <thead>
                             <tr className="bg-primary">
-                                {Object.values(REQUIRED_COLUMNS).map((column) => (
+                                {Object.values(ALL_COLUMNS).map((column) => (
                                     <th
                                         key={column}
                                         className="border border-border p-2 text-left text-sm font-medium"
@@ -205,12 +222,12 @@ export const ExcelPreview = ({
                         <tbody>
                             {previewData.map((row, index) => (
                                 <tr key={index} className="bg-background">
-                                    {Object.values(REQUIRED_COLUMNS).map((column) => (
+                                    {Object.values(ALL_COLUMNS).map((column) => (
                                         <td
                                             key={column}
                                             className="border border-border p-2 text-sm"
                                         >
-                                            {row[column] || ""}
+                                            {row[column] !== undefined ? String(row[column]) : "-"}
                                         </td>
                                     ))}
                                 </tr>

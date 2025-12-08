@@ -16,6 +16,7 @@ import { authService } from "@/services/services";
 
 // Mock profile returned from the service (camelCase after transformation)
 const mockProfile = {
+    id: "profile-123",
     profileId: "profile-123",
     authenticationCredentialId: "cred-456",
     firstName: "John",
@@ -39,6 +40,7 @@ const mockProfile = {
     isBioPublic: false,
     isAcademicInstitutionPublic: false,
     isAcademicEmailPublic: false,
+    isProfilePicturePublic: false,
 };
 
 describe("useMyProfile", () => {

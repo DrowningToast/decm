@@ -15,16 +15,16 @@ import (
 
 // Request/Response structures
 type CreateEventRegistrationConfigRequest struct {
-	FinalCallForRegistration             *string `json:"final_call_for_registration,omitempty"`
-	RegistrationPassword                 *string `json:"registration_password,omitempty"`
-	FirstNameRequirementStatus           int32   `json:"first_name_requirement_status"`
-	LastNameRequirementStatus            int32   `json:"last_name_requirement_status"`
-	EmailRequirementStatus               int32   `json:"email_requirement_status"`
-	BioRequirementStatus                 int32   `json:"bio_requirement_status"`
-	PhoneNumberRequirementStatus         int32   `json:"phone_number_requirement_status"`
-	AddressRequirementStatus             int32   `json:"address_requirement_status"`
-	AcademicInstitutionRequirementStatus int32   `json:"academic_institution_requirement_status"`
-	AcademicEmailRequirementStatus       int32   `json:"academic_email_requirement_status"`
+	FinalCallForRegistration             *string `json:"final_call_for_registration,omitempty" validate:"omitempty"`
+	RegistrationPassword                 *string `json:"registration_password,omitempty" validate:"omitempty,min=8"`
+	FirstNameRequirementStatus           int32   `json:"first_name_requirement_status" validate:"required,oneof=0 1 2"`
+	LastNameRequirementStatus            int32   `json:"last_name_requirement_status" validate:"required,oneof=0 1 2"`
+	EmailRequirementStatus               int32   `json:"email_requirement_status" validate:"required,oneof=0 1 2"`
+	BioRequirementStatus                 int32   `json:"bio_requirement_status" validate:"required,oneof=0 1 2"`
+	PhoneNumberRequirementStatus         int32   `json:"phone_number_requirement_status" validate:"required,oneof=0 1 2"`
+	AddressRequirementStatus             int32   `json:"address_requirement_status" validate:"required,oneof=0 1 2"`
+	AcademicInstitutionRequirementStatus int32   `json:"academic_institution_requirement_status" validate:"required,oneof=0 1 2"`
+	AcademicEmailRequirementStatus       int32   `json:"academic_email_requirement_status" validate:"required,oneof=0 1 2"`
 }
 
 func (r *CreateEventRegistrationConfigRequest) IsValid() error {
@@ -39,7 +39,7 @@ func (r *CreateEventRegistrationConfigRequest) IsValid() error {
 // @Produce json
 // @Param event_id path string true "Event ID"
 // @Param request body CreateEventRegistrationConfigRequest true "Event registration config data"
-// @Success 200 {object} EventRegistrationConfigResponse
+// @Success 200 {object} EventRegistrationConfigViewModel
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
@@ -93,11 +93,10 @@ func (h *Handler) CreateEventRegistrationConfig(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	return ctx.Status(http.StatusOK).JSON(EventRegistrationConfigResponse{
+	return ctx.Status(http.StatusOK).JSON(EventRegistrationConfigViewModel{
 		ID:                                   config.ID,
 		EventID:                              config.EventID,
 		FinalCallForRegistration:             config.FinalCallForRegistration,
-		RegistrationPassword:                 config.RegistrationPassword,
 		FirstNameRequirementStatus:           EventRegistrationConfigRequirementStatus(config.FirstNameRequirementStatus),
 		LastNameRequirementStatus:            EventRegistrationConfigRequirementStatus(config.LastNameRequirementStatus),
 		EmailRequirementStatus:               EventRegistrationConfigRequirementStatus(config.EmailRequirementStatus),

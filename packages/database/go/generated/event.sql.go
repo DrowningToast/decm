@@ -195,9 +195,16 @@ SELECT
     is_ticket_transferable,
     created_at,
     updated_at,
-    event_status
+    event_status,
+    COALESCE(
+        (SELECT COUNT(event_attendees.id) 
+         FROM event_attendees 
+         WHERE event_attendees.event_id = events.id 
+           AND event_attendees.is_attendee_accepted::INTEGER = 1
+        ), 
+    0)::INTEGER AS attendees_count
 FROM events
-WHERE id = $1
+WHERE events.id = $1
 `
 
 type GetEventByIdRow struct {
@@ -224,6 +231,7 @@ type GetEventByIdRow struct {
 	CreatedAt                pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                pgtype.Timestamptz `json:"updated_at"`
 	EventStatus              EventStatus        `json:"event_status"`
+	AttendeesCount           int32              `json:"attendees_count"`
 }
 
 func (q *Queries) GetEventById(ctx context.Context, id uuid.UUID) (GetEventByIdRow, error) {
@@ -253,6 +261,7 @@ func (q *Queries) GetEventById(ctx context.Context, id uuid.UUID) (GetEventByIdR
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.EventStatus,
+		&i.AttendeesCount,
 	)
 	return i, err
 }
@@ -266,7 +275,7 @@ SELECT
         (SELECT COUNT(event_attendees.id) 
          FROM event_attendees 
          WHERE event_attendees.event_id = events.id 
-           AND event_attendees.is_attendee_accepted = 1
+           AND event_attendees.is_attendee_accepted::INTEGER = 1
         ), 
     0)::INTEGER AS attendees_count
 FROM events

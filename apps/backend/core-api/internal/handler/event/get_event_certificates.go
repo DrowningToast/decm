@@ -37,7 +37,7 @@ func (h Handler) GetEventCertificates(ctx *fiber.Ctx) error {
 	currentUser := ctx.Locals("user").(*auth.JwtClaims)
 
 	// Get certificates for the event
-	certificates, err := h.EventUc.GetEventCertificatesByEventID(ctx.UserContext(), eventID, currentUser)
+	certificates, err := h.EventUc.GetEventCertificatesByEventId(ctx.UserContext(), eventID, currentUser)
 	if err != nil {
 		return err
 	}

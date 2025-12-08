@@ -10,7 +10,7 @@ import { useEventCertificateConfig } from "@/components/pages/HostPages/EventPag
 import { useEventContract } from "@/hooks/events/useEventContracts";
 import { useSignEventCertificates } from "@/hooks/useSignEventCertificates";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { ExternalLinkIcon, CheckCircle, Clock } from "lucide-react";
+import { ChevronLeft, ExternalLinkIcon, CheckCircle, Clock } from "lucide-react";
 import { PasswordPinModal } from "@/components/ui/password-pin-modal";
 import { TextLabelValue } from "@/components/ui/text-label-value";
 import { DataTable } from "@/components/ui/data-table";
@@ -20,7 +20,6 @@ import SectionContainer from "@/components/container/SectionContainer";
 import { IssuerStatusBadge } from "./IssuerStatusBadge";
 import { IssuersStatus } from "./IssuersStatus";
 import { useAuth } from "@/context/AuthContext";
-import type { EntityEventCertificate } from "@decm/api";
 
 interface IssuerSignPageProps {
     eventId: string;
@@ -42,12 +41,12 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
 
     // Get current issuer's information
     const currentIssuer = eventIssuers?.find(
-        (issuer) => issuer.issuer_credential_id === currentUser?.authenticationCredentialId,
+        (issuer) => issuer.issuerCredentialId === currentUser?.authenticationCredentialId,
     );
 
     // Determine if current issuer has already signed
-    const hasCurrentIssuerSigned = currentIssuer && currentIssuer.is_signed === 1;
-    const isCurrentIssuerPending = currentIssuer && currentIssuer.is_signed === 0;
+    const hasCurrentIssuerSigned = currentIssuer && currentIssuer.isSigned;
+    const isCurrentIssuerPending = currentIssuer && !currentIssuer.isSigned;
 
     // Calculate total certificates to be signed
     const certificatesToSign =
@@ -91,12 +90,29 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen  text-white mt-12">
+            <div className="min-h-screen text-white flex flex-col gap-y-4 mb-8">
+                {/* Header */}
+                <header className="bg-[#ff6a39] shadow-lg">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between h-16 items-center">
+                            <div
+                                className="flex items-center gap-2 cursor-pointer"
+                                onClick={handleGoBack}
+                            >
+                                <ChevronLeft className="h-5 w-5" />
+                                <Typography variant="text" tag="span" color="foreground-alt">
+                                    {t("issuer.sign.backToDashboard")}
+                                </Typography>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
                 {/* Main Content */}
-                <SectionContainer>
-                    <main>
+                <SectionContainer className="mt-4">
+                    <main className="flex flex-col gap-y-8">
                         {/* Page Header */}
-                        <div className="mb-8">
+                        <div>
                             <Typography
                                 variant="header"
                                 tag="h1"
@@ -119,17 +135,25 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                 issuers={
                                     eventIssuers?.map((issuer) => ({
                                         id: issuer.id || "",
-                                        issuer_credential_id: issuer.issuer_credential_id || "",
-                                        is_signed: issuer.is_signed || 0,
+                                        issuer_credential_id: issuer.issuerCredentialId || "",
+                                        is_signed: issuer.isSigned ? 1 : 0,
+                                        issuerProfile: issuer.issuerProfile
+                                            ? {
+                                                  firstName: issuer.issuerProfile.firstName,
+                                                  lastName: issuer.issuerProfile.lastName,
+                                                  walletAddress: issuer.issuerProfile.walletAddress,
+                                                  googleConnectorRef:
+                                                      issuer.issuerProfile.googleConnectorRef,
+                                              }
+                                            : undefined,
                                     })) || []
                                 }
                                 currentIssuerId={currentUser?.profileId}
-                                className="mb-8"
                             />
                         )}
 
                         {/* Signing Details Section */}
-                        <div className="bg-[#1a1a1a] border border-[#333333] rounded-lg p-6 mb-8">
+                        <div className="bg-[#1a1a1a] border border-[#333333] rounded-lg p-6">
                             <Typography
                                 variant="header"
                                 tag="h2"
@@ -151,7 +175,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                         {currentIssuer ? (
                                             <div className="flex items-center space-x-2">
                                                 <IssuerStatusBadge
-                                                    isSigned={currentIssuer.is_signed || 0}
+                                                    isSigned={!!currentIssuer.isSigned}
                                                 />
                                                 {hasCurrentIssuerSigned && (
                                                     <Typography
@@ -241,9 +265,9 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                             </div>
 
                             {/* Right Column - Action Card */}
-                            <div className="lg:col-span-1">
+                            <div className="lg:col-span-1 flex flex-col gap-y-8">
                                 {/* Event Details Section */}
-                                <div className="bg-[#1a1a1a] border border-[#333333] rounded-lg p-6 mb-8 flex flex-col">
+                                <div className="bg-[#1a1a1a] border border-[#333333] rounded-lg p-6 flex flex-col">
                                     <Typography
                                         variant="header"
                                         tag="h2"
@@ -283,6 +307,103 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                         />
                                     </div>
                                 </div>
+
+                                {/* Event Certificates Section */}
+                                <SectionContainer className="px-0">
+                                    <div>
+                                        <Typography
+                                            variant="header"
+                                            tag="h2"
+                                            className="text-xl font-semibold text-white mb-4"
+                                        >
+                                            {isCurrentIssuerPending
+                                                ? t("issuer.sign.certificatesToSign")
+                                                : hasCurrentIssuerSigned
+                                                  ? t("issuer.sign.signedCertificates")
+                                                  : t("issuer.sign.eventCertificates")}{" "}
+                                            (
+                                            {eventCertificates?.filter((cert) => !cert.revoked_at)
+                                                .length || 0}
+                                            )
+                                        </Typography>
+
+                                        <DataTable
+                                            columns={CertificateColumns()}
+                                            data={
+                                                eventCertificates
+                                                    ?.filter(
+                                                        (
+                                                            cert,
+                                                        ): cert is typeof cert & {
+                                                            created_at: string;
+                                                            event_contract_address: string;
+                                                            event_id: string;
+                                                            id: string;
+                                                        } =>
+                                                            cert.id !== undefined &&
+                                                            cert.event_id !== undefined &&
+                                                            !cert.revoked_at &&
+                                                            cert.created_at !== undefined &&
+                                                            cert.event_contract_address !==
+                                                                undefined,
+                                                    )
+                                                    .map((cert) => {
+                                                        const firstName =
+                                                            cert.name?.split(" ")[0] || "";
+                                                        const lastName =
+                                                            cert.name
+                                                                ?.split(" ")
+                                                                .slice(1)
+                                                                .join(" ") || "";
+
+                                                        return {
+                                                            id: cert.id,
+                                                            event_id: cert.event_id,
+                                                            receiver_credential_id:
+                                                                cert.receiver_credential_id,
+                                                            receiver_email: cert.receiver_email,
+                                                            name: cert.name,
+                                                            academic_institution:
+                                                                cert.academic_institution,
+                                                            certificate_title:
+                                                                cert.certificate_title,
+                                                            certificate_subtitle:
+                                                                cert.certificate_subtitle,
+                                                            event_contract_address:
+                                                                cert.event_contract_address,
+                                                            event_certificate_address:
+                                                                cert.event_certificate_address,
+                                                            created_at: cert.created_at,
+                                                            revoked_at: cert.revoked_at,
+                                                            firstName,
+                                                            lastName,
+                                                            email: cert.receiver_email || "",
+                                                            academicInstitution:
+                                                                cert.academic_institution || "",
+                                                            issuedAt: cert.created_at,
+                                                            status: cert.revoked_at
+                                                                ? "rejected"
+                                                                : isCurrentIssuerPending
+                                                                  ? "pending_signature"
+                                                                  : "received",
+                                                        };
+                                                    }) || []
+                                            }
+                                            totalItems={eventCertificates?.length || 0}
+                                            currentPage={1}
+                                            pageSize={10}
+                                            onPageChange={() => {}}
+                                            onPageSizeChange={() => {}}
+                                            searchValue=""
+                                            onSearchChange={() => {}}
+                                            searchPlaceholder="Search certificates..."
+                                            sorting={[]}
+                                            onSortingChange={() => {}}
+                                            isLoading={false}
+                                            disablePagination
+                                        />
+                                    </div>
+                                </SectionContainer>
 
                                 <div className="bg-[#1a1a1a] border border-[#333333] p-6 rounded-lg shadow-lg space-y-6 sticky top-8">
                                     <div>
@@ -331,63 +452,6 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                             </div>
                         </div>
                     </main>
-                </SectionContainer>
-
-                {/* Event Certificates Section */}
-                <SectionContainer>
-                    <div>
-                        <Typography
-                            variant="header"
-                            tag="h2"
-                            className="text-xl font-semibold text-white mb-4"
-                        >
-                            {isCurrentIssuerPending
-                                ? t("issuer.sign.certificatesToSign")
-                                : hasCurrentIssuerSigned
-                                  ? t("issuer.sign.signedCertificates")
-                                  : t("issuer.sign.eventCertificates")}{" "}
-                            (
-                            {eventCertificates?.filter((cert) => cert.revoked_at === null).length ||
-                                0}
-                            )
-                        </Typography>
-
-                        <DataTable
-                            columns={CertificateColumns()}
-                            data={
-                                eventCertificates?.map((cert) => {
-                                    const firstName = cert.name?.split(" ")[0] || "";
-                                    const lastName = cert.name?.split(" ").slice(1).join(" ") || "";
-
-                                    return {
-                                        ...cert,
-                                        firstName,
-                                        lastName,
-                                        email: cert.receiver_email || "",
-                                        academicInstitution: cert.academic_institution || "",
-                                        issuedAt: cert.created_at,
-                                        status: cert.revoked_at
-                                            ? "rejected"
-                                            : isCurrentIssuerPending
-                                              ? "pending_signature"
-                                              : "received",
-                                    } as EntityEventCertificate;
-                                }) || []
-                            }
-                            totalItems={eventCertificates?.length || 0}
-                            currentPage={1}
-                            pageSize={10}
-                            onPageChange={() => {}}
-                            onPageSizeChange={() => {}}
-                            searchValue=""
-                            onSearchChange={() => {}}
-                            searchPlaceholder="Search certificates..."
-                            sorting={[]}
-                            onSortingChange={() => {}}
-                            isLoading={false}
-                            disablePagination
-                        />
-                    </div>
                 </SectionContainer>
 
                 {/* Password/PIN Modal */}

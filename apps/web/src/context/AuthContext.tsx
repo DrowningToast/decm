@@ -1,10 +1,10 @@
 import React, { createContext, useContext } from "react";
 import type { ReactNode } from "react";
-import type { Profile } from "@/services/AuthService/AuthService";
+import type { ProfileWithAuth } from "@/services/AuthService/AuthService";
 import { AxiosError } from "axios";
 import { useMyProfile } from "@/hooks/useMyProfile";
 
-export type AuthUser = Profile;
+export type AuthUser = ProfileWithAuth;
 interface AuthContextType {
     user: AuthUser | null;
     isFetching: boolean;

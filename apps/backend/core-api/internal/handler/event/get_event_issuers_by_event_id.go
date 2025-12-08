@@ -50,7 +50,7 @@ func (h *Handler) GetEventIssuersByEventID(ctx *fiber.Ctx) error {
 	var response []EventIssuerResponse
 	for _, issuer := range issuers {
 		issuerCredentialId := issuer.IssuerCredentialID
-		issuerProfile, err := h.ProfileUc.GetProfileByAuthenticationCredentialId(ctxWithTimeout, issuerCredentialId)
+		issuerProfile, authCredential, err := h.ProfileUc.GetProfileAndCredentialWithCredentialId(ctxWithTimeout, issuerCredentialId)
 		if err != nil {
 			// Check if err is already a customerror type
 			var customErr *customerror.Err
@@ -60,6 +60,11 @@ func (h *Handler) GetEventIssuersByEventID(ctx *fiber.Ctx) error {
 			// For non-custom errors, wrap as not found error
 			return customerror.Parse(&customerror.ErrNotFound, err)
 		}
+
+		// Add connector references and wallet address to profile
+		issuerProfile.GoogleConnectorRef = authCredential.GoogleConnectorRef
+		issuerProfile.GithubConnectorRef = authCredential.GithubConnectorRef
+		issuerProfile.WalletAddress = authCredential.WalletAddress
 
 		response = append(response, EventIssuerResponse{
 			ID:                 issuer.ID,

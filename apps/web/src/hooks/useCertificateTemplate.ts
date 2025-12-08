@@ -31,7 +31,6 @@ export interface UseCertificateTemplateReturn {
     missingMandatoryKeywords: AvailableKeyword[];
 }
 
-const DEFAULT_SEARCH_KEYS = ["{{ name }}", "{{ eventName }}"];
 const DEFAULT_CERT_WIDTH = 1920;
 const DEFAULT_CERT_HEIGHT = 1080;
 
@@ -42,6 +41,9 @@ const DEFAULT_AVAILABLE_KEYWORDS: AvailableKeyword[] = [
     { keyword: "{{ certificateTitle }}", mandatory: false },
     { keyword: "{{ certificateSubtitle }}", mandatory: false },
 ];
+
+// Search for all available keywords by default
+const DEFAULT_SEARCH_KEYS = DEFAULT_AVAILABLE_KEYWORDS.map((kw) => kw.keyword);
 
 export const useCertificateTemplate = ({
     searchKeys = DEFAULT_SEARCH_KEYS,
@@ -91,7 +93,6 @@ export const useCertificateTemplate = ({
             });
 
             const newDetectedKeywords: DetectedKeyword[] = [];
-
             searchKeys.forEach((key) => {
                 const escapedKey = CSS.escape(key);
                 const placeholder = clonedSvgElement.querySelector(
@@ -173,6 +174,10 @@ export const useCertificateTemplate = ({
         (kw) => !detectedKeywordStrings.includes(kw.keyword),
     );
     const hasMissingMandatory = missingMandatoryKeywords.length > 0;
+
+    // console.log("detectedKeywords", detectedKeywords);
+    // console.log("missingMandatoryKeywords", missingMandatoryKeywords);
+    // console.log("hasMissingMandatory", hasMissingMandatory);
 
     return {
         svgFile,

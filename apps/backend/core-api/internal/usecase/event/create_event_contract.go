@@ -4,6 +4,8 @@ import (
 	"context"
 	"decm-database/go/generated"
 
+	"apps/backend/core-api/internal/entity"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -15,7 +17,7 @@ type CreateEventContractParams struct {
 	CertificateContractAddress   pgtype.Text
 }
 
-func (u *EventUsecase) CreateEventContract(ctx context.Context, eventID uuid.UUID, params CreateEventContractParams) (*generated.EventContract, error) {
+func (u *EventUsecase) CreateEventContract(ctx context.Context, eventID uuid.UUID, params CreateEventContractParams) (*entity.EventContract, error) {
 	_, err := u.EventDataGateway.GetEventById(ctx, eventID)
 	if err != nil {
 		return nil, err

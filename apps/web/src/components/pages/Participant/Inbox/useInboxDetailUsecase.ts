@@ -1,7 +1,9 @@
 import { useInboxMessage } from "@/hooks/inbox/useInboxMessage";
+import { type InboxMessageDetail } from "@/services/InboxService/InboxService";
 import { EntityInboxMessageType } from "@decm/api";
+import { useTranslation } from "react-i18next";
 
-export type InboxContentType = "event-invitation" | "certificate";
+export type InboxContentType = "event-invitation" | "certificate" | "general";
 
 export interface InboxDetail {
     id: string;
@@ -14,36 +16,118 @@ export interface InboxDetail {
     certificateId?: string;
     description?: string;
     isUserInEvent?: boolean;
+    // Action status fields
+    acceptedAt?: Date;
+    tokenId?: string;
 }
 
 interface UseInboxDetailOptions {
     inboxId: string;
 }
 
-const deriveStatus = (message: {
-    is_read?: number;
-    cancelled_at?: string;
-    deleted_at?: string;
-    hidden_at?: string;
-    valid_until?: string;
-}): "pending" | "available" | "expired" | "action-required" => {
-    if (message.cancelled_at) return "expired";
-    if (message.valid_until && new Date(message.valid_until) < new Date()) return "expired";
-    if (message.is_read === 0) return "action-required";
+const deriveStatus = (
+    message: InboxMessageDetail,
+): "pending" | "available" | "expired" | "action-required" => {
+    // Check for expired status based on message type
+    if (
+        message.entityInboxMessageType ===
+        EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation
+    ) {
+        if (message.cancelledAt) return "expired";
+        if (message.validUntil && message.validUntil < new Date()) return "expired";
+    }
+    if (
+        message.entityInboxMessageType ===
+        EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation
+    ) {
+        if (message.revokedAt) return "expired";
+    }
+    if (!message.isRead) return "action-required";
     return "available";
 };
 
-const deriveContentType = (messageType?: EntityInboxMessageType): InboxContentType => {
-    if (messageType === EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation) {
-        return "event-invitation";
+const deriveContentType = (entityInboxMessageType: EntityInboxMessageType): InboxContentType => {
+    switch (entityInboxMessageType) {
+        case EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation:
+            return "event-invitation";
+        case EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation:
+            return "certificate";
+        case EntityInboxMessageType.InboxMessageTypeGeneral:
+        default:
+            return "general";
     }
-    if (messageType === EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation) {
-        return "certificate";
+};
+
+const formatDate = (date: Date): string => {
+    return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+};
+
+const getMessageTitle = (
+    entityInboxMessageType: EntityInboxMessageType,
+    t: ReturnType<typeof useTranslation>["t"],
+): string => {
+    switch (entityInboxMessageType) {
+        case EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation:
+            return t(
+                "participant.inbox.messageType.eventRegistrationInvitation",
+                "Event Registration Invitation",
+            );
+        case EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation:
+            return t(
+                "participant.inbox.messageType.certificateInvitation",
+                "Certificate Invitation",
+            );
+        case EntityInboxMessageType.InboxMessageTypeGeneral:
+        default:
+            return t("participant.inbox.messageType.general", "Message");
     }
-    return "event-invitation";
+};
+
+const mapInboxMessageDetailToInboxDetail = (
+    message: InboxMessageDetail,
+    t: ReturnType<typeof useTranslation>["t"],
+): InboxDetail => {
+    const base = {
+        id: message.id,
+        title: getMessageTitle(message.entityInboxMessageType, t),
+        sender: message.senderCredentialEmail ?? message.senderCredentialWalletAddress ?? "Unknown",
+        date: formatDate(message.createdAt),
+        status: deriveStatus(message),
+        contentType: deriveContentType(message.entityInboxMessageType),
+        description: message.messageContent,
+    };
+
+    // Add type-specific fields
+    if (
+        message.entityInboxMessageType ===
+        EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation
+    ) {
+        return { ...base, eventId: message.eventId, acceptedAt: message.acceptedAt };
+    }
+    if (
+        message.entityInboxMessageType ===
+        EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation
+    ) {
+        return {
+            ...base,
+            certificateId: message.certificateId,
+            tokenId: message.tokenId,
+            isUserInEvent: message.hasParticipantJoinedEvent,
+        };
+    }
+
+    return base;
 };
 
 export const useInboxDetailUsecase = (options: UseInboxDetailOptions) => {
+    const { t } = useTranslation();
+
     // Fetch inbox message from API
     const {
         data: apiMessage,
@@ -55,26 +139,7 @@ export const useInboxDetailUsecase = (options: UseInboxDetailOptions) => {
 
     // Transform API response to match InboxDetail interface
     const inboxDetail: InboxDetail | null = apiMessage
-        ? {
-              id: apiMessage.id ?? "",
-              title:
-                  apiMessage.message_type ===
-                  EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation
-                      ? "Event Registration Invitation"
-                      : apiMessage.message_type ===
-                          EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation
-                        ? "Certificate Invitation"
-                        : "Message",
-              sender:
-                  apiMessage.sender_credential_email ??
-                  apiMessage.sender_credential_wallet_address ??
-                  "Unknown",
-              date: apiMessage.created_at ?? "",
-              status: deriveStatus(apiMessage),
-              contentType: deriveContentType(apiMessage.message_type),
-              eventId: apiMessage.event_id,
-              description: apiMessage.message_content,
-          }
+        ? mapInboxMessageDetailToInboxDetail(apiMessage, t)
         : null;
 
     return { inboxDetail, isLoading, error };

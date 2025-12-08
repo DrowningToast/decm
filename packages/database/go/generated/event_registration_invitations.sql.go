@@ -34,7 +34,7 @@ INSERT INTO event_registration_invitations (
     $8,
     $9
 )
-RETURNING id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at
+RETURNING id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at, accepted_at
 `
 
 type CreateEventRegistrationInvitationParams struct {
@@ -76,6 +76,7 @@ func (q *Queries) CreateEventRegistrationInvitation(ctx context.Context, arg Cre
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.CancelledAt,
+		&i.AcceptedAt,
 	)
 	return i, err
 }
@@ -103,6 +104,7 @@ SELECT
     event_registration_invitations.created_at as event_registration_invitation_created_at,
     event_registration_invitations.updated_at as event_registration_invitation_updated_at,
     event_registration_invitations.cancelled_at as event_registration_invitation_cancelled_at,
+    event_registration_invitations.accepted_at as event_registration_invitation_accepted_at,
     inbox_messages.id as inbox_message_id,
     inbox_messages.id as sender_credential_id,
     inbox_messages.receiver_credential_id as receiver_credential_id,
@@ -148,6 +150,7 @@ type GetEventRegistrationInvitationByEventIdAndCredentialIdRow struct {
 	EventRegistrationInvitationCreatedAt   pgtype.Timestamptz `json:"event_registration_invitation_created_at"`
 	EventRegistrationInvitationUpdatedAt   pgtype.Timestamptz `json:"event_registration_invitation_updated_at"`
 	EventRegistrationInvitationCancelledAt pgtype.Timestamptz `json:"event_registration_invitation_cancelled_at"`
+	EventRegistrationInvitationAcceptedAt  pgtype.Timestamptz `json:"event_registration_invitation_accepted_at"`
 	InboxMessageID                         uuid.UUID          `json:"inbox_message_id"`
 	SenderCredentialID                     uuid.UUID          `json:"sender_credential_id"`
 	ReceiverCredentialID                   pgtype.UUID        `json:"receiver_credential_id"`
@@ -184,6 +187,7 @@ func (q *Queries) GetEventRegistrationInvitationByEventIdAndCredentialId(ctx con
 		&i.EventRegistrationInvitationCreatedAt,
 		&i.EventRegistrationInvitationUpdatedAt,
 		&i.EventRegistrationInvitationCancelledAt,
+		&i.EventRegistrationInvitationAcceptedAt,
 		&i.InboxMessageID,
 		&i.SenderCredentialID,
 		&i.ReceiverCredentialID,
@@ -202,7 +206,7 @@ func (q *Queries) GetEventRegistrationInvitationByEventIdAndCredentialId(ctx con
 }
 
 const GetEventRegistrationInvitationByID = `-- name: GetEventRegistrationInvitationByID :one
-SELECT id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at FROM event_registration_invitations WHERE id = $1
+SELECT id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at, accepted_at FROM event_registration_invitations WHERE id = $1
 `
 
 func (q *Queries) GetEventRegistrationInvitationByID(ctx context.Context, id uuid.UUID) (EventRegistrationInvitation, error) {
@@ -222,12 +226,13 @@ func (q *Queries) GetEventRegistrationInvitationByID(ctx context.Context, id uui
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.CancelledAt,
+		&i.AcceptedAt,
 	)
 	return i, err
 }
 
 const GetEventRegistrationInvitationByInboxMessageID = `-- name: GetEventRegistrationInvitationByInboxMessageID :one
-SELECT id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at FROM event_registration_invitations 
+SELECT id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at, accepted_at FROM event_registration_invitations 
 WHERE inbox_message_id = $1
 AND cancelled_at IS NULL
 ORDER BY created_at DESC
@@ -250,12 +255,13 @@ func (q *Queries) GetEventRegistrationInvitationByInboxMessageID(ctx context.Con
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.CancelledAt,
+		&i.AcceptedAt,
 	)
 	return i, err
 }
 
 const GetEventRegistrationInvitationsByEventID = `-- name: GetEventRegistrationInvitationsByEventID :many
-SELECT id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at FROM event_registration_invitations 
+SELECT id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at, accepted_at FROM event_registration_invitations 
 WHERE event_id = $1 
 AND cancelled_at IS NULL
 ORDER BY created_at DESC
@@ -284,6 +290,7 @@ func (q *Queries) GetEventRegistrationInvitationsByEventID(ctx context.Context, 
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.CancelledAt,
+			&i.AcceptedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -306,9 +313,10 @@ SET
     email = $6,
     phone_number = $7,
     academic_institution = $8,
+    accepted_at = $9,
     updated_at = NOW()
-WHERE id = $9
-RETURNING id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at
+WHERE id = $10
+RETURNING id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at, accepted_at
 `
 
 type UpdateEventRegistrationInvitationParams struct {
@@ -320,6 +328,7 @@ type UpdateEventRegistrationInvitationParams struct {
 	Email               pgtype.Text        `json:"email"`
 	PhoneNumber         pgtype.Text        `json:"phone_number"`
 	AcademicInstitution pgtype.Text        `json:"academic_institution"`
+	AcceptedAt          pgtype.Timestamptz `json:"accepted_at"`
 	ID                  uuid.UUID          `json:"id"`
 }
 
@@ -333,6 +342,7 @@ func (q *Queries) UpdateEventRegistrationInvitation(ctx context.Context, arg Upd
 		arg.Email,
 		arg.PhoneNumber,
 		arg.AcademicInstitution,
+		arg.AcceptedAt,
 		arg.ID,
 	)
 	var i EventRegistrationInvitation
@@ -350,6 +360,43 @@ func (q *Queries) UpdateEventRegistrationInvitation(ctx context.Context, arg Upd
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.CancelledAt,
+		&i.AcceptedAt,
+	)
+	return i, err
+}
+
+const UpdateEventRegistrationInvitationAcceptedStatus = `-- name: UpdateEventRegistrationInvitationAcceptedStatus :one
+UPDATE event_registration_invitations 
+SET 
+    accepted_at = $1,
+    updated_at = NOW()
+WHERE id = $2
+RETURNING id, event_id, inbox_message_id, valid_until, code, first_name, last_name, email, phone_number, academic_institution, created_at, updated_at, cancelled_at, accepted_at
+`
+
+type UpdateEventRegistrationInvitationAcceptedStatusParams struct {
+	AcceptedAt pgtype.Timestamptz `json:"accepted_at"`
+	ID         uuid.UUID          `json:"id"`
+}
+
+func (q *Queries) UpdateEventRegistrationInvitationAcceptedStatus(ctx context.Context, arg UpdateEventRegistrationInvitationAcceptedStatusParams) (EventRegistrationInvitation, error) {
+	row := q.db.QueryRow(ctx, UpdateEventRegistrationInvitationAcceptedStatus, arg.AcceptedAt, arg.ID)
+	var i EventRegistrationInvitation
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.InboxMessageID,
+		&i.ValidUntil,
+		&i.Code,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.AcademicInstitution,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.CancelledAt,
+		&i.AcceptedAt,
 	)
 	return i, err
 }

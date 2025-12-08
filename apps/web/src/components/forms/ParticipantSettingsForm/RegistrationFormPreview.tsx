@@ -120,7 +120,8 @@ export const RegistrationFormPreview = ({ settings }: RegistrationFormPreviewPro
             {/* <div className="rounded-lg border bg-muted/20 p-6 space-y-6"> */}
             {/* Event Settings Info */}
             <div className="flex flex-wrap gap-4 pb-4 border-b">
-                {settings.isBookingRequired && (
+                {/* TODO */}
+                {/* {settings.isBookingRequired && (
                     <div className="flex items-center space-x-2 px-3 py-1.5 rounded-md bg-background border">
                         <Typography
                             variant="text"
@@ -130,7 +131,7 @@ export const RegistrationFormPreview = ({ settings }: RegistrationFormPreviewPro
                             {t("participantSettings.preview.bookingRequired")}
                         </Typography>
                     </div>
-                )}
+                )} */}
                 {settings.finalCallRegistrationDate && (
                     <div className="flex items-center space-x-2 px-3 py-1.5 rounded-md bg-background border">
                         <Typography
@@ -143,7 +144,7 @@ export const RegistrationFormPreview = ({ settings }: RegistrationFormPreviewPro
                         </Typography>
                     </div>
                 )}
-                {settings.isTicketTransferable && (
+                {/* {settings.isTicketTransferable && (
                     <div className="flex items-center space-x-2 px-3 py-1.5 rounded-md bg-background border">
                         <Typography
                             variant="text"
@@ -153,7 +154,7 @@ export const RegistrationFormPreview = ({ settings }: RegistrationFormPreviewPro
                             {t("participantSettings.preview.transferable")}
                         </Typography>
                     </div>
-                )}
+                )} */}
             </div>
 
             {/* Basic Information Fields */}

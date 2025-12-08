@@ -9,7 +9,65 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const AddParticipant = `-- name: AddParticipant :one
+INSERT INTO event_attendees (event_id, attendee_credential_id, contract_address, is_attendee_accepted, first_name, last_name, email, bio, phone_number, address, academic_institution, academic_email)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+RETURNING id, event_id, attendee_credential_id, contract_address, is_attendee_accepted, first_name, last_name, email, bio, phone_number, address, academic_institution, academic_email, created_at, updated_at
+`
+
+type AddParticipantParams struct {
+	EventID              uuid.UUID   `json:"event_id"`
+	AttendeeCredentialID uuid.UUID   `json:"attendee_credential_id"`
+	ContractAddress      string      `json:"contract_address"`
+	IsAttendeeAccepted   int32       `json:"is_attendee_accepted"`
+	FirstName            pgtype.Text `json:"first_name"`
+	LastName             pgtype.Text `json:"last_name"`
+	Email                pgtype.Text `json:"email"`
+	Bio                  pgtype.Text `json:"bio"`
+	PhoneNumber          pgtype.Text `json:"phone_number"`
+	Address              pgtype.Text `json:"address"`
+	AcademicInstitution  pgtype.Text `json:"academic_institution"`
+	AcademicEmail        pgtype.Text `json:"academic_email"`
+}
+
+func (q *Queries) AddParticipant(ctx context.Context, arg AddParticipantParams) (EventAttendee, error) {
+	row := q.db.QueryRow(ctx, AddParticipant,
+		arg.EventID,
+		arg.AttendeeCredentialID,
+		arg.ContractAddress,
+		arg.IsAttendeeAccepted,
+		arg.FirstName,
+		arg.LastName,
+		arg.Email,
+		arg.Bio,
+		arg.PhoneNumber,
+		arg.Address,
+		arg.AcademicInstitution,
+		arg.AcademicEmail,
+	)
+	var i EventAttendee
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.AttendeeCredentialID,
+		&i.ContractAddress,
+		&i.IsAttendeeAccepted,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.Bio,
+		&i.PhoneNumber,
+		&i.Address,
+		&i.AcademicInstitution,
+		&i.AcademicEmail,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
 
 const GetEventAttendeeByEventIDAndCredentialID = `-- name: GetEventAttendeeByEventIDAndCredentialID :one
 SELECT id, event_id, attendee_credential_id, contract_address, is_attendee_accepted, first_name, last_name, email, bio, phone_number, address, academic_institution, academic_email, created_at, updated_at
@@ -44,4 +102,75 @@ func (q *Queries) GetEventAttendeeByEventIDAndCredentialID(ctx context.Context, 
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const ListEventAttendeesByEventID = `-- name: ListEventAttendeesByEventID :many
+SELECT
+    ea.id,
+    ea.event_id,
+    ea.attendee_credential_id,
+    ea.contract_address,
+    ea.is_attendee_accepted,
+    ea.first_name,
+    ea.last_name,
+    ea.email,
+    ea.phone_number,
+    ea.academic_institution,
+    ea.created_at,
+    ea.updated_at,
+    ac.wallet_address
+FROM event_attendees ea
+INNER JOIN authentication_credentials ac ON ea.attendee_credential_id = ac.id
+WHERE ea.event_id = $1
+ORDER BY ea.created_at DESC
+`
+
+type ListEventAttendeesByEventIDRow struct {
+	ID                   uuid.UUID          `json:"id"`
+	EventID              uuid.UUID          `json:"event_id"`
+	AttendeeCredentialID uuid.UUID          `json:"attendee_credential_id"`
+	ContractAddress      string             `json:"contract_address"`
+	IsAttendeeAccepted   int32              `json:"is_attendee_accepted"`
+	FirstName            pgtype.Text        `json:"first_name"`
+	LastName             pgtype.Text        `json:"last_name"`
+	Email                pgtype.Text        `json:"email"`
+	PhoneNumber          pgtype.Text        `json:"phone_number"`
+	AcademicInstitution  pgtype.Text        `json:"academic_institution"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
+	WalletAddress        string             `json:"wallet_address"`
+}
+
+func (q *Queries) ListEventAttendeesByEventID(ctx context.Context, eventID uuid.UUID) ([]ListEventAttendeesByEventIDRow, error) {
+	rows, err := q.db.Query(ctx, ListEventAttendeesByEventID, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListEventAttendeesByEventIDRow{}
+	for rows.Next() {
+		var i ListEventAttendeesByEventIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.EventID,
+			&i.AttendeeCredentialID,
+			&i.ContractAddress,
+			&i.IsAttendeeAccepted,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.PhoneNumber,
+			&i.AcademicInstitution,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.WalletAddress,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

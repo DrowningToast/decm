@@ -1,10 +1,10 @@
-import { coreApiClient } from "@/lib/api/api";
 import { queryClient } from "@/lib/api/queryClient";
 import { useNavigate } from "@/router";
-import type { EventconfigUpdateEventRegistrationConfigRequest } from "@decm/api";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { QUERY_KEY } from "@/lib/queryKeys";
+import { eventRegistrationService } from "@/services/services";
+import type { EventRegistrationConfiguration } from "@/services/EventRegistration/EventRegistration";
 
 export function useUpdateParticipantSetting(eventId: string) {
     const navigate = useNavigate();
@@ -12,18 +12,12 @@ export function useUpdateParticipantSetting(eventId: string) {
     const { mutateAsync: _updateParticipantSetting, isPending: isUpdatingParticipantSetting } =
         useMutation({
             mutationKey: ["update-participant-setting"],
-            mutationFn: async (
-                participantSetting: EventconfigUpdateEventRegistrationConfigRequest,
-            ) => {
+            mutationFn: async (configuration: EventRegistrationConfiguration) => {
                 try {
-                    const res = await coreApiClient.v1.updateEventRegistrationConfig(
-                        {
-                            eventId,
-                        },
-                        participantSetting,
+                    return await eventRegistrationService.updateConfiguration(
+                        eventId,
+                        configuration,
                     );
-
-                    return res;
                 } catch (error) {
                     console.error(error);
                     throw error;
@@ -34,11 +28,9 @@ export function useUpdateParticipantSetting(eventId: string) {
             },
         });
 
-    async function updateParticipantSetting(
-        participantSetting: EventconfigUpdateEventRegistrationConfigRequest,
-    ) {
+    async function updateParticipantSetting(configuration: EventRegistrationConfiguration) {
         try {
-            await _updateParticipantSetting(participantSetting);
+            await _updateParticipantSetting(configuration);
             toast.success("Participant setting updated successfully");
             navigate("/host/events/:eventId", {
                 params: {

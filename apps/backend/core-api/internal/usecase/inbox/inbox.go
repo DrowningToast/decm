@@ -10,6 +10,7 @@ import (
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 
+	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
 )
 
@@ -18,6 +19,8 @@ type InboxUsecase struct {
 	InboxMessageDg                datagateway.InboxMessageDataGateway
 	EventRegistrationInvitationDg datagateway.EventRegistrationInvitationDataGateway
 	EventDg                       eventdatagateway.EventDataGateway
+	EventCertificateDg            eventdatagateway.EventCertificateDataGateway
+	EventAttendeeDg               datagateway.EventAttendeeDataGateway
 }
 
 func NewInboxUsecase(
@@ -25,12 +28,16 @@ func NewInboxUsecase(
 	inboxMessageDg datagateway.InboxMessageDataGateway,
 	eventRegistrationInvitationDg datagateway.EventRegistrationInvitationDataGateway,
 	eventDg eventdatagateway.EventDataGateway,
+	eventCertificateDg eventdatagateway.EventCertificateDataGateway,
+	eventAttendeeDg datagateway.EventAttendeeDataGateway,
 ) *InboxUsecase {
 	return &InboxUsecase{
 		AuthenticationCredentialDg:    authenticationCredentialDg,
 		InboxMessageDg:                inboxMessageDg,
 		EventRegistrationInvitationDg: eventRegistrationInvitationDg,
 		EventDg:                       eventDg,
+		EventCertificateDg:            eventCertificateDg,
+		EventAttendeeDg:               eventAttendeeDg,
 	}
 }
 
@@ -66,6 +73,7 @@ type InboxMessagesViewModel struct {
 	ReceiverEmail                 *string                 `json:"receiver_email,omitempty"`
 	MessageType                   entity.InboxMessageType `json:"message_type"`
 	MessageContent                string                  `json:"message_content"`
+	MessageContentFallback        *string                 `json:"message_content_fallback,omitempty"`
 	IsRead                        int                     `json:"is_read"`
 	CreatedAt                     time.Time               `json:"created_at"`
 	UpdatedAt                     time.Time               `json:"updated_at"`
@@ -82,17 +90,18 @@ func (uc *InboxUsecase) ToViewModel(ctx context.Context, inboxMessage entity.Inb
 		return nil, customerror.Parse(&customerror.ErrNotFound, err)
 	}
 	return &InboxMessagesViewModel{
-		ID:                    inboxMessage.Id,
-		ReceiverWalletAddress: inboxMessage.ReceiverWalletAddress,
-		ReceiverEmail:         inboxMessage.ReceiverEmail,
-		MessageType:           entity.InboxMessageType(inboxMessage.MessageType),
-		MessageContent:        inboxMessage.MessageContent,
-		IsRead:                inboxMessage.IsRead,
-		CreatedAt:             inboxMessage.CreatedAt,
-		UpdatedAt:             inboxMessage.UpdatedAt,
-		HiddenAt:              inboxMessage.HiddenAt,
-		DeletedAt:             inboxMessage.DeletedAt,
-		SenderCredentialEmail: sender.GoogleConnectorRef,
+		ID:                     inboxMessage.Id,
+		ReceiverWalletAddress:  inboxMessage.ReceiverWalletAddress,
+		ReceiverEmail:          inboxMessage.ReceiverEmail,
+		MessageType:            entity.InboxMessageType(inboxMessage.MessageType),
+		MessageContent:         inboxMessage.MessageContent,
+		MessageContentFallback: inboxMessage.FallbackMessageContent,
+		IsRead:                 inboxMessage.IsRead,
+		CreatedAt:              inboxMessage.CreatedAt,
+		UpdatedAt:              inboxMessage.UpdatedAt,
+		HiddenAt:               inboxMessage.HiddenAt,
+		DeletedAt:              inboxMessage.DeletedAt,
+		SenderCredentialEmail:  sender.GoogleConnectorRef,
 	}, nil
 }
 
@@ -108,19 +117,25 @@ type InboxMessagesEventRegistrationInvitationViewModel struct {
 	PhoneNumber         *string    `json:"phone_number,omitempty"`
 	AcademicInstitution *string    `json:"academic_institution,omitempty"`
 
+	AcceptedAt *time.Time `json:"accepted_at,omitempty"`
+
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 	CancelledAt *time.Time `json:"cancelled_at,omitempty"`
 }
 
-func (uc *InboxUsecase) ToWithEventRegistrationInvitationViewModel(ctx context.Context, inboxMessage entity.InboxMessage, eventRegistrationInvitation entity.EventRegistrationInvitation, event entity.Event) (*InboxMessagesEventRegistrationInvitationViewModel, error) {
+func (uc *InboxUsecase) ToWithEventRegistrationInvitationViewModel(ctx context.Context, inboxMessage entity.InboxMessage, eventRegistrationInvitation entity.EventRegistrationInvitation, event entity.Event, eventAttendee *entity.EventAttendee) (*InboxMessagesEventRegistrationInvitationViewModel, error) {
 	inboxMessageViewModel, err := uc.ToViewModel(ctx, inboxMessage)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to convert inbox message to view model")
+	}
+	var acceptedAt *time.Time = nil
+	if eventAttendee != nil {
+		acceptedAt = &eventAttendee.CreatedAt
 	}
 	return &InboxMessagesEventRegistrationInvitationViewModel{
 		InboxMessagesViewModel: *inboxMessageViewModel,
-		EventId:                event.ID,
+		EventId:                event.Id,
 		ValidUntil:             eventRegistrationInvitation.ValidUntil,
 		Code:                   eventRegistrationInvitation.Code,
 		FirstName:              eventRegistrationInvitation.FirstName,
@@ -131,5 +146,49 @@ func (uc *InboxUsecase) ToWithEventRegistrationInvitationViewModel(ctx context.C
 		CreatedAt:              eventRegistrationInvitation.CreatedAt,
 		UpdatedAt:              eventRegistrationInvitation.UpdatedAt,
 		CancelledAt:            eventRegistrationInvitation.CancelledAt,
+		AcceptedAt:             acceptedAt,
+	}, nil
+}
+
+type InboxMessageCertificateInvitationViewModel struct {
+	InboxMessagesViewModel
+
+	EventName        string    `json:"event_name"`
+	EventId          uuid.UUID `json:"event_id"`
+	CertificateId    uuid.UUID `json:"certificate_id"`
+	CertificateTitle *string   `json:"certificate_title,omitempty"`
+	TokenId          *string   `json:"token_id,omitempty"`
+
+	HasParticipantJoinedEvent bool `json:"has_participant_joined_event"`
+
+	CreatedAt time.Time `json:"created_at"`
+
+	RevokedAt *time.Time `json:"revoked_at,omitempty"`
+}
+
+func (uc *InboxUsecase) ToWithCertificateInvitationViewModel(ctx context.Context, inboxMessage entity.InboxMessage, eventCertificate entity.EventCertificate, user auth.JwtClaims) (*InboxMessageCertificateInvitationViewModel, error) {
+	// verify event type
+	if inboxMessage.MessageType != entity.InboxMessageTypeEventCertificateInvitation {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid message type"))
+	}
+	inboxMessageViewModel, err := uc.ToViewModel(ctx, inboxMessage)
+	if err != nil {
+		return nil, err
+	}
+	// check if the user has joined or not
+	eventAttendee, err := uc.EventAttendeeDg.GetEventAttendeeByEventIdAndCredentialId(ctx, eventCertificate.EventId, user.UserId)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get event attendee by event id and credential id")
+	}
+	return &InboxMessageCertificateInvitationViewModel{
+		InboxMessagesViewModel:    *inboxMessageViewModel,
+		EventName:                 *eventCertificate.Name,
+		CertificateId:             eventCertificate.Id,
+		CertificateTitle:          eventCertificate.CertificateTitle,
+		EventId:                   eventCertificate.EventId,
+		CreatedAt:                 eventCertificate.CreatedAt,
+		RevokedAt:                 eventCertificate.RevokedAt,
+		TokenId:                   eventCertificate.CertificateTokenId,
+		HasParticipantJoinedEvent: eventAttendee != nil,
 	}, nil
 }

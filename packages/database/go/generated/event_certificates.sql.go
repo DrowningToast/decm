@@ -37,7 +37,7 @@ INSERT INTO event_certificates (
     $9,
     $10,
     $11
-) RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at
+) RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id
 `
 
 type CreateEventCertificateParams struct {
@@ -84,6 +84,7 @@ func (q *Queries) CreateEventCertificate(ctx context.Context, arg CreateEventCer
 		&i.CertificateDigest,
 		&i.CreatedAt,
 		&i.RevokedAt,
+		&i.InboxMessageID,
 	)
 	return i, err
 }
@@ -122,7 +123,7 @@ func (q *Queries) GetAllEventCertificateIDsByEventID(ctx context.Context, eventI
 }
 
 const GetEventCertificateByID = `-- name: GetEventCertificateByID :one
-SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at FROM event_certificates WHERE id = $1
+SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id FROM event_certificates WHERE id = $1
 `
 
 func (q *Queries) GetEventCertificateByID(ctx context.Context, id uuid.UUID) (EventCertificate, error) {
@@ -143,12 +144,40 @@ func (q *Queries) GetEventCertificateByID(ctx context.Context, id uuid.UUID) (Ev
 		&i.CertificateDigest,
 		&i.CreatedAt,
 		&i.RevokedAt,
+		&i.InboxMessageID,
+	)
+	return i, err
+}
+
+const GetEventCertificateByInboxMessageID = `-- name: GetEventCertificateByInboxMessageID :one
+SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id FROM event_certificates WHERE inbox_message_id = $1
+`
+
+func (q *Queries) GetEventCertificateByInboxMessageID(ctx context.Context, inboxMessageID pgtype.UUID) (EventCertificate, error) {
+	row := q.db.QueryRow(ctx, GetEventCertificateByInboxMessageID, inboxMessageID)
+	var i EventCertificate
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.ReceiverCredentialID,
+		&i.ReceiverEmail,
+		&i.Name,
+		&i.AcademicInstitution,
+		&i.CertificateTitle,
+		&i.CertificateSubtitle,
+		&i.EventContractAddress,
+		&i.EventCertificateAddress,
+		&i.CertificateTokenID,
+		&i.CertificateDigest,
+		&i.CreatedAt,
+		&i.RevokedAt,
+		&i.InboxMessageID,
 	)
 	return i, err
 }
 
 const GetEventCertificatesByEventID = `-- name: GetEventCertificatesByEventID :many
-SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at FROM event_certificates WHERE event_id = $1 AND revoked_at IS NULL
+SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id FROM event_certificates WHERE event_id = $1 AND revoked_at IS NULL
 `
 
 func (q *Queries) GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error) {
@@ -175,6 +204,7 @@ func (q *Queries) GetEventCertificatesByEventID(ctx context.Context, eventID uui
 			&i.CertificateDigest,
 			&i.CreatedAt,
 			&i.RevokedAt,
+			&i.InboxMessageID,
 		); err != nil {
 			return nil, err
 		}
@@ -200,7 +230,7 @@ SET
     certificate_token_id = $9,
     revoked_at = $10
 WHERE id = $11
-RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at
+RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id
 `
 
 type UpdateEventCertificateParams struct {
@@ -247,6 +277,42 @@ func (q *Queries) UpdateEventCertificate(ctx context.Context, arg UpdateEventCer
 		&i.CertificateDigest,
 		&i.CreatedAt,
 		&i.RevokedAt,
+		&i.InboxMessageID,
+	)
+	return i, err
+}
+
+const UpdateEventCertificateInboxMessageID = `-- name: UpdateEventCertificateInboxMessageID :one
+UPDATE event_certificates
+SET inbox_message_id = $1
+WHERE id = $2
+RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id
+`
+
+type UpdateEventCertificateInboxMessageIDParams struct {
+	InboxMessageID pgtype.UUID `json:"inbox_message_id"`
+	ID             uuid.UUID   `json:"id"`
+}
+
+func (q *Queries) UpdateEventCertificateInboxMessageID(ctx context.Context, arg UpdateEventCertificateInboxMessageIDParams) (EventCertificate, error) {
+	row := q.db.QueryRow(ctx, UpdateEventCertificateInboxMessageID, arg.InboxMessageID, arg.ID)
+	var i EventCertificate
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.ReceiverCredentialID,
+		&i.ReceiverEmail,
+		&i.Name,
+		&i.AcademicInstitution,
+		&i.CertificateTitle,
+		&i.CertificateSubtitle,
+		&i.EventContractAddress,
+		&i.EventCertificateAddress,
+		&i.CertificateTokenID,
+		&i.CertificateDigest,
+		&i.CreatedAt,
+		&i.RevokedAt,
+		&i.InboxMessageID,
 	)
 	return i, err
 }

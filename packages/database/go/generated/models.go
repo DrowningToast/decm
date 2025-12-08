@@ -210,6 +210,7 @@ type EventCertificate struct {
 	CertificateDigest       pgtype.Text        `json:"certificate_digest"`
 	CreatedAt               pgtype.Timestamptz `json:"created_at"`
 	RevokedAt               pgtype.Timestamptz `json:"revoked_at"`
+	InboxMessageID          pgtype.UUID        `json:"inbox_message_id"`
 }
 
 type EventCertificateConfig struct {
@@ -228,6 +229,7 @@ type EventCertificateConfig struct {
 	CertificateTitlePosY      pgtype.Float8      `json:"certificate_title_pos_y"`
 	CertificateSubtitlePosX   pgtype.Float8      `json:"certificate_subtitle_pos_x"`
 	CertificateSubtitlePosY   pgtype.Float8      `json:"certificate_subtitle_pos_y"`
+	IsPublished               bool               `json:"is_published"`
 }
 
 type EventCertificateSignature struct {
@@ -295,6 +297,7 @@ type EventRegistrationInvitation struct {
 	CreatedAt           pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
 	CancelledAt         pgtype.Timestamptz `json:"cancelled_at"`
+	AcceptedAt          pgtype.Timestamptz `json:"accepted_at"`
 }
 
 type EventRegistrationRequirementType struct {

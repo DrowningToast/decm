@@ -1,3 +1,4 @@
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
@@ -8,33 +9,32 @@ import { IssuerSelectionModal } from "@/components/IssuerSelectionModal";
 import { SelectedIssuersTable } from "@/components/SelectedIssuersTable";
 import { CertificateTemplateUpload } from "@/components/CertificateTemplateUpload";
 import { CertificatePreview } from "@/components/CertificatePreview";
-import { useIssuerManagement } from "@/hooks/useIssuerManagement";
-import { useCertificateTemplate } from "@/hooks/useCertificateTemplate";
+import { convertProfileToIssuer, useIssuerManagement } from "@/hooks/useIssuerManagement";
+import { useCertificateTemplate, type DetectedKeyword } from "@/hooks/useCertificateTemplate";
 import SectionContainer from "@/components/container/SectionContainer";
 import { useUpdateCertificateConfig } from "./useUpdateCertificateConfig";
 import type {
     CoreApiInternalHandlerEventconfigEventCertificateConfigResponse,
-    EntityProfile,
-    GetEventIssuersByEventIdData,
-    GetVerifiedIssuersData,
     UpdateEventCertificateConfigPayload,
 } from "@decm/api";
 import { toast } from "sonner";
 import { useNavigate } from "@/router";
 import { useUpdateEventIssuer } from "./useUpdateEventIssuer";
 import { useDeleteEventIssuer } from "./useDeleteEventIssuer";
+import type { EventIssuer } from "@/services/EventService/EventService";
+import type { Profile } from "@/services/AuthService/AuthService";
+import { queryClient } from "@/lib/api/queryClient";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 interface CertificateSettingsPageProps {
     eventId: string;
     eventCertificateConfig?: CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
-    verifiedIssuers?: GetVerifiedIssuersData;
-    eventIssuers?: GetEventIssuersByEventIdData;
+    eventIssuers?: EventIssuer[];
 }
 
 export const CertificateSettingsPage = ({
     eventId,
     eventCertificateConfig,
-    verifiedIssuers,
     eventIssuers,
 }: CertificateSettingsPageProps) => {
     const { t } = useTranslation();
@@ -49,28 +49,159 @@ export const CertificateSettingsPage = ({
 
     // Use custom hooks for state management
     // Extract issuer profiles from event issuers
-    const selectedIssuerProfiles = eventIssuers
-        ?.map((issuer) => issuer.issuer_profile)
-        .filter((profile): profile is EntityProfile => profile !== undefined);
+    const selectedIssuerProfiles = eventIssuers?.map((issuer) => issuer);
 
     const issuerManagement = useIssuerManagement({
-        verifiedIssuers,
-        selectedIssuers: selectedIssuerProfiles,
+        selectedIssuers: selectedIssuerProfiles
+            ?.map((issuer) =>
+                issuer.issuerProfile ? convertProfileToIssuer(issuer.issuerProfile) : undefined,
+            )
+            .filter((v) => !!v),
     });
+
+    // Get the list of selected issuer credential IDs (both saved and unsaved)
+    const selectedIssuerCredentialIds = new Set(
+        issuerManagement.selectedIssuers.map((issuer) => issuer.id),
+    );
+
+    // Saved issuers: directly from eventIssuers to preserve all original data
+    const savedIssuers =
+        eventIssuers?.filter((eventIssuer) =>
+            selectedIssuerCredentialIds.has(eventIssuer.issuerCredentialId),
+        ) || [];
+
+    // Unsaved issuers: those in selectedIssuers but not in eventIssuers
+    const unsavedIssuers: EventIssuer[] = issuerManagement.selectedIssuers
+        .filter((issuer) => {
+            // Check if this issuer is NOT in the saved issuers
+            return !eventIssuers?.some(
+                (eventIssuer) => eventIssuer.issuerCredentialId === issuer.id,
+            );
+        })
+        .map((issuer) => {
+            // Create a new EventIssuer-like structure for unsaved issuers
+            // Convert Issuer back to Profile format for issuerProfile
+            const nameParts = issuer.name.trim().split(/\s+/);
+            const firstName = nameParts[0] || undefined;
+            const lastName = nameParts.slice(1).join(" ") || undefined;
+
+            const profile: Profile = {
+                id: issuer.id,
+                authenticationCredentialId: issuer.id,
+                firstName,
+                lastName,
+                email: issuer.email || undefined,
+                phoneNumber: issuer.phoneNumber,
+                academicInstitution: issuer.organization,
+                googleConnectorRef: issuer.googleOAuthEmail,
+                isEmailPublic: true,
+                isFirstNamePublic: true,
+                isLastNamePublic: true,
+                isPhoneNumberPublic: true,
+                isAcademicInstitutionPublic: true,
+                isProfilePicturePublic: false,
+                isBioPublic: false,
+                isAddressPublic: false,
+                isAcademicEmailPublic: false,
+            };
+
+            return {
+                eventId: eventId!,
+                id: `temp-${issuer.id}`, // Temporary ID for unsaved issuers
+                issuerCredentialId: issuer.id,
+                isSigned: false,
+                issuerProfile: profile,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+        });
     const certificateTemplate = useCertificateTemplate();
+
+    // Reconstruct detected keywords from saved config when template already exists
+    // Only include keywords that have meaningful positions (not 0,0) since required fields
+    // always have values even if the keyword wasn't detected
+    const savedDetectedKeywords = React.useMemo(() => {
+        if (!eventCertificateConfig) return [];
+
+        const keywords: DetectedKeyword[] = [];
+
+        // Add name keyword if position exists and is not (0,0)
+        if (
+            eventCertificateConfig.name_pos_x !== undefined &&
+            eventCertificateConfig.name_pos_y !== undefined &&
+            (eventCertificateConfig.name_pos_x !== 0 || eventCertificateConfig.name_pos_y !== 0)
+        ) {
+            keywords.push({
+                keyword: "{{ name }}",
+                x: eventCertificateConfig.name_pos_x,
+                y: eventCertificateConfig.name_pos_y,
+                count: 1,
+            });
+        }
+
+        // Add eventName keyword if position exists and is not (0,0)
+        if (
+            eventCertificateConfig.event_name_pos_x !== undefined &&
+            eventCertificateConfig.event_name_pos_y !== undefined &&
+            (eventCertificateConfig.event_name_pos_x !== 0 ||
+                eventCertificateConfig.event_name_pos_y !== 0)
+        ) {
+            keywords.push({
+                keyword: "{{ eventName }}",
+                x: eventCertificateConfig.event_name_pos_x,
+                y: eventCertificateConfig.event_name_pos_y,
+                count: 1,
+            });
+        }
+
+        // Add academicInstitutionName keyword if position exists (it's optional, so if it exists, it was detected)
+        if (
+            eventCertificateConfig.academic_institution_pos_x !== undefined &&
+            eventCertificateConfig.academic_institution_pos_y !== undefined
+        ) {
+            keywords.push({
+                keyword: "{{ academicInstitutionName }}",
+                x: eventCertificateConfig.academic_institution_pos_x,
+                y: eventCertificateConfig.academic_institution_pos_y,
+                count: 1,
+            });
+        }
+
+        return keywords;
+    }, [eventCertificateConfig]);
+
+    // Merge saved keywords with newly detected keywords (new upload takes precedence)
+    const allDetectedKeywords = React.useMemo(() => {
+        // If there's a new upload, use those keywords
+        if (certificateTemplate.detectedKeywords.length > 0) {
+            return certificateTemplate.detectedKeywords;
+        }
+        // Otherwise, use saved keywords
+        return savedDetectedKeywords;
+    }, [certificateTemplate.detectedKeywords, savedDetectedKeywords]);
 
     // Handle form submission
     const handleSubmit = async () => {
         try {
-            const name = certificateTemplate.detectedKeywords.find(
-                (keyword) => keyword.keyword === "{{ name }}",
-            );
+            // Validate that at least one issuer is selected
+            if (issuerManagement.selectedIssuers.length === 0) {
+                toast.error(t("certificateSettings.noIssuersError"));
+                return;
+            }
 
-            const eventName = certificateTemplate.detectedKeywords.find(
+            // TODO: Implement API call to save certificate settings
+            console.log("Event ID:", eventId);
+            console.log("Selected Issuers:", issuerManagement.selectedIssuers);
+            console.log("SVG File:", certificateTemplate.svgFile);
+            console.log("Detected Keywords:", allDetectedKeywords);
+
+            const name = allDetectedKeywords.find((keyword) => keyword.keyword === "{{ name }}");
+
+            const eventName = allDetectedKeywords.find(
                 (keyword) => keyword.keyword === "{{ eventName }}",
             );
 
-            const acedmicInstitutionName = certificateTemplate.detectedKeywords.find(
+            const acedmicInstitutionName = allDetectedKeywords.find(
                 (keyword) => keyword.keyword === "{{ academicInstitutionName }}",
             );
 
@@ -98,10 +229,23 @@ export const CertificateSettingsPage = ({
                     console.log(issuer);
                     return {
                         event_id: eventId,
-                        issuer_credential_id: issuer.authentication_credential_id,
+                        issuer_credential_id: issuer.id,
                     };
                 }),
             );
+
+            // Refetch all queries to ensure the page is up to date
+            await Promise.all([
+                queryClient.refetchQueries({
+                    queryKey: QUERY_KEY.event.certificate.config(eventId),
+                }),
+                queryClient.refetchQueries({
+                    queryKey: QUERY_KEY.event.issuers.byEventId(eventId),
+                }),
+                queryClient.refetchQueries({
+                    queryKey: QUERY_KEY.event.byId(eventId),
+                }),
+            ]);
 
             toast.success(t("certificateSettings.saveSuccess"));
         } catch (error) {
@@ -112,8 +256,20 @@ export const CertificateSettingsPage = ({
 
     const handleRemoveIssuer = async (issuerId: string) => {
         try {
-            await deleteEventIssuerAsync({ eventId, issuerId });
-            issuerManagement.handleRemoveIssuer(issuerId);
+            // Check if this is a temporary ID (unsaved issuer) or a real EventIssuer ID
+            if (issuerId.startsWith("temp-")) {
+                // For unsaved issuers, just remove from local state
+                const actualIssuerId = issuerId.replace("temp-", "");
+                issuerManagement.handleRemoveIssuer(actualIssuerId);
+            } else {
+                // For saved issuers, delete from backend and remove from local state
+                await deleteEventIssuerAsync({ eventId, issuerId });
+                // Find the issuerCredentialId from the EventIssuer
+                const eventIssuer = eventIssuers?.find((ei) => ei.id === issuerId);
+                if (eventIssuer) {
+                    issuerManagement.handleRemoveIssuer(eventIssuer.issuerCredentialId);
+                }
+            }
             toast.success(t("certificateSettings.removeIssuerSuccess"));
         } catch (error) {
             console.error("Error removing issuer:", error);
@@ -140,7 +296,8 @@ export const CertificateSettingsPage = ({
         certificateTemplate.detectedKeywords.length > 0 &&
         !certificateTemplate.hasMissingMandatory &&
         isSelectedIssuer;
-    const isUpdateFormValid = true;
+    // For update, we still need at least one issuer
+    const isUpdateFormValid = isSelectedIssuer;
 
     const isFormValid = !eventCertificateConfig ? isCreateFormValid : isUpdateFormValid;
 
@@ -148,6 +305,20 @@ export const CertificateSettingsPage = ({
         <div>
             <SectionContainer>
                 <div className="space-y-8">
+                    {/* Page Title and Description */}
+                    <div className="space-y-2">
+                        <Typography variant="header" tag="h1" className="text-2xl font-bold">
+                            {t("certificateSettings.pageTitle")}
+                        </Typography>
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            className="text-sm text-muted-foreground"
+                        >
+                            {t("certificateSettings.pageDescription")}
+                        </Typography>
+                    </div>
+
                     {/* Step 1: Issuer Settings */}
                     <div className="space-y-6">
                         <div>
@@ -179,51 +350,72 @@ export const CertificateSettingsPage = ({
                                         {t("certificateSettings.step1.searchLabel")}
                                     </Typography>
                                 </Label>
-                                <div className="flex gap-2 mt-2">
-                                    <Input
-                                        id="issuer-search"
-                                        type="text"
-                                        placeholder={t(
-                                            "certificateSettings.step1.searchPlaceholder",
-                                        )}
-                                        value={issuerManagement.searchQuery}
-                                        onChange={(e) =>
-                                            issuerManagement.handleSearchQueryChange(e.target.value)
-                                        }
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter") {
-                                                issuerManagement.handleSearch();
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex gap-2 mt-2">
+                                        <Input
+                                            id="issuer-search"
+                                            type="text"
+                                            placeholder={t(
+                                                "certificateSettings.step1.searchPlaceholder",
+                                            )}
+                                            value={issuerManagement.searchQuery}
+                                            onChange={(e) =>
+                                                issuerManagement.handleSearchQueryChange(
+                                                    e.target.value,
+                                                )
                                             }
-                                        }}
-                                        disabled={issuerManagement.isSearching}
-                                    />
-                                    <Button
-                                        type="button"
-                                        onClick={issuerManagement.handleSearch}
-                                        disabled={
-                                            issuerManagement.isSearching ||
-                                            !issuerManagement.searchQuery.trim()
-                                        }
-                                        className="min-w-[100px]"
-                                    >
-                                        <Search className="h-4 w-4 mr-2" />
-                                        <Typography
-                                            variant="text"
-                                            tag="span"
-                                            className="font-medium"
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter") {
+                                                    issuerManagement.handleSearch();
+                                                }
+                                            }}
+                                            disabled={issuerManagement.isSearching}
+                                            className="h-10"
+                                        />
+                                        <Button
+                                            type="button"
+                                            onClick={issuerManagement.handleSearch}
+                                            disabled={
+                                                issuerManagement.isSearching ||
+                                                !issuerManagement.searchQuery.trim()
+                                            }
+                                            className="min-w-[100px] h-10"
                                         >
-                                            {issuerManagement.isSearching
-                                                ? t("common.searching")
-                                                : t("certificateSettings.step1.searchButton")}
-                                        </Typography>
-                                    </Button>
+                                            <Search className="h-4 w-4 mr-2" />
+                                            <Typography
+                                                variant="text"
+                                                tag="span"
+                                                className="font-medium"
+                                            >
+                                                {issuerManagement.isSearching
+                                                    ? t("common.searching")
+                                                    : t("certificateSettings.step1.searchButton")}
+                                            </Typography>
+                                        </Button>
+                                    </div>
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        className="text-xs text-muted-foreground"
+                                    >
+                                        {t("certificateSettings.step1.searchNote")}
+                                    </Typography>
                                 </div>
                             </div>
 
-                            {/* Selected Issuers Table */}
+                            {/* Saved Issuers Table */}
                             <SelectedIssuersTable
-                                selectedIssuers={eventIssuers}
+                                selectedIssuers={savedIssuers}
                                 onRemoveIssuer={handleRemoveIssuer}
+                                title={t("certificateSettings.step1.savedIssuers")}
+                            />
+
+                            {/* Unsaved Issuers Table */}
+                            <SelectedIssuersTable
+                                selectedIssuers={unsavedIssuers}
+                                onRemoveIssuer={handleRemoveIssuer}
+                                title={t("certificateSettings.step1.unsavedIssuers")}
+                                isUnsaved={true}
                             />
                         </div>
                     </div>
@@ -263,6 +455,8 @@ export const CertificateSettingsPage = ({
                                     ? undefined
                                     : eventCertificateConfig?.base_certificate_presigned_url
                             }
+                            detectedKeywords={allDetectedKeywords}
+                            availableKeywords={certificateTemplate.availableKeywords}
                         />
                     </div>
 

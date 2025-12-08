@@ -15,17 +15,6 @@ contract Event is ThemisUtils {
         CLOSED
     }
 
-    // Errors
-    error Event__InvalidEventName();
-    error Event__CannotReduceSeatsCount();
-    error Event__SeatsCountReached();
-    error Event__ParticipantIsNotJoined();
-    error Event__ParticipantIsAlreadyJoined();
-    error Event__AddressCannotBeZero();
-    error Event__CantConfirmEvent(string message);
-    error Event__InvalidSignature();
-    error Event__AccessManagerCannotBeZeroAddress();
-
     event RemovedParticipant(address indexed participant);
     event AddedParticipant(address indexed participant);
     event ParticipantSigned(address indexed participant, bytes32 signature);
@@ -65,7 +54,7 @@ contract Event is ThemisUtils {
         uint256 _seatsCount
     ) {
         if (eventAccessManagerAddr == address(0)) {
-            revert Event__AccessManagerCannotBeZeroAddress();
+            require(false, "Access manager cannot be zero address");
         }
 
         EVENT_ACCESS_MANAGER = EventAccessManager(eventAccessManagerAddr);
@@ -88,14 +77,14 @@ contract Event is ThemisUtils {
         bytes memory signature
     ) external {
         address signer = recoverSigner(signedMessageDigest, signature); 
-        EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer); 
+        EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer, msg.sender); 
 
         // 1. Validate Event Name
         _validateEventName(_eventName);
 
         // 2. Validate Seats Count
         if (_seatsCount < seatsCount) {
-            revert Event__CannotReduceSeatsCount();
+            require(false, "Cannot reduce seats count");
         }
 
         // 3. Update Event 
@@ -129,24 +118,26 @@ contract Event is ThemisUtils {
         bytes memory signature
     ) external {
         address signer = recoverSigner(signedMessageDigest, signature);
-        EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
 
         // Pre Conditions
         if (participantAddress == address(0)) {
-            revert Event__AddressCannotBeZero();
+            // revert Event__AddressCannotBeZero();
+            require(false, "Address cannot be zero");
         }
 
-        if (currentSeatsCount >= seatsCount) {
-            revert Event__SeatsCountReached();
+        if (currentSeatsCount >= seatsCount) {   
+            // revert Event__SeatsCountReached();
+            require(false, "Seats count reached");
         }
 
         // 1. Validate Participant
         if (isParticipant[participantAddress]) {
-            revert Event__ParticipantIsAlreadyJoined();
+            // revert Event__ParticipantIsAlreadyJoined();
+            require(false, "Participant is already joined");
         }
 
         // 2. Add Participant
-        _addParticipant(participantAddress, signer);
+        _addParticipant(participantAddress, msg.sender);
 
         // 3. Emit Event
         emit AddedParticipant(participantAddress);
@@ -167,13 +158,13 @@ contract Event is ThemisUtils {
         bytes memory signature
     ) external {
         address signer = recoverSigner(signedMessageDigest, signature);
-        EVENT_ACCESS_MANAGER.requireParticipant(signer);
+        EVENT_ACCESS_MANAGER.requireParticipant(signer, msg.sender);
 
         address participantAddress = signer;
 
         // 1. Validate Participant
         if (!isParticipant[participantAddress]) {
-            revert Event__ParticipantIsNotJoined();
+            require(false, "Participant is not joined");
         }
 
         // 2. Remove Participant
@@ -195,16 +186,16 @@ contract Event is ThemisUtils {
 
     function removeParticipant(address participantAddress, string memory signedMessageDigest, bytes memory signature) external {
         address signer = recoverSigner(signedMessageDigest, signature);
-        EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
+        EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer, msg.sender);
 
         // Pre Conditions
         if (participantAddress == address(0)) {
-            revert Event__AddressCannotBeZero();
+            require(false, "Address cannot be zero");
         }
 
         // 1. Validate Participant
         if (!isParticipant[participantAddress]) {
-            revert Event__ParticipantIsNotJoined();
+            require(false, "Participant is not joined");
         }
         
         // 2. Remove Participant
@@ -219,15 +210,15 @@ contract Event is ThemisUtils {
         bytes memory signature
     ) external {
         address signer = recoverSigner(signedMessageDigest, signature);
-        EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer);
+        EVENT_ACCESS_MANAGER.requireHostOrAdmin(signer, msg.sender);
 
         // Pre Conditions
         if (eventStatus == EventStatus.CLOSED) {
-            revert Event__CantConfirmEvent("Event is closed");
+            require(false, "Event is closed");
         }
 
         if (eventStatus == EventStatus.INACTIVE) {
-            revert Event__CantConfirmEvent("Event is inactive");
+            require(false, "Event is inactive");
         }
 
         // 1. Update Event Status
@@ -247,14 +238,14 @@ contract Event is ThemisUtils {
         );
     }
 
-    function _addParticipant(address participantAddress, address signer) private {
+    function _addParticipant(address participantAddress, address msgSender) private {
         // 1. Add Participant
         participantIndex[participantAddress] = participants.length;
         participants.push(participantAddress);
         isParticipant[participantAddress] = true;
 
         // 2. Grant Participant Role
-        EVENT_ACCESS_MANAGER.grantParticipantRole(participantAddress, signer);
+        EVENT_ACCESS_MANAGER.grantParticipantRoleUsingAllowedMsgSender(participantAddress, msgSender);
 
         // 3. Current SeatsCount Increment
         currentSeatsCount++;

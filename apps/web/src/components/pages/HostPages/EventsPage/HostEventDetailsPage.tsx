@@ -24,32 +24,33 @@ import type {
     EntityEventCertificate,
     GetEventCertificateConfigData,
     GetEventContractByEventIdData,
-    GetEventIssuersByEventIdData,
 } from "@decm/api";
 import { formatEthereumAddress } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type { SortingState } from "@tanstack/react-table";
 import { useParticipantColumns, type Participant } from "./columns/useParticipantColumns";
+import { useAttendeeColumns } from "./columns/useAttendeeColumns";
+import { useEventAttendees } from "@/hooks/events/useEventAttendees";
 import { CertificateColumns } from "./columns/CertificateColumns";
 import { Separator } from "@/components/ui/separator";
 import { useEventCertificates } from "@/hooks/useEventCertificates";
 import { useRevokeEventCertificate } from "@/hooks/events/useRevokeEventCertificate";
-import { useRevokeAllEventCertificates } from "@/hooks/events/useRevokeAllEventCertificates";
+import { useToggleCertificatePublished } from "@/hooks/events/useToggleCertificatePublished";
 import { Link } from "@/router";
 import type {
     EventRegistrationConfiguration,
     EventRegistrationInvitation,
 } from "@/services/EventRegistration/EventRegistration";
 import { EventStatusesViewModel, EventTypesViewModel } from "./ViewModel";
-import type { EventViewModel } from "@/services/EventService/EventService";
+import type { EventIssuer, EventViewModel } from "@/services/EventService/EventService";
 
 interface HostEventDetailsPageProps {
     eventId: string;
     event: EventViewModel;
     eventRegistrationConfig: EventRegistrationConfiguration;
     eventCertificateConfig?: GetEventCertificateConfigData;
-    eventIssuers?: GetEventIssuersByEventIdData;
+    eventIssuers?: EventIssuer[];
     eventContract?: GetEventContractByEventIdData;
     eventInvitations?: EventRegistrationInvitation[];
 }
@@ -66,7 +67,14 @@ export default function HostEventDetailsPage({
     const { t } = useTranslation();
 
     const { revokeEventCertificate } = useRevokeEventCertificate();
-    const { revokeAllEventCertificates, isRevokingAll } = useRevokeAllEventCertificates();
+    const { mutate: togglePublished, isPending: isTogglingPublished } =
+        useToggleCertificatePublished();
+
+    // Get mint readiness from certificate config
+    const mintReadiness = eventCertificateConfig?.mint_readiness;
+
+    // Check if certificate config is published - if so, disable all edit buttons
+    const isCertificatePublished = eventCertificateConfig?.is_published ?? false;
 
     // State for client-side data management
     const [searchValue, setSearchValue] = useState("");
@@ -132,18 +140,23 @@ export default function HostEventDetailsPage({
         return processedData.slice(startIndex, endIndex).map(
             (invitation): Participant => ({
                 id: invitation.id,
-                firstName: invitation.firstName || "",
-                lastName: invitation.lastName || "",
-                email: invitation.email || "",
-                phoneNumber: invitation.phoneNumber || "",
-                academicInstitution: invitation.academicInstitution || "",
+                firstName: invitation.firstName ?? null,
+                lastName: invitation.lastName ?? null,
+                email: invitation.email ?? null,
+                phoneNumber: invitation.phoneNumber ?? null,
+                academicInstitution: invitation.academicInstitution ?? null,
                 walletAddress: "", // Not available in invitation data
                 status: invitation.cancelledAt ? "rejected" : "pending",
+                isAccepted: !!invitation.acceptedAt, // Convert acceptedAt timestamp to boolean
             }),
         );
     }, [processedData, currentPage, pageSize]);
 
-    const participantColumns = useParticipantColumns();
+    const participantColumns = useParticipantColumns(eventId);
+    const attendeeColumns = useAttendeeColumns();
+
+    // Fetch actual attendees
+    const { attendees, isLoading: attendeesLoading } = useEventAttendees({ eventId });
 
     // Callbacks for DataTable
     const handlePageChange = useCallback((page: number) => {
@@ -165,13 +178,12 @@ export default function HostEventDetailsPage({
 
     // Certificate state logic
     const hasCertificateConfig = !!eventCertificateConfig;
-    const allIssuersSigned = eventIssuers?.every((issuer) => issuer.is_signed === 1) ?? false;
 
     // Fetch event certificates using the hook
     const { certificates: eventCertificates, isLoading: certificatesLoading } =
         useEventCertificates(eventId);
 
-    console.log(event.googleMapQuery);
+    console.log(eventCertificates);
 
     return (
         <div className="flex flex-col gap-y-6">
@@ -302,9 +314,8 @@ export default function HostEventDetailsPage({
                                 <TextLabelValue
                                     label={t("events.settings.eventType")}
                                     value={
-                                        event.isPublic
-                                            ? t("participantSettings.eventTypePublic")
-                                            : t("participantSettings.eventTypePrivate")
+                                        EventTypesViewModel[event.eventType] ??
+                                        t("common.notAvailable")
                                     }
                                 />
                                 <TextLabelValue
@@ -405,6 +416,57 @@ export default function HostEventDetailsPage({
                                 </AccordionItem>
                             </Accordion>
 
+                            {/* Actual Attendees Section */}
+                            <div className="space-y-4">
+                                <Typography
+                                    variant="text"
+                                    tag="h3"
+                                    className="text-lg font-semibold"
+                                >
+                                    {t("events.hostDetails.attendees.title")}
+                                </Typography>
+                                <Typography variant="text" tag="p" size="small" color="muted">
+                                    {t("events.hostDetails.attendees.description")}
+                                </Typography>
+                                <DataTable
+                                    columns={attendeeColumns}
+                                    data={attendees}
+                                    totalItems={attendees.length}
+                                    currentPage={1}
+                                    pageSize={attendees.length}
+                                    onPageChange={() => {}}
+                                    onPageSizeChange={() => {}}
+                                    searchValue=""
+                                    onSearchChange={() => {}}
+                                    searchPlaceholder={t(
+                                        "events.hostDetails.attendees.searchPlaceholder",
+                                    )}
+                                    sorting={[]}
+                                    onSortingChange={() => {}}
+                                    isLoading={attendeesLoading}
+                                    disablePagination
+                                />
+                            </div>
+
+                            <Separator className="my-8" />
+
+                            {/* Invitations Section */}
+                            <Typography variant="text" tag="h3" className="text-lg font-semibold">
+                                {t("events.hostDetails.tabs.participants")} (Invitations)
+                            </Typography>
+                            <Typography variant="text" tag="p" size="small" color="muted">
+                                {t("events.hostDetails.participants.description")}
+                            </Typography>
+                            <Typography
+                                variant="text"
+                                tag="p"
+                                size="small"
+                                color="muted"
+                                className="italic"
+                            >
+                                {t("events.hostDetails.participants.cancelWarning")}
+                            </Typography>
+
                             <DataTable
                                 columns={participantColumns}
                                 data={paginatedData}
@@ -451,13 +513,331 @@ export default function HostEventDetailsPage({
                                     </div>
                                     <div className="flex gap-2">
                                         <WrappedButton
-                                            className="px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
-                                            href={`/host/events/${eventId}/settings/certificate`}
+                                            className={`px-5 py-2 rounded-md font-medium transition ${
+                                                isCertificatePublished
+                                                    ? "bg-gray-400 text-white cursor-not-allowed"
+                                                    : "bg-primary text-white hover:bg-primary/90"
+                                            }`}
+                                            href={
+                                                isCertificatePublished
+                                                    ? undefined
+                                                    : `/host/events/${eventId}/settings/certificate`
+                                            }
+                                            disabled={isCertificatePublished}
+                                            title={
+                                                isCertificatePublished
+                                                    ? t(
+                                                          "events.hostDetails.certificates.editDisabledMessage",
+                                                      )
+                                                    : undefined
+                                            }
                                         >
                                             {t("certificateSettings.pageTitle")}
                                         </WrappedButton>
                                     </div>
                                 </div>
+
+                                {/* Certificate Mint Readiness Status */}
+                                {mintReadiness && (
+                                    <div
+                                        className={`w-full border rounded-lg p-4 flex items-start gap-3 ${
+                                            mintReadiness.is_ready
+                                                ? "bg-green-50 border-green-200"
+                                                : "bg-blue-50 border-blue-200"
+                                        }`}
+                                    >
+                                        <div className="mt-0.5">
+                                            {mintReadiness.is_ready ? (
+                                                <CheckCircle2Icon className="h-5 w-5 text-green-600" />
+                                            ) : (
+                                                <div className="h-5 w-5 rounded-full border-2 border-blue-600" />
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <Typography
+                                                variant="text"
+                                                tag="p"
+                                                className={`font-semibold text-base ${
+                                                    mintReadiness.is_ready
+                                                        ? "text-green-900"
+                                                        : "text-blue-900"
+                                                }`}
+                                            >
+                                                {mintReadiness.is_ready
+                                                    ? t("events.hostDetails.certificates.mintReady")
+                                                    : t(
+                                                          "events.hostDetails.certificates.mintNotReady",
+                                                      )}
+                                            </Typography>
+                                            <div className="mt-2 space-y-1">
+                                                {/* Certificate Config Status */}
+                                                <div className="flex items-center gap-2 text-sm">
+                                                    {mintReadiness.has_certificate_config ? (
+                                                        <CheckCircle2Icon className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                                    ) : (
+                                                        <div className="h-4 w-4 rounded-full border-2 border-gray-400 flex-shrink-0" />
+                                                    )}
+                                                    <span
+                                                        className={
+                                                            mintReadiness.has_certificate_config
+                                                                ? "text-green-700"
+                                                                : "text-gray-600"
+                                                        }
+                                                    >
+                                                        {t(
+                                                            "events.hostDetails.certificates.configStatus",
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                {/* All Issuers Signed Status */}
+                                                <div className="flex items-center gap-2 text-sm">
+                                                    {mintReadiness.all_issuers_have_signed ? (
+                                                        <CheckCircle2Icon className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                                    ) : (
+                                                        <div className="h-4 w-4 rounded-full border-2 border-gray-400 flex-shrink-0" />
+                                                    )}
+                                                    <span
+                                                        className={
+                                                            mintReadiness.all_issuers_have_signed
+                                                                ? "text-green-700"
+                                                                : "text-gray-600"
+                                                        }
+                                                    >
+                                                        {t(
+                                                            "events.hostDetails.certificates.issuersSignedStatus",
+                                                            {
+                                                                signed: mintReadiness.signed_issuers_count,
+                                                                total: mintReadiness.total_issuers_count,
+                                                            },
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                {/* Contract Deployed Status */}
+                                                <div className="flex items-center gap-2 text-sm">
+                                                    {mintReadiness.has_certificate_contract ? (
+                                                        <CheckCircle2Icon className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                                    ) : (
+                                                        <div className="h-4 w-4 rounded-full border-2 border-gray-400 flex-shrink-0" />
+                                                    )}
+                                                    <span
+                                                        className={
+                                                            mintReadiness.has_certificate_contract
+                                                                ? "text-green-700"
+                                                                : "text-gray-600"
+                                                        }
+                                                    >
+                                                        {t(
+                                                            "events.hostDetails.certificates.contractStatus",
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            {/* Missing Requirements */}
+                                            {mintReadiness.missing_requirements &&
+                                                mintReadiness.missing_requirements.length > 0 && (
+                                                    <div className="mt-3 p-2 bg-blue-100 rounded text-sm text-blue-800">
+                                                        <Typography
+                                                            variant="text"
+                                                            tag="p"
+                                                            className="font-medium mb-1"
+                                                        >
+                                                            {t(
+                                                                "events.hostDetails.certificates.missingRequirements",
+                                                            )}
+                                                            :
+                                                        </Typography>
+                                                        <ul className="list-disc list-inside space-y-0.5">
+                                                            {mintReadiness.missing_requirements.map(
+                                                                (req, idx) => (
+                                                                    <li key={idx}>{req}</li>
+                                                                ),
+                                                            )}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Certificate Published Status Indicator */}
+                                {eventCertificateConfig && (
+                                    <div
+                                        className={`w-full border rounded-lg p-4 flex items-start gap-3 ${
+                                            eventCertificateConfig.is_published
+                                                ? "bg-green-50 border-green-200"
+                                                : "bg-gray-50 border-gray-200"
+                                        }`}
+                                    >
+                                        <div className="mt-0.5">
+                                            {eventCertificateConfig.is_published ? (
+                                                <CheckCircle2Icon className="h-5 w-5 text-green-600" />
+                                            ) : (
+                                                <div className="h-5 w-5 rounded-full border-2 border-gray-400" />
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <Typography
+                                                variant="text"
+                                                tag="p"
+                                                className={`font-semibold text-base ${
+                                                    eventCertificateConfig.is_published
+                                                        ? "text-green-900"
+                                                        : "text-gray-900"
+                                                }`}
+                                            >
+                                                {eventCertificateConfig.is_published
+                                                    ? t(
+                                                          "events.hostDetails.certificates.publishedConfigStatus",
+                                                      )
+                                                    : t(
+                                                          "events.hostDetails.certificates.notPublishedConfigStatus",
+                                                      )}
+                                            </Typography>
+                                            {eventCertificateConfig.is_published && (
+                                                <Typography
+                                                    variant="text"
+                                                    tag="p"
+                                                    className="text-sm text-green-700 mt-1"
+                                                >
+                                                    {t(
+                                                        "events.hostDetails.certificates.publishedWarning",
+                                                    )}
+                                                </Typography>
+                                            )}
+                                            {!eventCertificateConfig.is_published && (
+                                                <Typography
+                                                    variant="text"
+                                                    tag="p"
+                                                    className="text-sm text-gray-600 mt-1"
+                                                >
+                                                    {t(
+                                                        "events.hostDetails.certificates.notPublishedConfigDescription",
+                                                    )}
+                                                </Typography>
+                                            )}
+                                        </div>
+                                        {!eventCertificateConfig.is_published && (
+                                            <Button
+                                                onClick={() =>
+                                                    togglePublished({
+                                                        eventId,
+                                                        isPublished: true,
+                                                    })
+                                                }
+                                                disabled={
+                                                    isTogglingPublished ||
+                                                    !mintReadiness ||
+                                                    !mintReadiness.is_ready
+                                                }
+                                                className="ml-auto"
+                                            >
+                                                {t("events.hostDetails.certificates.publishButton")}
+                                            </Button>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Certificate List (Receivers) */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <Typography
+                                            variant="text"
+                                            tag="h3"
+                                            className="text-lg font-semibold"
+                                        >
+                                            {t(
+                                                "events.hostDetails.certificates.eventCertificatesTitle",
+                                                { count: eventCertificates?.length || 0 },
+                                            )}
+                                        </Typography>
+                                        <Typography
+                                            variant="text"
+                                            tag="p"
+                                            className="text-sm text-muted-foreground mt-1"
+                                        >
+                                            {t(
+                                                "events.hostDetails.certificates.eventCertificatesDescription",
+                                            )}
+                                        </Typography>
+                                    </div>
+
+                                    <DataTable
+                                        columns={CertificateColumns(
+                                            (eventCertificateId: string) => {
+                                                revokeEventCertificate({
+                                                    certificateIds: [eventCertificateId],
+                                                    eventId,
+                                                });
+                                            },
+                                        )}
+                                        data={
+                                            (eventCertificates || [])
+                                                .filter((cert) => !cert.revoked_at)
+                                                .map((cert) => {
+                                                    const nameParts = (cert.name || "").split(" ");
+                                                    return {
+                                                        ...cert,
+                                                        firstName: nameParts[0] || "",
+                                                        lastName:
+                                                            nameParts.slice(1).join(" ") || "",
+                                                        email: cert.receiver_email || "",
+                                                        academicInstitution:
+                                                            cert.academic_institution || "",
+                                                        issuedAt: cert.created_at || "",
+                                                        status: "received" as const,
+                                                    };
+                                                }) as EntityEventCertificate[]
+                                        }
+                                        totalItems={
+                                            eventCertificates?.filter((c) => !c.revoked_at)
+                                                .length || 0
+                                        }
+                                        currentPage={1}
+                                        pageSize={10}
+                                        onPageChange={() => {}}
+                                        onPageSizeChange={() => {}}
+                                        searchValue=""
+                                        onSearchChange={() => {}}
+                                        searchPlaceholder={t(
+                                            "events.hostDetails.certificates.searchCertificatesPlaceholder",
+                                        )}
+                                        sorting={[]}
+                                        onSortingChange={() => {}}
+                                        isLoading={certificatesLoading}
+                                        disablePagination
+                                    />
+                                </div>
+
+                                {/* Import Certificate Receivers */}
+                                <a
+                                    href={
+                                        isCertificatePublished
+                                            ? undefined
+                                            : `/host/events/${eventId}/imports/certificates`
+                                    }
+                                    className={`flex items-center justify-center p-6 border-dashed rounded-xl border-2 gap-4 ${
+                                        isCertificatePublished
+                                            ? "border-gray-300 opacity-50 cursor-not-allowed pointer-events-none"
+                                            : "border-white/50 cursor-pointer hover:border-primary/30"
+                                    }`}
+                                    onClick={
+                                        isCertificatePublished
+                                            ? (e) => e.preventDefault()
+                                            : undefined
+                                    }
+                                    title={
+                                        isCertificatePublished
+                                            ? t(
+                                                  "events.hostDetails.certificates.editDisabledMessage",
+                                              )
+                                            : undefined
+                                    }
+                                >
+                                    <CloudUploadIcon />{" "}
+                                    <Typography variant="text" tag="span">
+                                        {t("events.hostDetails.certificates.importSectionTitle")}
+                                    </Typography>
+                                </a>
 
                                 {/* Issuers Table */}
                                 {eventIssuers && eventIssuers.length > 0 && (
@@ -495,152 +875,6 @@ export default function HostEventDetailsPage({
                                                 disablePagination
                                             />
                                         </div>
-
-                                        <Separator className="my-12" />
-
-                                        <div className="flex items-center justify-between">
-                                            {/* Publish Certificates Section */}
-                                            <div className="w-full bg-white border border-white/50 rounded-lg p-6 flex flex-row items-center justify-between">
-                                                <div>
-                                                    <Typography
-                                                        variant="text"
-                                                        tag="p"
-                                                        className="font-semibold text-lg text-black"
-                                                    >
-                                                        {t(
-                                                            "events.hostDetails.certificates.publishTitle",
-                                                        )}
-                                                    </Typography>
-                                                    <Typography
-                                                        variant="text"
-                                                        tag="p"
-                                                        className="text-black/50 text-base mt-1"
-                                                    >
-                                                        {t(
-                                                            "events.hostDetails.certificates.publishDescription",
-                                                        )}
-                                                    </Typography>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <WrappedButton
-                                                        className="px-4 py-2 rounded-md bg-green-600 text-white font-medium hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                                        disabled={!allIssuersSigned}
-                                                        onClick={() => {
-                                                            // TODO: Implement publish certificates functionality
-                                                            console.log(
-                                                                "Publish certificates for event:",
-                                                                eventId,
-                                                            );
-                                                        }}
-                                                    >
-                                                        {t(
-                                                            allIssuersSigned
-                                                                ? "events.hostDetails.actions.publishCertificates"
-                                                                : "events.hostDetails.actions.waitingForSignatures",
-                                                        )}
-                                                    </WrappedButton>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <Typography
-                                            variant="text"
-                                            tag="h3"
-                                            className="text-lg font-semibold"
-                                        >
-                                            {t(
-                                                "events.hostDetails.certificates.eventCertificatesTitle",
-                                                { count: eventCertificates?.length || 0 },
-                                            )}
-                                        </Typography>
-
-                                        <DataTable
-                                            columns={CertificateColumns(
-                                                (eventCertificateId: string) => {
-                                                    revokeEventCertificate({
-                                                        certificateIds: [eventCertificateId],
-                                                        eventId,
-                                                    });
-                                                },
-                                            )}
-                                            data={
-                                                eventCertificates?.map((cert) => {
-                                                    const firstName =
-                                                        cert.name?.split(" ")[0] || "";
-                                                    const lastName =
-                                                        cert.name?.split(" ").slice(1).join(" ") ||
-                                                        "";
-
-                                                    return {
-                                                        ...cert,
-                                                        firstName,
-                                                        lastName,
-                                                        email: cert.receiver_email || "",
-                                                        academicInstitution:
-                                                            cert.academic_institution || "",
-                                                        issuedAt: cert.created_at,
-                                                        status: cert.revoked_at
-                                                            ? "rejected"
-                                                            : "received",
-                                                    } as EntityEventCertificate;
-                                                }) || []
-                                            }
-                                            totalItems={eventCertificates?.length || 0}
-                                            currentPage={1}
-                                            pageSize={10}
-                                            onPageChange={() => {}}
-                                            onPageSizeChange={() => {}}
-                                            searchValue=""
-                                            onSearchChange={() => {}}
-                                            searchPlaceholder={t(
-                                                "events.hostDetails.certificates.searchCertificatesPlaceholder",
-                                            )}
-                                            sorting={[]}
-                                            onSortingChange={() => {}}
-                                            isLoading={certificatesLoading}
-                                            disablePagination
-                                        />
-
-                                        {eventCertificates && eventCertificates.length > 0 && (
-                                            <div className="mt-4 flex justify-end">
-                                                <Button
-                                                    variant="destructive"
-                                                    size="lg"
-                                                    onClick={() => {
-                                                        if (
-                                                            confirm(
-                                                                t(
-                                                                    "events.hostDetails.certificates.confirmRevokeAll",
-                                                                ),
-                                                            )
-                                                        ) {
-                                                            revokeAllEventCertificates({ eventId });
-                                                        }
-                                                    }}
-                                                    disabled={isRevokingAll}
-                                                >
-                                                    {isRevokingAll
-                                                        ? t(
-                                                              "events.hostDetails.certificates.revokingAll",
-                                                          )
-                                                        : t(
-                                                              "events.hostDetails.certificates.revokeAll",
-                                                          )}
-                                                </Button>
-                                            </div>
-                                        )}
-
-                                        <a
-                                            href={`/host/events/${eventId}/imports/certificates`}
-                                            className="flex items-center justify-center p-6 border-dashed rounded-xl border-2 border-white/50 gap-4 cursor-pointer"
-                                        >
-                                            <CloudUploadIcon />{" "}
-                                            <Typography variant="text" tag="span">
-                                                {t(
-                                                    "events.hostDetails.certificates.importSectionTitle",
-                                                )}
-                                            </Typography>
-                                        </a>
                                     </div>
                                 )}
 
@@ -674,15 +908,42 @@ export default function HostEventDetailsPage({
                                 >
                                     {t("events.hostDetails.certificates.noConfigDescription")}
                                 </Typography>
-                                <div className="flex gap-4 mt-6">
+                                <div className="flex gap-4 mt-6 items-center">
                                     <WrappedButton
-                                        className="px-5 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/90 transition"
-                                        href={`/host/events/${eventId}/settings/certificate`}
+                                        className={`px-5 rounded-md font-medium transition ${
+                                            isCertificatePublished
+                                                ? "bg-gray-400 text-white cursor-not-allowed"
+                                                : "bg-primary text-white hover:bg-primary/90"
+                                        }`}
+                                        href={
+                                            isCertificatePublished
+                                                ? undefined
+                                                : `/host/events/${eventId}/settings/certificate`
+                                        }
+                                        disabled={isCertificatePublished}
                                     >
                                         {t("certificateSettings.pageTitle")}
                                     </WrappedButton>
-                                    <a href={`/host/events/${eventId}/imports/certificates`}>
-                                        <Button size="xl" variant="secondary-light">
+                                    <a
+                                        href={
+                                            isCertificatePublished
+                                                ? undefined
+                                                : `/host/events/${eventId}/imports/certificates`
+                                        }
+                                        onClick={
+                                            isCertificatePublished
+                                                ? (e) => e.preventDefault()
+                                                : undefined
+                                        }
+                                        className={
+                                            isCertificatePublished ? "pointer-events-none" : ""
+                                        }
+                                    >
+                                        <Button
+                                            size="lg"
+                                            variant="secondary-light"
+                                            disabled={isCertificatePublished}
+                                        >
                                             {t("events.hostDetails.actions.importReceivers")}
                                         </Button>
                                     </a>
