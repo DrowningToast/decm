@@ -28,6 +28,10 @@ type EventCertificateConfigResponse struct {
 	NamePosY                    float64            `json:"name_pos_y"`
 	AcademicInstitutionPosX     *float64           `json:"academic_institution_pos_x,omitempty"`
 	AcademicInstitutionPosY     *float64           `json:"academic_institution_pos_y,omitempty"`
+	CertificateTitlePosX        *float64           `json:"certificate_title_pos_x,omitempty"`
+	CertificateTitlePosY        *float64           `json:"certificate_title_pos_y,omitempty"`
+	CertificateSubtitlePosX     *float64           `json:"certificate_subtitle_pos_x,omitempty"`
+	CertificateSubtitlePosY     *float64           `json:"certificate_subtitle_pos_y,omitempty"`
 	IsPublished                 bool               `json:"is_published"`
 	CreatedAt                   string             `json:"created_at"`
 	UpdatedAt                   string             `json:"updated_at"`
@@ -54,6 +58,10 @@ type CreateEventCertificateConfigParams struct {
 	NamePosY                float64
 	AcademicInstitutionPosX *float64
 	AcademicInstitutionPosY *float64
+	CertificateTitlePosX    *float64
+	CertificateTitlePosY    *float64
+	CertificateSubtitlePosX *float64
+	CertificateSubtitlePosY *float64
 }
 
 func (uc *EventConfigUsecase) CreateEventCertificateConfig(ctx context.Context, eventID uuid.UUID, params CreateEventCertificateConfigParams) (*generated.EventCertificateConfig, error) {
@@ -84,6 +92,18 @@ func (uc *EventConfigUsecase) CreateEventCertificateConfig(ctx context.Context, 
 	if params.AcademicInstitutionPosY != nil {
 		createParams.AcademicInstitutionPosY = pgtype.Float8{Float64: *params.AcademicInstitutionPosY, Valid: true}
 	}
+	if params.CertificateTitlePosX != nil {
+		createParams.CertificateTitlePosX = pgtype.Float8{Float64: *params.CertificateTitlePosX, Valid: true}
+	}
+	if params.CertificateTitlePosY != nil {
+		createParams.CertificateTitlePosY = pgtype.Float8{Float64: *params.CertificateTitlePosY, Valid: true}
+	}
+	if params.CertificateSubtitlePosX != nil {
+		createParams.CertificateSubtitlePosX = pgtype.Float8{Float64: *params.CertificateSubtitlePosX, Valid: true}
+	}
+	if params.CertificateSubtitlePosY != nil {
+		createParams.CertificateSubtitlePosY = pgtype.Float8{Float64: *params.CertificateSubtitlePosY, Valid: true}
+	}
 
 	return uc.EventCertificateDg.CreateEventCertificateConfig(ctx, createParams)
 }
@@ -96,6 +116,10 @@ type UpdateEventCertificateConfigParams struct {
 	NamePosY                *float64
 	AcademicInstitutionPosX *float64
 	AcademicInstitutionPosY *float64
+	CertificateTitlePosX    *float64
+	CertificateTitlePosY    *float64
+	CertificateSubtitlePosX *float64
+	CertificateSubtitlePosY *float64
 }
 
 func (uc *EventConfigUsecase) UpdateEventCertificateConfig(ctx context.Context, eventID uuid.UUID, params UpdateEventCertificateConfigParams) (*generated.EventCertificateConfig, error) {
@@ -136,6 +160,22 @@ func (uc *EventConfigUsecase) UpdateEventCertificateConfig(ctx context.Context, 
 
 	if params.AcademicInstitutionPosY != nil {
 		updateParams.AcademicInstitutionPosY = pgtype.Float8{Float64: *params.AcademicInstitutionPosY, Valid: true}
+	}
+
+	if params.CertificateTitlePosX != nil {
+		updateParams.CertificateTitlePosX = pgtype.Float8{Float64: *params.CertificateTitlePosX, Valid: true}
+	}
+
+	if params.CertificateTitlePosY != nil {
+		updateParams.CertificateTitlePosY = pgtype.Float8{Float64: *params.CertificateTitlePosY, Valid: true}
+	}
+
+	if params.CertificateSubtitlePosX != nil {
+		updateParams.CertificateSubtitlePosX = pgtype.Float8{Float64: *params.CertificateSubtitlePosX, Valid: true}
+	}
+
+	if params.CertificateSubtitlePosY != nil {
+		updateParams.CertificateSubtitlePosY = pgtype.Float8{Float64: *params.CertificateSubtitlePosY, Valid: true}
 	}
 
 	updateParams.BaseCertificateStorageKey = dbEventCertConfig.BaseCertificateStorageKey
@@ -192,6 +232,29 @@ func (uc *EventConfigUsecase) GetEventCertificateConfigByEventID(ctx context.Con
 		}
 	}
 
+	var academicInstitutionPosX, academicInstitutionPosY *float64
+	var certificateTitlePosX, certificateTitlePosY *float64
+	var certificateSubtitlePosX, certificateSubtitlePosY *float64
+
+	if eventCertConfig.AcademicInstitutionPosX.Valid {
+		academicInstitutionPosX = &eventCertConfig.AcademicInstitutionPosX.Float64
+	}
+	if eventCertConfig.AcademicInstitutionPosY.Valid {
+		academicInstitutionPosY = &eventCertConfig.AcademicInstitutionPosY.Float64
+	}
+	if eventCertConfig.CertificateTitlePosX.Valid {
+		certificateTitlePosX = &eventCertConfig.CertificateTitlePosX.Float64
+	}
+	if eventCertConfig.CertificateTitlePosY.Valid {
+		certificateTitlePosY = &eventCertConfig.CertificateTitlePosY.Float64
+	}
+	if eventCertConfig.CertificateSubtitlePosX.Valid {
+		certificateSubtitlePosX = &eventCertConfig.CertificateSubtitlePosX.Float64
+	}
+	if eventCertConfig.CertificateSubtitlePosY.Valid {
+		certificateSubtitlePosY = &eventCertConfig.CertificateSubtitlePosY.Float64
+	}
+
 	return &EventCertificateConfigResponse{
 		ID:                          eventCertConfig.ID,
 		EventID:                     eventCertConfig.EventID,
@@ -201,8 +264,12 @@ func (uc *EventConfigUsecase) GetEventCertificateConfigByEventID(ctx context.Con
 		EventNamePosY:               eventCertConfig.EventNamePosY,
 		NamePosX:                    eventCertConfig.NamePosX,
 		NamePosY:                    eventCertConfig.NamePosY,
-		AcademicInstitutionPosX:     &eventCertConfig.AcademicInstitutionPosX.Float64,
-		AcademicInstitutionPosY:     &eventCertConfig.AcademicInstitutionPosY.Float64,
+		AcademicInstitutionPosX:     academicInstitutionPosX,
+		AcademicInstitutionPosY:     academicInstitutionPosY,
+		CertificateTitlePosX:        certificateTitlePosX,
+		CertificateTitlePosY:        certificateTitlePosY,
+		CertificateSubtitlePosX:     certificateSubtitlePosX,
+		CertificateSubtitlePosY:     certificateSubtitlePosY,
 		IsPublished:                 eventCertConfig.IsPublished,
 		CreatedAt:                   eventCertConfig.CreatedAt.Time.String(),
 		UpdatedAt:                   eventCertConfig.UpdatedAt.Time.String(),

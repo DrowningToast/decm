@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"decm-database/go/generated"
+	"strings"
 
 	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
@@ -26,7 +27,14 @@ func (r *Repository) CreateEventCertificate(ctx context.Context, params datagate
 		return nil, err
 	}
 
-	receiverEmailEnc, err := pgmapper.EncryptStringPtrToPgText(params.ReceiverEmail, r.piiEncryptionKey)
+	// Normalize email to lowercase for case-insensitive comparison
+	normalizedEmail := params.ReceiverEmail
+	if params.ReceiverEmail != nil && *params.ReceiverEmail != "" {
+		lowercaseEmail := strings.ToLower(*params.ReceiverEmail)
+		normalizedEmail = &lowercaseEmail
+	}
+
+	receiverEmailEnc, err := pgmapper.EncryptStringPtrToPgText(normalizedEmail, r.piiEncryptionKey)
 	if err != nil {
 		return nil, err
 	}
@@ -427,8 +435,15 @@ func (r *Repository) GetUnclaimedReadyCertificatesByEventID(ctx context.Context,
 }
 
 func (r *Repository) GetClaimedCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
+	// Normalize email to lowercase for case-insensitive comparison
+	normalizedEmail := email
+	if email != nil && *email != "" {
+		lowercaseEmail := strings.ToLower(*email)
+		normalizedEmail = &lowercaseEmail
+	}
+
 	// Encrypt email for query
-	encryptedEmail, err := pgmapper.EncryptStringPtrToPgText(email, r.piiEncryptionKey)
+	encryptedEmail, err := pgmapper.EncryptStringPtrToPgText(normalizedEmail, r.piiEncryptionKey)
 	if err != nil {
 		return nil, err
 	}
@@ -483,8 +498,15 @@ func (r *Repository) GetClaimedCertificatesByCredentialID(ctx context.Context, c
 }
 
 func (r *Repository) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
+	// Normalize email to lowercase for case-insensitive comparison
+	normalizedEmail := email
+	if email != nil && *email != "" {
+		lowercaseEmail := strings.ToLower(*email)
+		normalizedEmail = &lowercaseEmail
+	}
+
 	// Encrypt email for query
-	encryptedEmail, err := pgmapper.EncryptStringPtrToPgText(email, r.piiEncryptionKey)
+	encryptedEmail, err := pgmapper.EncryptStringPtrToPgText(normalizedEmail, r.piiEncryptionKey)
 	if err != nil {
 		return nil, err
 	}

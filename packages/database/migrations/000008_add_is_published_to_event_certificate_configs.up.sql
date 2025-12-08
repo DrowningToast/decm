@@ -7,3 +7,4 @@ CREATE INDEX idx_event_certificate_configs_is_published ON event_certificate_con
 
 
 
+

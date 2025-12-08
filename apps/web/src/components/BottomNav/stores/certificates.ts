@@ -12,10 +12,14 @@ export const useSearchCertificateNavStore = create<SearchCertificateNavStore>((s
 
 interface CertificateDetailNavStore {
     certificateId: string | null;
+    isClaimed: boolean;
     setCertificateId: (certificateId: string | null) => void;
+    setIsClaimed: (isClaimed: boolean) => void;
 }
 
 export const useCertificateDetailNavStore = create<CertificateDetailNavStore>((set) => ({
     certificateId: null,
+    isClaimed: false,
     setCertificateId: (certificateId: string | null) => set({ certificateId }),
+    setIsClaimed: (isClaimed: boolean) => set({ isClaimed }),
 }));

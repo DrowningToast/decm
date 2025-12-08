@@ -18,6 +18,10 @@ type UpdateEventCertificateConfigRequest struct {
 	NamePosY                *float64 `form:"name_pos_y"`
 	AcademicInstitutionPosX *float64 `form:"academic_institution_pos_x"`
 	AcademicInstitutionPosY *float64 `form:"academic_institution_pos_y"`
+	CertificateTitlePosX    *float64 `form:"certificate_title_pos_x"`
+	CertificateTitlePosY    *float64 `form:"certificate_title_pos_y"`
+	CertificateSubtitlePosX *float64 `form:"certificate_subtitle_pos_x"`
+	CertificateSubtitlePosY *float64 `form:"certificate_subtitle_pos_y"`
 }
 
 func (r *UpdateEventCertificateConfigRequest) IsValid() error {
@@ -45,6 +49,10 @@ func (r *UpdateEventCertificateConfigRequest) Parse(ctx *fiber.Ctx) error {
 // @Param name_pos_y formData float64 true "Name position y"
 // @Param academic_institution_pos_x formData float64 false "Academic institution position x"
 // @Param academic_institution_pos_y formData float64 false "Academic institution position y"
+// @Param certificate_title_pos_x formData float64 false "Certificate title position x"
+// @Param certificate_title_pos_y formData float64 false "Certificate title position y"
+// @Param certificate_subtitle_pos_x formData float64 false "Certificate subtitle position x"
+// @Param certificate_subtitle_pos_y formData float64 false "Certificate subtitle position y"
 // @Success 200 {object} EventCertificateConfigResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
@@ -84,6 +92,18 @@ func (h *Handler) UpdateEventCertificateConfig(ctx *fiber.Ctx) error {
 	if requestBody.AcademicInstitutionPosY != nil {
 		params.AcademicInstitutionPosY = requestBody.AcademicInstitutionPosY
 	}
+	if requestBody.CertificateTitlePosX != nil {
+		params.CertificateTitlePosX = requestBody.CertificateTitlePosX
+	}
+	if requestBody.CertificateTitlePosY != nil {
+		params.CertificateTitlePosY = requestBody.CertificateTitlePosY
+	}
+	if requestBody.CertificateSubtitlePosX != nil {
+		params.CertificateSubtitlePosX = requestBody.CertificateSubtitlePosX
+	}
+	if requestBody.CertificateSubtitlePosY != nil {
+		params.CertificateSubtitlePosY = requestBody.CertificateSubtitlePosY
+	}
 
 	baseCertificateImage, _ := ctx.FormFile("base_certificate_image")
 	if baseCertificateImage != nil {
@@ -103,6 +123,10 @@ func (h *Handler) UpdateEventCertificateConfig(ctx *fiber.Ctx) error {
 			NamePosY:                *params.NamePosX,
 			AcademicInstitutionPosX: params.AcademicInstitutionPosX,
 			AcademicInstitutionPosY: params.AcademicInstitutionPosY,
+			CertificateTitlePosX:    params.CertificateTitlePosX,
+			CertificateTitlePosY:    params.CertificateTitlePosY,
+			CertificateSubtitlePosX: params.CertificateSubtitlePosX,
+			CertificateSubtitlePosY: params.CertificateSubtitlePosY,
 		})
 		if err != nil {
 			return customerror.Parse(&customerror.ErrInternalServer, err)
@@ -130,6 +154,10 @@ func (h *Handler) UpdateEventCertificateConfig(ctx *fiber.Ctx) error {
 		NamePosY:                    dbEventCertConfig.NamePosY,
 		AcademicInstitutionPosX:     dbEventCertConfig.AcademicInstitutionPosX,
 		AcademicInstitutionPosY:     dbEventCertConfig.AcademicInstitutionPosY,
+		CertificateTitlePosX:        dbEventCertConfig.CertificateTitlePosX,
+		CertificateTitlePosY:        dbEventCertConfig.CertificateTitlePosY,
+		CertificateSubtitlePosX:     dbEventCertConfig.CertificateSubtitlePosX,
+		CertificateSubtitlePosY:     dbEventCertConfig.CertificateSubtitlePosY,
 		IsPublished:                 dbEventCertConfig.IsPublished,
 		CreatedAt:                   dbEventCertConfig.CreatedAt,
 		UpdatedAt:                   dbEventCertConfig.UpdatedAt,

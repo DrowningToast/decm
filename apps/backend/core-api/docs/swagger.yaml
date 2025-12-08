@@ -209,6 +209,14 @@ definitions:
         type: string
       base_certificate_storage_key:
         type: string
+      certificate_subtitle_pos_x:
+        type: number
+      certificate_subtitle_pos_y:
+        type: number
+      certificate_title_pos_x:
+        type: number
+      certificate_title_pos_y:
+        type: number
       created_at:
         type: string
       event_id:
@@ -3061,6 +3069,26 @@ paths:
         in: formData
         name: academic_institution_pos_y
         type: number
+      - description: Certificate title position x
+        format: float64
+        in: formData
+        name: certificate_title_pos_x
+        type: number
+      - description: Certificate title position y
+        format: float64
+        in: formData
+        name: certificate_title_pos_y
+        type: number
+      - description: Certificate subtitle position x
+        format: float64
+        in: formData
+        name: certificate_subtitle_pos_x
+        type: number
+      - description: Certificate subtitle position y
+        format: float64
+        in: formData
+        name: certificate_subtitle_pos_y
+        type: number
       produces:
       - application/json
       responses:
@@ -4265,4 +4293,44 @@ paths:
       summary: Verify password
       tags:
       - Profile
+  /certificates/{certificate_id}/image:
+    get:
+      description: Generates a PNG certificate image for the authenticated user's
+        certificate
+      operationId: generate-certificate-image
+      parameters:
+      - description: Certificate ID
+        format: uuid
+        in: path
+        name: certificate_id
+        required: true
+        type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: PNG certificate image
+          schema:
+            type: file
+        "400":
+          description: Invalid certificate ID
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: User does not own this certificate
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Certificate not found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      security:
+      - CookieAuth: []
+      summary: Generate certificate image for participant
+      tags:
+      - certificates
 swagger: "2.0"

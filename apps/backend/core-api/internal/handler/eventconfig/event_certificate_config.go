@@ -27,6 +27,10 @@ type EventCertificateConfigResponse struct {
 	NamePosY                    float64            `json:"name_pos_y"`
 	AcademicInstitutionPosX     *float64           `json:"academic_institution_pos_x,omitempty"`
 	AcademicInstitutionPosY     *float64           `json:"academic_institution_pos_y,omitempty"`
+	CertificateTitlePosX        *float64           `json:"certificate_title_pos_x,omitempty"`
+	CertificateTitlePosY        *float64           `json:"certificate_title_pos_y,omitempty"`
+	CertificateSubtitlePosX     *float64           `json:"certificate_subtitle_pos_x,omitempty"`
+	CertificateSubtitlePosY     *float64           `json:"certificate_subtitle_pos_y,omitempty"`
 	IsPublished                 bool               `json:"is_published"`
 	CreatedAt                   string             `json:"created_at"`
 	UpdatedAt                   string             `json:"updated_at"`

@@ -72,6 +72,22 @@ func (m *MockEventCertificateDataGateway) DeleteEventCertificate(ctx context.Con
 	return args.Error(0)
 }
 
+func (m *MockEventCertificateDataGateway) GetClaimedCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockEventCertificateDataGateway) GetClaimedCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
+	return nil, errors.New("not implemented")
+}
+
 type MockEventCertificateSignatureDataGateway struct {
 	mock.Mock
 }

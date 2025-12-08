@@ -214,22 +214,32 @@ type EventCertificate struct {
 }
 
 type EventCertificateConfig struct {
-	ID                        uuid.UUID          `json:"id"`
-	EventID                   uuid.UUID          `json:"event_id"`
-	BaseCertificateStorageKey string             `json:"base_certificate_storage_key"`
-	EventNamePosX             float64            `json:"event_name_pos_x"`
-	EventNamePosY             float64            `json:"event_name_pos_y"`
-	NamePosX                  float64            `json:"name_pos_x"`
-	NamePosY                  float64            `json:"name_pos_y"`
-	AcademicInstitutionPosX   pgtype.Float8      `json:"academic_institution_pos_x"`
-	AcademicInstitutionPosY   pgtype.Float8      `json:"academic_institution_pos_y"`
-	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
-	CertificateTitlePosX      pgtype.Float8      `json:"certificate_title_pos_x"`
-	CertificateTitlePosY      pgtype.Float8      `json:"certificate_title_pos_y"`
-	CertificateSubtitlePosX   pgtype.Float8      `json:"certificate_subtitle_pos_x"`
-	CertificateSubtitlePosY   pgtype.Float8      `json:"certificate_subtitle_pos_y"`
-	IsPublished               bool               `json:"is_published"`
+	ID                            uuid.UUID          `json:"id"`
+	EventID                       uuid.UUID          `json:"event_id"`
+	BaseCertificateStorageKey     string             `json:"base_certificate_storage_key"`
+	EventNamePosX                 float64            `json:"event_name_pos_x"`
+	EventNamePosY                 float64            `json:"event_name_pos_y"`
+	NamePosX                      float64            `json:"name_pos_x"`
+	NamePosY                      float64            `json:"name_pos_y"`
+	AcademicInstitutionPosX       pgtype.Float8      `json:"academic_institution_pos_x"`
+	AcademicInstitutionPosY       pgtype.Float8      `json:"academic_institution_pos_y"`
+	CreatedAt                     pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                     pgtype.Timestamptz `json:"updated_at"`
+	CertificateTitlePosX          pgtype.Float8      `json:"certificate_title_pos_x"`
+	CertificateTitlePosY          pgtype.Float8      `json:"certificate_title_pos_y"`
+	CertificateSubtitlePosX       pgtype.Float8      `json:"certificate_subtitle_pos_x"`
+	CertificateSubtitlePosY       pgtype.Float8      `json:"certificate_subtitle_pos_y"`
+	IsPublished                   bool               `json:"is_published"`
+	EventNameFontFamily           pgtype.Text        `json:"event_name_font_family"`
+	EventNameFontWeight           pgtype.Int4        `json:"event_name_font_weight"`
+	NameFontFamily                pgtype.Text        `json:"name_font_family"`
+	NameFontWeight                pgtype.Int4        `json:"name_font_weight"`
+	AcademicInstitutionFontFamily pgtype.Text        `json:"academic_institution_font_family"`
+	AcademicInstitutionFontWeight pgtype.Int4        `json:"academic_institution_font_weight"`
+	CertificateTitleFontFamily    pgtype.Text        `json:"certificate_title_font_family"`
+	CertificateTitleFontWeight    pgtype.Int4        `json:"certificate_title_font_weight"`
+	CertificateSubtitleFontFamily pgtype.Text        `json:"certificate_subtitle_font_family"`
+	CertificateSubtitleFontWeight pgtype.Int4        `json:"certificate_subtitle_font_weight"`
 }
 
 type EventCertificateSignature struct {

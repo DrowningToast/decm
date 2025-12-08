@@ -1631,6 +1631,34 @@
                         "description": "Academic institution position y",
                         "name": "academic_institution_pos_y",
                         "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Certificate title position x",
+                        "name": "certificate_title_pos_x",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Certificate title position y",
+                        "name": "certificate_title_pos_y",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Certificate subtitle position x",
+                        "name": "certificate_subtitle_pos_x",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Certificate subtitle position y",
+                        "name": "certificate_subtitle_pos_y",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -3378,6 +3406,66 @@
                     }
                 }
             }
+        },
+        "/certificates/{certificate_id}/image": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Generates a PNG certificate image for the authenticated user's certificate",
+                "produces": [
+                    "image/png"
+                ],
+                "tags": [
+                    "certificates"
+                ],
+                "summary": "Generate certificate image for participant",
+                "operationId": "generate-certificate-image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Certificate ID",
+                        "name": "certificate_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PNG certificate image",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid certificate ID",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "User does not own this certificate",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Certificate not found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -3698,6 +3786,18 @@
                 },
                 "base_certificate_storage_key": {
                     "type": "string"
+                },
+                "certificate_subtitle_pos_x": {
+                    "type": "number"
+                },
+                "certificate_subtitle_pos_y": {
+                    "type": "number"
+                },
+                "certificate_title_pos_x": {
+                    "type": "number"
+                },
+                "certificate_title_pos_y": {
+                    "type": "number"
                 },
                 "created_at": {
                     "type": "string"

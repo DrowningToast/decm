@@ -47,6 +47,9 @@ export const CertificateSettingsPage = ({
     const { updateEventIssuer, isUpdatingEventIssuer } = useUpdateEventIssuer(eventId!);
     const { deleteEventIssuerAsync } = useDeleteEventIssuer();
 
+    // Check if certificate is published - if so, disable issuer editing
+    const isCertificatePublished = eventCertificateConfig?.is_published ?? false;
+
     // Use custom hooks for state management
     // Extract issuer profiles from event issuers
     const selectedIssuerProfiles = eventIssuers?.map((issuer) => issuer);
@@ -167,6 +170,32 @@ export const CertificateSettingsPage = ({
             });
         }
 
+        // Add certificateTitle keyword if position exists (it's optional, so if it exists, it was detected)
+        if (
+            eventCertificateConfig.certificate_title_pos_x !== undefined &&
+            eventCertificateConfig.certificate_title_pos_y !== undefined
+        ) {
+            keywords.push({
+                keyword: "{{ certificateTitle }}",
+                x: eventCertificateConfig.certificate_title_pos_x,
+                y: eventCertificateConfig.certificate_title_pos_y,
+                count: 1,
+            });
+        }
+
+        // Add certificateSubtitle keyword if position exists (it's optional, so if it exists, it was detected)
+        if (
+            eventCertificateConfig.certificate_subtitle_pos_x !== undefined &&
+            eventCertificateConfig.certificate_subtitle_pos_y !== undefined
+        ) {
+            keywords.push({
+                keyword: "{{ certificateSubtitle }}",
+                x: eventCertificateConfig.certificate_subtitle_pos_x,
+                y: eventCertificateConfig.certificate_subtitle_pos_y,
+                count: 1,
+            });
+        }
+
         return keywords;
     }, [eventCertificateConfig]);
 
@@ -205,6 +234,14 @@ export const CertificateSettingsPage = ({
                 (keyword) => keyword.keyword === "{{ academicInstitutionName }}",
             );
 
+            const certificateTitle = allDetectedKeywords.find(
+                (keyword) => keyword.keyword === "{{ certificateTitle }}",
+            );
+
+            const certificateSubtitle = allDetectedKeywords.find(
+                (keyword) => keyword.keyword === "{{ certificateSubtitle }}",
+            );
+
             if (certificateTemplate.svgFile && !name) {
                 toast.error(t("certificateSettings.nameNotFound"));
                 return;
@@ -223,16 +260,30 @@ export const CertificateSettingsPage = ({
                 req.academic_institution_pos_y = acedmicInstitutionName.y;
             }
 
+            if (certificateTitle) {
+                req.certificate_title_pos_x = certificateTitle.x;
+                req.certificate_title_pos_y = certificateTitle.y;
+            }
+
+            if (certificateSubtitle) {
+                req.certificate_subtitle_pos_x = certificateSubtitle.x;
+                req.certificate_subtitle_pos_y = certificateSubtitle.y;
+            }
+
             await updateCertificateConfig(req);
-            await updateEventIssuer(
-                issuerManagement.selectedIssuers.map((issuer) => {
-                    console.log(issuer);
-                    return {
-                        event_id: eventId,
-                        issuer_credential_id: issuer.id,
-                    };
-                }),
-            );
+
+            // Only update issuers if certificate is not published
+            if (!isCertificatePublished) {
+                await updateEventIssuer(
+                    issuerManagement.selectedIssuers.map((issuer) => {
+                        console.log(issuer);
+                        return {
+                            event_id: eventId,
+                            issuer_credential_id: issuer.id,
+                        };
+                    }),
+                );
+            }
 
             // Refetch all queries to ensure the page is up to date
             await Promise.all([
@@ -340,6 +391,17 @@ export const CertificateSettingsPage = ({
 
                         {/* Search Issuers */}
                         <div className="space-y-4 rounded-lg border p-6">
+                            {isCertificatePublished && (
+                                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        className="text-sm text-yellow-800"
+                                    >
+                                        {t("certificateSettings.step1.publishedWarning")}
+                                    </Typography>
+                                </div>
+                            )}
                             <div>
                                 <Label htmlFor="issuer-search">
                                     <Typography
@@ -369,7 +431,10 @@ export const CertificateSettingsPage = ({
                                                     issuerManagement.handleSearch();
                                                 }
                                             }}
-                                            disabled={issuerManagement.isSearching}
+                                            disabled={
+                                                issuerManagement.isSearching ||
+                                                isCertificatePublished
+                                            }
                                             className="h-10"
                                         />
                                         <Button
@@ -377,7 +442,8 @@ export const CertificateSettingsPage = ({
                                             onClick={issuerManagement.handleSearch}
                                             disabled={
                                                 issuerManagement.isSearching ||
-                                                !issuerManagement.searchQuery.trim()
+                                                !issuerManagement.searchQuery.trim() ||
+                                                isCertificatePublished
                                             }
                                             className="min-w-[100px] h-10"
                                         >
@@ -408,6 +474,7 @@ export const CertificateSettingsPage = ({
                                 selectedIssuers={savedIssuers}
                                 onRemoveIssuer={handleRemoveIssuer}
                                 title={t("certificateSettings.step1.savedIssuers")}
+                                disabled={isCertificatePublished}
                             />
 
                             {/* Unsaved Issuers Table */}
@@ -416,6 +483,7 @@ export const CertificateSettingsPage = ({
                                 onRemoveIssuer={handleRemoveIssuer}
                                 title={t("certificateSettings.step1.unsavedIssuers")}
                                 isUnsaved={true}
+                                disabled={isCertificatePublished}
                             />
                         </div>
                     </div>

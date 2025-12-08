@@ -1,0 +1,156 @@
+package event
+
+import (
+	"apps/backend/core-api/internal/usecase/event"
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+)
+
+// Example handler for generating certificate images
+// This file demonstrates how to integrate the certificate image generation usecase
+// into your API handlers
+
+// GenerateCertificateImageRequest represents the request body
+// Fields match the event_certificates table schema
+type GenerateCertificateImageRequest struct {
+	// Name is the participant name (required)
+	Name string `json:"name" validate:"required"`
+	// EventName is required
+	EventName string `json:"event_name" validate:"required"`
+	// Optional fields matching database schema
+	AcademicInstitution *string `json:"academic_institution,omitempty"`
+	CertificateTitle    *string `json:"certificate_title,omitempty"`
+	CertificateSubtitle *string `json:"certificate_subtitle,omitempty"`
+}
+
+// GenerateCertificateImage generates a certificate image from SVG template
+// @Summary Generate certificate image
+// @Description Generates a PNG image from an SVG certificate template by replacing template variables
+// @ID generate-certificate-image
+// @Accept json
+// @Produce image/png
+// @Param eventId path string true "Event ID"
+// @Param body body GenerateCertificateImageRequest true "Template variables"
+// @Success 200 {file} binary "PNG image"
+// @Failure 400 {object} customerror.ErrResponse
+// @Failure 404 {object} customerror.ErrResponse
+// @Failure 500 {object} customerror.ErrResponse
+// @Router /api/v1/events/{eventId}/certificate-image [post]
+func (h *Handler) GenerateCertificateImage(ctx *fiber.Ctx) error {
+	// 1. Parse event ID from path
+	eventIDStr := ctx.Params("eventId")
+	eventID, err := uuid.Parse(eventIDStr)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid event ID")
+	}
+
+	// 2. Parse and validate request body
+	var req GenerateCertificateImageRequest
+	if err := ctx.BodyParser(&req); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
+	}
+
+	// 3. Convert to strictly-typed template variables
+	templateVars := event.CertificateTemplateVariables{
+		Name:                req.Name,
+		EventName:           req.EventName,
+		AcademicInstitution: req.AcademicInstitution,
+		CertificateTitle:    req.CertificateTitle,
+		CertificateSubtitle: req.CertificateSubtitle,
+	}
+
+	// 4. Call the usecase to generate the image
+	params := event.GenerateCertificateImageParams{
+		TemplateVariables: templateVars,
+	}
+
+	pngBytes, err := h.EventUsecase.GenerateCertificateImageByEventID(ctx.Context(), eventID, params)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Failed to generate certificate image: "+err.Error())
+	}
+
+	// 5. Return the PNG image
+	ctx.Set("Content-Type", "image/png")
+	ctx.Set("Cache-Control", "public, max-age=86400") // Cache for 24 hours
+	ctx.Set("Content-Disposition", "inline; filename=certificate.png")
+	
+	return ctx.Send(pngBytes)
+}
+
+// Alternative: Generate certificate for a specific participant
+// GenerateCertificateImageForParticipant generates a certificate for a specific participant
+// @Summary Generate participant certificate image
+// @Description Generates a PNG certificate for a specific participant with their details
+// @ID generate-participant-certificate-image
+// @Produce image/png
+// @Param eventId path string true "Event ID"
+// @Param participantId path string true "Participant Credential ID"
+// @Success 200 {file} binary "PNG image"
+// @Failure 404 {object} customerror.ErrResponse
+// @Failure 500 {object} customerror.ErrResponse
+// @Router /api/v1/events/{eventId}/participants/{participantId}/certificate-image [get]
+func (h *Handler) GenerateCertificateImageForParticipant(ctx *fiber.Ctx) error {
+	// 1. Parse IDs
+	eventIDStr := ctx.Params("eventId")
+	eventID, err := uuid.Parse(eventIDStr)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid event ID")
+	}
+
+	participantIDStr := ctx.Params("participantId")
+	participantID, err := uuid.Parse(participantIDStr)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid participant ID")
+	}
+
+	// 2. Get participant certificate details
+	certificate, err := h.EventUsecase.EventCertificateDataGateway.GetEventCertificateByID(ctx.Context(), participantID)
+	if err != nil {
+		return fiber.NewError(fiber.StatusNotFound, "Certificate not found")
+	}
+
+	// 3. Get event details
+	event, err := h.EventUsecase.EventDataGateway.GetEventById(ctx.Context(), eventID)
+	if err != nil {
+		return fiber.NewError(fiber.StatusNotFound, "Event not found")
+	}
+
+	// 4. Prepare strictly-typed template variables from certificate and event data
+	templateVars := event.CertificateTemplateVariables{
+		Name:                *certificate.Name,
+		EventName:           event.Title,
+		AcademicInstitution: certificate.AcademicInstitution,
+		CertificateTitle:    certificate.CertificateTitle,
+		CertificateSubtitle: certificate.CertificateSubtitle,
+	}
+
+	// 5. Generate the image
+	params := event.GenerateCertificateImageParams{
+		TemplateVariables: templateVars,
+	}
+
+	pngBytes, err := h.EventUsecase.GenerateCertificateImageByEventID(ctx.Context(), eventID, params)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Failed to generate certificate: "+err.Error())
+	}
+
+	// 6. Return PNG
+	ctx.Set("Content-Type", "image/png")
+	ctx.Set("Cache-Control", "public, max-age=86400")
+	filename := "certificate-" + participantID.String() + ".png"
+	ctx.Set("Content-Disposition", "inline; filename="+filename)
+	
+	return ctx.Send(pngBytes)
+}
+
+// Usage in routes.go:
+// func SetupEventRoutes(router fiber.Router, handler *Handler) {
+//     events := router.Group("/events")
+//     
+//     // Generate certificate image with custom variables
+//     events.Post("/:eventId/certificate-image", handler.GenerateCertificateImage)
+//     
+//     // Generate certificate for specific participant
+//     events.Get("/:eventId/participants/:participantId/certificate-image", handler.GenerateCertificateImageForParticipant)
+// }
+

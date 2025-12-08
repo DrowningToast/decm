@@ -945,6 +945,570 @@ return <Typography>{t("participant.events.detail.joined")}</Typography>;
 
 ---
 
+## Certificate Features
+
+### Overview
+
+The DECM platform includes comprehensive certificate management features including:
+
+- Certificate configuration with custom SVG templates
+- Mint readiness validation (config, issuer signatures, contract deployment)
+- Certificate publishing system with `is_published` flag
+- Certificate image generation (SVG → PNG on-demand)
+- Certificate claiming mechanism for participants
+- Backend authorization guards for certificate operations
+
+### Certificate Configuration (`is_published`)
+
+**Database Field**: `event_certificate_configs.is_published` (BOOLEAN, default: FALSE)
+
+**Purpose**: Track explicit publication status of certificate configurations
+
+**Key Files**:
+
+- Migration: `packages/database/migrations/000008_add_is_published_to_event_certificate_configs.up.sql`
+- Backend Handler: `apps/backend/core-api/internal/handler/eventconfig/toggle_certificate_published.go`
+- Frontend Hook: `apps/web/src/hooks/events/useToggleCertificatePublished.ts`
+- UI: `apps/web/src/components/pages/HostPages/EventsPage/HostEventDetailsPage.tsx`
+
+**API Endpoint**:
+
+```
+PATCH /api/v1/events/{event_id}/config/certificate/published
+Body: { "is_published": true }
+```
+
+**Usage Pattern**:
+
+```typescript
+// Frontend - Toggle published status
+const { mutate: togglePublished } = useToggleCertificatePublished(eventId);
+togglePublished({ is_published: true });
+
+// Backend - Check published status
+if config.IsPublished {
+    // Certificate configuration is live
+}
+```
+
+### Certificate Mint Readiness
+
+**Purpose**: Validate all prerequisites before allowing certificate minting
+
+**Validation Checks**:
+
+1. ✅ Certificate configuration exists (SVG template uploaded)
+2. ✅ ALL assigned issuers have signed (not just one)
+3. ✅ Certificate contract deployed and address set
+
+**Key Files**:
+
+- Backend UseCase: `apps/backend/core-api/internal/usecase/eventconfig/check_certificate_mint_readiness.go`
+- Backend Handler: `apps/backend/core-api/internal/handler/eventconfig/check_certificate_mint_readiness_response.go`
+- Frontend Hook: `apps/web/src/hooks/events/useCertificateMintReadiness.ts`
+- SQL Queries: `packages/database/queries/event_issuers.sql` (AllIssuersHaveSigned, GetTotalIssuersCount)
+
+**API Endpoint**:
+
+```
+GET /api/v1/events/{event_id}/config/certificate/mint-readiness
+
+Response:
+{
+  "is_ready": boolean,
+  "has_certificate_config": boolean,
+  "all_issuers_have_signed": boolean,
+  "signed_issuers_count": number,
+  "total_issuers_count": number,
+  "has_certificate_contract": boolean,
+  "certificate_contract_address": string | null,
+  "missing_requirements": string[]
+}
+```
+
+**Critical SQL Query**:
+
+```sql
+-- Returns true ONLY if ALL issuers have signed
+SELECT
+    CASE
+        WHEN COUNT(*) = 0 THEN false
+        WHEN COUNT(*) = COUNT(*) FILTER (WHERE is_signed = 1) THEN true
+        ELSE false
+    END AS all_issuers_signed
+FROM event_issuers
+WHERE event_id = $1 AND deleted_at IS NULL;
+```
+
+**Frontend Display**:
+
+```typescript
+const { data: mintReadiness } = useCertificateMintReadiness(eventId);
+
+// Show status card
+{mintReadiness?.is_ready ? (
+    <div className="bg-green-50">✅ Ready to Mint Certificates</div>
+) : (
+    <div className="bg-blue-50">
+        ○ Certificate Minting Requirements
+        <ul>
+            {mintReadiness?.missing_requirements.map(req => (
+                <li key={req}>• {req}</li>
+            ))}
+        </ul>
+    </div>
+)}
+
+// Disable publish button when not ready
+<Button disabled={!mintReadiness?.is_ready}>
+    Publish Configuration
+</Button>
+```
+
+### Certificate Image Generation
+
+**Purpose**: Generate PNG certificate images from SVG templates on-demand with participant data
+
+**Architecture**: Server-side rendering (SVG → PNG) with template variable substitution
+
+**Key Files**:
+
+- Backend UseCase: `apps/backend/core-api/internal/usecase/event/generate_certificate_image.go`
+- Backend UseCase (Participant): `apps/backend/core-api/internal/usecase/event/generate_certificate_image_for_participant.go`
+- Backend Handler: `apps/backend/core-api/internal/handler/event/generate_certificate_image.go`
+- Frontend Hook: `apps/web/src/hooks/useCertificateImage.ts`
+- Frontend Component: `apps/web/src/components/pages/Participant/Certificates/CertificateDetail.tsx`
+
+**Supported Template Variables**:
+
+- `name` - Participant name (REQUIRED)
+- `event_name` - Event name (REQUIRED)
+- `academic_institution` - Academic institution (OPTIONAL)
+- `certificate_title` - Certificate title (OPTIONAL)
+- `certificate_subtitle` - Certificate subtitle (OPTIONAL)
+
+**API Endpoint**:
+
+```
+GET /api/v1/certificates/{certificate_id}/image
+
+Response Headers:
+Content-Type: image/png
+Cache-Control: public, max-age=86400
+Content-Disposition: inline; filename=certificate.png
+
+Security:
+- Authentication Required (JWT cookie)
+- Ownership Verification (user must own certificate)
+- Returns 403 if unauthorized
+```
+
+**Backend Pattern**:
+
+```go
+// 1. Verify authorization
+func (u *EventUsecase) GenerateCertificateImageForParticipant(
+    ctx context.Context,
+    certificateID uuid.UUID,
+    authCredID uuid.UUID,
+) ([]byte, error) {
+    // Get certificate
+    cert, err := u.eventRepo.GetCertificateByID(ctx, certificateID)
+
+    // Check ownership
+    if cert.ReceiverCredentialID != authCredID {
+        return nil, customerror.New(customerror.StatusForbidden, "Unauthorized")
+    }
+
+    // Get template from S3
+    template, err := u.s3Client.Get(cert.TemplateStorageKey)
+
+    // Map variables
+    variables := CertificateTemplateVariables{
+        Name: cert.ReceiverName,
+        EventName: cert.EventName,
+        // ... other fields
+    }
+
+    // Render SVG to PNG
+    return RenderSVGToPNG(template, variables)
+}
+```
+
+**Frontend Pattern**:
+
+```typescript
+// Custom hook for image fetching
+const useCertificateImage = ({ certificateId, enabled }) => {
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!enabled || !certificateId) return;
+
+        fetch(`${API_URL}/certificates/${certificateId}/image`, {
+            credentials: 'include', // Include auth cookies
+        })
+        .then(res => res.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            setImageUrl(url);
+        });
+
+        // Cleanup
+        return () => {
+            if (imageUrl) URL.revokeObjectURL(imageUrl);
+        };
+    }, [certificateId, enabled]);
+
+    return { imageUrl, isLoading, error };
+};
+
+// Usage in component
+const { imageUrl, isLoading } = useCertificateImage({
+    certificateId: certificate.id,
+    enabled: true,
+});
+
+{isLoading ? (
+    <Spinner />
+) : imageUrl ? (
+    <img src={imageUrl} alt="Certificate" loading="lazy" />
+) : (
+    <div>Certificate not available</div>
+)}
+```
+
+**SVG Template Requirements**:
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600">
+    <!-- IDs must match database field names -->
+    <text id="certificate_title">TITLE</text>
+    <text id="name">NAME</text>
+    <text id="event_name">EVENT</text>
+    <text id="academic_institution">INSTITUTION</text>
+    <text id="certificate_subtitle">SUBTITLE</text>
+</svg>
+```
+
+### Certificate Claiming
+
+**Purpose**: Allow participants to claim their certificates with password verification
+
+**Key Files**:
+
+- Frontend Hook: `apps/web/src/hooks/useClaimCertificate.ts`
+- Frontend Component: `apps/web/src/components/pages/Participant/Certificates/CertificateDetail.tsx`
+- Backend Endpoint: To be implemented at `POST /api/v1/events/{event_id}/certificates/{certificate_id}/claim`
+
+**User Flow**:
+
+1. Participant views certificate detail page
+2. If unclaimed (status !== "completed"), sees "Claim Certificate" button
+3. Clicks button → Password/PIN modal opens
+4. Enters PIN/password for verification
+5. Backend verifies password and mints NFT
+6. Certificate status updated to "completed"
+7. Button changes to "Certificate Claimed" badge
+
+**Frontend Pattern**:
+
+```typescript
+// Custom hook
+const useClaimCertificate = (certificateId: string, eventId: string) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (accountPassword: string) => {
+            // TODO: Replace with real API call when backend ready
+            return await coreApi.claimCertificate(
+                { certificateId, eventId },
+                { account_password: accountPassword }
+            );
+        },
+        onSuccess: () => {
+            toast.success(t("participant.certificates.claimSuccess"));
+            queryClient.invalidateQueries({ queryKey: QUERY_KEY.certificate.all });
+            queryClient.invalidateQueries({ queryKey: QUERY_KEY.inbox.all });
+        },
+        onError: () => {
+            toast.error(t("participant.certificates.claimError"));
+        },
+    });
+};
+
+// Usage in component
+const { mutate: claimCertificate, isPending } = useClaimCertificate(certId, eventId);
+
+const handleClaim = async () => {
+    const password = await openPasswordPrompt({
+        title: t("participant.certificates.claimTitle"),
+        description: t("participant.certificates.claimDescription"),
+        transactionType: "Certificate Claim",
+    });
+
+    claimCertificate(password);
+};
+
+// UI
+{certificate.status === "completed" ? (
+    <Badge variant="success">
+        <Check className="w-4 h-4" />
+        {t("participant.certificates.claimed")}
+    </Badge>
+) : (
+    <Button onClick={handleClaim} disabled={isPending}>
+        {isPending ? "Claiming..." : "Claim Certificate"}
+    </Button>
+)}
+```
+
+**Backend Requirements** (To be implemented):
+
+```go
+// Handler
+// @Summary Claim certificate as participant
+// @Description Mint certificate NFT and mark as claimed
+// @Tags Certificates, Participant
+// @Param event_id path string true "Event ID"
+// @Param certificate_id path string true "Certificate ID"
+// @Param body body ClaimCertificateRequest true "Account password"
+// @Success 200 {object} ClaimCertificateResponse
+// @Failure 401 {object} customerror.ErrResponse "Invalid password"
+// @Failure 403 {object} customerror.ErrResponse "Not certificate owner"
+// @Failure 409 {object} customerror.ErrResponse "Already claimed"
+// @Router /api/v1/events/{event_id}/certificates/{certificate_id}/claim [post]
+func (h *CertificateHandler) ClaimCertificate(ctx *fiber.Ctx) error
+
+// Request/Response
+type ClaimCertificateRequest struct {
+    AccountPassword string `json:"account_password" binding:"required"`
+}
+
+type ClaimCertificateResponse struct {
+    CertificateID      string `json:"certificate_id"`
+    CertificateTokenID string `json:"certificate_token_id"`
+    TransactionHash    string `json:"transaction_hash"`
+    ClaimedAt          string `json:"claimed_at"`
+}
+
+// Business Logic Steps:
+// 1. Verify JWT and get user credential ID
+// 2. Verify account_password matches user's stored password
+// 3. Get certificate and verify:
+//    - Certificate exists
+//    - Belongs to authenticated user (receiver_credential_id match)
+//    - Not already claimed (certificate_token_id is NULL)
+// 4. Mint NFT using system-managed wallet
+// 5. Update database:
+//    - Set certificate_token_id
+//    - Set claimed timestamp
+//    - Update inbox message to "claimed" status
+// 6. Return certificate details with token ID and tx hash
+```
+
+### Certificate Settings Update Impact
+
+**Key Consideration**: Changes to certificate configuration after publishing require re-approval from all issuers
+
+**Warning Pattern**:
+
+```typescript
+{certificateConfig?.is_published && (
+    <Alert variant="warning">
+        ⚠️ Certificate configuration has been published.
+        Any changes will require re-approval from all issuers.
+    </Alert>
+)}
+```
+
+**Implementation**:
+
+- When config is published, show warning on settings page
+- After updates, set `is_published = false`
+- Require all issuers to sign again
+- Re-check mint readiness before allowing publication
+
+### Testing Certificate Features
+
+**Backend Tests**:
+
+```bash
+cd apps/backend
+go test -v ./core-api/internal/usecase/event -run "TestCertificate"
+go test -v ./core-api/internal/usecase/eventconfig -run "TestCheckCertificateMintReadiness"
+```
+
+**Frontend Tests**:
+
+```bash
+pnpm test useCertificateImage
+pnpm test useClaimCertificate
+pnpm test useCertificateMintReadiness
+pnpm test useToggleCertificatePublished
+```
+
+**Manual Testing Checklist**:
+
+- [ ] Upload certificate template (SVG)
+- [ ] Assign issuers to event
+- [ ] Verify mint readiness shows correct status
+- [ ] All issuers sign certificate config
+- [ ] Mint readiness shows "ready" when all requirements met
+- [ ] Publish certificate configuration
+- [ ] Generate certificate image (loads correctly)
+- [ ] Claim certificate (password verification works)
+- [ ] Certificate status updates to "completed"
+- [ ] Make changes to published config (warning appears)
+- [ ] Verify `is_published` resets to false after update
+
+---
+
+## Deployment
+
+### Production Deployment with Docker Compose
+
+**Prerequisites**:
+
+- Docker Engine 20.10+ and Docker Compose v2.0+
+- At least 4GB RAM and 20GB disk space
+- Domain name configured (optional, for SSL)
+
+**Quick Start**:
+
+```bash
+# 1. Configure environment
+cp .env.example .env
+# Edit .env with production values
+
+# 2. Start services
+docker compose -f docker-compose.prod.yml up -d
+
+# 3. Verify
+docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs -f
+```
+
+**Service Architecture**:
+
+1. **PostgreSQL Database** - Persistent storage with auto-initialization
+2. **Backend API** - Go REST API with auto-migrations on startup
+3. **Frontend** - React 19 SPA served by Nginx
+4. **Nginx Proxy Manager** (optional) - SSL termination and reverse proxy
+
+**Critical Environment Variables**:
+
+```bash
+# Security (MUST CHANGE)
+PII_ENCRYPTION_KEY=your-secure-32-character-key
+JWT_SECRET=your-secure-jwt-secret
+
+# Database
+DB_NAME=decm
+DB_USER=postgres
+DB_PASSWORD=your-secure-password
+
+# Blockchain
+BLOCKCHAIN_NETWORK=mainnet
+BLOCKCHAIN_RPC_URL=https://your-ethereum-node
+BLOCKCHAIN_PRIVATE_KEY=your-private-key
+BLOCKCHAIN_CHAIN_ID=1
+
+# CORS
+CORS_ALLOWED_ORIGINS=https://yourdomain.com
+
+# Frontend
+VITE_CORE_BACKEND_API=https://api.yourdomain.com
+VITE_APP_URL=https://yourdomain.com
+VITE_ENVIRONMENT=production
+```
+
+**Database Management**:
+
+```bash
+# Access PostgreSQL CLI
+docker compose -f docker-compose.prod.yml exec postgres psql -U postgres -d decm
+
+# Backup
+docker compose -f docker-compose.prod.yml exec postgres pg_dump -U postgres decm > backup.sql
+
+# Restore
+cat backup.sql | docker compose -f docker-compose.prod.yml exec -T postgres psql -U postgres -d decm
+```
+
+**SSL/HTTPS Setup with Nginx Proxy Manager**:
+
+1. Access NPM admin UI at `http://your-server-ip:81`
+2. Login with credentials from `.env` (NPM_ADMIN_EMAIL/NPM_ADMIN_PASSWORD)
+3. Add Proxy Host for frontend:
+    - Domain: yourdomain.com
+    - Forward: frontend:80
+    - SSL: Request Let's Encrypt certificate
+4. Add Proxy Host for API:
+    - Domain: api.yourdomain.com
+    - Forward: backend:8080
+    - SSL: Request Let's Encrypt certificate
+
+**Monitoring**:
+
+```bash
+# Logs
+docker compose -f docker-compose.prod.yml logs -f
+docker compose -f docker-compose.prod.yml logs -f backend
+
+# Health checks
+curl http://localhost:8080/ready  # Backend
+curl http://localhost:3000/        # Frontend
+
+# Resource usage
+docker stats
+```
+
+**Updates**:
+
+```bash
+# Pull latest code
+git pull origin main
+
+# Rebuild and restart
+docker compose -f docker-compose.prod.yml build
+docker compose -f docker-compose.prod.yml up -d
+
+# Zero-downtime update (one service at a time)
+docker compose -f docker-compose.prod.yml up -d --no-deps backend
+docker compose -f docker-compose.prod.yml up -d --no-deps frontend
+```
+
+**Security Checklist**:
+
+- [ ] Changed all default passwords
+- [ ] Generated secure PII_ENCRYPTION_KEY (32 characters)
+- [ ] Generated secure JWT_SECRET
+- [ ] Configured SSL certificates
+- [ ] Restricted PostgreSQL port (5432) to internal network
+- [ ] Set up firewall rules (only 80, 443 exposed)
+- [ ] Configured automated backups
+- [ ] Updated CORS origins for production domain
+- [ ] Verified S3 storage credentials
+- [ ] Tested blockchain connection
+
+**Troubleshooting**:
+
+```bash
+# Backend fails to start - check database connection
+docker compose -f docker-compose.prod.yml logs postgres
+docker compose -f docker-compose.prod.yml logs backend
+
+# Frontend API errors - verify CORS
+docker compose -f docker-compose.prod.yml exec backend env | grep CORS
+
+# Out of disk space - clean up
+docker system prune -a --volumes
+docker system df -v
+```
+
+---
+
 ## Prohibited Patterns
 
 ❌ **NEVER do these:**

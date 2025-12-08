@@ -30,7 +30,7 @@ const mapEventCertificateToViewModel = (cert: EntityEventCertificate): Certifica
         certificateTitle: cert.certificate_title || undefined,
         certificateSubtitle: cert.certificate_subtitle || undefined,
         academicInstitution: cert.academic_institution || undefined,
-        certificateImageUrl: undefined, // TODO: Add when image field is available
+        certificateImageUrl: undefined, // Fetched separately via useCertificateImage hook
         certificateContractAddress: cert.event_certificate_address || undefined,
         eventContractAddress: cert.event_contract_address || undefined,
         verifiableCredentialUrl: undefined, // TODO: Add when VC URL is available
@@ -38,7 +38,7 @@ const mapEventCertificateToViewModel = (cert: EntityEventCertificate): Certifica
 };
 
 export const useCertificateDetailUsecase = (certificateId: string) => {
-    const { setCertificateId } = useCertificateDetailNavStore();
+    const { setCertificateId, setIsClaimed } = useCertificateDetailNavStore();
     const { claimedCertificates, unclaimedCertificates, isLoading, isError } =
         useMyCertificatesListViewModel();
 
@@ -63,13 +63,15 @@ export const useCertificateDetailUsecase = (certificateId: string) => {
         });
     }, [certificate]);
 
-    // Set the certificate ID in the nav store when component mounts
+    // Set the certificate ID and claimed status in the nav store when component mounts
     useEffect(() => {
         setCertificateId(certificateId);
+        setIsClaimed(certificate?.status === "completed");
         return () => {
             setCertificateId(null);
+            setIsClaimed(false);
         };
-    }, [certificateId, setCertificateId]);
+    }, [certificateId, certificate?.status, setCertificateId, setIsClaimed]);
 
     return {
         certificate,

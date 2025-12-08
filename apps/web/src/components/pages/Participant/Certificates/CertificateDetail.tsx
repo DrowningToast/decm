@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
 import { useClaimCertificate } from "@/hooks/useClaimCertificate";
+import { useCertificateImage } from "@/hooks/useCertificateImage";
 
 interface CertificateDetailProps {
     certificateId: string;
@@ -20,6 +21,16 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
     const { mutateAsync: openPasswordPrompt } = usePasswordPrompt();
     const { claimCertificate, isClaiming } = useClaimCertificate();
     const [isProcessing, setIsProcessing] = useState(false);
+
+    // Fetch certificate image with authentication
+    const {
+        imageUrl: certificateImageUrl,
+        isLoading: isImageLoading,
+        error: imageError,
+    } = useCertificateImage({
+        certificateId,
+        enabled: !!certificate,
+    });
 
     const handleClaimCertificate = async () => {
         if (!certificate) return;
@@ -144,16 +155,33 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                     </Link>
                 </div>
 
-                {/* Certificate Image Placeholder */}
-                <div className="w-full h-[172px] bg-muted rounded-lg overflow-hidden">
-                    {certificate.certificateImageUrl ? (
+                {/* Certificate Image */}
+                <div className="w-full h-[172px] bg-muted rounded-lg overflow-hidden relative">
+                    {isImageLoading ? (
+                        <div className="w-full h-full flex items-center justify-center bg-muted/50">
+                            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                        </div>
+                    ) : certificateImageUrl && !imageError ? (
                         <img
-                            src={certificate.certificateImageUrl}
-                            alt={certificate.name}
-                            className="w-full h-full object-cover"
+                            src={certificateImageUrl}
+                            alt={`${certificate.name} - ${certificate.event}`}
+                            className="w-full h-full object-contain bg-white"
+                            loading="lazy"
                         />
                     ) : (
-                        <div className="w-full h-full bg-[#d9d9d9]" />
+                        <div className="w-full h-full bg-[#d9d9d9] flex items-center justify-center">
+                            <Typography variant="text" tag="p" color="muted" className="text-sm">
+                                {imageError
+                                    ? t(
+                                          "participant.certificates.detail.imageLoadError",
+                                          "Failed to load certificate image",
+                                      )
+                                    : t(
+                                          "participant.certificates.detail.certificatePreview",
+                                          "Certificate Preview",
+                                      )}
+                            </Typography>
+                        </div>
                     )}
                 </div>
 

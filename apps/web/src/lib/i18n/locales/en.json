@@ -1041,6 +1041,7 @@
             "searchPlaceholder": "Enter name, email, or organization...",
             "searchButton": "Search",
             "searchNote": "Note: Search query must exactly match the issuer's first name, last name, or OAuth email.",
+            "publishedWarning": "Certificate configuration has been published. Issuer settings cannot be modified.",
             "selectedIssuers": "Selected Issuers",
             "savedIssuers": "Saved Issuers",
             "unsavedIssuers": "Unsaved Changes",
@@ -1068,7 +1069,8 @@
             "removeIssuer": {
                 "title": "Remove Issuer",
                 "description": "Are you sure you want to remove this issuer? The issuer will be removed immediately without needing to click save.",
-                "minimumIssuerRequired": "At least one issuer is required for the certificate"
+                "minimumIssuerRequired": "At least one issuer is required for the certificate",
+                "disabledWhenPublished": "Cannot remove issuers after certificate configuration has been published"
             }
         },
         "step2": {
@@ -1120,7 +1122,9 @@
                     "status": "Status",
                     "keyword": "Keyword",
                     "type": "Type",
-                    "count": "Detected Count"
+                    "count": "Detected Count",
+                    "positionX": "Position X",
+                    "positionY": "Position Y"
                 },
                 "required": "Required",
                 "optional": "Optional",

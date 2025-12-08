@@ -20,6 +20,14 @@ func (r *Repository) CreateEventCertificateConfig(ctx context.Context, params ge
 	return &result, nil
 }
 
+func (r *Repository) GetEventCertificateConfigByID(ctx context.Context, id uuid.UUID) (*generated.EventCertificateConfig, error) {
+	result, err := r.queries.GetEventCertificateConfigByID(ctx, id)
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+	return &result, nil
+}
+
 func (r *Repository) GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (*generated.EventCertificateConfig, error) {
 	result, err := r.queries.GetEventCertificateConfigByEventID(ctx, eventID)
 	if err != nil {
@@ -30,6 +38,14 @@ func (r *Repository) GetEventCertificateConfigByEventID(ctx context.Context, eve
 
 func (r *Repository) UpdateEventCertificateConfig(ctx context.Context, params generated.UpdateEventCertificateConfigParams) (*generated.EventCertificateConfig, error) {
 	result, err := r.queries.UpdateEventCertificateConfig(ctx, params)
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+	return &result, nil
+}
+
+func (r *Repository) UpdateEventCertificateTextConfig(ctx context.Context, params generated.UpdateEventCertificateTextConfigParams) (*generated.EventCertificateConfig, error) {
+	result, err := r.queries.UpdateEventCertificateTextConfig(ctx, params)
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
 	}

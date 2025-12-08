@@ -10,7 +10,7 @@ interface CertificateDetailNavProps {
 }
 
 export const CertificateDetailNav = ({ className: propClassName }: CertificateDetailNavProps) => {
-    const { certificateId } = useCertificateDetailNavStore();
+    const { certificateId, isClaimed } = useCertificateDetailNavStore();
     const { onBack, className: contextClassName } = useBottomContainerContext();
     const { t } = useTranslation();
 
@@ -49,30 +49,34 @@ export const CertificateDetailNav = ({ className: propClassName }: CertificateDe
                 <ChevronLeft className="w-5 h-5 text-white" />
             </button>
 
-            {/* Download Button */}
-            <button
-                onClick={handleDownload}
-                className="cursor-pointer flex items-center justify-center w-16 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0"
-                aria-label={t("common.download")}
-            >
-                <Download className="w-5 h-5 text-background-alt" />
-            </button>
-
-            {/* Copy Shareable URL Button */}
-            <button
-                onClick={handleCopyShareableUrl}
-                className="cursor-pointer flex items-center justify-center flex-1 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors"
-                aria-label={t("participant.certificates.detail.copyShareableUrl")}
-            >
-                <Typography
-                    variant="text"
-                    tag="span"
-                    color="background-alt"
-                    className="text-xs font-normal leading-normal tracking-[0.06px] text-center whitespace-nowrap"
+            {/* Download Button - Only show if certificate is claimed */}
+            {isClaimed && (
+                <button
+                    onClick={handleDownload}
+                    className="cursor-pointer flex items-center justify-center w-16 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0"
+                    aria-label={t("common.download")}
                 >
-                    {t("participant.certificates.detail.copyShareableUrl")}
-                </Typography>
-            </button>
+                    <Download className="w-5 h-5 text-background-alt" />
+                </button>
+            )}
+
+            {/* Copy Shareable URL Button - Only show if certificate is claimed */}
+            {isClaimed && (
+                <button
+                    onClick={handleCopyShareableUrl}
+                    className="cursor-pointer flex items-center justify-center flex-1 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors"
+                    aria-label={t("participant.certificates.detail.copyShareableUrl")}
+                >
+                    <Typography
+                        variant="text"
+                        tag="span"
+                        color="background-alt"
+                        className="text-xs font-normal leading-normal tracking-[0.06px] text-center whitespace-nowrap"
+                    >
+                        {t("participant.certificates.detail.copyShareableUrl")}
+                    </Typography>
+                </button>
+            )}
         </div>
     );
 };
