@@ -2607,6 +2607,25 @@ paths:
       summary: Get event registration invitation of user and by event id
       tags:
       - Event Registration Invitation
+  /api/v1/eventconfig/certificate-font-families:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all font families that can be used in certificate templates,
+        including their available weights and italic support
+      operationId: get-event-certificate-font-families
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of available font families
+          schema:
+            $ref: '#/definitions/eventconfig.GetEventCertificateFontFamiliesResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get all available font families for certificates
   /api/v1/events:
     get:
       description: Get events list
@@ -4569,25 +4588,6 @@ paths:
       summary: Generate certificate image for participant
       tags:
       - certificates
-  /eventconfig/certificate-font-families:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves all font families that can be used in certificate templates,
-        including their available weights and italic support
-      operationId: get-event-certificate-font-families
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: List of available font families
-          schema:
-            $ref: '#/definitions/eventconfig.GetEventCertificateFontFamiliesResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-      summary: Get all available font families for certificates
   /events/{event_id}/certificates/text-config:
     put:
       consumes:

@@ -2,7 +2,9 @@ package event
 
 import (
 	"context"
-	"math/big"
+	"encoding/hex"
+	"fmt"
+	"strings"
 
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
@@ -10,10 +12,8 @@ import (
 	"apps/backend/services/auth"
 
 	"github.com/cockroachdb/errors"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/google/uuid"
 
@@ -239,62 +239,225 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("participant address is required"))
 	}
 
-	if certificate.EventCertificateAddress == nil || certificate.CertificateTokenId == nil {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("certificate is not published yet"))
+	// Check if certificate contract is deployed
+	if certificate.EventCertificateAddress == nil {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("certificate contract not deployed yet"))
 	}
 
-	certificateContractInstance, err := certificateContract.NewEventCertificate(common.HexToAddress(*certificate.EventCertificateAddress), client)
+	// Check if already minted (has token ID)
+	if certificate.CertificateTokenId != nil {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("certificate already minted"))
+	}
+
+	// ============================================
+	// PREPARE DATA FOR MINTING
+	// ============================================
+
+	// 1. Get all event issuers
+	issuers, err := uc.EventIssuerDataGateway.GetEventIssuersByEventID(ctx, certificate.EventId)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get event issuers"))
+	}
+	if len(issuers) == 0 {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("no issuers found for this event"))
 	}
 
-	// Parse token ID
-	tokenId := new(big.Int)
-	tokenId, ok := tokenId.SetString(*certificate.CertificateTokenId, 10)
-	if !ok {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("failed to parse certificate token id"))
-	}
-
-	// Check if the certificate NFT exists and get its owner
-	owner, err := certificateContractInstance.OwnerOf(&bind.CallOpts{Context: ctx}, tokenId)
+	// 2. Get all certificate signatures (one per issuer)
+	certificateSignatures, err := uc.EventCertificateSignatureDataGateway.GetEventCertificateSignaturesByEventCertificateID(ctx, certificate.Id)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get certificate owner"))
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get certificate signatures"))
+	}
+	if len(certificateSignatures) != len(issuers) {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("not all issuers have signed the certificate"))
 	}
 
-	// Verify that the participant address matches the NFT owner
-	if owner.Cmp(*participantAddress) != 0 {
-		return nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("wallet address does not match certificate owner"))
-	}
-
-	// Check if already claimed on-chain
-	// Note: In the contract, when participantSignedCertificate is called, an event is emitted
-	// We can check the event logs or maintain a database flag for this
-	// For now, we'll attempt the transaction and handle errors
-
-	transactor, err := cyptoutils.GetKeyedTransactor()
+	// 3. Get event details
+	event, err := uc.EventDataGateway.GetEventById(ctx, certificate.EventId)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get event"))
 	}
 
-	// Call participantSignedCertificate on the contract
-	tx, err := certificateContractInstance.ParticipantSignedCertificate(transactor, tokenId)
+	// 4. Get host credentials (for public key)
+	hostCredential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx, event.OwnerCredentialId)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "failed to claim certificate on blockchain: wallet=%s, contract=%s, tokenId=%s", participantAddress.Hex(), *certificate.EventCertificateAddress, *certificate.CertificateTokenId))
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get host credentials"))
 	}
 
-	receipt, err := bind.WaitMined(ctx, client, tx)
+	// ============================================
+	// BUILD MINT PARAMETERS
+	// ============================================
+
+	// Parameter 1: receiverAddress
+	receiverAddress := *participantAddress
+
+	// Parameter 2: userId (receiver's credential ID or generate one)
+	userId := ""
+	if certificate.ReceiverCredentialId != nil {
+		userId = certificate.ReceiverCredentialId.String()
+	} else {
+		userId = currentUser.UserId.String()
+	}
+
+	// Parameter 3: certificateId
+	certificateId := certificate.Id.String()
+
+	// Parameter 4: issuerId (first issuer's credential ID)
+	issuerId := issuers[0].IssuerCredentialID.String()
+
+	// Parameter 5 & 6: encryptedUserData and backendEncryptedUserData
+	// Build JSON with certificate data
+	name := ""
+	if certificate.Name != nil {
+		name = *certificate.Name
+	}
+	academicInstitution := ""
+	if certificate.AcademicInstitution != nil {
+		academicInstitution = *certificate.AcademicInstitution
+	}
+	certTitle := ""
+	if certificate.CertificateTitle != nil {
+		certTitle = *certificate.CertificateTitle
+	}
+	certSubtitle := ""
+	if certificate.CertificateSubtitle != nil {
+		certSubtitle = *certificate.CertificateSubtitle
+	}
+
+	// TODO: Properly encrypt this data
+	encryptedUserData := fmt.Sprintf(`{"name":"%s","academicInstitution":"%s"}`, name, academicInstitution)
+	backendEncryptedUserData := encryptedUserData // For now, same as user data
+
+	// Parameter 7: issuerAddresses (array of issuer wallet addresses)
+	issuerAddresses := make([]common.Address, len(issuers))
+	for i, issuer := range issuers {
+		// Get issuer's wallet address from their credentials
+		issuerCred, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, issuer.IssuerCredentialID)
+		if err != nil {
+			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "failed to get issuer %d credentials", i))
+		}
+		issuerAddresses[i] = common.HexToAddress(issuerCred.WalletAddress)
+	}
+
+	// Parameter 8, 9, 10, 12: signature data from first certificate signature
+	firstSignature := certificateSignatures[0]
+	if firstSignature.SignMessageDigest == nil || firstSignature.SignMessage == nil {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("certificate signature data is incomplete"))
+	}
+
+	signedMessageDigest := *firstSignature.SignMessageDigest
+	hostSignatureStr := firstSignature.HostSignature
+	signMessageStr := *firstSignature.SignMessage
+
+	// Decode host signature from hex string to bytes
+	hostSignatureBytes, err := hex.DecodeString(strings.TrimPrefix(hostSignatureStr, "0x"))
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "transaction mining failed: tx=%s", tx.Hash().Hex()))
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to decode host signature"))
 	}
 
-	if receipt.Status != types.ReceiptStatusSuccessful {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Errorf("transaction reverted (tx=%s, gas=%d)", tx.Hash().Hex(), receipt.GasUsed))
+	// Parameter 11: hostPublicKey
+	hostPublicKey := hostCredential.WalletAddress // Using wallet address as public key identifier
+
+	// Parameter 13 & 14: userEncryptedProof and backendEncryptedProof
+	// TODO: Build proper VC proof structure
+	userEncryptedProof := "{}"
+	backendEncryptedProof := "{}"
+
+	// Parameter 15 & 16: certificateTitle and certificateSubtitle
+	certificateTitle := certTitle
+	certificateSubtitle := certSubtitle
+
+	// Parameter 17: issuerProofs (array of {issuerSignature, issuerPublicKey})
+	type IssuerProof struct {
+		IssuerSignature string
+		IssuerPublicKey string
+	}
+	issuerProofs := make([]certificateContract.CertificateVCStructsIssuerProof, len(certificateSignatures))
+	for i, sig := range certificateSignatures {
+		issuerSig := ""
+		if sig.IssuerSignature != nil {
+			issuerSig = *sig.IssuerSignature
+		}
+
+		// Get issuer's public key (wallet address)
+		issuerCred, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, sig.IssuerCredentialId)
+		if err != nil {
+			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "failed to get issuer credentials for proof %d", i))
+		}
+
+		issuerProofs[i] = certificateContract.CertificateVCStructsIssuerProof{
+			IssuerSignature: issuerSig,
+			IssuerPublicKey: issuerCred.WalletAddress,
+		}
 	}
 
-	// TODO: Update database to mark certificate as claimed
-	// This might involve updating the event_certificates table with a claimed_at timestamp
-	// or updating the receiver_credential_id if it was previously null
+	// ============================================
+	// TODO: CALL CONTRACT TO MINT NFT
+	// ============================================
+
+	// Log prepared data for debugging
+	_ = receiverAddress
+	_ = userId
+	_ = certificateId
+	_ = issuerId
+	_ = encryptedUserData
+	_ = backendEncryptedUserData
+	_ = issuerAddresses
+	_ = signedMessageDigest
+	_ = hostSignatureBytes
+	_ = hostSignatureStr
+	_ = hostPublicKey
+	_ = signMessageStr
+	_ = userEncryptedProof
+	_ = backendEncryptedProof
+	_ = certificateTitle
+	_ = certificateSubtitle
+	_ = issuerProofs
+
+	// certificateContractInstance, err := certificateContract.NewEventCertificate(common.HexToAddress(*certificate.EventCertificateAddress), client)
+	// if err != nil {
+	// 	return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+	// }
+
+	// transactor, err := cyptoutils.GetKeyedTransactor()
+	// if err != nil {
+	// 	return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+	// }
+
+	// tx, err := certificateContractInstance.MintNft(
+	// 	transactor,
+	// 	receiverAddress,
+	// 	userId,
+	// 	certificateId,
+	// 	issuerId,
+	// 	encryptedUserData,
+	// 	backendEncryptedUserData,
+	// 	issuerAddresses,
+	// 	signedMessageDigest,
+	// 	hostSignatureBytes,
+	// 	hostSignatureStr,
+	// 	hostPublicKey,
+	// 	signMessageStr,
+	// 	userEncryptedProof,
+	// 	backendEncryptedProof,
+	// 	certificateTitle,
+	// 	certificateSubtitle,
+	// 	issuerProofs,
+	// )
+	// if err != nil {
+	// 	return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to mint certificate NFT"))
+	// }
+
+	// receipt, err := bind.WaitMined(ctx, client, tx)
+	// if err != nil {
+	// 	return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "transaction mining failed: tx=%s", tx.Hash().Hex()))
+	// }
+
+	// if receipt.Status != types.ReceiptStatusSuccessful {
+	// 	return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Errorf("transaction reverted (tx=%s, gas=%d)", tx.Hash().Hex(), receipt.GasUsed))
+	// }
+
+	// TODO: Extract tokenId from CertificateMinted event
+	// TODO: Update certificate with token ID and contract address
 
 	return certificate, nil
 }
-

@@ -677,6 +677,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/eventconfig/certificate-font-families": {
+            "get": {
+                "description": "Retrieves all font families that can be used in certificate templates, including their available weights and italic support",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all available font families for certificates",
+                "operationId": "get-event-certificate-font-families",
+                "responses": {
+                    "200": {
+                        "description": "List of available font families",
+                        "schema": {
+                            "$ref": "#/definitions/eventconfig.GetEventCertificateFontFamiliesResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events": {
             "get": {
                 "description": "Get events list",
@@ -3585,33 +3612,6 @@ const docTemplate = `{
                         "description": "Certificate not found",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/eventconfig/certificate-font-families": {
-            "get": {
-                "description": "Retrieves all font families that can be used in certificate templates, including their available weights and italic support",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Get all available font families for certificates",
-                "operationId": "get-event-certificate-font-families",
-                "responses": {
-                    "200": {
-                        "description": "List of available font families",
-                        "schema": {
-                            "$ref": "#/definitions/eventconfig.GetEventCertificateFontFamiliesResponse"
                         }
                     },
                     "500": {

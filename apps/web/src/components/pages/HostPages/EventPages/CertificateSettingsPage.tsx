@@ -49,8 +49,7 @@ export const CertificateSettingsPage = ({
         eventId!,
     );
 
-    const { updateCertificateTextConfig, isUpdatingCertificateTextConfig } =
-        useUpdateCertificateTextConfig(eventId!);
+    const { updateCertificateTextConfig } = useUpdateCertificateTextConfig(eventId!);
 
     const { updateEventIssuer, isUpdatingEventIssuer } = useUpdateEventIssuer(eventId!);
     const { deleteEventIssuerAsync } = useDeleteEventIssuer();
