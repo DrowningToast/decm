@@ -30,15 +30,15 @@ func TestInboxUsecase_GetMyInboxMessages(t *testing.T) {
 			{
 				Id:                   uuid.New(),
 				ReceiverCredentialId: &userID,
-				Subject:              "Event Invitation",
-				Body:                 "You're invited to our event",
+				MessageType:          entity.InboxMessageTypeEventRegistrationInvitation,
+				MessageContent:       "You're invited to our event",
 				IsRead:               0,
 			},
 			{
 				Id:                   uuid.New(),
 				ReceiverCredentialId: &userID,
-				Subject:              "Certificate Ready",
-				Body:                 "Your certificate is ready",
+				MessageType:          entity.InboxMessageTypeEventCertificateInvitation,
+				MessageContent:       "Your certificate is ready",
 				IsRead:               1,
 			},
 		}
@@ -57,8 +57,8 @@ func TestInboxUsecase_GetMyInboxMessages(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, messages)
 		assert.Len(t, messages, 2)
-		assert.Equal(t, "Event Invitation", messages[0].Subject)
-		assert.Equal(t, "Certificate Ready", messages[1].Subject)
+		assert.Equal(t, "You're invited to our event", messages[0].MessageContent)
+		assert.Equal(t, "Your certificate is ready", messages[1].MessageContent)
 		assert.Equal(t, 0, messages[0].IsRead) // Unread
 		assert.Equal(t, 1, messages[1].IsRead) // Read
 		mockInboxDg.AssertExpectations(t)
@@ -130,7 +130,8 @@ func TestInboxUsecase_GetInboxMessagesByCredentailID(t *testing.T) {
 			{
 				Id:                   uuid.New(),
 				ReceiverCredentialId: &credentialID,
-				Subject:              "Welcome",
+				MessageType:          entity.InboxMessageTypeGeneral,
+				MessageContent:       "Welcome",
 				IsRead:               0,
 			},
 		}
@@ -160,18 +161,18 @@ func TestInboxUsecase_GetInboxMessagesByReceiverEmail(t *testing.T) {
 
 		messages := []*entity.InboxMessage{
 			{
-				Id:            uuid.New(),
-				ReceiverEmail: &email,
-				Subject:       "Event Registration Confirmed",
-				Body:          "Your registration is confirmed",
-				IsRead:        0,
+				Id:             uuid.New(),
+				ReceiverEmail:  &email,
+				MessageType:    entity.InboxMessageTypeEventRegistrationInvitation,
+				MessageContent: "Your registration is confirmed",
+				IsRead:         0,
 			},
 			{
-				Id:            uuid.New(),
-				ReceiverEmail: &email,
-				Subject:       "Event Reminder",
-				Body:          "Event starts tomorrow",
-				IsRead:        0,
+				Id:             uuid.New(),
+				ReceiverEmail:  &email,
+				MessageType:    entity.InboxMessageTypeGeneral,
+				MessageContent: "Event starts tomorrow",
+				IsRead:         0,
 			},
 		}
 
@@ -189,8 +190,8 @@ func TestInboxUsecase_GetInboxMessagesByReceiverEmail(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, result)
 		assert.Len(t, result, 2)
-		assert.Equal(t, "Event Registration Confirmed", result[0].Subject)
-		assert.Equal(t, "Event Reminder", result[1].Subject)
+		assert.Equal(t, "Your registration is confirmed", result[0].MessageContent)
+		assert.Equal(t, "Event starts tomorrow", result[1].MessageContent)
 		mockInboxDg.AssertExpectations(t)
 	})
 
@@ -226,8 +227,8 @@ func TestInboxUsecase_GetInboxMessagesByReceiverWalletAddress(t *testing.T) {
 			{
 				Id:                    uuid.New(),
 				ReceiverWalletAddress: &walletAddress,
-				Subject:               "NFT Certificate Issued",
-				Body:                  "Your certificate NFT is ready",
+				MessageType:           entity.InboxMessageTypeEventCertificateInvitation,
+				MessageContent:        "Your certificate NFT is ready",
 				IsRead:                0,
 			},
 		}
@@ -246,7 +247,7 @@ func TestInboxUsecase_GetInboxMessagesByReceiverWalletAddress(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, result)
 		assert.Len(t, result, 1)
-		assert.Equal(t, "NFT Certificate Issued", result[0].Subject)
+		assert.Equal(t, "Your certificate NFT is ready", result[0].MessageContent)
 		mockInboxDg.AssertExpectations(t)
 	})
 }
@@ -261,15 +262,15 @@ func TestInboxUsecase_GetInboxMessagesBySenderCredentialID(t *testing.T) {
 			{
 				Id:                 uuid.New(),
 				SenderCredentialId: &senderID,
-				Subject:            "Event Update",
-				Body:               "Event location changed",
+				MessageType:        entity.InboxMessageTypeGeneral,
+				MessageContent:     "Event location changed",
 				IsRead:             1,
 			},
 			{
 				Id:                 uuid.New(),
 				SenderCredentialId: &senderID,
-				Subject:            "Event Cancelled",
-				Body:               "Unfortunately we must cancel",
+				MessageType:        entity.InboxMessageTypeGeneral,
+				MessageContent:     "Unfortunately we must cancel",
 				IsRead:             1,
 			},
 		}
@@ -288,8 +289,8 @@ func TestInboxUsecase_GetInboxMessagesBySenderCredentialID(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, result)
 		assert.Len(t, result, 2)
-		assert.Equal(t, "Event Update", result[0].Subject)
-		assert.Equal(t, "Event Cancelled", result[1].Subject)
+		assert.Equal(t, "Event location changed", result[0].MessageContent)
+		assert.Equal(t, "Unfortunately we must cancel", result[1].MessageContent)
 		mockInboxDg.AssertExpectations(t)
 	})
 
