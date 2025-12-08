@@ -39,12 +39,15 @@ func (h *Handler) CheckCertificateMintReadiness(ctx *fiber.Ctx) error {
 
 	// If not a verified organizer, check if user is an issuer for this specific event
 	if !isVerifiedOrganizer {
-		_, err := h.EventUc.EventIssuerDataGateway.GetEventIssuerByEventIDAndIssuerCredentialID(
+		isIssuer, err := h.EventUc.IsUserIssuerForEvent(
 			ctx.UserContext(),
 			eventID,
 			currentUser.UserId,
 		)
 		if err != nil {
+			return err
+		}
+		if !isIssuer {
 			return customerror.Parse(
 				&customerror.ErrForbidden,
 				errors.New("user must be a verified organizer or an issuer assigned to this event"),
@@ -60,7 +63,3 @@ func (h *Handler) CheckCertificateMintReadiness(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusOK).JSON(readiness)
 }
-
-
-
-
