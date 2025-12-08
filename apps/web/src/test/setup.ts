@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
+import React from "react";
 
 // Cleanup after each test case (e.g., clearing jsdom)
 afterEach(() => {
@@ -51,3 +52,75 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 //   configurable: true,
 //   value: { ...window.location, href: 'http://localhost:3000', assign: vi.fn(), replace: vi.fn(), reload: vi.fn() }
 // })
+
+// Global mock for lucide-react icons
+vi.mock("lucide-react", () => {
+    const icons = [
+        "Upload",
+        "Info",
+        "Image",
+        "AlertTriangle",
+        "Loader2",
+        "Check",
+        "Copy",
+        "ExternalLinkIcon",
+        "Eye",
+        "EyeOff",
+        "XIcon",
+        "MinusIcon",
+        "CheckCircle2Icon",
+        "CheckCircle2",
+        "XCircleIcon",
+        "XCircle",
+        "MinusCircleIcon",
+        "CheckIcon",
+        "ChevronDownIcon",
+        "ChevronUpIcon",
+        "ChevronRightIcon",
+        "CircleIcon",
+        "Loader2Icon",
+        "ArrowUpDown",
+        "ArrowUp",
+        "ArrowDown",
+        "ChevronLeft",
+        "ChevronRight",
+        "ChevronsLeft",
+        "ChevronsRight",
+        "X",
+        "Trash2",
+        "Trash",
+        "Plus",
+        "Minus",
+        "Calendar",
+        "Clock",
+        "MapPin",
+        "Mail",
+        "Phone",
+        "User",
+        "Users",
+        "Settings",
+        "LogOut",
+        "Home",
+        "Search",
+        "Filter",
+        "Edit",
+        "Save",
+        "Cancel",
+        "ArrowLeft",
+        "ArrowRight",
+        "PartyPopper",
+        "AlertCircle",
+    ];
+
+    const iconMocks: Record<string, unknown> = {};
+    icons.forEach((icon) => {
+        iconMocks[icon] = vi.fn((props: { className?: string }) => {
+            return React.createElement("svg", {
+                className: props?.className,
+                "data-testid": `mock-${icon.toLowerCase()}`,
+            });
+        });
+    });
+
+    return iconMocks;
+});

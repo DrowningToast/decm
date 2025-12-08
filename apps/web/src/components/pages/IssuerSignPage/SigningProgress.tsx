@@ -9,7 +9,9 @@ interface SigningProgressProps {
 
 export function SigningProgress({ issuers, className = "" }: SigningProgressProps) {
     const { t } = useTranslation();
-    const progress = calculateSigningProgress(issuers);
+    const progress = calculateSigningProgress(
+        issuers.map((issuer) => ({ is_signed: issuer.is_signed === 1 })),
+    );
     // const signedCount = issuers?.filter((issuer) => issuer.is_signed === 1).length || 0;
     const totalCount = issuers?.length || 0;
 

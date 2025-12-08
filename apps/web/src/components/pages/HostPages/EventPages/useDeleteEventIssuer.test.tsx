@@ -48,7 +48,7 @@ describe("useDeleteEventIssuer", () => {
     });
 
     it("should delete event issuer successfully", async () => {
-        const mockResponse = { success: true };
+        const mockResponse = {};
         vi.mocked(coreApiClient.v1.deleteEventIssuer).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(() => useDeleteEventIssuer(), {
@@ -72,7 +72,7 @@ describe("useDeleteEventIssuer", () => {
 
     it("should set isDeletingEventIssuer to true during mutation", async () => {
         vi.mocked(coreApiClient.v1.deleteEventIssuer).mockImplementation(
-            () => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 100)),
+            () => new Promise((resolve) => setTimeout(() => resolve({}), 100)),
         );
 
         const { result } = renderHook(() => useDeleteEventIssuer(), {
@@ -112,9 +112,7 @@ describe("useDeleteEventIssuer", () => {
     });
 
     it("should handle multiple delete operations", async () => {
-        vi.mocked(coreApiClient.v1.deleteEventIssuer).mockResolvedValue({
-            success: true,
-        });
+        vi.mocked(coreApiClient.v1.deleteEventIssuer).mockResolvedValue({});
 
         const { result } = renderHook(() => useDeleteEventIssuer(), {
             wrapper: createWrapper(),
@@ -142,9 +140,7 @@ describe("useDeleteEventIssuer", () => {
     });
 
     it("should handle different event IDs", async () => {
-        vi.mocked(coreApiClient.v1.deleteEventIssuer).mockResolvedValue({
-            success: true,
-        });
+        vi.mocked(coreApiClient.v1.deleteEventIssuer).mockResolvedValue({});
 
         const { result } = renderHook(() => useDeleteEventIssuer(), {
             wrapper: createWrapper(),

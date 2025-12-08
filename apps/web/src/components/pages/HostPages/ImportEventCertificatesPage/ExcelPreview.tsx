@@ -275,7 +275,7 @@ export const ExcelPreview = ({
                 </Button>
                 <div className="flex space-x-4">
                     {(validationError || importError) && (
-                        <Button variant="outline" onClick={onCancel} disabled={disabled}>
+                        <Button variant="secondary-light" onClick={onCancel} disabled={disabled}>
                             <Typography
                                 variant="text"
                                 tag="span"

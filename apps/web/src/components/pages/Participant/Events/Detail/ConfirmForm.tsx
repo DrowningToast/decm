@@ -135,7 +135,19 @@ export const RegistrationConfirmForm: React.FC<RegistrationConfirmFormProps> = (
         if (!formRequirements) {
             return "not_required";
         }
-        return mapFieldRequirementToStatus(fieldName, formRequirements, invitationData);
+        // Only pass RegistrationRequirement keys to mapFieldRequirementToStatus
+        if (fieldName in formRequirements) {
+            return mapFieldRequirementToStatus(
+                fieldName as keyof RegistrationRequirement,
+                formRequirements,
+                invitationData,
+            );
+        }
+        // For Invite-only fields like "acceptedAt", check if it's in invitation
+        if (invitationData && fieldName in invitationData) {
+            return "locked";
+        }
+        return "not_required";
     };
 
     // Helper function to check if field should be shown

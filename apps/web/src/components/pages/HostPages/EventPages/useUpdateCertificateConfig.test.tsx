@@ -4,7 +4,10 @@ import { ReactNode } from "react";
 import { useUpdateCertificateConfig } from "./useUpdateCertificateConfig";
 import { coreApiClient } from "@/lib/api/api";
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
-import type { UpdateEventCertificateConfigPayload } from "@decm/api";
+import type {
+    UpdateEventCertificateConfigPayload,
+    CoreApiInternalHandlerEventconfigEventCertificateConfigResponse,
+} from "@decm/api";
 
 // Mock the API client
 vi.mock("@/lib/api/api", () => ({
@@ -38,6 +41,7 @@ const createWrapper = () => {
 
 describe("useUpdateCertificateConfig", () => {
     const mockEventId = "event-123";
+    const mockFile = new File(["<svg></svg>"], "certificate.svg", { type: "image/svg+xml" });
     const mockPayload: UpdateEventCertificateConfigPayload = {
         name_pos_x: 100,
         name_pos_y: 200,
@@ -45,7 +49,23 @@ describe("useUpdateCertificateConfig", () => {
         event_name_pos_y: 250,
         academic_institution_pos_x: 175,
         academic_institution_pos_y: 275,
-        base_certificate_image: "data:image/svg+xml;base64,PHN2Zz4=",
+        base_certificate_image: mockFile,
+    };
+
+    const mockResponse: CoreApiInternalHandlerEventconfigEventCertificateConfigResponse = {
+        id: "config-1",
+        event_id: mockEventId,
+        name_pos_x: 100,
+        name_pos_y: 200,
+        event_name_pos_x: 150,
+        event_name_pos_y: 250,
+        academic_institution_pos_x: 175,
+        academic_institution_pos_y: 275,
+        base_certificate_presigned_url: "https://example.com/certificate.svg",
+        base_certificate_storage_key: "certificates/config-1.svg",
+        created_at: "2024-01-01T00:00:00Z",
+        is_published: false,
+        updated_at: "2024-01-01T00:00:00Z",
     };
 
     beforeEach(() => {
@@ -57,7 +77,6 @@ describe("useUpdateCertificateConfig", () => {
     });
 
     it("should update certificate config successfully", async () => {
-        const mockResponse = { success: true };
         vi.mocked(coreApiClient.v1.updateEventCertificateConfig).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(() => useUpdateCertificateConfig(mockEventId), {
@@ -78,7 +97,7 @@ describe("useUpdateCertificateConfig", () => {
 
     it("should set isUpdatingCertificateConfig to true during mutation", async () => {
         vi.mocked(coreApiClient.v1.updateEventCertificateConfig).mockImplementation(
-            () => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 100)),
+            () => new Promise((resolve) => setTimeout(() => resolve(mockResponse), 100)),
         );
 
         const { result } = renderHook(() => useUpdateCertificateConfig(mockEventId), {
@@ -119,7 +138,6 @@ describe("useUpdateCertificateConfig", () => {
             name_pos_y: 200,
         };
 
-        const mockResponse = { success: true };
         vi.mocked(coreApiClient.v1.updateEventCertificateConfig).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(() => useUpdateCertificateConfig(mockEventId), {
@@ -135,13 +153,14 @@ describe("useUpdateCertificateConfig", () => {
     });
 
     it("should update with base64 certificate image", async () => {
+        const imageFile = new File(['<svg width="100" height="100">'], "certificate.svg", {
+            type: "image/svg+xml",
+        });
         const payloadWithImage: UpdateEventCertificateConfigPayload = {
             ...mockPayload,
-            base_certificate_image:
-                "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCI+",
+            base_certificate_image: imageFile,
         };
 
-        const mockResponse = { success: true };
         vi.mocked(coreApiClient.v1.updateEventCertificateConfig).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(() => useUpdateCertificateConfig(mockEventId), {
@@ -157,9 +176,7 @@ describe("useUpdateCertificateConfig", () => {
     });
 
     it("should use correct mutation key", async () => {
-        vi.mocked(coreApiClient.v1.updateEventCertificateConfig).mockResolvedValue({
-            success: true,
-        });
+        vi.mocked(coreApiClient.v1.updateEventCertificateConfig).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(() => useUpdateCertificateConfig(mockEventId), {
             wrapper: createWrapper(),
@@ -172,9 +189,7 @@ describe("useUpdateCertificateConfig", () => {
     });
 
     it("should handle multiple consecutive updates", async () => {
-        vi.mocked(coreApiClient.v1.updateEventCertificateConfig).mockResolvedValue({
-            success: true,
-        });
+        vi.mocked(coreApiClient.v1.updateEventCertificateConfig).mockResolvedValue(mockResponse);
 
         const { result } = renderHook(() => useUpdateCertificateConfig(mockEventId), {
             wrapper: createWrapper(),

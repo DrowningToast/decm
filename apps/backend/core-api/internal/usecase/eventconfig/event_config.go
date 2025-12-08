@@ -9,17 +9,17 @@ import (
 )
 
 type EventConfigUsecase struct {
-	AuthenticationCredentialDg         datagateway.AuthenticationCredentialDataGateway
-	EventDg                            eventDg.EventDataGateway
-	EventDataGateway                   eventDg.EventDataGateway
-	EventCertificateDg                 eventDg.EventCertificateConfigDataGateway
-	EventCertificateDataGateway        eventDg.EventCertificateDataGateway
+	AuthenticationCredentialDg           datagateway.AuthenticationCredentialDataGateway
+	EventDg                              eventDg.EventDataGateway
+	EventDataGateway                     eventDg.EventDataGateway
+	EventCertificateDg                   eventDg.EventCertificateConfigDataGateway
+	EventCertificateDataGateway          eventDg.EventCertificateDataGateway
 	EventCertificateSignatureDataGateway eventDg.EventCertificateSignatureDataGateway
-	EventRegistrationDg                eventDg.EventRegistrationConfigDataGateway
-	EventIssuerDg                      eventDg.EventIssuerDataGateway
-	EventContractDg                    eventDg.EventContractDataGateway
-	InboxMessageDg                     datagateway.InboxMessageDataGateway
-	S3Service                          s3.S3Service
+	EventRegistrationDg                  eventDg.EventRegistrationConfigDataGateway
+	EventIssuerDg                        eventDg.EventIssuerDataGateway
+	EventContractDg                      eventDg.EventContractDataGateway
+	InboxMessageDg                       datagateway.InboxMessageDataGateway
+	S3Service                            s3.S3Service
 
 	logger *slog.Logger
 }

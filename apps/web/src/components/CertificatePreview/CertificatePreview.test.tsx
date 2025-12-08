@@ -91,8 +91,7 @@ describe("CertificatePreview", () => {
         render(
             <CertificatePreview
                 imageUrl={mockImageUrl}
-                detectedKeywords={mockDetectedKeywords}
-                availableKeywords={mockAvailableKeywords}
+                // Not passing detectedKeywords or availableKeywords, so keywords section should not display
             />,
         );
 

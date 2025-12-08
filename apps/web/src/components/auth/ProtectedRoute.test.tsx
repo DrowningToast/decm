@@ -32,6 +32,28 @@ vi.mock("@/hooks/useCheckRoles", () => ({
     useCheckRoles: vi.fn(),
 }));
 
+// Helper function to create mock user data
+const createMockUser = (overrides = {}) => ({
+    id: "user-123",
+    firstName: "Test",
+    lastName: "User",
+    email: "test@example.com",
+    walletAddress: "0x1234567890abcdef",
+    solutionStatus: "SYSTEM_MANAGED" as const,
+    profileId: "profile-123",
+    authenticationCredentialId: "auth-123",
+    isAcademicEmailPublic: false,
+    isAcademicInstitutionPublic: false,
+    isAddressPublic: false,
+    isBioPublic: false,
+    isEmailPublic: false,
+    isFirstNamePublic: false,
+    isLastNamePublic: false,
+    isPhoneNumberPublic: false,
+    isProfilePicturePublic: false,
+    ...overrides,
+});
+
 describe("ProtectedRoute", () => {
     let queryClient: QueryClient;
 
@@ -209,7 +231,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             render(
@@ -228,7 +250,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             render(
@@ -247,7 +269,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             render(
@@ -265,7 +287,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             render(
@@ -286,7 +308,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             render(
@@ -312,7 +334,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             render(
@@ -362,7 +384,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             rerender(
@@ -422,7 +444,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             const { container } = render(<ProtectedRoute>{null}</ProtectedRoute>, { wrapper });
@@ -436,7 +458,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             const { container } = render(
@@ -543,7 +565,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
@@ -576,7 +598,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
@@ -612,7 +634,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
@@ -648,7 +670,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
@@ -685,7 +707,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
@@ -718,7 +740,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
@@ -751,7 +773,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
@@ -781,7 +803,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
@@ -820,7 +842,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
@@ -880,7 +902,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({
@@ -909,7 +931,7 @@ describe("ProtectedRoute", () => {
                 isAuthenticated: true,
                 isFetching: false,
                 refetch: vi.fn(),
-                user: { id: "user-123", first_name: "Test" },
+                user: createMockUser(),
             });
 
             vi.spyOn(UseCheckRolesModule, "useCheckRoles").mockReturnValue({

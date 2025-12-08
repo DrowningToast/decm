@@ -78,7 +78,9 @@ describe("IssuerSelectionModal", () => {
         const bobRow = rows.find((row) => within(row).queryByText("Bob Johnson"));
         expect(bobRow).toBeDefined();
         if (bobRow) {
-            expect(within(bobRow).getByText("(empty)")).toBeInTheDocument();
+            // Bob Johnson has missing fields, so there should be at least one (empty) in their row
+            const emptyElements = within(bobRow).getAllByText("(empty)");
+            expect(emptyElements.length).toBeGreaterThan(0);
         }
     });
 
