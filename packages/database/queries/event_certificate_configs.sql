@@ -49,16 +49,16 @@ SET
     certificate_title_pos_y = sqlc.arg('certificate_title_pos_y'),
     certificate_subtitle_pos_x = sqlc.arg('certificate_subtitle_pos_x'),
     certificate_subtitle_pos_y = sqlc.arg('certificate_subtitle_pos_y'),
-    event_name_font_family = sqlc.arg('event_name_font_family'),
-    event_name_font_weight = sqlc.arg('event_name_font_weight'),
-    name_font_family = sqlc.arg('name_font_family'),
-    name_font_weight = sqlc.arg('name_font_weight'),
-    academic_institution_font_family = sqlc.arg('academic_institution_font_family'),
-    academic_institution_font_weight = sqlc.arg('academic_institution_font_weight'),
-    certificate_title_font_family = sqlc.arg('certificate_title_font_family'),
-    certificate_title_font_weight = sqlc.arg('certificate_title_font_weight'),
-    certificate_subtitle_font_family = sqlc.arg('certificate_subtitle_font_family'),
-    certificate_subtitle_font_weight = sqlc.arg('certificate_subtitle_font_weight'),
+    event_name_font_family_id = sqlc.narg('event_name_font_family_id'),
+    event_name_font_weight = sqlc.narg('event_name_font_weight'),
+    name_font_family_id = sqlc.narg('name_font_family_id'),
+    name_font_weight = sqlc.narg('name_font_weight'),
+    academic_institution_font_family_id = sqlc.narg('academic_institution_font_family_id'),
+    academic_institution_font_weight = sqlc.narg('academic_institution_font_weight'),
+    certificate_title_font_family_id = sqlc.narg('certificate_title_font_family_id'),
+    certificate_title_font_weight = sqlc.narg('certificate_title_font_weight'),
+    certificate_subtitle_font_family_id = sqlc.narg('certificate_subtitle_font_family_id'),
+    certificate_subtitle_font_weight = sqlc.narg('certificate_subtitle_font_weight'),
     is_published = COALESCE(sqlc.narg('is_published'), is_published),
     updated_at = NOW()
 WHERE event_id = sqlc.arg('event_id')
@@ -75,16 +75,16 @@ RETURNING *;
 -- name: UpdateEventCertificateTextConfig :one
 UPDATE event_certificate_configs
 SET 
-    event_name_font_family = sqlc.arg('event_name_font_family'),
-    event_name_font_weight = sqlc.arg('event_name_font_weight'),
-    name_font_family = sqlc.arg('name_font_family'),
-    name_font_weight = sqlc.arg('name_font_weight'),
-    academic_institution_font_family = sqlc.arg('academic_institution_font_family'),
-    academic_institution_font_weight = sqlc.arg('academic_institution_font_weight'),
-    certificate_title_font_family = sqlc.arg('certificate_title_font_family'),
-    certificate_title_font_weight = sqlc.arg('certificate_title_font_weight'),
-    certificate_subtitle_font_family = sqlc.arg('certificate_subtitle_font_family'),
-    certificate_subtitle_font_weight = sqlc.arg('certificate_subtitle_font_weight'),
+    event_name_font_family_id = sqlc.narg('event_name_font_family_id'),
+    event_name_font_weight = sqlc.narg('event_name_font_weight'),
+    name_font_family_id = sqlc.narg('name_font_family_id'),
+    name_font_weight = sqlc.narg('name_font_weight'),
+    academic_institution_font_family_id = sqlc.narg('academic_institution_font_family_id'),
+    academic_institution_font_weight = sqlc.narg('academic_institution_font_weight'),
+    certificate_title_font_family_id = sqlc.narg('certificate_title_font_family_id'),
+    certificate_title_font_weight = sqlc.narg('certificate_title_font_weight'),
+    certificate_subtitle_font_family_id = sqlc.narg('certificate_subtitle_font_family_id'),
+    certificate_subtitle_font_weight = sqlc.narg('certificate_subtitle_font_weight'),
     updated_at = NOW()
 WHERE event_id = sqlc.arg('event_id')
 RETURNING *;

@@ -112,7 +112,7 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
     return (
         <div className="relative w-full overflow-hidden">
             {/* Main content */}
-            <div className="relative z-10 w-full max-w-[1384px] mx-auto px-4 md:px-16 py-4 md:py-16 flex flex-col gap-y-4">
+            <div className="relative z-10 w-full max-w-[1384px] mx-auto px-4 md:px-16 pt-4 md:pt-6 pb-24 md:pb-16 flex flex-col gap-y-4">
                 {/* Certificate Header with Check Icon */}
                 <div className="flex flex-col gap-y-1.5">
                     <div className="flex items-center gap-2">

@@ -651,6 +651,49 @@ export interface EventRegistrationParticipantRequestItem {
     phone_number?: string;
 }
 
+export interface EventUpdateEventCertificateTextConfigRequest {
+    academic_institution_font_family: string;
+    academic_institution_font_weight: number;
+    certificate_subtitle_font_family: string;
+    certificate_subtitle_font_weight: number;
+    certificate_title_font_family: string;
+    certificate_title_font_weight: number;
+    event_name_font_family: string;
+    event_name_font_weight: number;
+    name_font_family: string;
+    name_font_weight: number;
+}
+
+export interface EventUpdateEventCertificateTextConfigResponse {
+    academic_institution_font_family?: string;
+    academic_institution_font_weight?: number;
+    academic_institution_pos_x?: number;
+    academic_institution_pos_y?: number;
+    base_certificate_presigned_url: string;
+    base_certificate_storage_key: string;
+    certificate_subtitle_font_family?: string;
+    certificate_subtitle_font_weight?: number;
+    certificate_subtitle_pos_x?: number;
+    certificate_subtitle_pos_y?: number;
+    certificate_title_font_family?: string;
+    certificate_title_font_weight?: number;
+    certificate_title_pos_x?: number;
+    certificate_title_pos_y?: number;
+    created_at: string;
+    event_id: string;
+    event_name_font_family?: string;
+    event_name_font_weight?: number;
+    event_name_pos_x: number;
+    event_name_pos_y: number;
+    id: string;
+    is_published: boolean;
+    name_font_family?: string;
+    name_font_weight?: number;
+    name_pos_x: number;
+    name_pos_y: number;
+    updated_at: string;
+}
+
 export interface EventUpdateEventContractRequest {
     access_manager_contract_address: string;
     certificate_contract_address: string;
@@ -1465,6 +1508,15 @@ export interface UpdateEventCertificateConfigPayload {
      * @format float64
      */
     name_pos_y: number;
+}
+
+export type UpdateEventCertificateTextConfigData = EventUpdateEventCertificateTextConfigResponse;
+
+export type UpdateEventCertificateTextConfigError = CustomerrorErrResponse;
+
+export interface UpdateEventCertificateTextConfigParams {
+    /** Event ID */
+    eventId: string;
 }
 
 export type UpdateEventContractData = CoreApiInternalHandlerEventEventContractResponse;
@@ -2991,6 +3043,31 @@ export class Api<SecurityDataType extends unknown> {
                 method: "GET",
                 secure: true,
                 format: "blob",
+                ...params,
+            }),
+    };
+    eventId = {
+        /**
+         * @description Update font family and font weight for all text templates in the certificate. This endpoint allows customization of fonts for event name, participant name, academic institution, certificate title, and certificate subtitle.
+         *
+         * @name UpdateEventCertificateTextConfig
+         * @summary Update certificate text configuration
+         * @request PUT:/events/{event_id}/certificates/text-config
+         */
+        updateEventCertificateTextConfig: (
+            { eventId, ...query }: UpdateEventCertificateTextConfigParams,
+            body: EventUpdateEventCertificateTextConfigRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                UpdateEventCertificateTextConfigData,
+                UpdateEventCertificateTextConfigError
+            >({
+                path: `/events/${eventId}/certificates/text-config`,
+                method: "PUT",
+                body: body,
+                type: ContentType.Json,
+                format: "json",
                 ...params,
             }),
     };

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { coreApiClient } from "@/lib/api/api";
+// import { coreApiClient } from "@/lib/api/api"; // Will be used when backend API is ready
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { QUERY_KEY } from "@/lib/queryKeys";
@@ -23,7 +23,7 @@ export function useClaimCertificate() {
         isPending: isClaiming,
         error: claimError,
     } = useMutation({
-        mutationFn: async ({ certificateId, eventId, accountPassword }: ClaimCertificateParams) => {
+        mutationFn: async ({ certificateId }: ClaimCertificateParams) => {
             // TODO: Backend API Integration Required
             // =====================================
             //
@@ -77,6 +77,7 @@ export function useClaimCertificate() {
             // return response;
 
             // Temporary mock response for development
+            // Note: eventId and accountPassword will be used when backend API is ready
             return new Promise((resolve) => {
                 setTimeout(() => {
                     resolve({
