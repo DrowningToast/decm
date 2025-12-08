@@ -49,6 +49,7 @@ export interface SelectedIssuersTableProps {
     onRemoveIssuer: (issuerId: string) => void;
     title?: string;
     isUnsaved?: boolean;
+    disabled?: boolean;
 }
 
 export const SelectedIssuersTable = ({
@@ -56,6 +57,7 @@ export const SelectedIssuersTable = ({
     onRemoveIssuer,
     title,
     isUnsaved = false,
+    disabled = false,
 }: SelectedIssuersTableProps) => {
     const { t } = useTranslation();
 
@@ -125,7 +127,7 @@ export const SelectedIssuersTable = ({
                                         )}
                                     </TableCell>
                                     <TableCell>
-                                        {isOnlyOneIssuer ? (
+                                        {isOnlyOneIssuer || disabled ? (
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <span>
@@ -141,9 +143,13 @@ export const SelectedIssuersTable = ({
                                                 </TooltipTrigger>
                                                 <TooltipContent>
                                                     <p className="text-white font-medium">
-                                                        {t(
-                                                            "certificateSettings.step1.removeIssuer.minimumIssuerRequired",
-                                                        )}
+                                                        {disabled
+                                                            ? t(
+                                                                  "certificateSettings.step1.removeIssuer.disabledWhenPublished",
+                                                              )
+                                                            : t(
+                                                                  "certificateSettings.step1.removeIssuer.minimumIssuerRequired",
+                                                              )}
                                                     </p>
                                                 </TooltipContent>
                                             </Tooltip>

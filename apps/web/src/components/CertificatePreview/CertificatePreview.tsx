@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import DOMPurify from "dompurify";
 import { Typography } from "@/components/typography/typography";
-import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import type { DetectedKeyword, AvailableKeyword } from "@/hooks/useCertificateTemplate";
 
@@ -139,11 +139,6 @@ export const CertificatePreview = ({
                                     <tr className="border-b bg-gray-100">
                                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
                                             {t(
-                                                "certificateSettings.step2.keywordStatus.table.status",
-                                            )}
-                                        </th>
-                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                                            {t(
                                                 "certificateSettings.step2.keywordStatus.table.keyword",
                                             )}
                                         </th>
@@ -157,35 +152,26 @@ export const CertificatePreview = ({
                                                 "certificateSettings.step2.keywordStatus.table.count",
                                             )}
                                         </th>
+                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                                            {t(
+                                                "certificateSettings.step2.keywordStatus.table.positionX",
+                                            )}
+                                        </th>
+                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                                            {t(
+                                                "certificateSettings.step2.keywordStatus.table.positionY",
+                                            )}
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {keywordStatuses.map((kw) => (
                                         <tr
                                             key={kw.keyword}
-                                            className="border-b last:border-b-0 hover:bg-muted/30 transition-colors"
+                                            className={`border-b last:border-b-0 hover:bg-muted/30 transition-colors ${
+                                                !kw.isDetected && kw.mandatory ? "bg-red-50" : ""
+                                            }`}
                                         >
-                                            <td className="px-4 py-3">
-                                                {kw.isDetected ? (
-                                                    <div className="flex items-center gap-2">
-                                                        <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
-                                                        <span className="text-sm font-medium text-green-700">
-                                                            {t(
-                                                                "certificateSettings.step2.keywordStatus.detected",
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2">
-                                                        <XCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
-                                                        <span className="text-sm font-medium text-red-700">
-                                                            {t(
-                                                                "certificateSettings.step2.keywordStatus.notDetected",
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </td>
                                             <td className="px-4 py-3">
                                                 <code className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-mono text-gray-900 select-all">
                                                     {kw.keyword}
@@ -209,16 +195,29 @@ export const CertificatePreview = ({
                                             <td className="px-4 py-3">
                                                 {kw.isDetected && kw.detectedData ? (
                                                     <span className="text-sm font-medium text-gray-900">
-                                                        {kw.detectedData.count}{" "}
-                                                        <span className="text-sm font-normal text-gray-700">
-                                                            {kw.detectedData.count === 1
-                                                                ? t(
-                                                                      "certificateSettings.step2.keywordStatus.detected",
-                                                                  )
-                                                                : t(
-                                                                      "certificateSettings.step2.keywordStatus.detectedPlural",
-                                                                  )}
-                                                        </span>
+                                                        {kw.detectedData.count}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-sm font-medium text-gray-400">
+                                                        —
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {kw.isDetected && kw.detectedData ? (
+                                                    <span className="text-sm font-mono text-gray-900">
+                                                        {kw.detectedData.x.toFixed(2)}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-sm font-medium text-gray-400">
+                                                        —
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {kw.isDetected && kw.detectedData ? (
+                                                    <span className="text-sm font-mono text-gray-900">
+                                                        {kw.detectedData.y.toFixed(2)}
                                                     </span>
                                                 ) : (
                                                     <span className="text-sm font-medium text-gray-400">

@@ -269,7 +269,40 @@ const {
 
 **NO `dangerouslySetInnerHTML`**: Never use unsafe HTML rendering - use Text components or structured data instead.
 
-### 9. Environment Configuration
+### 9. Certificate Implementation Patterns
+
+**Certificate Mint Readiness Validation**:
+
+- MUST validate ALL issuers have signed (not just one)
+- Check certificate config exists, contract deployed, and all issuers signed
+- Use SQL query: `AllIssuersHaveSigned` in `event_issuers.sql`
+- Frontend hook: `useCertificateMintReadiness(eventId)`
+
+**Certificate Publishing (`is_published` flag)**:
+
+- Database field: `event_certificate_configs.is_published` (BOOLEAN, default: FALSE)
+- Endpoint: `PATCH /api/v1/events/{event_id}/config/certificate/published`
+- Frontend hook: `useToggleCertificatePublished(eventId)`
+- Warning: Changes after publishing require re-approval from all issuers
+
+**Certificate Image Generation**:
+
+- Server-side SVG → PNG rendering with template variable substitution
+- Authentication required with ownership verification
+- Endpoint: `GET /api/v1/certificates/{certificate_id}/image`
+- Frontend hook: `useCertificateImage({ certificateId, enabled })`
+- Template variables: `name`, `event_name`, `academic_institution`, `certificate_title`, `certificate_subtitle`
+- SVG element IDs must match database field names
+
+**Certificate Claiming**:
+
+- User flow: View certificate → Click claim → Enter PIN → Verify → Mint NFT → Update status
+- Frontend hook: `useClaimCertificate(certificateId, eventId)`
+- Backend endpoint: `POST /api/v1/events/{event_id}/certificates/{certificate_id}/claim`
+- Verify: password correct, user owns certificate, not already claimed
+- Update: Set `certificate_token_id`, claimed timestamp, inbox message status
+
+### 10. Environment Configuration
 
 **Backend (.env file)**:
 
@@ -302,7 +335,7 @@ VITE_ENVIRONMENT=development
 
 **Pattern**: Use `.env.example` for configuration templates (NOT `env.template`).
 
-### 10. Development Endpoints
+### 11. Development Endpoints
 
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8080/api/v1
@@ -311,7 +344,7 @@ VITE_ENVIRONMENT=development
 - Health Check: http://localhost:8080/
 - Readiness: http://localhost:8080/ready
 
-### 11. Common Commands
+### 12. Common Commands
 
 ```bash
 # Setup
@@ -331,7 +364,7 @@ pnpm db:migrate:create       # Create new migration
 pnpm db:console              # PostgreSQL CLI
 ```
 
-### 12. Code Quality
+### 13. Code Quality
 
 **Naming Conventions**:
 
@@ -359,7 +392,7 @@ import (
 )
 ```
 
-### 13. Type Safety
+### 14. Type Safety
 
 **sqlc Generated Code**: Always use sqlc-generated types from `packages/database/go/generated/`
 
@@ -375,7 +408,7 @@ timePtr := pgmapper.PgTimestampzToTimePtr(timestampz)
 timestampz := pgmapper.TimePtrToPgTimestampz(timePtr)
 ```
 
-### 14. Testing
+### 15. Testing
 
 **Backend (Go)**:
 
@@ -393,7 +426,7 @@ pnpm test            # Run tests (when configured)
 pnpm test:watch      # Watch mode
 ```
 
-### 15. Prohibited Patterns
+### 16. Prohibited Patterns
 
 - ❌ Never use npm/yarn/bun for package management
 - ❌ Never hardcode encryption keys

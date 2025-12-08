@@ -159,6 +159,10 @@ export interface CoreApiInternalHandlerEventconfigEventCertificateConfigResponse
     academic_institution_pos_y?: number;
     base_certificate_presigned_url: string;
     base_certificate_storage_key: string;
+    certificate_subtitle_pos_x?: number;
+    certificate_subtitle_pos_y?: number;
+    certificate_title_pos_x?: number;
+    certificate_title_pos_y?: number;
     created_at: string;
     event_id: string;
     event_name_pos_x: number;
@@ -722,6 +726,19 @@ export interface EventconfigUpdateEventRegistrationConfigRequest {
     last_name_requirement_status: number;
     phone_number_requirement_status: number;
     registration_password?: string;
+}
+
+/** @format binary */
+export type GenerateCertificateImageData = File;
+
+export type GenerateCertificateImageError = CustomerrorErrResponse;
+
+export interface GenerateCertificateImageParams {
+    /**
+     * Certificate ID
+     * @format uuid
+     */
+    certificateId: string;
 }
 
 export type GetCertificatesListViewmodelData = EventGetCertificatesListViewModelResponse;
@@ -1408,6 +1425,26 @@ export interface UpdateEventCertificateConfigPayload {
     academic_institution_pos_y?: number;
     /** Base certificate image */
     base_certificate_image?: File;
+    /**
+     * Certificate subtitle position x
+     * @format float64
+     */
+    certificate_subtitle_pos_x?: number;
+    /**
+     * Certificate subtitle position y
+     * @format float64
+     */
+    certificate_subtitle_pos_y?: number;
+    /**
+     * Certificate title position x
+     * @format float64
+     */
+    certificate_title_pos_x?: number;
+    /**
+     * Certificate title position y
+     * @format float64
+     */
+    certificate_title_pos_y?: number;
     /**
      * Event name position x
      * @format float64
@@ -2932,6 +2969,28 @@ export class Api<SecurityDataType extends unknown> {
                 body: verifyPasswordRequest,
                 type: ContentType.Json,
                 format: "json",
+                ...params,
+            }),
+    };
+    certificateId = {
+        /**
+         * @description Generates a PNG certificate image for the authenticated user's certificate
+         *
+         * @tags certificates
+         * @name GenerateCertificateImage
+         * @summary Generate certificate image for participant
+         * @request GET:/certificates/{certificate_id}/image
+         * @secure
+         */
+        generateCertificateImage: (
+            { certificateId, ...query }: GenerateCertificateImageParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GenerateCertificateImageData, GenerateCertificateImageError>({
+                path: `/certificates/${certificateId}/image`,
+                method: "GET",
+                secure: true,
+                format: "blob",
                 ...params,
             }),
     };

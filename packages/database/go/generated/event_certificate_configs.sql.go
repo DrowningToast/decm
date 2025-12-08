@@ -22,6 +22,10 @@ INSERT INTO event_certificate_configs (
     name_pos_y,
     academic_institution_pos_x,
     academic_institution_pos_y,
+    certificate_title_pos_x,
+    certificate_title_pos_y,
+    certificate_subtitle_pos_x,
+    certificate_subtitle_pos_y,
     is_published
 ) VALUES (
     $1,
@@ -32,8 +36,12 @@ INSERT INTO event_certificate_configs (
     $6,
     $7,
     $8,
-    COALESCE($9, FALSE)
-) RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published
+    $9,
+    $10,
+    $11,
+    $12,
+    COALESCE($13, FALSE)
+) RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_family, event_name_font_weight, name_font_family, name_font_weight, academic_institution_font_family, academic_institution_font_weight, certificate_title_font_family, certificate_title_font_weight, certificate_subtitle_font_family, certificate_subtitle_font_weight
 `
 
 type CreateEventCertificateConfigParams struct {
@@ -45,6 +53,10 @@ type CreateEventCertificateConfigParams struct {
 	NamePosY                  float64       `json:"name_pos_y"`
 	AcademicInstitutionPosX   pgtype.Float8 `json:"academic_institution_pos_x"`
 	AcademicInstitutionPosY   pgtype.Float8 `json:"academic_institution_pos_y"`
+	CertificateTitlePosX      pgtype.Float8 `json:"certificate_title_pos_x"`
+	CertificateTitlePosY      pgtype.Float8 `json:"certificate_title_pos_y"`
+	CertificateSubtitlePosX   pgtype.Float8 `json:"certificate_subtitle_pos_x"`
+	CertificateSubtitlePosY   pgtype.Float8 `json:"certificate_subtitle_pos_y"`
 	IsPublished               interface{}   `json:"is_published"`
 }
 
@@ -58,6 +70,10 @@ func (q *Queries) CreateEventCertificateConfig(ctx context.Context, arg CreateEv
 		arg.NamePosY,
 		arg.AcademicInstitutionPosX,
 		arg.AcademicInstitutionPosY,
+		arg.CertificateTitlePosX,
+		arg.CertificateTitlePosY,
+		arg.CertificateSubtitlePosX,
+		arg.CertificateSubtitlePosY,
 		arg.IsPublished,
 	)
 	var i EventCertificateConfig
@@ -78,6 +94,16 @@ func (q *Queries) CreateEventCertificateConfig(ctx context.Context, arg CreateEv
 		&i.CertificateSubtitlePosX,
 		&i.CertificateSubtitlePosY,
 		&i.IsPublished,
+		&i.EventNameFontFamily,
+		&i.EventNameFontWeight,
+		&i.NameFontFamily,
+		&i.NameFontWeight,
+		&i.AcademicInstitutionFontFamily,
+		&i.AcademicInstitutionFontWeight,
+		&i.CertificateTitleFontFamily,
+		&i.CertificateTitleFontWeight,
+		&i.CertificateSubtitleFontFamily,
+		&i.CertificateSubtitleFontWeight,
 	)
 	return i, err
 }
@@ -92,7 +118,7 @@ func (q *Queries) DeleteEventCertificateConfig(ctx context.Context, eventID uuid
 }
 
 const GetEventCertificateConfigByEventID = `-- name: GetEventCertificateConfigByEventID :one
-SELECT id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published FROM event_certificate_configs WHERE event_id = $1
+SELECT id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_family, event_name_font_weight, name_font_family, name_font_weight, academic_institution_font_family, academic_institution_font_weight, certificate_title_font_family, certificate_title_font_weight, certificate_subtitle_font_family, certificate_subtitle_font_weight FROM event_certificate_configs WHERE event_id = $1
 `
 
 func (q *Queries) GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (EventCertificateConfig, error) {
@@ -115,6 +141,54 @@ func (q *Queries) GetEventCertificateConfigByEventID(ctx context.Context, eventI
 		&i.CertificateSubtitlePosX,
 		&i.CertificateSubtitlePosY,
 		&i.IsPublished,
+		&i.EventNameFontFamily,
+		&i.EventNameFontWeight,
+		&i.NameFontFamily,
+		&i.NameFontWeight,
+		&i.AcademicInstitutionFontFamily,
+		&i.AcademicInstitutionFontWeight,
+		&i.CertificateTitleFontFamily,
+		&i.CertificateTitleFontWeight,
+		&i.CertificateSubtitleFontFamily,
+		&i.CertificateSubtitleFontWeight,
+	)
+	return i, err
+}
+
+const GetEventCertificateConfigByID = `-- name: GetEventCertificateConfigByID :one
+SELECT id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_family, event_name_font_weight, name_font_family, name_font_weight, academic_institution_font_family, academic_institution_font_weight, certificate_title_font_family, certificate_title_font_weight, certificate_subtitle_font_family, certificate_subtitle_font_weight FROM event_certificate_configs WHERE id = $1
+`
+
+func (q *Queries) GetEventCertificateConfigByID(ctx context.Context, id uuid.UUID) (EventCertificateConfig, error) {
+	row := q.db.QueryRow(ctx, GetEventCertificateConfigByID, id)
+	var i EventCertificateConfig
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.BaseCertificateStorageKey,
+		&i.EventNamePosX,
+		&i.EventNamePosY,
+		&i.NamePosX,
+		&i.NamePosY,
+		&i.AcademicInstitutionPosX,
+		&i.AcademicInstitutionPosY,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.CertificateTitlePosX,
+		&i.CertificateTitlePosY,
+		&i.CertificateSubtitlePosX,
+		&i.CertificateSubtitlePosY,
+		&i.IsPublished,
+		&i.EventNameFontFamily,
+		&i.EventNameFontWeight,
+		&i.NameFontFamily,
+		&i.NameFontWeight,
+		&i.AcademicInstitutionFontFamily,
+		&i.AcademicInstitutionFontWeight,
+		&i.CertificateTitleFontFamily,
+		&i.CertificateTitleFontWeight,
+		&i.CertificateSubtitleFontFamily,
+		&i.CertificateSubtitleFontWeight,
 	)
 	return i, err
 }
@@ -125,7 +199,7 @@ SET
     is_published = $1,
     updated_at = NOW()
 WHERE event_id = $2
-RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published
+RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_family, event_name_font_weight, name_font_family, name_font_weight, academic_institution_font_family, academic_institution_font_weight, certificate_title_font_family, certificate_title_font_weight, certificate_subtitle_font_family, certificate_subtitle_font_weight
 `
 
 type ToggleEventCertificateConfigPublishedParams struct {
@@ -153,6 +227,16 @@ func (q *Queries) ToggleEventCertificateConfigPublished(ctx context.Context, arg
 		&i.CertificateSubtitlePosX,
 		&i.CertificateSubtitlePosY,
 		&i.IsPublished,
+		&i.EventNameFontFamily,
+		&i.EventNameFontWeight,
+		&i.NameFontFamily,
+		&i.NameFontWeight,
+		&i.AcademicInstitutionFontFamily,
+		&i.AcademicInstitutionFontWeight,
+		&i.CertificateTitleFontFamily,
+		&i.CertificateTitleFontWeight,
+		&i.CertificateSubtitleFontFamily,
+		&i.CertificateSubtitleFontWeight,
 	)
 	return i, err
 }
@@ -167,22 +251,50 @@ SET
     name_pos_y = $5,
     academic_institution_pos_x = $6,
     academic_institution_pos_y = $7,
-    is_published = COALESCE($8, is_published),
+    certificate_title_pos_x = $8,
+    certificate_title_pos_y = $9,
+    certificate_subtitle_pos_x = $10,
+    certificate_subtitle_pos_y = $11,
+    event_name_font_family = $12,
+    event_name_font_weight = $13,
+    name_font_family = $14,
+    name_font_weight = $15,
+    academic_institution_font_family = $16,
+    academic_institution_font_weight = $17,
+    certificate_title_font_family = $18,
+    certificate_title_font_weight = $19,
+    certificate_subtitle_font_family = $20,
+    certificate_subtitle_font_weight = $21,
+    is_published = COALESCE($22, is_published),
     updated_at = NOW()
-WHERE event_id = $9
-RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published
+WHERE event_id = $23
+RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_family, event_name_font_weight, name_font_family, name_font_weight, academic_institution_font_family, academic_institution_font_weight, certificate_title_font_family, certificate_title_font_weight, certificate_subtitle_font_family, certificate_subtitle_font_weight
 `
 
 type UpdateEventCertificateConfigParams struct {
-	BaseCertificateStorageKey string        `json:"base_certificate_storage_key"`
-	EventNamePosX             float64       `json:"event_name_pos_x"`
-	EventNamePosY             float64       `json:"event_name_pos_y"`
-	NamePosX                  float64       `json:"name_pos_x"`
-	NamePosY                  float64       `json:"name_pos_y"`
-	AcademicInstitutionPosX   pgtype.Float8 `json:"academic_institution_pos_x"`
-	AcademicInstitutionPosY   pgtype.Float8 `json:"academic_institution_pos_y"`
-	IsPublished               bool          `json:"is_published"`
-	EventID                   uuid.UUID     `json:"event_id"`
+	BaseCertificateStorageKey     string        `json:"base_certificate_storage_key"`
+	EventNamePosX                 float64       `json:"event_name_pos_x"`
+	EventNamePosY                 float64       `json:"event_name_pos_y"`
+	NamePosX                      float64       `json:"name_pos_x"`
+	NamePosY                      float64       `json:"name_pos_y"`
+	AcademicInstitutionPosX       pgtype.Float8 `json:"academic_institution_pos_x"`
+	AcademicInstitutionPosY       pgtype.Float8 `json:"academic_institution_pos_y"`
+	CertificateTitlePosX          pgtype.Float8 `json:"certificate_title_pos_x"`
+	CertificateTitlePosY          pgtype.Float8 `json:"certificate_title_pos_y"`
+	CertificateSubtitlePosX       pgtype.Float8 `json:"certificate_subtitle_pos_x"`
+	CertificateSubtitlePosY       pgtype.Float8 `json:"certificate_subtitle_pos_y"`
+	EventNameFontFamily           pgtype.Text   `json:"event_name_font_family"`
+	EventNameFontWeight           pgtype.Int4   `json:"event_name_font_weight"`
+	NameFontFamily                pgtype.Text   `json:"name_font_family"`
+	NameFontWeight                pgtype.Int4   `json:"name_font_weight"`
+	AcademicInstitutionFontFamily pgtype.Text   `json:"academic_institution_font_family"`
+	AcademicInstitutionFontWeight pgtype.Int4   `json:"academic_institution_font_weight"`
+	CertificateTitleFontFamily    pgtype.Text   `json:"certificate_title_font_family"`
+	CertificateTitleFontWeight    pgtype.Int4   `json:"certificate_title_font_weight"`
+	CertificateSubtitleFontFamily pgtype.Text   `json:"certificate_subtitle_font_family"`
+	CertificateSubtitleFontWeight pgtype.Int4   `json:"certificate_subtitle_font_weight"`
+	IsPublished                   pgtype.Bool   `json:"is_published"`
+	EventID                       uuid.UUID     `json:"event_id"`
 }
 
 func (q *Queries) UpdateEventCertificateConfig(ctx context.Context, arg UpdateEventCertificateConfigParams) (EventCertificateConfig, error) {
@@ -194,6 +306,20 @@ func (q *Queries) UpdateEventCertificateConfig(ctx context.Context, arg UpdateEv
 		arg.NamePosY,
 		arg.AcademicInstitutionPosX,
 		arg.AcademicInstitutionPosY,
+		arg.CertificateTitlePosX,
+		arg.CertificateTitlePosY,
+		arg.CertificateSubtitlePosX,
+		arg.CertificateSubtitlePosY,
+		arg.EventNameFontFamily,
+		arg.EventNameFontWeight,
+		arg.NameFontFamily,
+		arg.NameFontWeight,
+		arg.AcademicInstitutionFontFamily,
+		arg.AcademicInstitutionFontWeight,
+		arg.CertificateTitleFontFamily,
+		arg.CertificateTitleFontWeight,
+		arg.CertificateSubtitleFontFamily,
+		arg.CertificateSubtitleFontWeight,
 		arg.IsPublished,
 		arg.EventID,
 	)
@@ -215,6 +341,94 @@ func (q *Queries) UpdateEventCertificateConfig(ctx context.Context, arg UpdateEv
 		&i.CertificateSubtitlePosX,
 		&i.CertificateSubtitlePosY,
 		&i.IsPublished,
+		&i.EventNameFontFamily,
+		&i.EventNameFontWeight,
+		&i.NameFontFamily,
+		&i.NameFontWeight,
+		&i.AcademicInstitutionFontFamily,
+		&i.AcademicInstitutionFontWeight,
+		&i.CertificateTitleFontFamily,
+		&i.CertificateTitleFontWeight,
+		&i.CertificateSubtitleFontFamily,
+		&i.CertificateSubtitleFontWeight,
+	)
+	return i, err
+}
+
+const UpdateEventCertificateTextConfig = `-- name: UpdateEventCertificateTextConfig :one
+UPDATE event_certificate_configs
+SET 
+    event_name_font_family = $1,
+    event_name_font_weight = $2,
+    name_font_family = $3,
+    name_font_weight = $4,
+    academic_institution_font_family = $5,
+    academic_institution_font_weight = $6,
+    certificate_title_font_family = $7,
+    certificate_title_font_weight = $8,
+    certificate_subtitle_font_family = $9,
+    certificate_subtitle_font_weight = $10,
+    updated_at = NOW()
+WHERE event_id = $11
+RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_family, event_name_font_weight, name_font_family, name_font_weight, academic_institution_font_family, academic_institution_font_weight, certificate_title_font_family, certificate_title_font_weight, certificate_subtitle_font_family, certificate_subtitle_font_weight
+`
+
+type UpdateEventCertificateTextConfigParams struct {
+	EventNameFontFamily           pgtype.Text `json:"event_name_font_family"`
+	EventNameFontWeight           pgtype.Int4 `json:"event_name_font_weight"`
+	NameFontFamily                pgtype.Text `json:"name_font_family"`
+	NameFontWeight                pgtype.Int4 `json:"name_font_weight"`
+	AcademicInstitutionFontFamily pgtype.Text `json:"academic_institution_font_family"`
+	AcademicInstitutionFontWeight pgtype.Int4 `json:"academic_institution_font_weight"`
+	CertificateTitleFontFamily    pgtype.Text `json:"certificate_title_font_family"`
+	CertificateTitleFontWeight    pgtype.Int4 `json:"certificate_title_font_weight"`
+	CertificateSubtitleFontFamily pgtype.Text `json:"certificate_subtitle_font_family"`
+	CertificateSubtitleFontWeight pgtype.Int4 `json:"certificate_subtitle_font_weight"`
+	EventID                       uuid.UUID   `json:"event_id"`
+}
+
+func (q *Queries) UpdateEventCertificateTextConfig(ctx context.Context, arg UpdateEventCertificateTextConfigParams) (EventCertificateConfig, error) {
+	row := q.db.QueryRow(ctx, UpdateEventCertificateTextConfig,
+		arg.EventNameFontFamily,
+		arg.EventNameFontWeight,
+		arg.NameFontFamily,
+		arg.NameFontWeight,
+		arg.AcademicInstitutionFontFamily,
+		arg.AcademicInstitutionFontWeight,
+		arg.CertificateTitleFontFamily,
+		arg.CertificateTitleFontWeight,
+		arg.CertificateSubtitleFontFamily,
+		arg.CertificateSubtitleFontWeight,
+		arg.EventID,
+	)
+	var i EventCertificateConfig
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.BaseCertificateStorageKey,
+		&i.EventNamePosX,
+		&i.EventNamePosY,
+		&i.NamePosX,
+		&i.NamePosY,
+		&i.AcademicInstitutionPosX,
+		&i.AcademicInstitutionPosY,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.CertificateTitlePosX,
+		&i.CertificateTitlePosY,
+		&i.CertificateSubtitlePosX,
+		&i.CertificateSubtitlePosY,
+		&i.IsPublished,
+		&i.EventNameFontFamily,
+		&i.EventNameFontWeight,
+		&i.NameFontFamily,
+		&i.NameFontWeight,
+		&i.AcademicInstitutionFontFamily,
+		&i.AcademicInstitutionFontWeight,
+		&i.CertificateTitleFontFamily,
+		&i.CertificateTitleFontWeight,
+		&i.CertificateSubtitleFontFamily,
+		&i.CertificateSubtitleFontWeight,
 	)
 	return i, err
 }

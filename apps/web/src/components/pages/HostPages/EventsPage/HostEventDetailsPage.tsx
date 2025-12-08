@@ -513,24 +513,8 @@ export default function HostEventDetailsPage({
                                     </div>
                                     <div className="flex gap-2">
                                         <WrappedButton
-                                            className={`px-5 py-2 rounded-md font-medium transition ${
-                                                isCertificatePublished
-                                                    ? "bg-gray-400 text-white cursor-not-allowed"
-                                                    : "bg-primary text-white hover:bg-primary/90"
-                                            }`}
-                                            href={
-                                                isCertificatePublished
-                                                    ? undefined
-                                                    : `/host/events/${eventId}/settings/certificate`
-                                            }
-                                            disabled={isCertificatePublished}
-                                            title={
-                                                isCertificatePublished
-                                                    ? t(
-                                                          "events.hostDetails.certificates.editDisabledMessage",
-                                                      )
-                                                    : undefined
-                                            }
+                                            className="px-5 py-2 rounded-md font-medium transition bg-primary text-white hover:bg-primary/90"
+                                            href={`/host/events/${eventId}/settings/certificate`}
                                         >
                                             {t("certificateSettings.pageTitle")}
                                         </WrappedButton>
@@ -910,17 +894,8 @@ export default function HostEventDetailsPage({
                                 </Typography>
                                 <div className="flex gap-4 mt-6 items-center">
                                     <WrappedButton
-                                        className={`px-5 rounded-md font-medium transition ${
-                                            isCertificatePublished
-                                                ? "bg-gray-400 text-white cursor-not-allowed"
-                                                : "bg-primary text-white hover:bg-primary/90"
-                                        }`}
-                                        href={
-                                            isCertificatePublished
-                                                ? undefined
-                                                : `/host/events/${eventId}/settings/certificate`
-                                        }
-                                        disabled={isCertificatePublished}
+                                        className="px-5 rounded-md font-medium transition bg-primary text-white hover:bg-primary/90"
+                                        href={`/host/events/${eventId}/settings/certificate`}
                                     >
                                         {t("certificateSettings.pageTitle")}
                                     </WrappedButton>
