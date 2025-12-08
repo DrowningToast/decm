@@ -371,8 +371,8 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 		}
 	}
-	hasJoinedOnDatabsae := eventAttendee != nil
-	if hasJoinedOnChain && hasJoinedOnDatabsae {
+	hasJoinedOnDatabase := eventAttendee != nil
+	if hasJoinedOnChain && hasJoinedOnDatabase {
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("user has already joined the event"))
 	}
 
