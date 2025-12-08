@@ -6,7 +6,6 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 
 	"apps/backend/common/customerror"
 )
@@ -41,23 +40,20 @@ func (h *Handler) GetEventCertificateConfig(ctx *fiber.Ctx) error {
 
 	// If not a verified organizer, check if user is an issuer for this specific event
 	if !isVerifiedOrganizer {
-		_, err := h.EventUc.EventIssuerDataGateway.GetEventIssuerByEventIDAndIssuerCredentialID(
+		isIssuer, err := h.EventUc.IsUserIssuerForEvent(
 			ctx.UserContext(),
 			eventID,
 			currentUser.UserId,
 		)
 		if err != nil {
-			// Check if it's a "not found" error (user is not an issuer)
-			if errors.Is(err, pgx.ErrNoRows) {
-				return customerror.Parse(
-					&customerror.ErrForbidden,
-					errors.New("user must be a verified organizer or an issuer assigned to this event"),
-				)
-			}
-			// For other database errors, return internal server error
-			return errors.Wrap(err, "failed to check if user is an issuer for this event")
+			return err
 		}
-		// Note: SQL query now filters out soft-deleted records, so no need to check DeletedAt
+		if !isIssuer {
+			return customerror.Parse(
+				&customerror.ErrForbidden,
+				errors.New("user must be a verified organizer or an issuer assigned to this event"),
+			)
+		}
 	}
 
 	config, err := h.EventConfigUc.GetEventCertificateConfigByEventID(ctx.UserContext(), eventID)
