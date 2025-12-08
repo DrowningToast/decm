@@ -42,6 +42,15 @@ describe("useEventIssuers", () => {
                 lastName: "Doe",
                 email: "john@example.com",
                 academicInstitution: "MIT",
+                isAcademicEmailPublic: true,
+                isAcademicInstitutionPublic: true,
+                isAddressPublic: false,
+                isBioPublic: false,
+                isEmailPublic: true,
+                isFirstNamePublic: true,
+                isLastNamePublic: true,
+                isPhoneNumberPublic: false,
+                isProfilePicturePublic: false,
             },
             signMessage: "sign-message-1",
             signature: "signature-1",
@@ -60,6 +69,15 @@ describe("useEventIssuers", () => {
                 lastName: "Smith",
                 email: "jane@example.com",
                 academicInstitution: "Stanford",
+                isAcademicEmailPublic: true,
+                isAcademicInstitutionPublic: true,
+                isAddressPublic: false,
+                isBioPublic: false,
+                isEmailPublic: true,
+                isFirstNamePublic: true,
+                isLastNamePublic: true,
+                isPhoneNumberPublic: false,
+                isProfilePicturePublic: false,
             },
             createdAt: new Date("2024-01-02"),
             updatedAt: new Date("2024-01-02"),
@@ -115,7 +133,7 @@ describe("useEventIssuers", () => {
     });
 
     it("should handle undefined response", async () => {
-        vi.mocked(eventService.getEventIssuersByEventId).mockResolvedValue(undefined);
+        vi.mocked(eventService.getEventIssuersByEventId).mockResolvedValue([]);
 
         const { result } = renderHook(() => useEventIssuers(mockEventId), {
             wrapper: createWrapper(),
@@ -125,7 +143,7 @@ describe("useEventIssuers", () => {
             expect(result.current.isLoadingEventIssuers).toBe(false);
         });
 
-        expect(result.current.eventIssuers).toBeUndefined();
+        expect(result.current.eventIssuers).toEqual([]);
     });
 
     it("should handle issuers with and without signatures", async () => {

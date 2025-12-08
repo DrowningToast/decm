@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
-import { renderHook, act, waitFor } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { useIssuerManagement, convertProfileToIssuer } from "./useIssuerManagement";
 import type { Issuer } from "./useIssuerManagement";
 import type { Profile } from "@/services/AuthService/AuthService";

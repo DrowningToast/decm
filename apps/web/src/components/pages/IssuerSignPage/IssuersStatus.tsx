@@ -1,6 +1,5 @@
 import { Typography } from "@/components/typography/typography";
 import { IssuerStatusBadge } from "./IssuerStatusBadge";
-import { isIssuerSigned } from "./issuerStateUtils";
 import { useTranslation } from "react-i18next";
 
 interface IssuersStatusProps {

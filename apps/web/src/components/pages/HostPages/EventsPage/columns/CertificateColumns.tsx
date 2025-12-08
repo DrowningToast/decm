@@ -43,7 +43,7 @@ export function CertificateColumns(
             header: "Issued At",
             enableSorting: true,
             cell: ({ row }) => {
-                const issuedAt = row.original.issuedAt || row.original.created_at;
+                const issuedAt = row.original.created_at;
                 if (!issuedAt) {
                     return <span className="text-muted-foreground">-</span>;
                 }

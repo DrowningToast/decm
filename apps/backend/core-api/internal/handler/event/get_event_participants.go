@@ -13,19 +13,19 @@ import (
 )
 
 type EventParticipantResponse struct {
-	ID                  uuid.UUID  `json:"id"`
-	EventID             uuid.UUID  `json:"event_id"`
+	ID                   uuid.UUID `json:"id"`
+	EventID              uuid.UUID `json:"event_id"`
 	AttendeeCredentialID uuid.UUID `json:"attendee_credential_id"`
-	WalletAddress       string     `json:"wallet_address"`
-	ContractAddress     string     `json:"contract_address"`
-	IsAttendeeAccepted  bool       `json:"is_attendee_accepted"`
-	FirstName           *string    `json:"first_name,omitempty"`
-	LastName            *string    `json:"last_name,omitempty"`
-	Email               *string    `json:"email,omitempty"`
-	PhoneNumber         *string    `json:"phone_number,omitempty"`
-	AcademicInstitution *string    `json:"academic_institution,omitempty"`
-	CreatedAt           time.Time  `json:"created_at"`
-	UpdatedAt           time.Time  `json:"updated_at"`
+	WalletAddress        string    `json:"wallet_address"`
+	ContractAddress      string    `json:"contract_address"`
+	IsAttendeeAccepted   bool      `json:"is_attendee_accepted"`
+	FirstName            *string   `json:"first_name,omitempty"`
+	LastName             *string   `json:"last_name,omitempty"`
+	Email                *string   `json:"email,omitempty"`
+	PhoneNumber          *string   `json:"phone_number,omitempty"`
+	AcademicInstitution  *string   `json:"academic_institution,omitempty"`
+	CreatedAt            time.Time `json:"created_at"`
+	UpdatedAt            time.Time `json:"updated_at"`
 }
 
 // GetEventParticipants godoc

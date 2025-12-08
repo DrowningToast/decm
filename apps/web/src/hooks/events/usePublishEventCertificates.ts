@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { EventService } from "@/services/EventService/EventService";
+import { defaultEventService } from "@/services/EventService/EventService";
 import { QUERY_KEY } from "@/lib/queryKeys";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -17,7 +17,7 @@ export function usePublishEventCertificates() {
 
     return useMutation({
         mutationFn: async (eventId: string): Promise<PublishEventCertificatesResult> => {
-            const response = await EventService.publishEventCertificates(eventId);
+            const response = await defaultEventService.publishEventCertificates(eventId);
             return {
                 eventId: response.event_id,
                 publishedCount: response.published_count,

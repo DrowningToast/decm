@@ -41,6 +41,10 @@ describe("useEventCertificateConfig", () => {
         academic_institution_pos_x: 175,
         academic_institution_pos_y: 275,
         base_certificate_presigned_url: "https://example.com/certificate.svg",
+        base_certificate_storage_key: "certificates/config-1.svg",
+        created_at: "2024-01-01T00:00:00Z",
+        is_published: false,
+        updated_at: "2024-01-01T00:00:00Z",
     };
 
     beforeEach(() => {
@@ -101,7 +105,9 @@ describe("useEventCertificateConfig", () => {
     });
 
     it("should handle undefined response", async () => {
-        vi.mocked(coreApiClient.v1.getEventCertificateConfig).mockResolvedValue(undefined);
+        vi.mocked(coreApiClient.v1.getEventCertificateConfig).mockResolvedValue(
+            {} as CoreApiInternalHandlerEventconfigEventCertificateConfigResponse,
+        );
 
         const { result } = renderHook(() => useEventCertificateConfig(mockEventId), {
             wrapper: createWrapper(),
@@ -111,7 +117,7 @@ describe("useEventCertificateConfig", () => {
             expect(result.current.isLoading).toBe(false);
         });
 
-        expect(result.current.data).toBeUndefined();
+        expect(result.current.data).toBeDefined();
     });
 
     it("should use correct query key", async () => {

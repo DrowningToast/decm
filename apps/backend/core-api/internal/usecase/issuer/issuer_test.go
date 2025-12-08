@@ -2,10 +2,9 @@ package issuer
 
 import (
 	"context"
+	"decm-database/go/generated"
 	"errors"
 	"testing"
-
-	"decm-database/go/generated"
 
 	"apps/backend/core-api/internal/entity"
 

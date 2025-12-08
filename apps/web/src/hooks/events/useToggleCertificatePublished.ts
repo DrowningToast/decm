@@ -28,10 +28,12 @@ export const useToggleCertificatePublished = () => {
                 toast.success("Certificate configuration published successfully");
             }
         },
-        onError: (error: any) => {
-            toast.error(
-                error?.response?.data?.message || "Failed to update certificate published status",
-            );
+        onError: (error: unknown) => {
+            const errorMessage =
+                error && typeof error === "object" && "response" in error
+                    ? (error.response as { data?: { message?: string } })?.data?.message
+                    : undefined;
+            toast.error(errorMessage || "Failed to update certificate published status");
         },
     });
 };

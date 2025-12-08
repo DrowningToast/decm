@@ -29,6 +29,15 @@ describe("SelectedIssuersTable", () => {
                 lastName: "Doe",
                 email: "john@example.com",
                 academicInstitution: "MIT",
+                isAcademicEmailPublic: true,
+                isAcademicInstitutionPublic: true,
+                isAddressPublic: false,
+                isBioPublic: false,
+                isEmailPublic: true,
+                isFirstNamePublic: true,
+                isLastNamePublic: true,
+                isPhoneNumberPublic: false,
+                isProfilePicturePublic: false,
             },
             createdAt: new Date("2024-01-01"),
             updatedAt: new Date("2024-01-01"),
@@ -45,6 +54,15 @@ describe("SelectedIssuersTable", () => {
                 lastName: "Smith",
                 email: "jane@example.com",
                 academicInstitution: "Stanford",
+                isAcademicEmailPublic: true,
+                isAcademicInstitutionPublic: true,
+                isAddressPublic: false,
+                isBioPublic: false,
+                isEmailPublic: true,
+                isFirstNamePublic: true,
+                isLastNamePublic: true,
+                isPhoneNumberPublic: false,
+                isProfilePicturePublic: false,
             },
             createdAt: new Date("2024-01-02"),
             updatedAt: new Date("2024-01-02"),
@@ -60,6 +78,15 @@ describe("SelectedIssuersTable", () => {
                 firstName: "Bob",
                 lastName: "",
                 email: "bob@example.com",
+                isAcademicEmailPublic: true,
+                isAcademicInstitutionPublic: true,
+                isAddressPublic: false,
+                isBioPublic: false,
+                isEmailPublic: true,
+                isFirstNamePublic: true,
+                isLastNamePublic: true,
+                isPhoneNumberPublic: false,
+                isProfilePicturePublic: false,
             },
             createdAt: new Date("2024-01-03"),
             updatedAt: new Date("2024-01-03"),
@@ -131,6 +158,15 @@ describe("SelectedIssuersTable", () => {
                     firstName: "",
                     lastName: "",
                     email: "test@example.com",
+                    isAcademicEmailPublic: true,
+                    isAcademicInstitutionPublic: true,
+                    isAddressPublic: false,
+                    isBioPublic: false,
+                    isEmailPublic: true,
+                    isFirstNamePublic: true,
+                    isLastNamePublic: true,
+                    isPhoneNumberPublic: false,
+                    isProfilePicturePublic: false,
                 },
                 createdAt: new Date("2024-01-04"),
                 updatedAt: new Date("2024-01-04"),
@@ -172,7 +208,13 @@ describe("SelectedIssuersTable", () => {
         render(<SelectedIssuersTable {...defaultProps} />);
 
         expect(screen.getByText("certificateSettings.step1.table.name")).toBeInTheDocument();
-        expect(screen.getByText("certificateSettings.step1.table.email")).toBeInTheDocument();
+        expect(
+            screen.getByText("certificateSettings.step1.table.contactEmail"),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText("certificateSettings.step1.table.googleOAuthEmail"),
+        ).toBeInTheDocument();
+        expect(screen.getByText("certificateSettings.step1.table.phoneNumber")).toBeInTheDocument();
         expect(
             screen.getByText("certificateSettings.step1.table.organization"),
         ).toBeInTheDocument();

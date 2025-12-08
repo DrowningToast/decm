@@ -5,9 +5,9 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export const delay = (ms: number): Promise<NodeJS.Timeout> => {
+export const delay = (ms: number): Promise<void> => {
     return new Promise((resolve) => {
-        const timeoutId = setTimeout(() => resolve(timeoutId), ms);
+        setTimeout(() => resolve(), ms);
     });
 };
 
