@@ -62,6 +62,15 @@ export interface CheckRoleResponse {
     is_issuer?: boolean;
 }
 
+export type ClaimCertificateData = EntityEventCertificate;
+
+export type ClaimCertificateError = CustomerrorErrResponse;
+
+export interface ClaimCertificateParams {
+    /** Certificate ID */
+    certificateId: string;
+}
+
 /** @format int32 */
 export enum CommonSolutionStatus {
     SolutionStatusManaged = 0,
@@ -468,6 +477,13 @@ export interface EntityProfile {
     wallet_address?: string;
 }
 
+export interface EventClaimCertificateBody {
+    account_password?: string;
+    certificate_password?: string;
+    sign_message?: string;
+    signature?: string;
+}
+
 export interface EventCreateEventContractRequest {
     access_manager_contract_address: string;
     certificate_contract_address: string;
@@ -580,6 +596,10 @@ export interface EventGetCertificatesListViewModelResponse {
     unclaimed_certificates: any;
 }
 
+export interface EventGetClaimCertificateSignMessageResponse {
+    sign_message: string;
+}
+
 export interface EventGetEventCertificatesResponse {
     certificates: EntityEventCertificate[];
 }
@@ -652,42 +672,42 @@ export interface EventRegistrationParticipantRequestItem {
 }
 
 export interface EventUpdateEventCertificateTextConfigRequest {
-    academic_institution_font_family: string;
+    academic_institution_font_family_id: number;
     academic_institution_font_weight: number;
-    certificate_subtitle_font_family: string;
+    certificate_subtitle_font_family_id: number;
     certificate_subtitle_font_weight: number;
-    certificate_title_font_family: string;
+    certificate_title_font_family_id: number;
     certificate_title_font_weight: number;
-    event_name_font_family: string;
+    event_name_font_family_id: number;
     event_name_font_weight: number;
-    name_font_family: string;
+    name_font_family_id: number;
     name_font_weight: number;
 }
 
 export interface EventUpdateEventCertificateTextConfigResponse {
-    academic_institution_font_family?: string;
+    academic_institution_font_family_id?: number;
     academic_institution_font_weight?: number;
     academic_institution_pos_x?: number;
     academic_institution_pos_y?: number;
     base_certificate_presigned_url: string;
     base_certificate_storage_key: string;
-    certificate_subtitle_font_family?: string;
+    certificate_subtitle_font_family_id?: number;
     certificate_subtitle_font_weight?: number;
     certificate_subtitle_pos_x?: number;
     certificate_subtitle_pos_y?: number;
-    certificate_title_font_family?: string;
+    certificate_title_font_family_id?: number;
     certificate_title_font_weight?: number;
     certificate_title_pos_x?: number;
     certificate_title_pos_y?: number;
     created_at: string;
     event_id: string;
-    event_name_font_family?: string;
+    event_name_font_family_id?: number;
     event_name_font_weight?: number;
     event_name_pos_x: number;
     event_name_pos_y: number;
     id: string;
     is_published: boolean;
-    name_font_family?: string;
+    name_font_family_id?: number;
     name_font_weight?: number;
     name_pos_x: number;
     name_pos_y: number;
@@ -751,6 +771,19 @@ export interface EventconfigEventRegistrationConfigViewModel {
     updated_at: string;
 }
 
+export interface EventconfigFontFamilyItem {
+    available_font_weights: number[];
+    css_font_name: string;
+    font_family_name: string;
+    id: number;
+    is_default: boolean;
+    is_support_italic: boolean;
+}
+
+export interface EventconfigGetEventCertificateFontFamiliesResponse {
+    font_families: EventconfigFontFamilyItem[];
+}
+
 export interface EventconfigToggleCertificatePublishedRequest {
     is_published: boolean;
 }
@@ -793,6 +826,15 @@ export interface GetCertificatesListViewmodelParams {
     eventId: string;
 }
 
+export type GetClaimCertificateSignMessageData = EventGetClaimCertificateSignMessageResponse;
+
+export type GetClaimCertificateSignMessageError = CustomerrorErrResponse;
+
+export interface GetClaimCertificateSignMessageParams {
+    /** Certificate ID */
+    certificateId: string;
+}
+
 export type GetEventByIdData = EventEventResponse;
 
 export type GetEventByIdError = CustomerrorErrResponse;
@@ -811,6 +853,11 @@ export interface GetEventCertificateConfigParams {
     /** Event ID */
     eventId: string;
 }
+
+export type GetEventCertificateFontFamiliesData =
+    EventconfigGetEventCertificateFontFamiliesResponse;
+
+export type GetEventCertificateFontFamiliesError = CustomerrorErrResponse;
 
 export type GetEventCertificatesData = EventGetEventCertificatesResponse;
 
@@ -1866,6 +1913,51 @@ export class Api<SecurityDataType extends unknown> {
                 method: "GET",
                 query: query,
                 type: ContentType.Json,
+                ...params,
+            }),
+
+        /**
+         * @description Claim a certificate by signing with wallet
+         *
+         * @tags Certificates
+         * @name ClaimCertificate
+         * @summary Claim certificate
+         * @request POST:/api/v1/certificates/claim/{certificate_id}
+         */
+        claimCertificate: (
+            { certificateId, ...query }: ClaimCertificateParams,
+            claimCertificateBody: EventClaimCertificateBody,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<ClaimCertificateData, ClaimCertificateError>({
+                path: `/api/v1/certificates/claim/${certificateId}`,
+                method: "POST",
+                body: claimCertificateBody,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get sign message for claiming a certificate
+         *
+         * @tags Certificates
+         * @name GetClaimCertificateSignMessage
+         * @summary Get claim certificate sign message
+         * @request GET:/api/v1/certificates/claim/{certificate_id}/sign-message
+         */
+        getClaimCertificateSignMessage: (
+            { certificateId, ...query }: GetClaimCertificateSignMessageParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                GetClaimCertificateSignMessageData,
+                GetClaimCertificateSignMessageError
+            >({
+                path: `/api/v1/certificates/claim/${certificateId}/sign-message`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
                 ...params,
             }),
 
@@ -3043,6 +3135,26 @@ export class Api<SecurityDataType extends unknown> {
                 method: "GET",
                 secure: true,
                 format: "blob",
+                ...params,
+            }),
+    };
+    certificateFontFamilies = {
+        /**
+         * @description Retrieves all font families that can be used in certificate templates, including their available weights and italic support
+         *
+         * @name GetEventCertificateFontFamilies
+         * @summary Get all available font families for certificates
+         * @request GET:/eventconfig/certificate-font-families
+         */
+        getEventCertificateFontFamilies: (params: RequestParams = {}) =>
+            this.http.request<
+                GetEventCertificateFontFamiliesData,
+                GetEventCertificateFontFamiliesError
+            >({
+                path: `/eventconfig/certificate-font-families`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
                 ...params,
             }),
     };

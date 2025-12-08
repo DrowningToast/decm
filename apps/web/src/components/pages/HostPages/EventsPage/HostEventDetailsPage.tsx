@@ -753,6 +753,7 @@ export default function HostEventDetailsPage({
                                                     eventId,
                                                 });
                                             },
+                                            isCertificatePublished,
                                         )}
                                         data={
                                             (eventCertificates || [])

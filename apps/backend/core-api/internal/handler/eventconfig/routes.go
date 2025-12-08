@@ -10,6 +10,10 @@ func (h *Handler) Mount(r fiber.Router) {
 	logger := log.LoadLogger()
 	defer logger.Info("Mounted event config routes")
 
+	// Public routes for certificate font families (no authentication required)
+	publicGroup := r.Group("/eventconfig")
+	publicGroup.Get("/certificate-font-families", h.GetEventCertificateFontFamilies)
+
 	// Create event config group with authentication middleware
 	eventConfigGroup := r.Group("/events/:event_id/config").Use(
 		h.AuthenticationGuardMiddleware.Middleware,

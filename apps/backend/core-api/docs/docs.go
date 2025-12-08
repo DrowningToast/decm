@@ -183,6 +183,129 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/certificates/claim/{certificate_id}": {
+            "post": {
+                "description": "Claim a certificate by signing with wallet",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Certificates"
+                ],
+                "summary": "Claim certificate",
+                "operationId": "claim-certificate",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Certificate ID",
+                        "name": "certificate_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Claim certificate body",
+                        "name": "claimCertificateBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event.ClaimCertificateBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.EventCertificate"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/certificates/claim/{certificate_id}/sign-message": {
+            "get": {
+                "description": "Get sign message for claiming a certificate",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Certificates"
+                ],
+                "summary": "Get claim certificate sign message",
+                "operationId": "get-claim-certificate-sign-message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Certificate ID",
+                        "name": "certificate_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/event.GetClaimCertificateSignMessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/certificates/my-list-viewmodel": {
             "get": {
                 "description": "Get current user's certificates separated by claimed and unclaimed status. Claimed certificates have token_id populated, unclaimed certificates have token_id null and certificate config is published. Returns all certificates for the authenticated user across all events.",
@@ -3473,6 +3596,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/eventconfig/certificate-font-families": {
+            "get": {
+                "description": "Retrieves all font families that can be used in certificate templates, including their available weights and italic support",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all available font families for certificates",
+                "operationId": "get-event-certificate-font-families",
+                "responses": {
+                    "200": {
+                        "description": "List of available font families",
+                        "schema": {
+                            "$ref": "#/definitions/eventconfig.GetEventCertificateFontFamiliesResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/events/{event_id}/certificates/text-config": {
             "put": {
                 "description": "Update font family and font weight for all text templates in the certificate. This endpoint allows customization of fonts for event name, participant name, academic institution, certificate title, and certificate subtitle.",
@@ -4458,6 +4608,23 @@ const docTemplate = `{
                 }
             }
         },
+        "event.ClaimCertificateBody": {
+            "type": "object",
+            "properties": {
+                "account_password": {
+                    "type": "string"
+                },
+                "certificate_password": {
+                    "type": "string"
+                },
+                "sign_message": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                }
+            }
+        },
         "event.CreateEventContractRequest": {
             "type": "object",
             "required": [
@@ -4859,6 +5026,17 @@ const docTemplate = `{
                 "unclaimed_certificates": {}
             }
         },
+        "event.GetClaimCertificateSignMessageResponse": {
+            "type": "object",
+            "required": [
+                "sign_message"
+            ],
+            "properties": {
+                "sign_message": {
+                    "type": "string"
+                }
+            }
+        },
         "event.GetEventCertificatesResponse": {
             "type": "object",
             "required": [
@@ -4998,44 +5176,44 @@ const docTemplate = `{
         "event.UpdateEventCertificateTextConfigRequest": {
             "type": "object",
             "required": [
-                "academic_institution_font_family",
+                "academic_institution_font_family_id",
                 "academic_institution_font_weight",
-                "certificate_subtitle_font_family",
+                "certificate_subtitle_font_family_id",
                 "certificate_subtitle_font_weight",
-                "certificate_title_font_family",
+                "certificate_title_font_family_id",
                 "certificate_title_font_weight",
-                "event_name_font_family",
+                "event_name_font_family_id",
                 "event_name_font_weight",
-                "name_font_family",
+                "name_font_family_id",
                 "name_font_weight"
             ],
             "properties": {
-                "academic_institution_font_family": {
-                    "type": "string"
+                "academic_institution_font_family_id": {
+                    "type": "integer"
                 },
                 "academic_institution_font_weight": {
                     "type": "integer"
                 },
-                "certificate_subtitle_font_family": {
-                    "type": "string"
+                "certificate_subtitle_font_family_id": {
+                    "type": "integer"
                 },
                 "certificate_subtitle_font_weight": {
                     "type": "integer"
                 },
-                "certificate_title_font_family": {
-                    "type": "string"
+                "certificate_title_font_family_id": {
+                    "type": "integer"
                 },
                 "certificate_title_font_weight": {
                     "type": "integer"
                 },
-                "event_name_font_family": {
-                    "type": "string"
+                "event_name_font_family_id": {
+                    "type": "integer"
                 },
                 "event_name_font_weight": {
                     "type": "integer"
                 },
-                "name_font_family": {
-                    "type": "string"
+                "name_font_family_id": {
+                    "type": "integer"
                 },
                 "name_font_weight": {
                     "type": "integer"
@@ -5058,8 +5236,8 @@ const docTemplate = `{
                 "updated_at"
             ],
             "properties": {
-                "academic_institution_font_family": {
-                    "type": "string"
+                "academic_institution_font_family_id": {
+                    "type": "integer"
                 },
                 "academic_institution_font_weight": {
                     "type": "integer"
@@ -5076,8 +5254,8 @@ const docTemplate = `{
                 "base_certificate_storage_key": {
                     "type": "string"
                 },
-                "certificate_subtitle_font_family": {
-                    "type": "string"
+                "certificate_subtitle_font_family_id": {
+                    "type": "integer"
                 },
                 "certificate_subtitle_font_weight": {
                     "type": "integer"
@@ -5088,8 +5266,8 @@ const docTemplate = `{
                 "certificate_subtitle_pos_y": {
                     "type": "number"
                 },
-                "certificate_title_font_family": {
-                    "type": "string"
+                "certificate_title_font_family_id": {
+                    "type": "integer"
                 },
                 "certificate_title_font_weight": {
                     "type": "integer"
@@ -5106,8 +5284,8 @@ const docTemplate = `{
                 "event_id": {
                     "type": "string"
                 },
-                "event_name_font_family": {
-                    "type": "string"
+                "event_name_font_family_id": {
+                    "type": "integer"
                 },
                 "event_name_font_weight": {
                     "type": "integer"
@@ -5124,8 +5302,8 @@ const docTemplate = `{
                 "is_published": {
                     "type": "boolean"
                 },
-                "name_font_family": {
-                    "type": "string"
+                "name_font_family_id": {
+                    "type": "integer"
                 },
                 "name_font_weight": {
                     "type": "integer"
@@ -5445,6 +5623,54 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "eventconfig.FontFamilyItem": {
+            "type": "object",
+            "required": [
+                "available_font_weights",
+                "css_font_name",
+                "font_family_name",
+                "id",
+                "is_default",
+                "is_support_italic"
+            ],
+            "properties": {
+                "available_font_weights": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "css_font_name": {
+                    "type": "string"
+                },
+                "font_family_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "is_support_italic": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "eventconfig.GetEventCertificateFontFamiliesResponse": {
+            "type": "object",
+            "required": [
+                "font_families"
+            ],
+            "properties": {
+                "font_families": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/eventconfig.FontFamilyItem"
+                    }
                 }
             }
         },

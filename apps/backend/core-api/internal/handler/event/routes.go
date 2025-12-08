@@ -16,6 +16,8 @@ func (h *Handler) Mount(r fiber.Router) {
 	)
 	certificateGroup.Get("/my-list-viewmodel", h.GetMyCertificatesListViewModel)
 	certificateGroup.Get("/:certificate_id/image", h.GenerateCertificateImage)
+	certificateGroup.Get("/claim/:certificate_id/sign-message", h.GetClaimCertificateSignMessage)
+	certificateGroup.Post("/claim/:certificate_id", h.ClaimCertificate)
 
 	eventGroup := r.Group("/events").Use(
 		h.AuthenticationGuardMiddleware.Middleware,

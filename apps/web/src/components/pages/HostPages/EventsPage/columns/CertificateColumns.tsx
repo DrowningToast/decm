@@ -16,6 +16,7 @@ export interface CertificateRow {
 
 export function CertificateColumns(
     onClickRevoke?: (eventCertificateId: string) => void,
+    isCertificatePublished?: boolean,
 ): ColumnDef<EntityEventCertificate>[] {
     const certificateColumns: ColumnDef<EntityEventCertificate>[] = [
         {
@@ -103,24 +104,33 @@ export function CertificateColumns(
             enableSorting: false,
             cell: ({ row }) => {
                 const eventCertificateId = row.original.id;
-                const isRevokeDisabled = !eventCertificateId;
+                const isRevokeDisabled = !eventCertificateId || isCertificatePublished;
                 return (
                     <ConfirmModal
                         title="Revoke Certificate"
-                        message="Are you sure you want to revoke this certificate?"
+                        message={
+                            isCertificatePublished
+                                ? "Cannot revoke certificates after the certificate configuration has been published."
+                                : "Are you sure you want to revoke this certificate? This will reset all issuer signatures and require re-approval from all issuers before publishing again."
+                        }
                         onConfirm={() => {
-                            if (eventCertificateId) {
+                            if (eventCertificateId && !isCertificatePublished) {
                                 onClickRevoke(eventCertificateId);
                             }
                         }}
                         onCancel={() => {}}
                         cancelText="Cancel"
-                        confirmText="Revoke"
+                        confirmText={isCertificatePublished ? "OK" : "Revoke"}
                     >
                         <Button
                             size="sm"
                             className="bg-red-400 text-sm text-white"
                             disabled={isRevokeDisabled}
+                            title={
+                                isCertificatePublished
+                                    ? "Cannot revoke - certificate is published"
+                                    : "Revoke certificate"
+                            }
                         >
                             Revoke
                         </Button>
