@@ -18,24 +18,34 @@ import (
 
 // EventCertificateConfigResponse represents the response structure for event certificate config
 type EventCertificateConfigResponse struct {
-	ID                          uuid.UUID          `json:"id"`
-	EventID                     uuid.UUID          `json:"event_id"`
-	BaseCertificateStorageKey   string             `json:"base_certificate_storage_key"`
-	BaseCertificatePresignedURL string             `json:"base_certificate_presigned_url"`
-	EventNamePosX               float64            `json:"event_name_pos_x"`
-	EventNamePosY               float64            `json:"event_name_pos_y"`
-	NamePosX                    float64            `json:"name_pos_x"`
-	NamePosY                    float64            `json:"name_pos_y"`
-	AcademicInstitutionPosX     *float64           `json:"academic_institution_pos_x,omitempty"`
-	AcademicInstitutionPosY     *float64           `json:"academic_institution_pos_y,omitempty"`
-	CertificateTitlePosX        *float64           `json:"certificate_title_pos_x,omitempty"`
-	CertificateTitlePosY        *float64           `json:"certificate_title_pos_y,omitempty"`
-	CertificateSubtitlePosX     *float64           `json:"certificate_subtitle_pos_x,omitempty"`
-	CertificateSubtitlePosY     *float64           `json:"certificate_subtitle_pos_y,omitempty"`
-	IsPublished                 bool               `json:"is_published"`
-	CreatedAt                   string             `json:"created_at"`
-	UpdatedAt                   string             `json:"updated_at"`
-	MintReadiness               *MintReadinessInfo `json:"mint_readiness,omitempty"`
+	ID                            uuid.UUID          `json:"id"`
+	EventID                       uuid.UUID          `json:"event_id"`
+	BaseCertificateStorageKey     string             `json:"base_certificate_storage_key"`
+	BaseCertificatePresignedURL   string             `json:"base_certificate_presigned_url"`
+	EventNamePosX                 float64            `json:"event_name_pos_x"`
+	EventNamePosY                 float64            `json:"event_name_pos_y"`
+	NamePosX                      float64            `json:"name_pos_x"`
+	NamePosY                      float64            `json:"name_pos_y"`
+	AcademicInstitutionPosX       *float64           `json:"academic_institution_pos_x,omitempty"`
+	AcademicInstitutionPosY       *float64           `json:"academic_institution_pos_y,omitempty"`
+	CertificateTitlePosX          *float64           `json:"certificate_title_pos_x,omitempty"`
+	CertificateTitlePosY          *float64           `json:"certificate_title_pos_y,omitempty"`
+	CertificateSubtitlePosX       *float64           `json:"certificate_subtitle_pos_x,omitempty"`
+	CertificateSubtitlePosY       *float64           `json:"certificate_subtitle_pos_y,omitempty"`
+	EventNameFontFamilyID           *int32 `json:"event_name_font_family_id,omitempty"`
+	EventNameFontWeight             *int32 `json:"event_name_font_weight,omitempty"`
+	NameFontFamilyID                *int32 `json:"name_font_family_id,omitempty"`
+	NameFontWeight                  *int32 `json:"name_font_weight,omitempty"`
+	AcademicInstitutionFontFamilyID *int32 `json:"academic_institution_font_family_id,omitempty"`
+	AcademicInstitutionFontWeight   *int32 `json:"academic_institution_font_weight,omitempty"`
+	CertificateTitleFontFamilyID    *int32 `json:"certificate_title_font_family_id,omitempty"`
+	CertificateTitleFontWeight      *int32 `json:"certificate_title_font_weight,omitempty"`
+	CertificateSubtitleFontFamilyID *int32 `json:"certificate_subtitle_font_family_id,omitempty"`
+	CertificateSubtitleFontWeight   *int32 `json:"certificate_subtitle_font_weight,omitempty"`
+	IsPublished                   bool               `json:"is_published"`
+	CreatedAt                     string             `json:"created_at"`
+	UpdatedAt                     string             `json:"updated_at"`
+	MintReadiness                 *MintReadinessInfo `json:"mint_readiness,omitempty"`
 }
 
 // MintReadinessInfo contains mint readiness information embedded in certificate config
@@ -64,7 +74,7 @@ type CreateEventCertificateConfigParams struct {
 	CertificateSubtitlePosY *float64
 }
 
-func (uc *EventConfigUsecase) CreateEventCertificateConfig(ctx context.Context, eventID uuid.UUID, params CreateEventCertificateConfigParams) (*generated.EventCertificateConfig, error) {
+func (uc *EventConfigUsecase) CreateEventCertificateConfig(ctx context.Context, eventID uuid.UUID, params CreateEventCertificateConfigParams) (*entity.EventCertificateConfig, error) {
 	// Check if config already exists for this event
 	existingConfig, err := uc.EventCertificateDg.GetEventCertificateConfigByEventID(ctx, eventID)
 	if err == nil && existingConfig != nil {
@@ -122,7 +132,7 @@ type UpdateEventCertificateConfigParams struct {
 	CertificateSubtitlePosY *float64
 }
 
-func (uc *EventConfigUsecase) UpdateEventCertificateConfig(ctx context.Context, eventID uuid.UUID, params UpdateEventCertificateConfigParams) (*generated.EventCertificateConfig, error) {
+func (uc *EventConfigUsecase) UpdateEventCertificateConfig(ctx context.Context, eventID uuid.UUID, params UpdateEventCertificateConfigParams) (*entity.EventCertificateConfig, error) {
 	dbEventCertConfig, err := uc.GetEventCertificateConfigByEventID(ctx, eventID)
 	if err != nil {
 		return nil, err
@@ -232,48 +242,97 @@ func (uc *EventConfigUsecase) GetEventCertificateConfigByEventID(ctx context.Con
 		}
 	}
 
+	// Note: eventCertConfig is already converted to entity.EventCertificateConfig
+	// with regular Go pointer types (not pgtype), so we can use them directly
 	var academicInstitutionPosX, academicInstitutionPosY *float64
 	var certificateTitlePosX, certificateTitlePosY *float64
 	var certificateSubtitlePosX, certificateSubtitlePosY *float64
 
-	if eventCertConfig.AcademicInstitutionPosX.Valid {
-		academicInstitutionPosX = &eventCertConfig.AcademicInstitutionPosX.Float64
+	if eventCertConfig.AcademicInstitutionPosX != nil {
+		academicInstitutionPosX = eventCertConfig.AcademicInstitutionPosX
 	}
-	if eventCertConfig.AcademicInstitutionPosY.Valid {
-		academicInstitutionPosY = &eventCertConfig.AcademicInstitutionPosY.Float64
+	if eventCertConfig.AcademicInstitutionPosY != nil {
+		academicInstitutionPosY = eventCertConfig.AcademicInstitutionPosY
 	}
-	if eventCertConfig.CertificateTitlePosX.Valid {
-		certificateTitlePosX = &eventCertConfig.CertificateTitlePosX.Float64
+	if eventCertConfig.CertificateTitlePosX != nil {
+		certificateTitlePosX = eventCertConfig.CertificateTitlePosX
 	}
-	if eventCertConfig.CertificateTitlePosY.Valid {
-		certificateTitlePosY = &eventCertConfig.CertificateTitlePosY.Float64
+	if eventCertConfig.CertificateTitlePosY != nil {
+		certificateTitlePosY = eventCertConfig.CertificateTitlePosY
 	}
-	if eventCertConfig.CertificateSubtitlePosX.Valid {
-		certificateSubtitlePosX = &eventCertConfig.CertificateSubtitlePosX.Float64
+	if eventCertConfig.CertificateSubtitlePosX != nil {
+		certificateSubtitlePosX = eventCertConfig.CertificateSubtitlePosX
 	}
-	if eventCertConfig.CertificateSubtitlePosY.Valid {
-		certificateSubtitlePosY = &eventCertConfig.CertificateSubtitlePosY.Float64
+	if eventCertConfig.CertificateSubtitlePosY != nil {
+		certificateSubtitlePosY = eventCertConfig.CertificateSubtitlePosY
+	}
+
+	// Extract font family ID and weight fields (already converted to regular pointers)
+	var eventNameFontFamilyID, nameFontFamilyID *int32
+	var academicInstitutionFontFamilyID, certificateTitleFontFamilyID, certificateSubtitleFontFamilyID *int32
+	var eventNameFontWeight, nameFontWeight *int32
+	var academicInstitutionFontWeight, certificateTitleFontWeight, certificateSubtitleFontWeight *int32
+
+	if eventCertConfig.EventNameFontFamilyID != nil {
+		eventNameFontFamilyID = eventCertConfig.EventNameFontFamilyID
+	}
+	if eventCertConfig.EventNameFontWeight != nil {
+		eventNameFontWeight = eventCertConfig.EventNameFontWeight
+	}
+	if eventCertConfig.NameFontFamilyID != nil {
+		nameFontFamilyID = eventCertConfig.NameFontFamilyID
+	}
+	if eventCertConfig.NameFontWeight != nil {
+		nameFontWeight = eventCertConfig.NameFontWeight
+	}
+	if eventCertConfig.AcademicInstitutionFontFamilyID != nil {
+		academicInstitutionFontFamilyID = eventCertConfig.AcademicInstitutionFontFamilyID
+	}
+	if eventCertConfig.AcademicInstitutionFontWeight != nil {
+		academicInstitutionFontWeight = eventCertConfig.AcademicInstitutionFontWeight
+	}
+	if eventCertConfig.CertificateTitleFontFamilyID != nil {
+		certificateTitleFontFamilyID = eventCertConfig.CertificateTitleFontFamilyID
+	}
+	if eventCertConfig.CertificateTitleFontWeight != nil {
+		certificateTitleFontWeight = eventCertConfig.CertificateTitleFontWeight
+	}
+	if eventCertConfig.CertificateSubtitleFontFamilyID != nil {
+		certificateSubtitleFontFamilyID = eventCertConfig.CertificateSubtitleFontFamilyID
+	}
+	if eventCertConfig.CertificateSubtitleFontWeight != nil {
+		certificateSubtitleFontWeight = eventCertConfig.CertificateSubtitleFontWeight
 	}
 
 	return &EventCertificateConfigResponse{
-		ID:                          eventCertConfig.ID,
-		EventID:                     eventCertConfig.EventID,
-		BaseCertificateStorageKey:   eventCertConfig.BaseCertificateStorageKey,
-		BaseCertificatePresignedURL: baseConfigPresignedURL,
-		EventNamePosX:               eventCertConfig.EventNamePosX,
-		EventNamePosY:               eventCertConfig.EventNamePosY,
-		NamePosX:                    eventCertConfig.NamePosX,
-		NamePosY:                    eventCertConfig.NamePosY,
-		AcademicInstitutionPosX:     academicInstitutionPosX,
-		AcademicInstitutionPosY:     academicInstitutionPosY,
-		CertificateTitlePosX:        certificateTitlePosX,
-		CertificateTitlePosY:        certificateTitlePosY,
-		CertificateSubtitlePosX:     certificateSubtitlePosX,
-		CertificateSubtitlePosY:     certificateSubtitlePosY,
-		IsPublished:                 eventCertConfig.IsPublished,
-		CreatedAt:                   eventCertConfig.CreatedAt.Time.String(),
-		UpdatedAt:                   eventCertConfig.UpdatedAt.Time.String(),
-		MintReadiness:               mintReadinessInfo,
+		ID:                            eventCertConfig.ID,
+		EventID:                       eventCertConfig.EventID,
+		BaseCertificateStorageKey:     eventCertConfig.BaseCertificateStorageKey,
+		BaseCertificatePresignedURL:   baseConfigPresignedURL,
+		EventNamePosX:                 eventCertConfig.EventNamePosX,
+		EventNamePosY:                 eventCertConfig.EventNamePosY,
+		NamePosX:                      eventCertConfig.NamePosX,
+		NamePosY:                      eventCertConfig.NamePosY,
+		AcademicInstitutionPosX:       academicInstitutionPosX,
+		AcademicInstitutionPosY:       academicInstitutionPosY,
+		CertificateTitlePosX:          certificateTitlePosX,
+		CertificateTitlePosY:          certificateTitlePosY,
+		CertificateSubtitlePosX:       certificateSubtitlePosX,
+		CertificateSubtitlePosY:       certificateSubtitlePosY,
+		EventNameFontFamilyID:           eventNameFontFamilyID,
+		EventNameFontWeight:             eventNameFontWeight,
+		NameFontFamilyID:                nameFontFamilyID,
+		NameFontWeight:                  nameFontWeight,
+		AcademicInstitutionFontFamilyID: academicInstitutionFontFamilyID,
+		AcademicInstitutionFontWeight:   academicInstitutionFontWeight,
+		CertificateTitleFontFamilyID:    certificateTitleFontFamilyID,
+		CertificateTitleFontWeight:      certificateTitleFontWeight,
+		CertificateSubtitleFontFamilyID: certificateSubtitleFontFamilyID,
+		CertificateSubtitleFontWeight:   certificateSubtitleFontWeight,
+		IsPublished:                   eventCertConfig.IsPublished,
+		CreatedAt:                     eventCertConfig.CreatedAt.String(),
+		UpdatedAt:                     eventCertConfig.UpdatedAt.String(),
+		MintReadiness:                 mintReadinessInfo,
 	}, nil
 }
 
@@ -440,4 +499,81 @@ func (uc *EventConfigUsecase) createInboxMessagesForCertificates(ctx context.Con
 	}
 
 	return inboxMessagesCreated, nil
+}
+
+// UpdateEventCertificateTextConfigParams contains parameters for updating certificate text configuration
+type UpdateEventCertificateTextConfigParams struct {
+	EventNameFontFamilyID           *int32 `json:"event_name_font_family_id"`
+	EventNameFontWeight             *int32 `json:"event_name_font_weight"`
+	NameFontFamilyID                *int32 `json:"name_font_family_id"`
+	NameFontWeight                  *int32 `json:"name_font_weight"`
+	AcademicInstitutionFontFamilyID *int32 `json:"academic_institution_font_family_id"`
+	AcademicInstitutionFontWeight   *int32 `json:"academic_institution_font_weight"`
+	CertificateTitleFontFamilyID    *int32 `json:"certificate_title_font_family_id"`
+	CertificateTitleFontWeight      *int32 `json:"certificate_title_font_weight"`
+	CertificateSubtitleFontFamilyID *int32 `json:"certificate_subtitle_font_family_id"`
+	CertificateSubtitleFontWeight   *int32 `json:"certificate_subtitle_font_weight"`
+}
+
+// UpdateEventCertificateTextConfig updates font family and weight for certificate text templates
+func (uc *EventConfigUsecase) UpdateEventCertificateTextConfig(ctx context.Context, eventID uuid.UUID, params UpdateEventCertificateTextConfigParams) (*EventCertificateConfigResponse, error) {
+	// Validate that certificate config exists
+	_, err := uc.EventCertificateDg.GetEventCertificateConfigByEventID(ctx, eventID)
+	if err != nil {
+		return nil, errors.Wrap(err, "certificate configuration not found")
+	}
+
+	// Build update params with pgtype conversions
+	updateParams := generated.UpdateEventCertificateTextConfigParams{
+		EventID: eventID,
+	}
+
+	// Event name font
+	if params.EventNameFontFamilyID != nil {
+		updateParams.EventNameFontFamilyID = pgtype.Int4{Int32: *params.EventNameFontFamilyID, Valid: true}
+	}
+	if params.EventNameFontWeight != nil {
+		updateParams.EventNameFontWeight = pgtype.Int4{Int32: *params.EventNameFontWeight, Valid: true}
+	}
+
+	// Name font
+	if params.NameFontFamilyID != nil {
+		updateParams.NameFontFamilyID = pgtype.Int4{Int32: *params.NameFontFamilyID, Valid: true}
+	}
+	if params.NameFontWeight != nil {
+		updateParams.NameFontWeight = pgtype.Int4{Int32: *params.NameFontWeight, Valid: true}
+	}
+
+	// Academic institution font
+	if params.AcademicInstitutionFontFamilyID != nil {
+		updateParams.AcademicInstitutionFontFamilyID = pgtype.Int4{Int32: *params.AcademicInstitutionFontFamilyID, Valid: true}
+	}
+	if params.AcademicInstitutionFontWeight != nil {
+		updateParams.AcademicInstitutionFontWeight = pgtype.Int4{Int32: *params.AcademicInstitutionFontWeight, Valid: true}
+	}
+
+	// Certificate title font
+	if params.CertificateTitleFontFamilyID != nil {
+		updateParams.CertificateTitleFontFamilyID = pgtype.Int4{Int32: *params.CertificateTitleFontFamilyID, Valid: true}
+	}
+	if params.CertificateTitleFontWeight != nil {
+		updateParams.CertificateTitleFontWeight = pgtype.Int4{Int32: *params.CertificateTitleFontWeight, Valid: true}
+	}
+
+	// Certificate subtitle font
+	if params.CertificateSubtitleFontFamilyID != nil {
+		updateParams.CertificateSubtitleFontFamilyID = pgtype.Int4{Int32: *params.CertificateSubtitleFontFamilyID, Valid: true}
+	}
+	if params.CertificateSubtitleFontWeight != nil {
+		updateParams.CertificateSubtitleFontWeight = pgtype.Int4{Int32: *params.CertificateSubtitleFontWeight, Valid: true}
+	}
+
+	// Update in database
+	_, err = uc.EventCertificateDg.UpdateEventCertificateTextConfig(ctx, updateParams)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to update certificate text configuration")
+	}
+
+	// Return updated configuration
+	return uc.GetEventCertificateConfigByEventID(ctx, eventID)
 }

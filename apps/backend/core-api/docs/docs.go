@@ -3472,6 +3472,63 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/events/{event_id}/certificates/text-config": {
+            "put": {
+                "description": "Update font family and font weight for all text templates in the certificate. This endpoint allows customization of fonts for event name, participant name, academic institution, certificate title, and certificate subtitle.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update certificate text configuration",
+                "operationId": "update-event-certificate-text-config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Text configuration parameters",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event.UpdateEventCertificateTextConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated certificate configuration",
+                        "schema": {
+                            "$ref": "#/definitions/event.UpdateEventCertificateTextConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Certificate configuration not found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -4935,6 +4992,152 @@ const docTemplate = `{
                 },
                 "phone_number_requirement_status": {
                     "type": "integer"
+                }
+            }
+        },
+        "event.UpdateEventCertificateTextConfigRequest": {
+            "type": "object",
+            "required": [
+                "academic_institution_font_family",
+                "academic_institution_font_weight",
+                "certificate_subtitle_font_family",
+                "certificate_subtitle_font_weight",
+                "certificate_title_font_family",
+                "certificate_title_font_weight",
+                "event_name_font_family",
+                "event_name_font_weight",
+                "name_font_family",
+                "name_font_weight"
+            ],
+            "properties": {
+                "academic_institution_font_family": {
+                    "type": "string"
+                },
+                "academic_institution_font_weight": {
+                    "type": "integer"
+                },
+                "certificate_subtitle_font_family": {
+                    "type": "string"
+                },
+                "certificate_subtitle_font_weight": {
+                    "type": "integer"
+                },
+                "certificate_title_font_family": {
+                    "type": "string"
+                },
+                "certificate_title_font_weight": {
+                    "type": "integer"
+                },
+                "event_name_font_family": {
+                    "type": "string"
+                },
+                "event_name_font_weight": {
+                    "type": "integer"
+                },
+                "name_font_family": {
+                    "type": "string"
+                },
+                "name_font_weight": {
+                    "type": "integer"
+                }
+            }
+        },
+        "event.UpdateEventCertificateTextConfigResponse": {
+            "type": "object",
+            "required": [
+                "base_certificate_presigned_url",
+                "base_certificate_storage_key",
+                "created_at",
+                "event_id",
+                "event_name_pos_x",
+                "event_name_pos_y",
+                "id",
+                "is_published",
+                "name_pos_x",
+                "name_pos_y",
+                "updated_at"
+            ],
+            "properties": {
+                "academic_institution_font_family": {
+                    "type": "string"
+                },
+                "academic_institution_font_weight": {
+                    "type": "integer"
+                },
+                "academic_institution_pos_x": {
+                    "type": "number"
+                },
+                "academic_institution_pos_y": {
+                    "type": "number"
+                },
+                "base_certificate_presigned_url": {
+                    "type": "string"
+                },
+                "base_certificate_storage_key": {
+                    "type": "string"
+                },
+                "certificate_subtitle_font_family": {
+                    "type": "string"
+                },
+                "certificate_subtitle_font_weight": {
+                    "type": "integer"
+                },
+                "certificate_subtitle_pos_x": {
+                    "type": "number"
+                },
+                "certificate_subtitle_pos_y": {
+                    "type": "number"
+                },
+                "certificate_title_font_family": {
+                    "type": "string"
+                },
+                "certificate_title_font_weight": {
+                    "type": "integer"
+                },
+                "certificate_title_pos_x": {
+                    "type": "number"
+                },
+                "certificate_title_pos_y": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "event_name_font_family": {
+                    "type": "string"
+                },
+                "event_name_font_weight": {
+                    "type": "integer"
+                },
+                "event_name_pos_x": {
+                    "type": "number"
+                },
+                "event_name_pos_y": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_published": {
+                    "type": "boolean"
+                },
+                "name_font_family": {
+                    "type": "string"
+                },
+                "name_font_weight": {
+                    "type": "integer"
+                },
+                "name_pos_x": {
+                    "type": "number"
+                },
+                "name_pos_y": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },

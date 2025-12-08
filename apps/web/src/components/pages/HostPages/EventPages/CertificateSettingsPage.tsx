@@ -9,10 +9,15 @@ import { IssuerSelectionModal } from "@/components/IssuerSelectionModal";
 import { SelectedIssuersTable } from "@/components/SelectedIssuersTable";
 import { CertificateTemplateUpload } from "@/components/CertificateTemplateUpload";
 import { CertificatePreview } from "@/components/CertificatePreview";
+import {
+    CertificateFontSettings,
+    type CertificateFontConfig,
+} from "@/components/CertificateFontSettings";
 import { convertProfileToIssuer, useIssuerManagement } from "@/hooks/useIssuerManagement";
 import { useCertificateTemplate, type DetectedKeyword } from "@/hooks/useCertificateTemplate";
 import SectionContainer from "@/components/container/SectionContainer";
 import { useUpdateCertificateConfig } from "./useUpdateCertificateConfig";
+import { useUpdateCertificateTextConfig } from "./useUpdateCertificateTextConfig";
 import type {
     CoreApiInternalHandlerEventconfigEventCertificateConfigResponse,
     UpdateEventCertificateConfigPayload,
@@ -43,6 +48,9 @@ export const CertificateSettingsPage = ({
     const { updateCertificateConfig, isUpdatingCertificateConfig } = useUpdateCertificateConfig(
         eventId!,
     );
+
+    const { updateCertificateTextConfig, isUpdatingCertificateTextConfig } =
+        useUpdateCertificateTextConfig(eventId!);
 
     const { updateEventIssuer, isUpdatingEventIssuer } = useUpdateEventIssuer(eventId!);
     const { deleteEventIssuerAsync } = useDeleteEventIssuer();
@@ -527,6 +535,55 @@ export const CertificateSettingsPage = ({
                             availableKeywords={certificateTemplate.availableKeywords}
                         />
                     </div>
+
+                    {/* Step 3: Font Settings (only show if certificate config exists) */}
+                    {eventCertificateConfig && (
+                        <div className="space-y-6">
+                            <div>
+                                <Typography
+                                    variant="header"
+                                    tag="h2"
+                                    className="text-xl font-bold mb-2"
+                                >
+                                    {t("certificateSettings.step3.title", "Step 3: Font Settings")}
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    className="text-sm text-muted-foreground"
+                                >
+                                    {t(
+                                        "certificateSettings.step3.description",
+                                        "Customize the font family and weight for each text field in your certificate template.",
+                                    )}
+                                </Typography>
+                            </div>
+
+                            <CertificateFontSettings
+                                eventCertificateConfig={eventCertificateConfig}
+                                onUpdate={async (fontConfig: CertificateFontConfig) => {
+                                    try {
+                                        await updateCertificateTextConfig(fontConfig);
+                                        toast.success(
+                                            t(
+                                                "certificateSettings.fontSettings.updateSuccess",
+                                                "Font settings updated successfully",
+                                            ),
+                                        );
+                                    } catch (error) {
+                                        console.error("Error updating font settings:", error);
+                                        toast.error(
+                                            t(
+                                                "certificateSettings.fontSettings.updateError",
+                                                "Failed to update font settings",
+                                            ),
+                                        );
+                                    }
+                                }}
+                                isUpdating={isUpdatingCertificateTextConfig}
+                            />
+                        </div>
+                    )}
 
                     {/* Action Buttons */}
                     <div className="flex justify-end gap-4 pt-4">

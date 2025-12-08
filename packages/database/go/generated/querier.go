@@ -23,6 +23,7 @@ type Querier interface {
 	CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error)
 	CreateEventCertificate(ctx context.Context, arg CreateEventCertificateParams) (EventCertificate, error)
 	CreateEventCertificateConfig(ctx context.Context, arg CreateEventCertificateConfigParams) (EventCertificateConfig, error)
+	CreateEventCertificateFontFamily(ctx context.Context, arg CreateEventCertificateFontFamilyParams) (EventCertificateFontFamily, error)
 	CreateEventCertificateSignature(ctx context.Context, arg CreateEventCertificateSignatureParams) (EventCertificateSignature, error)
 	CreateEventContract(ctx context.Context, arg CreateEventContractParams) (EventContract, error)
 	CreateEventIssuer(ctx context.Context, arg CreateEventIssuerParams) (EventIssuer, error)
@@ -36,6 +37,7 @@ type Querier interface {
 	DeleteEvent(ctx context.Context, id uuid.UUID) (Event, error)
 	DeleteEventCertificate(ctx context.Context, id uuid.UUID) error
 	DeleteEventCertificateConfig(ctx context.Context, eventID uuid.UUID) error
+	DeleteEventCertificateFontFamily(ctx context.Context, id int32) error
 	DeleteEventCertificateSignature(ctx context.Context, id uuid.UUID) error
 	DeleteEventContract(ctx context.Context, eventID uuid.UUID) error
 	DeleteEventIssuer(ctx context.Context, id uuid.UUID) error
@@ -43,6 +45,7 @@ type Querier interface {
 	DeleteEventRegistrationInvitation(ctx context.Context, id uuid.UUID) error
 	DeleteProfile(ctx context.Context, id uuid.UUID) error
 	DeleteProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) error
+	GetAllEventCertificateFontFamilies(ctx context.Context) ([]EventCertificateFontFamily, error)
 	GetAllEventCertificateIDsByEventID(ctx context.Context, eventID uuid.UUID) ([]uuid.UUID, error)
 	GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef pgtype.Text) (AuthenticationCredential, error)
 	// Fetch authentication credential by Google OAuth email OR wallet address
@@ -54,12 +57,15 @@ type Querier interface {
 	GetClaimedCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error)
 	GetCredentialsBySolutionStatus(ctx context.Context, arg GetCredentialsBySolutionStatusParams) ([]AuthenticationCredential, error)
 	GetCredentialsByVerificationStatus(ctx context.Context, arg GetCredentialsByVerificationStatusParams) ([]AuthenticationCredential, error)
+	GetDefaultEventCertificateFontFamily(ctx context.Context) (EventCertificateFontFamily, error)
 	GetEventAttendeeByEventIDAndCredentialID(ctx context.Context, arg GetEventAttendeeByEventIDAndCredentialIDParams) (EventAttendee, error)
 	GetEventById(ctx context.Context, id uuid.UUID) (GetEventByIdRow, error)
 	GetEventCertificateByID(ctx context.Context, id uuid.UUID) (EventCertificate, error)
 	GetEventCertificateByInboxMessageID(ctx context.Context, inboxMessageID pgtype.UUID) (EventCertificate, error)
 	GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (EventCertificateConfig, error)
 	GetEventCertificateConfigByID(ctx context.Context, id uuid.UUID) (EventCertificateConfig, error)
+	GetEventCertificateFontFamilyByID(ctx context.Context, id int32) (EventCertificateFontFamily, error)
+	GetEventCertificateFontFamilyByName(ctx context.Context, fontFamilyName string) (EventCertificateFontFamily, error)
 	GetEventCertificateSignatureByID(ctx context.Context, id uuid.UUID) (EventCertificateSignature, error)
 	GetEventCertificateSignaturesByEventCertificateID(ctx context.Context, eventCertificateID uuid.UUID) ([]EventCertificateSignature, error)
 	GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error)
@@ -109,6 +115,7 @@ type Querier interface {
 	// Note: This would require adding a deleted_at column in future migration
 	// For now, we can use a status update approach
 	SoftDeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
+	SoftDeleteEventCertificateFontFamily(ctx context.Context, id int32) error
 	ToggleEventCertificateConfigPublished(ctx context.Context, arg ToggleEventCertificateConfigPublishedParams) (EventCertificateConfig, error)
 	UpdateAuthenticationCredential(ctx context.Context, arg UpdateAuthenticationCredentialParams) (AuthenticationCredential, error)
 	UpdateAuthenticationCredentialKeys(ctx context.Context, arg UpdateAuthenticationCredentialKeysParams) (AuthenticationCredential, error)
@@ -116,6 +123,7 @@ type Querier interface {
 	UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event, error)
 	UpdateEventCertificate(ctx context.Context, arg UpdateEventCertificateParams) (EventCertificate, error)
 	UpdateEventCertificateConfig(ctx context.Context, arg UpdateEventCertificateConfigParams) (EventCertificateConfig, error)
+	UpdateEventCertificateFontFamily(ctx context.Context, arg UpdateEventCertificateFontFamilyParams) (EventCertificateFontFamily, error)
 	UpdateEventCertificateInboxMessageID(ctx context.Context, arg UpdateEventCertificateInboxMessageIDParams) (EventCertificate, error)
 	UpdateEventCertificateIssuerSignature(ctx context.Context, arg UpdateEventCertificateIssuerSignatureParams) (EventCertificateSignature, error)
 	UpdateEventCertificateSignature(ctx context.Context, arg UpdateEventCertificateSignatureParams) (EventCertificateSignature, error)

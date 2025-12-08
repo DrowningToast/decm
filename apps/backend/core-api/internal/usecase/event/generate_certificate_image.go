@@ -9,14 +9,15 @@ import (
 	"time"
 
 	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
 
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
 	"github.com/google/uuid"
 )
 
-// CertificateTemplateVariables contains all variables that can be replaced in the SVG template
-type CertificateTemplateVariables struct {
+// CertificateData contains all data to be overlaid on the certificate
+type CertificateData struct {
 	Name                string
 	EventName           string
 	AcademicInstitution string
@@ -28,7 +29,7 @@ type CertificateTemplateVariables struct {
 // This function:
 // 1. Retrieves the certificate by ID
 // 2. Fetches the SVG template from S3
-// 3. Replaces template variables with certificate data
+// 3. Overlays text elements with certificate data at absolute positions from config
 // 4. Renders the SVG to PNG
 // 5. Returns PNG as byte array
 func (u *EventUsecase) GenerateCertificateImage(ctx context.Context, certificateID uuid.UUID) ([]byte, error) {
@@ -68,8 +69,8 @@ func (u *EventUsecase) GenerateCertificateImage(ctx context.Context, certificate
 		return nil, customerror.ParseWithMessage(&customerror.ErrNotFound, err, "Event not found")
 	}
 
-	// 5. Prepare template variables
-	variables := CertificateTemplateVariables{
+	// 5. Prepare certificate data
+	certificateData := CertificateData{
 		Name:                getValue(certificate.Name),
 		EventName:           event.Title,
 		AcademicInstitution: getValue(certificate.AcademicInstitution),
@@ -77,32 +78,14 @@ func (u *EventUsecase) GenerateCertificateImage(ctx context.Context, certificate
 		CertificateSubtitle: getValue(certificate.CertificateSubtitle),
 	}
 
-	// 6. Replace variables in SVG
+	// 6. Add text overlays to SVG using absolute positions from config
 	originalSVG := string(svgBytes)
-	processedSVG := replaceTemplateVariables(originalSVG, variables)
+	processedSVG := addTextOverlaysToSVG(originalSVG, certificateData, certificateConfig)
 
-	// Log replacement details for debugging
-	replacementOccurred := len(originalSVG) != len(processedSVG)
-	u.logger.Debug("template replacement completed",
-		"original_length", len(svgBytes),
+	u.logger.Debug("text overlays added to certificate",
+		"original_length", len(originalSVG),
 		"processed_length", len(processedSVG),
-		"replacement_occurred", replacementOccurred,
-		"variables", fmt.Sprintf("%+v", variables))
-
-	// Log which keywords were found in the original SVG (for debugging)
-	keywordsFound := []string{}
-	possibleKeywords := []string{
-		"{{ name }}", "{{ eventName }}", "{{ academicInstitutionName }}",
-		"{{ certificateTitle }}", "{{ certificateSubtitle }}",
-		"{{name}}", "{{eventName}}", "{{academicInstitutionName}}",
-		"{{certificateTitle}}", "{{certificateSubtitle}}",
-	}
-	for _, keyword := range possibleKeywords {
-		if strings.Contains(originalSVG, keyword) {
-			keywordsFound = append(keywordsFound, keyword)
-		}
-	}
-	u.logger.Debug("keywords found in SVG template", "keywords", keywordsFound)
+		"data", fmt.Sprintf("%+v", certificateData))
 
 	// 7. Render SVG to PNG
 	pngBytes, err := renderSVGToPNG(processedSVG)
@@ -114,88 +97,142 @@ func (u *EventUsecase) GenerateCertificateImage(ctx context.Context, certificate
 	return pngBytes, nil
 }
 
-// replaceTemplateVariables replaces text content in SVG based on element IDs or text patterns
-// Supports multiple replacement strategies:
-// 1. ID-based: <text id="name">...</text> - replaces entire text content (including nested tspan)
-// 2. Placeholder: {{name}} or {name} - replaces inline placeholders
-// 3. tspan-based: <tspan id="name">...</tspan> - replaces tspan content
-func replaceTemplateVariables(svgContent string, variables CertificateTemplateVariables) string {
+// addTextOverlaysToSVG adds new text elements to the SVG with absolute positioning
+// from the database, instead of replacing template strings. This provides precise
+// control over text positioning and styling.
+func addTextOverlaysToSVG(svgContent string, data CertificateData, config *entity.EventCertificateConfig) string {
+	// Remove or hide existing template text elements to avoid duplicates
+	result := hideTemplatePlaceholders(svgContent)
+
+	// Build text overlay elements with absolute positioning from config
+	var textOverlays strings.Builder
+
+	// TODO: Enhance to fetch font family names from event_certificate_font_families table using IDs
+	// For now, using default font family "Inter"
+	defaultFontFamily := "Inter"
+
+	// Add name text (required field, always has position)
+	if data.Name != "" {
+		fontWeight := int32PtrToString(config.NameFontWeight, "bold")
+		textOverlays.WriteString(createTextElement(data.Name, config.NamePosX, config.NamePosY, defaultFontFamily, fontWeight, 16))
+	}
+
+	// Add event name text (required field, always has position)
+	if data.EventName != "" {
+		fontWeight := int32PtrToString(config.EventNameFontWeight, "bold")
+		textOverlays.WriteString(createTextElement(data.EventName, config.EventNamePosX, config.EventNamePosY, defaultFontFamily, fontWeight, 16))
+	}
+
+	// Add academic institution text (optional field)
+	if config.AcademicInstitutionPosX != nil && config.AcademicInstitutionPosY != nil && data.AcademicInstitution != "" {
+		fontWeight := int32PtrToString(config.AcademicInstitutionFontWeight, "bold")
+		textOverlays.WriteString(createTextElement(data.AcademicInstitution, *config.AcademicInstitutionPosX, *config.AcademicInstitutionPosY, defaultFontFamily, fontWeight, 16))
+	}
+
+	// Add certificate title text (optional field)
+	if config.CertificateTitlePosX != nil && config.CertificateTitlePosY != nil && data.CertificateTitle != "" {
+		fontWeight := int32PtrToString(config.CertificateTitleFontWeight, "bold")
+		textOverlays.WriteString(createTextElement(data.CertificateTitle, *config.CertificateTitlePosX, *config.CertificateTitlePosY, defaultFontFamily, fontWeight, 16))
+	}
+
+	// Add certificate subtitle text (optional field)
+	if config.CertificateSubtitlePosX != nil && config.CertificateSubtitlePosY != nil && data.CertificateSubtitle != "" {
+		fontWeight := int32PtrToString(config.CertificateSubtitleFontWeight, "bold")
+		textOverlays.WriteString(createTextElement(data.CertificateSubtitle, *config.CertificateSubtitlePosX, *config.CertificateSubtitlePosY, defaultFontFamily, fontWeight, 16))
+	}
+
+	// Insert text overlays before closing </svg> tag
+	closingSvgIndex := strings.LastIndex(result, "</svg>")
+	if closingSvgIndex == -1 {
+		// If no closing tag found, append at the end
+		return result + textOverlays.String()
+	}
+
+	return result[:closingSvgIndex] + textOverlays.String() + result[closingSvgIndex:]
+}
+
+// hideTemplatePlaceholders hides or removes template placeholder text elements
+// by setting their opacity to 0 or removing them entirely
+func hideTemplatePlaceholders(svgContent string) string {
 	result := svgContent
 
-	// Strategy 1: Replace by element ID for <text> tags (e.g., <text id="name">placeholder</text>)
-	// This handles nested tspan elements by using a more flexible regex
-	// Support both camelCase (frontend) and snake_case (legacy) ID formats
-	idReplacements := map[string]string{
-		// CamelCase (matches frontend)
-		"name":                    variables.Name,
-		"eventName":               variables.EventName,
-		"academicInstitutionName": variables.AcademicInstitution,
-		"certificateTitle":        variables.CertificateTitle,
-		"certificateSubtitle":     variables.CertificateSubtitle,
-		// Snake_case (legacy support)
-		"event_name":           variables.EventName,
-		"academic_institution": variables.AcademicInstitution,
-		"certificate_title":    variables.CertificateTitle,
-		"certificate_subtitle": variables.CertificateSubtitle,
+	// Hide text elements that contain template placeholders by setting visibility="hidden"
+	placeholders := []string{
+		"{{ name }}", "{{ eventName }}", "{{ academicInstitutionName }}",
+		"{{ certificateTitle }}", "{{ certificateSubtitle }}",
 	}
 
-	for id, value := range idReplacements {
-		// Match <text id="name">...any content including nested tags...</text>
-		// Using (?s) flag to make . match newlines
-		pattern := fmt.Sprintf(`(?s)(<text[^>]*\bid="%s"[^>]*>)(.*?)(</text>)`, regexp.QuoteMeta(id))
+	for _, placeholder := range placeholders {
+		// Find text elements containing this placeholder
+		escapedPlaceholder := regexp.QuoteMeta(placeholder)
+		pattern := fmt.Sprintf(`(<text[^>]*id="%s"[^>]*>)`, escapedPlaceholder)
 		re := regexp.MustCompile(pattern)
-		result = re.ReplaceAllString(result, fmt.Sprintf("${1}%s${3}", value))
 
-		// Also try to match <tspan id="name">content</tspan> for nested cases
-		tspanPattern := fmt.Sprintf(`(?s)(<tspan[^>]*\bid="%s"[^>]*>)(.*?)(</tspan>)`, regexp.QuoteMeta(id))
-		tspanRe := regexp.MustCompile(tspanPattern)
-		result = tspanRe.ReplaceAllString(result, fmt.Sprintf("${1}%s${3}", value))
-	}
-
-	// Strategy 2: Replace inline placeholders like {{ name }} or {{ eventName }}
-	// Support both camelCase (frontend) and snake_case (legacy) formats
-	// Note: Frontend uses spaces inside {{ }}, e.g., "{{ eventName }}"
-	placeholderReplacements := map[string]string{
-		// CamelCase with spaces (matches frontend format)
-		"{{ name }}":                    variables.Name,
-		"{{ eventName }}":               variables.EventName,
-		"{{ academicInstitutionName }}": variables.AcademicInstitution,
-		"{{ certificateTitle }}":        variables.CertificateTitle,
-		"{{ certificateSubtitle }}":     variables.CertificateSubtitle,
-		// CamelCase without spaces (alternative format)
-		"{{name}}":                    variables.Name,
-		"{{eventName}}":               variables.EventName,
-		"{{academicInstitutionName}}": variables.AcademicInstitution,
-		"{{certificateTitle}}":        variables.CertificateTitle,
-		"{{certificateSubtitle}}":     variables.CertificateSubtitle,
-		// Snake_case (legacy support)
-		"{{event_name}}":           variables.EventName,
-		"{event_name}":             variables.EventName,
-		"{{academic_institution}}": variables.AcademicInstitution,
-		"{academic_institution}":   variables.AcademicInstitution,
-		"{{certificate_title}}":    variables.CertificateTitle,
-		"{certificate_title}":      variables.CertificateTitle,
-		"{{certificate_subtitle}}": variables.CertificateSubtitle,
-		"{certificate_subtitle}":   variables.CertificateSubtitle,
-	}
-
-	for placeholder, value := range placeholderReplacements {
-		result = strings.ReplaceAll(result, placeholder, value)
+		result = re.ReplaceAllStringFunc(result, func(match string) string {
+			// Add visibility="hidden" if not already present
+			if !strings.Contains(match, "visibility") {
+				return strings.TrimSuffix(match, ">") + ` visibility="hidden">`
+			}
+			return match
+		})
 	}
 
 	return result
+}
+
+// createTextElement creates an SVG text element with the specified properties
+// All text is center-aligned (text-anchor="middle") for consistent positioning
+func createTextElement(text string, x, y float64, fontFamily, fontWeight string, fontSize int) string {
+	// Escape special XML characters in text
+	text = strings.ReplaceAll(text, "&", "&amp;")
+	text = strings.ReplaceAll(text, "<", "&lt;")
+	text = strings.ReplaceAll(text, ">", "&gt;")
+	text = strings.ReplaceAll(text, "\"", "&quot;")
+	text = strings.ReplaceAll(text, "'", "&apos;")
+
+	return fmt.Sprintf(
+		`<text x="%.2f" y="%.2f" font-family="%s" font-size="%d" font-weight="%s" fill="#090909" text-anchor="middle">%s</text>`,
+		x, y, fontFamily, fontSize, fontWeight, text,
+	)
+}
+
+// getValueOrDefault returns the value if not nil, otherwise returns default
+func getValueOrDefault(value *string, defaultValue string) string {
+	if value == nil || *value == "" {
+		return defaultValue
+	}
+	return *value
+}
+
+// int32PtrToString converts *int32 font weight to string (e.g., "400", "700")
+// If nil, returns the defaultValue
+func int32PtrToString(weight *int32, defaultValue string) string {
+	if weight == nil {
+		return defaultValue
+	}
+	return fmt.Sprintf("%d", *weight)
 }
 
 // renderSVGToPNG converts SVG string to PNG byte array
 // Uses chromedp with headless Chrome for full SVG specification support
 // This handles embedded images, patterns, custom fonts, and all SVG features
 func renderSVGToPNG(svgContent string) ([]byte, error) {
+	// Extract SVG dimensions from viewBox or width/height attributes
+	width, height := extractSVGDimensions(svgContent)
+
 	// Create context with timeout for rendering
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// Create chromedp context
-	chromedpCtx, cancel := chromedp.NewContext(ctx)
+	// Create chromedp context with specific viewport size for high-resolution rendering
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.WindowSize(width, height),
+		chromedp.Flag("force-device-scale-factor", "1"), // Ensure 1:1 pixel ratio
+	)
+	allocCtx, cancel := chromedp.NewExecAllocator(ctx, opts...)
+	defer cancel()
+
+	chromedpCtx, cancel := chromedp.NewContext(allocCtx)
 	defer cancel()
 
 	var buf []byte
@@ -210,18 +247,22 @@ func renderSVGToPNG(svgContent string) ([]byte, error) {
             margin: 0; 
             padding: 0; 
             overflow: hidden;
+            width: %dpx;
+            height: %dpx;
         }
         svg { 
             display: block;
+            width: 100%%;
+            height: 100%%;
         }
     </style>
 </head>
 <body>
 %s
 </body>
-</html>`, svgContent)
+</html>`, width, height, svgContent)
 
-	// Render SVG using headless Chrome
+	// Render SVG using headless Chrome at intrinsic resolution
 	if err := chromedp.Run(chromedpCtx,
 		chromedp.Navigate("about:blank"),
 		chromedp.ActionFunc(func(ctx context.Context) error {
@@ -231,13 +272,50 @@ func renderSVGToPNG(svgContent string) ([]byte, error) {
 			}
 			return page.SetDocumentContent(frameTree.Frame.ID, html).Do(ctx)
 		}),
-		chromedp.Sleep(1*time.Second),      // Wait for fonts and images to load
+		chromedp.Sleep(2*time.Second),      // Wait for fonts and images to load
 		chromedp.FullScreenshot(&buf, 100), // Quality 100
 	); err != nil {
 		return nil, fmt.Errorf("failed to render SVG: %w", err)
 	}
 
 	return buf, nil
+}
+
+// extractSVGDimensions extracts width and height from SVG viewBox or attributes
+// Returns default 1920x1080 if dimensions cannot be determined
+func extractSVGDimensions(svgContent string) (int, int) {
+	// Default dimensions matching frontend template defaults
+	defaultWidth := 1920
+	defaultHeight := 1080
+
+	// Try to extract from viewBox first (more reliable)
+	viewBoxPattern := regexp.MustCompile(`viewBox=["']([^"']+)["']`)
+	if matches := viewBoxPattern.FindStringSubmatch(svgContent); len(matches) > 1 {
+		// viewBox format: "minX minY width height"
+		var minX, minY, width, height float64
+		if _, err := fmt.Sscanf(matches[1], "%f %f %f %f", &minX, &minY, &width, &height); err == nil {
+			return int(width), int(height)
+		}
+	}
+
+	// Fallback to width/height attributes
+	widthPattern := regexp.MustCompile(`width=["']?(\d+)`)
+	heightPattern := regexp.MustCompile(`height=["']?(\d+)`)
+
+	var width, height int
+	if matches := widthPattern.FindStringSubmatch(svgContent); len(matches) > 1 {
+		fmt.Sscanf(matches[1], "%d", &width)
+	}
+	if matches := heightPattern.FindStringSubmatch(svgContent); len(matches) > 1 {
+		fmt.Sscanf(matches[1], "%d", &height)
+	}
+
+	if width > 0 && height > 0 {
+		return width, height
+	}
+
+	// Return defaults if no dimensions found
+	return defaultWidth, defaultHeight
 }
 
 // getValue safely extracts string value from pointer, returns empty string if nil

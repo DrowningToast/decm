@@ -38,6 +38,7 @@ func (h *Handler) Mount(r fiber.Router) {
 	eventGroup.Post("/:event_id/certificates/sign", h.SignEventCertificates)
 	eventGroup.Get("/:event_id/certificates", h.GetEventCertificates)
 	eventGroup.Get("/:event_id/certificates/list-viewmodel", h.GetCertificatesListViewModel)
+	eventGroup.Put("/:event_id/certificates/text-config", h.UpdateEventCertificateTextConfig)
 
 	eventGroup.Get("/:event_id/contracts", h.GetEventContractByEventID)
 	eventGroup.Get("/:event_id/issuers", h.GetEventIssuersByEventID)

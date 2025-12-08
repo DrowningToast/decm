@@ -122,6 +122,20 @@ func PgUUIDToUUIDPtr(value pgtype.UUID) *uuid.UUID {
 	return &result
 }
 
+func PgFloat8ToFloat64Ptr(f8 pgtype.Float8) *float64 {
+	if !f8.Valid {
+		return nil
+	}
+	return &f8.Float64
+}
+
+func PgInt4ToInt32Ptr(i4 pgtype.Int4) *int32 {
+	if !i4.Valid {
+		return nil
+	}
+	return &i4.Int32
+}
+
 // ========== PII Encryption Functions ==========
 
 // EncryptPII encrypts plaintext PII data using AES-GCM
