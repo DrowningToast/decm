@@ -104,6 +104,29 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
         return fontFamily?.available_font_weights || [];
     };
 
+    // Check if fields have positions configured (meaning they appear in template)
+    const hasEventName =
+        eventCertificateConfig?.event_name_pos_x != null &&
+        eventCertificateConfig?.event_name_pos_y != null;
+    const hasParticipantName =
+        eventCertificateConfig?.name_pos_x != null && eventCertificateConfig?.name_pos_y != null;
+    const hasAcademicInstitution =
+        eventCertificateConfig?.academic_institution_pos_x != null &&
+        eventCertificateConfig?.academic_institution_pos_y != null;
+    const hasCertificateTitle =
+        eventCertificateConfig?.certificate_title_pos_x != null &&
+        eventCertificateConfig?.certificate_title_pos_y != null;
+    const hasCertificateSubtitle =
+        eventCertificateConfig?.certificate_subtitle_pos_x != null &&
+        eventCertificateConfig?.certificate_subtitle_pos_y != null;
+
+    const hasAnyFields =
+        hasEventName ||
+        hasParticipantName ||
+        hasAcademicInstitution ||
+        hasCertificateTitle ||
+        hasCertificateSubtitle;
+
     if (isLoadingFonts) {
         return (
             <div className="space-y-4 rounded-lg border p-4">
@@ -115,8 +138,8 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
     }
 
     return (
-        <div className="space-y-4 rounded-lg border p-4">
-            <div className="space-y-1">
+        <div className="space-y-3 rounded-lg border p-3">
+            <div className="space-y-0.5">
                 <Typography variant="header" tag="h3" className="text-base font-semibold">
                     {t("certificateSettings.fontSettings.title", "Font Settings")}
                 </Typography>
@@ -128,370 +151,440 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                 </Typography>
             </div>
 
-            <div className="space-y-4">
-                {/* Event Name Font */}
-                <div className="space-y-3">
-                    <Typography variant="text" tag="h4" className="text-sm font-medium">
-                        {t("certificateSettings.fontSettings.eventName", "Event Name")}
-                    </Typography>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="event-name-font-family" className="text-xs">
-                                {t("certificateSettings.fontSettings.fontFamily", "Font Family")}
-                            </Label>
-                            <Select
-                                value={fontConfig.event_name_font_family_id?.toString()}
-                                onValueChange={(value) =>
-                                    setFontConfig({
-                                        ...fontConfig,
-                                        event_name_font_family_id: parseInt(value),
-                                    })
-                                }
-                            >
-                                <SelectTrigger id="event-name-font-family">
-                                    <SelectValue
-                                        placeholder={t(
-                                            "certificateSettings.fontSettings.selectFont",
-                                            "Select font",
-                                        )}
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {fontFamilies.map((font) => (
-                                        <SelectItem key={font.id} value={font.id.toString()}>
-                                            {font.font_family_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="event-name-font-weight" className="text-xs">
-                                {t("certificateSettings.fontSettings.fontWeight", "Font Weight")}
-                            </Label>
-                            <Select
-                                value={fontConfig.event_name_font_weight?.toString()}
-                                onValueChange={(value) =>
-                                    setFontConfig({
-                                        ...fontConfig,
-                                        event_name_font_weight: parseInt(value),
-                                    })
-                                }
-                            >
-                                <SelectTrigger id="event-name-font-weight">
-                                    <SelectValue
-                                        placeholder={t(
-                                            "certificateSettings.fontSettings.selectWeight",
-                                            "Select weight",
-                                        )}
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {getAvailableWeights(fontConfig.event_name_font_family_id).map(
-                                        (weight) => (
+            <div className="space-y-3">
+                {!hasAnyFields && (
+                    <div className="rounded-md bg-muted/50 p-3">
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            className="text-sm text-muted-foreground"
+                        >
+                            {t(
+                                "certificateSettings.fontSettings.noFieldsConfigured",
+                                "No text fields have been positioned in the certificate template yet. Configure text positions first to manage font settings.",
+                            )}
+                        </Typography>
+                    </div>
+                )}
+
+                {/* Event Name Font - Only show if configured in template */}
+                {hasEventName && (
+                    <div className="space-y-2">
+                        <Typography variant="text" tag="h4" className="text-sm font-medium">
+                            {t("certificateSettings.fontSettings.eventName", "Event Name")}
+                        </Typography>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                                <Label htmlFor="event-name-font-family" className="text-xs">
+                                    {t(
+                                        "certificateSettings.fontSettings.fontFamily",
+                                        "Font Family",
+                                    )}
+                                </Label>
+                                <Select
+                                    value={fontConfig.event_name_font_family_id?.toString()}
+                                    onValueChange={(value) =>
+                                        setFontConfig({
+                                            ...fontConfig,
+                                            event_name_font_family_id: parseInt(value),
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger id="event-name-font-family">
+                                        <SelectValue
+                                            placeholder={t(
+                                                "certificateSettings.fontSettings.selectFont",
+                                                "Select font",
+                                            )}
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {fontFamilies.map((font) => (
+                                            <SelectItem key={font.id} value={font.id.toString()}>
+                                                {font.font_family_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="event-name-font-weight" className="text-xs">
+                                    {t(
+                                        "certificateSettings.fontSettings.fontWeight",
+                                        "Font Weight",
+                                    )}
+                                </Label>
+                                <Select
+                                    value={fontConfig.event_name_font_weight?.toString()}
+                                    onValueChange={(value) =>
+                                        setFontConfig({
+                                            ...fontConfig,
+                                            event_name_font_weight: parseInt(value),
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger id="event-name-font-weight">
+                                        <SelectValue
+                                            placeholder={t(
+                                                "certificateSettings.fontSettings.selectWeight",
+                                                "Select weight",
+                                            )}
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {getAvailableWeights(
+                                            fontConfig.event_name_font_family_id,
+                                        ).map((weight) => (
                                             <SelectItem key={weight} value={weight.toString()}>
                                                 {weight}
                                             </SelectItem>
-                                        ),
-                                    )}
-                                </SelectContent>
-                            </Select>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
-                {/* Participant Name Font */}
-                <div className="space-y-3">
-                    <Typography variant="text" tag="h4" className="text-sm font-medium">
-                        {t("certificateSettings.fontSettings.participantName", "Participant Name")}
-                    </Typography>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="name-font-family" className="text-xs">
-                                {t("certificateSettings.fontSettings.fontFamily", "Font Family")}
-                            </Label>
-                            <Select
-                                value={fontConfig.name_font_family_id?.toString()}
-                                onValueChange={(value) =>
-                                    setFontConfig({
-                                        ...fontConfig,
-                                        name_font_family_id: parseInt(value),
-                                    })
-                                }
-                            >
-                                <SelectTrigger id="name-font-family">
-                                    <SelectValue
-                                        placeholder={t(
-                                            "certificateSettings.fontSettings.selectFont",
-                                            "Select font",
+                {/* Participant Name Font - Only show if configured in template */}
+                {hasParticipantName && (
+                    <div className="space-y-2">
+                        <Typography variant="text" tag="h4" className="text-sm font-medium">
+                            {t(
+                                "certificateSettings.fontSettings.participantName",
+                                "Participant Name",
+                            )}
+                        </Typography>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                                <Label htmlFor="name-font-family" className="text-xs">
+                                    {t(
+                                        "certificateSettings.fontSettings.fontFamily",
+                                        "Font Family",
+                                    )}
+                                </Label>
+                                <Select
+                                    value={fontConfig.name_font_family_id?.toString()}
+                                    onValueChange={(value) =>
+                                        setFontConfig({
+                                            ...fontConfig,
+                                            name_font_family_id: parseInt(value),
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger id="name-font-family">
+                                        <SelectValue
+                                            placeholder={t(
+                                                "certificateSettings.fontSettings.selectFont",
+                                                "Select font",
+                                            )}
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {fontFamilies.map((font) => (
+                                            <SelectItem key={font.id} value={font.id.toString()}>
+                                                {font.font_family_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="name-font-weight" className="text-xs">
+                                    {t(
+                                        "certificateSettings.fontSettings.fontWeight",
+                                        "Font Weight",
+                                    )}
+                                </Label>
+                                <Select
+                                    value={fontConfig.name_font_weight?.toString()}
+                                    onValueChange={(value) =>
+                                        setFontConfig({
+                                            ...fontConfig,
+                                            name_font_weight: parseInt(value),
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger id="name-font-weight">
+                                        <SelectValue
+                                            placeholder={t(
+                                                "certificateSettings.fontSettings.selectWeight",
+                                                "Select weight",
+                                            )}
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {getAvailableWeights(fontConfig.name_font_family_id).map(
+                                            (weight) => (
+                                                <SelectItem key={weight} value={weight.toString()}>
+                                                    {weight}
+                                                </SelectItem>
+                                            ),
                                         )}
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {fontFamilies.map((font) => (
-                                        <SelectItem key={font.id} value={font.id.toString()}>
-                                            {font.font_family_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="name-font-weight" className="text-xs">
-                                {t("certificateSettings.fontSettings.fontWeight", "Font Weight")}
-                            </Label>
-                            <Select
-                                value={fontConfig.name_font_weight?.toString()}
-                                onValueChange={(value) =>
-                                    setFontConfig({
-                                        ...fontConfig,
-                                        name_font_weight: parseInt(value),
-                                    })
-                                }
-                            >
-                                <SelectTrigger id="name-font-weight">
-                                    <SelectValue
-                                        placeholder={t(
-                                            "certificateSettings.fontSettings.selectWeight",
-                                            "Select weight",
-                                        )}
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {getAvailableWeights(fontConfig.name_font_family_id).map(
-                                        (weight) => (
+                    </div>
+                )}
+
+                {/* Academic Institution Font - Only show if configured in template */}
+                {hasAcademicInstitution && (
+                    <div className="space-y-2">
+                        <Typography variant="text" tag="h4" className="text-sm font-medium">
+                            {t(
+                                "certificateSettings.fontSettings.academicInstitution",
+                                "Academic Institution",
+                            )}
+                        </Typography>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="academic-institution-font-family"
+                                    className="text-xs"
+                                >
+                                    {t(
+                                        "certificateSettings.fontSettings.fontFamily",
+                                        "Font Family",
+                                    )}
+                                </Label>
+                                <Select
+                                    value={fontConfig.academic_institution_font_family_id?.toString()}
+                                    onValueChange={(value) =>
+                                        setFontConfig({
+                                            ...fontConfig,
+                                            academic_institution_font_family_id: parseInt(value),
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger id="academic-institution-font-family">
+                                        <SelectValue
+                                            placeholder={t(
+                                                "certificateSettings.fontSettings.selectFont",
+                                                "Select font",
+                                            )}
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {fontFamilies.map((font) => (
+                                            <SelectItem key={font.id} value={font.id.toString()}>
+                                                {font.font_family_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="academic-institution-font-weight"
+                                    className="text-xs"
+                                >
+                                    {t(
+                                        "certificateSettings.fontSettings.fontWeight",
+                                        "Font Weight",
+                                    )}
+                                </Label>
+                                <Select
+                                    value={fontConfig.academic_institution_font_weight?.toString()}
+                                    onValueChange={(value) =>
+                                        setFontConfig({
+                                            ...fontConfig,
+                                            academic_institution_font_weight: parseInt(value),
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger id="academic-institution-font-weight">
+                                        <SelectValue
+                                            placeholder={t(
+                                                "certificateSettings.fontSettings.selectWeight",
+                                                "Select weight",
+                                            )}
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {getAvailableWeights(
+                                            fontConfig.academic_institution_font_family_id,
+                                        ).map((weight) => (
                                             <SelectItem key={weight} value={weight.toString()}>
                                                 {weight}
                                             </SelectItem>
-                                        ),
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Certificate Title Font - Only show if configured in template */}
+                {hasCertificateTitle && (
+                    <div className="space-y-2">
+                        <Typography variant="text" tag="h4" className="text-sm font-medium">
+                            {t(
+                                "certificateSettings.fontSettings.certificateTitle",
+                                "Certificate Title",
+                            )}
+                        </Typography>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                                <Label htmlFor="certificate-title-font-family" className="text-xs">
+                                    {t(
+                                        "certificateSettings.fontSettings.fontFamily",
+                                        "Font Family",
                                     )}
-                                </SelectContent>
-                            </Select>
+                                </Label>
+                                <Select
+                                    value={fontConfig.certificate_title_font_family_id?.toString()}
+                                    onValueChange={(value) =>
+                                        setFontConfig({
+                                            ...fontConfig,
+                                            certificate_title_font_family_id: parseInt(value),
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger id="certificate-title-font-family">
+                                        <SelectValue
+                                            placeholder={t(
+                                                "certificateSettings.fontSettings.selectFont",
+                                                "Select font",
+                                            )}
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {fontFamilies.map((font) => (
+                                            <SelectItem key={font.id} value={font.id.toString()}>
+                                                {font.font_family_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="certificate-title-font-weight" className="text-xs">
+                                    {t(
+                                        "certificateSettings.fontSettings.fontWeight",
+                                        "Font Weight",
+                                    )}
+                                </Label>
+                                <Select
+                                    value={fontConfig.certificate_title_font_weight?.toString()}
+                                    onValueChange={(value) =>
+                                        setFontConfig({
+                                            ...fontConfig,
+                                            certificate_title_font_weight: parseInt(value),
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger id="certificate-title-font-weight">
+                                        <SelectValue
+                                            placeholder={t(
+                                                "certificateSettings.fontSettings.selectWeight",
+                                                "Select weight",
+                                            )}
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {getAvailableWeights(
+                                            fontConfig.certificate_title_font_family_id,
+                                        ).map((weight) => (
+                                            <SelectItem key={weight} value={weight.toString()}>
+                                                {weight}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
-                {/* Academic Institution Font */}
-                <div className="space-y-3">
-                    <Typography variant="text" tag="h4" className="text-sm font-medium">
-                        {t(
-                            "certificateSettings.fontSettings.academicInstitution",
-                            "Academic Institution",
-                        )}
-                    </Typography>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="academic-institution-font-family" className="text-xs">
-                                {t("certificateSettings.fontSettings.fontFamily", "Font Family")}
-                            </Label>
-                            <Select
-                                value={fontConfig.academic_institution_font_family_id?.toString()}
-                                onValueChange={(value) =>
-                                    setFontConfig({
-                                        ...fontConfig,
-                                        academic_institution_font_family_id: parseInt(value),
-                                    })
-                                }
-                            >
-                                <SelectTrigger id="academic-institution-font-family">
-                                    <SelectValue
-                                        placeholder={t(
-                                            "certificateSettings.fontSettings.selectFont",
-                                            "Select font",
-                                        )}
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {fontFamilies.map((font) => (
-                                        <SelectItem key={font.id} value={font.id.toString()}>
-                                            {font.font_family_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="academic-institution-font-weight" className="text-xs">
-                                {t("certificateSettings.fontSettings.fontWeight", "Font Weight")}
-                            </Label>
-                            <Select
-                                value={fontConfig.academic_institution_font_weight?.toString()}
-                                onValueChange={(value) =>
-                                    setFontConfig({
-                                        ...fontConfig,
-                                        academic_institution_font_weight: parseInt(value),
-                                    })
-                                }
-                            >
-                                <SelectTrigger id="academic-institution-font-weight">
-                                    <SelectValue
-                                        placeholder={t(
-                                            "certificateSettings.fontSettings.selectWeight",
-                                            "Select weight",
-                                        )}
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {getAvailableWeights(
-                                        fontConfig.academic_institution_font_family_id,
-                                    ).map((weight) => (
-                                        <SelectItem key={weight} value={weight.toString()}>
-                                            {weight}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Certificate Title Font */}
-                <div className="space-y-3">
-                    <Typography variant="text" tag="h4" className="text-sm font-medium">
-                        {t(
-                            "certificateSettings.fontSettings.certificateTitle",
-                            "Certificate Title",
-                        )}
-                    </Typography>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="certificate-title-font-family" className="text-xs">
-                                {t("certificateSettings.fontSettings.fontFamily", "Font Family")}
-                            </Label>
-                            <Select
-                                value={fontConfig.certificate_title_font_family_id?.toString()}
-                                onValueChange={(value) =>
-                                    setFontConfig({
-                                        ...fontConfig,
-                                        certificate_title_font_family_id: parseInt(value),
-                                    })
-                                }
-                            >
-                                <SelectTrigger id="certificate-title-font-family">
-                                    <SelectValue
-                                        placeholder={t(
-                                            "certificateSettings.fontSettings.selectFont",
-                                            "Select font",
-                                        )}
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {fontFamilies.map((font) => (
-                                        <SelectItem key={font.id} value={font.id.toString()}>
-                                            {font.font_family_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="certificate-title-font-weight" className="text-xs">
-                                {t("certificateSettings.fontSettings.fontWeight", "Font Weight")}
-                            </Label>
-                            <Select
-                                value={fontConfig.certificate_title_font_weight?.toString()}
-                                onValueChange={(value) =>
-                                    setFontConfig({
-                                        ...fontConfig,
-                                        certificate_title_font_weight: parseInt(value),
-                                    })
-                                }
-                            >
-                                <SelectTrigger id="certificate-title-font-weight">
-                                    <SelectValue
-                                        placeholder={t(
-                                            "certificateSettings.fontSettings.selectWeight",
-                                            "Select weight",
-                                        )}
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {getAvailableWeights(
-                                        fontConfig.certificate_title_font_family_id,
-                                    ).map((weight) => (
-                                        <SelectItem key={weight} value={weight.toString()}>
-                                            {weight}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                {/* Certificate Subtitle Font - Only show if configured in template */}
+                {hasCertificateSubtitle && (
+                    <div className="space-y-2">
+                        <Typography variant="text" tag="h4" className="text-sm font-medium">
+                            {t(
+                                "certificateSettings.fontSettings.certificateSubtitle",
+                                "Certificate Subtitle",
+                            )}
+                        </Typography>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="certificate-subtitle-font-family"
+                                    className="text-xs"
+                                >
+                                    {t(
+                                        "certificateSettings.fontSettings.fontFamily",
+                                        "Font Family",
+                                    )}
+                                </Label>
+                                <Select
+                                    value={fontConfig.certificate_subtitle_font_family_id?.toString()}
+                                    onValueChange={(value) =>
+                                        setFontConfig({
+                                            ...fontConfig,
+                                            certificate_subtitle_font_family_id: parseInt(value),
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger id="certificate-subtitle-font-family">
+                                        <SelectValue
+                                            placeholder={t(
+                                                "certificateSettings.fontSettings.selectFont",
+                                                "Select font",
+                                            )}
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {fontFamilies.map((font) => (
+                                            <SelectItem key={font.id} value={font.id.toString()}>
+                                                {font.font_family_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1">
+                                <Label
+                                    htmlFor="certificate-subtitle-font-weight"
+                                    className="text-xs"
+                                >
+                                    {t(
+                                        "certificateSettings.fontSettings.fontWeight",
+                                        "Font Weight",
+                                    )}
+                                </Label>
+                                <Select
+                                    value={fontConfig.certificate_subtitle_font_weight?.toString()}
+                                    onValueChange={(value) =>
+                                        setFontConfig({
+                                            ...fontConfig,
+                                            certificate_subtitle_font_weight: parseInt(value),
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger id="certificate-subtitle-font-weight">
+                                        <SelectValue
+                                            placeholder={t(
+                                                "certificateSettings.fontSettings.selectWeight",
+                                                "Select weight",
+                                            )}
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {getAvailableWeights(
+                                            fontConfig.certificate_subtitle_font_family_id,
+                                        ).map((weight) => (
+                                            <SelectItem key={weight} value={weight.toString()}>
+                                                {weight}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                {/* Certificate Subtitle Font */}
-                <div className="space-y-3">
-                    <Typography variant="text" tag="h4" className="text-sm font-medium">
-                        {t(
-                            "certificateSettings.fontSettings.certificateSubtitle",
-                            "Certificate Subtitle",
-                        )}
-                    </Typography>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="certificate-subtitle-font-family" className="text-xs">
-                                {t("certificateSettings.fontSettings.fontFamily", "Font Family")}
-                            </Label>
-                            <Select
-                                value={fontConfig.certificate_subtitle_font_family_id?.toString()}
-                                onValueChange={(value) =>
-                                    setFontConfig({
-                                        ...fontConfig,
-                                        certificate_subtitle_font_family_id: parseInt(value),
-                                    })
-                                }
-                            >
-                                <SelectTrigger id="certificate-subtitle-font-family">
-                                    <SelectValue
-                                        placeholder={t(
-                                            "certificateSettings.fontSettings.selectFont",
-                                            "Select font",
-                                        )}
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {fontFamilies.map((font) => (
-                                        <SelectItem key={font.id} value={font.id.toString()}>
-                                            {font.font_family_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="certificate-subtitle-font-weight" className="text-xs">
-                                {t("certificateSettings.fontSettings.fontWeight", "Font Weight")}
-                            </Label>
-                            <Select
-                                value={fontConfig.certificate_subtitle_font_weight?.toString()}
-                                onValueChange={(value) =>
-                                    setFontConfig({
-                                        ...fontConfig,
-                                        certificate_subtitle_font_weight: parseInt(value),
-                                    })
-                                }
-                            >
-                                <SelectTrigger id="certificate-subtitle-font-weight">
-                                    <SelectValue
-                                        placeholder={t(
-                                            "certificateSettings.fontSettings.selectWeight",
-                                            "Select weight",
-                                        )}
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {getAvailableWeights(
-                                        fontConfig.certificate_subtitle_font_family_id,
-                                    ).map((weight) => (
-                                        <SelectItem key={weight} value={weight.toString()}>
-                                            {weight}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                </div>
+                )}
             </div>
         </div>
     );

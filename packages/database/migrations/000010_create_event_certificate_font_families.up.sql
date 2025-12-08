@@ -13,9 +13,9 @@ CREATE TABLE event_certificate_font_families (
 
 -- Insert default font families
 INSERT INTO event_certificate_font_families (font_family_name, css_font_name, is_default, available_font_weights, is_support_italic) VALUES
-    ('Inter', 'Inter', TRUE, '100,200,300,400,500,600,700,800,900', TRUE),
+    ('Prompt', 'Prompt', TRUE, '100,200,300,400,500,600,700,800,900', TRUE),
+    ('Inter', 'Inter', FALSE, '100,200,300,400,500,600,700,800,900', TRUE),
     ('Noto Sans Thai', 'Noto Sans Thai', FALSE, '100,200,300,400,500,600,700,800,900', TRUE),
-    ('Prompt', 'Prompt', FALSE, '100,200,300,400,500,600,700,800,900', TRUE),
     ('TH Sarabun New', 'Sarabun', FALSE, '100,200,300,400,500,600,700,800', TRUE),
     ('Kanit', 'Kanit', FALSE, '100,200,300,400,500,600,700,800,900', TRUE),
     ('Arial', 'Arial', FALSE, '400,700', TRUE),

@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { coreApiClient } from "@/lib/api/api";
+import { certificateService } from "@/services/services";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import type { CoreApiInternalHandlerEventSignEventCertificatesResponse } from "@decm/api";
 import { QUERY_KEY } from "@/lib/queryKeys";
 
 interface SignEventCertificatesParams {
@@ -20,9 +19,9 @@ export function useSignEventCertificates() {
         error: signingError,
     } = useMutation({
         mutationFn: ({ eventId, issuerPin }: SignEventCertificatesParams) =>
-            coreApiClient.v1.signEventCertificates({ eventId }, { issuer_pin: issuerPin }),
-        onSuccess: (data: CoreApiInternalHandlerEventSignEventCertificatesResponse) => {
-            const certificatesCount = data.certificates?.length || 0;
+            certificateService.signEventCertificates(eventId, issuerPin),
+        onSuccess: (data) => {
+            const certificatesCount = data.totalSigned;
             toast.success(t("issuer.sign.signingSuccess", { count: certificatesCount }));
             // Invalidate related queries to refresh data
             queryClient.invalidateQueries({

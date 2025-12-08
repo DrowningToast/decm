@@ -201,6 +201,10 @@ definitions:
     type: object
   core-api_internal_handler_eventconfig.EventCertificateConfigResponse:
     properties:
+      academic_institution_font_family_id:
+        type: integer
+      academic_institution_font_weight:
+        type: integer
       academic_institution_pos_x:
         type: number
       academic_institution_pos_y:
@@ -209,10 +213,18 @@ definitions:
         type: string
       base_certificate_storage_key:
         type: string
+      certificate_subtitle_font_family_id:
+        type: integer
+      certificate_subtitle_font_weight:
+        type: integer
       certificate_subtitle_pos_x:
         type: number
       certificate_subtitle_pos_y:
         type: number
+      certificate_title_font_family_id:
+        type: integer
+      certificate_title_font_weight:
+        type: integer
       certificate_title_pos_x:
         type: number
       certificate_title_pos_y:
@@ -221,6 +233,10 @@ definitions:
         type: string
       event_id:
         type: string
+      event_name_font_family_id:
+        type: integer
+      event_name_font_weight:
+        type: integer
       event_name_pos_x:
         type: number
       event_name_pos_y:
@@ -231,6 +247,10 @@ definitions:
         type: boolean
       mint_readiness:
         $ref: '#/definitions/core-api_internal_handler_eventconfig.MintReadinessInfo'
+      name_font_family_id:
+        type: integer
+      name_font_weight:
+        type: integer
       name_pos_x:
         type: number
       name_pos_y:
@@ -2274,11 +2294,52 @@ paths:
       summary: Verify Google OAuth code
       tags:
       - Auth
+  /api/v1/certificates/{certificate_id}/image:
+    get:
+      description: Generates a PNG certificate image for the authenticated user's
+        certificate
+      operationId: generate-certificate-image
+      parameters:
+      - description: Certificate ID
+        format: uuid
+        in: path
+        name: certificate_id
+        required: true
+        type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: PNG certificate image
+          schema:
+            type: file
+        "400":
+          description: Invalid certificate ID
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: User does not own this certificate
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Certificate not found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      security:
+      - CookieAuth: []
+      summary: Generate certificate image for participant
+      tags:
+      - certificates
   /api/v1/certificates/claim/{certificate_id}:
     post:
       consumes:
       - application/json
-      description: Claim a certificate by signing with wallet
+      description: Claim a certificate using account password or wallet signature
+        (requires authentication)
       operationId: claim-certificate
       parameters:
       - description: Certificate ID
@@ -2286,7 +2347,7 @@ paths:
         name: certificate_id
         required: true
         type: string
-      - description: Claim certificate body
+      - description: Claim certificate body (provide either account_password or signature+sign_message)
         in: body
         name: claimCertificateBody
         required: true
@@ -2307,6 +2368,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
         "404":
           description: Not Found
           schema:
@@ -2315,6 +2380,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
+      security:
+      - BearerAuth: []
       summary: Claim certificate
       tags:
       - Certificates
@@ -2322,7 +2389,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get sign message for claiming a certificate
+      description: Get sign message for claiming a certificate (requires authentication)
       operationId: get-claim-certificate-sign-message
       parameters:
       - description: Certificate ID
@@ -2345,6 +2412,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
         "404":
           description: Not Found
           schema:
@@ -2353,6 +2424,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
+      security:
+      - BearerAuth: []
       summary: Get claim certificate sign message
       tags:
       - Certificates
@@ -4548,46 +4621,6 @@ paths:
       summary: Verify password
       tags:
       - Profile
-  /certificates/{certificate_id}/image:
-    get:
-      description: Generates a PNG certificate image for the authenticated user's
-        certificate
-      operationId: generate-certificate-image
-      parameters:
-      - description: Certificate ID
-        format: uuid
-        in: path
-        name: certificate_id
-        required: true
-        type: string
-      produces:
-      - image/png
-      responses:
-        "200":
-          description: PNG certificate image
-          schema:
-            type: file
-        "400":
-          description: Invalid certificate ID
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "403":
-          description: User does not own this certificate
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "404":
-          description: Certificate not found
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-      security:
-      - CookieAuth: []
-      summary: Generate certificate image for participant
-      tags:
-      - certificates
   /events/{event_id}/certificates/text-config:
     put:
       consumes:

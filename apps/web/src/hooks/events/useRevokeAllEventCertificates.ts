@@ -1,4 +1,4 @@
-import { coreApiClient } from "@/lib/api/api";
+import { certificateService } from "@/services/services";
 import { queryClient } from "@/lib/api/queryClient";
 import { QUERY_KEY } from "@/lib/queryKeys";
 import { useMutation } from "@tanstack/react-query";
@@ -11,7 +11,7 @@ export function useRevokeAllEventCertificates() {
         error: revokeAllError,
     } = useMutation({
         mutationFn: ({ eventId }: { eventId: string }) =>
-            coreApiClient.v1.revokeAllEventCertificates({ eventId }),
+            certificateService.revokeAllCertificates(eventId),
         onSuccess: () => {
             toast.success("All event certificates revoked successfully");
             queryClient.invalidateQueries({ queryKey: QUERY_KEY.event.all });

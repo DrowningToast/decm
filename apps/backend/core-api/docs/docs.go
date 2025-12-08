@@ -185,7 +185,12 @@ const docTemplate = `{
         },
         "/api/v1/certificates/claim/{certificate_id}": {
             "post": {
-                "description": "Claim a certificate by signing with wallet",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Claim a certificate using account password or wallet signature (requires authentication)",
                 "consumes": [
                     "application/json"
                 ],
@@ -206,7 +211,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Claim certificate body",
+                        "description": "Claim certificate body (provide either account_password or signature+sign_message)",
                         "name": "claimCertificateBody",
                         "in": "body",
                         "required": true,
@@ -234,6 +239,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
                     },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -251,7 +262,12 @@ const docTemplate = `{
         },
         "/api/v1/certificates/claim/{certificate_id}/sign-message": {
             "get": {
-                "description": "Get sign message for claiming a certificate",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get sign message for claiming a certificate (requires authentication)",
                 "consumes": [
                     "application/json"
                 ],
@@ -287,6 +303,12 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
@@ -329,6 +351,66 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized - missing or invalid authentication",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/certificates/{certificate_id}/image": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Generates a PNG certificate image for the authenticated user's certificate",
+                "produces": [
+                    "image/png"
+                ],
+                "tags": [
+                    "certificates"
+                ],
+                "summary": "Generate certificate image for participant",
+                "operationId": "generate-certificate-image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Certificate ID",
+                        "name": "certificate_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PNG certificate image",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid certificate ID",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "User does not own this certificate",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Certificate not found",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
@@ -3563,66 +3645,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/certificates/{certificate_id}/image": {
-            "get": {
-                "security": [
-                    {
-                        "CookieAuth": []
-                    }
-                ],
-                "description": "Generates a PNG certificate image for the authenticated user's certificate",
-                "produces": [
-                    "image/png"
-                ],
-                "tags": [
-                    "certificates"
-                ],
-                "summary": "Generate certificate image for participant",
-                "operationId": "generate-certificate-image",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "Certificate ID",
-                        "name": "certificate_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "PNG certificate image",
-                        "schema": {
-                            "type": "file"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid certificate ID",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "User does not own this certificate",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Certificate not found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/events/{event_id}/certificates/text-config": {
             "put": {
                 "description": "Update font family and font weight for all text templates in the certificate. This endpoint allows customization of fonts for event name, participant name, academic institution, certificate title, and certificate subtitle.",
@@ -3988,6 +4010,12 @@ const docTemplate = `{
                 "updated_at"
             ],
             "properties": {
+                "academic_institution_font_family_id": {
+                    "type": "integer"
+                },
+                "academic_institution_font_weight": {
+                    "type": "integer"
+                },
                 "academic_institution_pos_x": {
                     "type": "number"
                 },
@@ -4000,11 +4028,23 @@ const docTemplate = `{
                 "base_certificate_storage_key": {
                     "type": "string"
                 },
+                "certificate_subtitle_font_family_id": {
+                    "type": "integer"
+                },
+                "certificate_subtitle_font_weight": {
+                    "type": "integer"
+                },
                 "certificate_subtitle_pos_x": {
                     "type": "number"
                 },
                 "certificate_subtitle_pos_y": {
                     "type": "number"
+                },
+                "certificate_title_font_family_id": {
+                    "type": "integer"
+                },
+                "certificate_title_font_weight": {
+                    "type": "integer"
                 },
                 "certificate_title_pos_x": {
                     "type": "number"
@@ -4017,6 +4057,12 @@ const docTemplate = `{
                 },
                 "event_id": {
                     "type": "string"
+                },
+                "event_name_font_family_id": {
+                    "type": "integer"
+                },
+                "event_name_font_weight": {
+                    "type": "integer"
                 },
                 "event_name_pos_x": {
                     "type": "number"
@@ -4032,6 +4078,12 @@ const docTemplate = `{
                 },
                 "mint_readiness": {
                     "$ref": "#/definitions/core-api_internal_handler_eventconfig.MintReadinessInfo"
+                },
+                "name_font_family_id": {
+                    "type": "integer"
+                },
+                "name_font_weight": {
+                    "type": "integer"
                 },
                 "name_pos_x": {
                     "type": "number"

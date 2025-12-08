@@ -4,11 +4,11 @@ import { Loader2, SearchX, CircleCheckBig } from "lucide-react";
 import { CertificateEmptyState } from "./CertificateEmptyState";
 import { Link } from "@/router";
 import { useSearchCertificateNavStore } from "@/components/BottomNav/stores/certificates";
-import type { EntityEventCertificate } from "@decm/api";
+import type { Certificate } from "@/services/CertificateService/mapper";
 
 interface CertificateListProps {
-    claimedCertificates?: EntityEventCertificate[];
-    unclaimedCertificates?: EntityEventCertificate[];
+    claimedCertificates?: Certificate[];
+    unclaimedCertificates?: Certificate[];
     isLoading?: boolean;
 }
 
@@ -24,20 +24,20 @@ export const CertificateList = ({
     const filteredClaimedCertificates = searchQuery.trim()
         ? claimedCertificates.filter(
               (cert) =>
-                  cert.certificate_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  cert.certificateTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                   cert.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  cert.event_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  cert.academic_institution?.toLowerCase().includes(searchQuery.toLowerCase()),
+                  cert.eventName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  cert.academicInstitution?.toLowerCase().includes(searchQuery.toLowerCase()),
           )
         : claimedCertificates;
 
     const filteredUnclaimedCertificates = searchQuery.trim()
         ? unclaimedCertificates.filter(
               (cert) =>
-                  cert.certificate_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  cert.certificateTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                   cert.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  cert.event_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  cert.academic_institution?.toLowerCase().includes(searchQuery.toLowerCase()),
+                  cert.eventName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  cert.academicInstitution?.toLowerCase().includes(searchQuery.toLowerCase()),
           )
         : unclaimedCertificates;
 
@@ -147,20 +147,22 @@ const CertificateItem = ({
     certificate,
     isClaimed,
 }: {
-    certificate: EntityEventCertificate;
+    certificate: Certificate;
     isClaimed: boolean;
 }) => {
     const { t } = useTranslation();
-    const formattedDate = new Date(certificate.created_at).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-    });
+    const formattedDate = certificate.createdAt
+        ? new Date(certificate.createdAt).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+          })
+        : "";
 
-    // Fallback order: certificate_title → certificate_subtitle → default text
+    // Fallback order: certificateTitle → certificateSubtitle → default text
     const displayTitle =
-        certificate.certificate_title ||
-        certificate.certificate_subtitle ||
+        certificate.certificateTitle ||
+        certificate.certificateSubtitle ||
         t("participant.certificates.defaultTitle", "Certificate of Achievement");
 
     return (
@@ -203,14 +205,14 @@ const CertificateItem = ({
 
             {/* Event name and Issuer info - below name */}
             <div className="ml-8 flex flex-col gap-0.5">
-                {certificate.event_name && (
+                {certificate.eventName && (
                     <Typography variant="text" tag="p" color="muted" className="text-xs md:text-sm">
-                        {certificate.event_name}
+                        {certificate.eventName}
                     </Typography>
                 )}
-                {certificate.academic_institution && (
+                {certificate.academicInstitution && (
                     <Typography variant="text" tag="p" color="muted" className="text-xs md:text-sm">
-                        {certificate.academic_institution}
+                        {certificate.academicInstitution}
                     </Typography>
                 )}
             </div>

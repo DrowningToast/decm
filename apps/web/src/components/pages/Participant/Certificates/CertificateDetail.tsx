@@ -45,19 +45,19 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                 title: t("participant.certificates.claimTitle", "Claim Certificate"),
                 description: t(
                     "participant.certificates.claimDescription",
-                    "Sign to claim your certificate on the blockchain",
+                    "Enter your account password to claim your certificate on the blockchain",
                 ),
                 details: `Claiming certificate: ${certificate.name}`,
             });
 
-            // Claim the certificate with the verified password
+            // Claim the certificate with the verified password (PIN flow)
             await claimCertificate({
                 certificateId: certificate.id,
-                eventId: certificate.eventId,
                 accountPassword,
             });
         } catch (error) {
             console.error("Failed to claim certificate:", error);
+            // Error toast is already shown by the hook
         } finally {
             setIsProcessing(false);
         }

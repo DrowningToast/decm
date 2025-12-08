@@ -164,21 +164,31 @@ export interface CoreApiInternalHandlerEventconfigCertificateMintReadinessRespon
 }
 
 export interface CoreApiInternalHandlerEventconfigEventCertificateConfigResponse {
+    academic_institution_font_family_id?: number;
+    academic_institution_font_weight?: number;
     academic_institution_pos_x?: number;
     academic_institution_pos_y?: number;
     base_certificate_presigned_url: string;
     base_certificate_storage_key: string;
+    certificate_subtitle_font_family_id?: number;
+    certificate_subtitle_font_weight?: number;
     certificate_subtitle_pos_x?: number;
     certificate_subtitle_pos_y?: number;
+    certificate_title_font_family_id?: number;
+    certificate_title_font_weight?: number;
     certificate_title_pos_x?: number;
     certificate_title_pos_y?: number;
     created_at: string;
     event_id: string;
+    event_name_font_family_id?: number;
+    event_name_font_weight?: number;
     event_name_pos_x: number;
     event_name_pos_y: number;
     id: string;
     is_published: boolean;
     mint_readiness?: CoreApiInternalHandlerEventconfigMintReadinessInfo;
+    name_font_family_id?: number;
+    name_font_weight?: number;
     name_pos_x: number;
     name_pos_y: number;
     updated_at: string;
@@ -1917,12 +1927,13 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Claim a certificate by signing with wallet
+         * @description Claim a certificate using account password or wallet signature (requires authentication)
          *
          * @tags Certificates
          * @name ClaimCertificate
          * @summary Claim certificate
          * @request POST:/api/v1/certificates/claim/{certificate_id}
+         * @secure
          */
         claimCertificate: (
             { certificateId, ...query }: ClaimCertificateParams,
@@ -1933,18 +1944,20 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/certificates/claim/${certificateId}`,
                 method: "POST",
                 body: claimCertificateBody,
+                secure: true,
                 type: ContentType.Json,
                 format: "json",
                 ...params,
             }),
 
         /**
-         * @description Get sign message for claiming a certificate
+         * @description Get sign message for claiming a certificate (requires authentication)
          *
          * @tags Certificates
          * @name GetClaimCertificateSignMessage
          * @summary Get claim certificate sign message
          * @request GET:/api/v1/certificates/claim/{certificate_id}/sign-message
+         * @secure
          */
         getClaimCertificateSignMessage: (
             { certificateId, ...query }: GetClaimCertificateSignMessageParams,
@@ -1956,6 +1969,7 @@ export class Api<SecurityDataType extends unknown> {
             >({
                 path: `/api/v1/certificates/claim/${certificateId}/sign-message`,
                 method: "GET",
+                secure: true,
                 type: ContentType.Json,
                 format: "json",
                 ...params,
@@ -1978,6 +1992,27 @@ export class Api<SecurityDataType extends unknown> {
                 method: "GET",
                 type: ContentType.Json,
                 format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Generates a PNG certificate image for the authenticated user's certificate
+         *
+         * @tags certificates
+         * @name GenerateCertificateImage
+         * @summary Generate certificate image for participant
+         * @request GET:/api/v1/certificates/{certificate_id}/image
+         * @secure
+         */
+        generateCertificateImage: (
+            { certificateId, ...query }: GenerateCertificateImageParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GenerateCertificateImageData, GenerateCertificateImageError>({
+                path: `/api/v1/certificates/${certificateId}/image`,
+                method: "GET",
+                secure: true,
+                format: "blob",
                 ...params,
             }),
 
@@ -3132,28 +3167,6 @@ export class Api<SecurityDataType extends unknown> {
                 body: verifyPasswordRequest,
                 type: ContentType.Json,
                 format: "json",
-                ...params,
-            }),
-    };
-    certificateId = {
-        /**
-         * @description Generates a PNG certificate image for the authenticated user's certificate
-         *
-         * @tags certificates
-         * @name GenerateCertificateImage
-         * @summary Generate certificate image for participant
-         * @request GET:/certificates/{certificate_id}/image
-         * @secure
-         */
-        generateCertificateImage: (
-            { certificateId, ...query }: GenerateCertificateImageParams,
-            params: RequestParams = {},
-        ) =>
-            this.http.request<GenerateCertificateImageData, GenerateCertificateImageError>({
-                path: `/certificates/${certificateId}/image`,
-                method: "GET",
-                secure: true,
-                format: "blob",
                 ...params,
             }),
     };

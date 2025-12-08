@@ -2,18 +2,27 @@ package event
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"apps/backend/common/customerror"
+	"apps/backend/common/pgmapper"
+	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/cyptoutils"
 	"apps/backend/services/auth"
 
 	"github.com/cockroachdb/errors"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/google/uuid"
 
@@ -58,49 +67,53 @@ func (uc *EventUsecase) GetClaimCertificateSignMessage(ctx context.Context, clie
 	return &signMessage, &messageHash, nil
 }
 
-type CheckClaimEligibilityParams struct {
-	CertificatePassword *string
-}
-
-// Performs checks if the user is eligible to claim the certificate
-func (uc *EventUsecase) CheckClaimEligibility(ctx context.Context, certificate *entity.EventCertificate, currentUser *auth.JwtClaims, params CheckClaimEligibilityParams) (bool, error) {
+// Checks if the user is eligible to claim the certificate
+// Eligibility is proven by:
+// 1. Matching authentication credential ID OR matching email
+// 2. Certificate is not revoked
+// 3. Certificate config is published (EventCertificateAddress is set)
+// 4. Certificate has not been claimed before (CertificateTokenId is NULL)
+func (uc *EventUsecase) CheckClaimEligibility(ctx context.Context, certificate *entity.EventCertificate, currentUser *auth.JwtClaims) error {
 	if currentUser == nil {
-		return false, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
+		return customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
 	}
 
 	// Check if certificate is revoked
 	if certificate.RevokedAt != nil {
-		return false, customerror.NewWithPreset(&customerror.ErrInvalidArgument, errors.New(string(ClaimCertificateUserErrorCertificateRevoked)))
+		return customerror.NewWithPreset(&customerror.ErrInvalidArgument, errors.New(string(ClaimCertificateUserErrorCertificateRevoked)))
+	}
+
+	// Check if certificate config is published
+	if certificate.EventCertificateAddress == nil {
+		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("certificate is not published yet"))
+	}
+
+	// Check if certificate has already been claimed
+	if certificate.CertificateTokenId != nil {
+		return customerror.NewWithPreset(&customerror.ErrInvalidArgument, errors.New(string(ClaimCertificateUserErrorCertificateAlreadyClaimed)))
 	}
 
 	// Check if user is the intended receiver by credential ID
 	if certificate.ReceiverCredentialId != nil {
 		if *certificate.ReceiverCredentialId != currentUser.UserId {
-			return false, customerror.NewWithPreset(&customerror.ErrUnauthorized, errors.New(string(ClaimCertificateUserErrorNotEligible)))
+			return customerror.NewWithPreset(&customerror.ErrUnauthorized, errors.New(string(ClaimCertificateUserErrorNotEligible)))
 		}
-		return true, nil
+		return nil
 	}
 
 	// Check if user is the intended receiver by email
 	if certificate.ReceiverEmail != nil {
 		if currentUser.Email == nil || *currentUser.Email != *certificate.ReceiverEmail {
-			return false, customerror.NewWithPreset(&customerror.ErrUnauthorized, errors.New(string(ClaimCertificateUserErrorNotEligible)))
+			return customerror.NewWithPreset(&customerror.ErrUnauthorized, errors.New(string(ClaimCertificateUserErrorNotEligible)))
 		}
-		return true, nil
+		return nil
 	}
 
 	// If no receiver credential or email is set, anyone can claim (open certificate)
-	// But if a password is required, validate it
-	if params.CertificatePassword != nil {
-		// TODO: Implement password validation logic if needed
-		// This would require a certificate_password field in the database
-		return true, nil
-	}
-
-	return true, nil
+	return nil
 }
 
-func (uc *EventUsecase) ClaimCertificateWithPin(ctx context.Context, client *ethclient.Client, currentUser *auth.JwtClaims, certificateId uuid.UUID, eligibilityProof CheckClaimEligibilityParams, password string) (*entity.EventCertificate, error) {
+func (uc *EventUsecase) ClaimCertificateWithPin(ctx context.Context, client *ethclient.Client, currentUser *auth.JwtClaims, certificateId uuid.UUID, password string) (*entity.EventCertificate, error) {
 	if currentUser == nil {
 		return nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
 	}
@@ -114,18 +127,9 @@ func (uc *EventUsecase) ClaimCertificateWithPin(ctx context.Context, client *eth
 		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New(string(ClaimCertificateUserErrorCertificateNotFound)))
 	}
 
-	// Check if certificate contract address is set (certificate is published)
-	if certificate.EventCertificateAddress == nil || certificate.CertificateTokenId == nil {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("certificate is not published yet"))
-	}
-
-	// Check eligibility
-	isEligible, err := uc.CheckClaimEligibility(ctx, certificate, currentUser, eligibilityProof)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to check claim eligibility")
-	}
-	if !isEligible {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New(string(ClaimCertificateUserErrorNotEligible)))
+	// Check eligibility (includes published check, not claimed check, revocation check, and user match)
+	if err := uc.CheckClaimEligibility(ctx, certificate, currentUser); err != nil {
+		return nil, err
 	}
 
 	// CRITICAL FIX: Get the actual wallet address derived from the private key
@@ -162,10 +166,16 @@ func (uc *EventUsecase) ClaimCertificateWithPin(ctx context.Context, client *eth
 		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	return uc.claimCertificate(ctx, client, currentUser, certificate, signature, signMessage, participantAddress)
+	// Derive public key from private key for ECIES encryption
+	participantPublicKey, err := cyptoutils.GetPublicKeyFromPrivateKey(privateKey)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to derive public key"))
+	}
+
+	return uc.claimCertificate(ctx, client, currentUser, certificate, signature, signMessage, participantAddress, participantPublicKey)
 }
 
-func (uc *EventUsecase) ClaimCertificateWithSignature(ctx context.Context, client *ethclient.Client, currentUser *auth.JwtClaims, certificateId uuid.UUID, eligibilityProof CheckClaimEligibilityParams, signature []byte, signMessage string) (*entity.EventCertificate, error) {
+func (uc *EventUsecase) ClaimCertificateWithSignature(ctx context.Context, client *ethclient.Client, currentUser *auth.JwtClaims, certificateId uuid.UUID, signature []byte, signMessage string) (*entity.EventCertificate, error) {
 	if currentUser == nil {
 		return nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
 	}
@@ -177,11 +187,6 @@ func (uc *EventUsecase) ClaimCertificateWithSignature(ctx context.Context, clien
 	}
 	if certificate == nil {
 		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New(string(ClaimCertificateUserErrorCertificateNotFound)))
-	}
-
-	// Check if certificate contract address is set (certificate is published)
-	if certificate.EventCertificateAddress == nil || certificate.CertificateTokenId == nil {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("certificate is not published yet"))
 	}
 
 	// CRITICAL FIX: Get the actual wallet address derived from the private key
@@ -219,24 +224,45 @@ func (uc *EventUsecase) ClaimCertificateWithSignature(ctx context.Context, clien
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("signature does not match the sign message"))
 	}
 
-	// check if the user is eligible to claim the certificate
-	isEligible, err := uc.CheckClaimEligibility(ctx, certificate, currentUser, eligibilityProof)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to check claim eligibility")
-	}
-	if !isEligible {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New(string(ClaimCertificateUserErrorNotEligible)))
+	// Check eligibility (includes published check, not claimed check, revocation check, and user match)
+	if err := uc.CheckClaimEligibility(ctx, certificate, currentUser); err != nil {
+		return nil, err
 	}
 
-	return uc.claimCertificate(ctx, client, currentUser, certificate, signature, signMessage, &participantAddress)
+	// WALLET EXTENSION FLOW:
+	// User signs a message with their wallet extension (no PII sent)
+	// Backend:
+	// 1. Verifies the signature (already done above)
+	// 2. Recovers public key from the signature
+	// 3. Encrypts PII CSV with user's public key
+	// 4. User can decrypt later with their wallet's private key
+
+	// Recover public key from signature
+	messageHashForRecovery := cyptoutils.HashEthereumMessage(signMessage)
+	participantPublicKey, err := cyptoutils.RecoverPublicKeyFromSignature(messageHashForRecovery, signature)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to recover public key from signature"))
+	}
+
+	// Verify recovered address matches the participant address
+	recoveredAddress := cyptoutils.PublicKeyToAddress(participantPublicKey)
+	if recoveredAddress.Hex() != participantAddress.Hex() {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.Errorf("recovered address (%s) does not match participant address (%s)", recoveredAddress.Hex(), participantAddress.Hex()))
+	}
+
+	// Proceed with claiming using recovered public key
+	return uc.claimCertificate(ctx, client, currentUser, certificate, signature, signMessage, &participantAddress, participantPublicKey)
 }
 
-func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.Client, currentUser *auth.JwtClaims, certificate *entity.EventCertificate, signature []byte, signMessage string, participantAddress *common.Address) (*entity.EventCertificate, error) {
+func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.Client, currentUser *auth.JwtClaims, certificate *entity.EventCertificate, signature []byte, signMessage string, participantAddress *common.Address, participantPublicKey *ecdsa.PublicKey) (*entity.EventCertificate, error) {
 	if currentUser == nil {
 		return nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
 	}
 	if participantAddress == nil {
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("participant address is required"))
+	}
+	if participantPublicKey == nil {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("participant public key is required for data encryption"))
 	}
 
 	// Check if certificate contract is deployed
@@ -305,7 +331,9 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	issuerId := issuers[0].IssuerCredentialID.String()
 
 	// Parameter 5 & 6: encryptedUserData and backendEncryptedUserData
-	// Build JSON with certificate data
+	// Build UserData CSV structure (PII - Raw Certificate Data)
+	// UserData format: name,academic_institution,certificate_title,certificate_subtitle
+	// This matches the pattern used in import_certificate_receivers.go
 	name := ""
 	if certificate.Name != nil {
 		name = *certificate.Name
@@ -323,9 +351,87 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		certSubtitle = *certificate.CertificateSubtitle
 	}
 
-	// TODO: Properly encrypt this data
-	encryptedUserData := fmt.Sprintf(`{"name":"%s","academicInstitution":"%s"}`, name, academicInstitution)
-	backendEncryptedUserData := encryptedUserData // For now, same as user data
+	// ============================================
+	// DATA SECTION: Participant Profile from event_attendees
+	// ============================================
+
+	// 1. Get attendee data from event_attendees table
+	// MUST exist - if not, user hasn't joined the event yet
+	// Use currentUser.UserId (authenticated user's credential ID) to get their attendee record
+	attendee, err := uc.EventAttendeeDg.GetEventAttendeeByEventIdAndCredentialId(ctx, certificate.EventId, currentUser.UserId)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrNotFound, errors.Wrap(err, "attendee record not found - user must join event first"))
+	}
+
+	// 2. Build attendee profile JSON with all 8 PII fields
+	// Keep null values as null before stringifying
+	type AttendeeProfileData struct {
+		FirstName           *string `json:"first_name"`
+		LastName            *string `json:"last_name"`
+		Email               *string `json:"email"`
+		Bio                 *string `json:"bio"`
+		PhoneNumber         *string `json:"phone_number"`
+		Address             *string `json:"address"`
+		AcademicInstitution *string `json:"academic_institution"`
+		AcademicEmail       *string `json:"academic_email"`
+	}
+
+	attendeeProfile := AttendeeProfileData{
+		FirstName:           attendee.FirstName,
+		LastName:            attendee.LastName,
+		Email:               attendee.Email,
+		Bio:                 attendee.Bio,
+		PhoneNumber:         attendee.PhoneNumber,
+		Address:             attendee.Address,
+		AcademicInstitution: attendee.AcademicInstitution,
+		AcademicEmail:       attendee.AcademicEmail,
+	}
+
+	// 3. Convert to JSON string
+	attendeeProfileJSON, err := json.Marshal(attendeeProfile)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to marshal attendee profile"))
+	}
+	attendeeProfileStr := string(attendeeProfileJSON)
+
+	// 4. DUAL ENCRYPTION for DATA section (Participant Profile)
+	// Parameter 5: encryptedUserData - Encrypted with user's wallet public key (ECIES)
+	encryptedUserData, err := cyptoutils.EncryptWithPublicKeyBytes(attendeeProfileStr, participantPublicKey)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to encrypt attendee profile with public key"))
+	}
+
+	// Parameter 6: backendEncryptedUserData - Encrypted with backend PII key (AES-GCM)
+	backendEncryptedUserData, err := pgmapper.EncryptPII(attendeeProfileStr, uc.cfg.PIIEncryptionKey)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to encrypt attendee profile with PII key"))
+	}
+
+	// ============================================
+	// PROOF SECTION: Certificate PII CSV
+	// ============================================
+
+	// 5. Create certificate PII CSV: name,academic_institution,certificate_title,certificate_subtitle
+	// DO NOT mutate or merge fields - keep as is
+	certificatePIIcsv := fmt.Sprintf("%s,%s,%s,%s", name, academicInstitution, certTitle, certSubtitle)
+
+	// 6. DUAL ENCRYPTION for PROOF section (Certificate PII)
+	// Parameter 13: userEncryptedProof - Encrypted with user's wallet public key (ECIES)
+	userEncryptedProof, err := cyptoutils.EncryptWithPublicKeyBytes(certificatePIIcsv, participantPublicKey)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to encrypt certificate PII with public key"))
+	}
+
+	// Parameter 14: backendEncryptedProof - Encrypted with backend PII key (AES-GCM)
+	backendEncryptedProof, err := pgmapper.EncryptPII(certificatePIIcsv, uc.cfg.PIIEncryptionKey)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to encrypt certificate PII with PII key"))
+	}
+
+	// 7. Compute hash of the certificate CSV (for blockchain verification)
+	// This matches the pattern used in import_certificate_receivers.go
+	certificatePIIhash := cyptoutils.HashMessage(certificatePIIcsv)
+	userDataHashStr := hexutil.Encode(certificatePIIhash) // Use hexutil.Encode to add "0x" prefix
 
 	// Parameter 7: issuerAddresses (array of issuer wallet addresses)
 	issuerAddresses := make([]common.Address, len(issuers))
@@ -357,11 +463,6 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	// Parameter 11: hostPublicKey
 	hostPublicKey := hostCredential.WalletAddress // Using wallet address as public key identifier
 
-	// Parameter 13 & 14: userEncryptedProof and backendEncryptedProof
-	// TODO: Build proper VC proof structure
-	userEncryptedProof := "{}"
-	backendEncryptedProof := "{}"
-
 	// Parameter 15 & 16: certificateTitle and certificateSubtitle
 	certificateTitle := certTitle
 	certificateSubtitle := certSubtitle
@@ -391,73 +492,144 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	}
 
 	// ============================================
-	// TODO: CALL CONTRACT TO MINT NFT
+	// IDEMPOTENCY CHECK: Handle different states
 	// ============================================
 
-	// Log prepared data for debugging
-	_ = receiverAddress
-	_ = userId
-	_ = certificateId
-	_ = issuerId
-	_ = encryptedUserData
-	_ = backendEncryptedUserData
-	_ = issuerAddresses
-	_ = signedMessageDigest
-	_ = hostSignatureBytes
-	_ = hostSignatureStr
-	_ = hostPublicKey
-	_ = signMessageStr
-	_ = userEncryptedProof
-	_ = backendEncryptedProof
-	_ = certificateTitle
-	_ = certificateSubtitle
-	_ = issuerProofs
+	// Check current state: Is NFT minted on-chain? Is DB updated?
+	certificateContractInstance, err := certificateContract.NewEventCertificate(common.HexToAddress(*certificate.EventCertificateAddress), client)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to create contract instance"))
+	}
 
-	// certificateContractInstance, err := certificateContract.NewEventCertificate(common.HexToAddress(*certificate.EventCertificateAddress), client)
-	// if err != nil {
-	// 	return nil, customerror.Parse(&customerror.ErrInternalServer, err)
-	// }
+	// Try to get token data from contract using certificateId as lookup
+	// If it exists, NFT is already minted
+	isNftMinted := false
+	var onChainTokenId *uint64
 
-	// transactor, err := cyptoutils.GetKeyedTransactor()
-	// if err != nil {
-	// 	return nil, customerror.Parse(&customerror.ErrInternalServer, err)
-	// }
+	// Check if token counter exists and try to find minted certificate
+	// Note: This is a simplified check - in production you might want to query events
+	// or use a mapping in the contract for certificateId -> tokenId lookup
+	if certificate.CertificateTokenId != nil {
+		// DB says it's minted, verify on-chain
+		tokenId := new(big.Int)
+		tokenId.SetString(*certificate.CertificateTokenId, 10)
 
-	// tx, err := certificateContractInstance.MintNft(
-	// 	transactor,
-	// 	receiverAddress,
-	// 	userId,
-	// 	certificateId,
-	// 	issuerId,
-	// 	encryptedUserData,
-	// 	backendEncryptedUserData,
-	// 	issuerAddresses,
-	// 	signedMessageDigest,
-	// 	hostSignatureBytes,
-	// 	hostSignatureStr,
-	// 	hostPublicKey,
-	// 	signMessageStr,
-	// 	userEncryptedProof,
-	// 	backendEncryptedProof,
-	// 	certificateTitle,
-	// 	certificateSubtitle,
-	// 	issuerProofs,
-	// )
-	// if err != nil {
-	// 	return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to mint certificate NFT"))
-	// }
+		// Try to get token data - if it succeeds, NFT exists
+		_, err := certificateContractInstance.GetTokenData(nil, tokenId)
+		if err == nil {
+			isNftMinted = true
+			tokenIdUint64 := tokenId.Uint64()
+			onChainTokenId = &tokenIdUint64
+		}
+	}
 
-	// receipt, err := bind.WaitMined(ctx, client, tx)
-	// if err != nil {
-	// 	return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "transaction mining failed: tx=%s", tx.Hash().Hex()))
-	// }
+	// Decision matrix based on state
+	isDbUpdated := certificate.CertificateTokenId != nil
 
-	// if receipt.Status != types.ReceiptStatusSuccessful {
-	// 	return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Errorf("transaction reverted (tx=%s, gas=%d)", tx.Hash().Hex(), receipt.GasUsed))
-	// }
+	// Case 1: NFT minted AND DB updated → Already claimed
+	if isNftMinted && isDbUpdated {
+		return nil, customerror.NewWithPreset(
+			&customerror.ErrInvalidArgument,
+			errors.New(string(ClaimCertificateUserErrorCertificateAlreadyClaimed)),
+		)
+	}
 
-	// TODO: Extract tokenId from CertificateMinted event
-	// TODO: Update certificate with token ID and contract address
+	// Case 2: NFT minted BUT DB not updated → Only update DB
+	if isNftMinted && !isDbUpdated {
+		if onChainTokenId == nil {
+			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("token ID not found despite NFT being minted"))
+		}
 
-	return certificate, nil
+		tokenIdStr := fmt.Sprintf("%d", *onChainTokenId)
+
+		// Update database only
+		updatedCert, err := uc.EventCertificateDataGateway.UpdateEventCertificate(ctx, certificate.Id, eventdatagateway.UpdateEventCertificateParameters{
+			CertificateTokenID: &tokenIdStr,
+		})
+		if err != nil {
+			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to update certificate with existing token ID"))
+		}
+
+		return updatedCert, nil
+	}
+
+	// Case 3: NFT NOT minted (regardless of DB state) → Mint and update DB
+	// ============================================
+	// MINT NFT ON BLOCKCHAIN
+	// ============================================
+
+	transactor, err := cyptoutils.GetKeyedTransactor()
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get system transactor"))
+	}
+
+	tx, err := certificateContractInstance.MintNft(
+		transactor,
+		receiverAddress,
+		userId,
+		certificateId,
+		issuerId,
+		encryptedUserData,
+		backendEncryptedUserData,
+		issuerAddresses,
+		signedMessageDigest,
+		hostSignatureBytes,
+		hostSignatureStr,
+		hostPublicKey,
+		signMessageStr,
+		userEncryptedProof,
+		backendEncryptedProof,
+		certificateTitle,
+		certificateSubtitle,
+		userDataHashStr, // Hash of the CSV data for blockchain verification
+		issuerProofs,
+	)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to mint certificate NFT"))
+	}
+
+	receipt, err := bind.WaitMined(ctx, client, tx)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "transaction mining failed: tx=%s", tx.Hash().Hex()))
+	}
+
+	if receipt.Status != types.ReceiptStatusSuccessful {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Errorf("transaction reverted (tx=%s, gas=%d)", tx.Hash().Hex(), receipt.GasUsed))
+	}
+
+	// ============================================
+	// EXTRACT TOKEN ID FROM EVENT LOGS
+	// ============================================
+
+	// Parse CertificateMinted event to get tokenId
+	var mintedTokenId *big.Int
+	for _, log := range receipt.Logs {
+		event, err := certificateContractInstance.ParseCertificateMinted(*log)
+		if err != nil {
+			// Not the event we're looking for, continue
+			continue
+		}
+		// Found the CertificateMinted event
+		mintedTokenId = event.TokenId
+		break
+	}
+
+	if mintedTokenId == nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("failed to extract token ID from minting event"))
+	}
+
+	// ============================================
+	// UPDATE DATABASE WITH TOKEN ID
+	// ============================================
+
+	tokenIdStr := mintedTokenId.String()
+
+	updatedCertificate, err := uc.EventCertificateDataGateway.UpdateEventCertificate(ctx, certificate.Id, eventdatagateway.UpdateEventCertificateParameters{
+		CertificateTokenID: &tokenIdStr,
+	})
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "NFT minted (tokenId=%s, tx=%s) but failed to update database", tokenIdStr, tx.Hash().Hex()))
+	}
+
+	return updatedCertificate, nil
 }

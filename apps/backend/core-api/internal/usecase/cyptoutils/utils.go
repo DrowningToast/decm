@@ -37,6 +37,32 @@ func GetPublicKeyFromPrivateKey(privateKey *ecdsa.PrivateKey) (*ecdsa.PublicKey,
 	return publicKeyECDSA, nil
 }
 
+// RecoverPublicKeyFromSignature recovers the public key from a signature and message hash
+// This is used in wallet extension flow where user signs a message
+func RecoverPublicKeyFromSignature(messageHash common.Hash, signature []byte) (*ecdsa.PublicKey, error) {
+	// Make a copy to avoid modifying the original signature
+	sig := make([]byte, len(signature))
+	copy(sig, signature)
+
+	// Adjust recovery ID from Ethereum format (27/28) to go-ethereum format (0/1) if needed
+	if len(sig) == 65 && (sig[64] == 27 || sig[64] == 28) {
+		sig[64] -= 27
+	}
+
+	// Recover public key from signature
+	publicKey, err := crypto.SigToPub(messageHash.Bytes(), sig)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to recover public key from signature")
+	}
+
+	return publicKey, nil
+}
+
+// PublicKeyToAddress converts an ECDSA public key to an Ethereum address
+func PublicKeyToAddress(publicKey *ecdsa.PublicKey) common.Address {
+	return crypto.PubkeyToAddress(*publicKey)
+}
+
 func ParsePrivateKey(privateKey string) (*ecdsa.PrivateKey, error) {
 	privateKeyBytes, err := hex.DecodeString(privateKey)
 	if err != nil {

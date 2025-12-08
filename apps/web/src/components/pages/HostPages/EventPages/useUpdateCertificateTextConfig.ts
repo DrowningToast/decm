@@ -7,11 +7,10 @@ import { QUERY_KEY } from "@/lib/queryKeys";
 export const useUpdateCertificateTextConfig = (eventId: string) => {
     const mutation = useMutation({
         mutationFn: async (textConfig: EventUpdateEventCertificateTextConfigRequest) => {
-            const response = await coreApiClient.updateEventCertificateTextConfig(
-                eventId,
+            return await coreApiClient.eventId.updateEventCertificateTextConfig(
+                { eventId },
                 textConfig,
             );
-            return response.data;
         },
         onSuccess: () => {
             // Invalidate certificate config query to refetch updated data

@@ -694,7 +694,7 @@
                 "description": "Try adjusting your search"
             },
             "claimTitle": "Claim Certificate",
-            "claimDescription": "Sign to claim your certificate on the blockchain",
+            "claimDescription": "Enter your account password to claim your certificate on the blockchain",
             "claimButton": "Claim Certificate",
             "claiming": "Claiming...",
             "claimSuccess": "Certificate claimed successfully!",
