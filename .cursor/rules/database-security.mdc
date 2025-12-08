@@ -95,8 +95,14 @@ func (r *Repository) CreateProfile(ctx context.Context, profile entity.Profile) 
         return nil, pgerrutils.ParsePgError(err)
     }
 
-    firstNameDec, _ := pgmapper.DecryptPgTextToStringPtr(query.FirstName, r.piiEncryptionKey)
-    emailDec, _ := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
+    firstNameDec, err := pgmapper.DecryptPgTextToStringPtr(query.FirstName, r.piiEncryptionKey)
+    if err != nil {
+        return nil, err
+    }
+    emailDec, err := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
+    if err != nil {
+        return nil, err
+    }
 
     return &entity.Profile{ID: query.ID, FirstName: firstNameDec, Email: emailDec}, nil
 }
@@ -111,8 +117,14 @@ func (r *Repository) GetProfileById(ctx context.Context, id uuid.UUID) (*entity.
         return nil, pgerrutils.ParsePgError(err)
     }
 
-    firstName, _ := pgmapper.DecryptPgTextToStringPtr(query.FirstName, r.piiEncryptionKey)
-    email, _ := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
+    firstName, err := pgmapper.DecryptPgTextToStringPtr(query.FirstName, r.piiEncryptionKey)
+    if err != nil {
+        return nil, err
+    }
+    email, err := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
+    if err != nil {
+        return nil, err
+    }
 
     return &entity.Profile{ID: query.ID, FirstName: firstName, Email: email}, nil
 }
@@ -132,7 +144,10 @@ func (r *Repository) GetProfileByEmail(ctx context.Context, email string) (*enti
         return nil, pgerrutils.ParsePgError(err)
     }
 
-    emailDec, _ := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
+    emailDec, err := pgmapper.DecryptPgTextToStringPtr(query.Email, r.piiEncryptionKey)
+    if err != nil {
+        return nil, err
+    }
     return &entity.Profile{ID: query.ID, Email: emailDec}, nil
 }
 ```
