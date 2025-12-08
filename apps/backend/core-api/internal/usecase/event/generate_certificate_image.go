@@ -1,370 +1,249 @@
 package event
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"image"
-	"image/png"
 	"io"
+	"regexp"
+	"strings"
+	"time"
 
-	"github.com/beevik/etree" // REQUIRED: Standard library for robust XML manipulation
-	"github.com/cockroachdb/errors"
+	"apps/backend/common/customerror"
+
+	"github.com/chromedp/cdproto/page"
+	"github.com/chromedp/chromedp"
 	"github.com/google/uuid"
-	"github.com/srwiley/oksvg"
-	"github.com/srwiley/rasterx"
 )
 
-// Certificate Image Generation Usecase
-
-// CertificateTemplateVariables defines the strictly-typed template variables
+// CertificateTemplateVariables contains all variables that can be replaced in the SVG template
 type CertificateTemplateVariables struct {
-	Name                string  `json:"name" validate:"required"`
-	EventName           string  `json:"event_name" validate:"required"`
-	AcademicInstitution *string `json:"academic_institution,omitempty"`
-	CertificateTitle    *string `json:"certificate_title,omitempty"`
-	CertificateSubtitle *string `json:"certificate_subtitle,omitempty"`
+	Name                string
+	EventName           string
+	AcademicInstitution string
+	CertificateTitle    string
+	CertificateSubtitle string
 }
 
-// GenerateCertificateImageParams contains parameters for certificate image generation
-type GenerateCertificateImageParams struct {
-	TemplateVariables CertificateTemplateVariables
-
-	// Optional position overrides (if nil, uses position defined in SVG)
-	NamePosX                *float64
-	NamePosY                *float64
-	EventNamePosX           *float64
-	EventNamePosY           *float64
-	CertificateTitlePosX    *float64
-	CertificateTitlePosY    *float64
-	CertificateSubtitlePosX *float64
-	CertificateSubtitlePosY *float64
-	AcademicInstitutionPosX *float64
-	AcademicInstitutionPosY *float64
-}
-
-// GenerateCertificateImage generates a PNG image from an SVG certificate template
-func (uc *EventUsecase) GenerateCertificateImage(
-	ctx context.Context,
-	certificateConfigID uuid.UUID,
-	params GenerateCertificateImageParams,
-) ([]byte, error) {
-	// 1. Get the certificate config
-	certConfig, err := uc.EventCertificateConfigDg.GetEventCertificateConfigByID(ctx, certificateConfigID)
+// GenerateCertificateImage generates a PNG image from certificate SVG template
+// This function:
+// 1. Retrieves the certificate by ID
+// 2. Fetches the SVG template from S3
+// 3. Replaces template variables with certificate data
+// 4. Renders the SVG to PNG
+// 5. Returns PNG as byte array
+func (u *EventUsecase) GenerateCertificateImage(ctx context.Context, certificateID uuid.UUID) ([]byte, error) {
+	// 1. Get certificate by ID
+	certificate, err := u.EventCertificateDataGateway.GetEventCertificateByID(ctx, certificateID)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get certificate config")
+		u.logger.Error("failed to get certificate", "error", err, "certificate_id", certificateID)
+		return nil, customerror.ParseWithMessage(&customerror.ErrNotFound, err, "Certificate not found")
 	}
 
-	// 2. Download the SVG template from S3
-	svgReader, err := uc.S3Service.GetFile(ctx, certConfig.BaseCertificateStorageKey)
+	// 2. Get certificate config to retrieve SVG template storage key
+	certificateConfig, err := u.EventCertificateConfigDg.GetEventCertificateConfigByEventID(ctx, certificate.EventId)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to download SVG template from S3")
+		u.logger.Error("failed to get certificate config", "error", err, "event_id", certificate.EventId)
+		return nil, customerror.ParseWithMessage(&customerror.ErrNotFound, err, "Certificate configuration not found")
+	}
+
+	// 3. Download SVG template from S3
+	svgReader, err := u.S3Service.GetFile(ctx, certificateConfig.BaseCertificateStorageKey)
+	if err != nil {
+		u.logger.Error("failed to download SVG template from S3", "error", err, "storage_key", certificateConfig.BaseCertificateStorageKey)
+		return nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "Failed to retrieve certificate template")
 	}
 	defer svgReader.Close()
 
+	// Read SVG content
 	svgBytes, err := io.ReadAll(svgReader)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read SVG content")
+		u.logger.Error("failed to read SVG content", "error", err)
+		return nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "Failed to read certificate template")
 	}
 
-	if len(svgBytes) == 0 {
-		return nil, errors.New("SVG template is empty")
-	}
-
-	// 3. Process SVG (Replace text and positions)
-	modifiedSVGBytes, err := uc.processSVGTemplate(svgBytes, params)
+	// 4. Get event details for event name
+	event, err := u.EventDataGateway.GetEventById(ctx, certificate.EventId)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to process SVG template")
+		u.logger.Error("failed to get event", "error", err, "event_id", certificate.EventId)
+		return nil, customerror.ParseWithMessage(&customerror.ErrNotFound, err, "Event not found")
 	}
 
-	// 4. Render SVG to PNG
-	pngBytes, err := uc.renderSVGToPNG(modifiedSVGBytes)
+	// 5. Prepare template variables
+	variables := CertificateTemplateVariables{
+		Name:                getValue(certificate.Name),
+		EventName:           event.Title,
+		AcademicInstitution: getValue(certificate.AcademicInstitution),
+		CertificateTitle:    getValue(certificate.CertificateTitle),
+		CertificateSubtitle: getValue(certificate.CertificateSubtitle),
+	}
+
+	// 6. Replace variables in SVG
+	originalSVG := string(svgBytes)
+	processedSVG := replaceTemplateVariables(originalSVG, variables)
+
+	// Log replacement details for debugging
+	replacementOccurred := len(originalSVG) != len(processedSVG)
+	u.logger.Debug("template replacement completed",
+		"original_length", len(svgBytes),
+		"processed_length", len(processedSVG),
+		"replacement_occurred", replacementOccurred,
+		"variables", fmt.Sprintf("%+v", variables))
+
+	// Log which keywords were found in the original SVG (for debugging)
+	keywordsFound := []string{}
+	possibleKeywords := []string{
+		"{{ name }}", "{{ eventName }}", "{{ academicInstitutionName }}",
+		"{{ certificateTitle }}", "{{ certificateSubtitle }}",
+		"{{name}}", "{{eventName}}", "{{academicInstitutionName}}",
+		"{{certificateTitle}}", "{{certificateSubtitle}}",
+	}
+	for _, keyword := range possibleKeywords {
+		if strings.Contains(originalSVG, keyword) {
+			keywordsFound = append(keywordsFound, keyword)
+		}
+	}
+	u.logger.Debug("keywords found in SVG template", "keywords", keywordsFound)
+
+	// 7. Render SVG to PNG
+	pngBytes, err := renderSVGToPNG(processedSVG)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to render SVG to PNG")
+		u.logger.Error("failed to render SVG to PNG", "error", err)
+		return nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "Failed to generate certificate image")
 	}
 
 	return pngBytes, nil
 }
 
-// processSVGTemplate parses the XML, updates text content, and applies position overrides
-func (uc *EventUsecase) processSVGTemplate(originalSVG []byte, params GenerateCertificateImageParams) ([]byte, error) {
-	doc := etree.NewDocument()
-	if err := doc.ReadFromBytes(originalSVG); err != nil {
-		return nil, errors.Wrap(err, "failed to parse SVG XML")
+// replaceTemplateVariables replaces text content in SVG based on element IDs or text patterns
+// Supports multiple replacement strategies:
+// 1. ID-based: <text id="name">...</text> - replaces entire text content (including nested tspan)
+// 2. Placeholder: {{name}} or {name} - replaces inline placeholders
+// 3. tspan-based: <tspan id="name">...</tspan> - replaces tspan content
+func replaceTemplateVariables(svgContent string, variables CertificateTemplateVariables) string {
+	result := svgContent
+
+	// Strategy 1: Replace by element ID for <text> tags (e.g., <text id="name">placeholder</text>)
+	// This handles nested tspan elements by using a more flexible regex
+	// Support both camelCase (frontend) and snake_case (legacy) ID formats
+	idReplacements := map[string]string{
+		// CamelCase (matches frontend)
+		"name":                    variables.Name,
+		"eventName":               variables.EventName,
+		"academicInstitutionName": variables.AcademicInstitution,
+		"certificateTitle":        variables.CertificateTitle,
+		"certificateSubtitle":     variables.CertificateSubtitle,
+		// Snake_case (legacy support)
+		"event_name":           variables.EventName,
+		"academic_institution": variables.AcademicInstitution,
+		"certificate_title":    variables.CertificateTitle,
+		"certificate_subtitle": variables.CertificateSubtitle,
 	}
 
-	// Define the mapping of IDs to Values and Optional Position Overrides
-	type fieldConfig struct {
-		Value string
-		PosX  *float64
-		PosY  *float64
+	for id, value := range idReplacements {
+		// Match <text id="name">...any content including nested tags...</text>
+		// Using (?s) flag to make . match newlines
+		pattern := fmt.Sprintf(`(?s)(<text[^>]*\bid="%s"[^>]*>)(.*?)(</text>)`, regexp.QuoteMeta(id))
+		re := regexp.MustCompile(pattern)
+		result = re.ReplaceAllString(result, fmt.Sprintf("${1}%s${3}", value))
+
+		// Also try to match <tspan id="name">content</tspan> for nested cases
+		tspanPattern := fmt.Sprintf(`(?s)(<tspan[^>]*\bid="%s"[^>]*>)(.*?)(</tspan>)`, regexp.QuoteMeta(id))
+		tspanRe := regexp.MustCompile(tspanPattern)
+		result = tspanRe.ReplaceAllString(result, fmt.Sprintf("${1}%s${3}", value))
 	}
 
-	// Helper to safely dereference string pointers
-	safeStr := func(s *string) string {
-		if s == nil {
-			return ""
-		}
-		return *s
+	// Strategy 2: Replace inline placeholders like {{ name }} or {{ eventName }}
+	// Support both camelCase (frontend) and snake_case (legacy) formats
+	// Note: Frontend uses spaces inside {{ }}, e.g., "{{ eventName }}"
+	placeholderReplacements := map[string]string{
+		// CamelCase with spaces (matches frontend format)
+		"{{ name }}":                    variables.Name,
+		"{{ eventName }}":               variables.EventName,
+		"{{ academicInstitutionName }}": variables.AcademicInstitution,
+		"{{ certificateTitle }}":        variables.CertificateTitle,
+		"{{ certificateSubtitle }}":     variables.CertificateSubtitle,
+		// CamelCase without spaces (alternative format)
+		"{{name}}":                    variables.Name,
+		"{{eventName}}":               variables.EventName,
+		"{{academicInstitutionName}}": variables.AcademicInstitution,
+		"{{certificateTitle}}":        variables.CertificateTitle,
+		"{{certificateSubtitle}}":     variables.CertificateSubtitle,
+		// Snake_case (legacy support)
+		"{{event_name}}":           variables.EventName,
+		"{event_name}":             variables.EventName,
+		"{{academic_institution}}": variables.AcademicInstitution,
+		"{academic_institution}":   variables.AcademicInstitution,
+		"{{certificate_title}}":    variables.CertificateTitle,
+		"{certificate_title}":      variables.CertificateTitle,
+		"{{certificate_subtitle}}": variables.CertificateSubtitle,
+		"{certificate_subtitle}":   variables.CertificateSubtitle,
 	}
 
-	// Map the SVG element IDs to their specific values and coordinate params
-	fields := map[string]fieldConfig{
-		"name": {
-			Value: params.TemplateVariables.Name,
-			PosX:  params.NamePosX,
-			PosY:  params.NamePosY,
-		},
-		"event_name": {
-			Value: params.TemplateVariables.EventName,
-			PosX:  params.EventNamePosX,
-			PosY:  params.EventNamePosY,
-		},
-		"academic_institution": {
-			Value: safeStr(params.TemplateVariables.AcademicInstitution),
-			PosX:  params.AcademicInstitutionPosX,
-			PosY:  params.AcademicInstitutionPosY,
-		},
-		"certificate_title": {
-			Value: safeStr(params.TemplateVariables.CertificateTitle),
-			PosX:  params.CertificateTitlePosX,
-			PosY:  params.CertificateTitlePosY,
-		},
-		"certificate_subtitle": {
-			Value: safeStr(params.TemplateVariables.CertificateSubtitle),
-			PosX:  params.CertificateSubtitlePosX,
-			PosY:  params.CertificateSubtitlePosY,
-		},
+	for placeholder, value := range placeholderReplacements {
+		result = strings.ReplaceAll(result, placeholder, value)
 	}
 
-	// Iterate through fields and update the SVG document
-	for id, config := range fields {
-		if config.Value == "" {
-			continue // Skip empty values
-		}
-
-		// Find element by ID - try multiple ID formats
-		var element *etree.Element
-
-		// Try standard id="name"
-		element = doc.FindElement(fmt.Sprintf("//*[@id='%s']", id))
-
-		// Try template formats if not found
-		if element == nil {
-			element = doc.FindElement(fmt.Sprintf("//*[@id='{{ %s }}']", id))
-		}
-		if element == nil {
-			element = doc.FindElement(fmt.Sprintf("//*[@id='{{%s}}']", id))
-		}
-
-		if element != nil {
-			parent := element.Parent()
-			if parent == nil {
-				uc.logger.Warn("Element has no parent, skipping", "id", id)
-				continue
-			}
-
-			// Get original position if exists
-			xPos := element.SelectAttrValue("x", "400")
-			yPos := element.SelectAttrValue("y", "300")
-
-			// Apply position overrides if provided
-			if config.PosX != nil {
-				xPos = fmt.Sprintf("%f", *config.PosX)
-			}
-			if config.PosY != nil {
-				yPos = fmt.Sprintf("%f", *config.PosY)
-			}
-
-			// Preserve original styling attributes from the template
-			fontSize := element.SelectAttrValue("font-size", "24")
-			fontFamily := element.SelectAttrValue("font-family", "Arial, sans-serif")
-			fontWeight := element.SelectAttrValue("font-weight", "normal")
-			fill := element.SelectAttrValue("fill", "#000000")
-			textAnchor := element.SelectAttrValue("text-anchor", "middle")
-
-			// Create new <text> element with the actual content
-			newTextElement := etree.NewElement("text")
-			newTextElement.CreateAttr("id", id)
-			newTextElement.CreateAttr("x", xPos)
-			newTextElement.CreateAttr("y", yPos)
-			newTextElement.CreateAttr("text-anchor", textAnchor)
-			newTextElement.CreateAttr("font-size", fontSize)
-			newTextElement.CreateAttr("font-family", fontFamily)
-			newTextElement.CreateAttr("font-weight", fontWeight)
-			newTextElement.CreateAttr("fill", fill)
-
-			// Copy other attributes that might be present (opacity, transform, etc.)
-			// but skip path-specific attributes like 'd', 'stroke', 'stroke-width'
-			for _, attr := range element.Attr {
-				attrName := attr.Key
-				// Skip attributes we've already handled
-				if attrName == "id" || attrName == "x" || attrName == "y" ||
-					attrName == "text-anchor" || attrName == "font-size" ||
-					attrName == "font-family" || attrName == "font-weight" || attrName == "fill" {
-					continue
-				}
-				// Skip path-specific attributes that don't belong on text elements
-				if attrName == "d" || attrName == "stroke" || attrName == "stroke-width" ||
-					attrName == "stroke-linecap" || attrName == "stroke-linejoin" {
-					continue
-				}
-				newTextElement.CreateAttr(attrName, attr.Value)
-			}
-
-			newTextElement.SetText(config.Value)
-
-			// Replace the old element with the new text element
-			// Remove old element and insert new one in its place
-			children := parent.ChildElements()
-			for i, child := range children {
-				if child == element {
-					parent.RemoveChild(element)
-					parent.InsertChildAt(i, newTextElement)
-
-					uc.logger.Info("Replaced element with text",
-						"id", id,
-						"value", config.Value,
-						"x", xPos,
-						"y", yPos,
-						"fontSize", fontSize,
-						"fontFamily", fontFamily,
-					)
-					break
-				}
-			}
-		} else {
-			uc.logger.Warn("SVG element not found for field", "id", id)
-		}
-	}
-
-	// Serialize back to bytes
-	modifiedSVG, err := doc.WriteToBytes()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to serialize modified SVG")
-	}
-
-	// Log the full modified SVG for debugging
-	uc.logger.Debug("Modified SVG", "svg", string(modifiedSVG))
-
-	return modifiedSVG, nil
+	return result
 }
 
-// renderSVGToPNG converts an SVG byte slice to PNG binary data
-func (uc *EventUsecase) renderSVGToPNG(svgContent []byte) ([]byte, error) {
-	// Log the SVG content for debugging (first 500 chars)
-	svgPreview := string(svgContent)
-	if len(svgPreview) > 500 {
-		svgPreview = svgPreview[:500] + "..."
-	}
-	uc.logger.Debug("SVG content preview", "svg", svgPreview)
+// renderSVGToPNG converts SVG string to PNG byte array
+// Uses chromedp with headless Chrome for full SVG specification support
+// This handles embedded images, patterns, custom fonts, and all SVG features
+func renderSVGToPNG(svgContent string) ([]byte, error) {
+	// Create context with timeout for rendering
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 
-	// Parse the SVG using oksvg
-	icon, err := oksvg.ReadIconStream(bytes.NewReader(svgContent))
-	if err != nil {
-		uc.logger.Error("Failed to parse SVG", "error", err, "svgLength", len(svgContent))
-		return nil, errors.Wrap(err, "failed to parse SVG for rendering")
-	}
+	// Create chromedp context
+	chromedpCtx, cancel := chromedp.NewContext(ctx)
+	defer cancel()
 
-	// Determine dimensions
-	width := int(icon.ViewBox.W)
-	height := int(icon.ViewBox.H)
+	var buf []byte
 
-	if width <= 0 || height <= 0 {
-		// Fallback dimensions if ViewBox is missing
-		width = 1200
-		height = 800
-		uc.logger.Warn("SVG ViewBox missing, using default dimensions", "width", width, "height", height)
-	}
+	// Wrap SVG in HTML for proper rendering
+	html := fmt.Sprintf(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden;
+        }
+        svg { 
+            display: block;
+        }
+    </style>
+</head>
+<body>
+%s
+</body>
+</html>`, svgContent)
 
-	uc.logger.Info("Rendering SVG to PNG", "width", width, "height", height)
-
-	// Setup the rasterizer with white background
-	icon.SetTarget(0, 0, float64(width), float64(height))
-	rgba := image.NewRGBA(image.Rect(0, 0, width, height))
-
-	// Fill with white background to prevent black/transparent images
-	// RGBA format: 4 bytes per pixel (Red, Green, Blue, Alpha)
-	white := []byte{255, 255, 255, 255} // White with full opacity
-	for i := 0; i < len(rgba.Pix); i += 4 {
-		copy(rgba.Pix[i:i+4], white)
-	}
-
-	uc.logger.Debug("Initialized white background",
-		"totalPixels", width*height,
-		"bufferSize", len(rgba.Pix))
-
-	scanner := rasterx.NewScannerGV(width, height, rgba, rgba.Bounds())
-	raster := rasterx.NewDasher(width, height, scanner)
-
-	// Draw the SVG onto the white background
-	icon.Draw(raster, 1.0)
-
-	// Sample some pixels to see what was actually rendered
-	samplePixels := make([]string, 0, 5)
-	samplePositions := []int{0, len(rgba.Pix) / 4, len(rgba.Pix) / 2, 3 * len(rgba.Pix) / 4, len(rgba.Pix) - 4}
-	for _, pos := range samplePositions {
-		if pos >= 0 && pos < len(rgba.Pix)-3 {
-			r, g, b, a := rgba.Pix[pos], rgba.Pix[pos+1], rgba.Pix[pos+2], rgba.Pix[pos+3]
-			samplePixels = append(samplePixels, fmt.Sprintf("RGBA(%d,%d,%d,%d)", r, g, b, a))
-		}
-	}
-	uc.logger.Debug("Sample pixels after SVG render", "samples", samplePixels)
-
-	// Check if the image has any non-white pixels (to detect if SVG rendered)
-	hasContent := false
-	whitePixelCount := 0
-	blackPixelCount := 0
-	otherPixelCount := 0
-
-	for i := 0; i < len(rgba.Pix); i += 4 {
-		r, g, b := rgba.Pix[i], rgba.Pix[i+1], rgba.Pix[i+2]
-
-		if r == 255 && g == 255 && b == 255 {
-			whitePixelCount++
-		} else if r == 0 && g == 0 && b == 0 {
-			blackPixelCount++
-			hasContent = true
-		} else {
-			otherPixelCount++
-			hasContent = true
-		}
+	// Render SVG using headless Chrome
+	if err := chromedp.Run(chromedpCtx,
+		chromedp.Navigate("about:blank"),
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			frameTree, err := page.GetFrameTree().Do(ctx)
+			if err != nil {
+				return err
+			}
+			return page.SetDocumentContent(frameTree.Frame.ID, html).Do(ctx)
+		}),
+		chromedp.Sleep(1*time.Second),      // Wait for fonts and images to load
+		chromedp.FullScreenshot(&buf, 100), // Quality 100
+	); err != nil {
+		return nil, fmt.Errorf("failed to render SVG: %w", err)
 	}
 
-	totalPixels := width * height
-	uc.logger.Info("Pixel analysis",
-		"whitePixels", whitePixelCount,
-		"blackPixels", blackPixelCount,
-		"otherPixels", otherPixelCount,
-		"totalPixels", totalPixels,
-		"percentWhite", float64(whitePixelCount)/float64(totalPixels)*100,
-	)
-
-	if !hasContent {
-		uc.logger.Warn("SVG rendered but resulted in blank white image - text may not be rendering properly")
-	}
-
-	// Encode to PNG
-	var buf bytes.Buffer
-	if err := png.Encode(&buf, rgba); err != nil {
-		uc.logger.Error("Failed to encode PNG", "error", err)
-		return nil, errors.Wrap(err, "failed to encode PNG")
-	}
-
-	uc.logger.Info("Successfully rendered PNG", "pngSize", buf.Len())
-	return buf.Bytes(), nil
+	return buf, nil
 }
 
-// GenerateCertificateImageByEventID is a convenience method
-func (uc *EventUsecase) GenerateCertificateImageByEventID(
-	ctx context.Context,
-	eventID uuid.UUID,
-	params GenerateCertificateImageParams,
-) ([]byte, error) {
-	certConfig, err := uc.EventCertificateConfigDg.GetEventCertificateConfigByEventID(ctx, eventID)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get certificate config")
+// getValue safely extracts string value from pointer, returns empty string if nil
+func getValue(ptr *string) string {
+	if ptr == nil {
+		return ""
 	}
-
-	return uc.GenerateCertificateImage(ctx, certConfig.ID, params)
+	return *ptr
 }

@@ -11,3 +11,5 @@ DROP COLUMN certificate_title_font_weight,
 DROP COLUMN certificate_subtitle_font_family,
 DROP COLUMN certificate_subtitle_font_weight;
 
+
+

@@ -156,33 +156,41 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                 </div>
 
                 {/* Certificate Image */}
-                <div className="w-full h-[172px] bg-muted rounded-lg overflow-hidden relative">
-                    {isImageLoading ? (
-                        <div className="w-full h-full flex items-center justify-center bg-muted/50">
-                            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : certificateImageUrl && !imageError ? (
-                        <img
-                            src={certificateImageUrl}
-                            alt={`${certificate.name} - ${certificate.event}`}
-                            className="w-full h-full object-contain bg-white"
-                            loading="lazy"
-                        />
-                    ) : (
-                        <div className="w-full h-full bg-[#d9d9d9] flex items-center justify-center">
-                            <Typography variant="text" tag="p" color="muted" className="text-sm">
-                                {imageError
-                                    ? t(
-                                          "participant.certificates.detail.imageLoadError",
-                                          "Failed to load certificate image",
-                                      )
-                                    : t(
-                                          "participant.certificates.detail.certificatePreview",
-                                          "Certificate Preview",
-                                      )}
-                            </Typography>
-                        </div>
-                    )}
+                <div className="w-full rounded-lg overflow-hidden relative">
+                    {/* Aspect ratio container using padding (4:3 ratio) */}
+                    <div className="relative w-full" style={{ paddingBottom: "75%" }}>
+                        {isImageLoading ? (
+                            <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
+                                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : certificateImageUrl && !imageError ? (
+                            <img
+                                src={certificateImageUrl}
+                                alt={`${certificate.name} - ${certificate.event}`}
+                                className="absolute inset-0 w-full h-full object-contain"
+                                loading="lazy"
+                            />
+                        ) : (
+                            <div className="absolute inset-0 bg-muted/30 flex items-center justify-center">
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="muted"
+                                    className="text-sm"
+                                >
+                                    {imageError
+                                        ? t(
+                                              "participant.certificates.detail.imageLoadError",
+                                              "Failed to load certificate image",
+                                          )
+                                        : t(
+                                              "participant.certificates.detail.certificatePreview",
+                                              "Certificate Preview",
+                                          )}
+                                </Typography>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Academic Institution */}
