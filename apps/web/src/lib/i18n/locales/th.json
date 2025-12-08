@@ -674,7 +674,29 @@
         },
         "certificates": {
             "sign": "ลงนามในใบรับรอง",
-            "searchPlaceholder": "ค้นหาใบรับรอง..."
+            "searchPlaceholder": "ค้นหาใบรับรอง...",
+            "claimTitle": "รับใบรับรอง",
+            "claimDescription": "ลงนามเพื่อรับใบรับรองของคุณบนบล็อกเชน",
+            "claimButton": "รับใบรับรอง",
+            "claiming": "กำลังรับใบรับรอง...",
+            "claimSuccess": "รับใบรับรองสำเร็จ!",
+            "claimError": "ไม่สามารถรับใบรับรองได้ กรุณาลองอีกครั้ง",
+            "claimNote": "ลงนามในใบรับรองนี้เพื่อเพิ่มลงในข้อมูลบล็อกเชนของคุณ",
+            "claimed": "รับใบรับรองแล้ว",
+            "errorLoadingCertificate": "ไม่สามารถโหลดรายละเอียดใบรับรองได้",
+            "notFound": "ไม่พบใบรับรอง",
+            "notFoundDescription": "ไม่พบใบรับรองที่คุณกำลังค้นหา หรือคุณอาจไม่มีสิทธิ์เข้าถึง",
+            "detail": {
+                "certificateDescription": "รายละเอียดใบรับรอง",
+                "academicInstitution": "สถาบันการศึกษา",
+                "youSignedCertificationOn": "คุณลงนามใบรับรองเมื่อ",
+                "certificateIssuedOn": "ใบรับรองออกเมื่อ",
+                "certificateAvailableFrom": "สามารถรับได้ตั้งแต่",
+                "certificateContractAddress": "ที่อยู่สัญญาใบรับรอง",
+                "eventContractAddress": "ที่อยู่สัญญากิจกรรม",
+                "verifiableCredentialAttributes": "คุณสมบัติข้อมูลรับรองที่ตรวจสอบได้",
+                "downloadAttributes": "ดาวน์โหลดคุณสมบัติ"
+            }
         },
         "identities": {
             "searchPlaceholder": "ค้นหาตัวตน..."

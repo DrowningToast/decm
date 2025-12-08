@@ -376,6 +376,7 @@ export interface EntityEventCertificate {
     event_certificate_address?: string;
     event_contract_address: string;
     event_id: string;
+    event_name?: string;
     id: string;
     inbox_message_id?: string;
     name?: string;
@@ -568,12 +569,26 @@ export interface EventEventViewModel {
     updated_at: string;
 }
 
+export interface EventGetCertificatesListViewModelResponse {
+    claimed_certificates: any;
+    total_claimed: number;
+    total_unclaimed: number;
+    unclaimed_certificates: any;
+}
+
 export interface EventGetEventCertificatesResponse {
     certificates: EntityEventCertificate[];
 }
 
 export interface EventGetEventListResponse {
     events: EntityEvent[];
+}
+
+export interface EventGetMyCertificatesListViewModelResponse {
+    claimed_certificates: any;
+    total_claimed: number;
+    total_unclaimed: number;
+    unclaimed_certificates: any;
 }
 
 export interface EventImportCertificateReceiverRequest {
@@ -707,6 +722,15 @@ export interface EventconfigUpdateEventRegistrationConfigRequest {
     last_name_requirement_status: number;
     phone_number_requirement_status: number;
     registration_password?: string;
+}
+
+export type GetCertificatesListViewmodelData = EventGetCertificatesListViewModelResponse;
+
+export type GetCertificatesListViewmodelError = CustomerrorErrResponse;
+
+export interface GetCertificatesListViewmodelParams {
+    /** Event ID */
+    eventId: string;
 }
 
 export type GetEventByIdData = EventEventResponse;
@@ -902,6 +926,10 @@ export interface GetJoinEventSignMessageParams {
     /** Event ID */
     eventId: string;
 }
+
+export type GetMyCertificatesListViewmodelData = EventGetMyCertificatesListViewModelResponse;
+
+export type GetMyCertificatesListViewmodelError = CustomerrorErrResponse;
 
 export type GetMyProfileData = ProfileGetMyProfileViewModel;
 
@@ -1753,6 +1781,26 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Get current user's certificates separated by claimed and unclaimed status. Claimed certificates have token_id populated, unclaimed certificates have token_id null and certificate config is published. Returns all certificates for the authenticated user across all events.
+         *
+         * @tags Certificates
+         * @name GetMyCertificatesListViewmodel
+         * @summary Get my certificates list viewmodel
+         * @request GET:/api/v1/certificates/my-list-viewmodel
+         */
+        getMyCertificatesListViewmodel: (params: RequestParams = {}) =>
+            this.http.request<
+                GetMyCertificatesListViewmodelData,
+                GetMyCertificatesListViewmodelError
+            >({
+                path: `/api/v1/certificates/my-list-viewmodel`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Cancel an event registration invitation by ID
          *
          * @tags Event Registration Invitation
@@ -2062,6 +2110,26 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/events/${eventId}/certificates/import`,
                 method: "POST",
                 body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get event certificates separated by claimed and unclaimed status. Claimed certificates have token_id populated, unclaimed certificates have token_id null and certificate config is published. Only event hosts and issuers can access this endpoint.
+         *
+         * @tags Event Certificates
+         * @name GetCertificatesListViewmodel
+         * @summary Get certificates list viewmodel
+         * @request GET:/api/v1/events/{event_id}/certificates/list-viewmodel
+         */
+        getCertificatesListViewmodel: (
+            { eventId, ...query }: GetCertificatesListViewmodelParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetCertificatesListViewmodelData, GetCertificatesListViewmodelError>({
+                path: `/api/v1/events/${eventId}/certificates/list-viewmodel`,
+                method: "GET",
                 type: ContentType.Json,
                 format: "json",
                 ...params,

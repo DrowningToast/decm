@@ -9,6 +9,7 @@ import (
 type EventCertificate struct {
 	Id                      uuid.UUID  `json:"id"`
 	EventId                 uuid.UUID  `json:"event_id"`
+	EventName               *string    `json:"event_name,omitempty"`
 	ReceiverCredentialId    *uuid.UUID `json:"receiver_credential_id,omitempty"`
 	ReceiverEmail           *string    `json:"receiver_email,omitempty"`
 	Name                    *string    `json:"name,omitempty"`
