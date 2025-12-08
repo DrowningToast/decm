@@ -73,9 +73,9 @@ func (h *Handler) UpdateEventContract(ctx *fiber.Ctx) error {
 		EventID:                      contract.EventID,
 		AccessManagerContractAddress: contract.AccessManagerContractAddress,
 		EventContractAddress:         contract.EventContractAddress,
-		TicketContractAddress:        contract.TicketContractAddress.String,
-		CertificateContractAddress:   contract.CertificateContractAddress.String,
-		CreatedAt:                    contract.CreatedAt.Time.String(),
-		UpdatedAt:                    contract.UpdatedAt.Time.String(),
+		TicketContractAddress:        contract.TicketContractAddress,
+		CertificateContractAddress:   contract.CertificateContractAddress,
+		CreatedAt:                    contract.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:                    contract.UpdatedAt.Format(time.RFC3339),
 	})
 }

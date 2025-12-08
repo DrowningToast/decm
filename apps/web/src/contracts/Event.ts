@@ -469,57 +469,6 @@ export const EventABI = [
     },
     {
         type: "error",
-        name: "Event__AccessManagerCannotBeZeroAddress",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Event__AddressCannotBeZero",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Event__CannotReduceSeatsCount",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Event__CantConfirmEvent",
-        inputs: [
-            {
-                name: "message",
-                type: "string",
-                internalType: "string",
-            },
-        ],
-    },
-    {
-        type: "error",
-        name: "Event__InvalidEventName",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Event__InvalidSignature",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Event__ParticipantIsAlreadyJoined",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Event__ParticipantIsNotJoined",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Event__SeatsCountReached",
-        inputs: [],
-    },
-    {
-        type: "error",
         name: "Themis__InvalidSignature",
         inputs: [],
     },

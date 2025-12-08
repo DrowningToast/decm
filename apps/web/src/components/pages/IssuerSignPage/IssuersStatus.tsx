@@ -1,6 +1,5 @@
 import { Typography } from "@/components/typography/typography";
 import { IssuerStatusBadge } from "./IssuerStatusBadge";
-import { isIssuerSigned } from "./issuerStateUtils";
 import { useTranslation } from "react-i18next";
 
 interface IssuersStatusProps {
@@ -8,6 +7,12 @@ interface IssuersStatusProps {
         id: string;
         issuer_credential_id: string;
         is_signed: number;
+        issuerProfile?: {
+            firstName?: string;
+            lastName?: string;
+            walletAddress?: string;
+            googleConnectorRef?: string;
+        };
         // Add other issuer fields as needed
     }>;
     currentIssuerId?: string;
@@ -45,23 +50,51 @@ export function IssuersStatus({ issuers, currentIssuerId, className = "" }: Issu
                         >
                             <div className="flex items-center space-x-3">
                                 <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-semibold">
-                                    {issuer.issuer_credential_id?.substring(0, 2).toUpperCase() ||
-                                        "IS"}
+                                    {issuer.issuerProfile?.firstName
+                                        ? issuer.issuerProfile.firstName
+                                              .substring(0, 2)
+                                              .toUpperCase()
+                                        : issuer.issuer_credential_id
+                                              ?.substring(0, 2)
+                                              .toUpperCase() || "IS"}
                                 </div>
-                                <div>
+                                <div className="flex-1 min-w-0">
                                     <Typography
                                         variant="text"
                                         tag="p"
-                                        className="font-medium text-white"
+                                        className="font-medium text-white truncate"
                                     >
-                                        {t("issuer.sign.issuer")}
-                                        {issuer.id?.substring(0, 8) || "Unknown"}
+                                        {issuer.issuerProfile?.firstName ||
+                                        issuer.issuerProfile?.lastName
+                                            ? `${issuer.issuerProfile.firstName || ""} ${issuer.issuerProfile.lastName || ""}`.trim()
+                                            : t("issuer.sign.issuer") +
+                                              (issuer.id?.substring(0, 8) || "Unknown")}
                                     </Typography>
+                                    <div className="flex flex-col gap-0.5 mt-1">
+                                        <Typography
+                                            variant="text"
+                                            tag="p"
+                                            className="text-xs text-muted-foreground truncate font-mono"
+                                            title={issuer.issuerProfile?.walletAddress}
+                                        >
+                                            {issuer.issuerProfile?.walletAddress || ""}
+                                        </Typography>
+                                        {issuer.issuerProfile?.googleConnectorRef && (
+                                            <Typography
+                                                variant="text"
+                                                tag="p"
+                                                className="text-xs text-muted-foreground truncate"
+                                                title={issuer.issuerProfile.googleConnectorRef}
+                                            >
+                                                {issuer.issuerProfile.googleConnectorRef}
+                                            </Typography>
+                                        )}
+                                    </div>
                                     {issuer.issuer_credential_id === currentIssuerId && (
                                         <Typography
                                             variant="text"
                                             tag="p"
-                                            className="text-sm text-[#ff6a39]"
+                                            className="text-sm text-[#ff6a39] mt-1"
                                         >
                                             {t("issuer.sign.you")}
                                         </Typography>
@@ -70,8 +103,8 @@ export function IssuersStatus({ issuers, currentIssuerId, className = "" }: Issu
                             </div>
 
                             <div className="flex items-center space-x-2">
-                                <IssuerStatusBadge isSigned={issuer.is_signed} />
-                                {isIssuerSigned(issuer.is_signed) && (
+                                <IssuerStatusBadge isSigned={Boolean(issuer.is_signed)} />
+                                {Boolean(issuer.is_signed) && (
                                     <Typography
                                         variant="text"
                                         tag="p"

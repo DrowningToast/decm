@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"decm-database/go/generated"
+	"time"
 
 	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
@@ -88,6 +89,7 @@ func (r *Repository) CreateEventRegistrationInvitation(ctx context.Context, para
 		CreatedAt:           *pgmapper.PgTimestampzToTimePtr(result.CreatedAt),
 		UpdatedAt:           *pgmapper.PgTimestampzToTimePtr(result.UpdatedAt),
 		CancelledAt:         pgmapper.PgTimestampzToTimePtr(result.CancelledAt),
+		AcceptedAt:          pgmapper.PgTimestampzToTimePtr(result.AcceptedAt),
 	}, nil
 }
 
@@ -133,6 +135,7 @@ func (r *Repository) GetEventRegistrationInvitationByID(ctx context.Context, id 
 		CreatedAt:           *pgmapper.PgTimestampzToTimePtr(result.CreatedAt),
 		UpdatedAt:           *pgmapper.PgTimestampzToTimePtr(result.UpdatedAt),
 		CancelledAt:         pgmapper.PgTimestampzToTimePtr(result.CancelledAt),
+		AcceptedAt:          pgmapper.PgTimestampzToTimePtr(result.AcceptedAt),
 	}, nil
 }
 
@@ -177,6 +180,7 @@ func (r *Repository) GetEventRegistrationInvitationByInboxMessageID(ctx context.
 		CreatedAt:           *pgmapper.PgTimestampzToTimePtr(result.CreatedAt),
 		UpdatedAt:           *pgmapper.PgTimestampzToTimePtr(result.UpdatedAt),
 		CancelledAt:         pgmapper.PgTimestampzToTimePtr(result.CancelledAt),
+		AcceptedAt:          pgmapper.PgTimestampzToTimePtr(result.AcceptedAt),
 	}, nil
 }
 
@@ -224,6 +228,7 @@ func (r *Repository) GetEventRegistrationInvitationsByEventID(ctx context.Contex
 			CreatedAt:           *pgmapper.PgTimestampzToTimePtr(result.CreatedAt),
 			UpdatedAt:           *pgmapper.PgTimestampzToTimePtr(result.UpdatedAt),
 			CancelledAt:         pgmapper.PgTimestampzToTimePtr(result.CancelledAt),
+			AcceptedAt:          pgmapper.PgTimestampzToTimePtr(result.AcceptedAt),
 		}
 	}
 
@@ -282,6 +287,7 @@ func (r *Repository) GetEventRegistrationInvitationByEventIDAndCredential(ctx co
 		CreatedAt:           *pgmapper.PgTimestampzToTimePtr(result.EventRegistrationInvitationCreatedAt),
 		UpdatedAt:           *pgmapper.PgTimestampzToTimePtr(result.EventRegistrationInvitationUpdatedAt),
 		CancelledAt:         pgmapper.PgTimestampzToTimePtr(result.EventRegistrationInvitationCancelledAt),
+		AcceptedAt:          pgmapper.PgTimestampzToTimePtr(result.EventRegistrationInvitationAcceptedAt),
 	}
 
 	inboxMessage := &entity.InboxMessage{
@@ -290,7 +296,7 @@ func (r *Repository) GetEventRegistrationInvitationByEventIDAndCredential(ctx co
 		ReceiverCredentialId:   pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 		ReceiverEmail:          emailDec,
 		ReceiverWalletAddress:  pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
-		MessageType:            int(result.MessageType),
+		MessageType:            entity.InboxMessageType(result.MessageType),
 		MessageContent:         string(result.MessageContent),
 		FallbackMessageContent: pgmapper.PgTextToStringPtr(result.FallbackMessageContent),
 		IsRead:                 int(result.InboxMessageIsRead.Int32),
@@ -336,6 +342,7 @@ func (r *Repository) UpdateEventRegistrationInvitation(ctx context.Context, id u
 		Email:               emailEnc,
 		PhoneNumber:         phoneNumberEnc,
 		AcademicInstitution: academicInstitutionEnc,
+		AcceptedAt:          pgmapper.TimePtrToPgTimestampz(params.AcceptedAt),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
@@ -377,6 +384,56 @@ func (r *Repository) UpdateEventRegistrationInvitation(ctx context.Context, id u
 		CreatedAt:           *pgmapper.PgTimestampzToTimePtr(result.CreatedAt),
 		UpdatedAt:           *pgmapper.PgTimestampzToTimePtr(result.UpdatedAt),
 		CancelledAt:         pgmapper.PgTimestampzToTimePtr(result.CancelledAt),
+		AcceptedAt:          pgmapper.PgTimestampzToTimePtr(result.AcceptedAt),
+	}, nil
+}
+
+func (r *Repository) UpdateEventRegistrationInvitationAcceptedStatus(ctx context.Context, id uuid.UUID, acceptedAt *time.Time) (*entity.EventRegistrationInvitation, error) {
+	result, err := r.queries.UpdateEventRegistrationInvitationAcceptedStatus(ctx, generated.UpdateEventRegistrationInvitationAcceptedStatusParams{
+		ID:         id,
+		AcceptedAt: pgmapper.TimePtrToPgTimestampz(acceptedAt),
+	})
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	// Decrypt PII fields for return using pgmapper
+	firstNameDec, err := pgmapper.DecryptPgTextToStringPtr(result.FirstName, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	lastNameDec, err := pgmapper.DecryptPgTextToStringPtr(result.LastName, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	emailDec, err := pgmapper.DecryptPgTextToStringPtr(result.Email, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	phoneNumberDec, err := pgmapper.DecryptPgTextToStringPtr(result.PhoneNumber, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	academicInstitutionDec, err := pgmapper.DecryptPgTextToStringPtr(result.AcademicInstitution, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity.EventRegistrationInvitation{
+		Id:                  result.ID,
+		EventId:             result.EventID,
+		InboxMessageId:      result.InboxMessageID,
+		ValidUntil:          pgmapper.PgTimestampzToTimePtr(result.ValidUntil),
+		Code:                pgmapper.PgTextToStringPtr(result.Code),
+		FirstName:           firstNameDec,
+		LastName:            lastNameDec,
+		Email:               emailDec,
+		PhoneNumber:         phoneNumberDec,
+		AcademicInstitution: academicInstitutionDec,
+		CreatedAt:           *pgmapper.PgTimestampzToTimePtr(result.CreatedAt),
+		UpdatedAt:           *pgmapper.PgTimestampzToTimePtr(result.UpdatedAt),
+		CancelledAt:         pgmapper.PgTimestampzToTimePtr(result.CancelledAt),
+		AcceptedAt:          pgmapper.PgTimestampzToTimePtr(result.AcceptedAt),
 	}, nil
 }
 

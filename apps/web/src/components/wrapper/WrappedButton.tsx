@@ -24,6 +24,7 @@ type WrappedButtonProps = {
     href?: string;
     disabled?: boolean;
     onClick?: () => void;
+    title?: string;
 } & VariantProps<typeof wrappedButtonVariants>;
 
 export default function WrappedButton({
@@ -33,6 +34,7 @@ export default function WrappedButton({
     href,
     disabled = false,
     onClick,
+    title,
 }: WrappedButtonProps) {
     const _className = cn(
         wrappedButtonVariants({
@@ -42,7 +44,12 @@ export default function WrappedButton({
     );
 
     const _Button = (
-        <Button className={cn(_className, className)} disabled={disabled} onClick={onClick}>
+        <Button
+            className={cn(_className, className)}
+            disabled={disabled}
+            onClick={onClick}
+            title={title}
+        >
             {children}
         </Button>
     );

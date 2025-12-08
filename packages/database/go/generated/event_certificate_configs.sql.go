@@ -21,7 +21,8 @@ INSERT INTO event_certificate_configs (
     name_pos_x,
     name_pos_y,
     academic_institution_pos_x,
-    academic_institution_pos_y
+    academic_institution_pos_y,
+    is_published
 ) VALUES (
     $1,
     $2,
@@ -30,8 +31,9 @@ INSERT INTO event_certificate_configs (
     $5,
     $6,
     $7,
-    $8
-) RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y
+    $8,
+    COALESCE($9, FALSE)
+) RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published
 `
 
 type CreateEventCertificateConfigParams struct {
@@ -43,6 +45,7 @@ type CreateEventCertificateConfigParams struct {
 	NamePosY                  float64       `json:"name_pos_y"`
 	AcademicInstitutionPosX   pgtype.Float8 `json:"academic_institution_pos_x"`
 	AcademicInstitutionPosY   pgtype.Float8 `json:"academic_institution_pos_y"`
+	IsPublished               interface{}   `json:"is_published"`
 }
 
 func (q *Queries) CreateEventCertificateConfig(ctx context.Context, arg CreateEventCertificateConfigParams) (EventCertificateConfig, error) {
@@ -55,6 +58,7 @@ func (q *Queries) CreateEventCertificateConfig(ctx context.Context, arg CreateEv
 		arg.NamePosY,
 		arg.AcademicInstitutionPosX,
 		arg.AcademicInstitutionPosY,
+		arg.IsPublished,
 	)
 	var i EventCertificateConfig
 	err := row.Scan(
@@ -73,6 +77,7 @@ func (q *Queries) CreateEventCertificateConfig(ctx context.Context, arg CreateEv
 		&i.CertificateTitlePosY,
 		&i.CertificateSubtitlePosX,
 		&i.CertificateSubtitlePosY,
+		&i.IsPublished,
 	)
 	return i, err
 }
@@ -87,7 +92,7 @@ func (q *Queries) DeleteEventCertificateConfig(ctx context.Context, eventID uuid
 }
 
 const GetEventCertificateConfigByEventID = `-- name: GetEventCertificateConfigByEventID :one
-SELECT id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y FROM event_certificate_configs WHERE event_id = $1
+SELECT id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published FROM event_certificate_configs WHERE event_id = $1
 `
 
 func (q *Queries) GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (EventCertificateConfig, error) {
@@ -109,6 +114,45 @@ func (q *Queries) GetEventCertificateConfigByEventID(ctx context.Context, eventI
 		&i.CertificateTitlePosY,
 		&i.CertificateSubtitlePosX,
 		&i.CertificateSubtitlePosY,
+		&i.IsPublished,
+	)
+	return i, err
+}
+
+const ToggleEventCertificateConfigPublished = `-- name: ToggleEventCertificateConfigPublished :one
+UPDATE event_certificate_configs
+SET 
+    is_published = $1,
+    updated_at = NOW()
+WHERE event_id = $2
+RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published
+`
+
+type ToggleEventCertificateConfigPublishedParams struct {
+	IsPublished bool      `json:"is_published"`
+	EventID     uuid.UUID `json:"event_id"`
+}
+
+func (q *Queries) ToggleEventCertificateConfigPublished(ctx context.Context, arg ToggleEventCertificateConfigPublishedParams) (EventCertificateConfig, error) {
+	row := q.db.QueryRow(ctx, ToggleEventCertificateConfigPublished, arg.IsPublished, arg.EventID)
+	var i EventCertificateConfig
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.BaseCertificateStorageKey,
+		&i.EventNamePosX,
+		&i.EventNamePosY,
+		&i.NamePosX,
+		&i.NamePosY,
+		&i.AcademicInstitutionPosX,
+		&i.AcademicInstitutionPosY,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.CertificateTitlePosX,
+		&i.CertificateTitlePosY,
+		&i.CertificateSubtitlePosX,
+		&i.CertificateSubtitlePosY,
+		&i.IsPublished,
 	)
 	return i, err
 }
@@ -123,9 +167,10 @@ SET
     name_pos_y = $5,
     academic_institution_pos_x = $6,
     academic_institution_pos_y = $7,
+    is_published = COALESCE($8, is_published),
     updated_at = NOW()
-WHERE event_id = $8
-RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y
+WHERE event_id = $9
+RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published
 `
 
 type UpdateEventCertificateConfigParams struct {
@@ -136,6 +181,7 @@ type UpdateEventCertificateConfigParams struct {
 	NamePosY                  float64       `json:"name_pos_y"`
 	AcademicInstitutionPosX   pgtype.Float8 `json:"academic_institution_pos_x"`
 	AcademicInstitutionPosY   pgtype.Float8 `json:"academic_institution_pos_y"`
+	IsPublished               bool          `json:"is_published"`
 	EventID                   uuid.UUID     `json:"event_id"`
 }
 
@@ -148,6 +194,7 @@ func (q *Queries) UpdateEventCertificateConfig(ctx context.Context, arg UpdateEv
 		arg.NamePosY,
 		arg.AcademicInstitutionPosX,
 		arg.AcademicInstitutionPosY,
+		arg.IsPublished,
 		arg.EventID,
 	)
 	var i EventCertificateConfig
@@ -167,6 +214,7 @@ func (q *Queries) UpdateEventCertificateConfig(ctx context.Context, arg UpdateEv
 		&i.CertificateTitlePosY,
 		&i.CertificateSubtitlePosX,
 		&i.CertificateSubtitlePosY,
+		&i.IsPublished,
 	)
 	return i, err
 }

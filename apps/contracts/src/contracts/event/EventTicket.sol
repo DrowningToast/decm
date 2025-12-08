@@ -40,14 +40,6 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         return tokenCounter;
     }
 
-    // Errors
-    error EventTicket__NotHostOrAdmin();
-    error EventTicket__TokenIdOutOfBounds();
-    error EventTicket__NotHost();
-    error EventTicket__AccessManagerCannotBeZeroAddress();
-    error EventTicket__EventAddressCannotBeZeroAddress();
-    error EventTicket__InvalidReceiver();
-
         // Events
     event TicketMinted(
         uint256 indexed tokenId,
@@ -62,10 +54,10 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
     mapping(uint256 => TicketStatus) private tokenIdToStatus;
 
     function requireHostOrAdmin(address signer) private view {
-        bool isAllowedMsgSender = EVENT_ACCESS_MANAGER.checkIsAllowedMsgSender();
+        bool isAllowedMsgSender = EVENT_ACCESS_MANAGER.checkIsAllowedMsgSender(msg.sender);
         bool isHostOrAdmin = EVENT_ACCESS_MANAGER.checkIsHostOrAdmin(signer);
         if (!isHostOrAdmin && !isAllowedMsgSender) {
-            revert EventTicket__NotHostOrAdmin();
+            require(false, "Not host or admin or allowed msg sender");
         }
     }
 
@@ -74,10 +66,10 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         address eventAddr
     ) ERC721(Constants.EVENT_TICKET_NAME, Constants.EVENT_TICKET_SYMBOL) {
         if (eventAccessManagerAddr == address(0)) {
-            revert EventTicket__AccessManagerCannotBeZeroAddress();
+            require(false, "Access manager cannot be zero address");
         }
         if (eventAddr == address(0)) {
-            revert EventTicket__EventAddressCannotBeZeroAddress();
+            require(false, "Event address cannot be zero address");
         }
 
         EVENT_ACCESS_MANAGER = EventAccessManager(eventAccessManagerAddr);
@@ -100,7 +92,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         requireHostOrAdmin(signer);
 
         if (receiverAddress == address(0)) {
-            revert EventTicket__InvalidReceiver();
+            require(false, "Invalid receiver");
         }
 
         uint256 tokenId = tokenCounter;
@@ -156,7 +148,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
 
         for (uint256 i = 0; i < params.length; i++) {
             if (params[i].receiverAddress == address(0)) {
-                revert EventTicket__InvalidReceiver();
+                require(false, "Invalid receiver");
             }
             
             uint256 tokenId = tokenCounter;
@@ -198,7 +190,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
         uint256 tokenId
     ) public view returns (string memory) {
         if (tokenId >= tokenCounter) {
-             revert EventTicket__TokenIdOutOfBounds();
+             require(false, "Token id out of bounds");
         }
 
         TicketVCStructs.TicketVcData memory vc = tokenIdToVcData[tokenId];
@@ -239,7 +231,7 @@ contract EventTicket is ERC721, ThemisUtils, ReentrancyGuard {
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         if (tokenId >= tokenCounter) {
-            revert EventTicket__TokenIdOutOfBounds();
+            require(false, "Token id out of bounds");
         }
 
         return getTokenData(tokenId);

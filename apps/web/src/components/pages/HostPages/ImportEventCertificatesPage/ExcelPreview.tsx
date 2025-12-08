@@ -12,14 +12,16 @@ interface ExcelPreviewProps {
     onConfirm: (certificates: EventImportCertificateReceiverRequest[], pin: string) => void;
     onCancel: () => void;
     disabled?: boolean;
+    importError?: string | null;
 }
 
 interface PreviewData {
     [key: string]: string;
 }
 
-// Fixed column names that Excel files must have
-const REQUIRED_COLUMNS = {
+// Column names for Excel files (email is required, others are optional)
+const EXPECTED_COLUMNS = {
+    email: "email",
     firstName: "first_name",
     lastName: "last_name",
     academicInstitution: "academic_institution",
@@ -32,6 +34,7 @@ export const ExcelPreview = ({
     onConfirm,
     onCancel,
     disabled = false,
+    importError = null,
 }: ExcelPreviewProps) => {
     const { t } = useTranslation();
     const [previewData, setPreviewData] = useState<PreviewData[]>([]);
@@ -55,23 +58,22 @@ export const ExcelPreview = ({
                     const jsonData = XLSX.utils.sheet_to_json(worksheet) as PreviewData[];
 
                     if (jsonData.length > 0) {
-                        const excelColumns = Object.keys(jsonData[0]);
+                        // Validate that email is present for all rows
+                        const missingEmailRows: number[] = [];
+                        jsonData.forEach((row, index) => {
+                            if (!row.email || row.email.trim() === "") {
+                                missingEmailRows.push(index + 1);
+                            }
+                        });
 
-                        // Validate that all required columns exist
-                        const missingColumns = Object.values(REQUIRED_COLUMNS).filter(
-                            (col) => !excelColumns.includes(col),
-                        );
-
-                        if (missingColumns.length > 0) {
+                        if (missingEmailRows.length > 0) {
                             setValidationError(
-                                t("certificateImport.missingColumns", {
-                                    columns: missingColumns.join(", "),
-                                }),
+                                t("certificateImport.missingEmailError", {
+                                    rows: missingEmailRows.join(", "),
+                                }) ||
+                                    `Email is required. Missing in rows: ${missingEmailRows.join(", ")}`,
                             );
                         } else {
-                            // Show only first 10 rows for preview
-                            // const preview = jsonData.slice(0, 10);
-                            console.log(jsonData);
                             setPreviewData(jsonData);
                         }
                     } else {
@@ -93,6 +95,7 @@ export const ExcelPreview = ({
         if (validationError) return;
 
         const request = previewData.map((row) => ({
+            email: row.email,
             first_name: row.first_name,
             last_name: row.last_name,
             academic_institution: row.academic_institution,
@@ -131,6 +134,25 @@ export const ExcelPreview = ({
                 </Alert>
             )}
 
+            {/* Import Error */}
+            {importError && (
+                <Alert variant="destructive" className="mb-4">
+                    <AlertDescription>
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="destructive"
+                            className="font-semibold mb-2"
+                        >
+                            {t("certificateImport.importError")}
+                        </Typography>
+                        <Typography variant="text" tag="p" color="destructive" className="text-sm">
+                            {importError}
+                        </Typography>
+                    </AlertDescription>
+                </Alert>
+            )}
+
             {/* Required Format Info */}
             <div className="mb-6 p-4 bg-muted/30 rounded-md">
                 <Typography
@@ -145,7 +167,7 @@ export const ExcelPreview = ({
                     {t("certificateImport.requiredFormatDescription")}
                 </Typography>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(REQUIRED_COLUMNS).map(([key, value]) => (
+                    {Object.entries(EXPECTED_COLUMNS).map(([key, value]) => (
                         <div key={key} className="flex items-center space-x-2">
                             <div className="w-3 h-3 rounded-full bg-primary/10 flex items-center justify-center">
                                 <Typography
@@ -195,7 +217,7 @@ export const ExcelPreview = ({
                     <table className="w-full border-collapse border border-border">
                         <thead>
                             <tr className="bg-primary">
-                                {Object.values(REQUIRED_COLUMNS).map((column) => (
+                                {Object.values(EXPECTED_COLUMNS).map((column) => (
                                     <th
                                         key={column}
                                         className="border border-border p-2 text-left text-sm font-medium"
@@ -208,7 +230,7 @@ export const ExcelPreview = ({
                         <tbody>
                             {previewData.map((row, index) => (
                                 <tr key={index} className="bg-background">
-                                    {Object.values(REQUIRED_COLUMNS).map((column) => (
+                                    {Object.values(EXPECTED_COLUMNS).map((column) => (
                                         <td
                                             key={column}
                                             className="border border-border p-2 text-sm"
@@ -223,8 +245,24 @@ export const ExcelPreview = ({
                 </div>
             )}
 
+            {/* Warning Alert */}
+            {!validationError && !importError && (
+                <Alert variant="warning" className="mb-6">
+                    <AlertDescription>
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="background"
+                            className="font-medium"
+                        >
+                            {t("certificateImport.receiverReplacementWarning")}
+                        </Typography>
+                    </AlertDescription>
+                </Alert>
+            )}
+
             {/* Action Buttons */}
-            <div className="flex justify-end space-x-4 mt-6">
+            <div className="flex justify-between items-center mt-6">
                 <Button variant="secondary-light" onClick={onCancel} disabled={disabled}>
                     <Typography
                         variant="text"
@@ -235,19 +273,33 @@ export const ExcelPreview = ({
                         {t("common.cancel")}
                     </Typography>
                 </Button>
-                <Button
-                    onClick={() => setShowHostPinModal(true)}
-                    disabled={disabled || !!validationError}
-                >
-                    <Typography
-                        variant="text"
-                        tag="span"
-                        color="foreground-alt"
-                        className="font-medium"
+                <div className="flex space-x-4">
+                    {(validationError || importError) && (
+                        <Button variant="secondary-light" onClick={onCancel} disabled={disabled}>
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                color="background"
+                                className="font-medium"
+                            >
+                                {t("certificateImport.reuploadFile") || "Re-upload File"}
+                            </Typography>
+                        </Button>
+                    )}
+                    <Button
+                        onClick={() => setShowHostPinModal(true)}
+                        disabled={disabled || !!validationError || !!importError}
                     >
-                        {t("certificateImport.confirmImport")}
-                    </Typography>
-                </Button>
+                        <Typography
+                            variant="text"
+                            tag="span"
+                            color="foreground-alt"
+                            className="font-medium"
+                        >
+                            {t("certificateImport.confirmImport")}
+                        </Typography>
+                    </Button>
+                </div>
             </div>
 
             <PasswordPinModal

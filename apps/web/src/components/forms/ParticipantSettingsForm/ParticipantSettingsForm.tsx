@@ -13,7 +13,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { WrappedSelect } from "@/components/forms/WrappedSelect";
-import { WrappedDateSelect } from "@/components/forms/styled-inputs";
 import { Controller } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
 import { RegistrationFormPreview } from "./RegistrationFormPreview";
@@ -53,9 +52,9 @@ export const ParticipantSettingsForm = ({
         defaultValues: defaultValues
             ? {
                   eventType: defaultValues?.eventType,
-                  isBookingRequired: defaultValues?.isBookingRequired,
-                  isTicketTransferable: defaultValues?.isTicketTransferable,
-                  requireRegistrationPassword: defaultValues?.requireRegistrationPassword,
+                  // isBookingRequired: defaultValues?.isBookingRequired,
+                  // isTicketTransferable: defaultValues?.isTicketTransferable,
+                  // requireRegistrationPassword: defaultValues?.requireRegistrationPassword,
                   registrationPassword: defaultValues?.registrationPassword,
                   finalCallRegistrationDate: defaultValues?.finalCallRegistrationDate,
                   firstName: defaultValues?.firstName,
@@ -71,17 +70,27 @@ export const ParticipantSettingsForm = ({
         mode: "onChange",
     });
 
-    const { control, watch } = form;
+    const {
+        control,
+        watch,
+        formState: { errors },
+    } = form;
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+    // Log validation errors for debugging
+    if (Object.keys(errors).length > 0) {
+        console.error("Form validation errors:", errors);
+    }
 
     // Watch form values for preview and conditional rendering
     const formValues = watch();
     const eventType = watch("eventType");
-    const isBookingRequired = watch("isBookingRequired");
+    // const isBookingRequired = watch("isBookingRequired");
 
     const requireRegistrationPassword = watch("requireRegistrationPassword");
 
     const handleFormSubmit = async (data: ParticipantSettingsData) => {
+        console.log("data", data);
         await onSubmit(data);
     };
 
@@ -291,8 +300,9 @@ export const ParticipantSettingsForm = ({
                         </>
                     )}
 
+                    {/* TODO */}
                     {/* Final Call Registration Date (conditional) */}
-                    {eventType === "private" && isBookingRequired && (
+                    {/* {eventType === "private" && isBookingRequired && (
                         <div className="space-y-2 pt-2 pb-4">
                             <WrappedDateSelect
                                 control={control}
@@ -312,7 +322,7 @@ export const ParticipantSettingsForm = ({
                                 {t("participantSettings.finalCallRegistrationDateDescription")}
                             </Typography>
                         </div>
-                    )}
+                    )} */}
                 </div>
             </div>
 
@@ -469,6 +479,36 @@ export const ParticipantSettingsForm = ({
                     </div>
                 </div>
             </div>
+
+            {/* Form-level validation errors */}
+            {Object.keys(errors).length > 0 && (
+                <div className="rounded-lg border border-destructive bg-destructive/10 p-4">
+                    <Typography
+                        variant="text"
+                        tag="p"
+                        color="destructive"
+                        className="font-semibold mb-2"
+                    >
+                        {t("common.validationErrors", {
+                            defaultValue: "Please fix the following errors:",
+                        })}
+                    </Typography>
+                    <ul className="list-disc list-inside space-y-1">
+                        {Object.entries(errors).map(([field, error]) => (
+                            <li key={field}>
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="destructive"
+                                    className="text-sm"
+                                >
+                                    {field}: {error?.message?.toString() || "Invalid value"}
+                                </Typography>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
 
             {/* Submit Button */}
             <div className="flex justify-end gap-4 pt-4">

@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"apps/backend/common/customerror"
+	"apps/backend/common/validatorutils"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/profile"
 
@@ -12,7 +13,28 @@ import (
 )
 
 type UpdateProfileRequest struct {
-	profile.UpdateProfileParameters
+	IsProfilePicturePublic      *bool   `json:"is_profile_picture_public,omitempty"`
+	ProfilePictureUrl           *string `json:"profile_picture_url,omitempty" validate:"omitempty,url"`
+	IsFirstNamePublic           *bool   `json:"is_first_name_public,omitempty"`
+	FirstName                   *string `json:"first_name,omitempty" validate:"omitempty,min=3,max=32"`
+	IsLastNamePublic            *bool   `json:"is_last_name_public,omitempty"`
+	LastName                    *string `json:"last_name,omitempty" validate:"omitempty,min=3,max=32"`
+	IsEmailPublic               *bool   `json:"is_email_public,omitempty"`
+	Email                       *string `json:"email,omitempty" validate:"omitempty,email,max=64"`
+	IsBioPublic                 *bool   `json:"is_bio_public,omitempty"`
+	Bio                         *string `json:"bio,omitempty" validate:"omitempty,min=10,max=255"`
+	IsPhoneNumberPublic         *bool   `json:"is_phone_number_public,omitempty"`
+	PhoneNumber                 *string `json:"phone_number,omitempty" validate:"omitempty,e164"`
+	IsAddressPublic             *bool   `json:"is_address_public,omitempty"`
+	Address                     *string `json:"address,omitempty" validate:"omitempty,min=10,max=255"`
+	IsAcademicInstitutionPublic *bool   `json:"is_academic_institution_public,omitempty"`
+	AcademicInstitution         *string `json:"academic_institution,omitempty" validate:"omitempty,min=3,max=255"`
+	IsAcademicEmailPublic       *bool   `json:"is_academic_email_public,omitempty"`
+	AcademicEmail               *string `json:"academic_email,omitempty" validate:"omitempty,email"`
+}
+
+func (r *UpdateProfileRequest) IsValid() error {
+	return validatorutils.ValidateStruct(r)
 }
 
 type UpdateProfileResponse struct {
@@ -33,22 +55,7 @@ func (r *UpdateProfileRequest) Parse(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param credential_id path string true "Credential ID"
-// @Param IsProfilePicturePublic body profile.UpdateProfileRequest.IsProfilePicturePublic true "Is Profile Picture Public"
-// @Param ProfilePictureUrl body profile.UpdateProfileRequest.ProfilePictureUrl true "Profile Picture URL"
-// @Param IsFirstNamePublic body profile.UpdateProfileRequest.IsFirstNamePublic true "Is First Name Public"
-// @Param FirstName body profile.UpdateProfileRequest.FirstName true "First Name"
-// @Param IsLastNamePublic body profile.UpdateProfileRequest.IsLastNamePublic true "Is Last Name Public"
-// @Param LastName body profile.UpdateProfileRequest.LastName true "Last Name"
-// @Param IsEmailPublic body profile.UpdateProfileRequest.IsEmailPublic true "Is Email Public"
-// @Param Email body profile.UpdateProfileRequest.Email true "Email"
-// @Param IsPhoneNumberPublic body profile.UpdateProfileRequest.IsPhoneNumberPublic true "Is Phone Number Public"
-// @Param PhoneNumber body profile.UpdateProfileRequest.PhoneNumber true "Phone Number"
-// @Param IsAddressPublic body profile.UpdateProfileRequest.IsAddressPublic true "Is Address Public"
-// @Param Address body profile.UpdateProfileRequest.Address true "Address"
-// @Param IsAcademicInstitutionPublic body profile.UpdateProfileRequest.IsAcademicInstitutionPublic true "Is Academic Institution Public"
-// @Param AcademicInstitution body profile.UpdateProfileRequest.AcademicInstitution true "Academic Institution"
-// @Param IsAcademicEmailPublic body profile.UpdateProfileRequest.IsAcademicEmailPublic true "Is Academic Email Public"
-// @Param AcademicEmail body profile.UpdateProfileRequest.AcademicEmail true "Academic Email"
+// @Param request body UpdateProfileRequest true "Profile update request"
 // @Success 200 {object} UpdateProfileResponse
 // @Failure 400 {object} customerror.Err
 // @Failure 403 {object} customerror.Err
@@ -75,7 +82,26 @@ func (h *Handler) UpdateProfileByCredentialId(c *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrUnauthorized, errors.New("unauthorized"))
 	}
 
-	profile, customerr := h.ProfileUc.UpdateProfileByCredentialId(c.Context(), credentialIdUUID, upsertProfileRequest.UpdateProfileParameters)
+	profile, customerr := h.ProfileUc.UpdateProfileByCredentialId(c.Context(), credentialIdUUID, profile.UpdateProfileParameters{
+		IsProfilePicturePublic:      upsertProfileRequest.IsProfilePicturePublic,
+		ProfilePictureUrl:           upsertProfileRequest.ProfilePictureUrl,
+		IsFirstNamePublic:           upsertProfileRequest.IsFirstNamePublic,
+		FirstName:                   upsertProfileRequest.FirstName,
+		IsLastNamePublic:            upsertProfileRequest.IsLastNamePublic,
+		LastName:                    upsertProfileRequest.LastName,
+		IsEmailPublic:               upsertProfileRequest.IsEmailPublic,
+		Email:                       upsertProfileRequest.Email,
+		IsBioPublic:                 upsertProfileRequest.IsBioPublic,
+		Bio:                         upsertProfileRequest.Bio,
+		IsPhoneNumberPublic:         upsertProfileRequest.IsPhoneNumberPublic,
+		PhoneNumber:                 upsertProfileRequest.PhoneNumber,
+		IsAddressPublic:             upsertProfileRequest.IsAddressPublic,
+		Address:                     upsertProfileRequest.Address,
+		IsAcademicInstitutionPublic: upsertProfileRequest.IsAcademicInstitutionPublic,
+		AcademicInstitution:         upsertProfileRequest.AcademicInstitution,
+		IsAcademicEmailPublic:       upsertProfileRequest.IsAcademicEmailPublic,
+		AcademicEmail:               upsertProfileRequest.AcademicEmail,
+	})
 	if customerr != nil {
 		var customErr *customerror.Err
 		if errors.As(customerr, &customErr) {

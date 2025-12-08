@@ -2,6 +2,7 @@ package event
 
 import (
 	"errors"
+	"fmt"
 
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
@@ -19,11 +20,12 @@ type ImportCertificateReceiversRequest struct {
 }
 
 type ImportCertificateReceiverRequest struct {
-	FirstName           string `json:"first_name" validate:"required"`
-	LastName            string `json:"last_name" validate:"required"`
-	AcademicInstitution string `json:"academic_institution" validate:"required"`
-	CertificateTitle    string `json:"certificate_title" validate:"required"`
-	CertificateSubtitle string `json:"certificate_subtitle" validate:"required"`
+	Email               string  `json:"email" validate:"required,email"`
+	FirstName           *string `json:"first_name"`
+	LastName            *string `json:"last_name"`
+	AcademicInstitution *string `json:"academic_institution"`
+	CertificateTitle    *string `json:"certificate_title"`
+	CertificateSubtitle *string `json:"certificate_subtitle"`
 }
 
 type ImportCertificateReceiversResponse struct {
@@ -61,11 +63,12 @@ func (h Handler) ImportCertificateReceivers(ctx *fiber.Ctx) error {
 	requests := make([]event.ImportCertificateReceiversRequest, 0, len(requestBody.Receivers))
 	for _, receiver := range requestBody.Receivers {
 		requests = append(requests, event.ImportCertificateReceiversRequest{
-			FirstName:           receiver.FirstName,
-			LastName:            receiver.LastName,
-			AcademicInstitution: receiver.AcademicInstitution,
-			CertificateTitle:    receiver.CertificateTitle,
-			CertificateSubtitle: receiver.CertificateSubtitle,
+			Email:               receiver.Email,               // Required string
+			FirstName:           receiver.FirstName,           // Already *string
+			LastName:            receiver.LastName,            // Already *string
+			AcademicInstitution: receiver.AcademicInstitution, // Already *string
+			CertificateTitle:    receiver.CertificateTitle,    // Already *string
+			CertificateSubtitle: receiver.CertificateSubtitle, // Already *string
 			HostPin:             requestBody.HostPin,
 		})
 	}
@@ -90,12 +93,10 @@ func (r *ImportCertificateReceiversRequest) IsValid() error {
 		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("at least one receiver is required"))
 	}
 
-	for _, receiver := range r.Receivers {
-		if receiver.FirstName == "" {
-			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("first_name is required"))
-		}
-		if receiver.LastName == "" {
-			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("last_name is required"))
+	// Validate that each receiver has a required email
+	for i, receiver := range r.Receivers {
+		if receiver.Email == "" {
+			return customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("receiver at index %d: email is required", i))
 		}
 	}
 

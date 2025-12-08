@@ -59,6 +59,7 @@
         "react-day-picker": "8.10.1",
         "react-dom": "^19.1.1",
         "react-error-boundary": "^6.0.0",
+        "react-grab": "^0.0.53",
         "react-helmet-async": "^2.0.5",
         "react-hook-form": "^7.62.0",
         "react-i18next": "^16.0.0",

@@ -133,7 +133,7 @@ describe("useLocalStorage", () => {
 
         act(() => {
             const [, setValue] = result.current;
-            setValue("test");
+            setValue("test" as "initial");
         });
 
         expect(localStorage.getItem("test-key")).toBe("TEST");

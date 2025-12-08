@@ -6,7 +6,11 @@ import type { EventImportCertificateReceiverRequest } from "@decm/api";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export function useImportCertificates(eventId: string) {
+interface UseImportCertificatesOptions {
+    onError?: (error: Error) => void;
+}
+
+export function useImportCertificates(eventId: string, options?: UseImportCertificatesOptions) {
     const navigate = useNavigate();
 
     const { mutateAsync: importCertificates, isPending: isImportingCertificates } = useMutation({
@@ -28,11 +32,13 @@ export function useImportCertificates(eventId: string) {
             queryClient.invalidateQueries({ queryKey: QUERY_KEY.event.all });
             navigate("/host/events/:eventId", { params: { eventId } });
         },
-        onError: (error) => {
+        onError: (error: Error) => {
             toast.error("Failed to import certificates", {
                 description: error.message,
             });
             console.error(error);
+            // Call the onError callback if provided (e.g., to set error state)
+            options?.onError?.(error);
         },
     });
 

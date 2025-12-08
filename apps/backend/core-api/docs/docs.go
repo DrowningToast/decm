@@ -183,7 +183,64 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/event-registration-invitations/import/{eventId}": {
+        "/api/v1/event-registration/invitation": {
+            "delete": {
+                "description": "Cancel an event registration invitation by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Registration Invitation"
+                ],
+                "summary": "Cancel event registration invitation",
+                "operationId": "cancel-event-registration-invitation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event Registration Invitation ID",
+                        "name": "event_registration_invitation_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/event-registration/invitation/:event_id/import": {
             "post": {
                 "description": "Import a list of participants for an event, creating inbox messages and event registration invitations",
                 "consumes": [
@@ -204,7 +261,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event_registration_invitation.ImportEventParticipantsRequest"
+                            "$ref": "#/definitions/event_registration.ImportEventParticipantsRequest"
                         }
                     }
                 ],
@@ -239,55 +296,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/event-registration-invitations/my/{event_id}": {
-            "get": {
-                "description": "Get event registration invitation of user and by event id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Event Registration Invitation"
-                ],
-                "summary": "Get event registration invitation of user and by event id",
-                "operationId": "get-event-registration-invitation-by-user-and-event",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/event_registration_invitation.GetEventRegistrationInvitationByUserAndEventResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/event-registration-invitations/{eventId}": {
+        "/api/v1/event-registration/invitation/{eventId}": {
             "get": {
                 "description": "Get all event registration invitations for a specific event",
                 "consumes": [
@@ -338,9 +347,132 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/event-registration-invitations/{eventRegistrationInvitationId}": {
-            "delete": {
-                "description": "Cancel an event registration invitation by ID",
+        "/api/v1/event-registration/join/{event_id}": {
+            "post": {
+                "description": "Join an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Registration"
+                ],
+                "summary": "Join event",
+                "operationId": "join-event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Join event body",
+                        "name": "joinEventBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event_registration.JoinEventBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.EventAttendee"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/event-registration/join/{event_id}/sign-message": {
+            "get": {
+                "description": "Get join event sign message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Registration"
+                ],
+                "summary": "Get join event sign message",
+                "operationId": "get-join-event-sign-message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/event_registration.GetJoinEventSignMessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/event-registration/my/{event_id}": {
+            "get": {
+                "description": "Get event registration invitation of user and by event id",
                 "consumes": [
                     "application/json"
                 ],
@@ -350,22 +482,13 @@ const docTemplate = `{
                 "tags": [
                     "Event Registration Invitation"
                 ],
-                "summary": "Cancel event registration invitation",
-                "operationId": "cancel-event-registration-invitation",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event Registration Invitation ID",
-                        "name": "eventRegistrationInvitationID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Get event registration invitation of user and by event id",
+                "operationId": "get-event-registration-invitation-by-user-and-event",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                            "$ref": "#/definitions/event_registration.GetEventRegistrationInvitationByUserAndEventResponse"
                         }
                     },
                     "400": {
@@ -1047,6 +1170,65 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/events/{event_id}/certificates/publish": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Publish certificates for an event. This will create inbox messages for all certificate receivers. All issuers must have signed before publishing.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Publish event certificates",
+                "operationId": "publish-event-certificates",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_event.PublishEventCertificatesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}/certificates/revoke": {
             "post": {
                 "description": "Revoke event certificates by certificate IDs",
@@ -1238,7 +1420,7 @@ const docTemplate = `{
         },
         "/api/v1/events/{event_id}/config/certificate": {
             "get": {
-                "description": "Get the event certificate configuration for an event",
+                "description": "Get the event certificate configuration for an event. Accessible by verified organizers or issuers assigned to the event.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1265,6 +1447,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
@@ -1380,6 +1568,111 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/events/{event_id}/config/certificate/mint-readiness": {
+            "get": {
+                "description": "Check if an event certificate is ready to be minted. Returns detailed status about configuration, signed issuers, and contract deployment. Accessible by verified organizers or issuers assigned to the event.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Check certificate mint readiness",
+                "operationId": "check-certificate-mint-readiness",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_eventconfig.CertificateMintReadinessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{event_id}/config/certificate/published": {
+            "patch": {
+                "description": "Toggle the published status of event certificate configuration. When setting to published, inbox messages will be created for all certificate receivers. Only accessible by verified organizers.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Toggle certificate published status",
+                "operationId": "toggle-certificate-published",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Toggle published request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/eventconfig.ToggleCertificatePublishedRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_eventconfig.EventCertificateConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}/config/password-check": {
             "post": {
                 "description": "Check if the password is correct for an event",
@@ -1446,7 +1739,7 @@ const docTemplate = `{
                 "tags": [
                     "Events"
                 ],
-                "summary": "Get event registration config",
+                "summary": "Get event registration config view model",
                 "operationId": "get-event-registration-config",
                 "parameters": [
                     {
@@ -1461,7 +1754,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
+                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigViewModel"
                         }
                     },
                     "400": {
@@ -1516,7 +1809,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
+                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigViewModel"
                         }
                     },
                     "400": {
@@ -2061,6 +2354,72 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/events/{event_id}/participants": {
+            "get": {
+                "description": "Get all participants (attendees) for an event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Get event participants",
+                "operationId": "get-event-participants",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/event.EventParticipantResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}/registration-config": {
             "post": {
                 "description": "Create a new event registration configuration for an event",
@@ -2094,7 +2453,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigResponse"
+                            "$ref": "#/definitions/eventconfig.EventRegistrationConfigViewModel"
                         }
                     },
                     "400": {
@@ -2218,9 +2577,135 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/inbox-messages": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get my inbox messages",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inbox Messages"
+                ],
+                "summary": "Get my inbox messages",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/inboxmessages.GetInboxMessagesResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/inbox-messages/read": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inbox Messages"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "message_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/inboxmessages.MarkMessageAsReadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/inboxmessages.MarkMessageAsReadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/inbox-messages/read-all": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inbox Messages"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/inboxmessages.MarkAllMessagesAsReadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/inbox-messages/{inbox_message_id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get inbox message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inbox Messages"
+                ],
+                "summary": "Get inbox message",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/inboxmessages.GetInboxMessageResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/issuers": {
             "get": {
-                "description": "Get verified issuers",
+                "description": "Get verified issuers with optional search query",
                 "consumes": [
                     "application/json"
                 ],
@@ -2243,6 +2728,12 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Offset",
                         "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query (searches first name, last name, email, academic email, wallet address)",
+                        "name": "search",
                         "in": "query"
                     }
                 ],
@@ -2314,6 +2805,73 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/issuer.IssuerEventResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/issuers/events/viewmodel": {
+            "get": {
+                "description": "Get events assigned to the authenticated issuer for signing with view model data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Issuer"
+                ],
+                "summary": "Get issuer events view model",
+                "operationId": "get-issuer-events-viewmodel",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Issuer credential ID",
+                        "name": "issuer_credential_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/issuer.IssuerEventViewModel"
                             }
                         }
                     },
@@ -2602,143 +3160,8 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Is Profile Picture Public",
-                        "name": "IsProfilePicturePublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Profile Picture URL",
-                        "name": "ProfilePictureUrl",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Is First Name Public",
-                        "name": "IsFirstNamePublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "First Name",
-                        "name": "FirstName",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Is Last Name Public",
-                        "name": "IsLastNamePublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Last Name",
-                        "name": "LastName",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Is Email Public",
-                        "name": "IsEmailPublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Email",
-                        "name": "Email",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Is Phone Number Public",
-                        "name": "IsPhoneNumberPublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Phone Number",
-                        "name": "PhoneNumber",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Is Address Public",
-                        "name": "IsAddressPublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Address",
-                        "name": "Address",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Is Academic Institution Public",
-                        "name": "IsAcademicInstitutionPublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Academic Institution",
-                        "name": "AcademicInstitution",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Is Academic Email Public",
-                        "name": "IsAcademicEmailPublic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/profile.UpdateProfileRequest"
-                        }
-                    },
-                    {
-                        "description": "Academic Email",
-                        "name": "AcademicEmail",
+                        "description": "Profile update request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -2862,132 +3285,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/inbox-messages": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Get my inbox messages",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Inbox Messages"
-                ],
-                "summary": "Get my inbox messages",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/inboxmessages.GetInboxMessagesResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/inbox-messages/read": {
-            "put": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Inbox Messages"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Message ID",
-                        "name": "message_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/inboxmessages.MarkMessageAsReadRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/inboxmessages.MarkMessageAsReadResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/inbox-messages/read-all": {
-            "put": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Inbox Messages"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/inboxmessages.MarkAllMessagesAsReadResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/inbox-messages/{inbox_message_id}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Get inbox message",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Inbox Messages"
-                ],
-                "summary": "Get inbox message",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/inboxmessages.GetInboxMessageEventRegistrationInvitationResponse"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -3036,12 +3333,10 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "access_manager_contract_address",
-                "certificate_contract_address",
                 "created_at",
                 "event_contract_address",
                 "event_id",
                 "id",
-                "ticket_contract_address",
                 "updated_at"
             ],
             "properties": {
@@ -3116,6 +3411,29 @@ const docTemplate = `{
                 }
             }
         },
+        "core-api_internal_handler_event.PublishEventCertificatesResponse": {
+            "type": "object",
+            "required": [
+                "event_id",
+                "inbox_messages_created",
+                "is_published",
+                "published_count"
+            ],
+            "properties": {
+                "event_id": {
+                    "type": "string"
+                },
+                "inbox_messages_created": {
+                    "type": "integer"
+                },
+                "is_published": {
+                    "type": "boolean"
+                },
+                "published_count": {
+                    "type": "integer"
+                }
+            }
+        },
         "core-api_internal_handler_event.RevokeAllEventCertificatesResponse": {
             "type": "object",
             "required": [
@@ -3184,6 +3502,82 @@ const docTemplate = `{
                 }
             }
         },
+        "core-api_internal_handler_event_registration.JoinEventPayload": {
+            "type": "object",
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "core-api_internal_handler_eventconfig.CertificateMintReadinessResponse": {
+            "type": "object",
+            "required": [
+                "all_issuers_have_signed",
+                "has_certificate_config",
+                "has_certificate_contract",
+                "is_ready",
+                "signed_issuers_count",
+                "total_issuers_count"
+            ],
+            "properties": {
+                "all_issuers_have_signed": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "certificate_contract_address": {
+                    "type": "string",
+                    "example": "0x1234567890abcdef"
+                },
+                "has_certificate_config": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "has_certificate_contract": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "is_ready": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "missing_requirements": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "signed_issuers_count": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "total_issuers_count": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
         "core-api_internal_handler_eventconfig.EventCertificateConfigResponse": {
             "type": "object",
             "required": [
@@ -3194,6 +3588,7 @@ const docTemplate = `{
                 "event_name_pos_x",
                 "event_name_pos_y",
                 "id",
+                "is_published",
                 "name_pos_x",
                 "name_pos_y",
                 "updated_at"
@@ -3226,6 +3621,12 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "is_published": {
+                    "type": "boolean"
+                },
+                "mint_readiness": {
+                    "$ref": "#/definitions/core-api_internal_handler_eventconfig.MintReadinessInfo"
+                },
                 "name_pos_x": {
                     "type": "number"
                 },
@@ -3234,6 +3635,46 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "core-api_internal_handler_eventconfig.MintReadinessInfo": {
+            "type": "object",
+            "required": [
+                "all_issuers_have_signed",
+                "has_certificate_config",
+                "has_certificate_contract",
+                "is_ready",
+                "signed_issuers_count",
+                "total_issuers_count"
+            ],
+            "properties": {
+                "all_issuers_have_signed": {
+                    "type": "boolean"
+                },
+                "certificate_contract_address": {
+                    "type": "string"
+                },
+                "has_certificate_config": {
+                    "type": "boolean"
+                },
+                "has_certificate_contract": {
+                    "type": "boolean"
+                },
+                "is_ready": {
+                    "type": "boolean"
+                },
+                "missing_requirements": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "signed_issuers_count": {
+                    "type": "integer"
+                },
+                "total_issuers_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -3402,6 +3843,69 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.EventAttendee": {
+            "type": "object",
+            "required": [
+                "attendee_credential_id",
+                "contract_address",
+                "created_at",
+                "event_id",
+                "id",
+                "is_attendee_accepted",
+                "updated_at",
+                "wallet_address"
+            ],
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "attendee_credential_id": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "contract_address": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_attendee_accepted": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "wallet_address": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.EventCertificate": {
             "type": "object",
             "required": [
@@ -3438,6 +3942,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "inbox_message_id": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -3455,6 +3962,7 @@ const docTemplate = `{
         "entity.EventRegistrationInvitation": {
             "type": "object",
             "required": [
+                "accepted_at",
                 "created_at",
                 "event_id",
                 "id",
@@ -3463,6 +3971,9 @@ const docTemplate = `{
             ],
             "properties": {
                 "academic_institution": {
+                    "type": "string"
+                },
+                "accepted_at": {
                     "type": "string"
                 },
                 "cancelled_at": {
@@ -3560,7 +4071,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "message_type": {
-                    "type": "integer"
+                    "$ref": "#/definitions/entity.InboxMessageType"
                 },
                 "receiver_credential_id": {
                     "type": "string"
@@ -3634,6 +4145,13 @@ const docTemplate = `{
                 "first_name": {
                     "type": "string"
                 },
+                "github_connector_ref": {
+                    "type": "string"
+                },
+                "google_connector_ref": {
+                    "description": "Connector references (from authentication_credentials table)",
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -3674,6 +4192,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                },
+                "wallet_address": {
                     "type": "string"
                 }
             }
@@ -3777,6 +4298,60 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "event.EventParticipantResponse": {
+            "type": "object",
+            "required": [
+                "attendee_credential_id",
+                "contract_address",
+                "created_at",
+                "event_id",
+                "id",
+                "is_attendee_accepted",
+                "updated_at",
+                "wallet_address"
+            ],
+            "properties": {
+                "academic_institution": {
+                    "type": "string"
+                },
+                "attendee_credential_id": {
+                    "type": "string"
+                },
+                "contract_address": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_attendee_accepted": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "wallet_address": {
                     "type": "string"
                 }
             }
@@ -4040,6 +4615,7 @@ const docTemplate = `{
                 "academic_institution",
                 "certificate_subtitle",
                 "certificate_title",
+                "email",
                 "first_name",
                 "last_name"
             ],
@@ -4051,6 +4627,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "certificate_title": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "first_name": {
@@ -4157,7 +4736,7 @@ const docTemplate = `{
                 }
             }
         },
-        "event_registration_invitation.GetEventRegistrationInvitationByUserAndEventResponse": {
+        "event_registration.GetEventRegistrationInvitationByUserAndEventResponse": {
             "type": "object",
             "properties": {
                 "inbox": {
@@ -4168,7 +4747,18 @@ const docTemplate = `{
                 }
             }
         },
-        "event_registration_invitation.ImportEventParticipantsRequest": {
+        "event_registration.GetJoinEventSignMessageResponse": {
+            "type": "object",
+            "required": [
+                "sign_message"
+            ],
+            "properties": {
+                "sign_message": {
+                    "type": "string"
+                }
+            }
+        },
+        "event_registration.ImportEventParticipantsRequest": {
             "type": "object",
             "required": [
                 "event_id",
@@ -4182,19 +4772,40 @@ const docTemplate = `{
                     "type": "array",
                     "minItems": 1,
                     "items": {
-                        "$ref": "#/definitions/event_registration_invitation.ParticipantRequestItem"
+                        "$ref": "#/definitions/event_registration.ParticipantRequestItem"
                     }
                 }
             }
         },
-        "event_registration_invitation.ParticipantRequestItem": {
+        "event_registration.JoinEventBody": {
             "type": "object",
             "required": [
-                "academic_institution",
+                "registration_data"
+            ],
+            "properties": {
+                "account_password": {
+                    "type": "string"
+                },
+                "event_password": {
+                    "type": "string"
+                },
+                "registration_data": {
+                    "$ref": "#/definitions/core-api_internal_handler_event_registration.JoinEventPayload"
+                },
+                "sign_message": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                }
+            }
+        },
+        "event_registration.ParticipantRequestItem": {
+            "type": "object",
+            "required": [
                 "email",
                 "first_name",
-                "last_name",
-                "phone_number"
+                "last_name"
             ],
             "properties": {
                 "academic_institution": {
@@ -4250,34 +4861,75 @@ const docTemplate = `{
             ],
             "properties": {
                 "academic_email_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "academic_institution_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "address_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "bio_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "email_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "final_call_for_registration": {
                     "type": "string"
                 },
                 "first_name_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "last_name_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "phone_number_requirement_status": {
-                    "type": "integer"
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1,
+                        2
+                    ]
                 },
                 "registration_password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 8
                 }
             }
         },
@@ -4295,7 +4947,7 @@ const docTemplate = `{
                 "EventRegistrationConfigRequirementStatusOptional"
             ]
         },
-        "eventconfig.EventRegistrationConfigResponse": {
+        "eventconfig.EventRegistrationConfigViewModel": {
             "type": "object",
             "required": [
                 "academic_email_requirement_status",
@@ -4348,11 +5000,19 @@ const docTemplate = `{
                 "phone_number_requirement_status": {
                     "$ref": "#/definitions/eventconfig.EventRegistrationConfigRequirementStatus"
                 },
-                "registration_password": {
-                    "type": "string"
-                },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "eventconfig.ToggleCertificatePublishedRequest": {
+            "type": "object",
+            "required": [
+                "is_published"
+            ],
+            "properties": {
+                "is_published": {
+                    "type": "boolean"
                 }
             }
         },
@@ -4364,6 +5024,7 @@ const docTemplate = `{
                 "address_requirement_status",
                 "bio_requirement_status",
                 "email_requirement_status",
+                "event_type",
                 "first_name_requirement_status",
                 "is_booking_request_required",
                 "is_ticket_transferable",
@@ -4412,6 +5073,84 @@ const docTemplate = `{
                 }
             }
         },
+        "inbox.InboxMessageCertificateInvitationViewModel": {
+            "type": "object",
+            "required": [
+                "certificate_id",
+                "created_at",
+                "created_at",
+                "event_id",
+                "event_name",
+                "has_participant_joined_event",
+                "id",
+                "is_read",
+                "message_content",
+                "message_type",
+                "updated_at"
+            ],
+            "properties": {
+                "certificate_id": {
+                    "type": "string"
+                },
+                "certificate_title": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "event_name": {
+                    "type": "string"
+                },
+                "has_participant_joined_event": {
+                    "type": "boolean"
+                },
+                "hidden_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_read": {
+                    "type": "integer"
+                },
+                "message_content": {
+                    "type": "string"
+                },
+                "message_content_fallback": {
+                    "type": "string"
+                },
+                "message_type": {
+                    "$ref": "#/definitions/entity.InboxMessageType"
+                },
+                "receiver_email": {
+                    "type": "string"
+                },
+                "receiver_wallet_address": {
+                    "type": "string"
+                },
+                "revoked_at": {
+                    "type": "string"
+                },
+                "sender_credential_email": {
+                    "type": "string"
+                },
+                "sender_credential_wallet_address": {
+                    "type": "string"
+                },
+                "token_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "inbox.InboxMessagesEventRegistrationInvitationViewModel": {
             "type": "object",
             "required": [
@@ -4427,6 +5166,9 @@ const docTemplate = `{
             ],
             "properties": {
                 "academic_institution": {
+                    "type": "string"
+                },
+                "accepted_at": {
                     "type": "string"
                 },
                 "cancelled_at": {
@@ -4463,6 +5205,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "message_content": {
+                    "type": "string"
+                },
+                "message_content_fallback": {
                     "type": "string"
                 },
                 "message_type": {
@@ -4520,6 +5265,9 @@ const docTemplate = `{
                 "message_content": {
                     "type": "string"
                 },
+                "message_content_fallback": {
+                    "type": "string"
+                },
                 "message_type": {
                     "$ref": "#/definitions/entity.InboxMessageType"
                 },
@@ -4540,25 +5288,24 @@ const docTemplate = `{
                 }
             }
         },
-        "inboxmessages.GetInboxMessageEventRegistrationInvitationResponse": {
-            "type": "object",
-            "required": [
-                "inbox_message"
-            ],
-            "properties": {
-                "inbox_message": {
-                    "$ref": "#/definitions/inbox.InboxMessagesEventRegistrationInvitationViewModel"
-                }
-            }
-        },
         "inboxmessages.GetInboxMessageResponse": {
             "type": "object",
             "required": [
-                "inbox_message"
+                "inbox_message",
+                "inbox_message_type"
             ],
             "properties": {
+                "event_certificate": {
+                    "$ref": "#/definitions/inbox.InboxMessageCertificateInvitationViewModel"
+                },
+                "event_registration_invitation": {
+                    "$ref": "#/definitions/inbox.InboxMessagesEventRegistrationInvitationViewModel"
+                },
                 "inbox_message": {
                     "$ref": "#/definitions/inbox.InboxMessagesViewModel"
+                },
+                "inbox_message_type": {
+                    "$ref": "#/definitions/entity.InboxMessageType"
                 }
             }
         },
@@ -4668,6 +5415,81 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "signature": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "issuer.IssuerEventViewModel": {
+            "type": "object",
+            "required": [
+                "certificate_count",
+                "created_at",
+                "event_end_date",
+                "event_id",
+                "event_location",
+                "event_owner_credential_id",
+                "event_short_description",
+                "event_start_date",
+                "event_title",
+                "id",
+                "is_signed",
+                "issuer_credential_id",
+                "owner_email",
+                "owner_google_email",
+                "owner_name",
+                "owner_wallet_address",
+                "updated_at"
+            ],
+            "properties": {
+                "certificate_count": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_end_date": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "event_location": {
+                    "type": "string"
+                },
+                "event_owner_credential_id": {
+                    "type": "string"
+                },
+                "event_short_description": {
+                    "type": "string"
+                },
+                "event_start_date": {
+                    "type": "string"
+                },
+                "event_title": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_signed": {
+                    "type": "boolean"
+                },
+                "issuer_credential_id": {
+                    "type": "string"
+                },
+                "owner_email": {
+                    "type": "string"
+                },
+                "owner_google_email": {
+                    "type": "string"
+                },
+                "owner_name": {
+                    "type": "string"
+                },
+                "owner_wallet_address": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -4894,6 +5716,13 @@ const docTemplate = `{
                 "first_name": {
                     "type": "string"
                 },
+                "github_connector_ref": {
+                    "type": "string"
+                },
+                "google_connector_ref": {
+                    "description": "Connector references (from authentication_credentials table)",
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -4934,6 +5763,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                },
+                "wallet_address": {
                     "type": "string"
                 }
             }
@@ -5158,6 +5990,13 @@ const docTemplate = `{
                 "first_name": {
                     "type": "string"
                 },
+                "github_connector_ref": {
+                    "type": "string"
+                },
+                "google_connector_ref": {
+                    "description": "Connector references (from authentication_credentials table)",
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -5198,6 +6037,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                },
+                "wallet_address": {
                     "type": "string"
                 }
             }

@@ -1,23 +1,26 @@
-import type {
-    EntityEventRegistrationInvitation,
-    EntityInboxMessage,
-    EventconfigEventRegistrationConfigResponse,
+import {
+    EntityEventType,
+    type CoreApiInternalHandlerEventRegistrationJoinEventPayload,
+    type EntityEventRegistrationInvitation,
+    type EventconfigEventRegistrationConfigViewModel,
 } from "@decm/api";
 import type {
     EventRegistrationConfiguration,
     EventRegistrationInvitation,
+    EventType,
     RegistrationRequirement,
     RegistrationRequirementStatus,
 } from "./EventRegistration";
-import type { InboxMessage } from "../InboxService/InboxService";
-import { mapEntityInboxMessageToInboxMessage as mapInboxMessage } from "../InboxService/mapper";
+import type { RegistrationConfirmDataForm } from "@/components/pages/Participant/Events/Detail/RegistrationConfirmDataFormSchema";
 
 export type EventRegistrationConfigResponse = Omit<
-    EventconfigEventRegistrationConfigResponse,
+    EventconfigEventRegistrationConfigViewModel,
     "created_at" | "updated_at"
 >;
 
-export const mapRegistrationRequirementStatus = (status: number): RegistrationRequirementStatus => {
+export const mapToRegistrationRequirementStatus = (
+    status: number,
+): RegistrationRequirementStatus => {
     switch (status) {
         case 0:
             return "not_required";
@@ -29,30 +32,56 @@ export const mapRegistrationRequirementStatus = (status: number): RegistrationRe
     throw new Error(`Invalid registration requirement status: ${status}`);
 };
 
+export const mapRegistrationRequirementStatusToNumber = (
+    status: RegistrationRequirementStatus,
+): number => {
+    switch (status) {
+        case "not_required":
+            return 0;
+        case "required":
+            return 1;
+        case "optional":
+            return 2;
+    }
+    throw new Error(`Invalid registration requirement status: ${status}`);
+};
+
+export const mapEventTypeToEntityEventType = (eventType: EventType): EntityEventType => {
+    switch (eventType) {
+        case "private":
+            return EntityEventType.EventTypePrivate;
+        case "invite":
+            return EntityEventType.EventTypeInvite;
+    }
+    throw new Error(`Invalid event type: ${eventType}`);
+};
+
 export const mapEntityEventRegistrationConfigRequirementStatus = (
     entityEventRegistrationConfig: EventRegistrationConfigResponse,
 ): RegistrationRequirement => {
     return {
-        firstName: mapRegistrationRequirementStatus(
+        firstName: mapToRegistrationRequirementStatus(
             entityEventRegistrationConfig.first_name_requirement_status,
         ),
-        lastName: mapRegistrationRequirementStatus(
+        lastName: mapToRegistrationRequirementStatus(
             entityEventRegistrationConfig.last_name_requirement_status,
         ),
-        email: mapRegistrationRequirementStatus(
+        email: mapToRegistrationRequirementStatus(
             entityEventRegistrationConfig.email_requirement_status,
         ),
-        bio: mapRegistrationRequirementStatus(entityEventRegistrationConfig.bio_requirement_status),
-        phoneNumber: mapRegistrationRequirementStatus(
+        bio: mapToRegistrationRequirementStatus(
+            entityEventRegistrationConfig.bio_requirement_status,
+        ),
+        phoneNumber: mapToRegistrationRequirementStatus(
             entityEventRegistrationConfig.phone_number_requirement_status,
         ),
-        address: mapRegistrationRequirementStatus(
+        address: mapToRegistrationRequirementStatus(
             entityEventRegistrationConfig.address_requirement_status,
         ),
-        academicInstitution: mapRegistrationRequirementStatus(
+        academicInstitution: mapToRegistrationRequirementStatus(
             entityEventRegistrationConfig.academic_institution_requirement_status,
         ),
-        academicEmail: mapRegistrationRequirementStatus(
+        academicEmail: mapToRegistrationRequirementStatus(
             entityEventRegistrationConfig.academic_email_requirement_status,
         ),
     };
@@ -88,13 +117,27 @@ export const mapEntityEventRegistrationInvitationToEventRegistrationInvitation =
         cancelledAt: entityEventRegistrationInvitation.cancelled_at
             ? new Date(entityEventRegistrationInvitation.cancelled_at)
             : undefined,
+        acceptedAt: entityEventRegistrationInvitation.accepted_at
+            ? new Date(entityEventRegistrationInvitation.accepted_at)
+            : undefined,
         inboxMessageId: entityEventRegistrationInvitation.inbox_message_id,
     };
 };
 
 // Re-export the inbox message mapper for convenience
-export const mapEntityInboxMessageToInboxMessage = (
-    entityInboxMessage: EntityInboxMessage,
-): InboxMessage => {
-    return mapInboxMessage(entityInboxMessage);
+export { mapEntityInboxMessageToInboxMessage } from "../InboxService/mapper";
+
+export const mapRegistrationToJoinEventParticipant = (
+    participantData: RegistrationConfirmDataForm,
+): CoreApiInternalHandlerEventRegistrationJoinEventPayload => {
+    return {
+        first_name: participantData.firstName,
+        last_name: participantData.lastName,
+        email: participantData.email,
+        phone_number: participantData.phoneNumber,
+        academic_institution: participantData.academicInstitution,
+        academic_email: participantData.academicEmail,
+        address: participantData.address,
+        bio: participantData.bio,
+    };
 };

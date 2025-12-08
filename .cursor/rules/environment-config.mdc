@@ -4,37 +4,21 @@ description: "Environment configuration patterns and .env file management"
 
 # Environment Configuration
 
-## Overview
+**Single `.env` file at root** (shared backend + frontend)
 
-DECM uses environment variables for configuration across backend (Go), frontend (React), and database scripts (Node.js). Configuration is stored in `.env` files with `.env.example` templates.
-
-## Configuration Files
-
-### Single Unified .env File
-
-DECM uses a single `.env` file at the root level containing both backend and frontend configuration:
-
-- `.env.example` - Template for all environment variables (backend + frontend)
-- `.env` - Actual environment variables (gitignored)
+Files:
+- `.env.example` - Template (committed)
+- `.env` - Actual values (gitignored)
 - `.env.local` - Local overrides (gitignored)
 
-**Key Benefits**:
+**Frontend vars MUST be prefixed with `VITE_`** (Vite requirement)
 
-- Simplified configuration management
-- Single source of truth for all environment variables
-- Both Go backend and React frontend read from the same file
-- Frontend variables must be prefixed with `VITE_` (Vite requirement)
+## Naming Conventions
 
-## Environment Variable Naming
-
-### Conventions:
-
-- **All caps with underscores**: `DATABASE_URL`
-- **Prefix by context**:
-    - Backend: `API_`, `JWT_`, `GOOGLE_OAUTH_`
-    - Frontend: `VITE_` (required for Vite)
-    - Database: `DATABASE_`, `POSTGRES_`
-- **Descriptive names**: `JWT_SECRET_KEY` not `JWT_KEY`
+- ALL_CAPS_WITH_UNDERSCORES
+- Backend: `API_`, `JWT_`, `GOOGLE_OAUTH_`
+- Frontend: `VITE_*` (required)
+- Database: `POSTGRES_*`, `DATABASE_*`
 
 ## Backend Configuration (Go)
 

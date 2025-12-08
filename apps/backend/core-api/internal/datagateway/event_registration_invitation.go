@@ -29,6 +29,7 @@ type EventRegistrationInvitationDataGateway interface {
 	// Search with event ID and credential ID, (also search through email and wallet address if possible)
 	GetEventRegistrationInvitationByEventIDAndCredential(ctx context.Context, eventId uuid.UUID, credentialId uuid.UUID, email *string, walletAddress *string) (*entity.EventRegistrationInvitation, *entity.InboxMessage, error)
 	UpdateEventRegistrationInvitation(ctx context.Context, id uuid.UUID, params UpdateEventRegistrationInvitationParameters) (*entity.EventRegistrationInvitation, error)
+	UpdateEventRegistrationInvitationAcceptedStatus(ctx context.Context, id uuid.UUID, acceptedAt *time.Time) (*entity.EventRegistrationInvitation, error)
 	DeleteEventRegistrationInvitation(ctx context.Context, id uuid.UUID) error
 }
 
@@ -41,4 +42,5 @@ type UpdateEventRegistrationInvitationParameters struct {
 	Email               *string
 	PhoneNumber         *string
 	AcademicInstitution *string
+	AcceptedAt          *time.Time
 }

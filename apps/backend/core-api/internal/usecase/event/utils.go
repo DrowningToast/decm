@@ -17,9 +17,10 @@ func (u *EventUsecase) ToEventResponse(ctx context.Context, event *entity.Event)
 	}
 
 	return &EventResponse{
-		Id:                       event.ID,
+		Id:                       event.Id,
 		ChainID:                  int32(event.ChainId),
 		ContactNumber:            event.ContactNumber,
+		ContactAddress:           event.ContactAddress,
 		OwnerCredentialID:        event.OwnerCredentialId,
 		BannerPresignedURL:       bannerPresignedURL,
 		IconPresignedURL:         iconPresignedURL,

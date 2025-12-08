@@ -4,7 +4,7 @@ import { CertificateListPage } from "@/components/pages/Participant/Certificates
 const CertificatesPage = () => {
     return (
         <PageContainer>
-            <CertificateListPage />;
+            <CertificateListPage />
         </PageContainer>
     );
 };

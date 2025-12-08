@@ -37,6 +37,10 @@ func (u *ProfileUsecase) GetProfileByAuthenticationCredentialId(ctx context.Cont
 	return u.ProfileDg.GetProfileByAuthenticationCredentialId(ctx, authenticationCredentialId)
 }
 
+func (u *ProfileUsecase) GetProfileAndCredentialWithCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID) (*entity.Profile, *entity.AuthenticationCredential, error) {
+	return u.ProfileDg.GetProfileAndCredentialWithCredentialId(ctx, authenticationCredentialId)
+}
+
 func (u *ProfileUsecase) GetProfileByEmail(ctx context.Context, email string) (*entity.Profile, error) {
 	return u.ProfileDg.GetProfileByEmail(ctx, email)
 }

@@ -53,17 +53,23 @@ export const useOAuthOnboardUsecase = () => {
                         error,
                         {
                             onDuplicateEntry: () => {
-                                toast.error(t("flow.oauth_google.create_account_error_duplicate"));
+                                toast.error(
+                                    t("onboard.flow.oauth_google.create_account_error_duplicate"),
+                                );
                                 return;
                             },
                             onUnauthorized: () => {
                                 toast.error(
-                                    t("flow.oauth_google.create_account_error_expired_token"),
+                                    t(
+                                        "onboard.flow.oauth_google.create_account_error_expired_token",
+                                    ),
                                 );
                                 return;
                             },
                             onInternalServerError: () => {
-                                toast.error(t("flow.oauth_google.create_account_error_generic"));
+                                toast.error(
+                                    t("onboard.flow.oauth_google.create_account_error_generic"),
+                                );
                                 return;
                             },
                         },
@@ -99,11 +105,15 @@ export const useOAuthOnboardUsecase = () => {
                     error,
                     {
                         onInternalServerError: () => {
-                            toast.error(t("flow.oauth_google.create_account_error_generic"));
+                            toast.error(
+                                t("onboard.flow.oauth_google.create_account_error_generic"),
+                            );
                             return;
                         },
                         onDuplicateEntry: () => {
-                            toast.error(t("flow.oauth_google.create_account_error_duplicate"));
+                            toast.error(
+                                t("onboard.flow.oauth_google.create_account_error_duplicate"),
+                            );
                             return;
                         },
                     },
@@ -113,7 +123,7 @@ export const useOAuthOnboardUsecase = () => {
             return;
         }
 
-        toast.success(t("flow.oauth_google.create_profile_success"));
+        toast.success(t("onboard.flow.oauth_google.create_profile_success"));
         await refetchMyProfile();
         await navigate("/app");
     };

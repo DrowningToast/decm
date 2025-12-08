@@ -4,20 +4,9 @@ description: "Form handling patterns using React Hook Form, validation, and erro
 
 # Form Handling Patterns
 
-## Overview
-DECM uses React Hook Form for efficient form management with validation, error handling, and integration with backend APIs.
+**Tech**: React Hook Form + Zod + Radix UI
 
-## Tech Stack
-
-- **Form Management**: React Hook Form
-- **Validation**: Zod (schema validation)
-- **Backend Validation**: Go validator (struct tags)
-- **UI Components**: Radix UI + Tailwind CSS
-- **Type Safety**: TypeScript end-to-end
-
-## Setup
-
-### Install Dependencies
+Setup:
 ```bash
 pnpm add react-hook-form @hookform/resolvers zod
 ```
@@ -612,28 +601,18 @@ const schema = z.object({
 
 ## Best Practices
 
-### ✅ DO:
-- Use Zod for schema validation
-- Validate on both frontend and backend
-- Show clear, user-friendly error messages
-- Use i18n for all validation messages
-- Disable submit button while submitting
-- Clear errors on successful submission
-- Use appropriate input types (email, number, etc.)
-- Provide real-time validation feedback
-- Use controlled components for complex logic
+✅ DO:
+- Use Zod for validation
+- Validate on BOTH frontend and backend
+- i18n for all messages
+- Disable submit while submitting
 - Handle backend validation errors
 
-### ❌ DON'T:
+❌ DON'T:
 - Trust client-side validation only
-- Show technical error messages to users
-- Skip accessibility attributes (aria-invalid, aria-describedby)
-- Use inline validation for every keystroke (use onBlur)
-- Hard-code error messages
-- Submit forms multiple times
-- Ignore loading states
-- Skip error handling
-- Use uncontrolled components without reason
+- Show technical errors
+- Hard-code messages
+- Skip accessibility attributes
 
 ## Accessibility
 

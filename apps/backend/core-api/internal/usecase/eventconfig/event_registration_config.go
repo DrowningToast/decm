@@ -38,11 +38,21 @@ func (uc *EventConfigUsecase) CreateEventRegistrationConfig(ctx context.Context,
 		return nil, fmt.Errorf("event registration config already exists for event ID: %s", eventID.String())
 	}
 
+	// Hash registration password if provided
+	var registrationPassword pgtype.Text
+	if params.RegistrationPassword.Valid && params.RegistrationPassword.String != "" {
+		hashPwd, err := hashutils.HashPassword(params.RegistrationPassword.String)
+		if err != nil {
+			return nil, err
+		}
+		registrationPassword = pgmapper.StringPtrToPgText(&hashPwd)
+	}
+
 	// Create new config
 	createParams := generated.CreateEventRegistrationConfigParams{
 		EventID:                              eventID,
 		FinalCallForRegistration:             params.FinalCallForRegistration,
-		RegistrationPassword:                 params.RegistrationPassword,
+		RegistrationPassword:                 registrationPassword,
 		FirstNameRequirementStatus:           params.FirstNameRequirementStatus,
 		LastNameRequirementStatus:            params.LastNameRequirementStatus,
 		EmailRequirementStatus:               params.EmailRequirementStatus,

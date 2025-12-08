@@ -4,24 +4,28 @@ import (
 	"net/http"
 	"strconv"
 
+	issuer_usecase "apps/backend/core-api/internal/usecase/issuer"
+
 	"github.com/gofiber/fiber/v2"
 )
 
 // @Summary Get verified issuers
-// @Description Get verified issuers
+// @Description Get verified issuers with optional search query
 // @ID get-verified-issuers
 // @Tags Issuer
 // @Accept json
 // @Produce json
 // @Param limit query int false "Limit"
 // @Param offset query int false "Offset"
+// @Param search query string false "Search query (searches first name, last name, email, academic email, wallet address)"
 // @Success 200 {object} []entity.Profile
 // @Failure 400 {object} customerror.Err
 // @Failure 500 {object} customerror.Err
 // @Router /api/v1/issuers [get]
 func (h *Handler) GetVerifiedIssuers(c *fiber.Ctx) error {
-	queryLimit := c.Query("limit")
-	queryOffset := c.Query("offset")
+	queryLimit := c.Query("limit", "25")
+	queryOffset := c.Query("offset", "0")
+	searchQuery := c.Query("search")
 
 	limit, err := strconv.Atoi(queryLimit)
 	if err != nil {
@@ -32,10 +36,14 @@ func (h *Handler) GetVerifiedIssuers(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid offset"})
 	}
 
-	issuers, err := h.IssuerUc.GetVerifiedIssuers(c.Context(), limit, offset)
+	issuers, err := h.IssuerUc.GetVerifiedIssuers(c.Context(), issuer_usecase.GetVerifiedIssuersRequest{
+		SearchQuery: searchQuery,
+		Limit:       limit,
+		Offset:      offset,
+	})
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.Status(http.StatusOK).JSON(issuers)
+	return c.Status(fiber.StatusOK).JSON(issuers)
 }

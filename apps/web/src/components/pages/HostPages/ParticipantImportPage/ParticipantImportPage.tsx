@@ -5,11 +5,7 @@ import { useTranslation } from "react-i18next";
 import { ExcelUpload } from "./ExcelUpload";
 import { ExcelPreview } from "./ExcelPreview";
 
-import type {
-    EventEventResponse,
-    EventRegistrationInvitationImportEventParticipantsRequest,
-    EventRegistrationInvitationParticipantRequestItem,
-} from "@decm/api";
+import type { EventEventResponse, EventRegistrationParticipantRequestItem } from "@decm/api";
 import * as XLSX from "xlsx";
 import { useImportParticipants } from "@/hooks/events/useImportParticipants";
 
@@ -35,8 +31,8 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
         setShowPreview(false);
     };
 
-    const handleImport = (participantData: EventRegistrationInvitationParticipantRequestItem[]) => {
-        const request: EventRegistrationInvitationImportEventParticipantsRequest = {
+    const handleImport = (participantData: EventRegistrationParticipantRequestItem[]) => {
+        const request = {
             event_id: eventId,
             participants: participantData,
         };
@@ -47,13 +43,6 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
     const downloadTemplate = () => {
         // Create a simple Excel template with the required columns
         const templateData = [
-            {
-                [t("participantImport.templateColumns.firstName")]: "",
-                [t("participantImport.templateColumns.lastName")]: "",
-                [t("participantImport.templateColumns.email")]: "",
-                [t("participantImport.templateColumns.phoneNumber")]: "",
-                [t("participantImport.templateColumns.academicInstitution")]: "",
-            },
             {
                 [t("participantImport.templateColumns.firstName")]: "John",
                 [t("participantImport.templateColumns.lastName")]: "Doe",
@@ -193,6 +182,203 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
                     </div>
                 </div>
 
+                {/* Required Fields Info Section */}
+                <div className="bg-card rounded-lg p-6 mb-8 shadow-sm">
+                    <Typography
+                        variant="header"
+                        tag="h2"
+                        color="background"
+                        className="text-xl font-semibold mb-4"
+                    >
+                        {t("participantImport.requiredFormat")}
+                    </Typography>
+                    <Typography
+                        variant="text"
+                        tag="p"
+                        color="background-alt"
+                        className="text-sm mb-4"
+                    >
+                        {t("participantImport.requiredFormatDescription")}
+                    </Typography>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        {/* Required Fields */}
+                        <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="foreground"
+                                    className="text-sm font-bold"
+                                >
+                                    ✓
+                                </Typography>
+                            </div>
+                            <div>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background"
+                                    className="font-semibold"
+                                >
+                                    first_name
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="primary"
+                                    className="text-xs font-medium"
+                                >
+                                    {t("participantImport.columnHeader")}
+                                </Typography>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="foreground"
+                                    className="text-sm font-bold"
+                                >
+                                    ✓
+                                </Typography>
+                            </div>
+                            <div>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background"
+                                    className="font-semibold"
+                                >
+                                    last_name
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="primary"
+                                    className="text-xs font-medium"
+                                >
+                                    {t("participantImport.columnHeader")}
+                                </Typography>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="foreground"
+                                    className="text-sm font-bold"
+                                >
+                                    ✓
+                                </Typography>
+                            </div>
+                            <div>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background"
+                                    className="font-semibold"
+                                >
+                                    email
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="primary"
+                                    className="text-xs font-medium"
+                                >
+                                    {t("participantImport.columnHeader")}
+                                </Typography>
+                            </div>
+                        </div>
+
+                        {/* Optional Fields */}
+                        <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg border border-border">
+                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="background"
+                                    className="text-sm font-bold"
+                                >
+                                    ~
+                                </Typography>
+                            </div>
+                            <div>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background"
+                                    className="font-semibold"
+                                >
+                                    phone_number
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background-alt"
+                                    className="text-xs font-medium"
+                                >
+                                    {t("participantImport.optionalColumn")}
+                                </Typography>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg border border-border">
+                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="background"
+                                    className="text-sm font-bold"
+                                >
+                                    ~
+                                </Typography>
+                            </div>
+                            <div>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background"
+                                    className="font-semibold"
+                                >
+                                    academic_institution
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background-alt"
+                                    className="text-xs font-medium"
+                                >
+                                    {t("participantImport.optionalColumn")}
+                                </Typography>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <Button variant="secondary-light" onClick={downloadTemplate}>
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                color="background"
+                                className="font-medium"
+                            >
+                                {t("participantImport.downloadTemplate")}
+                            </Typography>
+                        </Button>
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="background-alt"
+                            className="text-sm"
+                        >
+                            {t("participantImport.downloadTemplateDescription")}
+                        </Typography>
+                    </div>
+                </div>
+
                 {/* File Upload Section */}
                 {!showPreview ? (
                     <div className="bg-card rounded-lg p-6 shadow-sm">
@@ -204,31 +390,6 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
                         >
                             {t("participantImport.uploadFile")}
                         </Typography>
-
-                        <div className="mb-4">
-                            <Typography
-                                variant="text"
-                                tag="p"
-                                color="background"
-                                className="text-sm mb-2"
-                            >
-                                {t("participantImport.downloadTemplateDescription")}
-                            </Typography>
-                            <Button
-                                variant="secondary-light"
-                                onClick={downloadTemplate}
-                                className="mb-4"
-                            >
-                                <Typography
-                                    variant="text"
-                                    tag="span"
-                                    color="background"
-                                    className="font-medium"
-                                >
-                                    {t("participantImport.downloadTemplate")}
-                                </Typography>
-                            </Button>
-                        </div>
 
                         <ExcelUpload
                             onFileSelect={handleFileSelect}

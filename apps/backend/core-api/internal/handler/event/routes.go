@@ -21,8 +21,11 @@ func (h *Handler) Mount(r fiber.Router) {
 
 	// HOST
 	eventGroup.Post("/", h.CreateEvent)
+
 	eventGroup.Post("/:event_id/issuers", h.CreateEventIssuer)
+	eventGroup.Get("/:event_id/participants", h.GetEventParticipants)
 	eventGroup.Post("/:event_id/certificates/import", h.ImportCertificateReceivers)
+	eventGroup.Post("/:event_id/certificates/publish", h.PublishEventCertificates)
 	eventGroup.Post("/:event_id/certificates/revoke", h.RevokeEventCertificates)
 	eventGroup.Post("/:event_id/certificates/revoke-all", h.RevokeAllEventCertificates)
 	eventGroup.Post("/:event_id/certificates/sign", h.SignEventCertificates)

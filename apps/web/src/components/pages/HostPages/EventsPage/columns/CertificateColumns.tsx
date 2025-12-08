@@ -42,6 +42,27 @@ export function CertificateColumns(
             accessorKey: "issuedAt",
             header: "Issued At",
             enableSorting: true,
+            cell: ({ row }) => {
+                const issuedAt = row.original.created_at;
+                if (!issuedAt) {
+                    return <span className="text-muted-foreground">-</span>;
+                }
+                const date = new Date(issuedAt);
+                const formattedDate = date.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                });
+                const formattedTime = date.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                });
+                return (
+                    <span>
+                        {formattedDate} {formattedTime}
+                    </span>
+                );
+            },
         },
         {
             accessorKey: "status",

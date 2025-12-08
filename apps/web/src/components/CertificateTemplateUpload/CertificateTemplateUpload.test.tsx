@@ -32,13 +32,6 @@ vi.mock("@/components/ui/alert", () => ({
     AlertDescription: ({ children }: React.PropsWithChildren) => <div>{children}</div>,
 }));
 
-// Mock icons
-vi.mock("lucide-react", () => ({
-    Upload: () => <span data-testid="upload-icon">📤</span>,
-    Info: () => <span data-testid="info-icon">ℹ️</span>,
-    Image: () => <span data-testid="image-icon">🖼️</span>,
-}));
-
 // Mock translation
 vi.mock("react-i18next", () => ({
     useTranslation: () => ({
@@ -51,7 +44,7 @@ describe("CertificateTemplateUpload Component", () => {
     const mockOnFileSelect = vi.fn();
     const availableKeywords = [
         { keyword: "{{ name }}", mandatory: true },
-        { keyword: "{{ eventName }}", mandatory: true },
+        { keyword: "{{ eventName }}", mandatory: false },
         { keyword: "{{ academicInstitutionName }}", mandatory: false },
     ];
 
@@ -101,7 +94,7 @@ describe("CertificateTemplateUpload Component", () => {
 
         // The component should render "common.required" for mandatory keywords
         const requiredBadges = screen.getAllByText("common.required");
-        expect(requiredBadges.length).toBe(2); // Two mandatory keywords
+        expect(requiredBadges.length).toBe(1); // One mandatory keyword ({{ name }})
     });
 
     it("should not show required badge for optional keywords", () => {
@@ -114,9 +107,9 @@ describe("CertificateTemplateUpload Component", () => {
             />,
         );
 
-        // Should have only 2 "required" badges, not 3
+        // Should have only 1 "required" badge for the one mandatory keyword
         const requiredBadges = screen.getAllByText("common.required");
-        expect(requiredBadges.length).toBe(2);
+        expect(requiredBadges.length).toBe(1);
     });
 
     it("should display upload button with correct text when no file selected", () => {

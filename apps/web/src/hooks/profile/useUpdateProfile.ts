@@ -1,7 +1,6 @@
-import { coreApiClient } from "@/lib/api/api";
 import { QUERY_KEY } from "@/lib/queryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { EntityProfile } from "@decm/api";
+import { authService } from "@/services/services";
 
 // Mock type for ProfileUpdateProfileRequest until API is regenerated
 export interface ProfileUpdateProfileRequest {
@@ -30,19 +29,34 @@ export const useUpdateProfile = () => {
 
     const mutation = useMutation({
         mutationFn: async (profile: ProfileUpdateProfileRequest) => {
-            // Get the current profile from cache to extract credential_id
-            const currentProfile = queryClient.getQueryData<EntityProfile>(QUERY_KEY.user.profile);
-            const credentialId = currentProfile?.authentication_credential_id;
+            // Get the current profile to extract credential_id
+            const currentProfile = await authService.getMyProfile();
 
-            if (!credentialId) {
+            if (!currentProfile?.authenticationCredentialId) {
                 throw new Error("No credential ID found. Please ensure you're logged in.");
             }
 
-            const response = await coreApiClient.v1.updateProfileByCredentialId(
-                { credentialId },
-                profile,
-            );
-            return response;
+            // Transform snake_case to camelCase for service layer
+            return authService.updateProfile(currentProfile.authenticationCredentialId, {
+                academicEmail: profile.academic_email,
+                academicInstitution: profile.academic_institution,
+                address: profile.address,
+                bio: profile.bio,
+                email: profile.email,
+                firstName: profile.first_name,
+                lastName: profile.last_name,
+                phoneNumber: profile.phone_number,
+                profilePictureUrl: profile.profile_picture_url,
+                isAcademicEmailPublic: profile.is_academic_email_public,
+                isAcademicInstitutionPublic: profile.is_academic_institution_public,
+                isAddressPublic: profile.is_address_public,
+                isBioPublic: profile.is_bio_public,
+                isEmailPublic: profile.is_email_public,
+                isFirstNamePublic: profile.is_first_name_public,
+                isLastNamePublic: profile.is_last_name_public,
+                isPhoneNumberPublic: profile.is_phone_number_public,
+                isProfilePicturePublic: profile.is_profile_picture_public,
+            });
         },
         onSuccess: () => {
             // Invalidate and refetch profile
