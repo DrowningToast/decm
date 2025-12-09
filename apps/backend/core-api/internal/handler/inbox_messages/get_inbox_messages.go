@@ -1,6 +1,7 @@
 package inboxmessages
 
 import (
+	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/inbox"
 
 	"github.com/cockroachdb/errors"
@@ -33,13 +34,27 @@ func (h *Handler) GetMyInboxMessages(c *fiber.Ctx) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get my inbox messages")
 	}
-	inboxMessagesViewModels := make([]inbox.InboxMessagesViewModel, len(messages))
-	for i, message := range messages {
+
+	// Enrich messages with certificate-specific data when applicable
+	inboxMessagesViewModels := make([]inbox.InboxMessagesViewModel, 0, len(messages))
+	for _, message := range messages {
 		viewModel, err := h.InboxUc.ToViewModel(c.Context(), *message)
 		if err != nil {
 			return errors.Wrap(err, "failed to convert inbox message to view model")
 		}
-		inboxMessagesViewModels[i] = *viewModel
+
+		// For certificate invitations, enrich with certificate data
+		if message.MessageType == entity.InboxMessageTypeEventCertificateInvitation {
+			enrichedViewModel, err := h.InboxUc.ToEnrichedCertificateViewModel(c.Context(), *message, *user)
+			if err != nil {
+				// If enrichment fails, fall back to basic view model
+				inboxMessagesViewModels = append(inboxMessagesViewModels, *viewModel)
+				continue
+			}
+			inboxMessagesViewModels = append(inboxMessagesViewModels, *enrichedViewModel)
+		} else {
+			inboxMessagesViewModels = append(inboxMessagesViewModels, *viewModel)
+		}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(GetInboxMessagesResponse{

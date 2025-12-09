@@ -695,7 +695,10 @@
                 "certificateContractAddress": "ที่อยู่สัญญาใบรับรอง",
                 "eventContractAddress": "ที่อยู่สัญญากิจกรรม",
                 "verifiableCredentialAttributes": "คุณสมบัติข้อมูลรับรองที่ตรวจสอบได้",
-                "downloadAttributes": "ดาวน์โหลดคุณสมบัติ"
+                "downloadAttributes": "ดาวน์โหลดคุณสมบัติ",
+                "certificateFromEvent": "ใบรับรองจาก {{eventName}}",
+                "certificatePreview": "ตัวอย่างใบรับรอง",
+                "imageLoadError": "ไม่สามารถโหลดภาพใบรับรองได้"
             }
         },
         "identities": {
@@ -730,6 +733,7 @@
             "mustBeInEvent": "ต้องเข้าร่วมกิจกรรมก่อน",
             "loadingDetails": "กำลังโหลดรายละเอียดกล่องข้อความ...",
             "failedToLoadDetails": "ไม่สามารถโหลดรายละเอียดกล่องข้อความได้",
+            "notFoundHint": "ไม่พบข้อความนี้ ข้อความอาจถูกลบไปแล้ว หรือคุณอาจยังไม่ได้เข้าร่วมกิจกรรมที่กำหนด",
             "messageType": {
                 "eventRegistrationInvitation": "คำเชิญลงทะเบียนกิจกรรม",
                 "certificateInvitation": "คำเชิญรับใบรับรอง",

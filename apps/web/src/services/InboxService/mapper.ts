@@ -37,6 +37,13 @@ export const mapInboxMessagesViewModelToInboxMessage = (
         updatedAt: new Date(viewModel.updated_at),
         hiddenAt: viewModel.hidden_at ? new Date(viewModel.hidden_at) : undefined,
         deletedAt: viewModel.deleted_at ? new Date(viewModel.deleted_at) : undefined,
+        // Certificate-specific fields (only populated for certificate invitation messages)
+        eventId: viewModel.event_id,
+        certificateId: viewModel.certificate_id,
+        certificateTitle: viewModel.certificate_title,
+        tokenId: viewModel.token_id,
+        hasParticipantJoinedEvent: viewModel.has_participant_joined_event,
+        eventName: viewModel.event_name,
     };
 };
 
