@@ -35,6 +35,11 @@ export function useClaimCertificate() {
             queryClient.invalidateQueries({
                 queryKey: QUERY_KEY.certificate.all,
             });
+            // Invalidate the my certificates list view model query
+            // This is used by useCertificateDetailUsecase to determine if certificate is claimed
+            queryClient.invalidateQueries({
+                queryKey: ["my-certificates-list-viewmodel"],
+            });
             queryClient.invalidateQueries({
                 queryKey: QUERY_KEY.inbox.all,
             });

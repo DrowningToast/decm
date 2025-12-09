@@ -67,7 +67,7 @@ type Querier interface {
 	GetEventCertificateFontFamilyByID(ctx context.Context, id int32) (EventCertificateFontFamily, error)
 	GetEventCertificateFontFamilyByName(ctx context.Context, fontFamilyName string) (EventCertificateFontFamily, error)
 	GetEventCertificateSignatureByID(ctx context.Context, id uuid.UUID) (EventCertificateSignature, error)
-	GetEventCertificateSignaturesByEventCertificateID(ctx context.Context, eventCertificateID uuid.UUID) ([]EventCertificateSignature, error)
+	GetEventCertificateSignaturesByEventCertificateConfigID(ctx context.Context, eventCertificateConfigID uuid.UUID) ([]EventCertificateSignature, error)
 	GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error)
 	GetEventContractByEventID(ctx context.Context, eventID uuid.UUID) (EventContract, error)
 	GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Context, arg GetEventIssuerByEventIDAndIssuerCredentialIDParams) (EventIssuer, error)

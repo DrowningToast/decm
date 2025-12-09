@@ -254,18 +254,24 @@ func int32PtrToString(weight *int32, defaultValue string) string {
 // renderSVGToPNG converts SVG string to PNG byte array
 // Uses chromedp with headless Chrome for full SVG specification support
 // This handles embedded images, patterns, custom fonts, and all SVG features
+// Renders at 2x resolution for high-DPI displays (Retina quality)
 func renderSVGToPNG(svgContent string) ([]byte, error) {
 	// Extract SVG dimensions from viewBox or width/height attributes
 	width, height := extractSVGDimensions(svgContent)
+
+	// Scale factor for high-resolution rendering (2x for Retina/high-DPI)
+	const scaleFactor = 2
+	renderWidth := width * scaleFactor
+	renderHeight := height * scaleFactor
 
 	// Create context with timeout for rendering
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// Create chromedp context with specific viewport size for high-resolution rendering
+	// Create chromedp context with scaled viewport size for high-resolution rendering
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.WindowSize(width, height),
-		chromedp.Flag("force-device-scale-factor", "1"), // Ensure 1:1 pixel ratio
+		chromedp.WindowSize(renderWidth, renderHeight),
+		chromedp.Flag("force-device-scale-factor", fmt.Sprintf("%d", scaleFactor)), // 2x device pixel ratio
 	)
 	allocCtx, cancel := chromedp.NewExecAllocator(ctx, opts...)
 	defer cancel()
@@ -276,6 +282,7 @@ func renderSVGToPNG(svgContent string) ([]byte, error) {
 	var buf []byte
 
 	// Wrap SVG in HTML for proper rendering with Google Fonts
+	// Use original dimensions for CSS, but render at 2x scale
 	html := fmt.Sprintf(`<!DOCTYPE html>
 <html>
 <head>
@@ -301,9 +308,9 @@ func renderSVGToPNG(svgContent string) ([]byte, error) {
 <body>
 %s
 </body>
-</html>`, width, height, svgContent)
+</html>`, renderWidth, renderHeight, svgContent)
 
-	// Render SVG using headless Chrome at intrinsic resolution
+	// Render SVG using headless Chrome at 2x resolution
 	if err := chromedp.Run(chromedpCtx,
 		chromedp.Navigate("about:blank"),
 		chromedp.ActionFunc(func(ctx context.Context) error {

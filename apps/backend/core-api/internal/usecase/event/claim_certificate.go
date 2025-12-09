@@ -293,8 +293,14 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("no issuers found for this event"))
 	}
 
-	// 2. Get all certificate signatures (one per issuer)
-	certificateSignatures, err := uc.EventCertificateSignatureDataGateway.GetEventCertificateSignaturesByEventCertificateID(ctx, certificate.Id)
+	// 2. Get certificate config to get config ID
+	certificateConfig, err := uc.EventCertificateConfigDg.GetEventCertificateConfigByEventID(ctx, certificate.EventId)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get certificate config"))
+	}
+
+	// 3. Get all certificate signatures (one per issuer)
+	certificateSignatures, err := uc.EventCertificateSignatureDataGateway.GetEventCertificateSignaturesByEventCertificateConfigID(ctx, certificateConfig.ID)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get certificate signatures"))
 	}
@@ -302,13 +308,13 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("not all issuers have signed the certificate"))
 	}
 
-	// 3. Get event details
+	// 4. Get event details
 	event, err := uc.EventDataGateway.GetEventById(ctx, certificate.EventId)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get event"))
 	}
 
-	// 4. Get host credentials (for public key)
+	// 5. Get host credentials (for public key)
 	hostCredential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx, event.OwnerCredentialId)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get host credentials"))
@@ -482,7 +488,11 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	// Use the participant's signMessage and signature that were passed to this function
 	// These were created in ClaimCertificateWithPin using the participant's private key
 	participantSignMessageStr := signMessage // The message the participant signed
-	participantSignatureBytes := signature   // The signature bytes from the participant
+
+	// CRITICAL: Make a defensive copy of the signature to ensure it's never mutated
+	// This is the signature that will be passed to the contract - it must remain unchanged
+	participantSignatureBytes := make([]byte, len(signature))
+	copy(participantSignatureBytes, signature)
 
 	// Parameter 10: Host's signature of the raw JSON (storedSignMessageStr)
 	// This is the host's signature of the original JSON message stored in the database
@@ -491,20 +501,6 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	if !strings.HasPrefix(hostSignatureStr, "0x") {
 		hostSignatureStr = "0x" + hostSignatureStr
 	}
-
-	// Convert participant signature to hex string for logging/debugging (not used in contract call)
-	participantSignatureStr := fmt.Sprintf("0x%x", participantSignatureBytes)
-
-	slog.Info("📝 Using signatures for claim transaction",
-		"participant_sign_message", participantSignMessageStr,
-		"participant_sign_message_length", len(participantSignMessageStr),
-		"participant_address", participantAddress.Hex(),
-		"stored_sign_message", storedSignMessageStr,
-		"stored_sign_message_length", len(storedSignMessageStr),
-		"host_signature_hex", hostSignatureStr,
-		"participant_signature_bytes_length", len(participantSignatureBytes),
-		"note", "Participant signature used for param 8&9 (verification), host signature used for param 10 (metadata), stored message used for param 12 (metadata)",
-	)
 
 	// Parameter 11: hostPublicKey
 	hostPublicKey := hostCredential.WalletAddress // Using wallet address as public key identifier
@@ -540,7 +536,18 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	// ============================================
 	// IDEMPOTENCY CHECK: Handle different states
 	// ============================================
-
+	//
+	// This section implements a three-tier idempotency system to handle:
+	// 1. Normal flow: NFT not minted → Mint and update DB
+	// 2. Recovery flow: NFT minted but DB not updated → Query events and update DB only
+	// 3. Already claimed: NFT minted AND DB updated → Return error
+	//
+	// RECOVERY EFFICIENCY:
+	// - Uses indexed event parameters (receiverAddress) for O(1) blockchain filtering
+	// - CertificateMinted event has tokenId and receiverAddress indexed
+	// - Filters by receiverAddress first, then matches certificateId (non-indexed string)
+	// - This is much more efficient than iterating through all tokens or scanning all blocks
+	//
 	// Check current state: Is NFT minted on-chain? Is DB updated?
 	certificateContractInstance, err := certificateContract.NewEventCertificate(common.HexToAddress(*certificate.EventCertificateAddress), client)
 	if err != nil {
@@ -551,23 +558,14 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	isNftMinted := false
 	var onChainTokenId *uint64
 
-	slog.Info("🔒 Checking idempotency state",
-		"certificate_id", certificate.Id.String(),
-		"db_token_id", certificate.CertificateTokenId,
-		"contract_address", certificate.EventCertificateAddress,
-	)
-
 	// Check if token counter exists and try to find minted certificate
-	// Note: This is a simplified check - in production you might want to query events
-	// or use a mapping in the contract for certificateId -> tokenId lookup
+	// Strategy 1: If DB has token ID, verify it on-chain
+	// Strategy 2: If DB doesn't have token ID, query blockchain events for this certificateId
+	// This uses indexed event parameters (receiverAddress) for efficient O(1) filtering
 	if certificate.CertificateTokenId != nil {
 		// DB says it's minted, verify on-chain
 		tokenId := new(big.Int)
 		tokenId.SetString(*certificate.CertificateTokenId, 10)
-
-		slog.Info("📋 Database indicates certificate already has token ID, verifying on-chain",
-			"token_id", *certificate.CertificateTokenId,
-		)
 
 		// Try to get token data - if it succeeds, NFT exists
 		_, err := certificateContractInstance.GetTokenData(nil, tokenId)
@@ -575,205 +573,244 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 			isNftMinted = true
 			tokenIdUint64 := tokenId.Uint64()
 			onChainTokenId = &tokenIdUint64
-			slog.Info("✅ NFT verified on-chain", "token_id", tokenIdUint64)
+			slog.Info("Verified NFT exists on-chain from DB token ID", "token_id", tokenIdUint64, "certificate_id", certificate.Id)
 		} else {
-			slog.Warn("⚠️ Database has token ID but NFT not found on-chain", "error", err.Error())
+			slog.Warn("Database has token ID but NFT not found on-chain - possible token burn or invalid state",
+				"token_id", *certificate.CertificateTokenId,
+				"certificate_id", certificate.Id,
+				"error", err.Error())
+		}
+	} else {
+		// DB doesn't have token ID - query blockchain for CertificateMinted events
+		// This handles the recovery case where minting succeeded but DB update failed
+		// EFFICIENT: Uses indexed receiverAddress parameter for O(1) event filtering
+		currentBlock, err := client.BlockNumber(ctx)
+		if err != nil {
+			slog.Warn("Failed to get current block number for recovery - skipping event query",
+				"certificate_id", certificate.Id,
+				"error", err.Error())
+		} else {
+			// Look back a reasonable number of blocks (2000 blocks = ~7 hours on most chains)
+			// Most recovery scenarios happen within hours of minting
+			// If needed, we can extend this or make it configurable
+			fromBlock := uint64(0)
+			lookbackBlocks := uint64(2000)
+			if currentBlock > lookbackBlocks {
+				fromBlock = currentBlock - lookbackBlocks
+			}
+
+			filterOpts := &bind.FilterOpts{
+				Start:   fromBlock,
+				End:     &currentBlock,
+				Context: ctx,
+			}
+
+			// Filter by indexed receiverAddress for efficient O(1) lookup
+			// Then iterate through filtered results to match certificateId (non-indexed string)
+			receiverAddresses := []common.Address{*participantAddress}
+			iter, err := certificateContractInstance.FilterCertificateMinted(filterOpts, nil, receiverAddresses)
+			if err != nil {
+				slog.Warn("Failed to filter CertificateMinted events for recovery",
+					"certificate_id", certificate.Id,
+					"receiver_address", participantAddress.Hex(),
+					"from_block", fromBlock,
+					"to_block", currentBlock,
+					"error", err.Error())
+			} else {
+				defer iter.Close()
+
+				targetCertId := certificate.Id.String()
+				var matchingEvents []*certificateContract.EventCertificateCertificateMinted
+
+				// Collect all matching events (should typically be 0 or 1)
+				for iter.Next() {
+					event := iter.Event
+					if event.CertificateId == targetCertId {
+						matchingEvents = append(matchingEvents, event)
+					}
+				}
+
+				if iter.Error() != nil {
+					slog.Warn("Error iterating CertificateMinted events",
+						"certificate_id", certificate.Id,
+						"error", iter.Error())
+				}
+
+				// Handle matching events
+				if len(matchingEvents) > 0 {
+					if len(matchingEvents) > 1 {
+						slog.Warn("Multiple CertificateMinted events found for certificate - using first match",
+							"certificate_id", certificate.Id,
+							"count", len(matchingEvents))
+					}
+
+					// Use the first (and typically only) matching event
+					event := matchingEvents[0]
+					tokenIdUint64 := event.TokenId.Uint64()
+
+					// CRITICAL: Verify the token still exists on-chain before marking as minted
+					// This handles edge cases like token burns or contract state changes
+					tokenIdBigInt := new(big.Int).SetUint64(tokenIdUint64)
+					_, err := certificateContractInstance.GetTokenData(nil, tokenIdBigInt)
+					if err != nil {
+						slog.Warn("Found CertificateMinted event but token no longer exists on-chain - possible burn",
+							"certificate_id", certificate.Id,
+							"token_id", tokenIdUint64,
+							"tx_hash", event.Raw.TxHash.Hex(),
+							"error", err.Error())
+						// Don't mark as minted if token doesn't exist
+					} else {
+						isNftMinted = true
+						onChainTokenId = &tokenIdUint64
+						slog.Info("Recovery: Found already-minted NFT via event query",
+							"certificate_id", certificate.Id,
+							"token_id", tokenIdUint64,
+							"tx_hash", event.Raw.TxHash.Hex(),
+							"block_number", event.Raw.BlockNumber,
+							"receiver_address", event.ReceiverAddress.Hex())
+					}
+				} else {
+					slog.Debug("No CertificateMinted events found for certificate in lookback window",
+						"certificate_id", certificate.Id,
+						"receiver_address", participantAddress.Hex(),
+						"from_block", fromBlock,
+						"to_block", currentBlock)
+				}
+			}
 		}
 	}
 
 	// Decision matrix based on state
 	isDbUpdated := certificate.CertificateTokenId != nil
 
-	slog.Info("🔍 Idempotency check result",
-		"is_nft_minted", isNftMinted,
-		"is_db_updated", isDbUpdated,
-	)
-
 	// Case 1: NFT minted AND DB updated → Already claimed
 	if isNftMinted && isDbUpdated {
-		slog.Info("🚫 Certificate already claimed (Case 1: NFT minted + DB updated)")
 		return nil, customerror.NewWithPreset(
 			&customerror.ErrInvalidArgument,
 			errors.New(string(ClaimCertificateUserErrorCertificateAlreadyClaimed)),
 		)
 	}
 
-	// Case 2: NFT minted BUT DB not updated → Only update DB
+	// Case 2: NFT minted BUT DB not updated → Only update DB (Recovery Flow)
+	// This handles the scenario where:
+	// - Minting transaction succeeded on-chain
+	// - Database update failed or was interrupted
+	// - User retries claiming, and we recover the token ID from blockchain events
 	if isNftMinted && !isDbUpdated {
-		slog.Info("🔄 NFT already minted but DB not updated (Case 2: Recovery mode)")
+		slog.Info("Recovery mode: NFT minted on-chain but DB not updated - syncing database",
+			"certificate_id", certificate.Id,
+			"token_id", onChainTokenId)
+
 		if onChainTokenId == nil {
-			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("token ID not found despite NFT being minted"))
+			return nil, customerror.Parse(&customerror.ErrInternalServer,
+				errors.New("token ID not found despite NFT being minted - this should not happen"))
+		}
+
+		// Final verification: Double-check token exists before updating DB
+		tokenIdBigInt := new(big.Int).SetUint64(*onChainTokenId)
+		_, err := certificateContractInstance.GetTokenData(nil, tokenIdBigInt)
+		if err != nil {
+			return nil, customerror.Parse(&customerror.ErrInternalServer,
+				errors.Wrapf(err, "token ID %d found in events but token does not exist on-chain - possible burn or invalid state", *onChainTokenId))
 		}
 
 		tokenIdStr := fmt.Sprintf("%d", *onChainTokenId)
 
-		// Update database only
+		// Update database with recovered token ID
+		// CRITICAL: Preserve all existing fields to avoid null constraint violations
 		updatedCert, err := uc.EventCertificateDataGateway.UpdateEventCertificate(ctx, certificate.Id, eventdatagateway.UpdateEventCertificateParameters{
-			CertificateTokenID: &tokenIdStr,
+			ReceiverCredentialID:    certificate.ReceiverCredentialId,
+			ReceiverEmail:           certificate.ReceiverEmail,
+			Name:                    certificate.Name,
+			AcademicInstitution:     certificate.AcademicInstitution,
+			CertificateTitle:        certificate.CertificateTitle,
+			CertificateSubtitle:     certificate.CertificateSubtitle,
+			EventContractAddress:    &certificate.EventContractAddress,
+			EventCertificateAddress: certificate.EventCertificateAddress,
+			CertificateTokenID:      &tokenIdStr,
+			RevokedAt:               certificate.RevokedAt,
+			Digest:                  certificate.CertificateDigest,
 		})
 		if err != nil {
-			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to update certificate with existing token ID"))
+			return nil, customerror.Parse(&customerror.ErrInternalServer,
+				errors.Wrapf(err, "failed to update certificate with recovered token ID %s", tokenIdStr))
 		}
 
-		slog.Info("✅ Database updated with existing token ID", "token_id", tokenIdStr)
+		slog.Info("Recovery successful: Database synced with on-chain token ID",
+			"certificate_id", certificate.Id,
+			"token_id", tokenIdStr)
+
 		return updatedCert, nil
 	}
 
 	// Case 3: NFT NOT minted (regardless of DB state) → Mint and update DB
-	slog.Info("🎯 Proceeding to mint NFT (Case 3: NFT not minted)")
 	// ============================================
-	// CREATE FRESH SIGNATURE FOR CLAIM TRANSACTION
+	// VALIDATE PARTICIPANT SIGN MESSAGE MATCHES CONTRACT
 	// ============================================
-	// Get system transactor first (needed for signature creation and transaction)
+	// CRITICAL: Verify that the participant's sign message uses the correct contract address
+	// This must match the certificate contract address used in the contract call
+	certificateContractAddr := common.HexToAddress(*certificate.EventCertificateAddress)
+	deadlineBlockFromMessage, err := cyptoutils.ExtractDeadlineBlockFromSignMessage(participantSignMessageStr)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.Wrap(err, "failed to extract deadline block from participant sign message"))
+	}
+	isValidMessage, err := cyptoutils.ValidateSignMessage(participantSignMessageStr, *participantAddress, certificateContractAddr, deadlineBlockFromMessage)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.Wrap(err, "failed to validate participant sign message"))
+	}
+	if !isValidMessage {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("participant sign message does not match certificate contract address or participant address"))
+	}
+
 	transactor, err := cyptoutils.GetKeyedTransactor()
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get system transactor"))
 	}
 
-	// ============================================
-	// LOG MINTING PARAMETERS FOR DEBUGGING
-	// ============================================
-	logger := slog.With(
-		"certificate_id", certificateId,
-		"receiver_address", receiverAddress.Hex(),
-		"contract_address", certificate.EventCertificateAddress,
-		"transactor_address", transactor.From.Hex(),
-		"user_id", userId,
-		"issuer_id", issuerId,
-		"num_issuer_addresses", len(issuerAddresses),
-		"num_issuer_proofs", len(issuerProofs),
-		"certificate_title", certificateTitle,
-		"certificate_subtitle", certificateSubtitle,
-		"data_hash", userDataHashStr,
-	)
-
-	logger.Info("🚀 Attempting to mint certificate NFT")
-	logger.Debug("Mint parameters",
-		"encrypted_user_data_length", len(encryptedUserData),
-		"backend_encrypted_user_data_length", len(backendEncryptedUserData),
-		"user_encrypted_proof_length", len(userEncryptedProof),
-		"backend_encrypted_proof_length", len(backendEncryptedProof),
-		"participant_sign_message", participantSignMessageStr,
-		"stored_sign_message", storedSignMessageStr,
-		"participant_signature_length", len(participantSignatureBytes),
-	)
-
-	// Pre-flight check: Verify signature hasn't been used (replay prevention)
-	// The contract's recoverSigner marks signatures as used, so if this was used before, it will revert
+	// Pre-flight checks
 	var isSignatureUsed bool
 	isSignatureUsed, err = certificateContractInstance.UsedSignatures(nil, participantSignatureBytes)
 	if err != nil {
-		slog.Warn("⚠️ Could not check if signature was already used", "error", err.Error())
-		isSignatureUsed = false // Default to false if check fails (will be caught by contract if actually used)
+		slog.Warn("Could not check if signature was already used", "error", err.Error())
+		isSignatureUsed = false
 	} else if isSignatureUsed {
-		logger.Error("❌ CRITICAL: Participant signature has already been used! This will cause contract revert.",
-			"participant_signature", participantSignatureStr,
-			"note", "Each signature can only be used once. Participant must create a new signature to claim.",
-		)
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument,
 			errors.New("participant signature has already been used in a previous transaction"))
-	} else {
-		logger.Info("✅ Signature replay check passed", "signature_not_used", true)
 	}
 
-	// Note: Unlike join_event's addParticipant (which has no access control),
-	// mintNft DOES check access control via requireHostOrAdmin(signer, msg.sender).
-	// The signer must be the participant claiming the certificate, and the system transactor
-	// must be authorized to send the transaction.
-	logger.Info("🔐 Access control will be verified by contract",
-		"participant_address", participantAddress.Hex(),
-		"system_transactor", transactor.From.Hex(),
-		"note", "Contract will verify: signer is participant AND transactor is allowed sender",
-	)
-
-	// Pre-flight check: Verify receiver address is not zero
 	if receiverAddress == (common.Address{}) {
-		logger.Error("❌ CRITICAL: Receiver address is zero address! Contract will revert.")
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument,
 			errors.New("receiver address cannot be zero address"))
 	}
-	logger.Info("✅ Receiver address check passed", "receiver_address", receiverAddress.Hex())
 
-	// DIAGNOSTIC: Check if receiver is a contract (must implement ERC721Receiver)
-	code, err := client.CodeAt(ctx, receiverAddress, nil)
-	if err == nil && len(code) > 0 {
-		logger.Warn("⚠️ Receiver is a smart contract - must implement ERC721Receiver interface",
-			"receiver", receiverAddress.Hex(),
-			"code_length", len(code),
-		)
-	}
-
-	// DIAGNOSTIC: Verify signature locally before sending to contract
-	// This mimics exactly what the contract will do in ThemisUtils.recoverSigner
-	slog.Info("🔬 LOCAL SIGNATURE VERIFICATION (mimics contract)",
-		"participant_sign_message", participantSignMessageStr,
-		"participant_sign_message_length", len(participantSignMessageStr),
-		"participant_signature_hex", participantSignatureStr,
-		"participant_signature_bytes_length", len(participantSignatureBytes),
-		"signature_v_value", participantSignatureBytes[64],
-	)
-
-	// Verify signature V value
+	// Verify signature format
 	if len(participantSignatureBytes) != 65 {
-		logger.Error("❌ CRITICAL: Invalid signature length!", "length", len(participantSignatureBytes), "expected", 65)
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument,
 			errors.Errorf("invalid signature length: got %d, expected 65", len(participantSignatureBytes)))
 	}
 	if participantSignatureBytes[64] != 27 && participantSignatureBytes[64] != 28 {
-		logger.Error("❌ CRITICAL: Invalid signature V value!",
-			"v", participantSignatureBytes[64],
-			"expected", "27 or 28",
-			"note", "Signature was mutated or created incorrectly",
-		)
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument,
 			errors.Errorf("invalid signature v value: got %d, expected 27 or 28", participantSignatureBytes[64]))
 	}
 
-	// Simulate contract's signature recovery (using participant's message for verification)
+	// Verify signature locally before sending to contract
 	contractMessageHash := cyptoutils.HashEthereumMessage(participantSignMessageStr)
-
-	// Make a copy before verification to avoid mutation
 	participantSignatureBytesCopy := make([]byte, len(participantSignatureBytes))
 	copy(participantSignatureBytesCopy, participantSignatureBytes)
 
 	localRecoveredPubKey, err := cyptoutils.RecoverPublicKeyFromSignature(contractMessageHash, participantSignatureBytesCopy)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument,
-			errors.Wrapf(err, "local signature recovery failed - contract will reject this signature"))
+			errors.Wrapf(err, "local signature recovery failed"))
 	}
 
 	localRecoveredAddress := cyptoutils.PublicKeyToAddress(localRecoveredPubKey)
-	expectedParticipantAddress := *participantAddress
-
-	// Verify that the signature was created with the participant's private key
-	if localRecoveredAddress.Hex() != expectedParticipantAddress.Hex() {
+	if localRecoveredAddress.Hex() != participantAddress.Hex() {
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument,
-			errors.Errorf("signature verification failed: recovered %s, expected participant address %s",
-				localRecoveredAddress.Hex(), expectedParticipantAddress.Hex()))
+			errors.Errorf("signature verification failed: recovered %s, expected %s",
+				localRecoveredAddress.Hex(), participantAddress.Hex()))
 	}
 
-	// The contract's recoverSigner expects the original message string (not the digest)
-	// because it applies MessageHashUtils.toEthSignedMessageHash() to the input
-	// We sign with HashEthereumMessage which matches what the contract will compute
-	//
-	// CRITICAL: The signature for parameters 8 and 9 MUST come from the PARTICIPANT
-	// who is claiming the certificate, NOT from the host/system. The participant proves
-	// authorization by signing the message with their private key.
-	//
-	// Parameter 10: Host's signature of the raw JSON (storedSignMessageStr) - this is the
-	// host's signature of the original JSON message that was stored when certificates were imported.
-	//
-	// Comparison with update_event.go (working):
-	// - update_event.go: Host signs message using GetSignMessage, hashes it, signs hash, passes original message to contract
-	// - claim_certificate.go: PARTICIPANT signs message using GetSignMessage (params 8&9), HOST signature used for param 10 (metadata)
-	participantSignMsgPreview := participantSignMessageStr
-	if len(participantSignMsgPreview) > 100 {
-		participantSignMsgPreview = participantSignMsgPreview[:100] + "..."
-	}
-	storedSignMsgPreview := storedSignMessageStr
-	if len(storedSignMsgPreview) > 100 {
-		storedSignMsgPreview = storedSignMsgPreview[:100] + "..."
-	}
 	tx, err := certificateContractInstance.MintNft(
 		transactor,
 		receiverAddress,
@@ -796,99 +833,30 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		issuerProofs,
 	)
 	if err != nil {
-		logger.Error("❌ Failed to mint certificate NFT", "error", err.Error())
-
-		// Try to extract detailed revert reason from error message
-		revertReason := extractRevertReasonFromError(err)
-
-		// Enhanced error diagnostics for transaction revert
-		if strings.Contains(err.Error(), "execution reverted") || strings.Contains(err.Error(), "revert") {
-			logger.Error("🔍 Transaction reverted - Detailed analysis:",
-				"recovered_signer", hostCredential.WalletAddress,
-				"system_transactor", transactor.From.Hex(),
-				"receiver_address", receiverAddress.Hex(),
-				"participant_signature", participantSignatureStr,
-				"host_signature", hostSignatureStr,
-				"participant_sign_message", participantSignMessageStr,
-				"stored_sign_message", storedSignMessageStr,
-				"participant_address", participantAddress.Hex(),
-				"revert_reason_extracted", revertReason,
-				"possible_issues", []string{
-					"1. Signature replay: Participant signature already used (check signature usage)",
-					"2. Invalid signature: Participant signature format/validity issue",
-					"3. Access control: Participant not authorized OR system transactor not allowed",
-					"4. Zero address: Receiver address is zero (unlikely - we check this)",
-					"5. ERC721 hook failure: Receiver contract's onERC721Received failed",
-					"6. Out of gas: Parameters too large (check string/array lengths)",
-					"7. Contract mismatch: Sign message contract address doesn't match",
-				},
-				"preflight_checks", map[string]interface{}{
-					"signature_used": isSignatureUsed,
-					"receiver_zero":  receiverAddress == (common.Address{}),
-				},
-				"detected_errors", func() []string {
-					errStr := err.Error()
-					errors := []string{}
-					if strings.Contains(errStr, "Themis__InvalidSignature") || strings.Contains(errStr, "InvalidSignature") {
-						errors = append(errors, "Themis__InvalidSignature: Signature recovery failed")
-					}
-					if strings.Contains(errStr, "Themis__SignatureAlreadyUsed") || strings.Contains(errStr, "SignatureAlreadyUsed") {
-						errors = append(errors, "Themis__SignatureAlreadyUsed: Signature replay")
-					}
-					if strings.Contains(errStr, "Not host or admin") || strings.Contains(errStr, "allowed msg sender") {
-						errors = append(errors, "Access Control: Neither signer is host/admin NOR transactor is allowed")
-					}
-					return errors
-				}(),
-				"full_error_message", err.Error(),
-			)
-		}
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to mint certificate NFT"))
 	}
 
-	logger.Info("✅ Transaction submitted successfully", "tx_hash", tx.Hash().Hex())
-
-	logger.Info("⏳ Waiting for transaction to be mined...")
 	receipt, err := bind.WaitMined(ctx, client, tx)
 	if err != nil {
-		logger.Error("❌ Transaction mining failed", "tx_hash", tx.Hash().Hex(), "error", err.Error())
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "transaction mining failed: tx=%s", tx.Hash().Hex()))
 	}
 
-	logger.Info("📦 Transaction mined", "tx_hash", tx.Hash().Hex(), "gas_used", receipt.GasUsed, "status", receipt.Status)
-
 	if receipt.Status != types.ReceiptStatusSuccessful {
-		logger.Error("❌ Transaction reverted on-chain",
-			"tx_hash", tx.Hash().Hex(),
-			"gas_used", receipt.GasUsed,
-			"block_number", receipt.BlockNumber,
-		)
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Errorf("transaction reverted (tx=%s, gas=%d)", tx.Hash().Hex(), receipt.GasUsed))
 	}
 
-	// ============================================
-	// EXTRACT TOKEN ID FROM EVENT LOGS
-	// ============================================
-
-	logger.Info("🔍 Parsing transaction logs for CertificateMinted event", "num_logs", len(receipt.Logs))
-
-	// Parse CertificateMinted event to get tokenId
+	// Extract token ID from event logs
 	var mintedTokenId *big.Int
-	for i, log := range receipt.Logs {
+	for _, log := range receipt.Logs {
 		event, err := certificateContractInstance.ParseCertificateMinted(*log)
 		if err != nil {
-			// Not the event we're looking for, continue
-			logger.Debug("Skipping log entry", "log_index", i, "topics_count", len(log.Topics))
 			continue
 		}
-		// Found the CertificateMinted event
 		mintedTokenId = event.TokenId
-		logger.Info("✅ Found CertificateMinted event", "token_id", mintedTokenId.String(), "log_index", i)
 		break
 	}
 
 	if mintedTokenId == nil {
-		logger.Error("❌ Failed to find CertificateMinted event in transaction logs")
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("failed to extract token ID from minting event"))
 	}
 
@@ -899,7 +867,17 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	tokenIdStr := mintedTokenId.String()
 
 	updatedCertificate, err := uc.EventCertificateDataGateway.UpdateEventCertificate(ctx, certificate.Id, eventdatagateway.UpdateEventCertificateParameters{
-		CertificateTokenID: &tokenIdStr,
+		ReceiverCredentialID:    certificate.ReceiverCredentialId,
+		ReceiverEmail:           certificate.ReceiverEmail,
+		Name:                    certificate.Name,
+		AcademicInstitution:     certificate.AcademicInstitution,
+		CertificateTitle:        certificate.CertificateTitle,
+		CertificateSubtitle:     certificate.CertificateSubtitle,
+		EventContractAddress:    &certificate.EventContractAddress,
+		EventCertificateAddress: certificate.EventCertificateAddress,
+		CertificateTokenID:      &tokenIdStr,
+		RevokedAt:               certificate.RevokedAt,
+		Digest:                  certificate.CertificateDigest,
 	})
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "NFT minted (tokenId=%s, tx=%s) but failed to update database", tokenIdStr, tx.Hash().Hex()))

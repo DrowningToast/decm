@@ -54,8 +54,6 @@ CREATE TABLE event_issuers (
     issuer_credential_id UUID NOT NULL REFERENCES authentication_credentials(id) ON DELETE CASCADE,
     -- 0: Not Signed, 1: Signed
     is_signed INTEGER NOT NULL DEFAULT 0,
-    signature TEXT,
-    sign_message TEXT,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()

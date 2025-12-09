@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { useCertificateDetailUsecase } from "./useCertificateDetailUsecase";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
 import { useClaimCertificate } from "@/hooks/useClaimCertificate";
 import { useCertificateImage } from "@/hooks/useCertificateImage";
+import { useCertificateDetailNavStore } from "@/components/BottomNav/stores/certificates";
 
 interface CertificateDetailProps {
     certificateId: string;
@@ -21,6 +22,7 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
     const { mutateAsync: openPasswordPrompt } = usePasswordPrompt();
     const { claimCertificate, isClaiming } = useClaimCertificate();
     const [isProcessing, setIsProcessing] = useState(false);
+    const { setImageUrl } = useCertificateDetailNavStore();
 
     // Fetch certificate image with authentication
     const {
@@ -31,6 +33,14 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
         certificateId,
         enabled: !!certificate,
     });
+
+    // Store image URL in nav store for download functionality
+    useEffect(() => {
+        setImageUrl(certificateImageUrl);
+        return () => {
+            setImageUrl(null);
+        };
+    }, [certificateImageUrl, setImageUrl]);
 
     const handleClaimCertificate = async () => {
         if (!certificate) return;
@@ -158,7 +168,7 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                 </div>
 
                 {/* Certificate Image */}
-                <div className="w-full rounded-lg overflow-hidden relative">
+                <div className="w-full xl:max-w-2xl 2xl:max-w-3xl mx-auto rounded-lg overflow-hidden relative">
                     {/* Aspect ratio container using padding (4:3 ratio) */}
                     <div className="relative w-full" style={{ paddingBottom: "75%" }}>
                         {isImageLoading ? (

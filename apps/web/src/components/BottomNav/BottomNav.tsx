@@ -92,12 +92,12 @@ export const BottomNav = ({
             {/* Desktop - Fixed Width */}
             <div
                 className={cn(
-                    "hidden md:flex fixed bottom-12 left-1/2 transform -translate-x-1/2 justify-center z-50 pointer-events-auto w-[343px]",
+                    "hidden md:flex fixed bottom-12 left-1/2 transform -translate-x-1/2 justify-center z-50 pointer-events-auto w-[700px]",
                     className,
                 )}
             >
-                <BottomContainerProvider onBack={onBack} className="w-auto">
-                    <div className="flex flex-col gap-1">{content}</div>
+                <BottomContainerProvider onBack={onBack} className="w-full">
+                    <div className="flex flex-col gap-1 w-full">{content}</div>
                 </BottomContainerProvider>
             </div>
         </>
