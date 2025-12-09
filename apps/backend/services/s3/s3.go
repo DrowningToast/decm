@@ -111,7 +111,7 @@ func (s *S3Service) GetS3UploadRequestObject(entityType StorageKeyType, entityID
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	contentType := utils.GetFileContentType(fileHeader)
 	extension := utils.GetFileExtension(fileHeader)

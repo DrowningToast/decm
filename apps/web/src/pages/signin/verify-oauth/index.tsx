@@ -1,6 +1,5 @@
 import { TOAST_USECASE_VIEWMODEL } from "@/constants/toast";
 import { USECASE_IDS } from "@/constants/usecase";
-import { coreApiClient } from "@/lib/api/api";
 import { authService } from "@/services/services";
 import { OnboardRegistrationMethod } from "@decm/api";
 import { useEffect } from "react";
@@ -11,6 +10,7 @@ import { AxiosError } from "axios";
 import { Typography } from "@/components/typography/typography";
 import { useOAuthOnboardUsecase } from "@/components/pages/Onboard/Usecase/useOAuthOnboardUsecase";
 import { useMyProfile } from "@/hooks/useMyProfile";
+import { useCheckOnboardStatus } from "@/components/pages/Onboard/useCheckOnboardStatus";
 
 const VerifyOauthPage = () => {
     const [searchParams] = useSearchParams();
@@ -19,6 +19,7 @@ const VerifyOauthPage = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
     const { refetch: refetchMyProfile } = useMyProfile();
+    const { checkOnboardStatus } = useCheckOnboardStatus(undefined, false);
 
     useEffect(() => {
         const init = async () => {
@@ -41,10 +42,10 @@ const VerifyOauthPage = () => {
                 }
 
                 // Call API to check onboard status
-                const status = await coreApiClient.v1.checkOnboardStatus({
+                const status = await checkOnboardStatus({
                     method: OnboardRegistrationMethod.RegistrationMethodGoogle,
-                    access_token: accessToken,
-                    expires_in: expiresInNumber,
+                    accessToken: accessToken,
+                    expiresIn: expiresInNumber,
                 });
 
                 if (!status) {
@@ -97,7 +98,7 @@ const VerifyOauthPage = () => {
             }
         };
         init();
-    }, [accessToken, expiresIn, navigate, refetchMyProfile, t]);
+    }, [accessToken, expiresIn, navigate, refetchMyProfile, t, checkOnboardStatus]);
 
     return (
         <Typography variant="text" tag="span">

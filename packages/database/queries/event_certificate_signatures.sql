@@ -1,13 +1,13 @@
 -- name: CreateEventCertificateSignature :one
 INSERT INTO event_certificate_signatures (
-    event_certificate_id,
+    event_certificate_config_id,
     issuer_credential_id,
     issuer_signature,
     host_signature,
     sign_message,
     sign_message_digest
 ) VALUES (
-    sqlc.arg('event_certificate_id'),
+    sqlc.arg('event_certificate_config_id'),
     sqlc.arg('issuer_credential_id'),
     sqlc.arg('issuer_signature'),
     sqlc.arg('host_signature'),
@@ -18,8 +18,8 @@ INSERT INTO event_certificate_signatures (
 -- name: GetEventCertificateSignatureByID :one
 SELECT * FROM event_certificate_signatures WHERE id = sqlc.arg('id');
 
--- name: GetEventCertificateSignaturesByEventCertificateID :many
-SELECT * FROM event_certificate_signatures WHERE event_certificate_id = sqlc.arg('event_certificate_id');
+-- name: GetEventCertificateSignaturesByEventCertificateConfigID :many
+SELECT * FROM event_certificate_signatures WHERE event_certificate_config_id = sqlc.arg('event_certificate_config_id');
 
 -- name: UpdateEventCertificateSignature :one
 UPDATE event_certificate_signatures

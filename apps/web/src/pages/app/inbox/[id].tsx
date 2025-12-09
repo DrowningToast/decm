@@ -23,9 +23,14 @@ const InboxDetailRoute = () => {
     if (error || !inboxDetail) {
         return (
             <PageContainer className="relative z-10 w-full min-h-screen flex items-center justify-center">
-                <Typography variant="text" tag="p" color="destructive">
-                    {t("participant.inbox.failedToLoadDetails")}
-                </Typography>
+                <div className="flex flex-col items-center text-center max-w-md">
+                    <Typography variant="text" tag="p" color="destructive">
+                        {t("participant.inbox.failedToLoadDetails")}
+                    </Typography>
+                    <Typography variant="text" size="small" tag="p" color="muted">
+                        {t("participant.inbox.notFoundHint")}
+                    </Typography>
+                </div>
             </PageContainer>
         );
     }

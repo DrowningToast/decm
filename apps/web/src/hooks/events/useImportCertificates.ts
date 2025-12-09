@@ -1,9 +1,10 @@
-import { coreApiClient } from "@/lib/api/api";
+import { certificateService } from "@/services/services";
 import { queryClient } from "@/lib/api/queryClient";
 import { QUERY_KEY } from "@/lib/queryKeys";
 import { useNavigate } from "@/router";
 import type { EventImportCertificateReceiverRequest } from "@decm/api";
 import { useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 interface UseImportCertificatesOptions {
@@ -12,6 +13,7 @@ interface UseImportCertificatesOptions {
 
 export function useImportCertificates(eventId: string, options?: UseImportCertificatesOptions) {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const { mutateAsync: importCertificates, isPending: isImportingCertificates } = useMutation({
         mutationKey: ["import-certificates"],
@@ -19,21 +21,18 @@ export function useImportCertificates(eventId: string, options?: UseImportCertif
             hostPin: string;
             receivers: EventImportCertificateReceiverRequest[];
         }) =>
-            coreApiClient.v1.importCertificateReceivers(
-                { eventId },
-                {
-                    event_id: eventId,
-                    host_pin: data.hostPin,
-                    receivers: data.receivers,
-                },
-            ),
+            certificateService.importCertificates({
+                eventId,
+                hostPin: data.hostPin,
+                receivers: data.receivers,
+            }),
         onSuccess: () => {
-            toast.success("Certificates imported successfully");
+            toast.success(t("certificateImport.importSuccess"));
             queryClient.invalidateQueries({ queryKey: QUERY_KEY.event.all });
             navigate("/host/events/:eventId", { params: { eventId } });
         },
         onError: (error: Error) => {
-            toast.error("Failed to import certificates", {
+            toast.error(t("certificateImport.importError"), {
                 description: error.message,
             });
             console.error(error);

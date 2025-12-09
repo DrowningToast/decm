@@ -41,8 +41,8 @@ export const CreateEventPage = () => {
             {/* Page Header */}
             <SectionContainer>
                 <TitleSubtitle
-                    title="Create Event"
-                    subtitle="Fill in the details below to create a new event"
+                    title={t("host.events.createEventPage.title")}
+                    subtitle={t("host.events.createEventPage.subtitle")}
                 />
             </SectionContainer>
 

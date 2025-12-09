@@ -74,12 +74,18 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 		return nil, err
 	}
 
-	// 6. Process each certificate
+	// 6. Get certificate config (same for all certificates in the event)
+	certificateConfig, err := uc.EventCertificateConfigDg.GetEventCertificateConfigByEventID(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
+
+	// 7. Process each certificate
 	var signedCertificates []CertificateSignature
 
 	for _, certificate := range certificates {
-		// Get certificate signatures for this certificate
-		signatures, err := uc.EventCertificateSignatureDataGateway.GetEventCertificateSignaturesByEventCertificateID(ctx, certificate.Id)
+		// Get certificate signatures for this certificate config
+		signatures, err := uc.EventCertificateSignatureDataGateway.GetEventCertificateSignaturesByEventCertificateConfigID(ctx, certificateConfig.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -103,8 +109,9 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 			return nil, customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("sign message not found for certificate %s", certificate.Id))
 		}
 
-		signMessageDigest := cyptoutils.HashMessage(*targetSignature.SignMessage)
-		signature, err := cyptoutils.Sign(signMessageDigest, privateKey)
+		// Use HashEthereumMessage to match contract's recoverSigner which applies Ethereum prefix
+		signMessageDigest := cyptoutils.HashEthereumMessage(*targetSignature.SignMessage)
+		signature, err := cyptoutils.Sign(signMessageDigest.Bytes(), privateKey)
 		if err != nil {
 			return nil, err
 		}

@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"encoding/hex"
+	"strings"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -205,9 +206,12 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, customerr).Extend("failed to hash password")
 	}
 
+	// Normalize email to lowercase for case-insensitive comparison
+	lowercaseEmail := strings.ToLower(userInfo.Email)
+
 	// Create new credential
 	credential = &entity.AuthenticationCredential{
-		GoogleConnectorRef:  &userInfo.Email,
+		GoogleConnectorRef:  &lowercaseEmail,
 		SolutionStatus:      common.SolutionStatusManaged,
 		WalletAddress:       walletAddress.Hex(),
 		EncryptedPrivateKey: &encryptedPrivateKey,
@@ -225,7 +229,7 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 	sessionToken, err := u.authService.CreateToken(auth.JwtPayload{
 		UserId:              credential.Id,
 		WalletAddress:       credential.WalletAddress,
-		Email:               &userInfo.Email,
+		Email:               credential.GoogleConnectorRef,
 		IsVerifiedOrganizer: &credential.IsVerifiedOrganizer,
 		IsVerifiedIssuer:    &credential.IsVerifiedIssuer,
 	})

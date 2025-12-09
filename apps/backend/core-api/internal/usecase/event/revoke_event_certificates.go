@@ -42,6 +42,16 @@ func (uc *EventUsecase) RevokeEventCertificates(ctx context.Context, eventID uui
 		return nil, customerror.Parse(&customerror.ErrNotFound, fmt.Errorf("event not found"))
 	}
 
+	// 3. Check if certificate configuration is published
+	certificateConfig, err := uc.EventCertificateConfigDg.GetEventCertificateConfigByEventID(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
+
+	if certificateConfig.IsPublished {
+		return nil, customerror.Parse(&customerror.ErrForbidden, fmt.Errorf("cannot revoke certificates after certificate configuration has been published"))
+	}
+
 	// 3. Revoke each certificate in the database
 	revokedCertificates := make([]*entity.EventCertificate, 0, len(request.CertificateIDs))
 	now := time.Now()
@@ -75,6 +85,13 @@ func (uc *EventUsecase) RevokeEventCertificates(ctx context.Context, eventID uui
 		}
 
 		revokedCertificates = append(revokedCertificates, updatedCertificate)
+	}
+
+	// 4. Reset all issuers' signing status since certificate configuration needs re-approval
+	err = uc.EventIssuerDataGateway.ResetAllEventIssuersSigningStatus(ctx, eventID)
+	if err != nil {
+		uc.logger.Error("failed to reset issuers signing status", "error", err, "event_id", eventID)
+		// Log error but don't fail the revocation operation
 	}
 
 	return &RevokeEventCertificatesResponse{

@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"decm-database/go/generated"
+	"strings"
 
 	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
@@ -26,7 +27,14 @@ func (r *Repository) CreateEventCertificate(ctx context.Context, params datagate
 		return nil, err
 	}
 
-	receiverEmailEnc, err := pgmapper.EncryptStringPtrToPgText(params.ReceiverEmail, r.piiEncryptionKey)
+	// Normalize email to lowercase for case-insensitive comparison
+	normalizedEmail := params.ReceiverEmail
+	if params.ReceiverEmail != nil && *params.ReceiverEmail != "" {
+		lowercaseEmail := strings.ToLower(*params.ReceiverEmail)
+		normalizedEmail = &lowercaseEmail
+	}
+
+	receiverEmailEnc, err := pgmapper.EncryptStringPtrToPgText(normalizedEmail, r.piiEncryptionKey)
 	if err != nil {
 		return nil, err
 	}
@@ -76,6 +84,7 @@ func (r *Repository) CreateEventCertificate(ctx context.Context, params datagate
 		EventContractAddress:    *pgmapper.PgTextToStringPtr(result.EventContractAddress),
 		EventCertificateAddress: pgmapper.PgTextToStringPtr(result.EventCertificateAddress),
 		CertificateTokenId:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
+		CertificateDigest:       pgmapper.PgTextToStringPtr(result.CertificateDigest),
 		InboxMessageId:          pgmapper.PgUUIDToUUIDPtr(result.InboxMessageID),
 		CreatedAt:               result.CreatedAt.Time,
 		RevokedAt:               pgmapper.PgTimestampzToTimePtr(result.RevokedAt),
@@ -116,6 +125,7 @@ func (r *Repository) GetEventCertificateByID(ctx context.Context, id uuid.UUID) 
 		EventContractAddress:    *pgmapper.PgTextToStringPtr(result.EventContractAddress),
 		EventCertificateAddress: pgmapper.PgTextToStringPtr(result.EventCertificateAddress),
 		CertificateTokenId:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
+		CertificateDigest:       pgmapper.PgTextToStringPtr(result.CertificateDigest),
 		InboxMessageId:          pgmapper.PgUUIDToUUIDPtr(result.InboxMessageID),
 		CreatedAt:               result.CreatedAt.Time,
 		RevokedAt:               pgmapper.PgTimestampzToTimePtr(result.RevokedAt),
@@ -156,6 +166,7 @@ func (r *Repository) GetEventCertificateByInboxMessageID(ctx context.Context, in
 		EventContractAddress:    *pgmapper.PgTextToStringPtr(result.EventContractAddress),
 		EventCertificateAddress: pgmapper.PgTextToStringPtr(result.EventCertificateAddress),
 		CertificateTokenId:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
+		CertificateDigest:       pgmapper.PgTextToStringPtr(result.CertificateDigest),
 		InboxMessageId:          pgmapper.PgUUIDToUUIDPtr(result.InboxMessageID),
 		CreatedAt:               result.CreatedAt.Time,
 		RevokedAt:               pgmapper.PgTimestampzToTimePtr(result.RevokedAt),
@@ -279,6 +290,7 @@ func (r *Repository) UpdateEventCertificate(ctx context.Context, id uuid.UUID, p
 		EventContractAddress:    *pgmapper.PgTextToStringPtr(result.EventContractAddress),
 		EventCertificateAddress: pgmapper.PgTextToStringPtr(result.EventCertificateAddress),
 		CertificateTokenId:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
+		CertificateDigest:       pgmapper.PgTextToStringPtr(result.CertificateDigest),
 		InboxMessageId:          pgmapper.PgUUIDToUUIDPtr(result.InboxMessageID),
 		CreatedAt:               result.CreatedAt.Time,
 		RevokedAt:               pgmapper.PgTimestampzToTimePtr(result.RevokedAt),
@@ -322,6 +334,7 @@ func (r *Repository) UpdateEventCertificateInboxMessageID(ctx context.Context, i
 		EventContractAddress:    *pgmapper.PgTextToStringPtr(result.EventContractAddress),
 		EventCertificateAddress: pgmapper.PgTextToStringPtr(result.EventCertificateAddress),
 		CertificateTokenId:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
+		CertificateDigest:       pgmapper.PgTextToStringPtr(result.CertificateDigest),
 		InboxMessageId:          pgmapper.PgUUIDToUUIDPtr(result.InboxMessageID),
 		CreatedAt:               result.CreatedAt.Time,
 		RevokedAt:               pgmapper.PgTimestampzToTimePtr(result.RevokedAt),
@@ -334,4 +347,220 @@ func (r *Repository) DeleteEventCertificate(ctx context.Context, id uuid.UUID) e
 		return pgerrutils.ParsePgError(err)
 	}
 	return nil
+}
+
+func (r *Repository) GetClaimedCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error) {
+	results, err := r.queries.GetClaimedCertificatesByEventID(ctx, eventID)
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	certificates := make([]*entity.EventCertificate, len(results))
+	for i, result := range results {
+		// Decrypt PII fields
+		name, err := pgmapper.DecryptPgTextToStringPtr(result.Name, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		academicInstitution, err := pgmapper.DecryptPgTextToStringPtr(result.AcademicInstitution, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		receiverEmail, err := pgmapper.DecryptPgTextToStringPtr(result.ReceiverEmail, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		certificates[i] = &entity.EventCertificate{
+			Id:                      result.ID,
+			EventId:                 result.EventID,
+			ReceiverCredentialId:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			ReceiverEmail:           receiverEmail,
+			Name:                    name,
+			AcademicInstitution:     academicInstitution,
+			CertificateTitle:        pgmapper.PgTextToStringPtr(result.CertificateTitle),
+			CertificateSubtitle:     pgmapper.PgTextToStringPtr(result.CertificateSubtitle),
+			EventContractAddress:    *pgmapper.PgTextToStringPtr(result.EventContractAddress),
+			EventCertificateAddress: pgmapper.PgTextToStringPtr(result.EventCertificateAddress),
+			CertificateTokenId:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
+			InboxMessageId:          pgmapper.PgUUIDToUUIDPtr(result.InboxMessageID),
+			CreatedAt:               result.CreatedAt.Time,
+			RevokedAt:               pgmapper.PgTimestampzToTimePtr(result.RevokedAt),
+		}
+	}
+
+	return certificates, nil
+}
+
+func (r *Repository) GetUnclaimedReadyCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error) {
+	results, err := r.queries.GetUnclaimedReadyCertificatesByEventID(ctx, eventID)
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	certificates := make([]*entity.EventCertificate, len(results))
+	for i, result := range results {
+		// Decrypt PII fields
+		name, err := pgmapper.DecryptPgTextToStringPtr(result.Name, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		academicInstitution, err := pgmapper.DecryptPgTextToStringPtr(result.AcademicInstitution, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		receiverEmail, err := pgmapper.DecryptPgTextToStringPtr(result.ReceiverEmail, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		certificates[i] = &entity.EventCertificate{
+			Id:                      result.ID,
+			EventId:                 result.EventID,
+			ReceiverCredentialId:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			ReceiverEmail:           receiverEmail,
+			Name:                    name,
+			AcademicInstitution:     academicInstitution,
+			CertificateTitle:        pgmapper.PgTextToStringPtr(result.CertificateTitle),
+			CertificateSubtitle:     pgmapper.PgTextToStringPtr(result.CertificateSubtitle),
+			EventContractAddress:    *pgmapper.PgTextToStringPtr(result.EventContractAddress),
+			EventCertificateAddress: pgmapper.PgTextToStringPtr(result.EventCertificateAddress),
+			CertificateTokenId:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
+			InboxMessageId:          pgmapper.PgUUIDToUUIDPtr(result.InboxMessageID),
+			CreatedAt:               result.CreatedAt.Time,
+			RevokedAt:               pgmapper.PgTimestampzToTimePtr(result.RevokedAt),
+		}
+	}
+
+	return certificates, nil
+}
+
+func (r *Repository) GetClaimedCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
+	// Normalize email to lowercase for case-insensitive comparison
+	normalizedEmail := email
+	if email != nil && *email != "" {
+		lowercaseEmail := strings.ToLower(*email)
+		normalizedEmail = &lowercaseEmail
+	}
+
+	// Encrypt email for query
+	encryptedEmail, err := pgmapper.EncryptStringPtrToPgText(normalizedEmail, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	results, err := r.queries.GetClaimedCertificatesByCredentialID(ctx, generated.GetClaimedCertificatesByCredentialIDParams{
+		ReceiverCredentialID: pgmapper.UUIDToPgUUID(&credentialID),
+		ReceiverEmail:        encryptedEmail,
+	})
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	certificates := make([]*entity.EventCertificate, len(results))
+	for i, result := range results {
+		// Decrypt PII fields
+		name, err := pgmapper.DecryptPgTextToStringPtr(result.Name, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		academicInstitution, err := pgmapper.DecryptPgTextToStringPtr(result.AcademicInstitution, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		receiverEmail, err := pgmapper.DecryptPgTextToStringPtr(result.ReceiverEmail, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		eventName := result.EventName
+		certificates[i] = &entity.EventCertificate{
+			Id:                      result.ID,
+			EventId:                 result.EventID,
+			EventName:               &eventName,
+			ReceiverCredentialId:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			ReceiverEmail:           receiverEmail,
+			Name:                    name,
+			AcademicInstitution:     academicInstitution,
+			CertificateTitle:        pgmapper.PgTextToStringPtr(result.CertificateTitle),
+			CertificateSubtitle:     pgmapper.PgTextToStringPtr(result.CertificateSubtitle),
+			EventContractAddress:    *pgmapper.PgTextToStringPtr(result.EventContractAddress),
+			EventCertificateAddress: pgmapper.PgTextToStringPtr(result.EventCertificateAddress),
+			CertificateTokenId:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
+			InboxMessageId:          pgmapper.PgUUIDToUUIDPtr(result.InboxMessageID),
+			CreatedAt:               result.CreatedAt.Time,
+			RevokedAt:               pgmapper.PgTimestampzToTimePtr(result.RevokedAt),
+		}
+	}
+
+	return certificates, nil
+}
+
+func (r *Repository) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
+	// Normalize email to lowercase for case-insensitive comparison
+	normalizedEmail := email
+	if email != nil && *email != "" {
+		lowercaseEmail := strings.ToLower(*email)
+		normalizedEmail = &lowercaseEmail
+	}
+
+	// Encrypt email for query
+	encryptedEmail, err := pgmapper.EncryptStringPtrToPgText(normalizedEmail, r.piiEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	results, err := r.queries.GetUnclaimedReadyCertificatesByCredentialID(ctx, generated.GetUnclaimedReadyCertificatesByCredentialIDParams{
+		ReceiverCredentialID: credentialID,
+		ReceiverEmail:        encryptedEmail,
+	})
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	certificates := make([]*entity.EventCertificate, len(results))
+	for i, result := range results {
+		// Decrypt PII fields
+		name, err := pgmapper.DecryptPgTextToStringPtr(result.Name, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		academicInstitution, err := pgmapper.DecryptPgTextToStringPtr(result.AcademicInstitution, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		receiverEmail, err := pgmapper.DecryptPgTextToStringPtr(result.ReceiverEmail, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+
+		eventName := result.EventName
+		certificates[i] = &entity.EventCertificate{
+			Id:                      result.ID,
+			EventId:                 result.EventID,
+			EventName:               &eventName,
+			ReceiverCredentialId:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
+			ReceiverEmail:           receiverEmail,
+			Name:                    name,
+			AcademicInstitution:     academicInstitution,
+			CertificateTitle:        pgmapper.PgTextToStringPtr(result.CertificateTitle),
+			CertificateSubtitle:     pgmapper.PgTextToStringPtr(result.CertificateSubtitle),
+			EventContractAddress:    *pgmapper.PgTextToStringPtr(result.EventContractAddress),
+			EventCertificateAddress: pgmapper.PgTextToStringPtr(result.EventCertificateAddress),
+			CertificateTokenId:      pgmapper.PgTextToStringPtr(result.CertificateTokenID),
+			InboxMessageId:          pgmapper.PgUUIDToUUIDPtr(result.InboxMessageID),
+			CreatedAt:               result.CreatedAt.Time,
+			RevokedAt:               pgmapper.PgTimestampzToTimePtr(result.RevokedAt),
+		}
+	}
+
+	return certificates, nil
 }

@@ -64,7 +64,7 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
                     {/* Form Fields Section */}
                     <div className="flex gap-y-2.5 flex-col">
                         {/* First Name */}
-                        <div className="space-y-1.5">
+                        {/* <div className="space-y-1.5">
                             <FormField
                                 control={form.control}
                                 name="firstName"
@@ -108,9 +108,9 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
                                     </FormItem>
                                 )}
                             />
-                        </div>
+                        </div> */}
                         {/* Last Name */}
-                        <div className="space-y-1.5">
+                        {/* <div className="space-y-1.5">
                             <FormField
                                 control={form.control}
                                 name="lastName"
@@ -154,7 +154,7 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
                                     </FormItem>
                                 )}
                             />
-                        </div>
+                        </div> */}
 
                         {/* Contact Email */}
                         <div className="space-y-1.5">
@@ -204,7 +204,7 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
                         </div>
 
                         {/* Phone Number */}
-                        <div className="space-y-1.5">
+                        {/* <div className="space-y-1.5">
                             <FormField
                                 control={form.control}
                                 name="phoneNumber"
@@ -248,7 +248,7 @@ export const BaseProfilePage: React.FC<BaseProfilePageProps> = ({
                                     </FormItem>
                                 )}
                             />
-                        </div>
+                        </div> */}
                     </div>
 
                     {/* Action Buttons Section */}

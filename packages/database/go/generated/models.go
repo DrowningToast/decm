@@ -214,32 +214,54 @@ type EventCertificate struct {
 }
 
 type EventCertificateConfig struct {
-	ID                        uuid.UUID          `json:"id"`
-	EventID                   uuid.UUID          `json:"event_id"`
-	BaseCertificateStorageKey string             `json:"base_certificate_storage_key"`
-	EventNamePosX             float64            `json:"event_name_pos_x"`
-	EventNamePosY             float64            `json:"event_name_pos_y"`
-	NamePosX                  float64            `json:"name_pos_x"`
-	NamePosY                  float64            `json:"name_pos_y"`
-	AcademicInstitutionPosX   pgtype.Float8      `json:"academic_institution_pos_x"`
-	AcademicInstitutionPosY   pgtype.Float8      `json:"academic_institution_pos_y"`
-	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
-	CertificateTitlePosX      pgtype.Float8      `json:"certificate_title_pos_x"`
-	CertificateTitlePosY      pgtype.Float8      `json:"certificate_title_pos_y"`
-	CertificateSubtitlePosX   pgtype.Float8      `json:"certificate_subtitle_pos_x"`
-	CertificateSubtitlePosY   pgtype.Float8      `json:"certificate_subtitle_pos_y"`
-	IsPublished               bool               `json:"is_published"`
+	ID                              uuid.UUID          `json:"id"`
+	EventID                         uuid.UUID          `json:"event_id"`
+	BaseCertificateStorageKey       string             `json:"base_certificate_storage_key"`
+	EventNamePosX                   float64            `json:"event_name_pos_x"`
+	EventNamePosY                   float64            `json:"event_name_pos_y"`
+	NamePosX                        float64            `json:"name_pos_x"`
+	NamePosY                        float64            `json:"name_pos_y"`
+	AcademicInstitutionPosX         pgtype.Float8      `json:"academic_institution_pos_x"`
+	AcademicInstitutionPosY         pgtype.Float8      `json:"academic_institution_pos_y"`
+	CreatedAt                       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                       pgtype.Timestamptz `json:"updated_at"`
+	CertificateTitlePosX            pgtype.Float8      `json:"certificate_title_pos_x"`
+	CertificateTitlePosY            pgtype.Float8      `json:"certificate_title_pos_y"`
+	CertificateSubtitlePosX         pgtype.Float8      `json:"certificate_subtitle_pos_x"`
+	CertificateSubtitlePosY         pgtype.Float8      `json:"certificate_subtitle_pos_y"`
+	IsPublished                     bool               `json:"is_published"`
+	EventNameFontWeight             pgtype.Int4        `json:"event_name_font_weight"`
+	NameFontWeight                  pgtype.Int4        `json:"name_font_weight"`
+	AcademicInstitutionFontWeight   pgtype.Int4        `json:"academic_institution_font_weight"`
+	CertificateTitleFontWeight      pgtype.Int4        `json:"certificate_title_font_weight"`
+	CertificateSubtitleFontWeight   pgtype.Int4        `json:"certificate_subtitle_font_weight"`
+	EventNameFontFamilyID           pgtype.Int4        `json:"event_name_font_family_id"`
+	NameFontFamilyID                pgtype.Int4        `json:"name_font_family_id"`
+	AcademicInstitutionFontFamilyID pgtype.Int4        `json:"academic_institution_font_family_id"`
+	CertificateTitleFontFamilyID    pgtype.Int4        `json:"certificate_title_font_family_id"`
+	CertificateSubtitleFontFamilyID pgtype.Int4        `json:"certificate_subtitle_font_family_id"`
+}
+
+type EventCertificateFontFamily struct {
+	ID                   int32              `json:"id"`
+	FontFamilyName       string             `json:"font_family_name"`
+	CssFontName          string             `json:"css_font_name"`
+	IsDefault            bool               `json:"is_default"`
+	AvailableFontWeights pgtype.Text        `json:"available_font_weights"`
+	IsSupportItalic      bool               `json:"is_support_italic"`
+	CreatedAt            time.Time          `json:"created_at"`
+	UpdatedAt            time.Time          `json:"updated_at"`
+	DeletedAt            pgtype.Timestamptz `json:"deleted_at"`
 }
 
 type EventCertificateSignature struct {
-	ID                 uuid.UUID   `json:"id"`
-	EventCertificateID uuid.UUID   `json:"event_certificate_id"`
-	IssuerCredentialID uuid.UUID   `json:"issuer_credential_id"`
-	IssuerSignature    pgtype.Text `json:"issuer_signature"`
-	HostSignature      pgtype.Text `json:"host_signature"`
-	SignMessage        pgtype.Text `json:"sign_message"`
-	SignMessageDigest  pgtype.Text `json:"sign_message_digest"`
+	ID                       uuid.UUID   `json:"id"`
+	IssuerCredentialID       uuid.UUID   `json:"issuer_credential_id"`
+	IssuerSignature          pgtype.Text `json:"issuer_signature"`
+	HostSignature            pgtype.Text `json:"host_signature"`
+	SignMessage              pgtype.Text `json:"sign_message"`
+	SignMessageDigest        pgtype.Text `json:"sign_message_digest"`
+	EventCertificateConfigID uuid.UUID   `json:"event_certificate_config_id"`
 }
 
 type EventContract struct {
@@ -258,8 +280,6 @@ type EventIssuer struct {
 	EventID            uuid.UUID          `json:"event_id"`
 	IssuerCredentialID uuid.UUID          `json:"issuer_credential_id"`
 	IsSigned           int32              `json:"is_signed"`
-	Signature          pgtype.Text        `json:"signature"`
-	SignMessageDigest  pgtype.Text        `json:"sign_message_digest"`
 	CreatedAt          pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt          pgtype.Timestamptz `json:"deleted_at"`

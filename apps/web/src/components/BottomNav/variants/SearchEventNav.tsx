@@ -26,7 +26,7 @@ export const SearchEventNav = ({ className: propClassName }: SearchEventNavProps
             <button
                 onClick={onBack}
                 className="cursor-pointer flex items-center justify-center w-10 h-10 bg-primary rounded-lg hover:bg-primary/90 transition-colors flex-shrink-0"
-                aria-label="Go back"
+                aria-label={t("common.back")}
             >
                 <ChevronLeft className="w-5 h-5 text-white" />
             </button>

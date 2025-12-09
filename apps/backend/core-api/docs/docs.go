@@ -183,6 +183,247 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/certificates/claim/{certificate_id}": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Claim a certificate using account password or wallet signature (requires authentication)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Certificates"
+                ],
+                "summary": "Claim certificate",
+                "operationId": "claim-certificate",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Certificate ID",
+                        "name": "certificate_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Claim certificate body (provide either account_password or signature+sign_message)",
+                        "name": "claimCertificateBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event.ClaimCertificateBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.EventCertificate"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/certificates/claim/{certificate_id}/sign-message": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get sign message for claiming a certificate (requires authentication)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Certificates"
+                ],
+                "summary": "Get claim certificate sign message",
+                "operationId": "get-claim-certificate-sign-message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Certificate ID",
+                        "name": "certificate_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/event.GetClaimCertificateSignMessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/certificates/my-list-viewmodel": {
+            "get": {
+                "description": "Get current user's certificates separated by claimed and unclaimed status. Claimed certificates have token_id populated, unclaimed certificates have token_id null and certificate config is published. Returns all certificates for the authenticated user across all events.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Certificates"
+                ],
+                "summary": "Get my certificates list viewmodel",
+                "operationId": "get-my-certificates-list-viewmodel",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/event.GetMyCertificatesListViewModelResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - missing or invalid authentication",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/certificates/{certificate_id}/image": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Generates a PNG certificate image for the authenticated user's certificate",
+                "produces": [
+                    "image/png"
+                ],
+                "tags": [
+                    "certificates"
+                ],
+                "summary": "Generate certificate image for participant",
+                "operationId": "generate-certificate-image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Certificate ID",
+                        "name": "certificate_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PNG certificate image",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid certificate ID",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "User does not own this certificate",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Certificate not found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/event-registration/invitation": {
             "delete": {
                 "description": "Cancel an event registration invitation by ID",
@@ -511,6 +752,33 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/eventconfig/certificate-font-families": {
+            "get": {
+                "description": "Retrieves all font families that can be used in certificate templates, including their available weights and italic support",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all available font families for certificates",
+                "operationId": "get-event-certificate-font-families",
+                "responses": {
+                    "200": {
+                        "description": "List of available font families",
+                        "schema": {
+                            "$ref": "#/definitions/eventconfig.GetEventCertificateFontFamiliesResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
@@ -1170,6 +1438,69 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/events/{event_id}/certificates/list-viewmodel": {
+            "get": {
+                "description": "Get event certificates separated by claimed and unclaimed status. Claimed certificates have token_id populated, unclaimed certificates have token_id null and certificate config is published. Only event hosts and issuers can access this endpoint.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Certificates"
+                ],
+                "summary": "Get certificates list viewmodel",
+                "operationId": "get-certificates-list-viewmodel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/event.GetCertificatesListViewModelResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid event ID",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - missing or invalid authentication",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - user is not host or issuer of this event",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Event not found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}/certificates/publish": {
             "post": {
                 "security": [
@@ -1418,6 +1749,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/events/{event_id}/certificates/text-config": {
+            "put": {
+                "description": "Update font family and font weight for all text templates in the certificate. This endpoint allows customization of fonts for event name, participant name, academic institution, certificate title, and certificate subtitle.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update certificate text configuration",
+                "operationId": "update-event-certificate-text-config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Text configuration parameters",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event.UpdateEventCertificateTextConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated certificate configuration",
+                        "schema": {
+                            "$ref": "#/definitions/event.UpdateEventCertificateTextConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Certificate configuration not found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}/config/certificate": {
             "get": {
                 "description": "Get the event certificate configuration for an event. Accessible by verified organizers or issuers assigned to the event.",
@@ -1537,6 +1925,34 @@ const docTemplate = `{
                         "format": "float64",
                         "description": "Academic institution position y",
                         "name": "academic_institution_pos_y",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Certificate title position x",
+                        "name": "certificate_title_pos_x",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Certificate title position y",
+                        "name": "certificate_title_pos_y",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Certificate subtitle position x",
+                        "name": "certificate_subtitle_pos_x",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "number",
+                        "format": "float64",
+                        "description": "Certificate subtitle position y",
+                        "name": "certificate_subtitle_pos_y",
                         "in": "formData"
                     }
                 ],
@@ -3594,6 +4010,12 @@ const docTemplate = `{
                 "updated_at"
             ],
             "properties": {
+                "academic_institution_font_family_id": {
+                    "type": "integer"
+                },
+                "academic_institution_font_weight": {
+                    "type": "integer"
+                },
                 "academic_institution_pos_x": {
                     "type": "number"
                 },
@@ -3606,11 +4028,41 @@ const docTemplate = `{
                 "base_certificate_storage_key": {
                     "type": "string"
                 },
+                "certificate_subtitle_font_family_id": {
+                    "type": "integer"
+                },
+                "certificate_subtitle_font_weight": {
+                    "type": "integer"
+                },
+                "certificate_subtitle_pos_x": {
+                    "type": "number"
+                },
+                "certificate_subtitle_pos_y": {
+                    "type": "number"
+                },
+                "certificate_title_font_family_id": {
+                    "type": "integer"
+                },
+                "certificate_title_font_weight": {
+                    "type": "integer"
+                },
+                "certificate_title_pos_x": {
+                    "type": "number"
+                },
+                "certificate_title_pos_y": {
+                    "type": "number"
+                },
                 "created_at": {
                     "type": "string"
                 },
                 "event_id": {
                     "type": "string"
+                },
+                "event_name_font_family_id": {
+                    "type": "integer"
+                },
+                "event_name_font_weight": {
+                    "type": "integer"
                 },
                 "event_name_pos_x": {
                     "type": "number"
@@ -3626,6 +4078,12 @@ const docTemplate = `{
                 },
                 "mint_readiness": {
                     "$ref": "#/definitions/core-api_internal_handler_eventconfig.MintReadinessInfo"
+                },
+                "name_font_family_id": {
+                    "type": "integer"
+                },
+                "name_font_weight": {
+                    "type": "integer"
                 },
                 "name_pos_x": {
                     "type": "number"
@@ -3918,6 +4376,9 @@ const docTemplate = `{
                 "academic_institution": {
                     "type": "string"
                 },
+                "certificate_digest": {
+                    "type": "string"
+                },
                 "certificate_subtitle": {
                     "type": "string"
                 },
@@ -3937,6 +4398,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "event_id": {
+                    "type": "string"
+                },
+                "event_name": {
                     "type": "string"
                 },
                 "id": {
@@ -4199,6 +4663,23 @@ const docTemplate = `{
                 }
             }
         },
+        "event.ClaimCertificateBody": {
+            "type": "object",
+            "properties": {
+                "account_password": {
+                    "type": "string"
+                },
+                "certificate_password": {
+                    "type": "string"
+                },
+                "sign_message": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                }
+            }
+        },
         "event.CreateEventContractRequest": {
             "type": "object",
             "required": [
@@ -4226,9 +4707,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "is_signed",
-                "issuer_credential_id",
-                "sign_message",
-                "signature"
+                "issuer_credential_id"
             ],
             "properties": {
                 "is_signed": {
@@ -4239,12 +4718,6 @@ const docTemplate = `{
                     ]
                 },
                 "issuer_credential_id": {
-                    "type": "string"
-                },
-                "sign_message": {
-                    "type": "string"
-                },
-                "signature": {
                     "type": "string"
                 }
             }
@@ -4268,8 +4741,6 @@ const docTemplate = `{
                 "id",
                 "is_signed",
                 "issuer_credential_id",
-                "sign_message",
-                "signature",
                 "updated_at"
             ],
             "properties": {
@@ -4290,12 +4761,6 @@ const docTemplate = `{
                 },
                 "issuer_profile": {
                     "$ref": "#/definitions/entity.Profile"
-                },
-                "sign_message": {
-                    "type": "string"
-                },
-                "signature": {
-                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
@@ -4581,6 +5046,36 @@ const docTemplate = `{
                 }
             }
         },
+        "event.GetCertificatesListViewModelResponse": {
+            "type": "object",
+            "required": [
+                "claimed_certificates",
+                "total_claimed",
+                "total_unclaimed",
+                "unclaimed_certificates"
+            ],
+            "properties": {
+                "claimed_certificates": {},
+                "total_claimed": {
+                    "type": "integer"
+                },
+                "total_unclaimed": {
+                    "type": "integer"
+                },
+                "unclaimed_certificates": {}
+            }
+        },
+        "event.GetClaimCertificateSignMessageResponse": {
+            "type": "object",
+            "required": [
+                "sign_message"
+            ],
+            "properties": {
+                "sign_message": {
+                    "type": "string"
+                }
+            }
+        },
         "event.GetEventCertificatesResponse": {
             "type": "object",
             "required": [
@@ -4607,6 +5102,25 @@ const docTemplate = `{
                         "$ref": "#/definitions/entity.Event"
                     }
                 }
+            }
+        },
+        "event.GetMyCertificatesListViewModelResponse": {
+            "type": "object",
+            "required": [
+                "claimed_certificates",
+                "total_claimed",
+                "total_unclaimed",
+                "unclaimed_certificates"
+            ],
+            "properties": {
+                "claimed_certificates": {},
+                "total_claimed": {
+                    "type": "integer"
+                },
+                "total_unclaimed": {
+                    "type": "integer"
+                },
+                "unclaimed_certificates": {}
             }
         },
         "event.ImportCertificateReceiverRequest": {
@@ -4695,6 +5209,152 @@ const docTemplate = `{
                 },
                 "phone_number_requirement_status": {
                     "type": "integer"
+                }
+            }
+        },
+        "event.UpdateEventCertificateTextConfigRequest": {
+            "type": "object",
+            "required": [
+                "academic_institution_font_family_id",
+                "academic_institution_font_weight",
+                "certificate_subtitle_font_family_id",
+                "certificate_subtitle_font_weight",
+                "certificate_title_font_family_id",
+                "certificate_title_font_weight",
+                "event_name_font_family_id",
+                "event_name_font_weight",
+                "name_font_family_id",
+                "name_font_weight"
+            ],
+            "properties": {
+                "academic_institution_font_family_id": {
+                    "type": "integer"
+                },
+                "academic_institution_font_weight": {
+                    "type": "integer"
+                },
+                "certificate_subtitle_font_family_id": {
+                    "type": "integer"
+                },
+                "certificate_subtitle_font_weight": {
+                    "type": "integer"
+                },
+                "certificate_title_font_family_id": {
+                    "type": "integer"
+                },
+                "certificate_title_font_weight": {
+                    "type": "integer"
+                },
+                "event_name_font_family_id": {
+                    "type": "integer"
+                },
+                "event_name_font_weight": {
+                    "type": "integer"
+                },
+                "name_font_family_id": {
+                    "type": "integer"
+                },
+                "name_font_weight": {
+                    "type": "integer"
+                }
+            }
+        },
+        "event.UpdateEventCertificateTextConfigResponse": {
+            "type": "object",
+            "required": [
+                "base_certificate_presigned_url",
+                "base_certificate_storage_key",
+                "created_at",
+                "event_id",
+                "event_name_pos_x",
+                "event_name_pos_y",
+                "id",
+                "is_published",
+                "name_pos_x",
+                "name_pos_y",
+                "updated_at"
+            ],
+            "properties": {
+                "academic_institution_font_family_id": {
+                    "type": "integer"
+                },
+                "academic_institution_font_weight": {
+                    "type": "integer"
+                },
+                "academic_institution_pos_x": {
+                    "type": "number"
+                },
+                "academic_institution_pos_y": {
+                    "type": "number"
+                },
+                "base_certificate_presigned_url": {
+                    "type": "string"
+                },
+                "base_certificate_storage_key": {
+                    "type": "string"
+                },
+                "certificate_subtitle_font_family_id": {
+                    "type": "integer"
+                },
+                "certificate_subtitle_font_weight": {
+                    "type": "integer"
+                },
+                "certificate_subtitle_pos_x": {
+                    "type": "number"
+                },
+                "certificate_subtitle_pos_y": {
+                    "type": "number"
+                },
+                "certificate_title_font_family_id": {
+                    "type": "integer"
+                },
+                "certificate_title_font_weight": {
+                    "type": "integer"
+                },
+                "certificate_title_pos_x": {
+                    "type": "number"
+                },
+                "certificate_title_pos_y": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "event_name_font_family_id": {
+                    "type": "integer"
+                },
+                "event_name_font_weight": {
+                    "type": "integer"
+                },
+                "event_name_pos_x": {
+                    "type": "number"
+                },
+                "event_name_pos_y": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_published": {
+                    "type": "boolean"
+                },
+                "name_font_family_id": {
+                    "type": "integer"
+                },
+                "name_font_weight": {
+                    "type": "integer"
+                },
+                "name_pos_x": {
+                    "type": "number"
+                },
+                "name_pos_y": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
@@ -5005,6 +5665,54 @@ const docTemplate = `{
                 }
             }
         },
+        "eventconfig.FontFamilyItem": {
+            "type": "object",
+            "required": [
+                "available_font_weights",
+                "css_font_name",
+                "font_family_name",
+                "id",
+                "is_default",
+                "is_support_italic"
+            ],
+            "properties": {
+                "available_font_weights": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "css_font_name": {
+                    "type": "string"
+                },
+                "font_family_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "is_support_italic": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "eventconfig.GetEventCertificateFontFamiliesResponse": {
+            "type": "object",
+            "required": [
+                "font_families"
+            ],
+            "properties": {
+                "font_families": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/eventconfig.FontFamilyItem"
+                    }
+                }
+            }
+        },
         "eventconfig.ToggleCertificatePublishedRequest": {
             "type": "object",
             "required": [
@@ -5174,6 +5882,12 @@ const docTemplate = `{
                 "cancelled_at": {
                     "type": "string"
                 },
+                "certificate_id": {
+                    "type": "string"
+                },
+                "certificate_title": {
+                    "type": "string"
+                },
                 "code": {
                     "type": "string"
                 },
@@ -5189,8 +5903,14 @@ const docTemplate = `{
                 "event_id": {
                     "type": "string"
                 },
+                "event_name": {
+                    "type": "string"
+                },
                 "first_name": {
                     "type": "string"
+                },
+                "has_participant_joined_event": {
+                    "type": "boolean"
                 },
                 "hidden_at": {
                     "type": "string"
@@ -5228,6 +5948,9 @@ const docTemplate = `{
                 "sender_credential_wallet_address": {
                     "type": "string"
                 },
+                "token_id": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "string"
                 },
@@ -5247,11 +5970,27 @@ const docTemplate = `{
                 "updated_at"
             ],
             "properties": {
+                "certificate_id": {
+                    "type": "string"
+                },
+                "certificate_title": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
                 "deleted_at": {
                     "type": "string"
+                },
+                "event_id": {
+                    "description": "Certificate-specific fields (only populated for certificate invitation messages)",
+                    "type": "string"
+                },
+                "event_name": {
+                    "type": "string"
+                },
+                "has_participant_joined_event": {
+                    "type": "boolean"
                 },
                 "hidden_at": {
                     "type": "string"
@@ -5281,6 +6020,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sender_credential_wallet_address": {
+                    "type": "string"
+                },
+                "token_id": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -5373,8 +6115,6 @@ const docTemplate = `{
                 "id",
                 "is_signed",
                 "issuer_credential_id",
-                "sign_message",
-                "signature",
                 "updated_at"
             ],
             "properties": {
@@ -5409,12 +6149,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "issuer_credential_id": {
-                    "type": "string"
-                },
-                "sign_message": {
-                    "type": "string"
-                },
-                "signature": {
                     "type": "string"
                 },
                 "updated_at": {

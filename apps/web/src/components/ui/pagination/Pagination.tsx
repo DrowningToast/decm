@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/typography/typography";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface DataTablePaginationProps {
     currentPage: number;
@@ -34,6 +35,7 @@ export const DataTablePagination = ({
     rowsPerPageOptions = [10, 20, 50, 100],
     totalItems,
 }: DataTablePaginationProps) => {
+    const { t } = useTranslation();
     const handlePrevious = () => {
         if (hasPreviousPage && !isLoading) {
             onPageChange(currentPage - 1);
@@ -104,7 +106,7 @@ export const DataTablePagination = ({
             {/* Rows per page selector */}
             <div className="flex items-center space-x-2">
                 <Typography variant="text" tag="span" className="text-sm">
-                    Rows per page:
+                    {t("common.pagination.rowsPerPage")}
                 </Typography>
                 {onRowsPerPageChange ? (
                     <select
@@ -130,8 +132,11 @@ export const DataTablePagination = ({
             <div className="flex items-center">
                 <Typography variant="text" tag="span" className="text-sm text-muted-foreground">
                     {calculatedTotalPages
-                        ? `Page ${currentPage} of ${calculatedTotalPages}`
-                        : `Page ${currentPage}`}
+                        ? t("common.pagination.pageOf", {
+                              current: currentPage,
+                              total: calculatedTotalPages,
+                          })
+                        : t("common.pagination.page", { current: currentPage })}
                 </Typography>
             </div>
 
@@ -146,7 +151,7 @@ export const DataTablePagination = ({
                 >
                     <ChevronLeft className="h-4 w-4" />
                     <Typography variant="text" tag="span" className="ml-1">
-                        Previous
+                        {t("common.previous")}
                     </Typography>
                 </Button>
 
@@ -162,7 +167,7 @@ export const DataTablePagination = ({
                     className="flex items-center"
                 >
                     <Typography variant="text" tag="span" className="mr-1">
-                        Next
+                        {t("common.next")}
                     </Typography>
                     <ChevronRight className="h-4 w-4" />
                 </Button>

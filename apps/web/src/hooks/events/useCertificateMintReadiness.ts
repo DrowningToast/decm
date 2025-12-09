@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { coreApiClient } from "@/lib/api/api";
-import type { CoreApiInternalHandlerEventconfigCertificateMintReadinessResponse } from "@decm/api";
+import { certificateService } from "@/services/services";
+import type { CertificateMintReadiness } from "@/services/CertificateService/CertificateService";
 
 export const useCertificateMintReadiness = (eventId: string | undefined) => {
-    return useQuery<CoreApiInternalHandlerEventconfigCertificateMintReadinessResponse>({
+    return useQuery<CertificateMintReadiness>({
         queryKey: ["certificate-mint-readiness", eventId],
         queryFn: async () => {
             if (!eventId) {
                 throw new Error("Event ID is required");
             }
-            return await coreApiClient.v1.checkCertificateMintReadiness({ eventId });
+            return await certificateService.checkCertificateMintReadiness(eventId);
         },
         enabled: !!eventId,
         staleTime: 30000, // 30 seconds

@@ -52,3 +52,13 @@ func (h Handler) PublishEventCertificates(ctx *fiber.Ctx) error {
 
 
 
+
+
+
+
+
+
+
+
+
+

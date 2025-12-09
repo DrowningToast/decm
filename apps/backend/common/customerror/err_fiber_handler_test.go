@@ -93,7 +93,7 @@ func TestGetErrFiberHandler_CustomError(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to read response body: %v", err)
 			}
-			resp.Body.Close()
+			_ = resp.Body.Close()
 
 			var apiResponse map[string]interface{}
 			if err := json.Unmarshal(body, &apiResponse); err != nil {
@@ -181,7 +181,7 @@ func TestGetErrFiberHandler_FiberError(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to read response body: %v", err)
 			}
-			resp.Body.Close()
+			_ = resp.Body.Close()
 
 			var apiResponse map[string]interface{}
 			if err := json.Unmarshal(body, &apiResponse); err != nil {
@@ -237,7 +237,7 @@ func TestGetErrFiberHandler_UnknownError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to read response body: %v", err)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 
 	var apiResponse map[string]interface{}
 	if err := json.Unmarshal(body, &apiResponse); err != nil {

@@ -4,6 +4,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEventsListUsecase } from "./useEventsListUsecase";
 import type { ReactNode } from "react";
 
+// Mock the event service
+vi.mock("@/services/services", () => ({
+    eventService: {
+        getEvents: vi.fn(() => Promise.resolve([])),
+    },
+}));
+
 // Mock the zustand store
 vi.mock("@/components/BottomNav/stores/events", () => ({
     useSearchEventNavStore: vi.fn(() => ({

@@ -310,9 +310,8 @@ export const ExcelPreview = ({
                 }}
                 showSigningDetails
                 signingDetails={{
-                    details:
-                        "You're about to import the event certificates receivers. Please confirm to proceed.",
-                    transactionType: "Import Event Certificates Receivers",
+                    details: t("signing.details.importCertificatesDescription"),
+                    transactionType: t("signing.details.importCertificatesReceivers"),
                 }}
             />
         </div>

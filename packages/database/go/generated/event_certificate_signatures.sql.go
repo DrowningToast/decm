@@ -14,7 +14,7 @@ import (
 
 const CreateEventCertificateSignature = `-- name: CreateEventCertificateSignature :one
 INSERT INTO event_certificate_signatures (
-    event_certificate_id,
+    event_certificate_config_id,
     issuer_credential_id,
     issuer_signature,
     host_signature,
@@ -27,21 +27,21 @@ INSERT INTO event_certificate_signatures (
     $4,
     $5,
     $6
-) RETURNING id, event_certificate_id, issuer_credential_id, issuer_signature, host_signature, sign_message, sign_message_digest
+) RETURNING id, issuer_credential_id, issuer_signature, host_signature, sign_message, sign_message_digest, event_certificate_config_id
 `
 
 type CreateEventCertificateSignatureParams struct {
-	EventCertificateID uuid.UUID   `json:"event_certificate_id"`
-	IssuerCredentialID uuid.UUID   `json:"issuer_credential_id"`
-	IssuerSignature    pgtype.Text `json:"issuer_signature"`
-	HostSignature      pgtype.Text `json:"host_signature"`
-	SignMessage        pgtype.Text `json:"sign_message"`
-	SignMessageDigest  pgtype.Text `json:"sign_message_digest"`
+	EventCertificateConfigID uuid.UUID   `json:"event_certificate_config_id"`
+	IssuerCredentialID       uuid.UUID   `json:"issuer_credential_id"`
+	IssuerSignature          pgtype.Text `json:"issuer_signature"`
+	HostSignature            pgtype.Text `json:"host_signature"`
+	SignMessage              pgtype.Text `json:"sign_message"`
+	SignMessageDigest        pgtype.Text `json:"sign_message_digest"`
 }
 
 func (q *Queries) CreateEventCertificateSignature(ctx context.Context, arg CreateEventCertificateSignatureParams) (EventCertificateSignature, error) {
 	row := q.db.QueryRow(ctx, CreateEventCertificateSignature,
-		arg.EventCertificateID,
+		arg.EventCertificateConfigID,
 		arg.IssuerCredentialID,
 		arg.IssuerSignature,
 		arg.HostSignature,
@@ -51,12 +51,12 @@ func (q *Queries) CreateEventCertificateSignature(ctx context.Context, arg Creat
 	var i EventCertificateSignature
 	err := row.Scan(
 		&i.ID,
-		&i.EventCertificateID,
 		&i.IssuerCredentialID,
 		&i.IssuerSignature,
 		&i.HostSignature,
 		&i.SignMessage,
 		&i.SignMessageDigest,
+		&i.EventCertificateConfigID,
 	)
 	return i, err
 }
@@ -71,7 +71,7 @@ func (q *Queries) DeleteEventCertificateSignature(ctx context.Context, id uuid.U
 }
 
 const GetEventCertificateSignatureByID = `-- name: GetEventCertificateSignatureByID :one
-SELECT id, event_certificate_id, issuer_credential_id, issuer_signature, host_signature, sign_message, sign_message_digest FROM event_certificate_signatures WHERE id = $1
+SELECT id, issuer_credential_id, issuer_signature, host_signature, sign_message, sign_message_digest, event_certificate_config_id FROM event_certificate_signatures WHERE id = $1
 `
 
 func (q *Queries) GetEventCertificateSignatureByID(ctx context.Context, id uuid.UUID) (EventCertificateSignature, error) {
@@ -79,22 +79,22 @@ func (q *Queries) GetEventCertificateSignatureByID(ctx context.Context, id uuid.
 	var i EventCertificateSignature
 	err := row.Scan(
 		&i.ID,
-		&i.EventCertificateID,
 		&i.IssuerCredentialID,
 		&i.IssuerSignature,
 		&i.HostSignature,
 		&i.SignMessage,
 		&i.SignMessageDigest,
+		&i.EventCertificateConfigID,
 	)
 	return i, err
 }
 
-const GetEventCertificateSignaturesByEventCertificateID = `-- name: GetEventCertificateSignaturesByEventCertificateID :many
-SELECT id, event_certificate_id, issuer_credential_id, issuer_signature, host_signature, sign_message, sign_message_digest FROM event_certificate_signatures WHERE event_certificate_id = $1
+const GetEventCertificateSignaturesByEventCertificateConfigID = `-- name: GetEventCertificateSignaturesByEventCertificateConfigID :many
+SELECT id, issuer_credential_id, issuer_signature, host_signature, sign_message, sign_message_digest, event_certificate_config_id FROM event_certificate_signatures WHERE event_certificate_config_id = $1
 `
 
-func (q *Queries) GetEventCertificateSignaturesByEventCertificateID(ctx context.Context, eventCertificateID uuid.UUID) ([]EventCertificateSignature, error) {
-	rows, err := q.db.Query(ctx, GetEventCertificateSignaturesByEventCertificateID, eventCertificateID)
+func (q *Queries) GetEventCertificateSignaturesByEventCertificateConfigID(ctx context.Context, eventCertificateConfigID uuid.UUID) ([]EventCertificateSignature, error) {
+	rows, err := q.db.Query(ctx, GetEventCertificateSignaturesByEventCertificateConfigID, eventCertificateConfigID)
 	if err != nil {
 		return nil, err
 	}
@@ -104,12 +104,12 @@ func (q *Queries) GetEventCertificateSignaturesByEventCertificateID(ctx context.
 		var i EventCertificateSignature
 		if err := rows.Scan(
 			&i.ID,
-			&i.EventCertificateID,
 			&i.IssuerCredentialID,
 			&i.IssuerSignature,
 			&i.HostSignature,
 			&i.SignMessage,
 			&i.SignMessageDigest,
+			&i.EventCertificateConfigID,
 		); err != nil {
 			return nil, err
 		}
@@ -125,7 +125,7 @@ const UpdateEventCertificateIssuerSignature = `-- name: UpdateEventCertificateIs
 UPDATE event_certificate_signatures
 SET issuer_signature = $1
 WHERE id = $2
-RETURNING id, event_certificate_id, issuer_credential_id, issuer_signature, host_signature, sign_message, sign_message_digest
+RETURNING id, issuer_credential_id, issuer_signature, host_signature, sign_message, sign_message_digest, event_certificate_config_id
 `
 
 type UpdateEventCertificateIssuerSignatureParams struct {
@@ -138,12 +138,12 @@ func (q *Queries) UpdateEventCertificateIssuerSignature(ctx context.Context, arg
 	var i EventCertificateSignature
 	err := row.Scan(
 		&i.ID,
-		&i.EventCertificateID,
 		&i.IssuerCredentialID,
 		&i.IssuerSignature,
 		&i.HostSignature,
 		&i.SignMessage,
 		&i.SignMessageDigest,
+		&i.EventCertificateConfigID,
 	)
 	return i, err
 }
@@ -156,7 +156,7 @@ SET
     sign_message = $3,
     sign_message_digest = $4
 WHERE id = $5
-RETURNING id, event_certificate_id, issuer_credential_id, issuer_signature, host_signature, sign_message, sign_message_digest
+RETURNING id, issuer_credential_id, issuer_signature, host_signature, sign_message, sign_message_digest, event_certificate_config_id
 `
 
 type UpdateEventCertificateSignatureParams struct {
@@ -178,12 +178,12 @@ func (q *Queries) UpdateEventCertificateSignature(ctx context.Context, arg Updat
 	var i EventCertificateSignature
 	err := row.Scan(
 		&i.ID,
-		&i.EventCertificateID,
 		&i.IssuerCredentialID,
 		&i.IssuerSignature,
 		&i.HostSignature,
 		&i.SignMessage,
 		&i.SignMessageDigest,
+		&i.EventCertificateConfigID,
 	)
 	return i, err
 }

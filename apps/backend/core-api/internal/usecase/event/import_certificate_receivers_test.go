@@ -72,6 +72,22 @@ func (m *MockEventCertificateDataGateway) DeleteEventCertificate(ctx context.Con
 	return args.Error(0)
 }
 
+func (m *MockEventCertificateDataGateway) GetClaimedCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockEventCertificateDataGateway) GetClaimedCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
+	return nil, errors.New("not implemented")
+}
+
 type MockEventCertificateSignatureDataGateway struct {
 	mock.Mock
 }
@@ -88,8 +104,8 @@ func (m *MockEventCertificateSignatureDataGateway) GetEventCertificateSignatureB
 	return nil, errors.New("not implemented")
 }
 
-func (m *MockEventCertificateSignatureDataGateway) GetEventCertificateSignaturesByEventCertificateID(ctx context.Context, eventCertificateID uuid.UUID) ([]*entity.EventCertificateSignature, error) {
-	args := m.Called(ctx, eventCertificateID)
+func (m *MockEventCertificateSignatureDataGateway) GetEventCertificateSignaturesByEventCertificateConfigID(ctx context.Context, eventCertificateConfigID uuid.UUID) ([]*entity.EventCertificateSignature, error) {
+	args := m.Called(ctx, eventCertificateConfigID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -168,6 +184,42 @@ func (m *MockEventIssuerDataGateway) GetTotalIssuersCount(ctx context.Context, e
 func (m *MockEventIssuerDataGateway) HasSignedIssuers(ctx context.Context, eventID uuid.UUID) (bool, error) {
 	args := m.Called(ctx, eventID)
 	return args.Bool(0), args.Error(1)
+}
+
+type MockEventCertificateConfigDataGateway struct {
+	mock.Mock
+}
+
+func (m *MockEventCertificateConfigDataGateway) CreateEventCertificateConfig(ctx context.Context, params generated.CreateEventCertificateConfigParams) (*entity.EventCertificateConfig, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockEventCertificateConfigDataGateway) GetEventCertificateConfigByID(ctx context.Context, id uuid.UUID) (*entity.EventCertificateConfig, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockEventCertificateConfigDataGateway) GetEventCertificateConfigByEventID(ctx context.Context, eventId uuid.UUID) (*entity.EventCertificateConfig, error) {
+	args := m.Called(ctx, eventId)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.EventCertificateConfig), args.Error(1)
+}
+
+func (m *MockEventCertificateConfigDataGateway) UpdateEventCertificateConfig(ctx context.Context, params generated.UpdateEventCertificateConfigParams) (*entity.EventCertificateConfig, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockEventCertificateConfigDataGateway) UpdateEventCertificateTextConfig(ctx context.Context, params generated.UpdateEventCertificateTextConfigParams) (*entity.EventCertificateConfig, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockEventCertificateConfigDataGateway) ToggleEventCertificateConfigPublished(ctx context.Context, params generated.ToggleEventCertificateConfigPublishedParams) (*entity.EventCertificateConfig, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *MockEventCertificateConfigDataGateway) DeleteEventCertificateConfig(ctx context.Context, eventID uuid.UUID) error {
+	return errors.New("not implemented")
 }
 
 type MockEventContractDataGateway struct {
@@ -327,8 +379,9 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		mockEventDg := new(MockEventDataGateway)
 		event := &entity.Event{
-			Id:    eventID,
-			Title: "Test Event",
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userId,
 		}
 		mockEventDg.On("GetEventById", ctx, eventID).
 			Return(event, nil)
@@ -377,8 +430,9 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		mockEventDg := new(MockEventDataGateway)
 		event := &entity.Event{
-			Id:    eventID,
-			Title: "Test Event",
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userId,
 		}
 		mockEventDg.On("GetEventById", ctx, eventID).
 			Return(event, nil)
@@ -409,21 +463,23 @@ func TestImportCertificateReceivers(t *testing.T) {
 		mockCertDg.On("GetEventCertificatesByEventID", ctx, eventID).
 			Return(oldCertificates, nil)
 
-		// Setup existing signatures
+		// Setup certificate config
+		configID := uuid.New()
+		mockCertConfigDg := new(MockEventCertificateConfigDataGateway)
+		mockCertConfigDg.On("GetEventCertificateConfigByEventID", ctx, eventID).
+			Return(&entity.EventCertificateConfig{ID: configID, EventID: eventID}, nil)
+
+		// Setup existing signatures (now linked to config, not individual certificates)
 		oldSigID1 := uuid.New()
 		oldSigID2 := uuid.New()
-		oldSignatures1 := []*entity.EventCertificateSignature{
-			{Id: oldSigID1, EventCertificateId: oldCertID1},
-		}
-		oldSignatures2 := []*entity.EventCertificateSignature{
-			{Id: oldSigID2, EventCertificateId: oldCertID2},
+		oldSignatures := []*entity.EventCertificateSignature{
+			{Id: oldSigID1, EventCertificateConfigId: configID},
+			{Id: oldSigID2, EventCertificateConfigId: configID},
 		}
 
 		mockCertSigDg := new(MockEventCertificateSignatureDataGateway)
-		mockCertSigDg.On("GetEventCertificateSignaturesByEventCertificateID", ctx, oldCertID1).
-			Return(oldSignatures1, nil)
-		mockCertSigDg.On("GetEventCertificateSignaturesByEventCertificateID", ctx, oldCertID2).
-			Return(oldSignatures2, nil)
+		mockCertSigDg.On("GetEventCertificateSignaturesByEventCertificateConfigID", ctx, configID).
+			Return(oldSignatures, nil)
 		mockCertSigDg.On("DeleteEventCertificateSignature", ctx, oldSigID1).
 			Return(nil)
 		mockCertSigDg.On("DeleteEventCertificateSignature", ctx, oldSigID2).
@@ -441,6 +497,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			EventIssuerDataGateway:               mockEventIssuerDg,
 			EventCertificateDataGateway:          mockCertDg,
 			EventCertificateSignatureDataGateway: mockCertSigDg,
+			EventCertificateConfigDg:             mockCertConfigDg,
 			cfg:                                  createMockConfigForImport(),
 		}
 
@@ -475,8 +532,9 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		mockEventDg := new(MockEventDataGateway)
 		event := &entity.Event{
-			Id:    eventID,
-			Title: "Test Event",
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userId,
 		}
 		mockEventDg.On("GetEventById", ctx, eventID).
 			Return(event, nil)
@@ -536,8 +594,9 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		mockEventDg := new(MockEventDataGateway)
 		event := &entity.Event{
-			Id:    eventID,
-			Title: "Test Event",
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userId,
 		}
 		mockEventDg.On("GetEventById", ctx, eventID).
 			Return(event, nil)
@@ -565,13 +624,19 @@ func TestImportCertificateReceivers(t *testing.T) {
 		mockCertDg.On("GetEventCertificatesByEventID", ctx, eventID).
 			Return(oldCertificates, nil)
 
+		// Setup certificate config
+		configID := uuid.New()
+		mockCertConfigDg := new(MockEventCertificateConfigDataGateway)
+		mockCertConfigDg.On("GetEventCertificateConfigByEventID", ctx, eventID).
+			Return(&entity.EventCertificateConfig{ID: configID, EventID: eventID}, nil)
+
 		oldSigID := uuid.New()
 		oldSignatures := []*entity.EventCertificateSignature{
-			{Id: oldSigID, EventCertificateId: oldCertID},
+			{Id: oldSigID, EventCertificateConfigId: configID},
 		}
 
 		mockCertSigDg := new(MockEventCertificateSignatureDataGateway)
-		mockCertSigDg.On("GetEventCertificateSignaturesByEventCertificateID", ctx, oldCertID).
+		mockCertSigDg.On("GetEventCertificateSignaturesByEventCertificateConfigID", ctx, configID).
 			Return(oldSignatures, nil)
 		mockCertSigDg.On("DeleteEventCertificateSignature", ctx, oldSigID).
 			Return(errors.New("delete signature error"))
@@ -583,6 +648,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			EventIssuerDataGateway:               mockEventIssuerDg,
 			EventCertificateDataGateway:          mockCertDg,
 			EventCertificateSignatureDataGateway: mockCertSigDg,
+			EventCertificateConfigDg:             mockCertConfigDg,
 			cfg:                                  createMockConfigForImport(),
 		}
 
@@ -614,8 +680,9 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		mockEventDg := new(MockEventDataGateway)
 		event := &entity.Event{
-			Id:    eventID,
-			Title: "Test Event",
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userId,
 		}
 		mockEventDg.On("GetEventById", ctx, eventID).
 			Return(event, nil)
@@ -645,8 +712,14 @@ func TestImportCertificateReceivers(t *testing.T) {
 		mockCertDg.On("DeleteEventCertificate", ctx, oldCertID).
 			Return(errors.New("delete certificate error"))
 
+		// Setup certificate config
+		configID := uuid.New()
+		mockCertConfigDg := new(MockEventCertificateConfigDataGateway)
+		mockCertConfigDg.On("GetEventCertificateConfigByEventID", ctx, eventID).
+			Return(&entity.EventCertificateConfig{ID: configID, EventID: eventID}, nil)
+
 		mockCertSigDg := new(MockEventCertificateSignatureDataGateway)
-		mockCertSigDg.On("GetEventCertificateSignaturesByEventCertificateID", ctx, oldCertID).
+		mockCertSigDg.On("GetEventCertificateSignaturesByEventCertificateConfigID", ctx, configID).
 			Return([]*entity.EventCertificateSignature{}, nil)
 
 		uc := &EventUsecase{
@@ -656,6 +729,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			EventIssuerDataGateway:               mockEventIssuerDg,
 			EventCertificateDataGateway:          mockCertDg,
 			EventCertificateSignatureDataGateway: mockCertSigDg,
+			EventCertificateConfigDg:             mockCertConfigDg,
 			cfg:                                  createMockConfigForImport(),
 		}
 

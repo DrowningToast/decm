@@ -122,6 +122,141 @@ func (q *Queries) GetAllEventCertificateIDsByEventID(ctx context.Context, eventI
 	return items, nil
 }
 
+const GetClaimedCertificatesByCredentialID = `-- name: GetClaimedCertificatesByCredentialID :many
+SELECT 
+    ec.id,
+    ec.event_id,
+    ec.receiver_credential_id,
+    ec.receiver_email,
+    ec.name,
+    ec.academic_institution,
+    ec.certificate_title,
+    ec.certificate_subtitle,
+    ec.event_contract_address,
+    ec.event_certificate_address,
+    ec.certificate_token_id,
+    ec.certificate_digest,
+    ec.inbox_message_id,
+    ec.created_at,
+    ec.revoked_at,
+    e.title as event_name
+FROM event_certificates ec
+INNER JOIN events e ON ec.event_id = e.id
+WHERE (
+    ec.receiver_credential_id = $1
+    OR ec.receiver_email = $2
+  )
+  AND ec.certificate_token_id IS NOT NULL
+  AND ec.revoked_at IS NULL
+ORDER BY ec.created_at DESC
+`
+
+type GetClaimedCertificatesByCredentialIDParams struct {
+	ReceiverCredentialID pgtype.UUID `json:"receiver_credential_id"`
+	ReceiverEmail        pgtype.Text `json:"receiver_email"`
+}
+
+type GetClaimedCertificatesByCredentialIDRow struct {
+	ID                      uuid.UUID          `json:"id"`
+	EventID                 uuid.UUID          `json:"event_id"`
+	ReceiverCredentialID    pgtype.UUID        `json:"receiver_credential_id"`
+	ReceiverEmail           pgtype.Text        `json:"receiver_email"`
+	Name                    pgtype.Text        `json:"name"`
+	AcademicInstitution     pgtype.Text        `json:"academic_institution"`
+	CertificateTitle        pgtype.Text        `json:"certificate_title"`
+	CertificateSubtitle     pgtype.Text        `json:"certificate_subtitle"`
+	EventContractAddress    pgtype.Text        `json:"event_contract_address"`
+	EventCertificateAddress pgtype.Text        `json:"event_certificate_address"`
+	CertificateTokenID      pgtype.Text        `json:"certificate_token_id"`
+	CertificateDigest       pgtype.Text        `json:"certificate_digest"`
+	InboxMessageID          pgtype.UUID        `json:"inbox_message_id"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	RevokedAt               pgtype.Timestamptz `json:"revoked_at"`
+	EventName               string             `json:"event_name"`
+}
+
+func (q *Queries) GetClaimedCertificatesByCredentialID(ctx context.Context, arg GetClaimedCertificatesByCredentialIDParams) ([]GetClaimedCertificatesByCredentialIDRow, error) {
+	rows, err := q.db.Query(ctx, GetClaimedCertificatesByCredentialID, arg.ReceiverCredentialID, arg.ReceiverEmail)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetClaimedCertificatesByCredentialIDRow{}
+	for rows.Next() {
+		var i GetClaimedCertificatesByCredentialIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.EventID,
+			&i.ReceiverCredentialID,
+			&i.ReceiverEmail,
+			&i.Name,
+			&i.AcademicInstitution,
+			&i.CertificateTitle,
+			&i.CertificateSubtitle,
+			&i.EventContractAddress,
+			&i.EventCertificateAddress,
+			&i.CertificateTokenID,
+			&i.CertificateDigest,
+			&i.InboxMessageID,
+			&i.CreatedAt,
+			&i.RevokedAt,
+			&i.EventName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const GetClaimedCertificatesByEventID = `-- name: GetClaimedCertificatesByEventID :many
+SELECT ec.id, ec.event_id, ec.receiver_credential_id, ec.receiver_email, ec.name, ec.academic_institution, ec.certificate_title, ec.certificate_subtitle, ec.event_contract_address, ec.event_certificate_address, ec.certificate_token_id, ec.certificate_digest, ec.created_at, ec.revoked_at, ec.inbox_message_id 
+FROM event_certificates ec
+WHERE ec.event_id = $1 
+  AND ec.certificate_token_id IS NOT NULL
+  AND ec.revoked_at IS NULL
+ORDER BY ec.created_at DESC
+`
+
+func (q *Queries) GetClaimedCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error) {
+	rows, err := q.db.Query(ctx, GetClaimedCertificatesByEventID, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []EventCertificate{}
+	for rows.Next() {
+		var i EventCertificate
+		if err := rows.Scan(
+			&i.ID,
+			&i.EventID,
+			&i.ReceiverCredentialID,
+			&i.ReceiverEmail,
+			&i.Name,
+			&i.AcademicInstitution,
+			&i.CertificateTitle,
+			&i.CertificateSubtitle,
+			&i.EventContractAddress,
+			&i.EventCertificateAddress,
+			&i.CertificateTokenID,
+			&i.CertificateDigest,
+			&i.CreatedAt,
+			&i.RevokedAt,
+			&i.InboxMessageID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const GetEventCertificateByID = `-- name: GetEventCertificateByID :one
 SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id FROM event_certificates WHERE id = $1
 `
@@ -182,6 +317,146 @@ SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_inst
 
 func (q *Queries) GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error) {
 	rows, err := q.db.Query(ctx, GetEventCertificatesByEventID, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []EventCertificate{}
+	for rows.Next() {
+		var i EventCertificate
+		if err := rows.Scan(
+			&i.ID,
+			&i.EventID,
+			&i.ReceiverCredentialID,
+			&i.ReceiverEmail,
+			&i.Name,
+			&i.AcademicInstitution,
+			&i.CertificateTitle,
+			&i.CertificateSubtitle,
+			&i.EventContractAddress,
+			&i.EventCertificateAddress,
+			&i.CertificateTokenID,
+			&i.CertificateDigest,
+			&i.CreatedAt,
+			&i.RevokedAt,
+			&i.InboxMessageID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const GetUnclaimedReadyCertificatesByCredentialID = `-- name: GetUnclaimedReadyCertificatesByCredentialID :many
+SELECT 
+    ec.id,
+    ec.event_id,
+    ec.receiver_credential_id,
+    ec.receiver_email,
+    ec.name,
+    ec.academic_institution,
+    ec.certificate_title,
+    ec.certificate_subtitle,
+    ec.event_contract_address,
+    ec.event_certificate_address,
+    ec.certificate_token_id,
+    ec.certificate_digest,
+    ec.inbox_message_id,
+    ec.created_at,
+    ec.revoked_at,
+    e.title as event_name
+FROM event_certificates ec
+INNER JOIN event_certificate_configs ecc ON ec.event_id = ecc.event_id
+INNER JOIN events e ON ec.event_id = e.id
+INNER JOIN event_attendees ea ON ec.event_id = ea.event_id AND ea.attendee_credential_id = $1
+WHERE (
+    ec.receiver_credential_id = $1
+    OR ec.receiver_email = $2
+  )
+  AND ec.certificate_token_id IS NULL
+  AND ecc.is_published = TRUE
+  AND ec.revoked_at IS NULL
+ORDER BY ec.created_at DESC
+`
+
+type GetUnclaimedReadyCertificatesByCredentialIDParams struct {
+	ReceiverCredentialID uuid.UUID   `json:"receiver_credential_id"`
+	ReceiverEmail        pgtype.Text `json:"receiver_email"`
+}
+
+type GetUnclaimedReadyCertificatesByCredentialIDRow struct {
+	ID                      uuid.UUID          `json:"id"`
+	EventID                 uuid.UUID          `json:"event_id"`
+	ReceiverCredentialID    pgtype.UUID        `json:"receiver_credential_id"`
+	ReceiverEmail           pgtype.Text        `json:"receiver_email"`
+	Name                    pgtype.Text        `json:"name"`
+	AcademicInstitution     pgtype.Text        `json:"academic_institution"`
+	CertificateTitle        pgtype.Text        `json:"certificate_title"`
+	CertificateSubtitle     pgtype.Text        `json:"certificate_subtitle"`
+	EventContractAddress    pgtype.Text        `json:"event_contract_address"`
+	EventCertificateAddress pgtype.Text        `json:"event_certificate_address"`
+	CertificateTokenID      pgtype.Text        `json:"certificate_token_id"`
+	CertificateDigest       pgtype.Text        `json:"certificate_digest"`
+	InboxMessageID          pgtype.UUID        `json:"inbox_message_id"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	RevokedAt               pgtype.Timestamptz `json:"revoked_at"`
+	EventName               string             `json:"event_name"`
+}
+
+func (q *Queries) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, arg GetUnclaimedReadyCertificatesByCredentialIDParams) ([]GetUnclaimedReadyCertificatesByCredentialIDRow, error) {
+	rows, err := q.db.Query(ctx, GetUnclaimedReadyCertificatesByCredentialID, arg.ReceiverCredentialID, arg.ReceiverEmail)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetUnclaimedReadyCertificatesByCredentialIDRow{}
+	for rows.Next() {
+		var i GetUnclaimedReadyCertificatesByCredentialIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.EventID,
+			&i.ReceiverCredentialID,
+			&i.ReceiverEmail,
+			&i.Name,
+			&i.AcademicInstitution,
+			&i.CertificateTitle,
+			&i.CertificateSubtitle,
+			&i.EventContractAddress,
+			&i.EventCertificateAddress,
+			&i.CertificateTokenID,
+			&i.CertificateDigest,
+			&i.InboxMessageID,
+			&i.CreatedAt,
+			&i.RevokedAt,
+			&i.EventName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const GetUnclaimedReadyCertificatesByEventID = `-- name: GetUnclaimedReadyCertificatesByEventID :many
+SELECT ec.id, ec.event_id, ec.receiver_credential_id, ec.receiver_email, ec.name, ec.academic_institution, ec.certificate_title, ec.certificate_subtitle, ec.event_contract_address, ec.event_certificate_address, ec.certificate_token_id, ec.certificate_digest, ec.created_at, ec.revoked_at, ec.inbox_message_id 
+FROM event_certificates ec
+INNER JOIN event_certificate_configs ecc ON ec.event_id = ecc.event_id
+WHERE ec.event_id = $1 
+  AND ec.certificate_token_id IS NULL
+  AND ecc.is_published = TRUE
+  AND ec.revoked_at IS NULL
+ORDER BY ec.created_at DESC
+`
+
+func (q *Queries) GetUnclaimedReadyCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error) {
+	rows, err := q.db.Query(ctx, GetUnclaimedReadyCertificatesByEventID, eventID)
 	if err != nil {
 		return nil, err
 	}

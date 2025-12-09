@@ -14,8 +14,6 @@ export interface IssuerEvent {
     id: string;
     isSigned: boolean;
     issuerCredentialId: string;
-    signMessage: string;
-    signature: string;
 }
 
 export interface IssuerEventViewModel {

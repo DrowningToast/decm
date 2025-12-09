@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { Typography } from "@/components/typography/typography";
 import { useEventViewModelUsecase } from "./useEventViewModelUsecase";
@@ -8,12 +8,9 @@ import { useEventInvitationByUserAndEvent } from "./useEventInvitationByUserAndE
 import { useAuth } from "@/context/AuthContext";
 import { RegistrationConfirmForm } from "./ConfirmForm";
 import type { RegistrationConfirmDataForm } from "./RegistrationConfirmDataFormSchema";
-import { toast } from "sonner";
 import { useSignPasswordModalStore } from "@/components/providers/SignPasswordModal/store";
 import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
-import { eventRegistrationService } from "@/services/services";
-import { useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEY } from "@/lib/queryKeys";
+import { useJoinEventMutation } from "@/hooks/events/useJoinEventMutation";
 
 interface ActionMenuProps {
     eventId: string;
@@ -22,8 +19,7 @@ interface ActionMenuProps {
 export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
     const { t } = useTranslation();
     const { user } = useAuth();
-    const [isSubmiting, setIsSubmiting] = useState(false);
-    const queryClient = useQueryClient();
+    const { joinWithAccountPassword } = useJoinEventMutation();
 
     const { bottomNavVariant } = useEventViewModelUsecase({ eventId });
     const { showPreviewModal: _showPreviewModal, closePreviewModal } =
@@ -82,7 +78,6 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
 
     const handleSubmit = async (data: RegistrationConfirmDataForm) => {
         try {
-            setIsSubmiting(true);
             // password check
             const checkedPassword = await openPasswordPrompt({
                 eventContractAddress: eventViewModel?.eventContractAddress ?? "",
@@ -93,7 +88,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
             });
 
             if (registrationInvitation) {
-                await eventRegistrationService.joinEventWithAccountPassword({
+                await joinWithAccountPassword.mutateAsync({
                     eventId,
                     accountPassword: checkedPassword,
                     registrationData: data,
@@ -102,18 +97,13 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
                 throw new Error("No registration invitation or event password found");
             }
 
-            // Invalidate event viewmodel query to refetch participant status
-            await queryClient.invalidateQueries({
-                queryKey: [QUERY_KEY.event.viewmodel(eventId, user?.authenticationCredentialId)],
-            });
-
-            toast.success(t("events.registration.piiForm.submitSuccess"));
+            // Close modal after successful join
+            // The mutation's onSuccess handler will invalidate and refetch all relevant queries
             closePreviewModal();
         } catch (error) {
             console.error("Failed to submit Registration Confirm data:", error);
-            toast.error(t("events.registration.piiForm.submitError"));
-        } finally {
-            setIsSubmiting(false);
+            // Error toast is handled by the mutation hook
+            // Don't close modal on error so user can retry
         }
     };
 
@@ -138,7 +128,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
                         eventId={eventId}
                         onSubmit={handleSubmit}
                         onCancel={handleCancel}
-                        isSubmitting={isSubmiting}
+                        isSubmitting={joinWithAccountPassword.isPending}
                         profileData={prefilledProfile}
                         invitationData={registrationInvitation}
                     />

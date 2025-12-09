@@ -1,9 +1,147 @@
 import { useTranslation } from "react-i18next";
 import DOMPurify from "dompurify";
 import { Typography } from "@/components/typography/typography";
-import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { AlertCircle, Eye } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import type { DetectedKeyword, AvailableKeyword } from "@/hooks/useCertificateTemplate";
+import { useState, useRef, useEffect, useCallback } from "react";
+
+interface BoundingBoxOverlayProps {
+    detectedKeywords: DetectedKeyword[];
+    containerRef: React.RefObject<HTMLDivElement | null>;
+}
+
+const BoundingBoxOverlay = ({ detectedKeywords, containerRef }: BoundingBoxOverlayProps) => {
+    const [svgDimensions, setSvgDimensions] = useState({
+        width: 0,
+        height: 0,
+        viewBoxWidth: 1920,
+        viewBoxHeight: 1080,
+        offsetLeft: 0,
+        offsetTop: 0,
+    });
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const updateDimensions = () => {
+            const svg = containerRef.current?.querySelector("svg");
+            if (!svg) {
+                console.log("SVG not found in container");
+                return;
+            }
+
+            // Get actual rendered dimensions
+            const rect = svg.getBoundingClientRect();
+            const containerRect = containerRef.current!.getBoundingClientRect();
+
+            // Get viewBox dimensions (template coordinate space)
+            const viewBox = svg.getAttribute("viewBox");
+            let viewBoxWidth = 1920;
+            let viewBoxHeight = 1080;
+
+            if (viewBox) {
+                const parts = viewBox.split(/\s+/);
+                if (parts.length === 4) {
+                    viewBoxWidth = parseFloat(parts[2]);
+                    viewBoxHeight = parseFloat(parts[3]);
+                }
+            }
+
+            console.log("SVG Dimensions:", {
+                width: rect.width,
+                height: rect.height,
+                viewBoxWidth,
+                viewBoxHeight,
+                offsetLeft: rect.left - containerRect.left,
+                offsetTop: rect.top - containerRect.top,
+            });
+
+            setSvgDimensions({
+                width: rect.width,
+                height: rect.height,
+                viewBoxWidth,
+                viewBoxHeight,
+                offsetLeft: rect.left - containerRect.left,
+                offsetTop: rect.top - containerRect.top,
+            });
+        };
+
+        // Wait for SVG to be rendered
+        const timeoutId = setTimeout(updateDimensions, 100);
+
+        // Update on resize
+        const resizeObserver = new ResizeObserver(updateDimensions);
+        if (containerRef.current) {
+            resizeObserver.observe(containerRef.current);
+        }
+
+        return () => {
+            clearTimeout(timeoutId);
+            resizeObserver.disconnect();
+        };
+    }, [containerRef]);
+
+    if (svgDimensions.width === 0 || svgDimensions.height === 0) {
+        console.log("Waiting for SVG dimensions...");
+        return null;
+    }
+
+    console.log("Rendering overlays for keywords:", detectedKeywords);
+
+    // Calculate scale factors to convert template coordinates to screen coordinates
+    const scaleX = svgDimensions.width / svgDimensions.viewBoxWidth;
+    const scaleY = svgDimensions.height / svgDimensions.viewBoxHeight;
+
+    return (
+        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 10 }}>
+            {detectedKeywords.map((kw, idx) => {
+                // Convert template coordinates to screen coordinates
+                const screenX = kw.x * scaleX + svgDimensions.offsetLeft;
+                const screenY = kw.y * scaleY + svgDimensions.offsetTop;
+
+                // Estimate box dimensions (you may want to make this configurable)
+                const boxWidth = 200 * scaleX;
+                const boxHeight = 40 * scaleY;
+
+                console.log(`Keyword ${kw.keyword}:`, {
+                    templateX: kw.x,
+                    templateY: kw.y,
+                    screenX,
+                    screenY,
+                    boxWidth,
+                    boxHeight,
+                });
+
+                return (
+                    <div
+                        key={`${kw.keyword}-${idx}`}
+                        className="absolute"
+                        style={{
+                            left: `${screenX - boxWidth / 2}px`,
+                            top: `${screenY - boxHeight / 2}px`,
+                            width: `${boxWidth}px`,
+                            height: `${boxHeight}px`,
+                            border: "3px dashed #ef4444",
+                            backgroundColor: "rgba(239, 68, 68, 0.2)",
+                            borderRadius: "4px",
+                            animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                        }}
+                    >
+                        <div
+                            className="absolute left-0 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded font-mono whitespace-nowrap"
+                            style={{ top: "-20px" }}
+                        >
+                            {kw.keyword} ({kw.x.toFixed(0)}, {kw.y.toFixed(0)})
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
 
 export interface CertificatePreviewProps {
     svgPreview?: string;
@@ -21,6 +159,12 @@ export const CertificatePreview = ({
     availableKeywords = [],
 }: CertificatePreviewProps) => {
     const { t } = useTranslation();
+    const [showPositions, setShowPositions] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const handleTogglePositions = useCallback((checked: boolean) => {
+        setShowPositions(checked);
+    }, []);
 
     if (!svgPreview && !imageUrl) {
         return null;
@@ -89,11 +233,43 @@ export const CertificatePreview = ({
         <div className="space-y-4">
             {/* Preview Section */}
             <div className="space-y-2">
-                <Typography variant="text" tag="p" className="text-sm font-medium">
-                    {t("certificateSettings.step2.preview.title")}
-                </Typography>
+                <div className="flex items-center justify-between">
+                    <Typography variant="text" tag="p" className="text-sm font-medium">
+                        {t("certificateSettings.step2.preview.title")}
+                    </Typography>
+                    {detectedKeywords.length > 0 && (
+                        <div className="flex items-center gap-2">
+                            <Switch
+                                id="show-positions"
+                                checked={showPositions}
+                                onCheckedChange={handleTogglePositions}
+                            />
+                            <Label
+                                htmlFor="show-positions"
+                                className="text-xs cursor-pointer flex items-center gap-1"
+                            >
+                                <Eye className="w-3 h-3" />
+                                {t(
+                                    "certificateSettings.step2.preview.showPositions",
+                                    "Show Text Positions",
+                                )}
+                            </Label>
+                        </div>
+                    )}
+                </div>
                 <div className="rounded-md border bg-muted/30 p-4">
-                    <div className="w-full flex items-center justify-center">{renderContent()}</div>
+                    <div
+                        className="w-full flex items-center justify-center relative"
+                        ref={containerRef}
+                    >
+                        {renderContent()}
+                        {showPositions && detectedKeywords.length > 0 && (
+                            <BoundingBoxOverlay
+                                detectedKeywords={detectedKeywords}
+                                containerRef={containerRef}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -139,12 +315,12 @@ export const CertificatePreview = ({
                                     <tr className="border-b bg-gray-100">
                                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
                                             {t(
-                                                "certificateSettings.step2.keywordStatus.table.status",
+                                                "certificateSettings.step2.keywordStatus.table.keyword",
                                             )}
                                         </th>
                                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
                                             {t(
-                                                "certificateSettings.step2.keywordStatus.table.keyword",
+                                                "certificateSettings.step2.keywordStatus.table.status",
                                             )}
                                         </th>
                                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
@@ -157,39 +333,45 @@ export const CertificatePreview = ({
                                                 "certificateSettings.step2.keywordStatus.table.count",
                                             )}
                                         </th>
+                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                                            {t(
+                                                "certificateSettings.step2.keywordStatus.table.positionX",
+                                            )}
+                                        </th>
+                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                                            {t(
+                                                "certificateSettings.step2.keywordStatus.table.positionY",
+                                            )}
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {keywordStatuses.map((kw) => (
                                         <tr
                                             key={kw.keyword}
-                                            className="border-b last:border-b-0 hover:bg-muted/30 transition-colors"
+                                            className={`border-b last:border-b-0 hover:bg-muted/30 transition-colors ${
+                                                !kw.isDetected && kw.mandatory ? "bg-red-50" : ""
+                                            }`}
                                         >
-                                            <td className="px-4 py-3">
-                                                {kw.isDetected ? (
-                                                    <div className="flex items-center gap-2">
-                                                        <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
-                                                        <span className="text-sm font-medium text-green-700">
-                                                            {t(
-                                                                "certificateSettings.step2.keywordStatus.detected",
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2">
-                                                        <XCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
-                                                        <span className="text-sm font-medium text-red-700">
-                                                            {t(
-                                                                "certificateSettings.step2.keywordStatus.notDetected",
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </td>
                                             <td className="px-4 py-3">
                                                 <code className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-mono text-gray-900 select-all">
                                                     {kw.keyword}
                                                 </code>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {kw.isDetected ? (
+                                                    <span className="px-2 py-1 bg-green-100 border border-green-300 text-green-900 rounded text-xs font-semibold">
+                                                        {t(
+                                                            "certificateSettings.step2.keywordStatus.detected",
+                                                        )}
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2 py-1 bg-gray-100 border border-gray-300 text-gray-900 rounded text-xs font-semibold">
+                                                        {t(
+                                                            "certificateSettings.step2.keywordStatus.notDetected",
+                                                        )}
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="px-4 py-3">
                                                 {kw.mandatory ? (
@@ -209,16 +391,29 @@ export const CertificatePreview = ({
                                             <td className="px-4 py-3">
                                                 {kw.isDetected && kw.detectedData ? (
                                                     <span className="text-sm font-medium text-gray-900">
-                                                        {kw.detectedData.count}{" "}
-                                                        <span className="text-sm font-normal text-gray-700">
-                                                            {kw.detectedData.count === 1
-                                                                ? t(
-                                                                      "certificateSettings.step2.keywordStatus.detected",
-                                                                  )
-                                                                : t(
-                                                                      "certificateSettings.step2.keywordStatus.detectedPlural",
-                                                                  )}
-                                                        </span>
+                                                        {kw.detectedData.count}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-sm font-medium text-gray-400">
+                                                        —
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {kw.isDetected && kw.detectedData ? (
+                                                    <span className="text-sm font-mono text-gray-900">
+                                                        {kw.detectedData.x.toFixed(2)}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-sm font-medium text-gray-400">
+                                                        —
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {kw.isDetected && kw.detectedData ? (
+                                                    <span className="text-sm font-mono text-gray-900">
+                                                        {kw.detectedData.y.toFixed(2)}
                                                     </span>
                                                 ) : (
                                                     <span className="text-sm font-medium text-gray-400">

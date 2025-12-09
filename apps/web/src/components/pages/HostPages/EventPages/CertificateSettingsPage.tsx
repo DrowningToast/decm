@@ -9,10 +9,15 @@ import { IssuerSelectionModal } from "@/components/IssuerSelectionModal";
 import { SelectedIssuersTable } from "@/components/SelectedIssuersTable";
 import { CertificateTemplateUpload } from "@/components/CertificateTemplateUpload";
 import { CertificatePreview } from "@/components/CertificatePreview";
+import {
+    CertificateFontSettings,
+    type CertificateFontConfig,
+} from "@/components/CertificateFontSettings";
 import { convertProfileToIssuer, useIssuerManagement } from "@/hooks/useIssuerManagement";
 import { useCertificateTemplate, type DetectedKeyword } from "@/hooks/useCertificateTemplate";
 import SectionContainer from "@/components/container/SectionContainer";
 import { useUpdateCertificateConfig } from "./useUpdateCertificateConfig";
+import { useUpdateCertificateTextConfig } from "./useUpdateCertificateTextConfig";
 import type {
     CoreApiInternalHandlerEventconfigEventCertificateConfigResponse,
     UpdateEventCertificateConfigPayload,
@@ -44,8 +49,16 @@ export const CertificateSettingsPage = ({
         eventId!,
     );
 
+    const { updateCertificateTextConfig } = useUpdateCertificateTextConfig(eventId!);
+
     const { updateEventIssuer, isUpdatingEventIssuer } = useUpdateEventIssuer(eventId!);
     const { deleteEventIssuerAsync } = useDeleteEventIssuer();
+
+    // Check if certificate is published - if so, disable issuer editing
+    const isCertificatePublished = eventCertificateConfig?.is_published ?? false;
+
+    // Track font settings changes
+    const [fontSettings, setFontSettings] = React.useState<CertificateFontConfig | null>(null);
 
     // Use custom hooks for state management
     // Extract issuer profiles from event issuers
@@ -167,6 +180,32 @@ export const CertificateSettingsPage = ({
             });
         }
 
+        // Add certificateTitle keyword if position exists (it's optional, so if it exists, it was detected)
+        if (
+            eventCertificateConfig.certificate_title_pos_x !== undefined &&
+            eventCertificateConfig.certificate_title_pos_y !== undefined
+        ) {
+            keywords.push({
+                keyword: "{{ certificateTitle }}",
+                x: eventCertificateConfig.certificate_title_pos_x,
+                y: eventCertificateConfig.certificate_title_pos_y,
+                count: 1,
+            });
+        }
+
+        // Add certificateSubtitle keyword if position exists (it's optional, so if it exists, it was detected)
+        if (
+            eventCertificateConfig.certificate_subtitle_pos_x !== undefined &&
+            eventCertificateConfig.certificate_subtitle_pos_y !== undefined
+        ) {
+            keywords.push({
+                keyword: "{{ certificateSubtitle }}",
+                x: eventCertificateConfig.certificate_subtitle_pos_x,
+                y: eventCertificateConfig.certificate_subtitle_pos_y,
+                count: 1,
+            });
+        }
+
         return keywords;
     }, [eventCertificateConfig]);
 
@@ -205,6 +244,14 @@ export const CertificateSettingsPage = ({
                 (keyword) => keyword.keyword === "{{ academicInstitutionName }}",
             );
 
+            const certificateTitle = allDetectedKeywords.find(
+                (keyword) => keyword.keyword === "{{ certificateTitle }}",
+            );
+
+            const certificateSubtitle = allDetectedKeywords.find(
+                (keyword) => keyword.keyword === "{{ certificateSubtitle }}",
+            );
+
             if (certificateTemplate.svgFile && !name) {
                 toast.error(t("certificateSettings.nameNotFound"));
                 return;
@@ -213,26 +260,80 @@ export const CertificateSettingsPage = ({
             const req: UpdateEventCertificateConfigPayload = {
                 name_pos_x: name?.x ?? eventCertificateConfig?.name_pos_x ?? 0,
                 name_pos_y: name?.y ?? eventCertificateConfig?.name_pos_y ?? 0,
-                event_name_pos_x: eventName?.x ?? eventCertificateConfig?.event_name_pos_x ?? 0,
-                event_name_pos_y: eventName?.y ?? eventCertificateConfig?.event_name_pos_y ?? 0,
                 base_certificate_image: certificateTemplate.svgFile ?? undefined,
             };
+
+            // Only include event name positions if the template actually has the event name keyword
+            // If a new template is uploaded without event name, we should clear the positions
+            if (eventName) {
+                req.event_name_pos_x = eventName.x;
+                req.event_name_pos_y = eventName.y;
+            } else if (certificateTemplate.svgFile) {
+                // New template uploaded without event name - clear the positions
+                req.event_name_pos_x = 0;
+                req.event_name_pos_y = 0;
+            } else if (
+                eventCertificateConfig?.event_name_pos_x != null &&
+                eventCertificateConfig?.event_name_pos_y != null
+            ) {
+                // Keep existing values if no new template uploaded (for updates without template change)
+                req.event_name_pos_x = eventCertificateConfig.event_name_pos_x;
+                req.event_name_pos_y = eventCertificateConfig.event_name_pos_y;
+            }
 
             if (acedmicInstitutionName) {
                 req.academic_institution_pos_x = acedmicInstitutionName.x;
                 req.academic_institution_pos_y = acedmicInstitutionName.y;
             }
 
+            if (certificateTitle) {
+                req.certificate_title_pos_x = certificateTitle.x;
+                req.certificate_title_pos_y = certificateTitle.y;
+            }
+
+            if (certificateSubtitle) {
+                req.certificate_subtitle_pos_x = certificateSubtitle.x;
+                req.certificate_subtitle_pos_y = certificateSubtitle.y;
+            }
+
             await updateCertificateConfig(req);
-            await updateEventIssuer(
-                issuerManagement.selectedIssuers.map((issuer) => {
-                    console.log(issuer);
-                    return {
-                        event_id: eventId,
-                        issuer_credential_id: issuer.id,
-                    };
-                }),
-            );
+
+            // Only update issuers if certificate is not published
+            if (!isCertificatePublished) {
+                await updateEventIssuer(
+                    issuerManagement.selectedIssuers.map((issuer) => {
+                        console.log(issuer);
+                        return {
+                            event_id: eventId,
+                            issuer_credential_id: issuer.id,
+                        };
+                    }),
+                );
+            }
+
+            // Update font settings if they have changed (only if config exists or is being created)
+            if (fontSettings && (eventCertificateConfig || certificateTemplate.svgFile)) {
+                // Ensure all required fields are present (non-undefined)
+                const textConfig = {
+                    academic_institution_font_family_id:
+                        fontSettings.academic_institution_font_family_id ?? 1,
+                    academic_institution_font_weight:
+                        fontSettings.academic_institution_font_weight ?? 700,
+                    certificate_subtitle_font_family_id:
+                        fontSettings.certificate_subtitle_font_family_id ?? 1,
+                    certificate_subtitle_font_weight:
+                        fontSettings.certificate_subtitle_font_weight ?? 700,
+                    certificate_title_font_family_id:
+                        fontSettings.certificate_title_font_family_id ?? 1,
+                    certificate_title_font_weight:
+                        fontSettings.certificate_title_font_weight ?? 700,
+                    event_name_font_family_id: fontSettings.event_name_font_family_id ?? 1,
+                    event_name_font_weight: fontSettings.event_name_font_weight ?? 700,
+                    name_font_family_id: fontSettings.name_font_family_id ?? 1,
+                    name_font_weight: fontSettings.name_font_weight ?? 700,
+                };
+                await updateCertificateTextConfig(textConfig);
+            }
 
             // Refetch all queries to ensure the page is up to date
             await Promise.all([
@@ -340,6 +441,17 @@ export const CertificateSettingsPage = ({
 
                         {/* Search Issuers */}
                         <div className="space-y-4 rounded-lg border p-6">
+                            {isCertificatePublished && (
+                                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        className="text-sm text-yellow-800"
+                                    >
+                                        {t("certificateSettings.step1.publishedWarning")}
+                                    </Typography>
+                                </div>
+                            )}
                             <div>
                                 <Label htmlFor="issuer-search">
                                     <Typography
@@ -369,7 +481,10 @@ export const CertificateSettingsPage = ({
                                                     issuerManagement.handleSearch();
                                                 }
                                             }}
-                                            disabled={issuerManagement.isSearching}
+                                            disabled={
+                                                issuerManagement.isSearching ||
+                                                isCertificatePublished
+                                            }
                                             className="h-10"
                                         />
                                         <Button
@@ -377,7 +492,8 @@ export const CertificateSettingsPage = ({
                                             onClick={issuerManagement.handleSearch}
                                             disabled={
                                                 issuerManagement.isSearching ||
-                                                !issuerManagement.searchQuery.trim()
+                                                !issuerManagement.searchQuery.trim() ||
+                                                isCertificatePublished
                                             }
                                             className="min-w-[100px] h-10"
                                         >
@@ -408,6 +524,7 @@ export const CertificateSettingsPage = ({
                                 selectedIssuers={savedIssuers}
                                 onRemoveIssuer={handleRemoveIssuer}
                                 title={t("certificateSettings.step1.savedIssuers")}
+                                disabled={isCertificatePublished}
                             />
 
                             {/* Unsaved Issuers Table */}
@@ -416,6 +533,7 @@ export const CertificateSettingsPage = ({
                                 onRemoveIssuer={handleRemoveIssuer}
                                 title={t("certificateSettings.step1.unsavedIssuers")}
                                 isUnsaved={true}
+                                disabled={isCertificatePublished}
                             />
                         </div>
                     </div>
@@ -459,6 +577,36 @@ export const CertificateSettingsPage = ({
                             availableKeywords={certificateTemplate.availableKeywords}
                         />
                     </div>
+
+                    {/* Step 3: Font Settings (show if certificate config exists or template uploaded) */}
+                    {(eventCertificateConfig || certificateTemplate.svgFile) && (
+                        <div className="space-y-6">
+                            <div>
+                                <Typography
+                                    variant="header"
+                                    tag="h2"
+                                    className="text-xl font-bold mb-2"
+                                >
+                                    {t("certificateSettings.step3.title")}
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    className="text-sm text-muted-foreground"
+                                >
+                                    {t("certificateSettings.step3.description")}
+                                </Typography>
+                            </div>
+
+                            <CertificateFontSettings
+                                eventCertificateConfig={eventCertificateConfig}
+                                detectedKeywords={allDetectedKeywords}
+                                onChange={(fontConfig: CertificateFontConfig) => {
+                                    setFontSettings(fontConfig);
+                                }}
+                            />
+                        </div>
+                    )}
 
                     {/* Action Buttons */}
                     <div className="flex justify-end gap-4 pt-4">

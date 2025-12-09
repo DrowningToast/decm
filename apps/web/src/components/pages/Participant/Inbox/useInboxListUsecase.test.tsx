@@ -4,11 +4,22 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useInboxListUsecase } from "./useInboxListUsecase";
 import type { ReactNode } from "react";
 import { useSearchNotificationNavStore } from "@/components/BottomNav/stores/notifications";
+import type { InboxMessage } from "@/services/InboxService/InboxService";
 
 // Mock the zustand store
 vi.mock("@/components/BottomNav/stores/notifications", () => ({
     useSearchNotificationNavStore: vi.fn(() => ({
         searchQuery: "",
+    })),
+}));
+
+// Mock the useInboxMessages hook
+vi.mock("@/hooks/inbox/useInboxMessages", () => ({
+    useInboxMessages: vi.fn(() => ({
+        data: [],
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
     })),
 }));
 
@@ -174,5 +185,215 @@ describe("useInboxListUsecase", () => {
             // No inbox items - acceptable for mock data
             expect(result.current.inboxItems).toEqual([]);
         }
+    });
+
+    describe("certificate invitation filtering", () => {
+        it("shows certificate invitation when user has joined the event", async () => {
+            const { useInboxMessages } = await import("@/hooks/inbox/useInboxMessages");
+
+            const mockMessages: InboxMessage[] = [
+                {
+                    id: "1",
+                    messageType: "event_certificate_invitation",
+                    messageContent:
+                        '{"en": "Certificate invitation", "th": "เชิญรับใบประกาศนียบัตร"}',
+                    isRead: false,
+                    createdAt: new Date("2025-01-01"),
+                    updatedAt: new Date("2025-01-01"),
+                    hasParticipantJoinedEvent: true,
+                    certificateId: "cert-1",
+                    certificateTitle: "Test Certificate",
+                    eventId: "event-1",
+                    eventName: "Test Event",
+                },
+            ];
+
+            vi.mocked(useInboxMessages).mockReturnValue({
+                data: mockMessages,
+                isLoading: false,
+                error: null,
+                refetch: vi.fn(),
+            });
+
+            const { result } = renderHook(() => useInboxListUsecase(), { wrapper });
+
+            await waitFor(() => {
+                expect(result.current.isLoading).toBe(false);
+            });
+
+            expect(result.current.inboxItems).toHaveLength(1);
+            expect(result.current.inboxItems[0].id).toBe("1");
+        });
+
+        it("filters out certificate invitation when user has not joined the event", async () => {
+            const { useInboxMessages } = await import("@/hooks/inbox/useInboxMessages");
+
+            const mockMessages: InboxMessage[] = [
+                {
+                    id: "1",
+                    messageType: "event_certificate_invitation",
+                    messageContent:
+                        '{"en": "Certificate invitation", "th": "เชิญรับใบประกาศนียบัตร"}',
+                    isRead: false,
+                    createdAt: new Date("2025-01-01"),
+                    updatedAt: new Date("2025-01-01"),
+                    hasParticipantJoinedEvent: false,
+                    certificateId: "cert-1",
+                    certificateTitle: "Test Certificate",
+                    eventId: "event-1",
+                    eventName: "Test Event",
+                },
+            ];
+
+            vi.mocked(useInboxMessages).mockReturnValue({
+                data: mockMessages,
+                isLoading: false,
+                error: null,
+                refetch: vi.fn(),
+            });
+
+            const { result } = renderHook(() => useInboxListUsecase(), { wrapper });
+
+            await waitFor(() => {
+                expect(result.current.isLoading).toBe(false);
+            });
+
+            expect(result.current.inboxItems).toHaveLength(0);
+        });
+
+        it("filters out certificate invitation when hasParticipantJoinedEvent is undefined", async () => {
+            const { useInboxMessages } = await import("@/hooks/inbox/useInboxMessages");
+
+            const mockMessages: InboxMessage[] = [
+                {
+                    id: "1",
+                    messageType: "event_certificate_invitation",
+                    messageContent:
+                        '{"en": "Certificate invitation", "th": "เชิญรับใบประกาศนียบัตร"}',
+                    isRead: false,
+                    createdAt: new Date("2025-01-01"),
+                    updatedAt: new Date("2025-01-01"),
+                    hasParticipantJoinedEvent: undefined,
+                    certificateId: "cert-1",
+                    certificateTitle: "Test Certificate",
+                    eventId: "event-1",
+                    eventName: "Test Event",
+                },
+            ];
+
+            vi.mocked(useInboxMessages).mockReturnValue({
+                data: mockMessages,
+                isLoading: false,
+                error: null,
+                refetch: vi.fn(),
+            });
+
+            const { result } = renderHook(() => useInboxListUsecase(), { wrapper });
+
+            await waitFor(() => {
+                expect(result.current.isLoading).toBe(false);
+            });
+
+            expect(result.current.inboxItems).toHaveLength(0);
+        });
+
+        it("shows non-certificate messages regardless of hasParticipantJoinedEvent", async () => {
+            const { useInboxMessages } = await import("@/hooks/inbox/useInboxMessages");
+
+            const mockMessages: InboxMessage[] = [
+                {
+                    id: "1",
+                    messageType: "event_registration_invitation",
+                    messageContent: '{"en": "Event invitation", "th": "เชิญเข้าร่วมกิจกรรม"}',
+                    isRead: false,
+                    createdAt: new Date("2025-01-01"),
+                    updatedAt: new Date("2025-01-01"),
+                    hasParticipantJoinedEvent: false,
+                },
+                {
+                    id: "2",
+                    messageType: "general",
+                    messageContent: '{"en": "General message", "th": "ข้อความทั่วไป"}',
+                    isRead: false,
+                    createdAt: new Date("2025-01-01"),
+                    updatedAt: new Date("2025-01-01"),
+                },
+            ];
+
+            vi.mocked(useInboxMessages).mockReturnValue({
+                data: mockMessages,
+                isLoading: false,
+                error: null,
+                refetch: vi.fn(),
+            });
+
+            const { result } = renderHook(() => useInboxListUsecase(), { wrapper });
+
+            await waitFor(() => {
+                expect(result.current.isLoading).toBe(false);
+            });
+
+            expect(result.current.inboxItems).toHaveLength(2);
+        });
+
+        it("correctly filters mixed message types", async () => {
+            const { useInboxMessages } = await import("@/hooks/inbox/useInboxMessages");
+
+            const mockMessages: InboxMessage[] = [
+                {
+                    id: "1",
+                    messageType: "event_certificate_invitation",
+                    messageContent:
+                        '{"en": "Certificate invitation", "th": "เชิญรับใบประกาศนียบัตร"}',
+                    isRead: false,
+                    createdAt: new Date("2025-01-01"),
+                    updatedAt: new Date("2025-01-01"),
+                    hasParticipantJoinedEvent: true, // Should show
+                    certificateId: "cert-1",
+                    certificateTitle: "Test Certificate",
+                    eventId: "event-1",
+                    eventName: "Test Event",
+                },
+                {
+                    id: "2",
+                    messageType: "event_certificate_invitation",
+                    messageContent:
+                        '{"en": "Certificate invitation 2", "th": "เชิญรับใบประกาศนียบัตร 2"}',
+                    isRead: false,
+                    createdAt: new Date("2025-01-01"),
+                    updatedAt: new Date("2025-01-01"),
+                    hasParticipantJoinedEvent: false, // Should filter out
+                    certificateId: "cert-2",
+                    certificateTitle: "Test Certificate 2",
+                    eventId: "event-2",
+                    eventName: "Test Event 2",
+                },
+                {
+                    id: "3",
+                    messageType: "event_registration_invitation",
+                    messageContent: '{"en": "Event invitation", "th": "เชิญเข้าร่วมกิจกรรม"}',
+                    isRead: false,
+                    createdAt: new Date("2025-01-01"),
+                    updatedAt: new Date("2025-01-01"),
+                    hasParticipantJoinedEvent: false, // Should show (not a certificate invitation)
+                },
+            ];
+
+            vi.mocked(useInboxMessages).mockReturnValue({
+                data: mockMessages,
+                isLoading: false,
+                error: null,
+                refetch: vi.fn(),
+            });
+
+            const { result } = renderHook(() => useInboxListUsecase(), { wrapper });
+
+            await waitFor(() => {
+                expect(result.current.isLoading).toBe(false);
+            });
+
+            expect(result.current.inboxItems).toHaveLength(2);
+            expect(result.current.inboxItems.map((item) => item.id)).toEqual(["1", "3"]);
+        });
     });
 });

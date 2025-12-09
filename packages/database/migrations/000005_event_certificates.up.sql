@@ -6,8 +6,6 @@ ADD COLUMN certificate_subtitle_pos_x FLOAT,
 ADD COLUMN certificate_subtitle_pos_y FLOAT;
 
 ALTER TABLE event_issuers
-RENAME sign_message TO sign_message_digest;
-ALTER TABLE event_issuers
 ADD COLUMN deleted_at TIMESTAMPTZ;
  
 -- Create after issuer issued and host confirmed again.
