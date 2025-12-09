@@ -4,36 +4,40 @@ import { useCertificateDetailNavStore } from "../stores/certificates";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Typography } from "@/components/typography/typography";
+import { certificateService } from "@/services/services";
+import { toast } from "sonner";
+import { useState } from "react";
 
 interface CertificateDetailNavProps {
     className?: string;
 }
 
 export const CertificateDetailNav = ({ className: propClassName }: CertificateDetailNavProps) => {
-    const { certificateId, isClaimed, imageUrl } = useCertificateDetailNavStore();
+    const { certificateId, isClaimed } = useCertificateDetailNavStore();
     const { onBack, className: contextClassName } = useBottomContainerContext();
     const { t } = useTranslation();
+    const [isDownloading, setIsDownloading] = useState(false);
 
     const handleDownload = async () => {
-        if (!imageUrl || !certificateId) {
-            console.error("Certificate image not available for download");
-            // TODO: Show error toast notification
+        if (!certificateId) {
+            toast.error(
+                t(
+                    "participant.certificates.detail.downloadError",
+                    "Certificate ID is missing. Please try again.",
+                ),
+            );
             return;
         }
 
+        setIsDownloading(true);
+
         try {
-            // Fetch the image as a blob
-            const response = await fetch(imageUrl);
-            if (!response.ok) {
-                throw new Error("Failed to fetch certificate image");
-            }
+            // Fetch the certificate image using the service (includes authentication)
+            const certificateImage = await certificateService.getCertificateImage(certificateId);
 
-            const blob = await response.blob();
-
-            // Create a download link
-            const url = window.URL.createObjectURL(blob);
+            // Create a download link from the blob URL
             const link = document.createElement("a");
-            link.href = url;
+            link.href = certificateImage.url;
             link.download = `certificate-${certificateId}.png`;
 
             // Trigger download
@@ -42,27 +46,26 @@ export const CertificateDetailNav = ({ className: propClassName }: CertificateDe
 
             // Cleanup
             document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
 
-            // TODO: Show success toast notification
-            console.log("Certificate downloaded successfully");
+            toast.success(
+                t(
+                    "participant.certificates.detail.downloadSuccess",
+                    "Certificate downloaded successfully!",
+                ),
+            );
         } catch (error) {
             console.error("Failed to download certificate:", error);
-            // TODO: Show error toast notification
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : t(
+                          "participant.certificates.detail.downloadError",
+                          "Failed to download certificate. Please try again.",
+                      );
+            toast.error(errorMessage);
+        } finally {
+            setIsDownloading(false);
         }
-    };
-
-    const handleCopyShareableUrl = () => {
-        // Copy current URL to clipboard
-        navigator.clipboard
-            .writeText(window.location.href)
-            .then(() => {
-                // TODO: Show success toast notification
-                console.log("URL copied to clipboard");
-            })
-            .catch((err) => {
-                console.error("Failed to copy URL:", err);
-            });
     };
 
     return (
@@ -82,45 +85,35 @@ export const CertificateDetailNav = ({ className: propClassName }: CertificateDe
                 <ChevronLeft className="w-5 h-5 text-white" />
             </button>
 
-            {/* Download Button - Hidden for now */}
-            {false && isClaimed && (
+            {/* Download Button - Only show if certificate is claimed */}
+            {isClaimed && (
                 <button
                     onClick={handleDownload}
-                    className="cursor-pointer flex items-center justify-center gap-2 px-4 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0"
+                    disabled={isDownloading}
+                    className="cursor-pointer flex items-center justify-center gap-2 px-4 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label={t(
                         "participant.certificates.detail.downloadAsImage",
                         "Download as an image",
                     )}
                 >
-                    <Download className="w-5 h-5 text-background-alt" />
+                    <Download
+                        className={cn(
+                            "w-5 h-5 text-background-alt",
+                            isDownloading && "animate-pulse",
+                        )}
+                    />
                     <Typography
                         variant="text"
                         tag="span"
                         color="background-alt"
                         className="text-xs font-normal leading-normal tracking-[0.06px] whitespace-nowrap"
                     >
-                        {t(
-                            "participant.certificates.detail.downloadAsImage",
-                            "Download as an image",
-                        )}
-                    </Typography>
-                </button>
-            )}
-
-            {/* Copy Shareable URL Button - Only show if certificate is claimed */}
-            {isClaimed && (
-                <button
-                    onClick={handleCopyShareableUrl}
-                    className="cursor-pointer flex items-center justify-center flex-1 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors"
-                    aria-label={t("participant.certificates.detail.copyShareableUrl")}
-                >
-                    <Typography
-                        variant="text"
-                        tag="span"
-                        color="background-alt"
-                        className="text-xs font-normal leading-normal tracking-[0.06px] text-center whitespace-nowrap"
-                    >
-                        {t("participant.certificates.detail.copyShareableUrl")}
+                        {isDownloading
+                            ? t("participant.certificates.detail.downloading", "Downloading...")
+                            : t(
+                                  "participant.certificates.detail.downloadAsImage",
+                                  "Download as an image",
+                              )}
                     </Typography>
                 </button>
             )}

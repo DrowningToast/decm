@@ -34,6 +34,16 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
         enabled: !!certificate,
     });
 
+    // Update the store with the image URL when available
+    useEffect(() => {
+        if (certificateImageUrl) {
+            setImageUrl(certificateImageUrl);
+        }
+        return () => {
+            setImageUrl(null);
+        };
+    }, [certificateImageUrl, setImageUrl]);
+
     // Store image URL in nav store for download functionality
     useEffect(() => {
         setImageUrl(certificateImageUrl);
@@ -377,7 +387,7 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
 
                 {/* Claimed Status */}
                 {isCertificateClaimed && (
-                    <div className="mt-6 p-4 rounded-lg bg-primary/10 border border-primary/20">
+                    <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
                         <div className="flex items-center gap-2 justify-center">
                             <CircleCheckBig className="w-5 h-5 text-primary" />
                             <Typography

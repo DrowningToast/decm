@@ -1,6 +1,6 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useSearchParams } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { HelmetProvider, Helmet } from "react-helmet-async";
 import { queryClient } from "@/lib/api/queryClient";
 import "../index.css";
@@ -13,6 +13,8 @@ import { AuthProvider } from "@/context/AuthContext";
 import { WalletProvider } from "@/context/WalletContext";
 import { SignPasswordModalProvider } from "@/components/providers/SignPasswordModal/SignPasswordModaProvider";
 import { useTranslation } from "react-i18next";
+import i18n from "@/lib/i18n/config";
+import type { Language } from "@/lib/i18n/config";
 
 // Lazy load the DevTools to avoid bundle issues
 const ReactQueryDevtools = lazy(() =>
@@ -24,6 +26,21 @@ const ReactQueryDevtools = lazy(() =>
 const Layout = () => {
     const isMobile = useMediaQuery("(max-width: 768px)");
     const { t } = useTranslation();
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Detect and handle lang query parameter
+    useEffect(() => {
+        const langParam = searchParams.get("lang");
+        if (langParam === "en" || langParam === "th") {
+            // Change language
+            i18n.changeLanguage(langParam as Language);
+
+            // Remove lang query parameter from URL
+            const newSearchParams = new URLSearchParams(searchParams);
+            newSearchParams.delete("lang");
+            setSearchParams(newSearchParams, { replace: true });
+        }
+    }, [searchParams, setSearchParams]);
 
     return (
         <QueryClientProvider client={queryClient}>
