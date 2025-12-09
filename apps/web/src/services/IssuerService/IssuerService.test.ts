@@ -77,15 +77,15 @@ describe("IssuerService", () => {
                     id: "issuer-event-1",
                     event_id: "event-1",
                     issuer_credential_id: "cred-1",
-                    is_signed: false,
-                    sign_message: "Sign this",
-                    signature: "",
+                    is_signed: 0,
                     event_title: "Test Event",
                     event_short_description: "Description",
                     event_start_date: "2024-01-01T00:00:00Z",
                     event_end_date: "2024-01-02T00:00:00Z",
                     event_location: "Location",
                     event_owner_credential_id: "owner-cred-1",
+                    created_at: "2024-01-01T00:00:00Z",
+                    updated_at: "2024-01-01T00:00:00Z",
                 },
             ];
 
