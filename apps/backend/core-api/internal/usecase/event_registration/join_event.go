@@ -2,8 +2,7 @@ package event_registration
 
 import (
 	"context"
-	"fmt"
-	"log/slog"
+	"encoding/hex"
 	"strings"
 	"time"
 
@@ -21,7 +20,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/google/uuid"
 
-	eventAccessManagerContract "apps/backend/contracts/accessmanager"
 	eventContract "apps/backend/contracts/event"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
@@ -48,8 +46,6 @@ type JoinEventPayload struct {
 }
 
 // returns raw string, then message hash
-// CRITICAL: walletAddress parameter should be the address derived from the user's private key,
-// NOT from the JWT claims, to ensure cryptographic consistency
 func (uc *EventRegistrationUsecase) GetJoinEventSignMessage(ctx context.Context, client *ethclient.Client, walletAddress common.Address, currentUser auth.JwtClaims, eventContractAddress common.Address, deadlineBlock *uint64) (*string, *ethcommon.Hash, error) {
 	// Validation
 	if deadlineBlock == nil {
@@ -60,9 +56,7 @@ func (uc *EventRegistrationUsecase) GetJoinEventSignMessage(ctx context.Context,
 		deadlineBlock = &calculatedDeadlineBlock
 	}
 
-	// Use the provided walletAddress parameter (which should be derived from private key)
-	// instead of currentUser.WalletAddress (which comes from JWT claims)
-	signMessage, err := cyptoutils.GetSignMessage(walletAddress, eventContractAddress, *deadlineBlock)
+	signMessage, err := cyptoutils.GetSignMessage(common.HexToAddress(currentUser.WalletAddress), eventContractAddress, *deadlineBlock)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to get sign message")
 	}
@@ -158,8 +152,7 @@ func (uc *EventRegistrationUsecase) JoinEventWithPin(ctx context.Context, client
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("user is not eligible to join the event"))
 	}
 
-	// CRITICAL FIX: Get the actual wallet address derived from the private key
-	// instead of using currentUser.WalletAddress from JWT claims
+	// Get credential to decrypt private key (like fuck_join_event.go)
 	credential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx, currentUser.UserId)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
@@ -168,24 +161,24 @@ func (uc *EventRegistrationUsecase) JoinEventWithPin(ctx context.Context, client
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("encrypted private key not found"))
 	}
 
-	// Decrypt to get the address that cryptographically matches the private key
+	// Decrypt private key to get participant address (like fuck_join_event.go)
 	privateKey, participantAddress, err := cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, password)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("invalid password or failed to decrypt private key"))
 	}
 
-	deadlineBlock, err := cyptoutils.GetCalculatedDeadlineBlock(client)
+	calculatedDeadlineBlock, err := cyptoutils.GetCalculatedDeadlineBlock(client)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	// Use the derived address from the private key, NOT the JWT address
-	signMessage, err := cyptoutils.GetSignMessage(*participantAddress, common.HexToAddress(entityEventContract.EventContractAddress), deadlineBlock)
+	// Use participantAddress from private key (like fuck_join_event.go)
+	signMessage, err := cyptoutils.GetSignMessage(*participantAddress, common.HexToAddress(entityEventContract.EventContractAddress), calculatedDeadlineBlock)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
-	// Sign the message directly with the decrypted private key
+	// Sign directly with private key (like fuck_join_event.go)
 	messageHash := cyptoutils.HashEthereumMessage(signMessage)
 	signature, err := cyptoutils.Sign(messageHash.Bytes(), privateKey)
 	if err != nil {
@@ -208,8 +201,7 @@ func (uc *EventRegistrationUsecase) JoinEventWithSignature(ctx context.Context, 
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("event contract not found"))
 	}
 
-	// CRITICAL FIX: Get the actual wallet address derived from the private key
-	// The signature verification must use the address that actually signed the message
+	// Get credential to get wallet address (like fuck_join_event.go pattern)
 	credential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx, currentUser.UserId)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
@@ -218,7 +210,7 @@ func (uc *EventRegistrationUsecase) JoinEventWithSignature(ctx context.Context, 
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("wallet address not found"))
 	}
 
-	// Use the wallet address from the credential (which is derived from the private key)
+	// Use wallet address from credential (derived from private key)
 	participantAddress := common.HexToAddress(credential.WalletAddress)
 
 	// validate original sign message
@@ -305,7 +297,7 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 		messageHash := cyptoutils.HashEthereumMessage(signMessage)
 
 		// Compare the message hash with the signature
-		// CRITICAL: Use the actual participant address derived from the private key
+		// Use participantAddress from private key (like fuck_join_event.go)
 		isValidHash, err := cyptoutils.VerifySignatureByDigest(*participantAddress, messageHash, signature)
 		if err != nil {
 			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
@@ -314,179 +306,141 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 			return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("signature is not valid"))
 		}
 
+		// Debug logging before calling AddParticipant
+		participantAddr := *participantAddress
+		println("=== DEBUG AddParticipant ===")
+		println("Participant Address:", participantAddr.Hex())
+		println("Sign Message (RAW):", signMessage)
+		println("Message Hash:", messageHash.String())
+		println("Signature Length:", len(signature))
+		println("Contract Address:", entityEventContract.EventContractAddress)
+		println("Transactor Address:", transactor.From.Hex())
+
 		// Check current state before adding
-		currentCountPtr, err := eventContractInstance.CurrentSeatsCount(&bind.CallOpts{Context: ctx})
-		if err != nil {
-			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		currentCount, err := eventContractInstance.CurrentSeatsCount(&bind.CallOpts{Context: ctx})
+		if err == nil {
+			println("Current Seats:", currentCount.String())
 		}
-
-		maxCountPtr, err := eventContractInstance.SeatsCount(&bind.CallOpts{Context: ctx})
-		if err != nil {
-			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		maxCount, err := eventContractInstance.SeatsCount(&bind.CallOpts{Context: ctx})
+		if err == nil {
+			println("Max Seats:", maxCount.String())
 		}
-		if currentCountPtr == nil || maxCountPtr == nil {
-			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("current count or max count is nil"))
-		}
-
-		currentCount := int(currentCountPtr.Int64())
-		maxCount := int(maxCountPtr.Int64())
-		if currentCount >= maxCount {
-			return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New(string(JoinEventUserErrorEventAttendeeFull)))
-		}
+		println("========================")
 
 		// Pre-flight check: Try to simulate the call first to get detailed error
+		println("")
+		println("🔍 Pre-flight check: Simulating contract call...")
 		callOpts := &bind.CallOpts{
 			Context: ctx,
 			From:    transactor.From,
 		}
 
 		// Try calling GetParticipants to verify contract is accessible
-		_, err = eventContractInstance.GetParticipants(callOpts)
+		participants, err := eventContractInstance.GetParticipants(callOpts)
 		if err != nil {
-			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get participants"))
-		}
-
-		// Pre-flight checks: Verify all conditions that could cause revert
-
-		// 1. Check signature replay (most common cause after access control)
-		isSignatureUsed, err := eventContractInstance.UsedSignatures(callOpts, signature)
-		if err != nil {
-			slog.Warn("⚠️ Could not check if signature was already used", "error", err)
-		} else if isSignatureUsed {
-			slog.Error("❌ CRITICAL: Signature has already been used! This will cause contract revert.",
-				"participant_address", participantAddress.Hex(),
-				"signature", fmt.Sprintf("0x%x", signature),
-				"note", "Each signature can only be used once. The user must create a new signature to join.")
-			return nil, customerror.Parse(&customerror.ErrInvalidArgument,
-				errors.New("signature has already been used in a previous transaction. Please create a new signature"))
+			println("⚠️  Warning: Cannot read contract state:", err.Error())
 		} else {
-			slog.Info("✅ Signature replay check passed", "signature_not_used", true)
-		}
-
-		// 2. Signature validity already verified in Go at lines 305-311 above
-		// Note: We cannot call contract's recoverSigner here as it's NOT a view function
-		// and would mark the signature as used, causing the real transaction to fail
-		slog.Info("✅ Signature validity verified in Go backend",
-			"participant_address", participantAddress.Hex(),
-			"note", "Signature was verified using cyptoutils.VerifySignatureByDigest")
-
-		// 3. Double-check seats count (already checked above, but verify again)
-		currentCountCheck, err := eventContractInstance.CurrentSeatsCount(callOpts)
-		maxCountCheck, err2 := eventContractInstance.SeatsCount(callOpts)
-		if err == nil && err2 == nil && currentCountCheck != nil && maxCountCheck != nil {
-			currentCheck := int(currentCountCheck.Int64())
-			maxCheck := int(maxCountCheck.Int64())
-			if currentCheck >= maxCheck {
-				slog.Error("❌ CRITICAL: Event is full!",
-					"current_seats", currentCheck,
-					"max_seats", maxCheck)
-				return nil, customerror.Parse(&customerror.ErrInvalidArgument,
-					errors.New(string(JoinEventUserErrorEventAttendeeFull)))
-			} else {
-				slog.Info("✅ Seats availability check passed",
-					"current_seats", currentCheck,
-					"max_seats", maxCheck,
-					"available", maxCheck-currentCheck)
-			}
-		}
-
-		// 4. Double-check participant not already joined (already checked above)
-		participantsCheck, err := eventContractInstance.GetParticipants(callOpts)
-		if err == nil {
-			isAlreadyJoined := false
-			for _, p := range participantsCheck {
-				if p.Cmp(*participantAddress) == 0 {
-					isAlreadyJoined = true
+			println("✅ Contract is accessible. Current participants:", len(participants))
+			// Check if participant already exists on-chain (double-check)
+			for _, p := range participants {
+				if p.Hex() == participantAddr.Hex() {
+					println("⚠️  WARNING: Participant already exists on-chain!")
 					break
 				}
 			}
-			if isAlreadyJoined {
-				slog.Error("❌ CRITICAL: Participant is already joined!",
-					"participant_address", participantAddress.Hex())
-				return nil, customerror.Parse(&customerror.ErrInvalidArgument,
-					errors.New(string(JoinEventUserErrorEventAttendeeAlreadyJoined)))
-			} else {
-				slog.Info("✅ Participant not already joined check passed")
-			}
 		}
 
-		// 5. Check access control (transactor must be allowed msg sender)
-		eventAccessManagerAddress, err := eventContractInstance.EVENTACCESSMANAGER(callOpts)
-		if err != nil {
-			slog.Warn("⚠️ Could not get EventAccessManager address", "error", err)
-		} else {
-			// Check if system transactor is allowed msg sender
-			eventAccessManagerInstance, err := eventAccessManagerContract.NewEventAccessManager(eventAccessManagerAddress, client)
-			if err != nil {
-				slog.Warn("⚠️ Could not create EventAccessManager instance", "error", err)
-			} else {
-				isAllowed, err := eventAccessManagerInstance.CheckIsAllowedMsgSender(callOpts, transactor.From)
-				if err != nil {
-					slog.Warn("⚠️ Could not check if transactor is allowed",
-						"transactor", transactor.From.Hex(),
-						"event_access_manager", eventAccessManagerAddress.Hex(),
-						"error", err)
-				} else {
-					slog.Info("🔐 Access control pre-flight check",
-						"participant_address", participantAddress.Hex(),
-						"transactor_address", transactor.From.Hex(),
-						"event_contract", entityEventContract.EventContractAddress,
-						"event_access_manager", eventAccessManagerAddress.Hex(),
-						"is_transactor_allowed", isAllowed,
-						"note", "Transaction will call grantParticipantRoleUsingAllowedMsgSender which requires transactor to be allowed")
-
-					if !isAllowed {
-						slog.Error("❌ System transactor is NOT allowed msg sender",
-							"transactor_address", transactor.From.Hex(),
-							"event_access_manager", eventAccessManagerAddress.Hex(),
-							"note", "Register transactor in DecmAccessManager using addAllowedMsgSender() function")
-						return nil, customerror.Parse(&customerror.ErrInternalServer,
-							errors.New("system transactor is not registered as allowed message sender in DecmAccessManager"))
-					}
-				}
-			}
-		}
-
-		slog.Info("🚀 Attempting to add participant to event",
-			"participant_address", participantAddress.Hex(),
-			"transactor_address", transactor.From.Hex(),
-			"event_contract", entityEventContract.EventContractAddress,
-			"sign_message_length", len(signMessage),
-			"signature_length", len(signature))
+		println("🚀 Attempting to submit transaction...")
+		println("   Passing RAW sign message to contract (not hash)")
+		println("")
 
 		// CRITICAL: Pass the RAW sign message, NOT the hash!
 		// The smart contract will hash it itself using toEthSignedMessageHash
+		// Use participantAddress from private key (like fuck_join_event.go)
 		tx, err := eventContractInstance.AddParticipant(transactor, *participantAddress, signMessage, signature)
 		if err != nil {
-			revertReason := extractRevertReasonFromError(err)
-			slog.Error("❌ Failed to add participant to event",
-				"participant_address", participantAddress.Hex(),
-				"transactor_address", transactor.From.Hex(),
-				"event_contract", entityEventContract.EventContractAddress,
-				"error", err,
-				"revert_reason", revertReason,
-				"possible_issues", "[1. System transactor not allowed msg sender in DecmAccessManager 2. Seats count reached 3. Participant already joined 4. Invalid signature 5. Signature replay 6. Zero address]")
-			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "failed to add participant to blockchain: wallet=%s, contract=%s, revert_reason=%s", participantAddress.Hex(), entityEventContract.EventContractAddress, revertReason))
+			// Enhanced error logging - transaction was rejected before submission
+			println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+			println("ERROR: AddParticipant transaction REJECTED")
+			println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+			println("Full Error:", err.Error())
+			println("")
+
+			// Try to extract revert reason from error message
+			errStr := err.Error()
+
+			// Common patterns in go-ethereum errors
+			if strings.Contains(errStr, "execution reverted:") {
+				parts := strings.SplitN(errStr, "execution reverted:", 2)
+				if len(parts) == 2 {
+					revertReason := strings.TrimSpace(parts[1])
+					println("🔴 REVERT REASON:", revertReason)
+				}
+			} else if strings.Contains(errStr, "execution reverted") {
+				println("🔴 Transaction would revert (no specific reason provided)")
+			}
+
+			// Check for common issues
+			println("")
+			println("Possible causes:")
+			if strings.Contains(errStr, "insufficient funds") {
+				println("  ❌ Transactor wallet has insufficient funds for gas")
+			}
+			if strings.Contains(errStr, "nonce") {
+				println("  ❌ Nonce issue - transaction ordering problem")
+			}
+			if strings.Contains(errStr, "gas") && strings.Contains(errStr, "intrinsic") {
+				println("  ❌ Gas limit too low")
+			}
+			if strings.Contains(errStr, "reverted") {
+				println("  ❌ Smart contract rejected the call during gas estimation")
+				println("     This means one of the contract's require/revert statements failed:")
+				println("     - Event__SeatsCountReached: Event is full")
+				println("     - Event__ParticipantIsAlreadyJoined: Already registered")
+				println("     - Event__AddressCannotBeZero: Invalid address")
+				println("     - Access control: Transactor doesn't have HOST/ADMIN role")
+				println("     - Invalid signature: Signature verification failed")
+			}
+
+			println("")
+			println("Transaction Details:")
+			println("  Participant:", participantAddr.Hex())
+			println("  Contract:", entityEventContract.EventContractAddress)
+			println("  Transactor:", transactor.From.Hex())
+			println("  Message Hash:", messageHash.String())
+			println("  Signature:", hex.EncodeToString(signature))
+			println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "failed to add participant to blockchain: wallet=%s, contract=%s", participantAddr.Hex(), entityEventContract.EventContractAddress))
 		}
+
+		println("Transaction submitted:", tx.Hash().Hex())
 
 		receipt, err := bind.WaitMined(ctx, client, tx)
 		if err != nil {
+			println("ERROR: WaitMined failed:", err.Error())
 			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "transaction mining failed: tx=%s", tx.Hash().Hex()))
 		}
 
-		if receipt.Status != types.ReceiptStatusSuccessful {
-			slog.Error("❌ Transaction reverted",
-				"tx_hash", tx.Hash().Hex(),
-				"gas_used", receipt.GasUsed,
-				"participant_address", participantAddress.Hex(),
-				"event_contract", entityEventContract.EventContractAddress)
-			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Errorf("transaction reverted (tx=%s, gas=%d)", tx.Hash().Hex(), receipt.GasUsed))
-		}
+		println("Transaction mined. Status:", receipt.Status, "Gas Used:", receipt.GasUsed)
 
-		slog.Info("✅ Successfully added participant to event",
-			"participant_address", participantAddress.Hex(),
-			"tx_hash", tx.Hash().Hex(),
-			"gas_used", receipt.GasUsed)
+		if receipt.Status != types.ReceiptStatusSuccessful {
+			// Try to get revert reason
+			revertReason, err := cyptoutils.GetRevertReason(ctx, client, tx, receipt)
+			if err != nil {
+				println("Failed to get revert reason:", err.Error())
+				revertReason = "failed to decode revert reason: " + err.Error()
+			}
+			println("Revert Reason:", revertReason)
+
+			if len(receipt.Logs) > 0 {
+				println("Transaction logs count:", len(receipt.Logs))
+				for i, log := range receipt.Logs {
+					println("Log", i, "- Topics:", len(log.Topics))
+				}
+			}
+			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Errorf("transaction reverted (tx=%s, gas=%d): %s", tx.Hash().Hex(), receipt.GasUsed, revertReason))
+		}
 	}
 
 	// If hasJoined, check if the user is also in the event attendee or not
@@ -546,53 +500,4 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 	}
 
 	return eventAttendee, nil
-}
-
-// extractRevertReasonFromError attempts to extract the revert reason from an error
-func extractRevertReasonFromError(err error) string {
-	if err == nil {
-		return ""
-	}
-
-	errMsg := err.Error()
-
-	// Log full error for debugging
-	slog.Debug("Full error message for revert reason extraction", "error", errMsg)
-
-	// Try to extract revert reason from common patterns (check most specific first)
-	patterns := []struct {
-		prefix string
-		suffix string
-	}{
-		{"execution reverted: ", "\n"},
-		{"execution reverted:", "\n"},
-		{"revert ", "\n"},
-		{"revert: ", "\n"},
-		{"VM execution error.\n\nrevert ", "\n"},
-		{"revert ", ""},
-		{"execution reverted: ", ""},
-	}
-
-	for _, pattern := range patterns {
-		if idx := strings.Index(errMsg, pattern.prefix); idx != -1 {
-			start := idx + len(pattern.prefix)
-			var end int
-			if pattern.suffix != "" {
-				if suffixIdx := strings.Index(errMsg[start:], pattern.suffix); suffixIdx != -1 {
-					end = start + suffixIdx
-				} else {
-					end = len(errMsg)
-				}
-			} else {
-				end = len(errMsg)
-			}
-			reason := strings.TrimSpace(errMsg[start:end])
-			if reason != "" {
-				return reason
-			}
-		}
-	}
-
-	// If no pattern matches, return a generic message
-	return fmt.Sprintf("Could not extract revert reason - error message: %s", errMsg)
 }
