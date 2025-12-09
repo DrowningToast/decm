@@ -638,10 +638,12 @@
                 "configStatus": "Certificate configuration set up",
                 "issuersSignedStatus": "All issuers signed ({{signed}}/{{total}})",
                 "contractStatus": "Certificate contract deployed",
+                "hasReceiverStatus": "Must have at least 1 receiver ({{count}})",
                 "missingRequirements": "Missing requirements",
                 "publishSuccess": "Successfully published {{count}} certificate(s) and created {{messagesCount}} inbox message(s)!",
                 "publishError": "Failed to publish certificates: {{error}}",
                 "editDisabledMessage": "Editing is disabled because the certificate configuration has been published",
+                "noIssuersMessage": "Cannot import receivers until certificate issuers are assigned",
                 "alreadyPublished": "Already Published"
             }
         }

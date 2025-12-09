@@ -34,3 +34,4 @@ func (r *Repository) GetDefaultEventCertificateFontFamily(ctx context.Context) (
 	return &result, nil
 }
 
+

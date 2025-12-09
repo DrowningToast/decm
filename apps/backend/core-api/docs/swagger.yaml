@@ -464,6 +464,8 @@ definitions:
     properties:
       academic_institution:
         type: string
+      certificate_digest:
+        type: string
       certificate_subtitle:
         type: string
       certificate_title:
@@ -3313,6 +3315,46 @@ paths:
       summary: Sign event certificates
       tags:
       - Event Certificates
+  /api/v1/events/{event_id}/certificates/text-config:
+    put:
+      consumes:
+      - application/json
+      description: Update font family and font weight for all text templates in the
+        certificate. This endpoint allows customization of fonts for event name, participant
+        name, academic institution, certificate title, and certificate subtitle.
+      operationId: update-event-certificate-text-config
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Text configuration parameters
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/event.UpdateEventCertificateTextConfigRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated certificate configuration
+          schema:
+            $ref: '#/definitions/event.UpdateEventCertificateTextConfigResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Certificate configuration not found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Update certificate text configuration
   /api/v1/events/{event_id}/config/certificate:
     get:
       consumes:
@@ -4621,44 +4663,4 @@ paths:
       summary: Verify password
       tags:
       - Profile
-  /events/{event_id}/certificates/text-config:
-    put:
-      consumes:
-      - application/json
-      description: Update font family and font weight for all text templates in the
-        certificate. This endpoint allows customization of fonts for event name, participant
-        name, academic institution, certificate title, and certificate subtitle.
-      operationId: update-event-certificate-text-config
-      parameters:
-      - description: Event ID
-        in: path
-        name: event_id
-        required: true
-        type: string
-      - description: Text configuration parameters
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/event.UpdateEventCertificateTextConfigRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Updated certificate configuration
-          schema:
-            $ref: '#/definitions/event.UpdateEventCertificateTextConfigResponse'
-        "400":
-          description: Invalid request
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "404":
-          description: Certificate configuration not found
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-      summary: Update certificate text configuration
 swagger: "2.0"

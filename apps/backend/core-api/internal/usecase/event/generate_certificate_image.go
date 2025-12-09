@@ -110,35 +110,35 @@ func (uc *EventUsecase) addTextOverlaysToSVG(ctx context.Context, svgContent str
 	// Add name text (required field, always has position)
 	if data.Name != "" {
 		fontFamily := uc.getFontFamilyName(ctx, config.NameFontFamilyID)
-		fontWeight := int32PtrToString(config.NameFontWeight, "bold")
+		fontWeight := int32PtrToString(config.NameFontWeight, "700")
 		textOverlays.WriteString(createTextElement(data.Name, config.NamePosX, config.NamePosY, fontFamily, fontWeight, 16))
 	}
 
 	// Add event name text (required field, always has position)
 	if data.EventName != "" {
 		fontFamily := uc.getFontFamilyName(ctx, config.EventNameFontFamilyID)
-		fontWeight := int32PtrToString(config.EventNameFontWeight, "bold")
+		fontWeight := int32PtrToString(config.EventNameFontWeight, "700")
 		textOverlays.WriteString(createTextElement(data.EventName, config.EventNamePosX, config.EventNamePosY, fontFamily, fontWeight, 16))
 	}
 
 	// Add academic institution text (optional field)
 	if config.AcademicInstitutionPosX != nil && config.AcademicInstitutionPosY != nil && data.AcademicInstitution != "" {
 		fontFamily := uc.getFontFamilyName(ctx, config.AcademicInstitutionFontFamilyID)
-		fontWeight := int32PtrToString(config.AcademicInstitutionFontWeight, "bold")
+		fontWeight := int32PtrToString(config.AcademicInstitutionFontWeight, "700")
 		textOverlays.WriteString(createTextElement(data.AcademicInstitution, *config.AcademicInstitutionPosX, *config.AcademicInstitutionPosY, fontFamily, fontWeight, 16))
 	}
 
 	// Add certificate title text (optional field)
 	if config.CertificateTitlePosX != nil && config.CertificateTitlePosY != nil && data.CertificateTitle != "" {
 		fontFamily := uc.getFontFamilyName(ctx, config.CertificateTitleFontFamilyID)
-		fontWeight := int32PtrToString(config.CertificateTitleFontWeight, "bold")
+		fontWeight := int32PtrToString(config.CertificateTitleFontWeight, "700")
 		textOverlays.WriteString(createTextElement(data.CertificateTitle, *config.CertificateTitlePosX, *config.CertificateTitlePosY, fontFamily, fontWeight, 16))
 	}
 
 	// Add certificate subtitle text (optional field)
 	if config.CertificateSubtitlePosX != nil && config.CertificateSubtitlePosY != nil && data.CertificateSubtitle != "" {
 		fontFamily := uc.getFontFamilyName(ctx, config.CertificateSubtitleFontFamilyID)
-		fontWeight := int32PtrToString(config.CertificateSubtitleFontWeight, "bold")
+		fontWeight := int32PtrToString(config.CertificateSubtitleFontWeight, "700")
 		textOverlays.WriteString(createTextElement(data.CertificateSubtitle, *config.CertificateSubtitlePosX, *config.CertificateSubtitlePosY, fontFamily, fontWeight, 16))
 	}
 
@@ -153,21 +153,36 @@ func (uc *EventUsecase) addTextOverlaysToSVG(ctx context.Context, svgContent str
 }
 
 // getFontFamilyName fetches the CSS font name from the database by font family ID.
-// Returns "Prompt" as default if the ID is nil or if fetching fails.
+// Returns the default font family from the database if the ID is nil or if fetching fails.
 func (uc *EventUsecase) getFontFamilyName(ctx context.Context, fontFamilyID *int32) string {
-	// If no font family ID specified, use default
+	// If no font family ID specified, use default from database
 	if fontFamilyID == nil {
-		return "Prompt"
+		defaultFont, err := uc.EventCertificateFontFamilyDg.GetDefaultEventCertificateFontFamily(ctx)
+		if err != nil {
+			uc.logger.Warn("failed to get default font family from database, using fallback",
+				"error", err,
+			)
+			return "Prompt" // Fallback if database query fails
+		}
+		return defaultFont.CssFontName
 	}
 
 	// Fetch font family from database
 	fontFamily, err := uc.EventCertificateFontFamilyDg.GetEventCertificateFontFamilyByID(ctx, *fontFamilyID)
 	if err != nil {
-		uc.logger.Warn("failed to get font family by ID, using default",
+		uc.logger.Warn("failed to get font family by ID, using default from database",
 			"font_family_id", *fontFamilyID,
 			"error", err,
 		)
-		return "Prompt"
+		// Try to get default font from database
+		defaultFont, defaultErr := uc.EventCertificateFontFamilyDg.GetDefaultEventCertificateFontFamily(ctx)
+		if defaultErr != nil {
+			uc.logger.Warn("failed to get default font family from database, using fallback",
+				"error", defaultErr,
+			)
+			return "Prompt" // Fallback if database query fails
+		}
+		return defaultFont.CssFontName
 	}
 
 	// Return the CSS font name (e.g., "Inter", "Prompt", "Sarabun")

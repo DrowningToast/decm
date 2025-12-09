@@ -19,6 +19,7 @@ type EventCertificate struct {
 	EventContractAddress    string     `json:"event_contract_address"`
 	EventCertificateAddress *string    `json:"event_certificate_address,omitempty"`
 	CertificateTokenId      *string    `json:"certificate_token_id,omitempty"`
+	CertificateDigest       *string    `json:"certificate_digest,omitempty"`
 	InboxMessageId          *uuid.UUID `json:"inbox_message_id,omitempty"`
 	CreatedAt               time.Time  `json:"created_at"`
 	RevokedAt               *time.Time `json:"revoked_at,omitempty"`

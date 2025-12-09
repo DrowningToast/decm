@@ -11,9 +11,11 @@ import {
 } from "@/components/ui/select";
 import type { CoreApiInternalHandlerEventconfigEventCertificateConfigResponse } from "@decm/api";
 import { useCertificateFontFamilies } from "@/hooks/events/useCertificateFontFamilies";
+import type { DetectedKeyword } from "@/hooks/useCertificateTemplate";
 
 interface CertificateFontSettingsProps {
     eventCertificateConfig?: CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
+    detectedKeywords?: DetectedKeyword[];
     onChange?: (fontConfig: CertificateFontConfig) => void;
 }
 
@@ -32,6 +34,7 @@ export interface CertificateFontConfig {
 
 export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = ({
     eventCertificateConfig,
+    detectedKeywords = [],
     onChange,
 }) => {
     const { t } = useTranslation();
@@ -89,8 +92,40 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                     eventCertificateConfig.certificate_subtitle_font_weight || 700,
             };
             setFontConfig(newConfig);
+        } else if (!isLoadingFonts && defaultFontFamilyId && fontFamilies.length > 0) {
+            // When there's no config but we have detected keywords and fonts are loaded,
+            // ensure all fields have default values
+            setFontConfig((prevConfig) => {
+                const needsUpdate =
+                    !prevConfig.event_name_font_family_id ||
+                    !prevConfig.name_font_family_id ||
+                    !prevConfig.academic_institution_font_family_id ||
+                    !prevConfig.certificate_title_font_family_id ||
+                    !prevConfig.certificate_subtitle_font_family_id;
+
+                if (!needsUpdate) return prevConfig;
+
+                return {
+                    event_name_font_family_id:
+                        prevConfig.event_name_font_family_id || defaultFontFamilyId,
+                    event_name_font_weight: prevConfig.event_name_font_weight || 700,
+                    name_font_family_id: prevConfig.name_font_family_id || defaultFontFamilyId,
+                    name_font_weight: prevConfig.name_font_weight || 700,
+                    academic_institution_font_family_id:
+                        prevConfig.academic_institution_font_family_id || defaultFontFamilyId,
+                    academic_institution_font_weight:
+                        prevConfig.academic_institution_font_weight || 700,
+                    certificate_title_font_family_id:
+                        prevConfig.certificate_title_font_family_id || defaultFontFamilyId,
+                    certificate_title_font_weight: prevConfig.certificate_title_font_weight || 700,
+                    certificate_subtitle_font_family_id:
+                        prevConfig.certificate_subtitle_font_family_id || defaultFontFamilyId,
+                    certificate_subtitle_font_weight:
+                        prevConfig.certificate_subtitle_font_weight || 700,
+                };
+            });
         }
-    }, [eventCertificateConfig, defaultFontFamilyId]);
+    }, [eventCertificateConfig, defaultFontFamilyId, isLoadingFonts, fontFamilies.length]);
 
     // Notify parent of changes
     React.useEffect(() => {
@@ -99,26 +134,36 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
 
     // Get available weights for a given font family ID
     const getAvailableWeights = (fontFamilyId?: number) => {
-        if (!fontFamilyId) return [];
+        if (!fontFamilyId || !fontFamilies.length) return [];
         const fontFamily = fontFamilies.find((f) => f.id === fontFamilyId);
-        return fontFamily?.available_font_weights || [];
+        return fontFamily?.available_font_weights?.filter((w) => w != null) || [];
     };
 
     // Check if fields have positions configured (meaning they appear in template)
+    // First check eventCertificateConfig, then fall back to detectedKeywords
+    // Only show if positions exist and are not (0,0)
     const hasEventName =
-        eventCertificateConfig?.event_name_pos_x != null &&
-        eventCertificateConfig?.event_name_pos_y != null;
+        (eventCertificateConfig?.event_name_pos_x != null &&
+            eventCertificateConfig?.event_name_pos_y != null &&
+            (eventCertificateConfig.event_name_pos_x !== 0 ||
+                eventCertificateConfig.event_name_pos_y !== 0)) ||
+        detectedKeywords.some((k) => k.keyword === "{{ eventName }}" && (k.x !== 0 || k.y !== 0));
     const hasParticipantName =
-        eventCertificateConfig?.name_pos_x != null && eventCertificateConfig?.name_pos_y != null;
+        (eventCertificateConfig?.name_pos_x != null &&
+            eventCertificateConfig?.name_pos_y != null) ||
+        detectedKeywords.some((k) => k.keyword === "{{ name }}");
     const hasAcademicInstitution =
-        eventCertificateConfig?.academic_institution_pos_x != null &&
-        eventCertificateConfig?.academic_institution_pos_y != null;
+        (eventCertificateConfig?.academic_institution_pos_x != null &&
+            eventCertificateConfig?.academic_institution_pos_y != null) ||
+        detectedKeywords.some((k) => k.keyword === "{{ academicInstitutionName }}");
     const hasCertificateTitle =
-        eventCertificateConfig?.certificate_title_pos_x != null &&
-        eventCertificateConfig?.certificate_title_pos_y != null;
+        (eventCertificateConfig?.certificate_title_pos_x != null &&
+            eventCertificateConfig?.certificate_title_pos_y != null) ||
+        detectedKeywords.some((k) => k.keyword === "{{ certificateTitle }}");
     const hasCertificateSubtitle =
-        eventCertificateConfig?.certificate_subtitle_pos_x != null &&
-        eventCertificateConfig?.certificate_subtitle_pos_y != null;
+        (eventCertificateConfig?.certificate_subtitle_pos_x != null &&
+            eventCertificateConfig?.certificate_subtitle_pos_y != null) ||
+        detectedKeywords.some((k) => k.keyword === "{{ certificateSubtitle }}");
 
     const hasAnyFields =
         hasEventName ||
@@ -182,7 +227,10 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                     )}
                                 </Label>
                                 <Select
-                                    value={fontConfig.event_name_font_family_id?.toString()}
+                                    value={
+                                        fontConfig.event_name_font_family_id?.toString() ||
+                                        defaultFontFamilyId.toString()
+                                    }
                                     onValueChange={(value) =>
                                         setFontConfig({
                                             ...fontConfig,
@@ -199,11 +247,16 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {fontFamilies.map((font) => (
-                                            <SelectItem key={font.id} value={font.id.toString()}>
-                                                {font.font_family_name}
-                                            </SelectItem>
-                                        ))}
+                                        {fontFamilies
+                                            .filter((font) => font?.id != null)
+                                            .map((font) => (
+                                                <SelectItem
+                                                    key={font.id}
+                                                    value={font.id.toString()}
+                                                >
+                                                    {font.font_family_name}
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -215,7 +268,7 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                     )}
                                 </Label>
                                 <Select
-                                    value={fontConfig.event_name_font_weight?.toString()}
+                                    value={fontConfig.event_name_font_weight?.toString() || "700"}
                                     onValueChange={(value) =>
                                         setFontConfig({
                                             ...fontConfig,
@@ -232,13 +285,13 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {getAvailableWeights(
-                                            fontConfig.event_name_font_family_id,
-                                        ).map((weight) => (
-                                            <SelectItem key={weight} value={weight.toString()}>
-                                                {weight}
-                                            </SelectItem>
-                                        ))}
+                                        {getAvailableWeights(fontConfig.event_name_font_family_id)
+                                            .filter((weight) => weight != null)
+                                            .map((weight) => (
+                                                <SelectItem key={weight} value={weight.toString()}>
+                                                    {weight}
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -264,7 +317,10 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                     )}
                                 </Label>
                                 <Select
-                                    value={fontConfig.name_font_family_id?.toString()}
+                                    value={
+                                        fontConfig.name_font_family_id?.toString() ||
+                                        defaultFontFamilyId.toString()
+                                    }
                                     onValueChange={(value) =>
                                         setFontConfig({
                                             ...fontConfig,
@@ -281,11 +337,16 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {fontFamilies.map((font) => (
-                                            <SelectItem key={font.id} value={font.id.toString()}>
-                                                {font.font_family_name}
-                                            </SelectItem>
-                                        ))}
+                                        {fontFamilies
+                                            .filter((font) => font?.id != null)
+                                            .map((font) => (
+                                                <SelectItem
+                                                    key={font.id}
+                                                    value={font.id.toString()}
+                                                >
+                                                    {font.font_family_name}
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -297,7 +358,7 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                     )}
                                 </Label>
                                 <Select
-                                    value={fontConfig.name_font_weight?.toString()}
+                                    value={fontConfig.name_font_weight?.toString() || "700"}
                                     onValueChange={(value) =>
                                         setFontConfig({
                                             ...fontConfig,
@@ -314,13 +375,13 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {getAvailableWeights(fontConfig.name_font_family_id).map(
-                                            (weight) => (
+                                        {getAvailableWeights(fontConfig.name_font_family_id)
+                                            .filter((weight) => weight != null)
+                                            .map((weight) => (
                                                 <SelectItem key={weight} value={weight.toString()}>
                                                     {weight}
                                                 </SelectItem>
-                                            ),
-                                        )}
+                                            ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -349,7 +410,10 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                     )}
                                 </Label>
                                 <Select
-                                    value={fontConfig.academic_institution_font_family_id?.toString()}
+                                    value={
+                                        fontConfig.academic_institution_font_family_id?.toString() ||
+                                        defaultFontFamilyId.toString()
+                                    }
                                     onValueChange={(value) =>
                                         setFontConfig({
                                             ...fontConfig,
@@ -366,11 +430,16 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {fontFamilies.map((font) => (
-                                            <SelectItem key={font.id} value={font.id.toString()}>
-                                                {font.font_family_name}
-                                            </SelectItem>
-                                        ))}
+                                        {fontFamilies
+                                            .filter((font) => font?.id != null)
+                                            .map((font) => (
+                                                <SelectItem
+                                                    key={font.id}
+                                                    value={font.id.toString()}
+                                                >
+                                                    {font.font_family_name}
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -385,7 +454,10 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                     )}
                                 </Label>
                                 <Select
-                                    value={fontConfig.academic_institution_font_weight?.toString()}
+                                    value={
+                                        fontConfig.academic_institution_font_weight?.toString() ||
+                                        "700"
+                                    }
                                     onValueChange={(value) =>
                                         setFontConfig({
                                             ...fontConfig,
@@ -404,11 +476,13 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                     <SelectContent>
                                         {getAvailableWeights(
                                             fontConfig.academic_institution_font_family_id,
-                                        ).map((weight) => (
-                                            <SelectItem key={weight} value={weight.toString()}>
-                                                {weight}
-                                            </SelectItem>
-                                        ))}
+                                        )
+                                            .filter((weight) => weight != null)
+                                            .map((weight) => (
+                                                <SelectItem key={weight} value={weight.toString()}>
+                                                    {weight}
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -434,7 +508,10 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                     )}
                                 </Label>
                                 <Select
-                                    value={fontConfig.certificate_title_font_family_id?.toString()}
+                                    value={
+                                        fontConfig.certificate_title_font_family_id?.toString() ||
+                                        defaultFontFamilyId.toString()
+                                    }
                                     onValueChange={(value) =>
                                         setFontConfig({
                                             ...fontConfig,
@@ -451,11 +528,16 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {fontFamilies.map((font) => (
-                                            <SelectItem key={font.id} value={font.id.toString()}>
-                                                {font.font_family_name}
-                                            </SelectItem>
-                                        ))}
+                                        {fontFamilies
+                                            .filter((font) => font?.id != null)
+                                            .map((font) => (
+                                                <SelectItem
+                                                    key={font.id}
+                                                    value={font.id.toString()}
+                                                >
+                                                    {font.font_family_name}
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -467,7 +549,10 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                     )}
                                 </Label>
                                 <Select
-                                    value={fontConfig.certificate_title_font_weight?.toString()}
+                                    value={
+                                        fontConfig.certificate_title_font_weight?.toString() ||
+                                        "700"
+                                    }
                                     onValueChange={(value) =>
                                         setFontConfig({
                                             ...fontConfig,
@@ -486,11 +571,13 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                     <SelectContent>
                                         {getAvailableWeights(
                                             fontConfig.certificate_title_font_family_id,
-                                        ).map((weight) => (
-                                            <SelectItem key={weight} value={weight.toString()}>
-                                                {weight}
-                                            </SelectItem>
-                                        ))}
+                                        )
+                                            .filter((weight) => weight != null)
+                                            .map((weight) => (
+                                                <SelectItem key={weight} value={weight.toString()}>
+                                                    {weight}
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -519,7 +606,10 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                     )}
                                 </Label>
                                 <Select
-                                    value={fontConfig.certificate_subtitle_font_family_id?.toString()}
+                                    value={
+                                        fontConfig.certificate_subtitle_font_family_id?.toString() ||
+                                        defaultFontFamilyId.toString()
+                                    }
                                     onValueChange={(value) =>
                                         setFontConfig({
                                             ...fontConfig,
@@ -536,11 +626,16 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                         />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {fontFamilies.map((font) => (
-                                            <SelectItem key={font.id} value={font.id.toString()}>
-                                                {font.font_family_name}
-                                            </SelectItem>
-                                        ))}
+                                        {fontFamilies
+                                            .filter((font) => font?.id != null)
+                                            .map((font) => (
+                                                <SelectItem
+                                                    key={font.id}
+                                                    value={font.id.toString()}
+                                                >
+                                                    {font.font_family_name}
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -555,7 +650,10 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                     )}
                                 </Label>
                                 <Select
-                                    value={fontConfig.certificate_subtitle_font_weight?.toString()}
+                                    value={
+                                        fontConfig.certificate_subtitle_font_weight?.toString() ||
+                                        "700"
+                                    }
                                     onValueChange={(value) =>
                                         setFontConfig({
                                             ...fontConfig,
@@ -574,11 +672,13 @@ export const CertificateFontSettings: React.FC<CertificateFontSettingsProps> = (
                                     <SelectContent>
                                         {getAvailableWeights(
                                             fontConfig.certificate_subtitle_font_family_id,
-                                        ).map((weight) => (
-                                            <SelectItem key={weight} value={weight.toString()}>
-                                                {weight}
-                                            </SelectItem>
-                                        ))}
+                                        )
+                                            .filter((weight) => weight != null)
+                                            .map((weight) => (
+                                                <SelectItem key={weight} value={weight.toString()}>
+                                                    {weight}
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                             </div>

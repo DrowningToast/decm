@@ -1749,6 +1749,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/events/{event_id}/certificates/text-config": {
+            "put": {
+                "description": "Update font family and font weight for all text templates in the certificate. This endpoint allows customization of fonts for event name, participant name, academic institution, certificate title, and certificate subtitle.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update certificate text configuration",
+                "operationId": "update-event-certificate-text-config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Text configuration parameters",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event.UpdateEventCertificateTextConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated certificate configuration",
+                        "schema": {
+                            "$ref": "#/definitions/event.UpdateEventCertificateTextConfigResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Certificate configuration not found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}/config/certificate": {
             "get": {
                 "description": "Get the event certificate configuration for an event. Accessible by verified organizers or issuers assigned to the event.",
@@ -3644,63 +3701,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/events/{event_id}/certificates/text-config": {
-            "put": {
-                "description": "Update font family and font weight for all text templates in the certificate. This endpoint allows customization of fonts for event name, participant name, academic institution, certificate title, and certificate subtitle.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Update certificate text configuration",
-                "operationId": "update-event-certificate-text-config",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event ID",
-                        "name": "event_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Text configuration parameters",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/event.UpdateEventCertificateTextConfigRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Updated certificate configuration",
-                        "schema": {
-                            "$ref": "#/definitions/event.UpdateEventCertificateTextConfigResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Certificate configuration not found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -4374,6 +4374,9 @@ const docTemplate = `{
             ],
             "properties": {
                 "academic_institution": {
+                    "type": "string"
+                },
+                "certificate_digest": {
                     "type": "string"
                 },
                 "certificate_subtitle": {
