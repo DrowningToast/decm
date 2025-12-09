@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -265,6 +266,16 @@ func renderSVGToPNG(svgContent string) ([]byte, error) {
 		chromedp.WindowSize(renderWidth, renderHeight),
 		chromedp.Flag("force-device-scale-factor", fmt.Sprintf("%d", scaleFactor)), // 2x device pixel ratio
 	)
+
+	// Add sandbox flags for CI environments where sandboxing is restricted
+	// Check for common CI environment variables
+	if os.Getenv("CI") != "" || os.Getenv("GITHUB_ACTIONS") != "" {
+		opts = append(opts,
+			chromedp.Flag("no-sandbox", true),
+			chromedp.Flag("disable-setuid-sandbox", true),
+		)
+	}
+
 	allocCtx, cancel := chromedp.NewExecAllocator(ctx, opts...)
 	defer cancel()
 
