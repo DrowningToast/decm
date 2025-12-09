@@ -90,12 +90,17 @@ func VerifySignedMessageByAddress(walletAddress ethCommon.Address, message strin
 }
 
 func VerifySignatureByDigest(walletAddress ethCommon.Address, messageDigest common.Hash, signature []byte) (bool, error) {
+	// Make a copy of the signature to avoid mutating the original
+	// Slices are reference types, so modifying signature[64] would modify the original array
+	signatureCopy := make([]byte, len(signature))
+	copy(signatureCopy, signature)
+
 	// Adjust recovery ID from Ethereum format (27/28) to go-ethereum format (0/1)
-	if len(signature) == 65 && (signature[64] == 27 || signature[64] == 28) {
-		signature[64] -= 27
+	if len(signatureCopy) == 65 && (signatureCopy[64] == 27 || signatureCopy[64] == 28) {
+		signatureCopy[64] -= 27
 	}
 
-	usedPublicKey, err := crypto.SigToPub(messageDigest.Bytes(), signature)
+	usedPublicKey, err := crypto.SigToPub(messageDigest.Bytes(), signatureCopy)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to recover public key")
 	}

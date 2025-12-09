@@ -146,7 +146,9 @@ export class EventRegistrationService {
         accountPassword: string;
         registrationData: RegistrationConfirmDataForm;
     }): Promise<void> {
-        await this._coreApi.v1.joinEvent(
+        // The API returns EventAttendee, but we don't need to use it
+        // Just ensure the call succeeds
+        const response = await this._coreApi.v1.joinEvent(
             { eventId },
             {
                 account_password: accountPassword,
@@ -154,6 +156,8 @@ export class EventRegistrationService {
                 registration_data: mapRegistrationToJoinEventParticipant(registrationData),
             },
         );
+        // Response is validated by the API client, so if we get here, it succeeded
+        console.log("Join event successful:", response);
         return;
     }
 
