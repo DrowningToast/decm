@@ -56,7 +56,11 @@ func (uc *EventRegistrationUsecase) GetJoinEventSignMessage(ctx context.Context,
 		deadlineBlock = &calculatedDeadlineBlock
 	}
 
-	signMessage, err := cyptoutils.GetSignMessage(common.HexToAddress(currentUser.WalletAddress), eventContractAddress, *deadlineBlock)
+	// Use wallet address from JWT (what the user will sign with via wallet extension)
+	// This must match what JoinEventWithSignature uses for validation
+	participantAddress := common.HexToAddress(currentUser.WalletAddress)
+
+	signMessage, err := cyptoutils.GetSignMessage(participantAddress, eventContractAddress, *deadlineBlock)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to get sign message")
 	}
@@ -201,17 +205,9 @@ func (uc *EventRegistrationUsecase) JoinEventWithSignature(ctx context.Context, 
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("event contract not found"))
 	}
 
-	// Get credential to get wallet address (like fuck_join_event.go pattern)
-	credential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx, currentUser.UserId)
-	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
-	}
-	if credential == nil || credential.WalletAddress == "" {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("wallet address not found"))
-	}
-
-	// Use wallet address from credential (derived from private key)
-	participantAddress := common.HexToAddress(credential.WalletAddress)
+	// Use wallet address from JWT (what the user signed with via wallet extension)
+	// This must match what GetJoinEventSignMessage used to generate the sign message
+	participantAddress := common.HexToAddress(currentUser.WalletAddress)
 
 	// validate original sign message
 	deadlineBlock, err := cyptoutils.ExtractDeadlineBlockFromSignMessage(signMessage)
@@ -226,8 +222,14 @@ func (uc *EventRegistrationUsecase) JoinEventWithSignature(ctx context.Context, 
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("sign message is not valid"))
 	}
 	messageHash := cyptoutils.HashEthereumMessage(signMessage)
-	// check if the signature matches the sign message or not
-	isValidHash, err := cyptoutils.VerifySignatureByDigest(participantAddress, messageHash, signature)
+
+	// CRITICAL: Make a copy of signature before verification to prevent mutation
+	// VerifySignatureByDigest changes v from 27/28 to 0/1, but contracts expect 27/28
+	signatureCopy := make([]byte, len(signature))
+	copy(signatureCopy, signature)
+
+	// check if the signature matches the sign message or not (using copy)
+	isValidHash, err := cyptoutils.VerifySignatureByDigest(participantAddress, messageHash, signatureCopy)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to verify signature by digest")
 	}
@@ -293,26 +295,17 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 		}
 
-		// Use the original signMessage that was used to create the signature
-		messageHash := cyptoutils.HashEthereumMessage(signMessage)
-
-		// Compare the message hash with the signature
-		// Use participantAddress from private key (like fuck_join_event.go)
-		isValidHash, err := cyptoutils.VerifySignatureByDigest(*participantAddress, messageHash, signature)
-		if err != nil {
-			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
-		}
-		if !isValidHash {
-			return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("signature is not valid"))
-		}
-
 		// Debug logging before calling AddParticipant
+		messageHash := cyptoutils.HashEthereumMessage(signMessage)
 		participantAddr := *participantAddress
 		println("=== DEBUG AddParticipant ===")
 		println("Participant Address:", participantAddr.Hex())
 		println("Sign Message (RAW):", signMessage)
 		println("Message Hash:", messageHash.String())
 		println("Signature Length:", len(signature))
+		if len(signature) == 65 {
+			println("Signature V (recovery ID):", signature[64], "(should be 27 or 28 for contract)")
+		}
 		println("Contract Address:", entityEventContract.EventContractAddress)
 		println("Transactor Address:", transactor.From.Hex())
 

@@ -100,15 +100,13 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
                 throw new Error("No registration invitation or event password found");
             }
 
-            // Invalidate event viewmodel query to refetch participant status
-            await queryClient.invalidateQueries({
-                queryKey: [QUERY_KEY.event.viewmodel(eventId, user?.authenticationCredentialId)],
-            });
-
+            // Close modal after successful join
+            // The mutation's onSuccess handler will invalidate and refetch all relevant queries
             closePreviewModal();
         } catch (error) {
             console.error("Failed to submit Registration Confirm data:", error);
             // Error toast is handled by the mutation hook
+            // Don't close modal on error so user can retry
         }
     };
 

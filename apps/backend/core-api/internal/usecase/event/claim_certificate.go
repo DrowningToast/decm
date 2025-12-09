@@ -215,8 +215,14 @@ func (uc *EventUsecase) ClaimCertificateWithSignature(ctx context.Context, clien
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("sign message is not valid"))
 	}
 	messageHash := cyptoutils.HashEthereumMessage(signMessage)
-	// check if the signature matches the sign message or not
-	isValidHash, err := cyptoutils.VerifySignatureByDigest(participantAddress, messageHash, signature)
+
+	// DEFENSIVE: Make a copy before verification (participant signature not used in contract,
+	// but good practice to avoid mutation side effects)
+	signatureCopy := make([]byte, len(signature))
+	copy(signatureCopy, signature)
+
+	// check if the signature matches the sign message or not (using copy)
+	isValidHash, err := cyptoutils.VerifySignatureByDigest(participantAddress, messageHash, signatureCopy)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to verify signature by digest")
 	}

@@ -159,3 +159,4 @@ func (h *Handler) GenerateCertificateImageForParticipant(ctx *fiber.Ctx) error {
 
 
 
+

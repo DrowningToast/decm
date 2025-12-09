@@ -3,6 +3,7 @@ import { eventRegistrationService } from "@/services/services";
 import { QUERY_KEY } from "@/lib/queryKeys";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/context/AuthContext";
 
 interface JoinEventWithPasswordParams {
     eventId: string;
@@ -41,6 +42,7 @@ interface JoinEventWithEventPasswordParams {
 export const useJoinEventMutation = () => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
+    const { user } = useAuth();
 
     const joinWithAccountPassword = useMutation({
         mutationFn: async (params: JoinEventWithPasswordParams) => {
@@ -53,11 +55,42 @@ export const useJoinEventMutation = () => {
         onSuccess: (_, variables) => {
             toast.success(t("events.registration.piiForm.submitSuccess"));
             // Invalidate relevant queries
+            // Invalidate viewmodel query (used by event detail page to show participation status)
+            // Use the exact query key structure to ensure proper invalidation
             queryClient.invalidateQueries({
-                queryKey: QUERY_KEY.event.detail(variables.eventId),
+                queryKey: QUERY_KEY.event.viewmodel(
+                    variables.eventId,
+                    user?.authenticationCredentialId,
+                ),
             });
+            // Also invalidate all viewmodel queries for this event (in case userId is different)
+            queryClient.invalidateQueries({
+                queryKey: ["event", variables.eventId, "viewmodel"],
+            });
+            // Invalidate event detail queries
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEY.event.byId(variables.eventId),
+            });
+            // Invalidate registration config
             queryClient.invalidateQueries({
                 queryKey: QUERY_KEY.eventRegistration.config(variables.eventId),
+            });
+            // Invalidate invitations (user might have used an invitation)
+            queryClient.invalidateQueries({
+                queryKey: ["event", variables.eventId, "invitations"],
+            });
+            // Invalidate specific user invitation query
+            if (user?.walletAddress) {
+                queryClient.invalidateQueries({
+                    queryKey: QUERY_KEY.event.invitations.ofUserAndEventId(
+                        variables.eventId,
+                        user.walletAddress,
+                    ),
+                });
+            }
+            // Invalidate attendees (count might have changed)
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEY.event.attendees.byEventId(variables.eventId),
             });
         },
         onError: (error) => {
@@ -77,11 +110,42 @@ export const useJoinEventMutation = () => {
         onSuccess: (_, variables) => {
             toast.success(t("events.registration.piiForm.submitSuccess"));
             // Invalidate relevant queries
+            // Invalidate viewmodel query (used by event detail page to show participation status)
+            // Use the exact query key structure to ensure proper invalidation
             queryClient.invalidateQueries({
-                queryKey: QUERY_KEY.event.detail(variables.eventId),
+                queryKey: QUERY_KEY.event.viewmodel(
+                    variables.eventId,
+                    user?.authenticationCredentialId,
+                ),
             });
+            // Also invalidate all viewmodel queries for this event (in case userId is different)
+            queryClient.invalidateQueries({
+                queryKey: ["event", variables.eventId, "viewmodel"],
+            });
+            // Invalidate event detail queries
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEY.event.byId(variables.eventId),
+            });
+            // Invalidate registration config
             queryClient.invalidateQueries({
                 queryKey: QUERY_KEY.eventRegistration.config(variables.eventId),
+            });
+            // Invalidate invitations (user might have used an invitation)
+            queryClient.invalidateQueries({
+                queryKey: ["event", variables.eventId, "invitations"],
+            });
+            // Invalidate specific user invitation query
+            if (user?.walletAddress) {
+                queryClient.invalidateQueries({
+                    queryKey: QUERY_KEY.event.invitations.ofUserAndEventId(
+                        variables.eventId,
+                        user.walletAddress,
+                    ),
+                });
+            }
+            // Invalidate attendees (count might have changed)
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEY.event.attendees.byEventId(variables.eventId),
             });
         },
         onError: (error) => {
