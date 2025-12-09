@@ -15,7 +15,7 @@ export interface CertificateRow {
     status: "received" | "pending" | "rejected";
 }
 
-export function CertificateColumns(
+export function useCertificateColumns(
     onClickRevoke?: (eventCertificateId: string) => void,
     isCertificatePublished?: boolean,
 ): ColumnDef<EntityEventCertificate>[] {
