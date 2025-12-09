@@ -263,6 +263,106 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Event Certificates Section - Desktop: Below Preview */}
+                                <div className="hidden lg:block w-full">
+                                    <div className="bg-[#1a1a1a] border border-[#333333] rounded-lg p-6 w-full">
+                                        <Typography
+                                            variant="header"
+                                            tag="h2"
+                                            className="text-xl font-semibold text-white mb-4"
+                                        >
+                                            {isCurrentIssuerPending
+                                                ? t("issuer.sign.certificatesToSign")
+                                                : hasCurrentIssuerSigned
+                                                  ? t("issuer.sign.signedCertificates")
+                                                  : t("issuer.sign.eventCertificates")}{" "}
+                                            (
+                                            {eventCertificates?.filter((cert) => !cert.revokedAt)
+                                                .length || 0}
+                                            )
+                                        </Typography>
+
+                                        <div className="w-full overflow-hidden">
+                                            <DataTable
+                                                columns={CertificateColumns()}
+                                                data={
+                                                    eventCertificates
+                                                        ?.filter((cert) => {
+                                                            // Filter out revoked certificates and ensure required fields exist
+                                                            return (
+                                                                cert.id &&
+                                                                cert.eventId &&
+                                                                !cert.revokedAt &&
+                                                                cert.createdAt
+                                                            );
+                                                        })
+                                                        .map((cert) => {
+                                                            const firstName =
+                                                                cert.name?.split(" ")[0] || "";
+                                                            const lastName =
+                                                                cert.name
+                                                                    ?.split(" ")
+                                                                    .slice(1)
+                                                                    .join(" ") || "";
+
+                                                            return {
+                                                                id: cert.id!,
+                                                                event_id: cert.eventId!,
+                                                                receiver_credential_id:
+                                                                    cert.receiverCredentialId,
+                                                                receiver_email: cert.receiverEmail,
+                                                                name: cert.name,
+                                                                academic_institution:
+                                                                    cert.academicInstitution,
+                                                                certificate_title:
+                                                                    cert.certificateTitle,
+                                                                certificate_subtitle:
+                                                                    cert.certificateSubtitle,
+                                                                event_contract_address:
+                                                                    cert.eventContractAddress || "",
+                                                                event_certificate_address:
+                                                                    cert.eventCertificateAddress,
+                                                                created_at: cert.createdAt!,
+                                                                revoked_at: cert.revokedAt,
+                                                                firstName,
+                                                                lastName,
+                                                                email: cert.receiverEmail || "",
+                                                                academicInstitution:
+                                                                    cert.academicInstitution || "",
+                                                                issuedAt: cert.createdAt!,
+                                                                status: cert.revokedAt
+                                                                    ? "rejected"
+                                                                    : isCurrentIssuerPending
+                                                                      ? "pending_signature"
+                                                                      : "received",
+                                                            };
+                                                        }) || []
+                                                }
+                                                totalItems={
+                                                    eventCertificates?.filter(
+                                                        (cert) =>
+                                                            cert.id &&
+                                                            cert.eventId &&
+                                                            !cert.revokedAt &&
+                                                            cert.createdAt,
+                                                    ).length || 0
+                                                }
+                                                currentPage={1}
+                                                pageSize={10}
+                                                onPageChange={() => {}}
+                                                onPageSizeChange={() => {}}
+                                                searchValue=""
+                                                onSearchChange={() => {}}
+                                                searchPlaceholder="Search certificates..."
+                                                sorting={[]}
+                                                onSortingChange={() => {}}
+                                                isLoading={isLoadingCertificates}
+                                                disablePagination
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Right Column - Action Card */}
@@ -309,9 +409,9 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                     </div>
                                 </div>
 
-                                {/* Event Certificates Section */}
-                                <SectionContainer className="px-0">
-                                    <div>
+                                {/* Event Certificates Section - Mobile: In Right Column */}
+                                <div className="lg:hidden w-full">
+                                    <div className="bg-[#1a1a1a] border border-[#333333] rounded-lg p-6 w-full">
                                         <Typography
                                             variant="header"
                                             tag="h2"
@@ -328,84 +428,86 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                             )
                                         </Typography>
 
-                                        <DataTable
-                                            columns={CertificateColumns()}
-                                            data={
-                                                eventCertificates
-                                                    ?.filter((cert) => {
-                                                        // Filter out revoked certificates and ensure required fields exist
-                                                        return (
+                                        <div className="w-full overflow-hidden">
+                                            <DataTable
+                                                columns={CertificateColumns()}
+                                                data={
+                                                    eventCertificates
+                                                        ?.filter((cert) => {
+                                                            // Filter out revoked certificates and ensure required fields exist
+                                                            return (
+                                                                cert.id &&
+                                                                cert.eventId &&
+                                                                !cert.revokedAt &&
+                                                                cert.createdAt
+                                                            );
+                                                        })
+                                                        .map((cert) => {
+                                                            const firstName =
+                                                                cert.name?.split(" ")[0] || "";
+                                                            const lastName =
+                                                                cert.name
+                                                                    ?.split(" ")
+                                                                    .slice(1)
+                                                                    .join(" ") || "";
+
+                                                            return {
+                                                                id: cert.id!,
+                                                                event_id: cert.eventId!,
+                                                                receiver_credential_id:
+                                                                    cert.receiverCredentialId,
+                                                                receiver_email: cert.receiverEmail,
+                                                                name: cert.name,
+                                                                academic_institution:
+                                                                    cert.academicInstitution,
+                                                                certificate_title:
+                                                                    cert.certificateTitle,
+                                                                certificate_subtitle:
+                                                                    cert.certificateSubtitle,
+                                                                event_contract_address:
+                                                                    cert.eventContractAddress || "",
+                                                                event_certificate_address:
+                                                                    cert.eventCertificateAddress,
+                                                                created_at: cert.createdAt!,
+                                                                revoked_at: cert.revokedAt,
+                                                                firstName,
+                                                                lastName,
+                                                                email: cert.receiverEmail || "",
+                                                                academicInstitution:
+                                                                    cert.academicInstitution || "",
+                                                                issuedAt: cert.createdAt!,
+                                                                status: cert.revokedAt
+                                                                    ? "rejected"
+                                                                    : isCurrentIssuerPending
+                                                                      ? "pending_signature"
+                                                                      : "received",
+                                                            };
+                                                        }) || []
+                                                }
+                                                totalItems={
+                                                    eventCertificates?.filter(
+                                                        (cert) =>
                                                             cert.id &&
                                                             cert.eventId &&
                                                             !cert.revokedAt &&
-                                                            cert.createdAt
-                                                        );
-                                                    })
-                                                    .map((cert) => {
-                                                        const firstName =
-                                                            cert.name?.split(" ")[0] || "";
-                                                        const lastName =
-                                                            cert.name
-                                                                ?.split(" ")
-                                                                .slice(1)
-                                                                .join(" ") || "";
-
-                                                        return {
-                                                            id: cert.id!,
-                                                            event_id: cert.eventId!,
-                                                            receiver_credential_id:
-                                                                cert.receiverCredentialId,
-                                                            receiver_email: cert.receiverEmail,
-                                                            name: cert.name,
-                                                            academic_institution:
-                                                                cert.academicInstitution,
-                                                            certificate_title:
-                                                                cert.certificateTitle,
-                                                            certificate_subtitle:
-                                                                cert.certificateSubtitle,
-                                                            event_contract_address:
-                                                                cert.eventContractAddress || "",
-                                                            event_certificate_address:
-                                                                cert.eventCertificateAddress,
-                                                            created_at: cert.createdAt!,
-                                                            revoked_at: cert.revokedAt,
-                                                            firstName,
-                                                            lastName,
-                                                            email: cert.receiverEmail || "",
-                                                            academicInstitution:
-                                                                cert.academicInstitution || "",
-                                                            issuedAt: cert.createdAt!,
-                                                            status: cert.revokedAt
-                                                                ? "rejected"
-                                                                : isCurrentIssuerPending
-                                                                  ? "pending_signature"
-                                                                  : "received",
-                                                        };
-                                                    }) || []
-                                            }
-                                            totalItems={
-                                                eventCertificates?.filter(
-                                                    (cert) =>
-                                                        cert.id &&
-                                                        cert.eventId &&
-                                                        !cert.revokedAt &&
-                                                        cert.createdAt,
-                                                ).length || 0
-                                            }
-                                            currentPage={1}
-                                            pageSize={10}
-                                            onPageChange={() => {}}
-                                            onPageSizeChange={() => {}}
-                                            searchValue=""
-                                            onSearchChange={() => {}}
-                                            searchPlaceholder="Search certificates..."
-                                            sorting={[]}
-                                            onSortingChange={() => {}}
-                                            isLoading={isLoadingCertificates}
-                                            disablePagination
-                                        />
+                                                            cert.createdAt,
+                                                    ).length || 0
+                                                }
+                                                currentPage={1}
+                                                pageSize={10}
+                                                onPageChange={() => {}}
+                                                onPageSizeChange={() => {}}
+                                                searchValue=""
+                                                onSearchChange={() => {}}
+                                                searchPlaceholder="Search certificates..."
+                                                sorting={[]}
+                                                onSortingChange={() => {}}
+                                                isLoading={isLoadingCertificates}
+                                                disablePagination
+                                            />
+                                        </div>
                                     </div>
-                                </SectionContainer>
+                                </div>
 
                                 <div className="bg-[#1a1a1a] border border-[#333333] p-6 rounded-lg shadow-lg space-y-6 sticky top-8">
                                     <div>

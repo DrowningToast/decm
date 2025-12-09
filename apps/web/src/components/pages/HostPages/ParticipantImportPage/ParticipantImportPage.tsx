@@ -55,6 +55,17 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
         // Create a new workbook and worksheet
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(templateData);
+
+        // Set column widths for better spacing
+        const columnWidths = [
+            { wch: 20 }, // first_name
+            { wch: 20 }, // last_name
+            { wch: 30 }, // email
+            { wch: 20 }, // phone_number
+            { wch: 30 }, // academic_institution
+        ];
+        ws["!cols"] = columnWidths;
+
         XLSX.utils.book_append_sheet(wb, ws, t("participantImport.templateSheetName"));
 
         // Generate Excel file and download

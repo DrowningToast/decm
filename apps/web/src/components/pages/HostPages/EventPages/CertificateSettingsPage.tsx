@@ -313,7 +313,26 @@ export const CertificateSettingsPage = ({
 
             // Update font settings if they have changed (only if config exists or is being created)
             if (fontSettings && (eventCertificateConfig || certificateTemplate.svgFile)) {
-                await updateCertificateTextConfig(fontSettings);
+                // Ensure all required fields are present (non-undefined)
+                const textConfig = {
+                    academic_institution_font_family_id:
+                        fontSettings.academic_institution_font_family_id ?? 1,
+                    academic_institution_font_weight:
+                        fontSettings.academic_institution_font_weight ?? 700,
+                    certificate_subtitle_font_family_id:
+                        fontSettings.certificate_subtitle_font_family_id ?? 1,
+                    certificate_subtitle_font_weight:
+                        fontSettings.certificate_subtitle_font_weight ?? 700,
+                    certificate_title_font_family_id:
+                        fontSettings.certificate_title_font_family_id ?? 1,
+                    certificate_title_font_weight:
+                        fontSettings.certificate_title_font_weight ?? 700,
+                    event_name_font_family_id: fontSettings.event_name_font_family_id ?? 1,
+                    event_name_font_weight: fontSettings.event_name_font_weight ?? 700,
+                    name_font_family_id: fontSettings.name_font_family_id ?? 1,
+                    name_font_weight: fontSettings.name_font_weight ?? 700,
+                };
+                await updateCertificateTextConfig(textConfig);
             }
 
             // Refetch all queries to ensure the page is up to date
@@ -568,17 +587,14 @@ export const CertificateSettingsPage = ({
                                     tag="h2"
                                     className="text-xl font-bold mb-2"
                                 >
-                                    {t("certificateSettings.step3.title", "Step 3: Font Settings")}
+                                    {t("certificateSettings.step3.title")}
                                 </Typography>
                                 <Typography
                                     variant="text"
                                     tag="p"
                                     className="text-sm text-muted-foreground"
                                 >
-                                    {t(
-                                        "certificateSettings.step3.description",
-                                        "Customize the font family and weight for each text field in your certificate template.",
-                                    )}
+                                    {t("certificateSettings.step3.description")}
                                 </Typography>
                             </div>
 

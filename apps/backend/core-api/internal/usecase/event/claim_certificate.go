@@ -26,7 +26,6 @@ import (
 	"github.com/google/uuid"
 
 	certificateContract "apps/backend/contracts/certificate"
-	ethcommon "github.com/ethereum/go-ethereum/common"
 )
 
 type ClaimCertificateUserError string
@@ -45,7 +44,7 @@ type ClaimCertificatePayload struct {
 // returns raw string, then message hash
 // CRITICAL: walletAddress parameter should be the address derived from the user's private key,
 // NOT from the JWT claims, to ensure cryptographic consistency
-func (uc *EventUsecase) GetClaimCertificateSignMessage(ctx context.Context, client *ethclient.Client, walletAddress common.Address, currentUser auth.JwtClaims, certificateContractAddress common.Address, deadlineBlock *uint64) (*string, *ethcommon.Hash, error) {
+func (uc *EventUsecase) GetClaimCertificateSignMessage(ctx context.Context, client *ethclient.Client, walletAddress common.Address, currentUser auth.JwtClaims, certificateContractAddress common.Address, deadlineBlock *uint64) (*string, *common.Hash, error) {
 	// Validation
 	if deadlineBlock == nil {
 		calculatedDeadlineBlock, err := cyptoutils.GetCalculatedDeadlineBlock(client)
@@ -510,10 +509,6 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	certificateSubtitle := certSubtitle
 
 	// Parameter 17: issuerProofs (array of {issuerSignature, issuerPublicKey})
-	type IssuerProof struct {
-		IssuerSignature string
-		IssuerPublicKey string
-	}
 	issuerProofs := make([]certificateContract.CertificateVCStructsIssuerProof, len(certificateSignatures))
 	for i, sig := range certificateSignatures {
 		issuerSig := ""
@@ -617,7 +612,7 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 					"to_block", currentBlock,
 					"error", err.Error())
 			} else {
-				defer iter.Close()
+				defer func() { _ = iter.Close() }()
 
 				targetCertId := certificate.Id.String()
 				var matchingEvents []*certificateContract.EventCertificateCertificateMinted
@@ -772,7 +767,6 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	isSignatureUsed, err = certificateContractInstance.UsedSignatures(nil, participantSignatureBytes)
 	if err != nil {
 		slog.Warn("Could not check if signature was already used", "error", err.Error())
-		isSignatureUsed = false
 	} else if isSignatureUsed {
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument,
 			errors.New("participant signature has already been used in a previous transaction"))
@@ -884,70 +878,4 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	}
 
 	return updatedCertificate, nil
-}
-
-// extractRevertReasonFromError attempts to extract the revert reason from an error
-func extractRevertReasonFromError(err error) string {
-	if err == nil {
-		return ""
-	}
-
-	errMsg := err.Error()
-
-	// Log full error for debugging
-	slog.Debug("Full error message for revert reason extraction", "error", errMsg)
-
-	// Try to extract revert reason from common patterns (check most specific first)
-	patterns := []struct {
-		prefix string
-		suffix string
-	}{
-		{"execution reverted: ", "\n"},
-		{"execution reverted:", "\n"},
-		{"revert ", "\n"},
-		{"revert: ", "\n"},
-		{"VM execution error.\n\nrevert ", "\n"},
-		{"revert ", ""},
-		{"execution reverted: ", ""},
-	}
-
-	for _, pattern := range patterns {
-		if idx := strings.Index(errMsg, pattern.prefix); idx != -1 {
-			reason := strings.TrimSpace(errMsg[idx+len(pattern.prefix):])
-			if pattern.suffix != "" {
-				if suffixIdx := strings.Index(reason, pattern.suffix); suffixIdx != -1 {
-					reason = reason[:suffixIdx]
-				}
-			}
-			// Also trim common trailing parts
-			reason = strings.TrimSpace(reason)
-			if len(reason) > 0 && reason != "" {
-				return reason
-			}
-		}
-	}
-
-	// Check for wrapped errors that might contain revert data
-	if strings.Contains(errMsg, "revert") || strings.Contains(errMsg, "reverted") {
-		// Try to find any text after revert/reverted
-		for _, keyword := range []string{"revert ", "reverted ", "reverted: ", "reverted:"} {
-			if idx := strings.Index(errMsg, keyword); idx != -1 {
-				remaining := errMsg[idx+len(keyword):]
-				// Take up to 200 chars or first newline
-				if newlineIdx := strings.Index(remaining, "\n"); newlineIdx != -1 && newlineIdx < 200 {
-					return strings.TrimSpace(remaining[:newlineIdx])
-				}
-				if len(remaining) > 200 {
-					return strings.TrimSpace(remaining[:200]) + "..."
-				}
-				return strings.TrimSpace(remaining)
-			}
-		}
-	}
-
-	maxLen := 200
-	if len(errMsg) < maxLen {
-		maxLen = len(errMsg)
-	}
-	return "Could not extract revert reason - error message: " + errMsg[:maxLen]
 }

@@ -17,3 +17,6 @@ DROP COLUMN certificate_subtitle_font_weight;
 
 
 
+
+
+

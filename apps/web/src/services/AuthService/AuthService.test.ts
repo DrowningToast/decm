@@ -453,6 +453,187 @@ describe("AuthService", () => {
             });
             expect(result).toEqual(mockResponse);
         });
+
+        it("should check roles with only host requirement", async () => {
+            const mockResponse = {
+                is_authenticated: true,
+                is_host: true,
+                is_issuer: false,
+            };
+            (coreApiClient.v1.checkRole as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockResolvedValue(mockResponse);
+
+            const result = await authService.checkRoles({
+                requireHost: true,
+            });
+
+            expect(coreApiClient.v1.checkRole).toHaveBeenCalledWith({
+                is_authenticated: undefined,
+                is_host: true,
+                is_issuer: undefined,
+            });
+            expect(result).toEqual(mockResponse);
+        });
+
+        it("should check roles with only issuer requirement", async () => {
+            const mockResponse = {
+                is_authenticated: true,
+                is_host: false,
+                is_issuer: true,
+            };
+            (coreApiClient.v1.checkRole as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockResolvedValue(mockResponse);
+
+            const result = await authService.checkRoles({
+                requireIssuer: true,
+            });
+
+            expect(coreApiClient.v1.checkRole).toHaveBeenCalledWith({
+                is_authenticated: undefined,
+                is_host: undefined,
+                is_issuer: true,
+            });
+            expect(result).toEqual(mockResponse);
+        });
+
+        it("should check roles with both host and issuer requirements", async () => {
+            const mockResponse = {
+                is_authenticated: true,
+                is_host: true,
+                is_issuer: true,
+            };
+            (coreApiClient.v1.checkRole as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockResolvedValue(mockResponse);
+
+            const result = await authService.checkRoles({
+                requireHost: true,
+                requireIssuer: true,
+            });
+
+            expect(coreApiClient.v1.checkRole).toHaveBeenCalledWith({
+                is_authenticated: undefined,
+                is_host: true,
+                is_issuer: true,
+            });
+            expect(result).toEqual(mockResponse);
+        });
+
+        it("should check roles when user has host but not issuer", async () => {
+            const mockResponse = {
+                is_authenticated: true,
+                is_host: true,
+                is_issuer: false,
+            };
+            (coreApiClient.v1.checkRole as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockResolvedValue(mockResponse);
+
+            const result = await authService.checkRoles({
+                requireHost: true,
+                requireIssuer: true,
+            });
+
+            expect(coreApiClient.v1.checkRole).toHaveBeenCalledWith({
+                is_authenticated: undefined,
+                is_host: true,
+                is_issuer: true,
+            });
+            expect(result.is_host).toBe(true);
+            expect(result.is_issuer).toBe(false);
+        });
+
+        it("should check roles when user has issuer but not host", async () => {
+            const mockResponse = {
+                is_authenticated: true,
+                is_host: false,
+                is_issuer: true,
+            };
+            (coreApiClient.v1.checkRole as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockResolvedValue(mockResponse);
+
+            const result = await authService.checkRoles({
+                requireHost: true,
+                requireIssuer: true,
+            });
+
+            expect(result.is_host).toBe(false);
+            expect(result.is_issuer).toBe(true);
+        });
+
+        it("should check roles when user has neither host nor issuer", async () => {
+            const mockResponse = {
+                is_authenticated: true,
+                is_host: false,
+                is_issuer: false,
+            };
+            (coreApiClient.v1.checkRole as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockResolvedValue(mockResponse);
+
+            const result = await authService.checkRoles({
+                requireHost: true,
+                requireIssuer: true,
+            });
+
+            expect(result.is_host).toBe(false);
+            expect(result.is_issuer).toBe(false);
+        });
+
+        it("should check roles when user has both roles", async () => {
+            const mockResponse = {
+                is_authenticated: true,
+                is_host: true,
+                is_issuer: true,
+            };
+            (coreApiClient.v1.checkRole as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockResolvedValue(mockResponse);
+
+            const result = await authService.checkRoles({
+                requireHost: true,
+                requireIssuer: true,
+            });
+
+            expect(result.is_host).toBe(true);
+            expect(result.is_issuer).toBe(true);
+        });
+
+        it("should handle API errors gracefully", async () => {
+            const error = new Error("Role check failed");
+            (coreApiClient.v1.checkRole as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockRejectedValue(error);
+
+            await expect(
+                authService.checkRoles({
+                    requireHost: true,
+                }),
+            ).rejects.toThrow("Role check failed");
+        });
+
+        it("should check roles with no requirements (all undefined)", async () => {
+            const mockResponse = {
+                is_authenticated: true,
+                is_host: false,
+                is_issuer: false,
+            };
+            (coreApiClient.v1.checkRole as ReturnType<typeof vi.fn>) = vi
+                .fn()
+                .mockResolvedValue(mockResponse);
+
+            const result = await authService.checkRoles({});
+
+            expect(coreApiClient.v1.checkRole).toHaveBeenCalledWith({
+                is_authenticated: undefined,
+                is_host: undefined,
+                is_issuer: undefined,
+            });
+            expect(result).toEqual(mockResponse);
+        });
     });
 
     describe("getMyProfile", () => {

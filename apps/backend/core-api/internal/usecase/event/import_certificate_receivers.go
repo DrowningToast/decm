@@ -181,7 +181,6 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 
 	// 6. Save certificate data to event_certificates
 	certificates := make([]*entity.EventCertificate, 0, len(requests))
-	var certificateIDs []uuid.UUID
 
 	for _, req := range requests {
 		// Safely dereference pointer fields (use empty string if nil)
@@ -235,7 +234,6 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 		}
 
 		certificates = append(certificates, certificate)
-		certificateIDs = append(certificateIDs, certificate.Id)
 	}
 
 	// 7. Create NEW sign_message with NEW receiver hashes

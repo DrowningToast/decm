@@ -25,7 +25,7 @@ import (
 // TEST HELPERS
 // ============================================
 
-func setupTestUsecase(t *testing.T) *event_usecase.EventUsecase {
+func setupTestUsecase(_ *testing.T) *event_usecase.EventUsecase {
 	// For unit tests without blockchain/database, we just test logic
 	uc := &event_usecase.EventUsecase{}
 	return uc
@@ -38,7 +38,7 @@ func createTestPrivateKey(t *testing.T) (*ecdsa.PrivateKey, common.Address) {
 	return privateKey, address
 }
 
-func createTestCertificate(credentialId uuid.UUID, address string, tokenId *string, revoked bool) *entity.EventCertificate {
+func createTestCertificate(credentialId uuid.UUID, _ string, tokenId *string, revoked bool) *entity.EventCertificate {
 	eventId := uuid.New()
 	certId := uuid.New()
 	contractAddr := "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1"
@@ -95,16 +95,6 @@ func createTestAttendee(eventId, credentialId uuid.UUID, walletAddress string) *
 		AcademicEmail:        &academicEmail,
 		CreatedAt:            time.Now(),
 		UpdatedAt:            time.Now(),
-	}
-}
-
-func createTestAuthCredential(credentialId uuid.UUID, walletAddress string, encryptedPrivateKey string) *entity.AuthenticationCredential {
-	return &entity.AuthenticationCredential{
-		Id:                  credentialId,
-		WalletAddress:       walletAddress,
-		EncryptedPrivateKey: &encryptedPrivateKey,
-		CreatedAt:           time.Now(),
-		UpdatedAt:           time.Now(),
 	}
 }
 

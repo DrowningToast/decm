@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import ConfirmModal from "@/components/ConfirmModal";
 import { Typography } from "@/components/typography/typography";
 import type { EntityEventCertificate } from "@decm/api";
+import { useTranslation } from "react-i18next";
 
 export interface CertificateRow {
     id: string;
@@ -18,30 +19,31 @@ export function CertificateColumns(
     onClickRevoke?: (eventCertificateId: string) => void,
     isCertificatePublished?: boolean,
 ): ColumnDef<EntityEventCertificate>[] {
+    const { t, i18n } = useTranslation();
     const certificateColumns: ColumnDef<EntityEventCertificate>[] = [
         {
             accessorKey: "firstName",
-            header: "First Name",
+            header: t("events.participants.fields.firstName"),
             enableSorting: true,
         },
         {
             accessorKey: "lastName",
-            header: "Last Name",
+            header: t("events.participants.fields.lastName"),
             enableSorting: true,
         },
         {
             accessorKey: "email",
-            header: "Email",
+            header: t("events.participants.fields.email"),
             enableSorting: true,
         },
         {
             accessorKey: "academicInstitution",
-            header: "Academic Institution",
+            header: t("events.participants.fields.academicInstitution"),
             enableSorting: true,
         },
         {
             accessorKey: "issuedAt",
-            header: "Issued At",
+            header: t("events.hostDetails.certificates.table.issuedAt"),
             enableSorting: true,
             cell: ({ row }) => {
                 const issuedAt = row.original.created_at;
@@ -49,12 +51,14 @@ export function CertificateColumns(
                     return <span className="text-muted-foreground">-</span>;
                 }
                 const date = new Date(issuedAt);
-                const formattedDate = date.toLocaleDateString("en-US", {
+                // Use i18n language for date formatting (e.g., 'en' or 'th')
+                const locale = i18n.language === "th" ? "th-TH" : "en-US";
+                const formattedDate = date.toLocaleDateString(locale, {
                     year: "numeric",
                     month: "short",
                     day: "numeric",
                 });
-                const formattedTime = date.toLocaleTimeString("en-US", {
+                const formattedTime = date.toLocaleTimeString(locale, {
                     hour: "2-digit",
                     minute: "2-digit",
                 });
@@ -67,7 +71,7 @@ export function CertificateColumns(
         },
         {
             accessorKey: "status",
-            header: "Status",
+            header: t("events.hostDetails.certificates.table.status"),
             enableSorting: true,
             cell: ({ row }) => {
                 const isReceived = row.original.receiver_credential_id;
@@ -79,7 +83,7 @@ export function CertificateColumns(
                             tag="span"
                             className="text-green-500 inline-block px-2 py-1 rounded text-xs bg-green-100"
                         >
-                            Collected
+                            {t("events.hostDetails.certificates.table.statusCollected")}
                         </Typography>
                     );
                 } else {
@@ -89,7 +93,7 @@ export function CertificateColumns(
                             tag="span"
                             className="text-red-500 inline-block px-2 py-1 rounded text-xs bg-red-100"
                         >
-                            Not Collect
+                            {t("events.hostDetails.certificates.table.statusNotCollected")}
                         </Typography>
                     );
                 }
@@ -100,18 +104,18 @@ export function CertificateColumns(
     if (onClickRevoke) {
         certificateColumns.push({
             id: "actions",
-            header: "Action",
+            header: t("events.hostDetails.certificates.table.action"),
             enableSorting: false,
             cell: ({ row }) => {
                 const eventCertificateId = row.original.id;
                 const isRevokeDisabled = !eventCertificateId || isCertificatePublished;
                 return (
                     <ConfirmModal
-                        title="Revoke Certificate"
+                        title={t("events.hostDetails.certificates.table.revokeTitle")}
                         message={
                             isCertificatePublished
-                                ? "Cannot revoke certificates after the certificate configuration has been published."
-                                : "Are you sure you want to revoke this certificate? This will reset all issuer signatures and require re-approval from all issuers before publishing again."
+                                ? t("events.hostDetails.certificates.table.revokeMessagePublished")
+                                : t("events.hostDetails.certificates.table.revokeMessage")
                         }
                         onConfirm={() => {
                             if (eventCertificateId && !isCertificatePublished) {
@@ -119,8 +123,12 @@ export function CertificateColumns(
                             }
                         }}
                         onCancel={() => {}}
-                        cancelText="Cancel"
-                        confirmText={isCertificatePublished ? "OK" : "Revoke"}
+                        cancelText={t("common.cancel")}
+                        confirmText={
+                            isCertificatePublished
+                                ? t("common.confirm")
+                                : t("events.hostDetails.certificates.table.revokeButton")
+                        }
                     >
                         <Button
                             size="sm"
@@ -128,11 +136,11 @@ export function CertificateColumns(
                             disabled={isRevokeDisabled}
                             title={
                                 isCertificatePublished
-                                    ? "Cannot revoke - certificate is published"
-                                    : "Revoke certificate"
+                                    ? t("events.hostDetails.certificates.table.revokeDisabledTitle")
+                                    : t("events.hostDetails.certificates.table.revokeTitle")
                             }
                         >
-                            Revoke
+                            {t("events.hostDetails.certificates.table.revokeButton")}
                         </Button>
                     </ConfirmModal>
                 );

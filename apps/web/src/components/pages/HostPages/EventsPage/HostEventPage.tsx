@@ -5,8 +5,10 @@ import { Link } from "@/router";
 import { DataTablePagination } from "@/components/ui/pagination/Pagination";
 import { useHostEvents } from "./useHostEvents";
 import { EventStatusesViewModel, EventTypesViewModel } from "./ViewModel";
+import { useTranslation } from "react-i18next";
 
 export default function HostEventPage() {
+    const { t } = useTranslation();
     const {
         events,
         isLoadingEvents,
@@ -20,30 +22,43 @@ export default function HostEventPage() {
     } = useHostEvents();
 
     return (
-        <div title="Events">
+        <div title={t("host.events.title")}>
             <SectionContainer className="flex items-center justify-between">
-                <TitleSubtitle title="Events" subtitle="Create or manage your events" />
+                <TitleSubtitle
+                    title={t("host.events.title")}
+                    subtitle={t("host.events.subtitle")}
+                />
                 <div className="flex justify-end">
-                    <WrappedButton href="/host/events/create">Create Event</WrappedButton>
+                    <WrappedButton href="/host/events/create">
+                        {t("host.events.createEvent")}
+                    </WrappedButton>
                 </div>
             </SectionContainer>
 
             <SectionContainer>
                 {isLoadingEvents ? (
                     <div className="flex justify-center py-8">
-                        <div>Loading events...</div>
+                        <div>{t("host.events.loading")}</div>
                     </div>
                 ) : isLoadingEventsError ? (
                     <div className="flex justify-center py-8 text-red-500">
-                        <div>Error loading events: {isLoadingEventsError.message}</div>
+                        <div>
+                            {t("host.events.loadingError", {
+                                error: isLoadingEventsError.message,
+                            })}
+                        </div>
                     </div>
                 ) : (
                     <>
                         <table className="w-full">
                             <thead className="border-b h-10">
                                 <tr>
-                                    <th className="text-start text-muted">Name</th>
-                                    <th className="text-end text-muted">Status</th>
+                                    <th className="text-start text-muted">
+                                        {t("host.events.table.name")}
+                                    </th>
+                                    <th className="text-end text-muted">
+                                        {t("host.events.table.status")}
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -64,7 +79,7 @@ export default function HostEventPage() {
                                                 <p className="text-muted text-sm mt-0.5">
                                                     {event.startDate && event.endDate
                                                         ? `${new Date(event.startDate).toLocaleDateString()} - ${new Date(event.endDate).toLocaleDateString()}`
-                                                        : "Date TBD"}
+                                                        : t("host.events.dateTBD")}
                                                 </p>
                                                 <p className="text-muted text-sm">
                                                     {EventTypesViewModel[event.eventType]}
@@ -78,7 +93,7 @@ export default function HostEventPage() {
                                 ) : (
                                     <tr>
                                         <td colSpan={2} className="text-center py-8">
-                                            No events found. Create your first event!
+                                            {t("host.events.empty")}
                                         </td>
                                     </tr>
                                 )}

@@ -253,9 +253,9 @@ func TestSignEventCertificates_MultipleIssuers(t *testing.T) {
 	certificateID1 := uuid.New()
 	certificateID2 := uuid.New()
 	signatureID1 := uuid.New()
-	signatureID2 := uuid.New()
-	signatureID3 := uuid.New()
-	signatureID4 := uuid.New()
+	// signatureID2 := uuid.New()
+	// signatureID3 := uuid.New()
+	// signatureID4 := uuid.New()
 	issuerPin := "test-pin-123"
 
 	encryptedPrivateKey := "encrypted_key_data"

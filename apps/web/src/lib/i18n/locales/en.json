@@ -44,7 +44,14 @@
         "notAvailable": "N/A",
         "networkError": "Network error. Please check your connection.",
         "comingSoon": "Coming Soon",
-        "empty": "(empty)"
+        "empty": "(empty)",
+        "previous": "Previous",
+        "pagination": {
+            "rowsPerPage": "Rows per page:",
+            "page": "Page {{current}}",
+            "pageOf": "Page {{current}} of {{total}}",
+            "noResults": "No results found."
+        }
     },
     "nav": {
         "home": "Home",
@@ -57,6 +64,11 @@
         "signIn": "Sign In",
         "signUp": "Sign Up",
         "signOut": "Sign Out",
+        "roles": {
+            "verifiedOrganizer": "Verified Organizer",
+            "issuer": "Issuer"
+        },
+        "signedInAs": "You're currently signed in as a {{role}}",
         "account": "Account",
         "security": "Security",
         "settings": "Settings",
@@ -592,9 +604,13 @@
                 "revokeInvitationTitle": "Revoke Invitation",
                 "revokeInvitationMessage": "Are you sure you want to revoke this invitation? This will only prevent future registration and will not remove participants who have already joined.",
                 "alreadyAccepted": "Invitation already accepted - cannot revoke",
+                "cancelSuccess": "Invitation cancelled successfully",
                 "statusHeader": "Status",
                 "statusAccepted": "Accepted",
-                "statusPending": "Pending"
+                "statusPending": "Pending",
+                "table": {
+                    "actions": "Action"
+                }
             },
             "attendees": {
                 "title": "Event Attendees",
@@ -644,7 +660,27 @@
                 "publishError": "Failed to publish certificates: {{error}}",
                 "editDisabledMessage": "Editing is disabled because the certificate configuration has been published",
                 "noIssuersMessage": "Cannot import receivers until certificate issuers are assigned",
-                "alreadyPublished": "Already Published"
+                "alreadyPublished": "Already Published",
+                "revokeSuccess": "Event certificates revoked successfully",
+                "revokeError": "Failed to revoke event certificates",
+                "revokeAllSuccess": "All event certificates revoked successfully",
+                "revokeAllError": "Failed to revoke all event certificates",
+                "publishConfigSuccess": "Certificate configuration published successfully",
+                "updatePublishedStatusError": "Failed to update certificate published status",
+                "table": {
+                    "issuedAt": "Issued At",
+                    "status": "Status",
+                    "action": "Action",
+                    "statusCollected": "Collected",
+                    "statusNotCollected": "Not Collected",
+                    "revokeTitle": "Revoke Certificate",
+                    "revokeMessage": "Are you sure you want to revoke this certificate? This will reset all issuer signatures and require re-approval from all issuers before publishing again.",
+                    "revokeMessagePublished": "Cannot revoke certificates after the certificate configuration has been published.",
+                    "revokeButton": "Revoke",
+                    "revokeDisabledTitle": "Cannot revoke - certificate is published",
+                    "signingStatus": "Signing Status",
+                    "signedAt": "Signed At"
+                }
             }
         }
     },
@@ -729,7 +765,11 @@
                 "certificateFromEvent": "Certificate from {{eventName}}",
                 "certificatePreview": "Certificate Preview",
                 "imageLoadError": "Failed to load certificate image",
-                "loadingImageHint": "Loading certificate preview... This may take a while on the first load."
+                "loadingImageHint": "Loading certificate preview... This may take a while on the first load.",
+                "downloadAsImage": "Download as an image",
+                "downloading": "Downloading...",
+                "downloadSuccess": "Certificate downloaded successfully!",
+                "downloadError": "Failed to download certificate. Please try again."
             }
         },
         "events": {
@@ -1145,6 +1185,10 @@
                 "instruction": "Please update your SVG template to include these required keywords before proceeding."
             }
         },
+        "step3": {
+            "title": "Step 3: Font Settings",
+            "description": "Customize the font family and weight for each text field in your certificate template."
+        },
         "confirmButton": "Confirm Settings",
         "saveSuccess": "Certificate settings saved successfully",
         "saveError": "Failed to save certificate settings. Please try again.",
@@ -1433,6 +1477,49 @@
             "default": "Default",
             "large": "Large",
             "extraLarge": "Extra Large"
+        }
+    },
+    "host": {
+        "home": {
+            "dashboardTitle": "Host Dashboard",
+            "dashboardAlt": "Host Dashboard Background",
+            "greeting": {
+                "morning": "Good morning",
+                "afternoon": "Good afternoon",
+                "evening": "Good evening"
+            },
+            "actionRequired": "You've {{count}} action required.",
+            "actionRequired_plural": "You've {{count}} actions required.",
+            "hostServices": "HOST SERVICES",
+            "generalServices": "GENERAL SERVICES",
+            "services": {
+                "event": "Event",
+                "verifyCertificate": "Verify certificate"
+            }
+        },
+        "events": {
+            "title": "Events",
+            "subtitle": "Create or manage your events",
+            "createEvent": "Create Event",
+            "createEventPage": {
+                "title": "Create Event",
+                "subtitle": "Fill in the details below to create a new event"
+            },
+            "loading": "Loading events...",
+            "loadingError": "Error loading events: {{error}}",
+            "table": {
+                "name": "Name",
+                "status": "Status"
+            },
+            "dateTBD": "Date TBD",
+            "empty": "No events found. Create your first event!"
+        }
+    },
+    "flow": {
+        "generic": {
+            "unauthenticated_response": "You must be logged in to access this page. Please sign in.",
+            "unauthorized_response": "You don't have permission to access this page. Please contact an administrator.",
+            "sign_out_success": "You have been signed out successfully."
         }
     }
 }

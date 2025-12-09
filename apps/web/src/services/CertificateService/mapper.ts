@@ -169,8 +169,8 @@ export const mapToSignedCertificatesResult = (
     response: CoreApiInternalHandlerEventSignEventCertificatesResponse,
 ): SignedCertificatesResult => {
     const certificates = (response.certificates || []).map((cert) => ({
-        certificateId: cert.certificate_id || "",
-        eventId: cert.event_id || "",
+        certificateId: cert.certificate?.id || "",
+        eventId: cert.certificate?.event_id || "",
         signature: cert.signature || "",
     }));
 
@@ -187,9 +187,9 @@ export const mapImportCertificatesResponse = (
     response: CoreApiInternalHandlerEventImportCertificateReceiversResponse,
 ): ImportCertificatesResult => {
     return {
-        importedCount: response.imported_count || 0,
-        failedCount: response.failed_count || 0,
-        errors: response.errors || [],
+        importedCount: response.certificates?.length || 0,
+        failedCount: 0, // API doesn't provide failed count
+        errors: [], // API doesn't provide errors
     };
 };
 
@@ -200,9 +200,9 @@ export const mapRevokeCertificatesResponse = (
     response: CoreApiInternalHandlerEventRevokeEventCertificatesResponse,
 ): RevokeCertificatesResult => {
     return {
-        revokedCount: response.revoked_count || 0,
-        failedCount: response.failed_count || 0,
-        errors: response.errors || [],
+        revokedCount: response.revoked_certificates?.length || 0,
+        failedCount: 0, // API doesn't provide failed count
+        errors: [], // API doesn't provide errors
     };
 };
 
@@ -213,8 +213,8 @@ export const mapRevokeAllCertificatesResponse = (
     response: CoreApiInternalHandlerEventRevokeAllEventCertificatesResponse,
 ): RevokeAllCertificatesResult => {
     return {
-        revokedCount: response.revoked_count || 0,
-        message: response.message || "",
+        revokedCount: response.revoked_certificates?.length || 0,
+        message: `Successfully revoked ${response.revoked_certificates?.length || 0} certificates`,
     };
 };
 
@@ -226,8 +226,8 @@ export const mapPublishCertificatesResponse = (
 ): PublishCertificatesResult => {
     return {
         publishedCount: response.published_count || 0,
-        failedCount: response.failed_count || 0,
-        errors: response.errors || [],
+        failedCount: 0, // API doesn't provide failed count
+        errors: [], // API doesn't provide errors
     };
 };
 
@@ -235,11 +235,11 @@ export const mapPublishCertificatesResponse = (
  * Maps claim certificate sign message response
  */
 export const mapClaimCertificateSignMessage = (response: {
-    data?: { sign_message?: string; certificate_id?: string };
+    sign_message: string;
 }): ClaimCertificateSignMessage => {
     return {
-        signMessage: response.data?.sign_message || "",
-        certificateId: response.data?.certificate_id || "",
+        signMessage: response.sign_message || "",
+        certificateId: "", // Certificate ID is not in the response, caller should provide it
     };
 };
 
@@ -247,17 +247,14 @@ export const mapClaimCertificateSignMessage = (response: {
  * Maps claim certificate response
  */
 export const mapClaimCertificateResponse = (response: {
-    data?: {
-        certificate_id?: string;
-        transaction_hash?: string;
-        claimed_at?: string;
-        message?: string;
-    };
+    id: string;
+    certificate_token_id?: string;
+    created_at: string;
 }): ClaimCertificateResult => {
     return {
-        certificateId: response.data?.certificate_id || "",
-        transactionHash: response.data?.transaction_hash || "",
-        claimedAt: response.data?.claimed_at || "",
-        message: response.data?.message || "",
+        certificateId: response.id || "",
+        transactionHash: response.certificate_token_id || "", // Use token ID as transaction hash indicator
+        claimedAt: response.created_at || "",
+        message: "Certificate claimed successfully",
     };
 };

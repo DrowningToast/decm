@@ -5,7 +5,11 @@ import type { EventEventParticipantResponse } from "@decm/api";
 import { CopyButton } from "@/components/ui/copy-button";
 
 // Helper to render cell content with "(empty)" fallback
-const renderCellContent = (value: string | null | undefined, className?: string) => {
+const renderCellContent = (
+    value: string | null | undefined,
+    className?: string,
+    emptyText?: string,
+) => {
     const isEmpty =
         value === null ||
         value === undefined ||
@@ -15,7 +19,7 @@ const renderCellContent = (value: string | null | undefined, className?: string)
     if (isEmpty) {
         return (
             <Typography variant="text" tag="span" className={className} color="muted-foreground">
-                <span className="italic">(empty)</span>
+                <span className="italic">{emptyText || "(empty)"}</span>
             </Typography>
         );
     }
@@ -37,7 +41,11 @@ export function useAttendeeColumns() {
             enableSorting: true,
             cell: ({ row }) => {
                 const firstName = row.getValue("first_name") as string | null | undefined;
-                return renderCellContent(firstName, "font-mono text-xs min-w-[160px]");
+                return renderCellContent(
+                    firstName,
+                    "font-mono text-xs min-w-[160px]",
+                    t("common.empty"),
+                );
             },
         },
         {
@@ -46,7 +54,7 @@ export function useAttendeeColumns() {
             enableSorting: true,
             cell: ({ row }) => {
                 const lastName = row.getValue("last_name") as string | null | undefined;
-                return renderCellContent(lastName, "font-mono text-xs");
+                return renderCellContent(lastName, "font-mono text-xs", t("common.empty"));
             },
         },
         {
@@ -55,7 +63,7 @@ export function useAttendeeColumns() {
             enableSorting: true,
             cell: ({ row }) => {
                 const email = row.getValue("email") as string | null | undefined;
-                return renderCellContent(email, "font-mono text-xs");
+                return renderCellContent(email, "font-mono text-xs", t("common.empty"));
             },
         },
         {
@@ -64,7 +72,11 @@ export function useAttendeeColumns() {
             enableSorting: false,
             cell: ({ row }) => {
                 const phoneNumber = row.getValue("phone_number") as string | null | undefined;
-                return renderCellContent(phoneNumber, "font-mono text-xs min-w-[128px]");
+                return renderCellContent(
+                    phoneNumber,
+                    "font-mono text-xs min-w-[128px]",
+                    t("common.empty"),
+                );
             },
         },
         {
@@ -76,7 +88,11 @@ export function useAttendeeColumns() {
                     | string
                     | null
                     | undefined;
-                return renderCellContent(academicInstitution, "font-mono text-xs");
+                return renderCellContent(
+                    academicInstitution,
+                    "font-mono text-xs",
+                    t("common.empty"),
+                );
             },
         },
         {
@@ -99,7 +115,7 @@ export function useAttendeeColumns() {
                             className="font-mono text-xs"
                             color="muted-foreground"
                         >
-                            <span className="italic">(empty)</span>
+                            <span className="italic">{t("common.empty")}</span>
                         </Typography>
                     );
                 }

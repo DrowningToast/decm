@@ -77,9 +77,14 @@ func BoolToIntPtr(value bool) *int32 {
 }
 
 func BoolPtrToPgInt4(value *bool) pgtype.Int4 {
+	if value == nil {
+		return pgtype.Int4{
+			Valid: false,
+		}
+	}
 	return pgtype.Int4{
 		Int32: BoolToInt32(*value),
-		Valid: value != nil,
+		Valid: true,
 	}
 }
 
@@ -91,9 +96,14 @@ func IntPtrToBool(value *int32) bool {
 }
 
 func IntPtrToPgInt4(value *int32) pgtype.Int4 {
+	if value == nil {
+		return pgtype.Int4{
+			Valid: false,
+		}
+	}
 	return pgtype.Int4{
 		Int32: *value,
-		Valid: value != nil,
+		Valid: true,
 	}
 }
 

@@ -11,8 +11,6 @@ import type { RegistrationConfirmDataForm } from "./RegistrationConfirmDataFormS
 import { useSignPasswordModalStore } from "@/components/providers/SignPasswordModal/store";
 import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
 import { useJoinEventMutation } from "@/hooks/events/useJoinEventMutation";
-import { useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEY } from "@/lib/queryKeys";
 
 interface ActionMenuProps {
     eventId: string;
@@ -21,7 +19,6 @@ interface ActionMenuProps {
 export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
     const { t } = useTranslation();
     const { user } = useAuth();
-    const queryClient = useQueryClient();
     const { joinWithAccountPassword } = useJoinEventMutation();
 
     const { bottomNavVariant } = useEventViewModelUsecase({ eventId });

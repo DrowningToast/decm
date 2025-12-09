@@ -23,8 +23,6 @@ type IssuerEventResponse struct {
 	EventOwnerCredentialID string    `json:"event_owner_credential_id"`
 	IssuerCredentialID     string    `json:"issuer_credential_id"`
 	IsSigned               int32     `json:"is_signed"`
-	Signature              string    `json:"signature"`
-	SignMessage            string    `json:"sign_message"`
 	CreatedAt              time.Time `json:"created_at"`
 	UpdatedAt              time.Time `json:"updated_at"`
 }
@@ -87,8 +85,6 @@ func (h *Handler) GetIssuerEvents(ctx *fiber.Ctx) error {
 			EventOwnerCredentialID: event.EventOwnerCredentialID.String(),
 			IssuerCredentialID:     event.IssuerCredentialID.String(),
 			IsSigned:               event.IsSigned,
-			Signature:              event.Signature.String,
-			SignMessage:            "",
 			CreatedAt:              event.CreatedAt.Time,
 			UpdatedAt:              event.UpdatedAt.Time,
 		}

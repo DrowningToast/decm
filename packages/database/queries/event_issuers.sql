@@ -2,15 +2,11 @@
 INSERT INTO event_issuers (
     event_id,
     issuer_credential_id,
-    is_signed,
-    signature,
-    sign_message_digest
+    is_signed
 ) VALUES (
     sqlc.arg('event_id'),
     sqlc.arg('issuer_credential_id'),
-    sqlc.arg('is_signed'),
-    sqlc.arg('signature'),
-    sqlc.arg('sign_message_digest')
+    sqlc.arg('is_signed')
 ) RETURNING *;
 
 -- name: GetEventIssuersByEventID :many
@@ -21,10 +17,8 @@ SELECT * FROM event_issuers WHERE id = sqlc.arg('id');
 
 -- name: UpdateEventIssuer :one
 UPDATE event_issuers
-SET 
+SET
     is_signed = sqlc.arg('is_signed'),
-    signature = sqlc.arg('signature'),
-    sign_message_digest = sqlc.arg('sign_message_digest'),
     updated_at = NOW()
 WHERE id = sqlc.arg('id')
 RETURNING *;
@@ -39,13 +33,11 @@ WHERE event_id = sqlc.arg('event_id')
   AND deleted_at IS NULL;
 
 -- name: GetEventIssuersByCredentialID :many
-SELECT 
+SELECT
     ei.id,
     ei.event_id as event_id,
     ei.issuer_credential_id,
     ei.is_signed,
-    ei.signature,
-    ei.sign_message_digest,
     ei.created_at,
     ei.updated_at,
     e.title as event_title,
@@ -66,13 +58,11 @@ SET is_signed = 0, updated_at = NOW()
 WHERE event_id = sqlc.arg('event_id');
 
 -- name: GetIssuerEventsWithDetails :many
-SELECT 
+SELECT
     ei.id,
     ei.event_id as event_id,
     ei.issuer_credential_id,
     ei.is_signed,
-    ei.signature,
-    ei.sign_message_digest,
     ei.created_at,
     ei.updated_at,
     e.title as event_title,
@@ -87,11 +77,11 @@ SELECT
     ac.wallet_address as owner_wallet_address,
     ac.google_connector_ref as owner_google_connector_ref,
     COALESCE(
-        (SELECT COUNT(ec.id) 
-         FROM event_certificates ec 
-         WHERE ec.event_id = e.id 
+        (SELECT COUNT(ec.id)
+         FROM event_certificates ec
+         WHERE ec.event_id = e.id
            AND ec.revoked_at IS NULL
-        ), 
+        ),
     0)::INTEGER AS certificate_count
 FROM event_issuers ei
 INNER JOIN events e ON ei.event_id = e.id

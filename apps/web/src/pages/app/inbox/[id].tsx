@@ -27,7 +27,7 @@ const InboxDetailRoute = () => {
                     <Typography variant="text" tag="p" color="destructive">
                         {t("participant.inbox.failedToLoadDetails")}
                     </Typography>
-                    <Typography variant="small" tag="p" color="muted">
+                    <Typography variant="text" size="small" tag="p" color="muted">
                         {t("participant.inbox.notFoundHint")}
                     </Typography>
                 </div>

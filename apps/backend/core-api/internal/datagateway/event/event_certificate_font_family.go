@@ -10,5 +10,3 @@ type EventCertificateFontFamilyDataGateway interface {
 	GetEventCertificateFontFamilyByID(ctx context.Context, id int32) (*generated.EventCertificateFontFamily, error)
 	GetDefaultEventCertificateFontFamily(ctx context.Context) (*generated.EventCertificateFontFamily, error)
 }
-
-

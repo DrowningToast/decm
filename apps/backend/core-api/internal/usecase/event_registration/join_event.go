@@ -21,8 +21,6 @@ import (
 	"github.com/google/uuid"
 
 	eventContract "apps/backend/contracts/event"
-
-	ethcommon "github.com/ethereum/go-ethereum/common"
 )
 
 type JoinEventUserError string
@@ -46,7 +44,7 @@ type JoinEventPayload struct {
 }
 
 // returns raw string, then message hash
-func (uc *EventRegistrationUsecase) GetJoinEventSignMessage(ctx context.Context, client *ethclient.Client, walletAddress common.Address, currentUser auth.JwtClaims, eventContractAddress common.Address, deadlineBlock *uint64) (*string, *ethcommon.Hash, error) {
+func (uc *EventRegistrationUsecase) GetJoinEventSignMessage(ctx context.Context, client *ethclient.Client, walletAddress common.Address, currentUser auth.JwtClaims, eventContractAddress common.Address, deadlineBlock *uint64) (*string, *common.Hash, error) {
 	// Validation
 	if deadlineBlock == nil {
 		calculatedDeadlineBlock, err := cyptoutils.GetCalculatedDeadlineBlock(client)

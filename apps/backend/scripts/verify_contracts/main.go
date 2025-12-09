@@ -24,7 +24,7 @@ func main() {
 	expectedDecmAddr := common.HexToAddress("0x123453863fC927f7E9d76F0ba06EE7425db5C47B")
 
 	fmt.Println("🔍 Verifying Deployed Contracts...")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 	client, err := ethclient.Dial(rpcURL)
 	if err != nil {
@@ -223,3 +223,4 @@ func main() {
 		}
 	}
 }
+

@@ -505,8 +505,6 @@ export interface EventCreateEventContractRequest {
 export interface EventCreateEventIssuerRequest {
     is_signed: 0 | 1;
     issuer_credential_id: string;
-    sign_message: string;
-    signature: string;
 }
 
 export interface EventDeleteEventRequest {
@@ -520,8 +518,6 @@ export interface EventEventIssuerResponse {
     is_signed: number;
     issuer_credential_id: string;
     issuer_profile?: EntityProfile;
-    sign_message: string;
-    signature: string;
     updated_at: string;
 }
 
@@ -1197,8 +1193,6 @@ export interface IssuerIssuerEventResponse {
     id: string;
     is_signed: number;
     issuer_credential_id: string;
-    sign_message: string;
-    signature: string;
     updated_at: string;
 }
 

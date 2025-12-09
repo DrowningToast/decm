@@ -10,7 +10,6 @@ import (
 	"apps/backend/services/auth"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type UpdateEventIssuerParams struct {
@@ -77,7 +76,6 @@ func (u *EventUsecase) UpdateEventIssuer(ctx context.Context, eventID uuid.UUID,
 				EventID:            eventID,
 				IssuerCredentialID: issuerCredentialID,
 				IsSigned:           0,
-				Signature:          pgtype.Text{},
 			})
 			if err != nil {
 				return nil, customerror.Parse(&customerror.ErrInternalServer, err)

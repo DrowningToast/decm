@@ -5,7 +5,6 @@ import (
 	"decm-database/go/generated"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"apps/backend/common/customerror"
 )
@@ -14,8 +13,6 @@ type CreateEventIssuerParams struct {
 	EventID            uuid.UUID
 	IssuerCredentialID uuid.UUID
 	IsSigned           int32
-	Signature          pgtype.Text
-	SignMessage        pgtype.Text
 }
 
 func (u *EventUsecase) CreateEventIssuer(ctx context.Context, params CreateEventIssuerParams) (*generated.EventIssuer, error) {
@@ -23,7 +20,6 @@ func (u *EventUsecase) CreateEventIssuer(ctx context.Context, params CreateEvent
 		EventID:            params.EventID,
 		IssuerCredentialID: params.IssuerCredentialID,
 		IsSigned:           params.IsSigned,
-		Signature:          params.Signature,
 	}
 
 	issuer, err := u.EventIssuerDataGateway.CreateEventIssuer(ctx, createParams)

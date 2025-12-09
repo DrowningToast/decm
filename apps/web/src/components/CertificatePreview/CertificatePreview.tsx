@@ -6,11 +6,11 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import type { DetectedKeyword, AvailableKeyword } from "@/hooks/useCertificateTemplate";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 interface BoundingBoxOverlayProps {
     detectedKeywords: DetectedKeyword[];
-    containerRef: React.RefObject<HTMLDivElement>;
+    containerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 const BoundingBoxOverlay = ({ detectedKeywords, containerRef }: BoundingBoxOverlayProps) => {
@@ -162,6 +162,10 @@ export const CertificatePreview = ({
     const [showPositions, setShowPositions] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
+    const handleTogglePositions = useCallback((checked: boolean) => {
+        setShowPositions(checked);
+    }, []);
+
     if (!svgPreview && !imageUrl) {
         return null;
     }
@@ -238,7 +242,7 @@ export const CertificatePreview = ({
                             <Switch
                                 id="show-positions"
                                 checked={showPositions}
-                                onCheckedChange={setShowPositions}
+                                onCheckedChange={handleTogglePositions}
                             />
                             <Label
                                 htmlFor="show-positions"
@@ -316,6 +320,11 @@ export const CertificatePreview = ({
                                         </th>
                                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
                                             {t(
+                                                "certificateSettings.step2.keywordStatus.table.status",
+                                            )}
+                                        </th>
+                                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                                            {t(
                                                 "certificateSettings.step2.keywordStatus.table.type",
                                             )}
                                         </th>
@@ -348,6 +357,21 @@ export const CertificatePreview = ({
                                                 <code className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-mono text-gray-900 select-all">
                                                     {kw.keyword}
                                                 </code>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {kw.isDetected ? (
+                                                    <span className="px-2 py-1 bg-green-100 border border-green-300 text-green-900 rounded text-xs font-semibold">
+                                                        {t(
+                                                            "certificateSettings.step2.keywordStatus.detected",
+                                                        )}
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2 py-1 bg-gray-100 border border-gray-300 text-gray-900 rounded text-xs font-semibold">
+                                                        {t(
+                                                            "certificateSettings.step2.keywordStatus.notDetected",
+                                                        )}
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="px-4 py-3">
                                                 {kw.mandatory ? (

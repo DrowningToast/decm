@@ -208,7 +208,7 @@ func DecryptAESWithKey(ciphertext string, key []byte) (string, error) {
 // Utility: Generate random AES key
 func GenerateAESKey() []byte {
 	key := make([]byte, 32) // 256-bit key
-	rand.Read(key)
+	_, _ = rand.Read(key)
 	return key
 }
 

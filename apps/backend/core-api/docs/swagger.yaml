@@ -706,15 +706,9 @@ definitions:
         type: integer
       issuer_credential_id:
         type: string
-      sign_message:
-        type: string
-      signature:
-        type: string
     required:
     - is_signed
     - issuer_credential_id
-    - sign_message
-    - signature
     type: object
   event.DeleteEventRequest:
     properties:
@@ -737,10 +731,6 @@ definitions:
         type: string
       issuer_profile:
         $ref: '#/definitions/entity.Profile'
-      sign_message:
-        type: string
-      signature:
-        type: string
       updated_at:
         type: string
     required:
@@ -749,8 +739,6 @@ definitions:
     - id
     - is_signed
     - issuer_credential_id
-    - sign_message
-    - signature
     - updated_at
     type: object
   event.EventParticipantResponse:
@@ -1719,10 +1707,6 @@ definitions:
         type: integer
       issuer_credential_id:
         type: string
-      sign_message:
-        type: string
-      signature:
-        type: string
       updated_at:
         type: string
     required:
@@ -1737,8 +1721,6 @@ definitions:
     - id
     - is_signed
     - issuer_credential_id
-    - sign_message
-    - signature
     - updated_at
     type: object
   issuer.IssuerEventViewModel:

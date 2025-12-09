@@ -136,11 +136,11 @@ const StyledInputWithPreview = ({
                         {label}
                     </Typography>
                 </Label>
-                <div className="relative w-full h-72 rounded-lg overflow-hidden border border-primary">
+                <div className="relative w-full h-72 rounded-lg overflow-hidden border border-primary bg-background flex items-center justify-center">
                     <img
                         src={previewUrl}
                         alt="File preview"
-                        className="w-full h-full object-cover"
+                        className="max-w-full max-h-full object-contain"
                     />
                 </div>
 
@@ -225,14 +225,14 @@ const StyledInputWithPreview = ({
                     {preview ? (
                         <div
                             className={cn(
-                                "relative w-full h-72 rounded-lg overflow-hidden border border-primary",
+                                "relative w-full h-72 rounded-lg overflow-hidden border border-primary bg-background flex items-center justify-center",
                                 previewClassName,
                             )}
                         >
                             <img
                                 src={preview}
                                 alt={fileInfo?.name || "File preview"}
-                                className="w-full h-full object-cover"
+                                className="max-w-full max-h-full object-contain"
                             />
                         </div>
                     ) : fileInfo ? (

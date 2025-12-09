@@ -544,6 +544,16 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                                 </Typography>
                             </div>
                         )}
+                        <div className="flex items-center gap-1.5">
+                            <Typography
+                                variant="text"
+                                tag="span"
+                                color="foreground-alt"
+                                className="text-[9px] md:text-xs opacity-70"
+                            >
+                                Beta access, currently under development
+                            </Typography>
+                        </div>
                     </div>
 
                     <button
@@ -558,7 +568,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                         <motion.span
                             ref={textWrapRef}
                             className={cn(
-                                "sm-toggle-textWrap relative inline-block h-[1em] overflow-hidden whitespace-nowrap w-[var(--sm-toggle-width,auto)] min-w-[var(--sm-toggle-width,auto)]",
+                                "sm-toggle-textWrap relative inline-block h-[1.5em] overflow-hidden whitespace-nowrap w-[var(--sm-toggle-width,auto)] min-w-[var(--sm-toggle-width,auto)]",
                                 {
                                     "text-foreground": variant === "dark" ? !open : open,
                                     "text-background": variant === "light" ? !open : open,
@@ -572,7 +582,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                                 tag="span"
                                 ref={textInnerRef}
                                 aria-hidden="true"
-                                className="sm-toggle-textInner flex flex-col leading-none"
+                                className="sm-toggle-textInner flex flex-col leading-none gap-1"
                             ></Typography>
                         </motion.span>
                         <motion.span
@@ -620,7 +630,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                                         {section.title}
                                     </Typography>
                                     <ul
-                                        className="sm-panel-list list-none m-0 p-0 flex flex-col gap-2"
+                                        className="sm-panel-list list-none m-0 p-0 flex flex-col gap-5"
                                         role="list"
                                         data-numbering={displayItemNumbering || undefined}
                                     >
@@ -670,7 +680,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                             ))
                         ) : (
                             <ul
-                                className="sm-panel-list list-none m-0 p-0 flex flex-col gap-2"
+                                className="sm-panel-list list-none m-0 p-0 flex flex-col gap-5"
                                 role="list"
                                 data-numbering={displayItemNumbering || undefined}
                             >
@@ -761,9 +771,9 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 /* Toggle button styles */
 .sm-scope .sm-toggle { position: relative; display: inline-flex; align-items: center; gap: 0.3rem; background: transparent; border: none; cursor: pointer; color: #e9e9ef; font-weight: 500; line-height: 1; overflow: visible; }
 .sm-scope .sm-toggle:focus-visible { outline: 2px solid #ffffffaa; outline-offset: 4px; border-radius: 4px; }
-.sm-scope .sm-toggle-textWrap { position: relative; margin-right: 0.5em; display: inline-block; height: 1em; overflow: hidden; white-space: nowrap; width: var(--sm-toggle-width, auto); min-width: var(--sm-toggle-width, auto); }
-.sm-scope .sm-toggle-textInner { display: flex; flex-direction: column; line-height: 1; }
-.sm-scope .sm-toggle-line { display: block; height: 1em; line-height: 1; }
+.sm-scope .sm-toggle-textWrap { position: relative; margin-right: 0.5em; display: inline-block; height: 1.5em; overflow: hidden; white-space: nowrap; width: var(--sm-toggle-width, auto); min-width: var(--sm-toggle-width, auto); }
+.sm-scope .sm-toggle-textInner { display: flex; flex-direction: column; line-height: 1.5; gap: 0.25rem; }
+.sm-scope .sm-toggle-line { display: block; height: 1.5em; line-height: 1.5; }
 
 /* Icon animations */
 .sm-scope .sm-icon { position: relative; width: 14px; height: 14px; flex: 0 0 14px; display: inline-flex; align-items: center; justify-content: center; will-change: transform; }
