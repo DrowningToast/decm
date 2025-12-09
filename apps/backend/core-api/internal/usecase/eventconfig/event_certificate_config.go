@@ -18,34 +18,34 @@ import (
 
 // EventCertificateConfigResponse represents the response structure for event certificate config
 type EventCertificateConfigResponse struct {
-	ID                            uuid.UUID          `json:"id"`
-	EventID                       uuid.UUID          `json:"event_id"`
-	BaseCertificateStorageKey     string             `json:"base_certificate_storage_key"`
-	BaseCertificatePresignedURL   string             `json:"base_certificate_presigned_url"`
-	EventNamePosX                 float64            `json:"event_name_pos_x"`
-	EventNamePosY                 float64            `json:"event_name_pos_y"`
-	NamePosX                      float64            `json:"name_pos_x"`
-	NamePosY                      float64            `json:"name_pos_y"`
-	AcademicInstitutionPosX       *float64           `json:"academic_institution_pos_x,omitempty"`
-	AcademicInstitutionPosY       *float64           `json:"academic_institution_pos_y,omitempty"`
-	CertificateTitlePosX          *float64           `json:"certificate_title_pos_x,omitempty"`
-	CertificateTitlePosY          *float64           `json:"certificate_title_pos_y,omitempty"`
-	CertificateSubtitlePosX       *float64           `json:"certificate_subtitle_pos_x,omitempty"`
-	CertificateSubtitlePosY       *float64           `json:"certificate_subtitle_pos_y,omitempty"`
-	EventNameFontFamilyID           *int32 `json:"event_name_font_family_id,omitempty"`
-	EventNameFontWeight             *int32 `json:"event_name_font_weight,omitempty"`
-	NameFontFamilyID                *int32 `json:"name_font_family_id,omitempty"`
-	NameFontWeight                  *int32 `json:"name_font_weight,omitempty"`
-	AcademicInstitutionFontFamilyID *int32 `json:"academic_institution_font_family_id,omitempty"`
-	AcademicInstitutionFontWeight   *int32 `json:"academic_institution_font_weight,omitempty"`
-	CertificateTitleFontFamilyID    *int32 `json:"certificate_title_font_family_id,omitempty"`
-	CertificateTitleFontWeight      *int32 `json:"certificate_title_font_weight,omitempty"`
-	CertificateSubtitleFontFamilyID *int32 `json:"certificate_subtitle_font_family_id,omitempty"`
-	CertificateSubtitleFontWeight   *int32 `json:"certificate_subtitle_font_weight,omitempty"`
-	IsPublished                   bool               `json:"is_published"`
-	CreatedAt                     string             `json:"created_at"`
-	UpdatedAt                     string             `json:"updated_at"`
-	MintReadiness                 *MintReadinessInfo `json:"mint_readiness,omitempty"`
+	ID                              uuid.UUID          `json:"id"`
+	EventID                         uuid.UUID          `json:"event_id"`
+	BaseCertificateStorageKey       string             `json:"base_certificate_storage_key"`
+	BaseCertificatePresignedURL     string             `json:"base_certificate_presigned_url"`
+	EventNamePosX                   float64            `json:"event_name_pos_x"`
+	EventNamePosY                   float64            `json:"event_name_pos_y"`
+	NamePosX                        float64            `json:"name_pos_x"`
+	NamePosY                        float64            `json:"name_pos_y"`
+	AcademicInstitutionPosX         *float64           `json:"academic_institution_pos_x,omitempty"`
+	AcademicInstitutionPosY         *float64           `json:"academic_institution_pos_y,omitempty"`
+	CertificateTitlePosX            *float64           `json:"certificate_title_pos_x,omitempty"`
+	CertificateTitlePosY            *float64           `json:"certificate_title_pos_y,omitempty"`
+	CertificateSubtitlePosX         *float64           `json:"certificate_subtitle_pos_x,omitempty"`
+	CertificateSubtitlePosY         *float64           `json:"certificate_subtitle_pos_y,omitempty"`
+	EventNameFontFamilyID           *int32             `json:"event_name_font_family_id,omitempty"`
+	EventNameFontWeight             *int32             `json:"event_name_font_weight,omitempty"`
+	NameFontFamilyID                *int32             `json:"name_font_family_id,omitempty"`
+	NameFontWeight                  *int32             `json:"name_font_weight,omitempty"`
+	AcademicInstitutionFontFamilyID *int32             `json:"academic_institution_font_family_id,omitempty"`
+	AcademicInstitutionFontWeight   *int32             `json:"academic_institution_font_weight,omitempty"`
+	CertificateTitleFontFamilyID    *int32             `json:"certificate_title_font_family_id,omitempty"`
+	CertificateTitleFontWeight      *int32             `json:"certificate_title_font_weight,omitempty"`
+	CertificateSubtitleFontFamilyID *int32             `json:"certificate_subtitle_font_family_id,omitempty"`
+	CertificateSubtitleFontWeight   *int32             `json:"certificate_subtitle_font_weight,omitempty"`
+	IsPublished                     bool               `json:"is_published"`
+	CreatedAt                       string             `json:"created_at"`
+	UpdatedAt                       string             `json:"updated_at"`
+	MintReadiness                   *MintReadinessInfo `json:"mint_readiness,omitempty"`
 }
 
 // MintReadinessInfo contains mint readiness information embedded in certificate config
@@ -305,20 +305,20 @@ func (uc *EventConfigUsecase) GetEventCertificateConfigByEventID(ctx context.Con
 	}
 
 	return &EventCertificateConfigResponse{
-		ID:                            eventCertConfig.ID,
-		EventID:                       eventCertConfig.EventID,
-		BaseCertificateStorageKey:     eventCertConfig.BaseCertificateStorageKey,
-		BaseCertificatePresignedURL:   baseConfigPresignedURL,
-		EventNamePosX:                 eventCertConfig.EventNamePosX,
-		EventNamePosY:                 eventCertConfig.EventNamePosY,
-		NamePosX:                      eventCertConfig.NamePosX,
-		NamePosY:                      eventCertConfig.NamePosY,
-		AcademicInstitutionPosX:       academicInstitutionPosX,
-		AcademicInstitutionPosY:       academicInstitutionPosY,
-		CertificateTitlePosX:          certificateTitlePosX,
-		CertificateTitlePosY:          certificateTitlePosY,
-		CertificateSubtitlePosX:       certificateSubtitlePosX,
-		CertificateSubtitlePosY:       certificateSubtitlePosY,
+		ID:                              eventCertConfig.ID,
+		EventID:                         eventCertConfig.EventID,
+		BaseCertificateStorageKey:       eventCertConfig.BaseCertificateStorageKey,
+		BaseCertificatePresignedURL:     baseConfigPresignedURL,
+		EventNamePosX:                   eventCertConfig.EventNamePosX,
+		EventNamePosY:                   eventCertConfig.EventNamePosY,
+		NamePosX:                        eventCertConfig.NamePosX,
+		NamePosY:                        eventCertConfig.NamePosY,
+		AcademicInstitutionPosX:         academicInstitutionPosX,
+		AcademicInstitutionPosY:         academicInstitutionPosY,
+		CertificateTitlePosX:            certificateTitlePosX,
+		CertificateTitlePosY:            certificateTitlePosY,
+		CertificateSubtitlePosX:         certificateSubtitlePosX,
+		CertificateSubtitlePosY:         certificateSubtitlePosY,
 		EventNameFontFamilyID:           eventNameFontFamilyID,
 		EventNameFontWeight:             eventNameFontWeight,
 		NameFontFamilyID:                nameFontFamilyID,
@@ -329,10 +329,10 @@ func (uc *EventConfigUsecase) GetEventCertificateConfigByEventID(ctx context.Con
 		CertificateTitleFontWeight:      certificateTitleFontWeight,
 		CertificateSubtitleFontFamilyID: certificateSubtitleFontFamilyID,
 		CertificateSubtitleFontWeight:   certificateSubtitleFontWeight,
-		IsPublished:                   eventCertConfig.IsPublished,
-		CreatedAt:                     eventCertConfig.CreatedAt.String(),
-		UpdatedAt:                     eventCertConfig.UpdatedAt.String(),
-		MintReadiness:                 mintReadinessInfo,
+		IsPublished:                     eventCertConfig.IsPublished,
+		CreatedAt:                       eventCertConfig.CreatedAt.String(),
+		UpdatedAt:                       eventCertConfig.UpdatedAt.String(),
+		MintReadiness:                   mintReadinessInfo,
 	}, nil
 }
 
@@ -389,23 +389,27 @@ func (uc *EventConfigUsecase) ToggleCertificatePublished(ctx context.Context, ev
 			return nil, errors.Wrap(fmt.Errorf("no issuers found for this event"), "cannot publish without issuers")
 		}
 
-		// 3. Validate: all issuers must have signed all certificates
-		for _, certificate := range certificates {
-			signatures, err := uc.EventCertificateSignatureDataGateway.GetEventCertificateSignaturesByEventCertificateID(ctx, certificate.Id)
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to get certificate signatures")
-			}
+		// 3. Get certificate config
+		certificateConfig, err := uc.EventCertificateDg.GetEventCertificateConfigByEventID(ctx, eventID)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get certificate config")
+		}
 
-			// Check if we have signatures from all issuers
-			if len(signatures) != len(eventIssuers) {
-				return nil, fmt.Errorf("not all issuers have signature records for certificate %s", certificate.Id)
-			}
+		// 4. Validate: all issuers must have signed (signatures are linked to config, not individual certificates)
+		signatures, err := uc.EventCertificateSignatureDataGateway.GetEventCertificateSignaturesByEventCertificateConfigID(ctx, certificateConfig.ID)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get certificate signatures")
+		}
 
-			// Check if all issuers have actually signed (issuer_signature is not null)
-			for _, signature := range signatures {
-				if signature.IssuerSignature == nil || *signature.IssuerSignature == "" {
-					return nil, fmt.Errorf("not all issuers have signed the certificates. Please ensure all issuers have completed signing before publishing")
-				}
+		// Check if we have signatures from all issuers
+		if len(signatures) != len(eventIssuers) {
+			return nil, fmt.Errorf("not all issuers have signature records for the certificate config")
+		}
+
+		// Check if all issuers have actually signed (issuer_signature is not null)
+		for _, signature := range signatures {
+			if signature.IssuerSignature == nil || *signature.IssuerSignature == "" {
+				return nil, fmt.Errorf("not all issuers have signed the certificates. Please ensure all issuers have completed signing before publishing")
 			}
 		}
 

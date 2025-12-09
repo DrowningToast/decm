@@ -14,6 +14,3 @@ ALTER TABLE event_certificate_configs DROP COLUMN IF EXISTS certificate_subtitle
 
 -- Remove the column that was added to event_issuers
 ALTER TABLE event_issuers DROP COLUMN IF EXISTS deleted_at;
-
--- Rename the column back to its original name
-ALTER TABLE event_issuers RENAME sign_message_digest TO sign_message;

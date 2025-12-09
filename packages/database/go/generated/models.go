@@ -255,13 +255,13 @@ type EventCertificateFontFamily struct {
 }
 
 type EventCertificateSignature struct {
-	ID                 uuid.UUID   `json:"id"`
-	EventCertificateID uuid.UUID   `json:"event_certificate_id"`
-	IssuerCredentialID uuid.UUID   `json:"issuer_credential_id"`
-	IssuerSignature    pgtype.Text `json:"issuer_signature"`
-	HostSignature      pgtype.Text `json:"host_signature"`
-	SignMessage        pgtype.Text `json:"sign_message"`
-	SignMessageDigest  pgtype.Text `json:"sign_message_digest"`
+	ID                       uuid.UUID   `json:"id"`
+	IssuerCredentialID       uuid.UUID   `json:"issuer_credential_id"`
+	IssuerSignature          pgtype.Text `json:"issuer_signature"`
+	HostSignature            pgtype.Text `json:"host_signature"`
+	SignMessage              pgtype.Text `json:"sign_message"`
+	SignMessageDigest        pgtype.Text `json:"sign_message_digest"`
+	EventCertificateConfigID uuid.UUID   `json:"event_certificate_config_id"`
 }
 
 type EventContract struct {

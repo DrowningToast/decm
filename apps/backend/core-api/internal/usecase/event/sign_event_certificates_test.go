@@ -25,6 +25,10 @@ func createMockConfigForSign() *config.Config {
 	}
 }
 
+// MockEventCertificateConfigDataGateway is defined in import_certificate_receivers_test.go
+// This is a placeholder to ensure the type exists for this test file
+// The actual implementation is shared across test files in this package
+
 func TestSignEventCertificates(t *testing.T) {
 	ctx := context.Background()
 	userId := uuid.New()
@@ -292,67 +296,46 @@ func TestSignEventCertificates_MultipleIssuers(t *testing.T) {
 		}
 		mockContractDg.On("GetEventContractByEventID", ctx, eventID).Return(contract, nil)
 
+		// Setup certificate config (signatures are linked to config, not individual certificates)
+		configID := uuid.New()
+		mockCertConfigDg := new(MockEventCertificateConfigDataGateway)
+		mockCertConfigDg.On("GetEventCertificateConfigByEventID", ctx, eventID).
+			Return(&entity.EventCertificateConfig{ID: configID, EventID: eventID}, nil)
+
 		mockSigDg := new(MockEventCertificateSignatureDataGateway)
 
-		// Certificate 1 has signatures for all 3 issuers
-		signaturesForCert1 := []*entity.EventCertificateSignature{
+		// Signatures are shared across all certificates (linked to config)
+		signaturesForConfig := []*entity.EventCertificateSignature{
 			{
-				Id:                 signatureID1,
-				EventCertificateId: certificateID1,
-				IssuerCredentialId: issuer1ID, // Current issuer
-				SignMessage:        &signMessage,
-				IssuerSignature:    nil, // Not signed yet
+				Id:                       signatureID1,
+				EventCertificateConfigId: configID,
+				IssuerCredentialId:       issuer1ID, // Current issuer
+				SignMessage:              &signMessage,
+				IssuerSignature:          nil, // Not signed yet
 			},
 			{
-				Id:                 uuid.New(),
-				EventCertificateId: certificateID1,
-				IssuerCredentialId: issuer2ID, // Other issuer
-				SignMessage:        &signMessage,
-				IssuerSignature:    nil,
+				Id:                       uuid.New(),
+				EventCertificateConfigId: configID,
+				IssuerCredentialId:       issuer2ID, // Other issuer
+				SignMessage:              &signMessage,
+				IssuerSignature:          nil,
 			},
 			{
-				Id:                 uuid.New(),
-				EventCertificateId: certificateID1,
-				IssuerCredentialId: issuer3ID, // Other issuer
-				SignMessage:        &signMessage,
-				IssuerSignature:    nil,
-			},
-		}
-		mockSigDg.On("GetEventCertificateSignaturesByEventCertificateID", ctx, certificateID1).
-			Return(signaturesForCert1, nil)
-
-		// Certificate 2 has signatures for all 3 issuers
-		signaturesForCert2 := []*entity.EventCertificateSignature{
-			{
-				Id:                 signatureID2,
-				EventCertificateId: certificateID2,
-				IssuerCredentialId: issuer1ID, // Current issuer
-				SignMessage:        &signMessage,
-				IssuerSignature:    nil, // Not signed yet
-			},
-			{
-				Id:                 signatureID3,
-				EventCertificateId: certificateID2,
-				IssuerCredentialId: issuer2ID, // Other issuer
-				SignMessage:        &signMessage,
-				IssuerSignature:    nil,
-			},
-			{
-				Id:                 signatureID4,
-				EventCertificateId: certificateID2,
-				IssuerCredentialId: issuer3ID, // Other issuer
-				SignMessage:        &signMessage,
-				IssuerSignature:    nil,
+				Id:                       uuid.New(),
+				EventCertificateConfigId: configID,
+				IssuerCredentialId:       issuer3ID, // Other issuer
+				SignMessage:              &signMessage,
+				IssuerSignature:          nil,
 			},
 		}
-		mockSigDg.On("GetEventCertificateSignaturesByEventCertificateID", ctx, certificateID2).
-			Return(signaturesForCert2, nil)
+		// Both certificates use the same signatures (from config)
+		mockSigDg.On("GetEventCertificateSignaturesByEventCertificateConfigID", ctx, configID).
+			Return(signaturesForConfig, nil)
 
-		// Mock the UpdateEventCertificateIssuerSignature calls - only for issuer1ID's signatures
+		// Mock the UpdateEventCertificateIssuerSignature calls - only for issuer1ID's signature
+		// Since signatures are now linked to config, there's only one signature per issuer
 		dummySignature := hexutil.Encode([]byte{})
 		mockSigDg.On("UpdateEventCertificateIssuerSignature", ctx, signatureID1, &dummySignature).
-			Return(&entity.EventCertificateSignature{}, nil).Maybe()
-		mockSigDg.On("UpdateEventCertificateIssuerSignature", ctx, signatureID2, &dummySignature).
 			Return(&entity.EventCertificateSignature{}, nil).Maybe()
 
 		mockIssuerDg := new(MockEventIssuerDataGateway)
@@ -365,6 +348,7 @@ func TestSignEventCertificates_MultipleIssuers(t *testing.T) {
 			EventCertificateDataGateway:          mockCertDg,
 			EventContractDataGateway:             mockContractDg,
 			EventCertificateSignatureDataGateway: mockSigDg,
+			EventCertificateConfigDg:             mockCertConfigDg,
 			EventIssuerDataGateway:               mockIssuerDg,
 			cfg:                                  createMockConfigForSign(),
 		}

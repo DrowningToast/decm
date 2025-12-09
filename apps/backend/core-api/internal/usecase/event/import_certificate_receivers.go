@@ -99,21 +99,28 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 		return nil, err
 	}
 
+	// Get certificate config (same for all certificates in the event)
+	certificateConfig, err := uc.EventCertificateConfigDg.GetEventCertificateConfigByEventID(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
+
 	// Delete all certificate signatures first (foreign key constraint)
-	for _, certificate := range existingCertificates {
-		signatures, err := uc.EventCertificateSignatureDataGateway.GetEventCertificateSignaturesByEventCertificateID(ctx, certificate.Id)
+	// Since signatures are now linked to config, we can get them directly
+	signatures, err := uc.EventCertificateSignatureDataGateway.GetEventCertificateSignaturesByEventCertificateConfigID(ctx, certificateConfig.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, signature := range signatures {
+		err = uc.EventCertificateSignatureDataGateway.DeleteEventCertificateSignature(ctx, signature.Id)
 		if err != nil {
 			return nil, err
 		}
+	}
 
-		for _, signature := range signatures {
-			err = uc.EventCertificateSignatureDataGateway.DeleteEventCertificateSignature(ctx, signature.Id)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		// Delete the certificate
+	// Delete all existing certificates
+	for _, certificate := range existingCertificates {
 		err = uc.EventCertificateDataGateway.DeleteEventCertificate(ctx, certificate.Id)
 		if err != nil {
 			return nil, err
@@ -142,7 +149,7 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 		eventCertificateAddress, tx, _, err := eventCertificateContract.DeployEventCertificate(
 			auth,
 			client,
-			common.HexToAddress(eventContract.EventContractAddress),
+			common.HexToAddress(eventContract.AccessManagerContractAddress),
 			common.HexToAddress(eventContract.EventContractAddress),
 		)
 		if err != nil {
@@ -291,31 +298,29 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 		return nil, err
 	}
 
-	// 9. Create event_certificate_signatures for each certificate
-	for _, certificateID := range certificateIDs {
-		// Get event issuers for this event
-		eventIssuers, err := uc.EventIssuerDataGateway.GetEventIssuersByEventID(ctx, eventID)
+	// 9. Create event_certificate_signatures for the certificate config (one set per config, not per certificate)
+	// Get event issuers for this event
+	eventIssuers, err := uc.EventIssuerDataGateway.GetEventIssuersByEventID(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create signature for each issuer (linked to config, not individual certificates)
+	for _, issuer := range eventIssuers {
+		// Store the hash digest as hex string (for compatibility, though contract uses original message)
+		encodedSignMessageDigestStr := hexutil.Encode(signMessageDigest[:])
+		encodedHostSignature := hexutil.Encode(signature)
+
+		_, err := uc.EventCertificateSignatureDataGateway.CreateEventCertificateSignature(ctx, eventdatagateway.CreateEventCertificateSignatureParameters{
+			EventCertificateConfigID: certificateConfig.ID,
+			IssuerCredentialID:       issuer.IssuerCredentialID,
+			IssuerSignature:          nil, // Will be set when issuer signs
+			HostSignature:            encodedHostSignature,
+			SignMessage:              &signMessageJSON,
+			SignMessageDigest:        &encodedSignMessageDigestStr,
+		})
 		if err != nil {
 			return nil, err
-		}
-
-		// Create signature for each issuer
-		for _, issuer := range eventIssuers {
-			// Store the hash digest as hex string (for compatibility, though contract uses original message)
-			encodedSignMessageDigestStr := hexutil.Encode(signMessageDigest[:])
-			encodedHostSignature := hexutil.Encode(signature)
-
-			_, err := uc.EventCertificateSignatureDataGateway.CreateEventCertificateSignature(ctx, eventdatagateway.CreateEventCertificateSignatureParameters{
-				EventCertificateID: certificateID,
-				IssuerCredentialID: issuer.IssuerCredentialID,
-				IssuerSignature:    nil, // Will be set when issuer signs
-				HostSignature:      encodedHostSignature,
-				SignMessage:        &signMessageJSON,
-				SignMessageDigest:  &encodedSignMessageDigestStr,
-			})
-			if err != nil {
-				return nil, err
-			}
 		}
 	}
 

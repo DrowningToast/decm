@@ -77,27 +77,31 @@ func (uc *EventUsecase) PublishEventCertificates(ctx context.Context, eventID uu
 		return nil, customerror.Parse(&customerror.ErrNotFound, fmt.Errorf("no issuers found for this event"))
 	}
 
-	// 5. Check precondition: all issuers must have signed all certificates
-	for _, certificate := range certificates {
-		signatures, err := uc.EventCertificateSignatureDataGateway.GetEventCertificateSignaturesByEventCertificateID(ctx, certificate.Id)
-		if err != nil {
-			return nil, err
-		}
+	// 5. Get certificate config
+	certificateConfig, err := uc.EventCertificateConfigDg.GetEventCertificateConfigByEventID(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
 
-		// Check if we have signatures from all issuers
-		if len(signatures) != len(eventIssuers) {
-			return nil, customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("not all issuers have signature records for certificate %s", certificate.Id))
-		}
+	// 6. Check precondition: all issuers must have signed (signatures are linked to config, not individual certificates)
+	signatures, err := uc.EventCertificateSignatureDataGateway.GetEventCertificateSignaturesByEventCertificateConfigID(ctx, certificateConfig.ID)
+	if err != nil {
+		return nil, err
+	}
 
-		// Check if all issuers have actually signed (issuer_signature is not null)
-		for _, signature := range signatures {
-			if signature.IssuerSignature == nil || *signature.IssuerSignature == "" {
-				return nil, customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("not all issuers have signed the certificates. Please ensure all issuers have completed signing before publishing"))
-			}
+	// Check if we have signatures from all issuers
+	if len(signatures) != len(eventIssuers) {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("not all issuers have signature records for the certificate config"))
+	}
+
+	// Check if all issuers have actually signed (issuer_signature is not null)
+	for _, signature := range signatures {
+		if signature.IssuerSignature == nil || *signature.IssuerSignature == "" {
+			return nil, customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("not all issuers have signed the certificates. Please ensure all issuers have completed signing before publishing"))
 		}
 	}
 
-	// 6. Mark the event certificate config as published
+	// 7. Mark the event certificate config as published
 	_, err = uc.EventCertificateConfigDg.ToggleEventCertificateConfigPublished(ctx, generated.ToggleEventCertificateConfigPublishedParams{
 		EventID:     eventID,
 		IsPublished: true,
