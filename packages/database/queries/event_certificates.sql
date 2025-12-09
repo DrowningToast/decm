@@ -129,6 +129,7 @@ SELECT
 FROM event_certificates ec
 INNER JOIN event_certificate_configs ecc ON ec.event_id = ecc.event_id
 INNER JOIN events e ON ec.event_id = e.id
+INNER JOIN event_attendees ea ON ec.event_id = ea.event_id AND ea.attendee_credential_id = sqlc.arg('receiver_credential_id')
 WHERE (
     ec.receiver_credential_id = sqlc.arg('receiver_credential_id')
     OR ec.receiver_email = sqlc.arg('receiver_email')

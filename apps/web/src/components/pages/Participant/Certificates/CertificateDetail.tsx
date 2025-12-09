@@ -123,22 +123,24 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                             color="foreground"
                             className="text-[28px] font-header leading-normal [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
                         >
-                            {certificate.name}
+                            {certificate.certificateTitle ||
+                                t(
+                                    "participant.certificates.detail.certificateFromEvent",
+                                    "Certificate from {{eventName}}",
+                                    { eventName: certificate.event },
+                                )}
                         </Typography>
                     </div>
-                    {/* Certificate Title and Subtitle */}
-                    {(certificate.certificateTitle || certificate.certificateSubtitle) && (
-                        <Typography
-                            variant="text"
-                            tag="p"
-                            color="foreground"
-                            className="text-base leading-normal [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
-                        >
-                            {[certificate.certificateTitle, certificate.certificateSubtitle]
-                                .filter(Boolean)
-                                .join(" ")}
-                        </Typography>
-                    )}
+                    {/* Participant Name and Certificate Subtitle */}
+                    <Typography
+                        variant="text"
+                        tag="p"
+                        color="foreground"
+                        className="text-base leading-normal [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                    >
+                        {certificate.name}
+                        {certificate.certificateSubtitle && ` • ${certificate.certificateSubtitle}`}
+                    </Typography>
                     {/* Event Name Link */}
                     <Link
                         to={`/app/events/${certificate.eventId}`}

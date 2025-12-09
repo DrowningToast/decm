@@ -2,6 +2,9 @@ package event_registration
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
+	"strings"
 	"time"
 
 	"apps/backend/common/customerror"
@@ -18,6 +21,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/google/uuid"
 
+	eventAccessManagerContract "apps/backend/contracts/accessmanager"
 	eventContract "apps/backend/contracts/event"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
@@ -342,11 +346,127 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get participants"))
 		}
 
+		// Pre-flight checks: Verify all conditions that could cause revert
+
+		// 1. Check signature replay (most common cause after access control)
+		isSignatureUsed, err := eventContractInstance.UsedSignatures(callOpts, signature)
+		if err != nil {
+			slog.Warn("⚠️ Could not check if signature was already used", "error", err)
+		} else if isSignatureUsed {
+			slog.Error("❌ CRITICAL: Signature has already been used! This will cause contract revert.",
+				"participant_address", participantAddress.Hex(),
+				"signature", fmt.Sprintf("0x%x", signature),
+				"note", "Each signature can only be used once. The user must create a new signature to join.")
+			return nil, customerror.Parse(&customerror.ErrInvalidArgument,
+				errors.New("signature has already been used in a previous transaction. Please create a new signature"))
+		} else {
+			slog.Info("✅ Signature replay check passed", "signature_not_used", true)
+		}
+
+		// 2. Signature validity already verified in Go at lines 305-311 above
+		// Note: We cannot call contract's recoverSigner here as it's NOT a view function
+		// and would mark the signature as used, causing the real transaction to fail
+		slog.Info("✅ Signature validity verified in Go backend",
+			"participant_address", participantAddress.Hex(),
+			"note", "Signature was verified using cyptoutils.VerifySignatureByDigest")
+
+		// 3. Double-check seats count (already checked above, but verify again)
+		currentCountCheck, err := eventContractInstance.CurrentSeatsCount(callOpts)
+		maxCountCheck, err2 := eventContractInstance.SeatsCount(callOpts)
+		if err == nil && err2 == nil && currentCountCheck != nil && maxCountCheck != nil {
+			currentCheck := int(currentCountCheck.Int64())
+			maxCheck := int(maxCountCheck.Int64())
+			if currentCheck >= maxCheck {
+				slog.Error("❌ CRITICAL: Event is full!",
+					"current_seats", currentCheck,
+					"max_seats", maxCheck)
+				return nil, customerror.Parse(&customerror.ErrInvalidArgument,
+					errors.New(string(JoinEventUserErrorEventAttendeeFull)))
+			} else {
+				slog.Info("✅ Seats availability check passed",
+					"current_seats", currentCheck,
+					"max_seats", maxCheck,
+					"available", maxCheck-currentCheck)
+			}
+		}
+
+		// 4. Double-check participant not already joined (already checked above)
+		participantsCheck, err := eventContractInstance.GetParticipants(callOpts)
+		if err == nil {
+			isAlreadyJoined := false
+			for _, p := range participantsCheck {
+				if p.Cmp(*participantAddress) == 0 {
+					isAlreadyJoined = true
+					break
+				}
+			}
+			if isAlreadyJoined {
+				slog.Error("❌ CRITICAL: Participant is already joined!",
+					"participant_address", participantAddress.Hex())
+				return nil, customerror.Parse(&customerror.ErrInvalidArgument,
+					errors.New(string(JoinEventUserErrorEventAttendeeAlreadyJoined)))
+			} else {
+				slog.Info("✅ Participant not already joined check passed")
+			}
+		}
+
+		// 5. Check access control (transactor must be allowed msg sender)
+		eventAccessManagerAddress, err := eventContractInstance.EVENTACCESSMANAGER(callOpts)
+		if err != nil {
+			slog.Warn("⚠️ Could not get EventAccessManager address", "error", err)
+		} else {
+			// Check if system transactor is allowed msg sender
+			eventAccessManagerInstance, err := eventAccessManagerContract.NewEventAccessManager(eventAccessManagerAddress, client)
+			if err != nil {
+				slog.Warn("⚠️ Could not create EventAccessManager instance", "error", err)
+			} else {
+				isAllowed, err := eventAccessManagerInstance.CheckIsAllowedMsgSender(callOpts, transactor.From)
+				if err != nil {
+					slog.Warn("⚠️ Could not check if transactor is allowed",
+						"transactor", transactor.From.Hex(),
+						"event_access_manager", eventAccessManagerAddress.Hex(),
+						"error", err)
+				} else {
+					slog.Info("🔐 Access control pre-flight check",
+						"participant_address", participantAddress.Hex(),
+						"transactor_address", transactor.From.Hex(),
+						"event_contract", entityEventContract.EventContractAddress,
+						"event_access_manager", eventAccessManagerAddress.Hex(),
+						"is_transactor_allowed", isAllowed,
+						"note", "Transaction will call grantParticipantRoleUsingAllowedMsgSender which requires transactor to be allowed")
+
+					if !isAllowed {
+						slog.Error("❌ System transactor is NOT allowed msg sender",
+							"transactor_address", transactor.From.Hex(),
+							"event_access_manager", eventAccessManagerAddress.Hex(),
+							"note", "Register transactor in DecmAccessManager using addAllowedMsgSender() function")
+						return nil, customerror.Parse(&customerror.ErrInternalServer,
+							errors.New("system transactor is not registered as allowed message sender in DecmAccessManager"))
+					}
+				}
+			}
+		}
+
+		slog.Info("🚀 Attempting to add participant to event",
+			"participant_address", participantAddress.Hex(),
+			"transactor_address", transactor.From.Hex(),
+			"event_contract", entityEventContract.EventContractAddress,
+			"sign_message_length", len(signMessage),
+			"signature_length", len(signature))
+
 		// CRITICAL: Pass the RAW sign message, NOT the hash!
 		// The smart contract will hash it itself using toEthSignedMessageHash
 		tx, err := eventContractInstance.AddParticipant(transactor, *participantAddress, signMessage, signature)
 		if err != nil {
-			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "failed to add participant to blockchain: wallet=%s, contract=%s", participantAddress.Hex(), entityEventContract.EventContractAddress))
+			revertReason := extractRevertReasonFromError(err)
+			slog.Error("❌ Failed to add participant to event",
+				"participant_address", participantAddress.Hex(),
+				"transactor_address", transactor.From.Hex(),
+				"event_contract", entityEventContract.EventContractAddress,
+				"error", err,
+				"revert_reason", revertReason,
+				"possible_issues", "[1. System transactor not allowed msg sender in DecmAccessManager 2. Seats count reached 3. Participant already joined 4. Invalid signature 5. Signature replay 6. Zero address]")
+			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "failed to add participant to blockchain: wallet=%s, contract=%s, revert_reason=%s", participantAddress.Hex(), entityEventContract.EventContractAddress, revertReason))
 		}
 
 		receipt, err := bind.WaitMined(ctx, client, tx)
@@ -355,8 +475,18 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 		}
 
 		if receipt.Status != types.ReceiptStatusSuccessful {
-			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Errorf("transaction reverted (tx=%s, gas=%d): %s", tx.Hash().Hex(), receipt.GasUsed))
+			slog.Error("❌ Transaction reverted",
+				"tx_hash", tx.Hash().Hex(),
+				"gas_used", receipt.GasUsed,
+				"participant_address", participantAddress.Hex(),
+				"event_contract", entityEventContract.EventContractAddress)
+			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Errorf("transaction reverted (tx=%s, gas=%d)", tx.Hash().Hex(), receipt.GasUsed))
 		}
+
+		slog.Info("✅ Successfully added participant to event",
+			"participant_address", participantAddress.Hex(),
+			"tx_hash", tx.Hash().Hex(),
+			"gas_used", receipt.GasUsed)
 	}
 
 	// If hasJoined, check if the user is also in the event attendee or not
@@ -416,4 +546,53 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 	}
 
 	return eventAttendee, nil
+}
+
+// extractRevertReasonFromError attempts to extract the revert reason from an error
+func extractRevertReasonFromError(err error) string {
+	if err == nil {
+		return ""
+	}
+
+	errMsg := err.Error()
+
+	// Log full error for debugging
+	slog.Debug("Full error message for revert reason extraction", "error", errMsg)
+
+	// Try to extract revert reason from common patterns (check most specific first)
+	patterns := []struct {
+		prefix string
+		suffix string
+	}{
+		{"execution reverted: ", "\n"},
+		{"execution reverted:", "\n"},
+		{"revert ", "\n"},
+		{"revert: ", "\n"},
+		{"VM execution error.\n\nrevert ", "\n"},
+		{"revert ", ""},
+		{"execution reverted: ", ""},
+	}
+
+	for _, pattern := range patterns {
+		if idx := strings.Index(errMsg, pattern.prefix); idx != -1 {
+			start := idx + len(pattern.prefix)
+			var end int
+			if pattern.suffix != "" {
+				if suffixIdx := strings.Index(errMsg[start:], pattern.suffix); suffixIdx != -1 {
+					end = start + suffixIdx
+				} else {
+					end = len(errMsg)
+				}
+			} else {
+				end = len(errMsg)
+			}
+			reason := strings.TrimSpace(errMsg[start:end])
+			if reason != "" {
+				return reason
+			}
+		}
+	}
+
+	// If no pattern matches, return a generic message
+	return fmt.Sprintf("Could not extract revert reason - error message: %s", errMsg)
 }

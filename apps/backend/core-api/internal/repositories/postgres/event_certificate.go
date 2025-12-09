@@ -517,7 +517,7 @@ func (r *Repository) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Con
 	}
 
 	results, err := r.queries.GetUnclaimedReadyCertificatesByCredentialID(ctx, generated.GetUnclaimedReadyCertificatesByCredentialIDParams{
-		ReceiverCredentialID: pgmapper.UUIDToPgUUID(&credentialID),
+		ReceiverCredentialID: credentialID,
 		ReceiverEmail:        encryptedEmail,
 	})
 	if err != nil {

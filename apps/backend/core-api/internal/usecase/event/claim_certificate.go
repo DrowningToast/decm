@@ -488,9 +488,26 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 
 	// Try to recover the signer to verify signature validity before sending to contract
 	// Use the original message string since signatures are now created with HashEthereumMessage
+	signMsgPreview := signMessageStr
+	if len(signMsgPreview) > 100 {
+		signMsgPreview = signMsgPreview[:100] + "..."
+	}
+	slog.Info("🔍 Attempting signature recovery",
+		"sign_message_length", len(signMessageStr),
+		"sign_message_preview", signMsgPreview,
+		"host_signature", hostSignatureStr,
+		"expected_host_address", hostCredential.WalletAddress,
+	)
+
 	recoveredSigner, err := cyptoutils.GetAddressFromSignature(signMessageStr, hostSignatureStr)
 	if err != nil {
-		slog.Warn("⚠️ Could not recover signer from signature (this may be expected)", "error", err.Error())
+		slog.Error("❌ CRITICAL: Could not recover signer from signature! This will cause contract revert.",
+			"error", err.Error(),
+			"sign_message", signMessageStr,
+			"host_signature", hostSignatureStr,
+			"expected_host", hostCredential.WalletAddress,
+		)
+		// Don't fail here, but log the error - contract will fail anyway
 	} else {
 		signerMatch := strings.EqualFold(recoveredSigner.Hex(), hostCredential.WalletAddress)
 		slog.Info("✅ Signature recovery test",
@@ -499,7 +516,14 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 			"addresses_match", signerMatch,
 		)
 		if !signerMatch {
-			slog.Error("❌ CRITICAL: Recovered signer does not match host wallet address! Contract will likely revert.")
+			slog.Error("❌ CRITICAL: Recovered signer does not match host wallet address! Contract will likely revert.",
+				"recovered", recoveredSigner.Hex(),
+				"expected", hostCredential.WalletAddress,
+				"sign_message", signMessageStr,
+			)
+			return nil, customerror.Parse(&customerror.ErrInvalidArgument,
+				errors.Errorf("signature verification failed: recovered signer %s does not match expected host %s",
+					recoveredSigner.Hex(), hostCredential.WalletAddress))
 		}
 	}
 
@@ -543,7 +567,6 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to create contract instance"))
 	}
-
 	// Try to get token data from contract using certificateId as lookup
 	// If it exists, NFT is already minted
 	isNftMinted := false
@@ -655,6 +678,42 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		"host_signature_length", len(hostSignatureBytes),
 	)
 
+	// Pre-flight check: Verify signature hasn't been used (replay prevention)
+	// The contract's recoverSigner marks signatures as used, so if this was used before, it will revert
+	var isSignatureUsed bool
+	isSignatureUsed, err = certificateContractInstance.UsedSignatures(nil, hostSignatureBytes)
+	if err != nil {
+		slog.Warn("⚠️ Could not check if signature was already used", "error", err.Error())
+		isSignatureUsed = false // Default to false if check fails (will be caught by contract if actually used)
+	} else if isSignatureUsed {
+		logger.Error("❌ CRITICAL: Signature has already been used! This will cause contract revert.",
+			"host_signature", hostSignatureStr,
+			"note", "Each signature can only be used once. If certificate was re-imported, new signatures were created.",
+		)
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument,
+			errors.New("host signature has already been used in a previous transaction. Certificate receivers must be re-imported to generate new signatures"))
+	} else {
+		logger.Info("✅ Signature replay check passed", "signature_not_used", true)
+	}
+
+	// Note: Unlike join_event's addParticipant (which has no access control),
+	// mintNft DOES check access control via requireHostOrAdmin(signer, msg.sender).
+	// We skip pre-flight checks here (as join_event does) and let the contract handle access control.
+	// If access control fails, the transaction will revert with a clear error.
+	logger.Info("🔐 Access control will be verified by contract",
+		"recovered_signer", hostCredential.WalletAddress,
+		"system_transactor", transactor.From.Hex(),
+		"note", "Contract will verify: signer is host/admin OR transactor is allowed sender",
+	)
+
+	// Pre-flight check: Verify receiver address is not zero
+	if receiverAddress == (common.Address{}) {
+		logger.Error("❌ CRITICAL: Receiver address is zero address! Contract will revert.")
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument,
+			errors.New("receiver address cannot be zero address"))
+	}
+	logger.Info("✅ Receiver address check passed", "receiver_address", receiverAddress.Hex())
+
 	// The contract's recoverSigner expects the original message string (not the digest)
 	// because it applies MessageHashUtils.toEthSignedMessageHash() to the input
 	// We sign with HashEthereumMessage which matches what the contract will compute
@@ -681,6 +740,49 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	)
 	if err != nil {
 		logger.Error("❌ Failed to mint certificate NFT", "error", err.Error())
+
+		// Try to extract detailed revert reason from error message
+		revertReason := extractRevertReasonFromError(err)
+
+		// Enhanced error diagnostics for transaction revert
+		if strings.Contains(err.Error(), "execution reverted") || strings.Contains(err.Error(), "revert") {
+			logger.Error("🔍 Transaction reverted - Detailed analysis:",
+				"recovered_signer", hostCredential.WalletAddress,
+				"system_transactor", transactor.From.Hex(),
+				"receiver_address", receiverAddress.Hex(),
+				"host_signature", hostSignatureStr,
+				"sign_message", signMessageStr,
+				"revert_reason_extracted", revertReason,
+				"possible_issues", []string{
+					"1. Signature replay: Host signature already used (check signature usage)",
+					"2. Invalid signature: Signature format/validity issue",
+					"3. Access control: Host not registered OR system transactor not allowed",
+					"4. Zero address: Receiver address is zero (unlikely - we check this)",
+					"5. ERC721 hook failure: Receiver contract's onERC721Received failed",
+					"6. Out of gas: Parameters too large (check string/array lengths)",
+					"7. Contract mismatch: Sign message contract address doesn't match",
+				},
+				"preflight_checks", map[string]interface{}{
+					"signature_used": isSignatureUsed,
+					"receiver_zero":  receiverAddress == (common.Address{}),
+				},
+				"detected_errors", func() []string {
+					errStr := err.Error()
+					errors := []string{}
+					if strings.Contains(errStr, "Themis__InvalidSignature") || strings.Contains(errStr, "InvalidSignature") {
+						errors = append(errors, "Themis__InvalidSignature: Signature recovery failed")
+					}
+					if strings.Contains(errStr, "Themis__SignatureAlreadyUsed") || strings.Contains(errStr, "SignatureAlreadyUsed") {
+						errors = append(errors, "Themis__SignatureAlreadyUsed: Signature replay")
+					}
+					if strings.Contains(errStr, "Not host or admin") || strings.Contains(errStr, "allowed msg sender") {
+						errors = append(errors, "Access Control: Neither signer is host/admin NOR transactor is allowed")
+					}
+					return errors
+				}(),
+				"full_error_message", err.Error(),
+			)
+		}
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to mint certificate NFT"))
 	}
 
@@ -744,4 +846,70 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	}
 
 	return updatedCertificate, nil
+}
+
+// extractRevertReasonFromError attempts to extract the revert reason from an error
+func extractRevertReasonFromError(err error) string {
+	if err == nil {
+		return ""
+	}
+
+	errMsg := err.Error()
+
+	// Log full error for debugging
+	slog.Debug("Full error message for revert reason extraction", "error", errMsg)
+
+	// Try to extract revert reason from common patterns (check most specific first)
+	patterns := []struct {
+		prefix string
+		suffix string
+	}{
+		{"execution reverted: ", "\n"},
+		{"execution reverted:", "\n"},
+		{"revert ", "\n"},
+		{"revert: ", "\n"},
+		{"VM execution error.\n\nrevert ", "\n"},
+		{"revert ", ""},
+		{"execution reverted: ", ""},
+	}
+
+	for _, pattern := range patterns {
+		if idx := strings.Index(errMsg, pattern.prefix); idx != -1 {
+			reason := strings.TrimSpace(errMsg[idx+len(pattern.prefix):])
+			if pattern.suffix != "" {
+				if suffixIdx := strings.Index(reason, pattern.suffix); suffixIdx != -1 {
+					reason = reason[:suffixIdx]
+				}
+			}
+			// Also trim common trailing parts
+			reason = strings.TrimSpace(reason)
+			if len(reason) > 0 && reason != "" {
+				return reason
+			}
+		}
+	}
+
+	// Check for wrapped errors that might contain revert data
+	if strings.Contains(errMsg, "revert") || strings.Contains(errMsg, "reverted") {
+		// Try to find any text after revert/reverted
+		for _, keyword := range []string{"revert ", "reverted ", "reverted: ", "reverted:"} {
+			if idx := strings.Index(errMsg, keyword); idx != -1 {
+				remaining := errMsg[idx+len(keyword):]
+				// Take up to 200 chars or first newline
+				if newlineIdx := strings.Index(remaining, "\n"); newlineIdx != -1 && newlineIdx < 200 {
+					return strings.TrimSpace(remaining[:newlineIdx])
+				}
+				if len(remaining) > 200 {
+					return strings.TrimSpace(remaining[:200]) + "..."
+				}
+				return strings.TrimSpace(remaining)
+			}
+		}
+	}
+
+	maxLen := 200
+	if len(errMsg) < maxLen {
+		maxLen = len(errMsg)
+	}
+	return "Could not extract revert reason - error message: " + errMsg[:maxLen]
 }

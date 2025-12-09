@@ -5898,6 +5898,12 @@ const docTemplate = `{
                 "cancelled_at": {
                     "type": "string"
                 },
+                "certificate_id": {
+                    "type": "string"
+                },
+                "certificate_title": {
+                    "type": "string"
+                },
                 "code": {
                     "type": "string"
                 },
@@ -5913,8 +5919,14 @@ const docTemplate = `{
                 "event_id": {
                     "type": "string"
                 },
+                "event_name": {
+                    "type": "string"
+                },
                 "first_name": {
                     "type": "string"
+                },
+                "has_participant_joined_event": {
+                    "type": "boolean"
                 },
                 "hidden_at": {
                     "type": "string"
@@ -5952,6 +5964,9 @@ const docTemplate = `{
                 "sender_credential_wallet_address": {
                     "type": "string"
                 },
+                "token_id": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "string"
                 },
@@ -5971,11 +5986,27 @@ const docTemplate = `{
                 "updated_at"
             ],
             "properties": {
+                "certificate_id": {
+                    "type": "string"
+                },
+                "certificate_title": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
                 "deleted_at": {
                     "type": "string"
+                },
+                "event_id": {
+                    "description": "Certificate-specific fields (only populated for certificate invitation messages)",
+                    "type": "string"
+                },
+                "event_name": {
+                    "type": "string"
+                },
+                "has_participant_joined_event": {
+                    "type": "boolean"
                 },
                 "hidden_at": {
                     "type": "string"
@@ -6005,6 +6036,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sender_credential_wallet_address": {
+                    "type": "string"
+                },
+                "token_id": {
                     "type": "string"
                 },
                 "updated_at": {

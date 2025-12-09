@@ -52,9 +52,9 @@ export const ParticipantSettingsForm = ({
         defaultValues: defaultValues
             ? {
                   eventType: defaultValues?.eventType,
-                  // isBookingRequired: defaultValues?.isBookingRequired,
-                  // isTicketTransferable: defaultValues?.isTicketTransferable,
-                  // requireRegistrationPassword: defaultValues?.requireRegistrationPassword,
+                  isBookingRequired: defaultValues?.isBookingRequired ?? false,
+                  isTicketTransferable: defaultValues?.isTicketTransferable ?? true,
+                  requireRegistrationPassword: defaultValues?.requireRegistrationPassword ?? false,
                   registrationPassword: defaultValues?.registrationPassword,
                   finalCallRegistrationDate: defaultValues?.finalCallRegistrationDate,
                   firstName: defaultValues?.firstName,
@@ -66,7 +66,11 @@ export const ParticipantSettingsForm = ({
                   academicInstitution: defaultValues?.academicInstitution,
                   academicEmail: defaultValues?.academicEmail,
               }
-            : undefined,
+            : {
+                  isBookingRequired: false,
+                  isTicketTransferable: true,
+                  requireRegistrationPassword: false,
+              },
         mode: "onChange",
     });
 

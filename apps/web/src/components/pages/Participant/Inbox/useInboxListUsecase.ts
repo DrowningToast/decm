@@ -67,10 +67,27 @@ export const useInboxListUsecase = () => {
     // Fetch inbox messages from API
     const { data: apiMessages, isLoading, error } = useInboxMessages();
 
+    // Filter out unclaimed certificates from events the user has joined
+    const filteredMessages = useMemo(() => {
+        return apiMessages.filter((message) => {
+            // For certificate invitation messages, filter out unclaimed certificates from events user has joined
+            if (message.messageType === "event_certificate_invitation") {
+                const hasJoined = message.hasParticipantJoinedEvent === true;
+                const isUnclaimed = !message.tokenId; // tokenId is undefined or null for unclaimed certificates
+
+                // Filter out if: user has joined the event AND certificate is unclaimed
+                if (hasJoined && isUnclaimed) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }, [apiMessages]);
+
     // Transform API response to match InboxItem interface
     const inboxItems = useMemo(() => {
-        return apiMessages.map((message) => mapInboxMessageToInboxItem(message, t));
-    }, [apiMessages, t]);
+        return filteredMessages.map((message) => mapInboxMessageToInboxItem(message, t));
+    }, [filteredMessages, t]);
 
     // Apply fuzzy search filter
     const searcher = new FuzzySearch(inboxItems, ["title", "sender"], {

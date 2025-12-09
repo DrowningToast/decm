@@ -19,8 +19,8 @@ export const participantSettingsSchema = z
     .object({
         // Registration Settings
         eventType: eventTypeEnum,
-        isBookingRequired: z.boolean(),
-        isTicketTransferable: z.boolean(),
+        isBookingRequired: z.boolean().default(false),
+        isTicketTransferable: z.boolean().default(true),
         requireRegistrationPassword: z.boolean().default(false),
         registrationPassword: z.string().optional(),
         finalCallRegistrationDate: z.date().optional(),

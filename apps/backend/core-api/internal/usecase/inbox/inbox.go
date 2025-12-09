@@ -79,6 +79,14 @@ type InboxMessagesViewModel struct {
 	UpdatedAt                     time.Time               `json:"updated_at"`
 	HiddenAt                      *time.Time              `json:"hidden_at,omitempty"`
 	DeletedAt                     *time.Time              `json:"deleted_at,omitempty"`
+
+	// Certificate-specific fields (only populated for certificate invitation messages)
+	EventId                   *uuid.UUID `json:"event_id,omitempty"`
+	CertificateId             *uuid.UUID `json:"certificate_id,omitempty"`
+	CertificateTitle          *string    `json:"certificate_title,omitempty"`
+	TokenId                   *string    `json:"token_id,omitempty"`
+	HasParticipantJoinedEvent *bool      `json:"has_participant_joined_event,omitempty"`
+	EventName                 *string    `json:"event_name,omitempty"`
 }
 
 func (uc *InboxUsecase) ToViewModel(ctx context.Context, inboxMessage entity.InboxMessage) (*InboxMessagesViewModel, error) {
@@ -191,4 +199,51 @@ func (uc *InboxUsecase) ToWithCertificateInvitationViewModel(ctx context.Context
 		TokenId:                   eventCertificate.CertificateTokenId,
 		HasParticipantJoinedEvent: eventAttendee != nil,
 	}, nil
+}
+
+// ToEnrichedCertificateViewModel enriches a basic view model with certificate-specific fields for list view
+func (uc *InboxUsecase) ToEnrichedCertificateViewModel(ctx context.Context, inboxMessage entity.InboxMessage, user auth.JwtClaims) (*InboxMessagesViewModel, error) {
+	// verify event type
+	if inboxMessage.MessageType != entity.InboxMessageTypeEventCertificateInvitation {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid message type"))
+	}
+
+	inboxMessageViewModel, err := uc.ToViewModel(ctx, inboxMessage)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the certificate associated with this inbox message
+	eventCertificate, err := uc.EventCertificateDg.GetEventCertificateByInboxMessageID(ctx, inboxMessage.Id)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get event certificate by inbox message id")
+	}
+	if eventCertificate == nil {
+		// If certificate not found, return basic view model without enrichment
+		return inboxMessageViewModel, nil
+	}
+
+	// Check if the user has joined the event
+	eventAttendee, err := uc.EventAttendeeDg.GetEventAttendeeByEventIdAndCredentialId(ctx, eventCertificate.EventId, user.UserId)
+	if err != nil {
+		// If error getting attendee, assume not joined
+		hasJoined := false
+		inboxMessageViewModel.HasParticipantJoinedEvent = &hasJoined
+	} else {
+		hasJoined := eventAttendee != nil
+		inboxMessageViewModel.HasParticipantJoinedEvent = &hasJoined
+	}
+
+	// Enrich with certificate-specific fields
+	eventName := ""
+	if eventCertificate.Name != nil {
+		eventName = *eventCertificate.Name
+	}
+	inboxMessageViewModel.EventId = &eventCertificate.EventId
+	inboxMessageViewModel.CertificateId = &eventCertificate.Id
+	inboxMessageViewModel.CertificateTitle = eventCertificate.CertificateTitle
+	inboxMessageViewModel.TokenId = eventCertificate.CertificateTokenId
+	inboxMessageViewModel.EventName = &eventName
+
+	return inboxMessageViewModel, nil
 }

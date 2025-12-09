@@ -1112,12 +1112,16 @@ export interface InboxInboxMessagesEventRegistrationInvitationViewModel {
     academic_institution?: string;
     accepted_at?: string;
     cancelled_at?: string;
+    certificate_id?: string;
+    certificate_title?: string;
     code?: string;
     created_at: string;
     deleted_at?: string;
     email?: string;
     event_id: string;
+    event_name?: string;
     first_name?: string;
+    has_participant_joined_event?: boolean;
     hidden_at?: string;
     id: string;
     is_read: number;
@@ -1130,13 +1134,20 @@ export interface InboxInboxMessagesEventRegistrationInvitationViewModel {
     receiver_wallet_address?: string;
     sender_credential_email?: string;
     sender_credential_wallet_address?: string;
+    token_id?: string;
     updated_at: string;
     valid_until?: string;
 }
 
 export interface InboxInboxMessagesViewModel {
+    certificate_id?: string;
+    certificate_title?: string;
     created_at: string;
     deleted_at?: string;
+    /** Certificate-specific fields (only populated for certificate invitation messages) */
+    event_id?: string;
+    event_name?: string;
+    has_participant_joined_event?: boolean;
     hidden_at?: string;
     id: string;
     is_read: number;
@@ -1147,6 +1158,7 @@ export interface InboxInboxMessagesViewModel {
     receiver_wallet_address?: string;
     sender_credential_email?: string;
     sender_credential_wallet_address?: string;
+    token_id?: string;
     updated_at: string;
 }
 

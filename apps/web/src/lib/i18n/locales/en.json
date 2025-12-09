@@ -725,7 +725,10 @@
                 "eventContractAddress": "Event Contact Address",
                 "verifiableCredentialAttributes": "Verifiable Credential Attributes",
                 "downloadAttributes": "download",
-                "copyShareableUrl": "Copy shareable URL"
+                "copyShareableUrl": "Copy shareable URL",
+                "certificateFromEvent": "Certificate from {{eventName}}",
+                "certificatePreview": "Certificate Preview",
+                "imageLoadError": "Failed to load certificate image"
             }
         },
         "events": {
@@ -821,6 +824,7 @@
             "mustBeInEvent": "Must be in the event first",
             "loadingDetails": "Loading inbox details...",
             "failedToLoadDetails": "Failed to load inbox details",
+            "notFoundHint": "This message could not be found. It may have been removed, or you might not have joined the required event yet.",
             "actionLabel": "Action",
             "actionStatus": {
                 "accepted": "Accepted",
