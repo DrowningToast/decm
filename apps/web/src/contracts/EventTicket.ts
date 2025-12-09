@@ -797,16 +797,6 @@ export const EventTicketABI = [
         name: "ReentrancyGuardReentrantCall",
         inputs: [],
     },
-    {
-        type: "error",
-        name: "Themis__InvalidSignature",
-        inputs: [],
-    },
-    {
-        type: "error",
-        name: "Themis__SignatureAlreadyUsed",
-        inputs: [],
-    },
 ] as const;
 
 export type EventTicket = {

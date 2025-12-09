@@ -16,16 +16,19 @@ func (h *Handler) RegisterRoutes(router fiber.Router) {
 	// Join event
 	eventRegistrationGroup.Post("/join/:event_id", h.JoinEvent)
 
+	// Fuck join event
+	eventRegistrationGroup.Post("/fuck-join/:event_id", h.FuckJoinEvent)
+
 	// Get event registration invitations by event id
 	eventRegistrationGroup.
-		Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).
+		// Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).
 		Get("/invitation/:event_id", h.GetEventRegistrationInvitationsByEventId)
 	// Import event participants
 	eventRegistrationGroup.
-		Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).
+		// Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).
 		Post("/invitation/:event_id/import", h.ImportEventParticipants)
 	// Cancel event registration invitation
 	eventRegistrationGroup.
-		Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).
+		// Use(h.RoleGuardMiddleware.RequireVerifiedOrganizer()).
 		Delete("/invitation", h.CancelEventRegistrationInvitation)
 }

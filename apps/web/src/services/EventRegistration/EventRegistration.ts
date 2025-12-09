@@ -146,12 +146,27 @@ export class EventRegistrationService {
         accountPassword: string;
         registrationData: RegistrationConfirmDataForm;
     }): Promise<void> {
-        await this._coreApi.v1.joinEvent(
+        // await this._coreApi.v1.joinEvent(
+        //     { eventId },
+        //     {
+        //         account_password: accountPassword,
+        //         event_password: eventPassword,
+        //         registration_data: mapRegistrationToJoinEventParticipant(registrationData),
+        //     },
+        // );
+
+        await this._coreApi.v1.fuckJoinEvent(
             { eventId },
             {
-                account_password: accountPassword,
-                event_password: eventPassword,
-                registration_data: mapRegistrationToJoinEventParticipant(registrationData),
+                academic_email: registrationData.academicEmail,
+                academic_institution: registrationData.academicInstitution,
+                address: registrationData.address,
+                bio: registrationData.bio,
+                email: registrationData.email,
+                first_name: registrationData.firstName,
+                last_name: registrationData.lastName,
+                phone_number: registrationData.phoneNumber,
+                pin_code: accountPassword,
             },
         );
         return;

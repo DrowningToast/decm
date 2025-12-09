@@ -183,6 +183,72 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/event-registration/fuck-join/{event_id}": {
+            "post": {
+                "description": "Fuck join event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Registration"
+                ],
+                "summary": "Fuck join event",
+                "operationId": "fuck-join-event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fuck join event payload",
+                        "name": "fuckJoinEventPayload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event_registration.FuckJoinEventPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.EventAttendee"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/event-registration/invitation": {
             "delete": {
                 "description": "Cancel an event registration invitation by ID",
@@ -4732,6 +4798,38 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "issuer_credential_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "event_registration.FuckJoinEventPayload": {
+            "type": "object",
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "pin_code": {
                     "type": "string"
                 }
             }
