@@ -56,6 +56,7 @@ export const QUERY_KEY = {
         },
         certificate: {
             config: (eventId: string) => ["event", eventId, "certificate", "config"] as const,
+            fontFamilies: ["event", "certificate", "font-families"] as const,
         },
         certificates: (eventId: string) => ["event", eventId, "certificates"] as const,
         invitations: {
@@ -96,6 +97,8 @@ export const QUERY_KEY = {
             ["certificate", "list", limit, offset, status] as const,
         byId: (certificateId: string) => ["certificate", certificateId] as const,
         byEventId: (eventId: string) => ["certificate", "event", eventId] as const,
+        claimSignMessage: (certificateId: string) =>
+            ["certificate", certificateId, "claim-sign-message"] as const,
     },
 
     // Inbox

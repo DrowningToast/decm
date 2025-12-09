@@ -7,7 +7,6 @@ import (
 	"apps/backend/core-api/config"
 	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
 	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
-	usecase "apps/backend/core-api/internal/usecase/onboard"
 	profile_usecase "apps/backend/core-api/internal/usecase/profile"
 	"apps/backend/services/auth"
 	oauth_services "apps/backend/services/oauth"
@@ -24,7 +23,7 @@ type Handler struct {
 	VerifyJwtMiddleware *verifyjwt.VerifyJwtMiddleware
 }
 
-func NewHandler(onboardUc *usecase.OnboardUsecase, profileUc *profile_usecase.ProfileUsecase, authService *auth.AuthService, googleOAuthService *oauth_services.GoogleOAuthService, verifyJwtMiddleware *verifyjwt.VerifyJwtMiddleware) (*Handler, error) {
+func NewHandler(onboardUc *onboard_usecase.OnboardUsecase, profileUc *profile_usecase.ProfileUsecase, authService *auth.AuthService, googleOAuthService *oauth_services.GoogleOAuthService, verifyJwtMiddleware *verifyjwt.VerifyJwtMiddleware) (*Handler, error) {
 	cfg := config.LoadConfig()
 
 	expiration, err := time.ParseDuration(cfg.Jwt.Expiration)

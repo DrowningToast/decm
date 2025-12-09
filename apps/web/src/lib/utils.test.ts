@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cn, delay, until } from "./utils";
+import { cn, delay, formatEthereumAddress, until } from "./utils";
 
 describe("cn utility", () => {
     it("should merge class names correctly", () => {
@@ -114,6 +114,44 @@ describe("delay utility", () => {
     });
 });
 
+describe("formatEthereumAddress utility", () => {
+    it("should format ethereum address correctly", () => {
+        const address = "0x1234567890123456789012345678901234567890";
+        const result = formatEthereumAddress(address);
+        expect(result).toBe("0x1234...7890");
+    });
+
+    it("should return short address as-is when length is <= 10", () => {
+        const shortAddress = "0x12345678";
+        const result = formatEthereumAddress(shortAddress);
+        expect(result).toBe("0x12345678");
+    });
+
+    it("should handle exactly 10 character address", () => {
+        const address = "0x12345678";
+        const result = formatEthereumAddress(address);
+        expect(result).toBe("0x12345678");
+    });
+
+    it("should handle 11 character address", () => {
+        const address = "0x123456789";
+        const result = formatEthereumAddress(address);
+        expect(result).toBe("0x1234...6789");
+    });
+
+    it("should format standard ethereum address (42 chars)", () => {
+        const address = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb";
+        const result = formatEthereumAddress(address);
+        expect(result).toBe("0x742d...0bEb");
+    });
+
+    it("should handle very long addresses", () => {
+        const address = "0x1234567890123456789012345678901234567890123456789012345678901234567890";
+        const result = formatEthereumAddress(address);
+        expect(result).toBe("0x1234...7890");
+    });
+});
+
 describe("until utility", () => {
     it("should return success when callback succeeds on first attempt", async () => {
         const callback = vi.fn().mockResolvedValueOnce({ data: "success" });
@@ -169,5 +207,62 @@ describe("until utility", () => {
         expect(result.response).toEqual({ data: "test" });
         // On success, error is undefined (not included in the object)
         expect(result.error).toBeUndefined();
+    });
+
+    it("should retry on failure until max duration", async () => {
+        vi.useFakeTimers();
+        const callback = vi
+            .fn()
+            .mockRejectedValueOnce(new Error("First attempt failed"))
+            .mockRejectedValueOnce(new Error("Second attempt failed"))
+            .mockResolvedValueOnce("Success on third attempt");
+
+        const promise = until(callback, { maxDurationMs: 1000, delayMs: 100 });
+
+        // Advance timers to allow retries
+        await vi.advanceTimersByTimeAsync(300);
+
+        const result = await promise;
+
+        expect(result.isSuccess).toBe(true);
+        expect(result.response).toBe("Success on third attempt");
+        expect(callback).toHaveBeenCalledTimes(3);
+        vi.useRealTimers();
+    });
+
+    it("should fail after max duration is reached", async () => {
+        vi.useFakeTimers();
+        const error = new Error("Always fails");
+        const callback = vi.fn().mockRejectedValue(error);
+
+        const promise = until(callback, { maxDurationMs: 500, delayMs: 100 });
+
+        // Advance timers past max duration
+        await vi.advanceTimersByTimeAsync(600);
+
+        const result = await promise;
+
+        expect(result.isSuccess).toBe(false);
+        expect(result.isFailed).toBe(true);
+        expect(result.response).toBeNull();
+        expect(result.error).toBe(error);
+        expect(callback).toHaveBeenCalled();
+        vi.useRealTimers();
+    });
+
+    it("should handle non-Error exceptions", async () => {
+        vi.useFakeTimers();
+        const callback = vi.fn().mockRejectedValue("String error");
+
+        const promise = until(callback, { maxDurationMs: 100, delayMs: 50 });
+
+        await vi.advanceTimersByTimeAsync(150);
+
+        const result = await promise;
+
+        expect(result.isFailed).toBe(true);
+        expect(result.error).toBeInstanceOf(Error);
+        expect(result.error?.message).toBe("String error");
+        vi.useRealTimers();
     });
 });

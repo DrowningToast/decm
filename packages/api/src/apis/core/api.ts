@@ -62,6 +62,15 @@ export interface CheckRoleResponse {
     is_issuer?: boolean;
 }
 
+export type ClaimCertificateData = EntityEventCertificate;
+
+export type ClaimCertificateError = CustomerrorErrResponse;
+
+export interface ClaimCertificateParams {
+    /** Certificate ID */
+    certificateId: string;
+}
+
 /** @format int32 */
 export enum CommonSolutionStatus {
     SolutionStatusManaged = 0,
@@ -155,17 +164,31 @@ export interface CoreApiInternalHandlerEventconfigCertificateMintReadinessRespon
 }
 
 export interface CoreApiInternalHandlerEventconfigEventCertificateConfigResponse {
+    academic_institution_font_family_id?: number;
+    academic_institution_font_weight?: number;
     academic_institution_pos_x?: number;
     academic_institution_pos_y?: number;
     base_certificate_presigned_url: string;
     base_certificate_storage_key: string;
+    certificate_subtitle_font_family_id?: number;
+    certificate_subtitle_font_weight?: number;
+    certificate_subtitle_pos_x?: number;
+    certificate_subtitle_pos_y?: number;
+    certificate_title_font_family_id?: number;
+    certificate_title_font_weight?: number;
+    certificate_title_pos_x?: number;
+    certificate_title_pos_y?: number;
     created_at: string;
     event_id: string;
+    event_name_font_family_id?: number;
+    event_name_font_weight?: number;
     event_name_pos_x: number;
     event_name_pos_y: number;
     id: string;
     is_published: boolean;
     mint_readiness?: CoreApiInternalHandlerEventconfigMintReadinessInfo;
+    name_font_family_id?: number;
+    name_font_weight?: number;
     name_pos_x: number;
     name_pos_y: number;
     updated_at: string;
@@ -369,6 +392,7 @@ export interface EntityEventAttendee {
 
 export interface EntityEventCertificate {
     academic_institution?: string;
+    certificate_digest?: string;
     certificate_subtitle?: string;
     certificate_title?: string;
     certificate_token_id?: string;
@@ -376,6 +400,7 @@ export interface EntityEventCertificate {
     event_certificate_address?: string;
     event_contract_address: string;
     event_id: string;
+    event_name?: string;
     id: string;
     inbox_message_id?: string;
     name?: string;
@@ -463,6 +488,13 @@ export interface EntityProfile {
     wallet_address?: string;
 }
 
+export interface EventClaimCertificateBody {
+    account_password?: string;
+    certificate_password?: string;
+    sign_message?: string;
+    signature?: string;
+}
+
 export interface EventCreateEventContractRequest {
     access_manager_contract_address: string;
     certificate_contract_address: string;
@@ -473,8 +505,6 @@ export interface EventCreateEventContractRequest {
 export interface EventCreateEventIssuerRequest {
     is_signed: 0 | 1;
     issuer_credential_id: string;
-    sign_message: string;
-    signature: string;
 }
 
 export interface EventDeleteEventRequest {
@@ -488,8 +518,6 @@ export interface EventEventIssuerResponse {
     is_signed: number;
     issuer_credential_id: string;
     issuer_profile?: EntityProfile;
-    sign_message: string;
-    signature: string;
     updated_at: string;
 }
 
@@ -568,12 +596,30 @@ export interface EventEventViewModel {
     updated_at: string;
 }
 
+export interface EventGetCertificatesListViewModelResponse {
+    claimed_certificates: any;
+    total_claimed: number;
+    total_unclaimed: number;
+    unclaimed_certificates: any;
+}
+
+export interface EventGetClaimCertificateSignMessageResponse {
+    sign_message: string;
+}
+
 export interface EventGetEventCertificatesResponse {
     certificates: EntityEventCertificate[];
 }
 
 export interface EventGetEventListResponse {
     events: EntityEvent[];
+}
+
+export interface EventGetMyCertificatesListViewModelResponse {
+    claimed_certificates: any;
+    total_claimed: number;
+    total_unclaimed: number;
+    unclaimed_certificates: any;
 }
 
 export interface EventImportCertificateReceiverRequest {
@@ -630,6 +676,49 @@ export interface EventRegistrationParticipantRequestItem {
     first_name: string;
     last_name: string;
     phone_number?: string;
+}
+
+export interface EventUpdateEventCertificateTextConfigRequest {
+    academic_institution_font_family_id: number;
+    academic_institution_font_weight: number;
+    certificate_subtitle_font_family_id: number;
+    certificate_subtitle_font_weight: number;
+    certificate_title_font_family_id: number;
+    certificate_title_font_weight: number;
+    event_name_font_family_id: number;
+    event_name_font_weight: number;
+    name_font_family_id: number;
+    name_font_weight: number;
+}
+
+export interface EventUpdateEventCertificateTextConfigResponse {
+    academic_institution_font_family_id?: number;
+    academic_institution_font_weight?: number;
+    academic_institution_pos_x?: number;
+    academic_institution_pos_y?: number;
+    base_certificate_presigned_url: string;
+    base_certificate_storage_key: string;
+    certificate_subtitle_font_family_id?: number;
+    certificate_subtitle_font_weight?: number;
+    certificate_subtitle_pos_x?: number;
+    certificate_subtitle_pos_y?: number;
+    certificate_title_font_family_id?: number;
+    certificate_title_font_weight?: number;
+    certificate_title_pos_x?: number;
+    certificate_title_pos_y?: number;
+    created_at: string;
+    event_id: string;
+    event_name_font_family_id?: number;
+    event_name_font_weight?: number;
+    event_name_pos_x: number;
+    event_name_pos_y: number;
+    id: string;
+    is_published: boolean;
+    name_font_family_id?: number;
+    name_font_weight?: number;
+    name_pos_x: number;
+    name_pos_y: number;
+    updated_at: string;
 }
 
 export interface EventUpdateEventContractRequest {
@@ -689,6 +778,19 @@ export interface EventconfigEventRegistrationConfigViewModel {
     updated_at: string;
 }
 
+export interface EventconfigFontFamilyItem {
+    available_font_weights: number[];
+    css_font_name: string;
+    font_family_name: string;
+    id: number;
+    is_default: boolean;
+    is_support_italic: boolean;
+}
+
+export interface EventconfigGetEventCertificateFontFamiliesResponse {
+    font_families: EventconfigFontFamilyItem[];
+}
+
 export interface EventconfigToggleCertificatePublishedRequest {
     is_published: boolean;
 }
@@ -709,6 +811,37 @@ export interface EventconfigUpdateEventRegistrationConfigRequest {
     registration_password?: string;
 }
 
+/** @format binary */
+export type GenerateCertificateImageData = File;
+
+export type GenerateCertificateImageError = CustomerrorErrResponse;
+
+export interface GenerateCertificateImageParams {
+    /**
+     * Certificate ID
+     * @format uuid
+     */
+    certificateId: string;
+}
+
+export type GetCertificatesListViewmodelData = EventGetCertificatesListViewModelResponse;
+
+export type GetCertificatesListViewmodelError = CustomerrorErrResponse;
+
+export interface GetCertificatesListViewmodelParams {
+    /** Event ID */
+    eventId: string;
+}
+
+export type GetClaimCertificateSignMessageData = EventGetClaimCertificateSignMessageResponse;
+
+export type GetClaimCertificateSignMessageError = CustomerrorErrResponse;
+
+export interface GetClaimCertificateSignMessageParams {
+    /** Certificate ID */
+    certificateId: string;
+}
+
 export type GetEventByIdData = EventEventResponse;
 
 export type GetEventByIdError = CustomerrorErrResponse;
@@ -727,6 +860,11 @@ export interface GetEventCertificateConfigParams {
     /** Event ID */
     eventId: string;
 }
+
+export type GetEventCertificateFontFamiliesData =
+    EventconfigGetEventCertificateFontFamiliesResponse;
+
+export type GetEventCertificateFontFamiliesError = CustomerrorErrResponse;
 
 export type GetEventCertificatesData = EventGetEventCertificatesResponse;
 
@@ -903,6 +1041,10 @@ export interface GetJoinEventSignMessageParams {
     eventId: string;
 }
 
+export type GetMyCertificatesListViewmodelData = EventGetMyCertificatesListViewModelResponse;
+
+export type GetMyCertificatesListViewmodelError = CustomerrorErrResponse;
+
 export type GetMyProfileData = ProfileGetMyProfileViewModel;
 
 export type GetMyProfileError = CustomerrorErr;
@@ -966,12 +1108,16 @@ export interface InboxInboxMessagesEventRegistrationInvitationViewModel {
     academic_institution?: string;
     accepted_at?: string;
     cancelled_at?: string;
+    certificate_id?: string;
+    certificate_title?: string;
     code?: string;
     created_at: string;
     deleted_at?: string;
     email?: string;
     event_id: string;
+    event_name?: string;
     first_name?: string;
+    has_participant_joined_event?: boolean;
     hidden_at?: string;
     id: string;
     is_read: number;
@@ -984,13 +1130,20 @@ export interface InboxInboxMessagesEventRegistrationInvitationViewModel {
     receiver_wallet_address?: string;
     sender_credential_email?: string;
     sender_credential_wallet_address?: string;
+    token_id?: string;
     updated_at: string;
     valid_until?: string;
 }
 
 export interface InboxInboxMessagesViewModel {
+    certificate_id?: string;
+    certificate_title?: string;
     created_at: string;
     deleted_at?: string;
+    /** Certificate-specific fields (only populated for certificate invitation messages) */
+    event_id?: string;
+    event_name?: string;
+    has_participant_joined_event?: boolean;
     hidden_at?: string;
     id: string;
     is_read: number;
@@ -1001,6 +1154,7 @@ export interface InboxInboxMessagesViewModel {
     receiver_wallet_address?: string;
     sender_credential_email?: string;
     sender_credential_wallet_address?: string;
+    token_id?: string;
     updated_at: string;
 }
 
@@ -1039,8 +1193,6 @@ export interface IssuerIssuerEventResponse {
     id: string;
     is_signed: number;
     issuer_credential_id: string;
-    sign_message: string;
-    signature: string;
     updated_at: string;
 }
 
@@ -1381,6 +1533,26 @@ export interface UpdateEventCertificateConfigPayload {
     /** Base certificate image */
     base_certificate_image?: File;
     /**
+     * Certificate subtitle position x
+     * @format float64
+     */
+    certificate_subtitle_pos_x?: number;
+    /**
+     * Certificate subtitle position y
+     * @format float64
+     */
+    certificate_subtitle_pos_y?: number;
+    /**
+     * Certificate title position x
+     * @format float64
+     */
+    certificate_title_pos_x?: number;
+    /**
+     * Certificate title position y
+     * @format float64
+     */
+    certificate_title_pos_y?: number;
+    /**
      * Event name position x
      * @format float64
      */
@@ -1400,6 +1572,15 @@ export interface UpdateEventCertificateConfigPayload {
      * @format float64
      */
     name_pos_y: number;
+}
+
+export type UpdateEventCertificateTextConfigData = EventUpdateEventCertificateTextConfigResponse;
+
+export type UpdateEventCertificateTextConfigError = CustomerrorErrResponse;
+
+export interface UpdateEventCertificateTextConfigParams {
+    /** Event ID */
+    eventId: string;
 }
 
 export type UpdateEventContractData = CoreApiInternalHandlerEventEventContractResponse;
@@ -1753,6 +1934,96 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Claim a certificate using account password or wallet signature (requires authentication)
+         *
+         * @tags Certificates
+         * @name ClaimCertificate
+         * @summary Claim certificate
+         * @request POST:/api/v1/certificates/claim/{certificate_id}
+         * @secure
+         */
+        claimCertificate: (
+            { certificateId, ...query }: ClaimCertificateParams,
+            claimCertificateBody: EventClaimCertificateBody,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<ClaimCertificateData, ClaimCertificateError>({
+                path: `/api/v1/certificates/claim/${certificateId}`,
+                method: "POST",
+                body: claimCertificateBody,
+                secure: true,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get sign message for claiming a certificate (requires authentication)
+         *
+         * @tags Certificates
+         * @name GetClaimCertificateSignMessage
+         * @summary Get claim certificate sign message
+         * @request GET:/api/v1/certificates/claim/{certificate_id}/sign-message
+         * @secure
+         */
+        getClaimCertificateSignMessage: (
+            { certificateId, ...query }: GetClaimCertificateSignMessageParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                GetClaimCertificateSignMessageData,
+                GetClaimCertificateSignMessageError
+            >({
+                path: `/api/v1/certificates/claim/${certificateId}/sign-message`,
+                method: "GET",
+                secure: true,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get current user's certificates separated by claimed and unclaimed status. Claimed certificates have token_id populated, unclaimed certificates have token_id null and certificate config is published. Returns all certificates for the authenticated user across all events.
+         *
+         * @tags Certificates
+         * @name GetMyCertificatesListViewmodel
+         * @summary Get my certificates list viewmodel
+         * @request GET:/api/v1/certificates/my-list-viewmodel
+         */
+        getMyCertificatesListViewmodel: (params: RequestParams = {}) =>
+            this.http.request<
+                GetMyCertificatesListViewmodelData,
+                GetMyCertificatesListViewmodelError
+            >({
+                path: `/api/v1/certificates/my-list-viewmodel`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Generates a PNG certificate image for the authenticated user's certificate
+         *
+         * @tags certificates
+         * @name GenerateCertificateImage
+         * @summary Generate certificate image for participant
+         * @request GET:/api/v1/certificates/{certificate_id}/image
+         * @secure
+         */
+        generateCertificateImage: (
+            { certificateId, ...query }: GenerateCertificateImageParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GenerateCertificateImageData, GenerateCertificateImageError>({
+                path: `/api/v1/certificates/${certificateId}/image`,
+                method: "GET",
+                secure: true,
+                format: "blob",
+                ...params,
+            }),
+
+        /**
          * @description Cancel an event registration invitation by ID
          *
          * @tags Event Registration Invitation
@@ -1880,6 +2151,25 @@ export class Api<SecurityDataType extends unknown> {
                 GetEventRegistrationInvitationByUserAndEventError
             >({
                 path: `/api/v1/event-registration/my/${eventId}`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Retrieves all font families that can be used in certificate templates, including their available weights and italic support
+         *
+         * @name GetEventCertificateFontFamilies
+         * @summary Get all available font families for certificates
+         * @request GET:/api/v1/eventconfig/certificate-font-families
+         */
+        getEventCertificateFontFamilies: (params: RequestParams = {}) =>
+            this.http.request<
+                GetEventCertificateFontFamiliesData,
+                GetEventCertificateFontFamiliesError
+            >({
+                path: `/api/v1/eventconfig/certificate-font-families`,
                 method: "GET",
                 type: ContentType.Json,
                 format: "json",
@@ -2068,6 +2358,26 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Get event certificates separated by claimed and unclaimed status. Claimed certificates have token_id populated, unclaimed certificates have token_id null and certificate config is published. Only event hosts and issuers can access this endpoint.
+         *
+         * @tags Event Certificates
+         * @name GetCertificatesListViewmodel
+         * @summary Get certificates list viewmodel
+         * @request GET:/api/v1/events/{event_id}/certificates/list-viewmodel
+         */
+        getCertificatesListViewmodel: (
+            { eventId, ...query }: GetCertificatesListViewmodelParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetCertificatesListViewmodelData, GetCertificatesListViewmodelError>({
+                path: `/api/v1/events/${eventId}/certificates/list-viewmodel`,
+                method: "GET",
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Publish certificates for an event. This will create inbox messages for all certificate receivers. All issuers must have signed before publishing.
          *
          * @name PublishEventCertificates
@@ -2147,6 +2457,30 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/events/${eventId}/certificates/sign`,
                 method: "POST",
                 body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Update font family and font weight for all text templates in the certificate. This endpoint allows customization of fonts for event name, participant name, academic institution, certificate title, and certificate subtitle.
+         *
+         * @name UpdateEventCertificateTextConfig
+         * @summary Update certificate text configuration
+         * @request PUT:/api/v1/events/{event_id}/certificates/text-config
+         */
+        updateEventCertificateTextConfig: (
+            { eventId, ...query }: UpdateEventCertificateTextConfigParams,
+            body: EventUpdateEventCertificateTextConfigRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                UpdateEventCertificateTextConfigData,
+                UpdateEventCertificateTextConfigError
+            >({
+                path: `/api/v1/events/${eventId}/certificates/text-config`,
+                method: "PUT",
+                body: body,
                 type: ContentType.Json,
                 format: "json",
                 ...params,

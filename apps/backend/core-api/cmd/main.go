@@ -110,8 +110,8 @@ func main() {
 	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
 	authUc := auth_usecase.NewAuthUsecase(pgRepo) // No database dependency - reads from JWT claims
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo, authService)
-	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService, &cfg)
-	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, logger)
+	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService, &cfg)
+	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, logger)
 	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)
 	inboxUc := inbox_usecase.NewInboxUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo)
 	eventRegistrationUc := event_registration_invitation_usecase.NewEventRegistrationUsecase(
@@ -201,7 +201,7 @@ func main() {
 	eventHandler := event.NewHandler(eventUc, eventConfigUc, profileUc, eventRegistrationUc, authService, authenticationGuardMiddleware, logger)
 	eventHandler.Mount(apiV1)
 
-	eventConfigHandler := eventconfig_handler.NewHandler(eventConfigUc, eventUc, authService, authenticationGuardMiddleware, roleGuardMiddleware)
+	eventConfigHandler := eventconfig_handler.NewHandler(eventConfigUc, eventUc, authService, authenticationGuardMiddleware, roleGuardMiddleware, logger)
 	eventConfigHandler.Mount(apiV1)
 
 	issuerHandler := issuer.NewHandler(issuerUc, authService, authenticationGuardMiddleware, roleGuardMiddleware)

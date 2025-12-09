@@ -2,6 +2,7 @@ import { coreApiClient } from "@/lib/api/api";
 import { queryClient } from "@/lib/api/queryClient";
 import { QUERY_KEY } from "@/lib/queryKeys";
 import { useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 interface CancelEventInvitationParams {
@@ -10,6 +11,8 @@ interface CancelEventInvitationParams {
 }
 
 export function useCancelEventInvitation() {
+    const { t } = useTranslation();
+
     const {
         mutate: cancelEventInvitation,
         isPending: isCancelling,
@@ -24,7 +27,7 @@ export function useCancelEventInvitation() {
             queryClient.invalidateQueries({
                 queryKey: QUERY_KEY.event.invitations.byEventId(eventId),
             });
-            toast.success("Invitation cancelled successfully");
+            toast.success(t("event.participants.cancelSuccess"));
         },
     });
 

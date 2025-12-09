@@ -10,6 +10,15 @@ func (h *Handler) Mount(r fiber.Router) {
 	logger := log.LoadLogger()
 	defer logger.Info("Mounted event routes")
 
+	// Certificates routes (user-specific, not event-specific)
+	certificateGroup := r.Group("/certificates").Use(
+		h.AuthenticationGuardMiddleware.Middleware,
+	)
+	certificateGroup.Get("/my-list-viewmodel", h.GetMyCertificatesListViewModel)
+	certificateGroup.Get("/:certificate_id/image", h.GenerateCertificateImage)
+	certificateGroup.Get("/claim/:certificate_id/sign-message", h.GetClaimCertificateSignMessage)
+	certificateGroup.Post("/claim/:certificate_id", h.ClaimCertificate)
+
 	eventGroup := r.Group("/events").Use(
 		h.AuthenticationGuardMiddleware.Middleware,
 	)
@@ -30,6 +39,8 @@ func (h *Handler) Mount(r fiber.Router) {
 	eventGroup.Post("/:event_id/certificates/revoke-all", h.RevokeAllEventCertificates)
 	eventGroup.Post("/:event_id/certificates/sign", h.SignEventCertificates)
 	eventGroup.Get("/:event_id/certificates", h.GetEventCertificates)
+	eventGroup.Get("/:event_id/certificates/list-viewmodel", h.GetCertificatesListViewModel)
+	eventGroup.Put("/:event_id/certificates/text-config", h.UpdateEventCertificateTextConfig)
 
 	eventGroup.Get("/:event_id/contracts", h.GetEventContractByEventID)
 	eventGroup.Get("/:event_id/issuers", h.GetEventIssuersByEventID)

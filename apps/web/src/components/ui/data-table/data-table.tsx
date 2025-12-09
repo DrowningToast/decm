@@ -19,6 +19,7 @@ import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 import { Typography } from "@/components/typography/typography";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -57,6 +58,7 @@ export function DataTable<TData, TValue>({
     onSortingChange,
     isLoading = false,
 }: DataTableProps<TData, TValue>) {
+    const { t } = useTranslation();
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [rowSelection, setRowSelection] = useState({});
@@ -143,7 +145,7 @@ export function DataTable<TData, TValue>({
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
                                     <Typography variant="text" tag="p" color="background">
-                                        Loading...
+                                        {t("common.loading")}
                                     </Typography>
                                 </TableCell>
                             </TableRow>
@@ -168,7 +170,7 @@ export function DataTable<TData, TValue>({
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
                                     <Typography variant="text" tag="p" color="background-alt">
-                                        No results found.
+                                        {t("common.pagination.noResults")}
                                     </Typography>
                                 </TableCell>
                             </TableRow>

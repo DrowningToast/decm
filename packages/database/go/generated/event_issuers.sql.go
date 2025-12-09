@@ -36,42 +36,28 @@ const CreateEventIssuer = `-- name: CreateEventIssuer :one
 INSERT INTO event_issuers (
     event_id,
     issuer_credential_id,
-    is_signed,
-    signature,
-    sign_message_digest
+    is_signed
 ) VALUES (
     $1,
     $2,
-    $3,
-    $4,
-    $5
-) RETURNING id, event_id, issuer_credential_id, is_signed, signature, sign_message_digest, created_at, updated_at, deleted_at
+    $3
+) RETURNING id, event_id, issuer_credential_id, is_signed, created_at, updated_at, deleted_at
 `
 
 type CreateEventIssuerParams struct {
-	EventID            uuid.UUID   `json:"event_id"`
-	IssuerCredentialID uuid.UUID   `json:"issuer_credential_id"`
-	IsSigned           int32       `json:"is_signed"`
-	Signature          pgtype.Text `json:"signature"`
-	SignMessageDigest  pgtype.Text `json:"sign_message_digest"`
+	EventID            uuid.UUID `json:"event_id"`
+	IssuerCredentialID uuid.UUID `json:"issuer_credential_id"`
+	IsSigned           int32     `json:"is_signed"`
 }
 
 func (q *Queries) CreateEventIssuer(ctx context.Context, arg CreateEventIssuerParams) (EventIssuer, error) {
-	row := q.db.QueryRow(ctx, CreateEventIssuer,
-		arg.EventID,
-		arg.IssuerCredentialID,
-		arg.IsSigned,
-		arg.Signature,
-		arg.SignMessageDigest,
-	)
+	row := q.db.QueryRow(ctx, CreateEventIssuer, arg.EventID, arg.IssuerCredentialID, arg.IsSigned)
 	var i EventIssuer
 	err := row.Scan(
 		&i.ID,
 		&i.EventID,
 		&i.IssuerCredentialID,
 		&i.IsSigned,
-		&i.Signature,
-		&i.SignMessageDigest,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -89,7 +75,7 @@ func (q *Queries) DeleteEventIssuer(ctx context.Context, id uuid.UUID) error {
 }
 
 const GetEventIssuerByEventIDAndIssuerCredentialID = `-- name: GetEventIssuerByEventIDAndIssuerCredentialID :one
-SELECT id, event_id, issuer_credential_id, is_signed, signature, sign_message_digest, created_at, updated_at, deleted_at FROM event_issuers 
+SELECT id, event_id, issuer_credential_id, is_signed, created_at, updated_at, deleted_at FROM event_issuers 
 WHERE event_id = $1 
   AND issuer_credential_id = $2
   AND deleted_at IS NULL
@@ -108,8 +94,6 @@ func (q *Queries) GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Conte
 		&i.EventID,
 		&i.IssuerCredentialID,
 		&i.IsSigned,
-		&i.Signature,
-		&i.SignMessageDigest,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -118,7 +102,7 @@ func (q *Queries) GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Conte
 }
 
 const GetEventIssuerByID = `-- name: GetEventIssuerByID :one
-SELECT id, event_id, issuer_credential_id, is_signed, signature, sign_message_digest, created_at, updated_at, deleted_at FROM event_issuers WHERE id = $1
+SELECT id, event_id, issuer_credential_id, is_signed, created_at, updated_at, deleted_at FROM event_issuers WHERE id = $1
 `
 
 func (q *Queries) GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIssuer, error) {
@@ -129,8 +113,6 @@ func (q *Queries) GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIs
 		&i.EventID,
 		&i.IssuerCredentialID,
 		&i.IsSigned,
-		&i.Signature,
-		&i.SignMessageDigest,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -139,13 +121,11 @@ func (q *Queries) GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIs
 }
 
 const GetEventIssuersByCredentialID = `-- name: GetEventIssuersByCredentialID :many
-SELECT 
+SELECT
     ei.id,
     ei.event_id as event_id,
     ei.issuer_credential_id,
     ei.is_signed,
-    ei.signature,
-    ei.sign_message_digest,
     ei.created_at,
     ei.updated_at,
     e.title as event_title,
@@ -172,8 +152,6 @@ type GetEventIssuersByCredentialIDRow struct {
 	EventID                uuid.UUID          `json:"event_id"`
 	IssuerCredentialID     uuid.UUID          `json:"issuer_credential_id"`
 	IsSigned               int32              `json:"is_signed"`
-	Signature              pgtype.Text        `json:"signature"`
-	SignMessageDigest      pgtype.Text        `json:"sign_message_digest"`
 	CreatedAt              pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
 	EventTitle             string             `json:"event_title"`
@@ -198,8 +176,6 @@ func (q *Queries) GetEventIssuersByCredentialID(ctx context.Context, arg GetEven
 			&i.EventID,
 			&i.IssuerCredentialID,
 			&i.IsSigned,
-			&i.Signature,
-			&i.SignMessageDigest,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.EventTitle,
@@ -220,7 +196,7 @@ func (q *Queries) GetEventIssuersByCredentialID(ctx context.Context, arg GetEven
 }
 
 const GetEventIssuersByEventID = `-- name: GetEventIssuersByEventID :many
-SELECT id, event_id, issuer_credential_id, is_signed, signature, sign_message_digest, created_at, updated_at, deleted_at FROM event_issuers WHERE event_id = $1
+SELECT id, event_id, issuer_credential_id, is_signed, created_at, updated_at, deleted_at FROM event_issuers WHERE event_id = $1
 `
 
 func (q *Queries) GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUID) ([]EventIssuer, error) {
@@ -237,8 +213,6 @@ func (q *Queries) GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUI
 			&i.EventID,
 			&i.IssuerCredentialID,
 			&i.IsSigned,
-			&i.Signature,
-			&i.SignMessageDigest,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -254,13 +228,11 @@ func (q *Queries) GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUI
 }
 
 const GetIssuerEventsWithDetails = `-- name: GetIssuerEventsWithDetails :many
-SELECT 
+SELECT
     ei.id,
     ei.event_id as event_id,
     ei.issuer_credential_id,
     ei.is_signed,
-    ei.signature,
-    ei.sign_message_digest,
     ei.created_at,
     ei.updated_at,
     e.title as event_title,
@@ -275,11 +247,11 @@ SELECT
     ac.wallet_address as owner_wallet_address,
     ac.google_connector_ref as owner_google_connector_ref,
     COALESCE(
-        (SELECT COUNT(ec.id) 
-         FROM event_certificates ec 
-         WHERE ec.event_id = e.id 
+        (SELECT COUNT(ec.id)
+         FROM event_certificates ec
+         WHERE ec.event_id = e.id
            AND ec.revoked_at IS NULL
-        ), 
+        ),
     0)::INTEGER AS certificate_count
 FROM event_issuers ei
 INNER JOIN events e ON ei.event_id = e.id
@@ -301,8 +273,6 @@ type GetIssuerEventsWithDetailsRow struct {
 	EventID                 uuid.UUID          `json:"event_id"`
 	IssuerCredentialID      uuid.UUID          `json:"issuer_credential_id"`
 	IsSigned                int32              `json:"is_signed"`
-	Signature               pgtype.Text        `json:"signature"`
-	SignMessageDigest       pgtype.Text        `json:"sign_message_digest"`
 	CreatedAt               pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt               pgtype.Timestamptz `json:"updated_at"`
 	EventTitle              string             `json:"event_title"`
@@ -333,8 +303,6 @@ func (q *Queries) GetIssuerEventsWithDetails(ctx context.Context, arg GetIssuerE
 			&i.EventID,
 			&i.IssuerCredentialID,
 			&i.IsSigned,
-			&i.Signature,
-			&i.SignMessageDigest,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.EventTitle,
@@ -419,37 +387,26 @@ func (q *Queries) ResetAllEventIssuersSigningStatus(ctx context.Context, eventID
 
 const UpdateEventIssuer = `-- name: UpdateEventIssuer :one
 UPDATE event_issuers
-SET 
+SET
     is_signed = $1,
-    signature = $2,
-    sign_message_digest = $3,
     updated_at = NOW()
-WHERE id = $4
-RETURNING id, event_id, issuer_credential_id, is_signed, signature, sign_message_digest, created_at, updated_at, deleted_at
+WHERE id = $2
+RETURNING id, event_id, issuer_credential_id, is_signed, created_at, updated_at, deleted_at
 `
 
 type UpdateEventIssuerParams struct {
-	IsSigned          int32       `json:"is_signed"`
-	Signature         pgtype.Text `json:"signature"`
-	SignMessageDigest pgtype.Text `json:"sign_message_digest"`
-	ID                uuid.UUID   `json:"id"`
+	IsSigned int32     `json:"is_signed"`
+	ID       uuid.UUID `json:"id"`
 }
 
 func (q *Queries) UpdateEventIssuer(ctx context.Context, arg UpdateEventIssuerParams) (EventIssuer, error) {
-	row := q.db.QueryRow(ctx, UpdateEventIssuer,
-		arg.IsSigned,
-		arg.Signature,
-		arg.SignMessageDigest,
-		arg.ID,
-	)
+	row := q.db.QueryRow(ctx, UpdateEventIssuer, arg.IsSigned, arg.ID)
 	var i EventIssuer
 	err := row.Scan(
 		&i.ID,
 		&i.EventID,
 		&i.IssuerCredentialID,
 		&i.IsSigned,
-		&i.Signature,
-		&i.SignMessageDigest,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,

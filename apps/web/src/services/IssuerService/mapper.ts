@@ -13,7 +13,5 @@ export const mapToIssuerEvent = (issuerEventResponse: IssuerIssuerEventResponse)
         id: issuerEventResponse.id,
         isSigned: issuerEventResponse.is_signed === 1,
         issuerCredentialId: issuerEventResponse.issuer_credential_id || "",
-        signMessage: issuerEventResponse.sign_message || "",
-        signature: issuerEventResponse.signature || "",
     };
 };

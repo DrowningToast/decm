@@ -140,6 +140,7 @@ export const EventTable: React.FC<EventTableProps> = ({ events, type, onActionCl
                                 <EventActions
                                     type={type}
                                     eventId={event.eventId || ""}
+                                    certificateCount={event.certificateCount}
                                     onActionClick={onActionClick}
                                 />
                             </TableCell>

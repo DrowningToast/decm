@@ -145,6 +145,11 @@ func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params 
 			MessageType:            entity.InboxMessageType(result.MessageType),
 			MessageContent:         string(result.MessageContent),
 			FallbackMessageContent: pgmapper.PgTextToStringPtr(result.FallbackMessageContent),
+			IsRead:                 int(result.IsRead.Int32),
+			CreatedAt:              *pgmapper.PgTimestampzToTimePtr(result.CreatedAt),
+			UpdatedAt:              *pgmapper.PgTimestampzToTimePtr(result.UpdatedAt),
+			HiddenAt:               pgmapper.PgTimestampzToTimePtr(result.HiddenAt),
+			DeletedAt:              pgmapper.PgTimestampzToTimePtr(result.DeletedAt),
 		}
 	}
 
@@ -231,6 +236,11 @@ func (r *Repository) GetInboxMessagesByReceiverWalletAddress(ctx context.Context
 			MessageType:            entity.InboxMessageType(result.MessageType),
 			MessageContent:         string(result.MessageContent),
 			FallbackMessageContent: pgmapper.PgTextToStringPtr(result.FallbackMessageContent),
+			IsRead:                 int(result.IsRead.Int32),
+			CreatedAt:              *pgmapper.PgTimestampzToTimePtr(result.CreatedAt),
+			UpdatedAt:              *pgmapper.PgTimestampzToTimePtr(result.UpdatedAt),
+			HiddenAt:               pgmapper.PgTimestampzToTimePtr(result.HiddenAt),
+			DeletedAt:              pgmapper.PgTimestampzToTimePtr(result.DeletedAt),
 		}
 	}
 

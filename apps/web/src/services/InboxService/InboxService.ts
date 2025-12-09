@@ -28,6 +28,13 @@ export interface InboxMessage {
     updatedAt: Date;
     hiddenAt?: Date;
     deletedAt?: Date;
+    // Certificate-specific fields (only populated for certificate invitation messages)
+    eventId?: string;
+    certificateId?: string;
+    certificateTitle?: string;
+    tokenId?: string;
+    hasParticipantJoinedEvent?: boolean;
+    eventName?: string;
 }
 
 export type InboxMessageDetail =

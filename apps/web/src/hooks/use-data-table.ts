@@ -65,7 +65,7 @@ export function useDataTable<TData>({
 
         try {
             const sortBy = sorting[0]?.id;
-            const sortOrder = sorting[0]?.desc ? "desc" : "asc";
+            const sortOrder = sortBy ? (sorting[0]?.desc ? "desc" : "asc") : undefined;
 
             const result = await fetchData({
                 page: currentPage,

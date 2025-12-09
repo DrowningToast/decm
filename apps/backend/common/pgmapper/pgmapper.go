@@ -77,9 +77,14 @@ func BoolToIntPtr(value bool) *int32 {
 }
 
 func BoolPtrToPgInt4(value *bool) pgtype.Int4 {
+	if value == nil {
+		return pgtype.Int4{
+			Valid: false,
+		}
+	}
 	return pgtype.Int4{
 		Int32: BoolToInt32(*value),
-		Valid: value != nil,
+		Valid: true,
 	}
 }
 
@@ -91,9 +96,14 @@ func IntPtrToBool(value *int32) bool {
 }
 
 func IntPtrToPgInt4(value *int32) pgtype.Int4 {
+	if value == nil {
+		return pgtype.Int4{
+			Valid: false,
+		}
+	}
 	return pgtype.Int4{
 		Int32: *value,
-		Valid: value != nil,
+		Valid: true,
 	}
 }
 
@@ -120,6 +130,20 @@ func PgUUIDToUUIDPtr(value pgtype.UUID) *uuid.UUID {
 	}
 	result := uuid.UUID(value.Bytes)
 	return &result
+}
+
+func PgFloat8ToFloat64Ptr(f8 pgtype.Float8) *float64 {
+	if !f8.Valid {
+		return nil
+	}
+	return &f8.Float64
+}
+
+func PgInt4ToInt32Ptr(i4 pgtype.Int4) *int32 {
+	if !i4.Valid {
+		return nil
+	}
+	return &i4.Int32
 }
 
 // ========== PII Encryption Functions ==========

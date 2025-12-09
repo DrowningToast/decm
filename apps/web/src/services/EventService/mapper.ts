@@ -137,8 +137,6 @@ export const mapToEventIssuer = (eventIssuerResponse: EventEventIssuerResponse):
         issuerProfile: eventIssuerResponse.issuer_profile
             ? mapProfileViewModel(eventIssuerResponse.issuer_profile)
             : undefined,
-        signMessage: eventIssuerResponse.sign_message ?? undefined,
-        signature: eventIssuerResponse.signature ?? undefined,
 
         createdAt: new Date(eventIssuerResponse.created_at),
         updatedAt: new Date(eventIssuerResponse.updated_at),

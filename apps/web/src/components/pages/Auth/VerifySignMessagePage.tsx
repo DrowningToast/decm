@@ -10,9 +10,9 @@ import { useSignMessage } from "wagmi";
 import { toast } from "sonner";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
-import { onboardService } from "@/services/services";
 import { OnboardRegistrationMethod } from "@decm/api";
 import { handleUniversalError } from "@/common/Err";
+import { useCheckOnboardStatus } from "../Onboard/useCheckOnboardStatus";
 
 import { OnboardMethods } from "@/pages/onboard/[method]";
 interface VerifySignMessagePageProps {
@@ -32,6 +32,7 @@ export const VerifySignMessagePage: React.FC<VerifySignMessagePageProps> = ({
     );
 
     const { signMessageAsync } = useSignMessage();
+    const { checkOnboardStatus } = useCheckOnboardStatus(undefined, false);
 
     const { signMessage, isPending: isGetMessagePending } = useGetSignMessage();
     const isEnabled = useMemo(() => {
@@ -46,7 +47,7 @@ export const VerifySignMessagePage: React.FC<VerifySignMessagePageProps> = ({
         const loadingToastId = toast.loading(t("verify.signMessageLoading"));
         try {
             const signature = await signMessageAsync({ message: signMessage });
-            const response = await onboardService.checkOnboardStatus({
+            const response = await checkOnboardStatus({
                 method: OnboardRegistrationMethod.RegistrationMethodWallet,
                 signSignature: signature,
             });

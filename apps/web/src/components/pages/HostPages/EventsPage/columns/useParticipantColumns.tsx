@@ -18,13 +18,17 @@ export interface Participant {
 }
 
 // Helper to render cell content with "(empty)" fallback
-const renderCellContent = (value: string | null | undefined, className?: string) => {
+const renderCellContent = (
+    value: string | null | undefined,
+    className?: string,
+    emptyText?: string,
+) => {
     const isEmpty = !value || (typeof value === "string" && value.trim() === "");
 
     if (isEmpty) {
         return (
             <Typography variant="text" tag="span" className={className} color="muted-foreground">
-                <span className="italic">(empty)</span>
+                <span className="italic">{emptyText || "(empty)"}</span>
             </Typography>
         );
     }
@@ -43,47 +47,59 @@ export function useParticipantColumns(eventId: string) {
     const participantColumns: ColumnDef<Participant>[] = [
         {
             accessorKey: "firstName",
-            header: "First Name",
+            header: t("events.participants.fields.firstName"),
             enableSorting: true,
             cell: ({ row }) => {
                 const firstName = row.getValue("firstName") as string | null;
-                return renderCellContent(firstName, "font-mono text-xs min-w-[160px]");
+                return renderCellContent(
+                    firstName,
+                    "font-mono text-xs min-w-[160px]",
+                    t("common.empty"),
+                );
             },
         },
         {
             accessorKey: "lastName",
-            header: "Last Name",
+            header: t("events.participants.fields.lastName"),
             enableSorting: true,
             cell: ({ row }) => {
                 const lastName = row.getValue("lastName") as string | null;
-                return renderCellContent(lastName, "font-mono text-xs");
+                return renderCellContent(lastName, "font-mono text-xs", t("common.empty"));
             },
         },
         {
             accessorKey: "email",
-            header: "Email",
+            header: t("events.participants.fields.email"),
             enableSorting: true,
             cell: ({ row }) => {
                 const email = row.getValue("email") as string | null;
-                return renderCellContent(email, "font-mono text-xs");
+                return renderCellContent(email, "font-mono text-xs", t("common.empty"));
             },
         },
         {
             accessorKey: "phoneNumber",
-            header: "Phone Number",
+            header: t("events.participants.fields.phoneNumber"),
             enableSorting: false,
             cell: ({ row }) => {
                 const phoneNumber = row.getValue("phoneNumber") as string | null;
-                return renderCellContent(phoneNumber, "font-mono text-xs min-w-[128px]");
+                return renderCellContent(
+                    phoneNumber,
+                    "font-mono text-xs min-w-[128px]",
+                    t("common.empty"),
+                );
             },
         },
         {
             accessorKey: "academicInstitution",
-            header: "Academic Institution",
+            header: t("events.participants.fields.academicInstitution"),
             enableSorting: true,
             cell: ({ row }) => {
                 const academicInstitution = row.getValue("academicInstitution") as string | null;
-                return renderCellContent(academicInstitution, "font-mono text-xs");
+                return renderCellContent(
+                    academicInstitution,
+                    "font-mono text-xs",
+                    t("common.empty"),
+                );
             },
         },
         {
@@ -112,7 +128,7 @@ export function useParticipantColumns(eventId: string) {
         },
         {
             id: "actions",
-            header: "Action",
+            header: t("events.hostDetails.participants.table.actions"),
             enableSorting: false,
             cell: ({ row }) => {
                 const eventInvitationId = row.original.id;

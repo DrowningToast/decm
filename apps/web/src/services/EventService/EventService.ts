@@ -91,8 +91,6 @@ export interface EventIssuer {
     isSigned: boolean;
     issuerCredentialId: string;
     issuerProfile?: Profile;
-    signMessage?: string;
-    signature?: string;
 
     createdAt: Date;
     updatedAt: Date;

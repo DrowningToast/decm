@@ -59,10 +59,8 @@ func (r *Repository) UpdateEventIssuerSigningStatus(ctx context.Context, eventID
 
 	// Update is_signed field
 	_, err = r.queries.UpdateEventIssuer(ctx, generated.UpdateEventIssuerParams{
-		ID:                issuer.ID,
-		IsSigned:          isSigned,
-		Signature:         issuer.Signature,
-		SignMessageDigest: issuer.SignMessageDigest,
+		ID:       issuer.ID,
+		IsSigned: isSigned,
 	})
 
 	return err

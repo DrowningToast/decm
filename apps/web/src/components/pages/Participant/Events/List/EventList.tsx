@@ -111,7 +111,7 @@ export const EventList = ({ events = [], isLoading, filterType }: EventListProps
 };
 
 const EventItem = ({ event }: { event: EventItemType | EventViewModelExtended }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     // Check if event has isJoined property (from EventViewModelExtended)
     const isJoined = "isJoined" in event && event.isJoined === true;
@@ -151,8 +151,10 @@ const EventItem = ({ event }: { event: EventItemType | EventViewModelExtended })
 
     const accessInfo = getAccessIcon();
 
+    // Use i18n language for date formatting (e.g., 'en' or 'th')
+    const locale = i18n.language === "th" ? "th-TH" : "en-US";
     const formattedDate = event.endDate
-        ? new Date(event.endDate).toLocaleDateString("en-US", {
+        ? new Date(event.endDate).toLocaleDateString(locale, {
               year: "numeric",
               month: "short",
               day: "numeric",

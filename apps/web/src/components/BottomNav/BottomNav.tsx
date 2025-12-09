@@ -77,27 +77,32 @@ export const BottomNav = ({
 
     return (
         <>
-            {/* Mobile - Full Width */}
+            {/* Mobile - Full Width (or compact for certificate-detail) */}
             <div
                 className={cn(
                     "md:hidden fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background to-transparent",
+                    variant === "certificate-detail" && "flex justify-center",
+                    className,
+                )}
+            >
+                <BottomContainerProvider
+                    onBack={onBack}
+                    className={cn(variant === "certificate-detail" ? "w-auto" : "w-full")}
+                >
+                    <div className="flex flex-col gap-1 w-full">{content}</div>
+                </BottomContainerProvider>
+            </div>
+
+            {/* Desktop - Fixed Width (or compact for certificate-detail) */}
+            <div
+                className={cn(
+                    "hidden md:flex fixed bottom-12 left-1/2 transform -translate-x-1/2 justify-center z-50 pointer-events-auto",
+                    variant === "certificate-detail" ? "w-auto" : "w-[700px]",
                     className,
                 )}
             >
                 <BottomContainerProvider onBack={onBack} className="w-full">
                     <div className="flex flex-col gap-1 w-full">{content}</div>
-                </BottomContainerProvider>
-            </div>
-
-            {/* Desktop - Fixed Width */}
-            <div
-                className={cn(
-                    "hidden md:flex fixed bottom-12 left-1/2 transform -translate-x-1/2 justify-center z-50 pointer-events-auto w-[343px]",
-                    className,
-                )}
-            >
-                <BottomContainerProvider onBack={onBack} className="w-auto">
-                    <div className="flex flex-col gap-1">{content}</div>
                 </BottomContainerProvider>
             </div>
         </>

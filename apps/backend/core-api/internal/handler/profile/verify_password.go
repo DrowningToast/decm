@@ -45,7 +45,9 @@ func (r *VerifyPasswordRequest) IsValid() error {
 
 func (h *Handler) VerifyPassword(c *fiber.Ctx) error {
 	var verifyPasswordRequest VerifyPasswordRequest
-	verifyPasswordRequest.Parse(c)
+	if err := verifyPasswordRequest.Parse(c); err != nil {
+		return err
+	}
 
 	if err := verifyPasswordRequest.IsValid(); err != nil {
 		return err

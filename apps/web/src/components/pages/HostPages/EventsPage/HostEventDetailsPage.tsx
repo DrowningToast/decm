@@ -19,7 +19,7 @@ import WrappedButton from "@/components/wrapper/WrappedButton";
 import { CheckCircle2Icon, CloudUploadIcon, ExternalLinkIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
-import { issuerColumns } from "./columns/issuer-columns";
+import { useIssuerColumns } from "./columns/issuer-columns";
 import type {
     EntityEventCertificate,
     GetEventCertificateConfigData,
@@ -32,7 +32,7 @@ import type { SortingState } from "@tanstack/react-table";
 import { useParticipantColumns, type Participant } from "./columns/useParticipantColumns";
 import { useAttendeeColumns } from "./columns/useAttendeeColumns";
 import { useEventAttendees } from "@/hooks/events/useEventAttendees";
-import { CertificateColumns } from "./columns/CertificateColumns";
+import { useCertificateColumns } from "./columns/CertificateColumns";
 import { Separator } from "@/components/ui/separator";
 import { useEventCertificates } from "@/hooks/useEventCertificates";
 import { useRevokeEventCertificate } from "@/hooks/events/useRevokeEventCertificate";
@@ -75,6 +75,14 @@ export default function HostEventDetailsPage({
 
     // Check if certificate config is published - if so, disable all edit buttons
     const isCertificatePublished = eventCertificateConfig?.is_published ?? false;
+
+    // Get certificate columns
+    const certificateColumns = useCertificateColumns((eventCertificateId: string) => {
+        revokeEventCertificate({
+            certificateIds: [eventCertificateId],
+            eventId,
+        });
+    }, isCertificatePublished);
 
     // State for client-side data management
     const [searchValue, setSearchValue] = useState("");
@@ -154,6 +162,7 @@ export default function HostEventDetailsPage({
 
     const participantColumns = useParticipantColumns(eventId);
     const attendeeColumns = useAttendeeColumns();
+    const issuerColumns = useIssuerColumns();
 
     // Fetch actual attendees
     const { attendees, isLoading: attendeesLoading } = useEventAttendees({ eventId });
@@ -179,9 +188,25 @@ export default function HostEventDetailsPage({
     // Certificate state logic
     const hasCertificateConfig = !!eventCertificateConfig;
 
+    // Check if issuers are assigned
+    const hasIssuers = !!eventIssuers && eventIssuers.length > 0;
+
     // Fetch event certificates using the hook
     const { certificates: eventCertificates, isLoading: certificatesLoading } =
         useEventCertificates(eventId);
+
+    // Client-side check: Must have at least 1 receiver (non-revoked certificate)
+    const hasAtLeastOneReceiver = useMemo(() => {
+        if (!eventCertificates) return false;
+        const nonRevokedCertificates = eventCertificates.filter((cert) => !cert.revokedAt);
+        return nonRevokedCertificates.length > 0;
+    }, [eventCertificates]);
+
+    // Combined readiness check (backend + client-side receiver requirement)
+    const isReadyToPublish = useMemo(() => {
+        if (!mintReadiness) return false;
+        return mintReadiness.is_ready && hasAtLeastOneReceiver;
+    }, [mintReadiness, hasAtLeastOneReceiver]);
 
     console.log(eventCertificates);
 
@@ -218,13 +243,17 @@ export default function HostEventDetailsPage({
 
             <SectionContainer className="lg:grid lg:grid-cols-4 gap-8">
                 <div className="flex flex-col gap-4 lg:col-span-3">
-                    <Typography tag="p" size={"base"} color="muted">
-                        {event.shortDescription}
-                    </Typography>
+                    {event.shortDescription && (
+                        <Typography tag="p" size={"base"} color="muted">
+                            {event.shortDescription}
+                        </Typography>
+                    )}
 
-                    <Typography tag="p" size={"base"} color="muted">
-                        {event.longDescription}
-                    </Typography>
+                    {event.longDescription && event.longDescription !== event.shortDescription && (
+                        <Typography tag="p" size={"base"} color="muted">
+                            {event.longDescription}
+                        </Typography>
+                    )}
 
                     <img
                         src={event.bannerPresignedUrl ?? ""}
@@ -513,24 +542,8 @@ export default function HostEventDetailsPage({
                                     </div>
                                     <div className="flex gap-2">
                                         <WrappedButton
-                                            className={`px-5 py-2 rounded-md font-medium transition ${
-                                                isCertificatePublished
-                                                    ? "bg-gray-400 text-white cursor-not-allowed"
-                                                    : "bg-primary text-white hover:bg-primary/90"
-                                            }`}
-                                            href={
-                                                isCertificatePublished
-                                                    ? undefined
-                                                    : `/host/events/${eventId}/settings/certificate`
-                                            }
-                                            disabled={isCertificatePublished}
-                                            title={
-                                                isCertificatePublished
-                                                    ? t(
-                                                          "events.hostDetails.certificates.editDisabledMessage",
-                                                      )
-                                                    : undefined
-                                            }
+                                            className="px-5 py-2 rounded-md font-medium transition bg-primary text-white hover:bg-primary/90"
+                                            href={`/host/events/${eventId}/settings/certificate`}
                                         >
                                             {t("certificateSettings.pageTitle")}
                                         </WrappedButton>
@@ -541,13 +554,13 @@ export default function HostEventDetailsPage({
                                 {mintReadiness && (
                                     <div
                                         className={`w-full border rounded-lg p-4 flex items-start gap-3 ${
-                                            mintReadiness.is_ready
+                                            isReadyToPublish
                                                 ? "bg-green-50 border-green-200"
                                                 : "bg-blue-50 border-blue-200"
                                         }`}
                                     >
                                         <div className="mt-0.5">
-                                            {mintReadiness.is_ready ? (
+                                            {isReadyToPublish ? (
                                                 <CheckCircle2Icon className="h-5 w-5 text-green-600" />
                                             ) : (
                                                 <div className="h-5 w-5 rounded-full border-2 border-blue-600" />
@@ -558,12 +571,12 @@ export default function HostEventDetailsPage({
                                                 variant="text"
                                                 tag="p"
                                                 className={`font-semibold text-base ${
-                                                    mintReadiness.is_ready
+                                                    isReadyToPublish
                                                         ? "text-green-900"
                                                         : "text-blue-900"
                                                 }`}
                                             >
-                                                {mintReadiness.is_ready
+                                                {isReadyToPublish
                                                     ? t("events.hostDetails.certificates.mintReady")
                                                     : t(
                                                           "events.hostDetails.certificates.mintNotReady",
@@ -631,6 +644,31 @@ export default function HostEventDetailsPage({
                                                         )}
                                                     </span>
                                                 </div>
+                                                {/* At Least One Receiver Status (Client-side check) */}
+                                                <div className="flex items-center gap-2 text-sm">
+                                                    {hasAtLeastOneReceiver ? (
+                                                        <CheckCircle2Icon className="h-4 w-4 text-green-600 flex-shrink-0" />
+                                                    ) : (
+                                                        <div className="h-4 w-4 rounded-full border-2 border-gray-400 flex-shrink-0" />
+                                                    )}
+                                                    <span
+                                                        className={
+                                                            hasAtLeastOneReceiver
+                                                                ? "text-green-700"
+                                                                : "text-gray-600"
+                                                        }
+                                                    >
+                                                        {t(
+                                                            "events.hostDetails.certificates.hasReceiverStatus",
+                                                            {
+                                                                count:
+                                                                    eventCertificates?.filter(
+                                                                        (c) => !c.revokedAt,
+                                                                    ).length || 0,
+                                                            },
+                                                        )}
+                                                    </span>
+                                                </div>
                                             </div>
                                             {/* Missing Requirements */}
                                             {mintReadiness.missing_requirements &&
@@ -648,9 +686,69 @@ export default function HostEventDetailsPage({
                                                         </Typography>
                                                         <ul className="list-disc list-inside space-y-0.5">
                                                             {mintReadiness.missing_requirements.map(
-                                                                (req, idx) => (
-                                                                    <li key={idx}>{req}</li>
-                                                                ),
+                                                                (req, idx) => {
+                                                                    // Translate backend messages to i18n keys
+                                                                    let translatedMessage = req;
+
+                                                                    // Map backend messages to translation keys
+                                                                    if (
+                                                                        req ===
+                                                                        "Certificate configuration is not set up"
+                                                                    ) {
+                                                                        translatedMessage = t(
+                                                                            "events.hostDetails.certificates.missingRequirementMessages.certificateConfigNotSetUp",
+                                                                        );
+                                                                    } else if (
+                                                                        req ===
+                                                                        "No issuers have been assigned to this event"
+                                                                    ) {
+                                                                        translatedMessage = t(
+                                                                            "events.hostDetails.certificates.missingRequirementMessages.noIssuersAssigned",
+                                                                        );
+                                                                    } else if (
+                                                                        req.startsWith(
+                                                                            "Not all issuers have signed",
+                                                                        )
+                                                                    ) {
+                                                                        // Parse the dynamic message: "Not all issuers have signed (0/1 signed)"
+                                                                        const match = req.match(
+                                                                            /Not all issuers have signed \((\d+)\/(\d+) signed\)/,
+                                                                        );
+                                                                        if (match) {
+                                                                            const signed = match[1];
+                                                                            const total = match[2];
+                                                                            translatedMessage = t(
+                                                                                "events.hostDetails.certificates.missingRequirementMessages.notAllIssuersSigned",
+                                                                                {
+                                                                                    signed,
+                                                                                    total,
+                                                                                },
+                                                                            );
+                                                                        } else {
+                                                                            translatedMessage = req;
+                                                                        }
+                                                                    } else if (
+                                                                        req ===
+                                                                        "Event contracts are not deployed"
+                                                                    ) {
+                                                                        translatedMessage = t(
+                                                                            "events.hostDetails.certificates.missingRequirementMessages.eventContractsNotDeployed",
+                                                                        );
+                                                                    } else if (
+                                                                        req ===
+                                                                        "Certificate contract address is not set"
+                                                                    ) {
+                                                                        translatedMessage = t(
+                                                                            "events.hostDetails.certificates.missingRequirementMessages.certificateContractAddressNotSet",
+                                                                        );
+                                                                    }
+
+                                                                    return (
+                                                                        <li key={idx}>
+                                                                            {translatedMessage}
+                                                                        </li>
+                                                                    );
+                                                                },
                                                             )}
                                                         </ul>
                                                     </div>
@@ -724,11 +822,7 @@ export default function HostEventDetailsPage({
                                                         isPublished: true,
                                                     })
                                                 }
-                                                disabled={
-                                                    isTogglingPublished ||
-                                                    !mintReadiness ||
-                                                    !mintReadiness.is_ready
-                                                }
+                                                disabled={isTogglingPublished || !isReadyToPublish}
                                                 className="ml-auto"
                                             >
                                                 {t("events.hostDetails.certificates.publishButton")}
@@ -762,35 +856,49 @@ export default function HostEventDetailsPage({
                                     </div>
 
                                     <DataTable
-                                        columns={CertificateColumns(
-                                            (eventCertificateId: string) => {
-                                                revokeEventCertificate({
-                                                    certificateIds: [eventCertificateId],
-                                                    eventId,
-                                                });
-                                            },
-                                        )}
+                                        columns={certificateColumns}
                                         data={
                                             (eventCertificates || [])
-                                                .filter((cert) => !cert.revoked_at)
+                                                .filter((cert) => !cert.revokedAt)
                                                 .map((cert) => {
                                                     const nameParts = (cert.name || "").split(" ");
                                                     return {
-                                                        ...cert,
+                                                        id: cert.id,
+                                                        event_id: cert.eventId,
+                                                        event_name: cert.eventName,
+                                                        receiver_credential_id:
+                                                            cert.receiverCredentialId,
+                                                        receiver_email: cert.receiverEmail,
+                                                        name: cert.name,
+                                                        academic_institution:
+                                                            cert.academicInstitution,
+                                                        certificate_title: cert.certificateTitle,
+                                                        certificate_subtitle:
+                                                            cert.certificateSubtitle,
+                                                        event_contract_address:
+                                                            cert.eventContractAddress,
+                                                        event_certificate_address:
+                                                            cert.eventCertificateAddress,
+                                                        certificate_token_id:
+                                                            cert.certificateTokenId,
+                                                        certificate_digest: undefined,
+                                                        created_at: cert.createdAt,
+                                                        revoked_at: cert.revokedAt,
+                                                        inbox_message_id: cert.inboxMessageId,
                                                         firstName: nameParts[0] || "",
                                                         lastName:
                                                             nameParts.slice(1).join(" ") || "",
-                                                        email: cert.receiver_email || "",
+                                                        email: cert.receiverEmail || "",
                                                         academicInstitution:
-                                                            cert.academic_institution || "",
-                                                        issuedAt: cert.created_at || "",
+                                                            cert.academicInstitution || "",
+                                                        issuedAt: cert.createdAt || "",
                                                         status: "received" as const,
                                                     };
                                                 }) as EntityEventCertificate[]
                                         }
                                         totalItems={
-                                            eventCertificates?.filter((c) => !c.revoked_at)
-                                                .length || 0
+                                            eventCertificates?.filter((c) => !c.revokedAt).length ||
+                                            0
                                         }
                                         currentPage={1}
                                         pageSize={10}
@@ -811,17 +919,17 @@ export default function HostEventDetailsPage({
                                 {/* Import Certificate Receivers */}
                                 <a
                                     href={
-                                        isCertificatePublished
+                                        isCertificatePublished || !hasIssuers
                                             ? undefined
                                             : `/host/events/${eventId}/imports/certificates`
                                     }
                                     className={`flex items-center justify-center p-6 border-dashed rounded-xl border-2 gap-4 ${
-                                        isCertificatePublished
+                                        isCertificatePublished || !hasIssuers
                                             ? "border-gray-300 opacity-50 cursor-not-allowed pointer-events-none"
                                             : "border-white/50 cursor-pointer hover:border-primary/30"
                                     }`}
                                     onClick={
-                                        isCertificatePublished
+                                        isCertificatePublished || !hasIssuers
                                             ? (e) => e.preventDefault()
                                             : undefined
                                     }
@@ -830,7 +938,11 @@ export default function HostEventDetailsPage({
                                             ? t(
                                                   "events.hostDetails.certificates.editDisabledMessage",
                                               )
-                                            : undefined
+                                            : !hasIssuers
+                                              ? t(
+                                                    "events.hostDetails.certificates.noIssuersMessage",
+                                                )
+                                              : undefined
                                     }
                                 >
                                     <CloudUploadIcon />{" "}
@@ -910,39 +1022,39 @@ export default function HostEventDetailsPage({
                                 </Typography>
                                 <div className="flex gap-4 mt-6 items-center">
                                     <WrappedButton
-                                        className={`px-5 rounded-md font-medium transition ${
-                                            isCertificatePublished
-                                                ? "bg-gray-400 text-white cursor-not-allowed"
-                                                : "bg-primary text-white hover:bg-primary/90"
-                                        }`}
-                                        href={
-                                            isCertificatePublished
-                                                ? undefined
-                                                : `/host/events/${eventId}/settings/certificate`
-                                        }
-                                        disabled={isCertificatePublished}
+                                        className="px-5 rounded-md font-medium transition bg-primary text-white hover:bg-primary/90"
+                                        href={`/host/events/${eventId}/settings/certificate`}
                                     >
                                         {t("certificateSettings.pageTitle")}
                                     </WrappedButton>
                                     <a
                                         href={
-                                            isCertificatePublished
+                                            isCertificatePublished || !hasIssuers
                                                 ? undefined
                                                 : `/host/events/${eventId}/imports/certificates`
                                         }
                                         onClick={
-                                            isCertificatePublished
+                                            isCertificatePublished || !hasIssuers
                                                 ? (e) => e.preventDefault()
                                                 : undefined
                                         }
                                         className={
-                                            isCertificatePublished ? "pointer-events-none" : ""
+                                            isCertificatePublished || !hasIssuers
+                                                ? "pointer-events-none"
+                                                : ""
+                                        }
+                                        title={
+                                            !hasIssuers
+                                                ? t(
+                                                      "events.hostDetails.certificates.noIssuersMessage",
+                                                  )
+                                                : undefined
                                         }
                                     >
                                         <Button
                                             size="lg"
                                             variant="secondary-light"
-                                            disabled={isCertificatePublished}
+                                            disabled={isCertificatePublished || !hasIssuers}
                                         >
                                             {t("events.hostDetails.actions.importReceivers")}
                                         </Button>

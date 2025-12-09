@@ -13,7 +13,7 @@ interface EventDetailPageProps {
 }
 
 export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { event, isLoading, error } = useEventViewModelUsecase({ eventId });
 
     const eventType = useMemo(() => {
@@ -28,8 +28,10 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({ eventId }) => 
         return t("participant.events.detail.open");
     }, [event?.eventType, t]);
 
+    // Use i18n language for date formatting (e.g., 'en' or 'th')
+    const locale = i18n.language === "th" ? "th-TH" : "en-US";
     const formattedDate = event?.finalCallDate
-        ? new Date(event?.finalCallDate).toLocaleDateString("en-US", {
+        ? new Date(event?.finalCallDate).toLocaleDateString(locale, {
               year: "numeric",
               month: "short",
               day: "numeric",

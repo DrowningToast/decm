@@ -70,3 +70,13 @@ func TestOnboardUsecase_Initialization(t *testing.T) {
 		assert.NotEmpty(t, uc.GetRegisterSignMessage())
 	})
 }
+
+
+
+
+
+
+
+
+
+
