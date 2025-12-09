@@ -6,8 +6,8 @@ export function useCertificateFontFamilies() {
     const { data, isLoading, error } = useQuery({
         queryKey: QUERY_KEY.event.certificate.fontFamilies,
         queryFn: async () => {
-            const response = await coreApiClient.getEventCertificateFontFamilies();
-            return response.data;
+            const response = await coreApiClient.v1.getEventCertificateFontFamilies();
+            return response;
         },
     });
 

@@ -379,8 +379,9 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		mockEventDg := new(MockEventDataGateway)
 		event := &entity.Event{
-			Id:    eventID,
-			Title: "Test Event",
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userId,
 		}
 		mockEventDg.On("GetEventById", ctx, eventID).
 			Return(event, nil)
@@ -429,8 +430,9 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		mockEventDg := new(MockEventDataGateway)
 		event := &entity.Event{
-			Id:    eventID,
-			Title: "Test Event",
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userId,
 		}
 		mockEventDg.On("GetEventById", ctx, eventID).
 			Return(event, nil)
@@ -530,8 +532,9 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		mockEventDg := new(MockEventDataGateway)
 		event := &entity.Event{
-			Id:    eventID,
-			Title: "Test Event",
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userId,
 		}
 		mockEventDg.On("GetEventById", ctx, eventID).
 			Return(event, nil)
@@ -591,8 +594,9 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		mockEventDg := new(MockEventDataGateway)
 		event := &entity.Event{
-			Id:    eventID,
-			Title: "Test Event",
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userId,
 		}
 		mockEventDg.On("GetEventById", ctx, eventID).
 			Return(event, nil)
@@ -676,8 +680,9 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		mockEventDg := new(MockEventDataGateway)
 		event := &entity.Event{
-			Id:    eventID,
-			Title: "Test Event",
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userId,
 		}
 		mockEventDg.On("GetEventById", ctx, eventID).
 			Return(event, nil)

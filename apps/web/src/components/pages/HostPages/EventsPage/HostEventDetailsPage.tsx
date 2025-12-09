@@ -19,7 +19,7 @@ import WrappedButton from "@/components/wrapper/WrappedButton";
 import { CheckCircle2Icon, CloudUploadIcon, ExternalLinkIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table";
-import { issuerColumns } from "./columns/issuer-columns";
+import { useIssuerColumns } from "./columns/issuer-columns";
 import type {
     EntityEventCertificate,
     GetEventCertificateConfigData,
@@ -154,6 +154,7 @@ export default function HostEventDetailsPage({
 
     const participantColumns = useParticipantColumns(eventId);
     const attendeeColumns = useAttendeeColumns();
+    const issuerColumns = useIssuerColumns();
 
     // Fetch actual attendees
     const { attendees, isLoading: attendeesLoading } = useEventAttendees({ eventId });
@@ -189,7 +190,7 @@ export default function HostEventDetailsPage({
     // Client-side check: Must have at least 1 receiver (non-revoked certificate)
     const hasAtLeastOneReceiver = useMemo(() => {
         if (!eventCertificates) return false;
-        const nonRevokedCertificates = eventCertificates.filter((cert) => !cert.revoked_at);
+        const nonRevokedCertificates = eventCertificates.filter((cert) => !cert.revokedAt);
         return nonRevokedCertificates.length > 0;
     }, [eventCertificates]);
 
@@ -650,7 +651,7 @@ export default function HostEventDetailsPage({
                                                             {
                                                                 count:
                                                                     eventCertificates?.filter(
-                                                                        (c) => !c.revoked_at,
+                                                                        (c) => !c.revokedAt,
                                                                     ).length || 0,
                                                             },
                                                         )}
@@ -794,25 +795,46 @@ export default function HostEventDetailsPage({
                                         )}
                                         data={
                                             (eventCertificates || [])
-                                                .filter((cert) => !cert.revoked_at)
+                                                .filter((cert) => !cert.revokedAt)
                                                 .map((cert) => {
                                                     const nameParts = (cert.name || "").split(" ");
                                                     return {
-                                                        ...cert,
+                                                        id: cert.id,
+                                                        event_id: cert.eventId,
+                                                        event_name: cert.eventName,
+                                                        receiver_credential_id:
+                                                            cert.receiverCredentialId,
+                                                        receiver_email: cert.receiverEmail,
+                                                        name: cert.name,
+                                                        academic_institution:
+                                                            cert.academicInstitution,
+                                                        certificate_title: cert.certificateTitle,
+                                                        certificate_subtitle:
+                                                            cert.certificateSubtitle,
+                                                        event_contract_address:
+                                                            cert.eventContractAddress,
+                                                        event_certificate_address:
+                                                            cert.eventCertificateAddress,
+                                                        certificate_token_id:
+                                                            cert.certificateTokenId,
+                                                        certificate_digest: undefined,
+                                                        created_at: cert.createdAt,
+                                                        revoked_at: cert.revokedAt,
+                                                        inbox_message_id: cert.inboxMessageId,
                                                         firstName: nameParts[0] || "",
                                                         lastName:
                                                             nameParts.slice(1).join(" ") || "",
-                                                        email: cert.receiver_email || "",
+                                                        email: cert.receiverEmail || "",
                                                         academicInstitution:
-                                                            cert.academic_institution || "",
-                                                        issuedAt: cert.created_at || "",
+                                                            cert.academicInstitution || "",
+                                                        issuedAt: cert.createdAt || "",
                                                         status: "received" as const,
                                                     };
                                                 }) as EntityEventCertificate[]
                                         }
                                         totalItems={
-                                            eventCertificates?.filter((c) => !c.revoked_at)
-                                                .length || 0
+                                            eventCertificates?.filter((c) => !c.revokedAt).length ||
+                                            0
                                         }
                                         currentPage={1}
                                         pageSize={10}

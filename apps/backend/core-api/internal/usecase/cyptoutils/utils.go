@@ -10,7 +10,6 @@ import (
 	"apps/backend/common/encryptutils"
 
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -39,7 +38,7 @@ func GetPublicKeyFromPrivateKey(privateKey *ecdsa.PrivateKey) (*ecdsa.PublicKey,
 
 // RecoverPublicKeyFromSignature recovers the public key from a signature and message hash
 // This is used in wallet extension flow where user signs a message
-func RecoverPublicKeyFromSignature(messageHash common.Hash, signature []byte) (*ecdsa.PublicKey, error) {
+func RecoverPublicKeyFromSignature(messageHash ethCommon.Hash, signature []byte) (*ecdsa.PublicKey, error) {
 	// Make a copy to avoid modifying the original signature
 	sig := make([]byte, len(signature))
 	copy(sig, signature)
@@ -59,7 +58,7 @@ func RecoverPublicKeyFromSignature(messageHash common.Hash, signature []byte) (*
 }
 
 // PublicKeyToAddress converts an ECDSA public key to an Ethereum address
-func PublicKeyToAddress(publicKey *ecdsa.PublicKey) common.Address {
+func PublicKeyToAddress(publicKey *ecdsa.PublicKey) ethCommon.Address {
 	return crypto.PubkeyToAddress(*publicKey)
 }
 
@@ -80,7 +79,7 @@ func ParseAddress(address string) (*ethCommon.Address, error) {
 	return &parsedAddress, nil
 }
 
-func DecryptPrivateKey(ciphertext string, password string) (*ecdsa.PrivateKey, *common.Address, error) {
+func DecryptPrivateKey(ciphertext string, password string) (*ecdsa.PrivateKey, *ethCommon.Address, error) {
 	hostDecryptedPk, err := encryptutils.DecryptAESGCM(ciphertext, password)
 	if err != nil {
 		return nil, nil, err

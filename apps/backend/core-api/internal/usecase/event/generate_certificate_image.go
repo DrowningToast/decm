@@ -53,7 +53,7 @@ func (u *EventUsecase) GenerateCertificateImage(ctx context.Context, certificate
 		u.logger.Error("failed to download SVG template from S3", "error", err, "storage_key", certificateConfig.BaseCertificateStorageKey)
 		return nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "Failed to retrieve certificate template")
 	}
-	defer svgReader.Close()
+	defer func() { _ = svgReader.Close() }()
 
 	// Read SVG content
 	svgBytes, err := io.ReadAll(svgReader)
@@ -234,14 +234,6 @@ func createTextElement(text string, x, y float64, fontFamily, fontWeight string,
 	)
 }
 
-// getValueOrDefault returns the value if not nil, otherwise returns default
-func getValueOrDefault(value *string, defaultValue string) string {
-	if value == nil || *value == "" {
-		return defaultValue
-	}
-	return *value
-}
-
 // int32PtrToString converts *int32 font weight to string (e.g., "400", "700")
 // If nil, returns the defaultValue
 func int32PtrToString(weight *int32, defaultValue string) string {
@@ -352,10 +344,10 @@ func extractSVGDimensions(svgContent string) (int, int) {
 
 	var width, height int
 	if matches := widthPattern.FindStringSubmatch(svgContent); len(matches) > 1 {
-		fmt.Sscanf(matches[1], "%d", &width)
+		_, _ = fmt.Sscanf(matches[1], "%d", &width)
 	}
 	if matches := heightPattern.FindStringSubmatch(svgContent); len(matches) > 1 {
-		fmt.Sscanf(matches[1], "%d", &height)
+		_, _ = fmt.Sscanf(matches[1], "%d", &height)
 	}
 
 	if width > 0 && height > 0 {

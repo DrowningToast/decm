@@ -48,13 +48,29 @@ export function useClaimCertificate() {
             console.error("Error claiming certificate:", error);
 
             // Parse error message from backend
-            const errorMessage =
-                error?.error?.message ||
-                error?.message ||
-                t(
+            let errorMessage: string;
+            if (error && typeof error === "object") {
+                if (
+                    "error" in error &&
+                    error.error &&
+                    typeof error.error === "object" &&
+                    "message" in error.error
+                ) {
+                    errorMessage = String(error.error.message);
+                } else if ("message" in error) {
+                    errorMessage = String(error.message);
+                } else {
+                    errorMessage = t(
+                        "participant.certificates.claimError",
+                        "Failed to claim certificate. Please try again.",
+                    );
+                }
+            } else {
+                errorMessage = t(
                     "participant.certificates.claimError",
                     "Failed to claim certificate. Please try again.",
                 );
+            }
 
             toast.error(errorMessage);
         },

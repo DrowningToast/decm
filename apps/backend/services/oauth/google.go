@@ -132,7 +132,14 @@ func (s *GoogleOAuthService) Login(session *session.Session) (*string, error) {
 }
 
 func (s *GoogleOAuthService) Callback(ctx context.Context, session *session.Session, code string, state string) (*oauth2.Token, error) {
-	savedState := session.Get("state").(string)
+	savedStateInterface := session.Get("state")
+	if savedStateInterface == nil {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("state not found in session"))
+	}
+	savedState, ok := savedStateInterface.(string)
+	if !ok {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid state type in session"))
+	}
 	if savedState != state {
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("state mismatch"))
 	}
@@ -187,7 +194,7 @@ func (s *GoogleOAuthService) GetUserInfo(ctx context.Context, token *oauth2.Toke
 		s.logger.Warn("Failed to get user info: %v", slog.String("error", err.Error()))
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("failed to get user info"))
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Read response body
 	body, err := io.ReadAll(resp.Body)
@@ -231,6 +238,6 @@ func (s *GoogleOAuthService) GetUserInfo(ctx context.Context, token *oauth2.Toke
 
 	default:
 		s.logger.Error("Google API error %d: %s", slog.Int("status_code", resp.StatusCode), slog.String("error", string(body)))
-		return nil, customerror.Parse(&customerror.ErrInternalServer, fmt.Errorf("Google API error %d: %s", resp.StatusCode, string(body)))
+		return nil, customerror.Parse(&customerror.ErrInternalServer, fmt.Errorf("google API error %d: %s", resp.StatusCode, string(body)))
 	}
 }

@@ -4707,9 +4707,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "is_signed",
-                "issuer_credential_id",
-                "sign_message",
-                "signature"
+                "issuer_credential_id"
             ],
             "properties": {
                 "is_signed": {
@@ -4720,12 +4718,6 @@ const docTemplate = `{
                     ]
                 },
                 "issuer_credential_id": {
-                    "type": "string"
-                },
-                "sign_message": {
-                    "type": "string"
-                },
-                "signature": {
                     "type": "string"
                 }
             }
@@ -4749,8 +4741,6 @@ const docTemplate = `{
                 "id",
                 "is_signed",
                 "issuer_credential_id",
-                "sign_message",
-                "signature",
                 "updated_at"
             ],
             "properties": {
@@ -4771,12 +4761,6 @@ const docTemplate = `{
                 },
                 "issuer_profile": {
                     "$ref": "#/definitions/entity.Profile"
-                },
-                "sign_message": {
-                    "type": "string"
-                },
-                "signature": {
-                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
@@ -6131,8 +6115,6 @@ const docTemplate = `{
                 "id",
                 "is_signed",
                 "issuer_credential_id",
-                "sign_message",
-                "signature",
                 "updated_at"
             ],
             "properties": {
@@ -6167,12 +6149,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "issuer_credential_id": {
-                    "type": "string"
-                },
-                "sign_message": {
-                    "type": "string"
-                },
-                "signature": {
                     "type": "string"
                 },
                 "updated_at": {

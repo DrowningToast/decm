@@ -96,7 +96,8 @@ func (uc *EventRegistrationUsecase) CancelEventRegistrationInvitation(ctx contex
 	if err != nil {
 		// Log error but don't fail the cancellation - the invitation was already cancelled
 		// Returning an error here would be confusing since the cancellation succeeded
-		// In production, you might want to log this error for monitoring
+		// TODO: In production, log this error for monitoring
+		_ = err
 	}
 
 	return updatedInvitation, nil

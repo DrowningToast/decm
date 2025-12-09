@@ -280,8 +280,6 @@ type EventIssuer struct {
 	EventID            uuid.UUID          `json:"event_id"`
 	IssuerCredentialID uuid.UUID          `json:"issuer_credential_id"`
 	IsSigned           int32              `json:"is_signed"`
-	Signature          pgtype.Text        `json:"signature"`
-	SignMessageDigest  pgtype.Text        `json:"sign_message_digest"`
 	CreatedAt          pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
 	DeletedAt          pgtype.Timestamptz `json:"deleted_at"`

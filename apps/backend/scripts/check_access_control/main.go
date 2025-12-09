@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"apps/backend/contracts/eventaccessmanager"
+	"apps/backend/contracts/accessmanager"
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 	fmt.Printf("Recovered Signer: %s\n", recoveredSigner.Hex())
 	fmt.Printf("System Transactor: %s\n\n", systemTransactor.Hex())
 
-	accessManager, err := eventaccessmanager.NewEventAccessManager(eventAccessManagerAddr, client)
+	accessManager, err := accessmanager.NewEventAccessManager(eventAccessManagerAddr, client)
 	if err != nil {
 		log.Fatal("Failed to instantiate EventAccessManager:", err)
 	}
@@ -107,3 +107,4 @@ func main() {
 		fmt.Printf("   2. OR add %s to allowed senders in DecmAccessManager\n", systemTransactor.Hex())
 	}
 }
+

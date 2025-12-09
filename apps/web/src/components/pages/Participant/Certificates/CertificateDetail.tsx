@@ -185,7 +185,8 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-muted/50 p-4">
                                 <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                                 <Typography
-                                    variant="small"
+                                    variant="text"
+                                    size="small"
                                     tag="p"
                                     color="muted"
                                     className="text-center"

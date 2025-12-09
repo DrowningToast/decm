@@ -80,12 +80,23 @@ export const PrivateNavbar: React.FC<PrivateNavbarProps> = ({ currentRole, varia
         return "/app";
     };
 
+    // Get translated role label
+    const getRoleLabel = (): string | undefined => {
+        if (!currentRole) return undefined;
+        const roleKey =
+            currentRole === "Verified Organizer"
+                ? "nav.roles.verifiedOrganizer"
+                : "nav.roles.issuer";
+        const role = t(roleKey);
+        return t("nav.signedInAs", { role });
+    };
+
     return (
         <StaggeredMenu
             isFixed={true}
             sections={sections}
             position="right"
-            roleLabel={currentRole ? `You're currently signed in as a ${currentRole}` : undefined}
+            roleLabel={getRoleLabel()}
             logoLink={getLogoLink()}
             variant={variant}
         />

@@ -90,10 +90,25 @@ export const mapEntityEventRegistrationConfigRequirementStatus = (
 export const mapEntityEventRegistrationConfigToEventRegistrationConfiguration = (
     entityEventRegistrationConfig: EventRegistrationConfigResponse,
 ): EventRegistrationConfiguration => {
+    // Map event_type if it exists in the response
+    let eventType: EventType | undefined;
+    if (
+        "event_type" in entityEventRegistrationConfig &&
+        entityEventRegistrationConfig.event_type !== undefined
+    ) {
+        const et = entityEventRegistrationConfig.event_type;
+        if (et === EntityEventType.EventTypePrivate || et === 0) {
+            eventType = "private";
+        } else if (et === EntityEventType.EventTypeInvite || et === 1) {
+            eventType = "invite";
+        }
+    }
+
     return {
         finalCallForRegistration: entityEventRegistrationConfig.final_call_for_registration
             ? new Date(entityEventRegistrationConfig.final_call_for_registration)
             : undefined,
+        eventType,
         ...mapEntityEventRegistrationConfigRequirementStatus(entityEventRegistrationConfig),
     };
 };

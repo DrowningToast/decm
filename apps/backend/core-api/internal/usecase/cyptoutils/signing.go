@@ -8,7 +8,6 @@ import (
 
 	customerror "apps/backend/common/customerror"
 
-	"github.com/ethereum/go-ethereum/common"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -89,7 +88,7 @@ func VerifySignedMessageByAddress(walletAddress ethCommon.Address, message strin
 	return recoveredAddress == walletAddress, nil
 }
 
-func VerifySignatureByDigest(walletAddress ethCommon.Address, messageDigest common.Hash, signature []byte) (bool, error) {
+func VerifySignatureByDigest(walletAddress ethCommon.Address, messageDigest ethCommon.Hash, signature []byte) (bool, error) {
 	// Make a copy of the signature to avoid mutating the original
 	// Slices are reference types, so modifying signature[64] would modify the original array
 	signatureCopy := make([]byte, len(signature))

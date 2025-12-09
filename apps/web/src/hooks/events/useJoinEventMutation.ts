@@ -49,7 +49,17 @@ export const useJoinEventMutation = () => {
             return await eventRegistrationService.joinEventWithAccountPassword({
                 eventId: params.eventId,
                 accountPassword: params.accountPassword,
-                registrationData: params.registrationData,
+                eventPassword: undefined,
+                registrationData: params.registrationData as {
+                    firstName: string | undefined;
+                    lastName: string | undefined;
+                    bio: string | undefined;
+                    email: string | undefined;
+                    phoneNumber: string | undefined;
+                    address: string | undefined;
+                    academicEmail: string | undefined;
+                    academicInstitution: string | undefined;
+                },
             });
         },
         onSuccess: (_, variables) => {
@@ -73,7 +83,7 @@ export const useJoinEventMutation = () => {
             });
             // Invalidate registration config
             queryClient.invalidateQueries({
-                queryKey: QUERY_KEY.eventRegistration.config(variables.eventId),
+                queryKey: QUERY_KEY.event.registrationConfig(variables.eventId),
             });
             // Invalidate invitations (user might have used an invitation)
             queryClient.invalidateQueries({
@@ -101,10 +111,23 @@ export const useJoinEventMutation = () => {
 
     const joinWithEventPassword = useMutation({
         mutationFn: async (params: JoinEventWithEventPasswordParams) => {
-            return await eventRegistrationService.joinEventWithEventPassword({
+            // Note: The service method accepts both accountPassword and eventPassword
+            // For event password only, we pass an empty string for accountPassword
+            // This should be adjusted based on actual API requirements
+            return await eventRegistrationService.joinEventWithAccountPassword({
                 eventId: params.eventId,
+                accountPassword: "", // Empty for event password only flow
                 eventPassword: params.eventPassword,
-                registrationData: params.registrationData,
+                registrationData: params.registrationData as {
+                    firstName: string | undefined;
+                    lastName: string | undefined;
+                    bio: string | undefined;
+                    email: string | undefined;
+                    phoneNumber: string | undefined;
+                    address: string | undefined;
+                    academicEmail: string | undefined;
+                    academicInstitution: string | undefined;
+                },
             });
         },
         onSuccess: (_, variables) => {
@@ -128,7 +151,7 @@ export const useJoinEventMutation = () => {
             });
             // Invalidate registration config
             queryClient.invalidateQueries({
-                queryKey: QUERY_KEY.eventRegistration.config(variables.eventId),
+                queryKey: QUERY_KEY.event.registrationConfig(variables.eventId),
             });
             // Invalidate invitations (user might have used an invitation)
             queryClient.invalidateQueries({

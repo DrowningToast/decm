@@ -30,7 +30,7 @@ export const LandingPage = () => {
                             <Typography
                                 variant="header"
                                 tag="h1"
-                                className="text-[36px] md:text-[64px] leading-[40px] md:leading-[56px] text-foreground text-right md:text-center font-primary tracking-[0.06px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px]"
+                                className="text-[36px] md:text-[64px] leading-[40px] md:leading-[56px] text-foreground text-right md:text-center font-primary tracking-[0.06px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px] whitespace-nowrap"
                             >
                                 {t("landing.hero.title")}
                             </Typography>
@@ -80,7 +80,7 @@ export const LandingPage = () => {
                 className="relative bg-gradient-to-b from-[#362927] to-[#0f1012] px-6 py-12 md:px-16 md:py-16"
             >
                 {/* About Themis */}
-                <div className="max-w-[1384px] mx-auto mb-12 md:mb-24">
+                <div className="max-w-[1600px] mx-auto mb-12 md:mb-24">
                     <div className="flex flex-col gap-3 md:gap-6">
                         <Typography
                             variant="header"
@@ -101,7 +101,7 @@ export const LandingPage = () => {
                 </div>
 
                 {/* Feature Cards */}
-                <div className="max-w-[1384px] mx-auto mb-12 md:mb-24">
+                <div className="max-w-[1600px] mx-auto mb-12 md:mb-24">
                     <div className="flex flex-col md:flex-row gap-6 md:gap-6">
                         {/* Card 1: Wallet Management */}
                         <div className="flex md:flex-col gap-3 md:gap-2.5 md:bg-foreground md:rounded-xl md:p-6 flex-1">

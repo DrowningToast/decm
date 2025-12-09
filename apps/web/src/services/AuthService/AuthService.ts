@@ -250,7 +250,7 @@ export class AuthService {
                 await disconnect(this._wagmiConfig);
             }
             if (showToast) {
-                toast.info(TOAST_USECASE_VIEWMODEL[USECASE_IDS.GENERIC].SIGN_OUT_SUCCESS);
+                toast.info(t(TOAST_USECASE_VIEWMODEL[USECASE_IDS.GENERIC].SIGN_OUT_SUCCESS));
             }
         } catch (error) {
             console.error(error);

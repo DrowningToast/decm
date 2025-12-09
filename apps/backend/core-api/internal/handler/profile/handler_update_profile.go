@@ -64,7 +64,9 @@ func (r *UpdateProfileRequest) Parse(c *fiber.Ctx) error {
 // @Router /api/v1/profile/credential/{credential_id} [patch]
 func (h *Handler) UpdateProfileByCredentialId(c *fiber.Ctx) error {
 	var upsertProfileRequest UpdateProfileRequest
-	upsertProfileRequest.Parse(c)
+	if err := upsertProfileRequest.Parse(c); err != nil {
+		return err
+	}
 	if err := upsertProfileRequest.IsValid(); err != nil {
 		return err
 	}
