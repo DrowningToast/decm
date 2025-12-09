@@ -23,7 +23,7 @@ export const useToggleCertificatePublished = () => {
             });
 
             if (variables.isPublished) {
-                toast.success(t("event.certificates.publishConfigSuccess"));
+                toast.success(t("event.hostDetails.certificates.publishConfigSuccess"));
             }
         },
         onError: (error: unknown) => {
@@ -31,7 +31,9 @@ export const useToggleCertificatePublished = () => {
                 error && typeof error === "object" && "response" in error
                     ? (error.response as { data?: { message?: string } })?.data?.message
                     : undefined;
-            toast.error(errorMessage || t("event.certificates.updatePublishedStatusError"));
+            toast.error(
+                errorMessage || t("event.hostDetails.certificates.updatePublishedStatusError"),
+            );
         },
     });
 };

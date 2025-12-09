@@ -64,6 +64,7 @@
         "signIn": "เข้าสู่ระบบ",
         "signUp": "สมัครสมาชิก",
         "signOut": "ออกจากระบบ",
+        "betaAccess": "เวอร์ชั่น Beta, กำลังอยู่ระหว่างการพัฒนา",
         "account": "บัญชี",
         "security": "ความปลอดภัย",
         "settings": "การตั้งค่า",
@@ -149,7 +150,9 @@
             "title": "รายละเอียดการลงนาม",
             "contractAddress": "ที่อยู่สัญญา",
             "transactionType": "ประเภทธุรกรรม",
-            "details": "รายละเอียด"
+            "details": "รายละเอียด",
+            "importCertificatesReceivers": "นำเข้าผู้รับใบรับรองกิจกรรม",
+            "importCertificatesDescription": "คุณกำลังจะนำเข้าผู้รับใบรับรองกิจกรรม กรุณายืนยันเพื่อดำเนินการต่อ"
         }
     },
     "oauth": {
@@ -414,6 +417,13 @@
                 "contractStatus": "สัญญาใบรับรองถูกติดตั้งแล้ว",
                 "hasReceiverStatus": "ต้องมีผู้รับอย่างน้อย 1 คน ({{count}})",
                 "missingRequirements": "ข้อกำหนดที่ขาดหายไป",
+                "missingRequirementMessages": {
+                    "certificateConfigNotSetUp": "ยังไม่ได้ตั้งค่าการกำหนดค่าใบรับรอง",
+                    "noIssuersAssigned": "ยังไม่ได้กำหนดผู้ออกให้กับกิจกรรมนี้",
+                    "notAllIssuersSigned": "ผู้ออกยังไม่ได้ลงนามทั้งหมด ({{signed}}/{{total}} ลงนามแล้ว)",
+                    "eventContractsNotDeployed": "สัญญากิจกรรมยังไม่ได้ถูกติดตั้ง",
+                    "certificateContractAddressNotSet": "ยังไม่ได้ตั้งค่าที่อยู่สัญญาใบรับรอง"
+                },
                 "publishSuccess": "เผยแพร่ใบรับรอง {{count}} ใบและสร้างข้อความในกล่องจดหมาย {{messagesCount}} ข้อความสำเร็จ!",
                 "publishError": "ไม่สามารถเผยแพร่ใบรับรอง: {{error}}",
                 "editDisabledMessage": "การแก้ไขถูกปิดใช้งานเนื่องจากมีการเผยแพร่การตั้งค่าใบรับรองแล้ว",
@@ -767,7 +777,8 @@
             "noResults": {
                 "title": "ไม่พบกิจกรรม",
                 "description": "ลองปรับการค้นหาหรือตัวกรองของคุณ"
-            }
+            },
+            "invitationRequired": "ต้องการคำเชิญ"
         },
         "certificates": {
             "title": "ประกาศนียบัตร",
@@ -782,6 +793,7 @@
             "claimDescription": "กรอกรหัสผ่านบัญชีของคุณเพื่อรับใบรับรองบนบล็อกเชน",
             "claimButton": "รับใบรับรอง",
             "claiming": "กำลังรับใบรับรอง...",
+            "claimingCertificate": "กำลังรับใบรับรอง: {{name}}",
             "claimSuccess": "รับใบรับรองสำเร็จ!",
             "claimError": "ไม่สามารถรับใบรับรองได้ กรุณาลองอีกครั้ง",
             "claimNote": "ลงนามในใบรับรองนี้เพื่อเพิ่มลงในข้อมูลบล็อกเชนของคุณ",
@@ -968,7 +980,7 @@
         "requiredFormat": "รูปแบบ Excel ที่กำหนด",
         "requiredFormatDescription": "ไฟล์ Excel ของคุณต้องมีคอลัมน์หัวตองเหล่านี้:",
         "columnHeader": "คอลัมน์ที่จำเป็น",
-        "optionalColumn": "คอลัมน์เสริม",
+        "optionalColumn": "คอลัมน์ที่เว้นว่างได้",
         "downloadTemplate": "ดาวน์โหลดเทมเพลต",
         "downloadTemplateDescription": "ดาวน์โหลดเทมเพลต Excel ที่มีรูปแบบที่ถูกต้อง",
         "templateSheetName": "ผู้เข้าร่วม",
@@ -1020,7 +1032,8 @@
         "parseError": "ไม่สามารถแยกวิเคราะห์ไฟล์ Excel ได้ กรุณาตรวจสอบรูปแบบไฟล์",
         "requiredFormat": "รูปแบบ Excel ที่จำเป็นต้องมี",
         "requiredFormatDescription": "ไฟล์ Excel ของคุณต้องมีส่วนหัวคอลัมน์เหล่านี้:",
-        "columnHeader": "ส่วนหัวคอลัมน์",
+        "columnHeader": "คอลัมน์ที่จำเป็น",
+        "optionalColumn": "คอลัมน์ที่เว้นว่างได้",
         "downloadTemplate": "ดาวน์โหลดเทมเพลต",
         "downloadTemplateDescription": "ดาวน์โหลดไฟล์เทมเพลต Excel ที่มีรูปแบบที่ถูกต้อง",
         "availableColumns": "คอลัมน์ที่มีให้",

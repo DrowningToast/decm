@@ -3,13 +3,14 @@ import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { useCertificateDetailUsecase } from "./useCertificateDetailUsecase";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
-import { CircleCheckBig, ExternalLink, Award, Loader2 } from "lucide-react";
+import { CircleCheckBig, Award, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
 import { useClaimCertificate } from "@/hooks/useClaimCertificate";
 import { useCertificateImage } from "@/hooks/useCertificateImage";
 import { useCertificateDetailNavStore } from "@/components/BottomNav/stores/certificates";
+import { EthExplorerLink } from "@/components/common/EthscanLink";
 
 interface CertificateDetailProps {
     certificateId: string;
@@ -67,7 +68,9 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                     "participant.certificates.claimDescription",
                     "Enter your account password to claim your certificate on the blockchain",
                 ),
-                details: `Claiming certificate: ${certificate.name}`,
+                details: t("participant.certificates.claimingCertificate", {
+                    name: certificate.name,
+                }),
             });
 
             // Claim the certificate with the verified password (PIN flow)
@@ -291,7 +294,10 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                         >
                             {t("participant.certificates.detail.certificateContractAddress")}
                         </Typography>
-                        <div className="flex items-center gap-2.5">
+                        <EthExplorerLink
+                            address={certificate.certificateContractAddress}
+                            className="flex items-center gap-2.5"
+                        >
                             <Typography
                                 variant="text"
                                 tag="p"
@@ -300,8 +306,7 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                             >
                                 {certificate.certificateContractAddress}
                             </Typography>
-                            <ExternalLink className="w-4 h-4 text-foreground shrink-0" />
-                        </div>
+                        </EthExplorerLink>
                     </div>
                 )}
 
@@ -316,7 +321,10 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                         >
                             {t("participant.certificates.detail.eventContractAddress")}
                         </Typography>
-                        <div className="flex items-center gap-2.5">
+                        <EthExplorerLink
+                            address={certificate.eventContractAddress}
+                            className="flex items-center gap-2.5"
+                        >
                             <Typography
                                 variant="text"
                                 tag="p"
@@ -325,8 +333,7 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                             >
                                 {certificate.eventContractAddress}
                             </Typography>
-                            <ExternalLink className="w-4 h-4 text-foreground shrink-0" />
-                        </div>
+                        </EthExplorerLink>
                     </div>
                 )}
 

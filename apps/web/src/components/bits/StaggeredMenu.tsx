@@ -551,7 +551,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                                 color="foreground-alt"
                                 className="text-[9px] md:text-xs opacity-70"
                             >
-                                Beta access, currently under development
+                                {t("nav.betaAccess")}
                             </Typography>
                         </div>
                     </div>

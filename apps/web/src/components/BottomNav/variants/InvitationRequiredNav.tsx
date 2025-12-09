@@ -36,7 +36,7 @@ export const InvitationRequiredNav = ({ className: propClassName }: InvitationRe
                 color="foreground"
                 className="flex-1 text-xs font-normal italic leading-normal tracking-[0.06px] text-center"
             >
-                {t("participant.events.invitationRequired") || "Invitation is required."}
+                {t("participant.events.invitationRequired")}
             </Typography>
         </div>
     );

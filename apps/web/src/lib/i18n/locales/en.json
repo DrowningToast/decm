@@ -69,6 +69,7 @@
             "issuer": "Issuer"
         },
         "signedInAs": "You're currently signed in as a {{role}}",
+        "betaAccess": "Beta access, currently under development",
         "account": "Account",
         "security": "Security",
         "settings": "Settings",
@@ -149,7 +150,9 @@
             "title": "Signing Details",
             "contractAddress": "Contract Address",
             "transactionType": "Transaction Type",
-            "details": "Details"
+            "details": "Details",
+            "importCertificatesReceivers": "Import Event Certificates Receivers",
+            "importCertificatesDescription": "You're about to import the event certificates receivers. Please confirm to proceed."
         }
     },
     "oauth": {
@@ -656,6 +659,13 @@
                 "contractStatus": "Certificate contract deployed",
                 "hasReceiverStatus": "Must have at least 1 receiver ({{count}})",
                 "missingRequirements": "Missing requirements",
+                "missingRequirementMessages": {
+                    "certificateConfigNotSetUp": "Certificate configuration is not set up",
+                    "noIssuersAssigned": "No issuers have been assigned to this event",
+                    "notAllIssuersSigned": "Not all issuers have signed ({{signed}}/{{total}} signed)",
+                    "eventContractsNotDeployed": "Event contracts are not deployed",
+                    "certificateContractAddressNotSet": "Certificate contract address is not set"
+                },
                 "publishSuccess": "Successfully published {{count}} certificate(s) and created {{messagesCount}} inbox message(s)!",
                 "publishError": "Failed to publish certificates: {{error}}",
                 "editDisabledMessage": "Editing is disabled because the certificate configuration has been published",
@@ -735,6 +745,7 @@
             "claimDescription": "Enter your account password to claim your certificate on the blockchain",
             "claimButton": "Claim Certificate",
             "claiming": "Claiming...",
+            "claimingCertificate": "Claiming certificate: {{name}}",
             "claimSuccess": "Certificate claimed successfully!",
             "claimError": "Failed to claim certificate. Please try again.",
             "claimNote": "Sign this certificate to add it to your blockchain credentials",

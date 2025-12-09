@@ -14,7 +14,7 @@ import { ChevronLeft, ExternalLinkIcon, CheckCircle, Clock } from "lucide-react"
 import { PasswordPinModal } from "@/components/ui/password-pin-modal";
 import { TextLabelValue } from "@/components/ui/text-label-value";
 import { DataTable } from "@/components/ui/data-table";
-import { CertificateColumns } from "@/components/pages/HostPages/EventsPage/columns/CertificateColumns";
+import { useCertificateColumns } from "@/components/pages/HostPages/EventsPage/columns/CertificateColumns";
 import { formatEthereumAddress } from "@/lib/utils";
 import SectionContainer from "@/components/container/SectionContainer";
 import { IssuerStatusBadge } from "./IssuerStatusBadge";
@@ -52,6 +52,9 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
     // Calculate total certificates to be signed
     const certificatesToSign =
         eventCertificates?.filter((cert) => !cert.revokedAt && currentIssuer) || [];
+
+    // Get certificate columns
+    const certificateColumns = useCertificateColumns();
 
     const handleSignCertificates = () => {
         setShowPinModal(true);
@@ -285,7 +288,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
 
                                         <div className="w-full overflow-hidden">
                                             <DataTable
-                                                columns={CertificateColumns()}
+                                                columns={certificateColumns}
                                                 data={
                                                     eventCertificates
                                                         ?.filter((cert) => {
@@ -430,7 +433,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
 
                                         <div className="w-full overflow-hidden">
                                             <DataTable
-                                                columns={CertificateColumns()}
+                                                columns={certificateColumns}
                                                 data={
                                                     eventCertificates
                                                         ?.filter((cert) => {

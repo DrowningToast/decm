@@ -67,16 +67,15 @@ export const useInboxListUsecase = () => {
     // Fetch inbox messages from API
     const { data: apiMessages, isLoading, error } = useInboxMessages();
 
-    // Filter out unclaimed certificates from events the user has joined
+    // Filter out certificate invitations from events the user hasn't joined yet
     const filteredMessages = useMemo(() => {
         return apiMessages.filter((message) => {
-            // For certificate invitation messages, filter out unclaimed certificates from events user has joined
+            // For certificate invitation messages, only show if user has joined the event
             if (message.messageType === "event_certificate_invitation") {
                 const hasJoined = message.hasParticipantJoinedEvent === true;
-                const isUnclaimed = !message.tokenId; // tokenId is undefined or null for unclaimed certificates
 
-                // Filter out if: user has joined the event AND certificate is unclaimed
-                if (hasJoined && isUnclaimed) {
+                // Filter out if: user has NOT joined the event
+                if (!hasJoined) {
                     return false;
                 }
             }

@@ -32,7 +32,7 @@ import type { SortingState } from "@tanstack/react-table";
 import { useParticipantColumns, type Participant } from "./columns/useParticipantColumns";
 import { useAttendeeColumns } from "./columns/useAttendeeColumns";
 import { useEventAttendees } from "@/hooks/events/useEventAttendees";
-import { CertificateColumns } from "./columns/CertificateColumns";
+import { useCertificateColumns } from "./columns/CertificateColumns";
 import { Separator } from "@/components/ui/separator";
 import { useEventCertificates } from "@/hooks/useEventCertificates";
 import { useRevokeEventCertificate } from "@/hooks/events/useRevokeEventCertificate";
@@ -75,6 +75,14 @@ export default function HostEventDetailsPage({
 
     // Check if certificate config is published - if so, disable all edit buttons
     const isCertificatePublished = eventCertificateConfig?.is_published ?? false;
+
+    // Get certificate columns
+    const certificateColumns = useCertificateColumns((eventCertificateId: string) => {
+        revokeEventCertificate({
+            certificateIds: [eventCertificateId],
+            eventId,
+        });
+    }, isCertificatePublished);
 
     // State for client-side data management
     const [searchValue, setSearchValue] = useState("");
@@ -235,13 +243,17 @@ export default function HostEventDetailsPage({
 
             <SectionContainer className="lg:grid lg:grid-cols-4 gap-8">
                 <div className="flex flex-col gap-4 lg:col-span-3">
-                    <Typography tag="p" size={"base"} color="muted">
-                        {event.shortDescription}
-                    </Typography>
+                    {event.shortDescription && (
+                        <Typography tag="p" size={"base"} color="muted">
+                            {event.shortDescription}
+                        </Typography>
+                    )}
 
-                    <Typography tag="p" size={"base"} color="muted">
-                        {event.longDescription}
-                    </Typography>
+                    {event.longDescription && event.longDescription !== event.shortDescription && (
+                        <Typography tag="p" size={"base"} color="muted">
+                            {event.longDescription}
+                        </Typography>
+                    )}
 
                     <img
                         src={event.bannerPresignedUrl ?? ""}
@@ -674,9 +686,69 @@ export default function HostEventDetailsPage({
                                                         </Typography>
                                                         <ul className="list-disc list-inside space-y-0.5">
                                                             {mintReadiness.missing_requirements.map(
-                                                                (req, idx) => (
-                                                                    <li key={idx}>{req}</li>
-                                                                ),
+                                                                (req, idx) => {
+                                                                    // Translate backend messages to i18n keys
+                                                                    let translatedMessage = req;
+
+                                                                    // Map backend messages to translation keys
+                                                                    if (
+                                                                        req ===
+                                                                        "Certificate configuration is not set up"
+                                                                    ) {
+                                                                        translatedMessage = t(
+                                                                            "events.hostDetails.certificates.missingRequirementMessages.certificateConfigNotSetUp",
+                                                                        );
+                                                                    } else if (
+                                                                        req ===
+                                                                        "No issuers have been assigned to this event"
+                                                                    ) {
+                                                                        translatedMessage = t(
+                                                                            "events.hostDetails.certificates.missingRequirementMessages.noIssuersAssigned",
+                                                                        );
+                                                                    } else if (
+                                                                        req.startsWith(
+                                                                            "Not all issuers have signed",
+                                                                        )
+                                                                    ) {
+                                                                        // Parse the dynamic message: "Not all issuers have signed (0/1 signed)"
+                                                                        const match = req.match(
+                                                                            /Not all issuers have signed \((\d+)\/(\d+) signed\)/,
+                                                                        );
+                                                                        if (match) {
+                                                                            const signed = match[1];
+                                                                            const total = match[2];
+                                                                            translatedMessage = t(
+                                                                                "events.hostDetails.certificates.missingRequirementMessages.notAllIssuersSigned",
+                                                                                {
+                                                                                    signed,
+                                                                                    total,
+                                                                                },
+                                                                            );
+                                                                        } else {
+                                                                            translatedMessage = req;
+                                                                        }
+                                                                    } else if (
+                                                                        req ===
+                                                                        "Event contracts are not deployed"
+                                                                    ) {
+                                                                        translatedMessage = t(
+                                                                            "events.hostDetails.certificates.missingRequirementMessages.eventContractsNotDeployed",
+                                                                        );
+                                                                    } else if (
+                                                                        req ===
+                                                                        "Certificate contract address is not set"
+                                                                    ) {
+                                                                        translatedMessage = t(
+                                                                            "events.hostDetails.certificates.missingRequirementMessages.certificateContractAddressNotSet",
+                                                                        );
+                                                                    }
+
+                                                                    return (
+                                                                        <li key={idx}>
+                                                                            {translatedMessage}
+                                                                        </li>
+                                                                    );
+                                                                },
                                                             )}
                                                         </ul>
                                                     </div>
@@ -784,15 +856,7 @@ export default function HostEventDetailsPage({
                                     </div>
 
                                     <DataTable
-                                        columns={CertificateColumns(
-                                            (eventCertificateId: string) => {
-                                                revokeEventCertificate({
-                                                    certificateIds: [eventCertificateId],
-                                                    eventId,
-                                                });
-                                            },
-                                            isCertificatePublished,
-                                        )}
+                                        columns={certificateColumns}
                                         data={
                                             (eventCertificates || [])
                                                 .filter((cert) => !cert.revokedAt)
