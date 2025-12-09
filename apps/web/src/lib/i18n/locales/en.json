@@ -728,7 +728,8 @@
                 "copyShareableUrl": "Copy shareable URL",
                 "certificateFromEvent": "Certificate from {{eventName}}",
                 "certificatePreview": "Certificate Preview",
-                "imageLoadError": "Failed to load certificate image"
+                "imageLoadError": "Failed to load certificate image",
+                "loadingImageHint": "Loading certificate preview... This may take a while on the first load."
             }
         },
         "events": {

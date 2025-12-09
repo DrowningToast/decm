@@ -698,7 +698,8 @@
                 "downloadAttributes": "ดาวน์โหลดคุณสมบัติ",
                 "certificateFromEvent": "ใบรับรองจาก {{eventName}}",
                 "certificatePreview": "ตัวอย่างใบรับรอง",
-                "imageLoadError": "ไม่สามารถโหลดภาพใบรับรองได้"
+                "imageLoadError": "ไม่สามารถโหลดภาพใบรับรองได้",
+                "loadingImageHint": "กำลังโหลดตัวอย่างใบรับรอง... การโหลดครั้งแรกอาจใช้เวลาสักครู่"
             }
         },
         "identities": {

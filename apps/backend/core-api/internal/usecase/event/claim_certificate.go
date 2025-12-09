@@ -3,7 +3,6 @@ package event
 import (
 	"context"
 	"crypto/ecdsa"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -462,76 +461,50 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		issuerAddresses[i] = common.HexToAddress(issuerCred.WalletAddress)
 	}
 
-	// Parameter 8, 9, 10, 12: signature data from first certificate signature
+	// Parameter 8, 9, 10, 12: Use PARTICIPANT's signature for claim transaction
+	// CRITICAL: The signature must come from the PARTICIPANT who is claiming the certificate,
+	// NOT from the host/system. The participant proves authorization by signing the message.
+	//
+	// The participant's signature and signMessage were already created in ClaimCertificateWithPin
+	// and passed to this function. We use those for parameters 8 and 9.
+
+	// First, retrieve the stored signMessage from database for parameter 12 (metadata storage)
+	// This is the original JSON body from the certificate signature table
 	firstSignature := certificateSignatures[0]
-	if firstSignature.SignMessageDigest == nil || firstSignature.SignMessage == nil {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("certificate signature data is incomplete"))
+	if firstSignature.SignMessage == nil {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("certificate signature signMessage is missing"))
 	}
+	if firstSignature.HostSignature == "" {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("certificate signature hostSignature is missing"))
+	}
+	storedSignMessageStr := *firstSignature.SignMessage // This is the raw JSON from the database for parameter 12
 
-	signedMessageDigest := *firstSignature.SignMessageDigest
+	// Use the participant's signMessage and signature that were passed to this function
+	// These were created in ClaimCertificateWithPin using the participant's private key
+	participantSignMessageStr := signMessage // The message the participant signed
+	participantSignatureBytes := signature   // The signature bytes from the participant
+
+	// Parameter 10: Host's signature of the raw JSON (storedSignMessageStr)
+	// This is the host's signature of the original JSON message stored in the database
 	hostSignatureStr := firstSignature.HostSignature
-	signMessageStr := *firstSignature.SignMessage
-
-	slog.Info("📝 Certificate signature data for contract verification",
-		"signed_message_digest", signedMessageDigest,
-		"host_signature", hostSignatureStr,
-		"host_signature_length", len(hostSignatureStr),
-		"sign_message", signMessageStr,
-		"host_wallet_address", hostCredential.WalletAddress,
-	)
-
-	// Decode host signature from hex string to bytes
-	hostSignatureBytes, err := hex.DecodeString(strings.TrimPrefix(hostSignatureStr, "0x"))
-	if err != nil {
-		slog.Error("❌ Failed to decode host signature", "error", err.Error())
-		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to decode host signature"))
+	// Ensure it has 0x prefix if not already present
+	if !strings.HasPrefix(hostSignatureStr, "0x") {
+		hostSignatureStr = "0x" + hostSignatureStr
 	}
 
-	slog.Info("🔐 Decoded host signature",
-		"signature_bytes_length", len(hostSignatureBytes),
-		"signature_hex", fmt.Sprintf("0x%x", hostSignatureBytes),
-	)
+	// Convert participant signature to hex string for logging/debugging (not used in contract call)
+	participantSignatureStr := fmt.Sprintf("0x%x", participantSignatureBytes)
 
-	// Try to recover the signer to verify signature validity before sending to contract
-	// Use the original message string since signatures are now created with HashEthereumMessage
-	signMsgPreview := signMessageStr
-	if len(signMsgPreview) > 100 {
-		signMsgPreview = signMsgPreview[:100] + "..."
-	}
-	slog.Info("🔍 Attempting signature recovery",
-		"sign_message_length", len(signMessageStr),
-		"sign_message_preview", signMsgPreview,
-		"host_signature", hostSignatureStr,
-		"expected_host_address", hostCredential.WalletAddress,
+	slog.Info("📝 Using signatures for claim transaction",
+		"participant_sign_message", participantSignMessageStr,
+		"participant_sign_message_length", len(participantSignMessageStr),
+		"participant_address", participantAddress.Hex(),
+		"stored_sign_message", storedSignMessageStr,
+		"stored_sign_message_length", len(storedSignMessageStr),
+		"host_signature_hex", hostSignatureStr,
+		"participant_signature_bytes_length", len(participantSignatureBytes),
+		"note", "Participant signature used for param 8&9 (verification), host signature used for param 10 (metadata), stored message used for param 12 (metadata)",
 	)
-
-	recoveredSigner, err := cyptoutils.GetAddressFromSignature(signMessageStr, hostSignatureStr)
-	if err != nil {
-		slog.Error("❌ CRITICAL: Could not recover signer from signature! This will cause contract revert.",
-			"error", err.Error(),
-			"sign_message", signMessageStr,
-			"host_signature", hostSignatureStr,
-			"expected_host", hostCredential.WalletAddress,
-		)
-		// Don't fail here, but log the error - contract will fail anyway
-	} else {
-		signerMatch := strings.EqualFold(recoveredSigner.Hex(), hostCredential.WalletAddress)
-		slog.Info("✅ Signature recovery test",
-			"recovered_signer", recoveredSigner.Hex(),
-			"expected_host_address", hostCredential.WalletAddress,
-			"addresses_match", signerMatch,
-		)
-		if !signerMatch {
-			slog.Error("❌ CRITICAL: Recovered signer does not match host wallet address! Contract will likely revert.",
-				"recovered", recoveredSigner.Hex(),
-				"expected", hostCredential.WalletAddress,
-				"sign_message", signMessageStr,
-			)
-			return nil, customerror.Parse(&customerror.ErrInvalidArgument,
-				errors.Errorf("signature verification failed: recovered signer %s does not match expected host %s",
-					recoveredSigner.Hex(), hostCredential.WalletAddress))
-		}
-	}
 
 	// Parameter 11: hostPublicKey
 	hostPublicKey := hostCredential.WalletAddress // Using wallet address as public key identifier
@@ -649,9 +622,9 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	// Case 3: NFT NOT minted (regardless of DB state) → Mint and update DB
 	slog.Info("🎯 Proceeding to mint NFT (Case 3: NFT not minted)")
 	// ============================================
-	// MINT NFT ON BLOCKCHAIN
+	// CREATE FRESH SIGNATURE FOR CLAIM TRANSACTION
 	// ============================================
-
+	// Get system transactor first (needed for signature creation and transaction)
 	transactor, err := cyptoutils.GetKeyedTransactor()
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get system transactor"))
@@ -680,36 +653,37 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		"backend_encrypted_user_data_length", len(backendEncryptedUserData),
 		"user_encrypted_proof_length", len(userEncryptedProof),
 		"backend_encrypted_proof_length", len(backendEncryptedProof),
-		"sign_message_digest", signedMessageDigest,
-		"host_signature_length", len(hostSignatureBytes),
+		"participant_sign_message", participantSignMessageStr,
+		"stored_sign_message", storedSignMessageStr,
+		"participant_signature_length", len(participantSignatureBytes),
 	)
 
 	// Pre-flight check: Verify signature hasn't been used (replay prevention)
 	// The contract's recoverSigner marks signatures as used, so if this was used before, it will revert
 	var isSignatureUsed bool
-	isSignatureUsed, err = certificateContractInstance.UsedSignatures(nil, hostSignatureBytes)
+	isSignatureUsed, err = certificateContractInstance.UsedSignatures(nil, participantSignatureBytes)
 	if err != nil {
 		slog.Warn("⚠️ Could not check if signature was already used", "error", err.Error())
 		isSignatureUsed = false // Default to false if check fails (will be caught by contract if actually used)
 	} else if isSignatureUsed {
-		logger.Error("❌ CRITICAL: Signature has already been used! This will cause contract revert.",
-			"host_signature", hostSignatureStr,
-			"note", "Each signature can only be used once. If certificate was re-imported, new signatures were created.",
+		logger.Error("❌ CRITICAL: Participant signature has already been used! This will cause contract revert.",
+			"participant_signature", participantSignatureStr,
+			"note", "Each signature can only be used once. Participant must create a new signature to claim.",
 		)
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument,
-			errors.New("host signature has already been used in a previous transaction. Certificate receivers must be re-imported to generate new signatures"))
+			errors.New("participant signature has already been used in a previous transaction"))
 	} else {
 		logger.Info("✅ Signature replay check passed", "signature_not_used", true)
 	}
 
 	// Note: Unlike join_event's addParticipant (which has no access control),
 	// mintNft DOES check access control via requireHostOrAdmin(signer, msg.sender).
-	// We skip pre-flight checks here (as join_event does) and let the contract handle access control.
-	// If access control fails, the transaction will revert with a clear error.
+	// The signer must be the participant claiming the certificate, and the system transactor
+	// must be authorized to send the transaction.
 	logger.Info("🔐 Access control will be verified by contract",
-		"recovered_signer", hostCredential.WalletAddress,
+		"participant_address", participantAddress.Hex(),
 		"system_transactor", transactor.From.Hex(),
-		"note", "Contract will verify: signer is host/admin OR transactor is allowed sender",
+		"note", "Contract will verify: signer is participant AND transactor is allowed sender",
 	)
 
 	// Pre-flight check: Verify receiver address is not zero
@@ -720,25 +694,102 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	}
 	logger.Info("✅ Receiver address check passed", "receiver_address", receiverAddress.Hex())
 
+	// DIAGNOSTIC: Check if receiver is a contract (must implement ERC721Receiver)
+	code, err := client.CodeAt(ctx, receiverAddress, nil)
+	if err == nil && len(code) > 0 {
+		logger.Warn("⚠️ Receiver is a smart contract - must implement ERC721Receiver interface",
+			"receiver", receiverAddress.Hex(),
+			"code_length", len(code),
+		)
+	}
+
+	// DIAGNOSTIC: Verify signature locally before sending to contract
+	// This mimics exactly what the contract will do in ThemisUtils.recoverSigner
+	slog.Info("🔬 LOCAL SIGNATURE VERIFICATION (mimics contract)",
+		"participant_sign_message", participantSignMessageStr,
+		"participant_sign_message_length", len(participantSignMessageStr),
+		"participant_signature_hex", participantSignatureStr,
+		"participant_signature_bytes_length", len(participantSignatureBytes),
+		"signature_v_value", participantSignatureBytes[64],
+	)
+
+	// Verify signature V value
+	if len(participantSignatureBytes) != 65 {
+		logger.Error("❌ CRITICAL: Invalid signature length!", "length", len(participantSignatureBytes), "expected", 65)
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument,
+			errors.Errorf("invalid signature length: got %d, expected 65", len(participantSignatureBytes)))
+	}
+	if participantSignatureBytes[64] != 27 && participantSignatureBytes[64] != 28 {
+		logger.Error("❌ CRITICAL: Invalid signature V value!",
+			"v", participantSignatureBytes[64],
+			"expected", "27 or 28",
+			"note", "Signature was mutated or created incorrectly",
+		)
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument,
+			errors.Errorf("invalid signature v value: got %d, expected 27 or 28", participantSignatureBytes[64]))
+	}
+
+	// Simulate contract's signature recovery (using participant's message for verification)
+	contractMessageHash := cyptoutils.HashEthereumMessage(participantSignMessageStr)
+
+	// Make a copy before verification to avoid mutation
+	participantSignatureBytesCopy := make([]byte, len(participantSignatureBytes))
+	copy(participantSignatureBytesCopy, participantSignatureBytes)
+
+	localRecoveredPubKey, err := cyptoutils.RecoverPublicKeyFromSignature(contractMessageHash, participantSignatureBytesCopy)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument,
+			errors.Wrapf(err, "local signature recovery failed - contract will reject this signature"))
+	}
+
+	localRecoveredAddress := cyptoutils.PublicKeyToAddress(localRecoveredPubKey)
+	expectedParticipantAddress := *participantAddress
+
+	// Verify that the signature was created with the participant's private key
+	if localRecoveredAddress.Hex() != expectedParticipantAddress.Hex() {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument,
+			errors.Errorf("signature verification failed: recovered %s, expected participant address %s",
+				localRecoveredAddress.Hex(), expectedParticipantAddress.Hex()))
+	}
+
 	// The contract's recoverSigner expects the original message string (not the digest)
 	// because it applies MessageHashUtils.toEthSignedMessageHash() to the input
 	// We sign with HashEthereumMessage which matches what the contract will compute
+	//
+	// CRITICAL: The signature for parameters 8 and 9 MUST come from the PARTICIPANT
+	// who is claiming the certificate, NOT from the host/system. The participant proves
+	// authorization by signing the message with their private key.
+	//
+	// Parameter 10: Host's signature of the raw JSON (storedSignMessageStr) - this is the
+	// host's signature of the original JSON message that was stored when certificates were imported.
+	//
+	// Comparison with update_event.go (working):
+	// - update_event.go: Host signs message using GetSignMessage, hashes it, signs hash, passes original message to contract
+	// - claim_certificate.go: PARTICIPANT signs message using GetSignMessage (params 8&9), HOST signature used for param 10 (metadata)
+	participantSignMsgPreview := participantSignMessageStr
+	if len(participantSignMsgPreview) > 100 {
+		participantSignMsgPreview = participantSignMsgPreview[:100] + "..."
+	}
+	storedSignMsgPreview := storedSignMessageStr
+	if len(storedSignMsgPreview) > 100 {
+		storedSignMsgPreview = storedSignMsgPreview[:100] + "..."
+	}
 	tx, err := certificateContractInstance.MintNft(
 		transactor,
 		receiverAddress,
 		userId,
 		certificateId,
 		issuerId,
-		encryptedUserData,
-		backendEncryptedUserData,
+		encryptedUserData,        // Param 5: Encrypted user data (attendee profile JSON) using user's public key
+		backendEncryptedUserData, // Param 6: Encrypted user data (attendee profile JSON) using backend public key
 		issuerAddresses,
-		signMessageStr, // Pass original message, contract will hash it with Ethereum prefix
-		hostSignatureBytes,
-		hostSignatureStr,
-		hostPublicKey,
-		signMessageStr,
-		userEncryptedProof,
-		backendEncryptedProof,
+		participantSignMessageStr, // Param 8: Participant's signed message for signature verification (contract will hash it with Ethereum prefix)
+		participantSignatureBytes, // Param 9: Participant's signature bytes (signed with participant's private key)
+		hostSignatureStr,          // Param 10: Host's signature hex string of the raw JSON (for metadata)
+		hostPublicKey,             // Param 11: Host public key
+		storedSignMessageStr,      // Param 12: Stored JSON message from database (original from certificate signature table)
+		userEncryptedProof,        // Param 13: Encrypted user proof (ceretificate as .csv encrypted with user public key)
+		backendEncryptedProof,     // Param 14: Encrypted user proof (ceretificate as .csv encrypted with backend public key)
 		certificateTitle,
 		certificateSubtitle,
 		userDataHashStr, // Hash of the CSV data for blockchain verification
@@ -756,13 +807,16 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 				"recovered_signer", hostCredential.WalletAddress,
 				"system_transactor", transactor.From.Hex(),
 				"receiver_address", receiverAddress.Hex(),
+				"participant_signature", participantSignatureStr,
 				"host_signature", hostSignatureStr,
-				"sign_message", signMessageStr,
+				"participant_sign_message", participantSignMessageStr,
+				"stored_sign_message", storedSignMessageStr,
+				"participant_address", participantAddress.Hex(),
 				"revert_reason_extracted", revertReason,
 				"possible_issues", []string{
-					"1. Signature replay: Host signature already used (check signature usage)",
-					"2. Invalid signature: Signature format/validity issue",
-					"3. Access control: Host not registered OR system transactor not allowed",
+					"1. Signature replay: Participant signature already used (check signature usage)",
+					"2. Invalid signature: Participant signature format/validity issue",
+					"3. Access control: Participant not authorized OR system transactor not allowed",
 					"4. Zero address: Receiver address is zero (unlikely - we check this)",
 					"5. ERC721 hook failure: Receiver contract's onERC721Received failed",
 					"6. Out of gas: Parameters too large (check string/array lengths)",

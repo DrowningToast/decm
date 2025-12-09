@@ -162,8 +162,19 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                     {/* Aspect ratio container using padding (4:3 ratio) */}
                     <div className="relative w-full" style={{ paddingBottom: "75%" }}>
                         {isImageLoading ? (
-                            <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-muted/50 p-4">
                                 <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                                <Typography
+                                    variant="small"
+                                    tag="p"
+                                    color="muted"
+                                    className="text-center"
+                                >
+                                    {t(
+                                        "participant.certificates.detail.loadingImageHint",
+                                        "Loading certificate preview... This may take a while on the first load.",
+                                    )}
+                                </Typography>
                             </div>
                         ) : certificateImageUrl && !imageError ? (
                             <img
