@@ -12,9 +12,7 @@ func (h *Handler) RegisterRoutes(router fiber.Router) {
 	eventRegistrationGroup.Get("/my/:event_id/", h.GetEventRegistrationInvitationByUserAndEvent)
 
 	// Get join event sign message
-	eventRegistrationGroup.Get("/join/:event_id/sign-message", h.GetJoinEventSignMessage)
 	// Join event
-	eventRegistrationGroup.Post("/join/:event_id", h.JoinEvent)
 
 	// Fuck join event
 	eventRegistrationGroup.Post("/fuck-join/:event_id", h.FuckJoinEvent)
