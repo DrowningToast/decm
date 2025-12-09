@@ -5,8 +5,6 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 contract ThemisUtils {
-    error Themis__InvalidSignature();
-    error Themis__SignatureAlreadyUsed();
     
     mapping(bytes => bool) public usedSignatures;
 
@@ -24,11 +22,11 @@ contract ThemisUtils {
         address signer = ECDSA.recover(ethSignedMessageHash, signature);
         
         if (signer == address(0)) {
-            revert Themis__InvalidSignature();
+            require(false, "Invalid signature");
         }
         
         if (usedSignatures[signature]) {
-            revert Themis__SignatureAlreadyUsed();
+            require(false, "Signature already used");
         }
 
         usedSignatures[signature] = true;
