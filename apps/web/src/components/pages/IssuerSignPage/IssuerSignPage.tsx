@@ -34,7 +34,8 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
     // Fetch event data
     const { event, isLoadingEventError } = useEvent(eventId);
     const { eventIssuers } = useEventIssuers(eventId);
-    const { certificates: eventCertificates } = useEventCertificates(eventId);
+    const { certificates: eventCertificates, isLoading: isLoadingCertificates } =
+        useEventCertificates(eventId);
     const { data: eventCertificateConfig } = useEventCertificateConfig(eventId);
     const { data: eventContract } = useEventContract(eventId);
     const { signEventCertificates, isSigning } = useSignEventCertificates();
@@ -50,7 +51,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
 
     // Calculate total certificates to be signed
     const certificatesToSign =
-        eventCertificates?.filter((cert) => !cert.revoked_at && currentIssuer) || [];
+        eventCertificates?.filter((cert) => !cert.revokedAt && currentIssuer) || [];
 
     const handleSignCertificates = () => {
         setShowPinModal(true);
@@ -322,7 +323,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                                   ? t("issuer.sign.signedCertificates")
                                                   : t("issuer.sign.eventCertificates")}{" "}
                                             (
-                                            {eventCertificates?.filter((cert) => !cert.revoked_at)
+                                            {eventCertificates?.filter((cert) => !cert.revokedAt)
                                                 .length || 0}
                                             )
                                         </Typography>
@@ -331,22 +332,15 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                             columns={CertificateColumns()}
                                             data={
                                                 eventCertificates
-                                                    ?.filter(
-                                                        (
-                                                            cert,
-                                                        ): cert is typeof cert & {
-                                                            created_at: string;
-                                                            event_contract_address: string;
-                                                            event_id: string;
-                                                            id: string;
-                                                        } =>
-                                                            cert.id !== undefined &&
-                                                            cert.event_id !== undefined &&
-                                                            !cert.revoked_at &&
-                                                            cert.created_at !== undefined &&
-                                                            cert.event_contract_address !==
-                                                                undefined,
-                                                    )
+                                                    ?.filter((cert) => {
+                                                        // Filter out revoked certificates and ensure required fields exist
+                                                        return (
+                                                            cert.id &&
+                                                            cert.eventId &&
+                                                            !cert.revokedAt &&
+                                                            cert.createdAt
+                                                        );
+                                                    })
                                                     .map((cert) => {
                                                         const firstName =
                                                             cert.name?.split(" ")[0] || "";
@@ -357,31 +351,31 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                                                 .join(" ") || "";
 
                                                         return {
-                                                            id: cert.id,
-                                                            event_id: cert.event_id,
+                                                            id: cert.id!,
+                                                            event_id: cert.eventId!,
                                                             receiver_credential_id:
-                                                                cert.receiver_credential_id,
-                                                            receiver_email: cert.receiver_email,
+                                                                cert.receiverCredentialId,
+                                                            receiver_email: cert.receiverEmail,
                                                             name: cert.name,
                                                             academic_institution:
-                                                                cert.academic_institution,
+                                                                cert.academicInstitution,
                                                             certificate_title:
-                                                                cert.certificate_title,
+                                                                cert.certificateTitle,
                                                             certificate_subtitle:
-                                                                cert.certificate_subtitle,
+                                                                cert.certificateSubtitle,
                                                             event_contract_address:
-                                                                cert.event_contract_address,
+                                                                cert.eventContractAddress || "",
                                                             event_certificate_address:
-                                                                cert.event_certificate_address,
-                                                            created_at: cert.created_at,
-                                                            revoked_at: cert.revoked_at,
+                                                                cert.eventCertificateAddress,
+                                                            created_at: cert.createdAt!,
+                                                            revoked_at: cert.revokedAt,
                                                             firstName,
                                                             lastName,
-                                                            email: cert.receiver_email || "",
+                                                            email: cert.receiverEmail || "",
                                                             academicInstitution:
-                                                                cert.academic_institution || "",
-                                                            issuedAt: cert.created_at,
-                                                            status: cert.revoked_at
+                                                                cert.academicInstitution || "",
+                                                            issuedAt: cert.createdAt!,
+                                                            status: cert.revokedAt
                                                                 ? "rejected"
                                                                 : isCurrentIssuerPending
                                                                   ? "pending_signature"
@@ -389,7 +383,15 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                                         };
                                                     }) || []
                                             }
-                                            totalItems={eventCertificates?.length || 0}
+                                            totalItems={
+                                                eventCertificates?.filter(
+                                                    (cert) =>
+                                                        cert.id &&
+                                                        cert.eventId &&
+                                                        !cert.revokedAt &&
+                                                        cert.createdAt,
+                                                ).length || 0
+                                            }
                                             currentPage={1}
                                             pageSize={10}
                                             onPageChange={() => {}}
@@ -399,7 +401,7 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                             searchPlaceholder="Search certificates..."
                                             sorting={[]}
                                             onSortingChange={() => {}}
-                                            isLoading={false}
+                                            isLoading={isLoadingCertificates}
                                             disablePagination
                                         />
                                     </div>

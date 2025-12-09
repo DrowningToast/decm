@@ -9,9 +9,13 @@ export function useCertificateFontFamilies() {
         error,
     } = useQuery({
         queryKey: QUERY_KEY.event.certificate.fontFamilies,
-        queryFn: () => certificateService.getFontFamilies(),
+        queryFn: async () => {
+            const result = await certificateService.getFontFamilies();
+            return result;
+        },
         staleTime: Infinity, // Font families don't change often
         gcTime: 1000 * 60 * 30, // Cache for 30 minutes
+        retry: 3, // Retry 3 times on failure
     });
 
     return {

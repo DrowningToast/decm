@@ -103,8 +103,9 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 			return nil, customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("sign message not found for certificate %s", certificate.Id))
 		}
 
-		signMessageDigest := cyptoutils.HashMessage(*targetSignature.SignMessage)
-		signature, err := cyptoutils.Sign(signMessageDigest, privateKey)
+		// Use HashEthereumMessage to match contract's recoverSigner which applies Ethereum prefix
+		signMessageDigest := cyptoutils.HashEthereumMessage(*targetSignature.SignMessage)
+		signature, err := cyptoutils.Sign(signMessageDigest.Bytes(), privateKey)
 		if err != nil {
 			return nil, err
 		}

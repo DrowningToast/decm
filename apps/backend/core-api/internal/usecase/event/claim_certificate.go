@@ -6,11 +6,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"math/big"
 	"strings"
 
 	"apps/backend/common/customerror"
-	"apps/backend/common/pgmapper"
 	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/cyptoutils"
@@ -21,8 +21,8 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/google/uuid"
 
@@ -394,6 +394,16 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	}
 	attendeeProfileStr := string(attendeeProfileJSON)
 
+	// Derive backend public key from blockchain private key for encryption
+	backendPrivateKey, err := crypto.HexToECDSA(uc.cfg.Blockchain.PrivateKey)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to parse blockchain private key"))
+	}
+	backendPublicKey, err := cyptoutils.GetPublicKeyFromPrivateKey(backendPrivateKey)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to derive backend public key from blockchain private key"))
+	}
+
 	// 4. DUAL ENCRYPTION for DATA section (Participant Profile)
 	// Parameter 5: encryptedUserData - Encrypted with user's wallet public key (ECIES)
 	encryptedUserData, err := cyptoutils.EncryptWithPublicKeyBytes(attendeeProfileStr, participantPublicKey)
@@ -401,10 +411,10 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to encrypt attendee profile with public key"))
 	}
 
-	// Parameter 6: backendEncryptedUserData - Encrypted with backend PII key (AES-GCM)
-	backendEncryptedUserData, err := pgmapper.EncryptPII(attendeeProfileStr, uc.cfg.PIIEncryptionKey)
+	// Parameter 6: backendEncryptedUserData - Encrypted with backend public key (ECIES, derived from BLOCKCHAIN_PRIVATE_KEY)
+	backendEncryptedUserData, err := cyptoutils.EncryptWithPublicKeyBytes(attendeeProfileStr, backendPublicKey)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to encrypt attendee profile with PII key"))
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to encrypt attendee profile with backend public key"))
 	}
 
 	// ============================================
@@ -422,16 +432,18 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to encrypt certificate PII with public key"))
 	}
 
-	// Parameter 14: backendEncryptedProof - Encrypted with backend PII key (AES-GCM)
-	backendEncryptedProof, err := pgmapper.EncryptPII(certificatePIIcsv, uc.cfg.PIIEncryptionKey)
+	// Parameter 14: backendEncryptedProof - Encrypted with backend public key (ECIES, derived from BLOCKCHAIN_PRIVATE_KEY)
+	backendEncryptedProof, err := cyptoutils.EncryptWithPublicKeyBytes(certificatePIIcsv, backendPublicKey)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to encrypt certificate PII with PII key"))
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to encrypt certificate PII with backend public key"))
 	}
 
-	// 7. Compute hash of the certificate CSV (for blockchain verification)
-	// This matches the pattern used in import_certificate_receivers.go
-	certificatePIIhash := cyptoutils.HashMessage(certificatePIIcsv)
-	userDataHashStr := hexutil.Encode(certificatePIIhash) // Use hexutil.Encode to add "0x" prefix
+	// 7. Get certificate digest from database (pre-computed hash)
+	// This should match the hash stored when the certificate was created
+	if certificate.CertificateDigest == nil {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("certificate digest is missing"))
+	}
+	userDataHashStr := *certificate.CertificateDigest
 
 	// Parameter 7: issuerAddresses (array of issuer wallet addresses)
 	issuerAddresses := make([]common.Address, len(issuers))
@@ -454,10 +466,41 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	hostSignatureStr := firstSignature.HostSignature
 	signMessageStr := *firstSignature.SignMessage
 
+	slog.Info("📝 Certificate signature data for contract verification",
+		"signed_message_digest", signedMessageDigest,
+		"host_signature", hostSignatureStr,
+		"host_signature_length", len(hostSignatureStr),
+		"sign_message", signMessageStr,
+		"host_wallet_address", hostCredential.WalletAddress,
+	)
+
 	// Decode host signature from hex string to bytes
 	hostSignatureBytes, err := hex.DecodeString(strings.TrimPrefix(hostSignatureStr, "0x"))
 	if err != nil {
+		slog.Error("❌ Failed to decode host signature", "error", err.Error())
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to decode host signature"))
+	}
+
+	slog.Info("🔐 Decoded host signature",
+		"signature_bytes_length", len(hostSignatureBytes),
+		"signature_hex", fmt.Sprintf("0x%x", hostSignatureBytes),
+	)
+
+	// Try to recover the signer to verify signature validity before sending to contract
+	// Use the original message string since signatures are now created with HashEthereumMessage
+	recoveredSigner, err := cyptoutils.GetAddressFromSignature(signMessageStr, hostSignatureStr)
+	if err != nil {
+		slog.Warn("⚠️ Could not recover signer from signature (this may be expected)", "error", err.Error())
+	} else {
+		signerMatch := strings.EqualFold(recoveredSigner.Hex(), hostCredential.WalletAddress)
+		slog.Info("✅ Signature recovery test",
+			"recovered_signer", recoveredSigner.Hex(),
+			"expected_host_address", hostCredential.WalletAddress,
+			"addresses_match", signerMatch,
+		)
+		if !signerMatch {
+			slog.Error("❌ CRITICAL: Recovered signer does not match host wallet address! Contract will likely revert.")
+		}
 	}
 
 	// Parameter 11: hostPublicKey
@@ -506,6 +549,12 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	isNftMinted := false
 	var onChainTokenId *uint64
 
+	slog.Info("🔒 Checking idempotency state",
+		"certificate_id", certificate.Id.String(),
+		"db_token_id", certificate.CertificateTokenId,
+		"contract_address", certificate.EventCertificateAddress,
+	)
+
 	// Check if token counter exists and try to find minted certificate
 	// Note: This is a simplified check - in production you might want to query events
 	// or use a mapping in the contract for certificateId -> tokenId lookup
@@ -514,20 +563,33 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		tokenId := new(big.Int)
 		tokenId.SetString(*certificate.CertificateTokenId, 10)
 
+		slog.Info("📋 Database indicates certificate already has token ID, verifying on-chain",
+			"token_id", *certificate.CertificateTokenId,
+		)
+
 		// Try to get token data - if it succeeds, NFT exists
 		_, err := certificateContractInstance.GetTokenData(nil, tokenId)
 		if err == nil {
 			isNftMinted = true
 			tokenIdUint64 := tokenId.Uint64()
 			onChainTokenId = &tokenIdUint64
+			slog.Info("✅ NFT verified on-chain", "token_id", tokenIdUint64)
+		} else {
+			slog.Warn("⚠️ Database has token ID but NFT not found on-chain", "error", err.Error())
 		}
 	}
 
 	// Decision matrix based on state
 	isDbUpdated := certificate.CertificateTokenId != nil
 
+	slog.Info("🔍 Idempotency check result",
+		"is_nft_minted", isNftMinted,
+		"is_db_updated", isDbUpdated,
+	)
+
 	// Case 1: NFT minted AND DB updated → Already claimed
 	if isNftMinted && isDbUpdated {
+		slog.Info("🚫 Certificate already claimed (Case 1: NFT minted + DB updated)")
 		return nil, customerror.NewWithPreset(
 			&customerror.ErrInvalidArgument,
 			errors.New(string(ClaimCertificateUserErrorCertificateAlreadyClaimed)),
@@ -536,6 +598,7 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 
 	// Case 2: NFT minted BUT DB not updated → Only update DB
 	if isNftMinted && !isDbUpdated {
+		slog.Info("🔄 NFT already minted but DB not updated (Case 2: Recovery mode)")
 		if onChainTokenId == nil {
 			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("token ID not found despite NFT being minted"))
 		}
@@ -550,10 +613,12 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 			return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to update certificate with existing token ID"))
 		}
 
+		slog.Info("✅ Database updated with existing token ID", "token_id", tokenIdStr)
 		return updatedCert, nil
 	}
 
 	// Case 3: NFT NOT minted (regardless of DB state) → Mint and update DB
+	slog.Info("🎯 Proceeding to mint NFT (Case 3: NFT not minted)")
 	// ============================================
 	// MINT NFT ON BLOCKCHAIN
 	// ============================================
@@ -563,6 +628,36 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get system transactor"))
 	}
 
+	// ============================================
+	// LOG MINTING PARAMETERS FOR DEBUGGING
+	// ============================================
+	logger := slog.With(
+		"certificate_id", certificateId,
+		"receiver_address", receiverAddress.Hex(),
+		"contract_address", certificate.EventCertificateAddress,
+		"transactor_address", transactor.From.Hex(),
+		"user_id", userId,
+		"issuer_id", issuerId,
+		"num_issuer_addresses", len(issuerAddresses),
+		"num_issuer_proofs", len(issuerProofs),
+		"certificate_title", certificateTitle,
+		"certificate_subtitle", certificateSubtitle,
+		"data_hash", userDataHashStr,
+	)
+
+	logger.Info("🚀 Attempting to mint certificate NFT")
+	logger.Debug("Mint parameters",
+		"encrypted_user_data_length", len(encryptedUserData),
+		"backend_encrypted_user_data_length", len(backendEncryptedUserData),
+		"user_encrypted_proof_length", len(userEncryptedProof),
+		"backend_encrypted_proof_length", len(backendEncryptedProof),
+		"sign_message_digest", signedMessageDigest,
+		"host_signature_length", len(hostSignatureBytes),
+	)
+
+	// The contract's recoverSigner expects the original message string (not the digest)
+	// because it applies MessageHashUtils.toEthSignedMessageHash() to the input
+	// We sign with HashEthereumMessage which matches what the contract will compute
 	tx, err := certificateContractInstance.MintNft(
 		transactor,
 		receiverAddress,
@@ -572,7 +667,7 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		encryptedUserData,
 		backendEncryptedUserData,
 		issuerAddresses,
-		signedMessageDigest,
+		signMessageStr, // Pass original message, contract will hash it with Ethereum prefix
 		hostSignatureBytes,
 		hostSignatureStr,
 		hostPublicKey,
@@ -585,15 +680,27 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		issuerProofs,
 	)
 	if err != nil {
+		logger.Error("❌ Failed to mint certificate NFT", "error", err.Error())
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to mint certificate NFT"))
 	}
 
+	logger.Info("✅ Transaction submitted successfully", "tx_hash", tx.Hash().Hex())
+
+	logger.Info("⏳ Waiting for transaction to be mined...")
 	receipt, err := bind.WaitMined(ctx, client, tx)
 	if err != nil {
+		logger.Error("❌ Transaction mining failed", "tx_hash", tx.Hash().Hex(), "error", err.Error())
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "transaction mining failed: tx=%s", tx.Hash().Hex()))
 	}
 
+	logger.Info("📦 Transaction mined", "tx_hash", tx.Hash().Hex(), "gas_used", receipt.GasUsed, "status", receipt.Status)
+
 	if receipt.Status != types.ReceiptStatusSuccessful {
+		logger.Error("❌ Transaction reverted on-chain",
+			"tx_hash", tx.Hash().Hex(),
+			"gas_used", receipt.GasUsed,
+			"block_number", receipt.BlockNumber,
+		)
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Errorf("transaction reverted (tx=%s, gas=%d)", tx.Hash().Hex(), receipt.GasUsed))
 	}
 
@@ -601,20 +708,25 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	// EXTRACT TOKEN ID FROM EVENT LOGS
 	// ============================================
 
+	logger.Info("🔍 Parsing transaction logs for CertificateMinted event", "num_logs", len(receipt.Logs))
+
 	// Parse CertificateMinted event to get tokenId
 	var mintedTokenId *big.Int
-	for _, log := range receipt.Logs {
+	for i, log := range receipt.Logs {
 		event, err := certificateContractInstance.ParseCertificateMinted(*log)
 		if err != nil {
 			// Not the event we're looking for, continue
+			logger.Debug("Skipping log entry", "log_index", i, "topics_count", len(log.Topics))
 			continue
 		}
 		// Found the CertificateMinted event
 		mintedTokenId = event.TokenId
+		logger.Info("✅ Found CertificateMinted event", "token_id", mintedTokenId.String(), "log_index", i)
 		break
 	}
 
 	if mintedTokenId == nil {
+		logger.Error("❌ Failed to find CertificateMinted event in transaction logs")
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("failed to extract token ID from minting event"))
 	}
 

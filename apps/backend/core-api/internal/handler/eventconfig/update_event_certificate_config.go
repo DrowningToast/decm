@@ -120,7 +120,7 @@ func (h *Handler) UpdateEventCertificateConfig(ctx *fiber.Ctx) error {
 			EventNamePosX:           *params.EventNamePosX,
 			EventNamePosY:           *params.EventNamePosY,
 			NamePosX:                *params.NamePosX,
-			NamePosY:                *params.NamePosX,
+			NamePosY:                *params.NamePosY,
 			AcademicInstitutionPosX: params.AcademicInstitutionPosX,
 			AcademicInstitutionPosY: params.AcademicInstitutionPosY,
 			CertificateTitlePosX:    params.CertificateTitlePosX,

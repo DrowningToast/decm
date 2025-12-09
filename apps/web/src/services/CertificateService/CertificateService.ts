@@ -91,15 +91,20 @@ export class CertificateService {
 
     /**
      * Fetches available font families for certificates
-     * @returns Array of font families
+     * @returns Array of font families in the format expected by the component
      */
-    public async getFontFamilies(): Promise<FontFamily[]> {
+    public async getFontFamilies(): Promise<
+        Array<{
+            id: number;
+            font_family_name: string;
+            css_font_name: string;
+            is_default: boolean;
+            available_font_weights: number[];
+            is_support_italic: boolean;
+        }>
+    > {
         const response = await this._coreApi.v1.getEventCertificateFontFamilies();
-        return (response.font_families || []).map((font) => ({
-            name: font.name || "",
-            displayName: font.display_name || "",
-            weights: font.weights || [],
-        }));
+        return response.font_families || [];
     }
 
     /**

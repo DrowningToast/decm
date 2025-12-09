@@ -392,6 +392,7 @@ export interface EntityEventAttendee {
 
 export interface EntityEventCertificate {
     academic_institution?: string;
+    certificate_digest?: string;
     certificate_subtitle?: string;
     certificate_title?: string;
     certificate_token_id?: string;
@@ -2456,6 +2457,30 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Update font family and font weight for all text templates in the certificate. This endpoint allows customization of fonts for event name, participant name, academic institution, certificate title, and certificate subtitle.
+         *
+         * @name UpdateEventCertificateTextConfig
+         * @summary Update certificate text configuration
+         * @request PUT:/api/v1/events/{event_id}/certificates/text-config
+         */
+        updateEventCertificateTextConfig: (
+            { eventId, ...query }: UpdateEventCertificateTextConfigParams,
+            body: EventUpdateEventCertificateTextConfigRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                UpdateEventCertificateTextConfigData,
+                UpdateEventCertificateTextConfigError
+            >({
+                path: `/api/v1/events/${eventId}/certificates/text-config`,
+                method: "PUT",
+                body: body,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Get the event certificate configuration for an event. Accessible by verified organizers or issuers assigned to the event.
          *
          * @name GetEventCertificateConfig
@@ -3165,31 +3190,6 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/profile/password/verify`,
                 method: "POST",
                 body: verifyPasswordRequest,
-                type: ContentType.Json,
-                format: "json",
-                ...params,
-            }),
-    };
-    eventId = {
-        /**
-         * @description Update font family and font weight for all text templates in the certificate. This endpoint allows customization of fonts for event name, participant name, academic institution, certificate title, and certificate subtitle.
-         *
-         * @name UpdateEventCertificateTextConfig
-         * @summary Update certificate text configuration
-         * @request PUT:/events/{event_id}/certificates/text-config
-         */
-        updateEventCertificateTextConfig: (
-            { eventId, ...query }: UpdateEventCertificateTextConfigParams,
-            body: EventUpdateEventCertificateTextConfigRequest,
-            params: RequestParams = {},
-        ) =>
-            this.http.request<
-                UpdateEventCertificateTextConfigData,
-                UpdateEventCertificateTextConfigError
-            >({
-                path: `/events/${eventId}/certificates/text-config`,
-                method: "PUT",
-                body: body,
                 type: ContentType.Json,
                 format: "json",
                 ...params,

@@ -260,10 +260,26 @@ export const CertificateSettingsPage = ({
             const req: UpdateEventCertificateConfigPayload = {
                 name_pos_x: name?.x ?? eventCertificateConfig?.name_pos_x ?? 0,
                 name_pos_y: name?.y ?? eventCertificateConfig?.name_pos_y ?? 0,
-                event_name_pos_x: eventName?.x ?? eventCertificateConfig?.event_name_pos_x ?? 0,
-                event_name_pos_y: eventName?.y ?? eventCertificateConfig?.event_name_pos_y ?? 0,
                 base_certificate_image: certificateTemplate.svgFile ?? undefined,
             };
+
+            // Only include event name positions if the template actually has the event name keyword
+            // If a new template is uploaded without event name, we should clear the positions
+            if (eventName) {
+                req.event_name_pos_x = eventName.x;
+                req.event_name_pos_y = eventName.y;
+            } else if (certificateTemplate.svgFile) {
+                // New template uploaded without event name - clear the positions
+                req.event_name_pos_x = 0;
+                req.event_name_pos_y = 0;
+            } else if (
+                eventCertificateConfig?.event_name_pos_x != null &&
+                eventCertificateConfig?.event_name_pos_y != null
+            ) {
+                // Keep existing values if no new template uploaded (for updates without template change)
+                req.event_name_pos_x = eventCertificateConfig.event_name_pos_x;
+                req.event_name_pos_y = eventCertificateConfig.event_name_pos_y;
+            }
 
             if (acedmicInstitutionName) {
                 req.academic_institution_pos_x = acedmicInstitutionName.x;
@@ -295,8 +311,8 @@ export const CertificateSettingsPage = ({
                 );
             }
 
-            // Update font settings if they have changed
-            if (fontSettings && eventCertificateConfig) {
+            // Update font settings if they have changed (only if config exists or is being created)
+            if (fontSettings && (eventCertificateConfig || certificateTemplate.svgFile)) {
                 await updateCertificateTextConfig(fontSettings);
             }
 
@@ -543,8 +559,8 @@ export const CertificateSettingsPage = ({
                         />
                     </div>
 
-                    {/* Step 3: Font Settings (only show if certificate config exists) */}
-                    {eventCertificateConfig && (
+                    {/* Step 3: Font Settings (show if certificate config exists or template uploaded) */}
+                    {(eventCertificateConfig || certificateTemplate.svgFile) && (
                         <div className="space-y-6">
                             <div>
                                 <Typography
@@ -568,6 +584,7 @@ export const CertificateSettingsPage = ({
 
                             <CertificateFontSettings
                                 eventCertificateConfig={eventCertificateConfig}
+                                detectedKeywords={allDetectedKeywords}
                                 onChange={(fontConfig: CertificateFontConfig) => {
                                     setFontSettings(fontConfig);
                                 }}

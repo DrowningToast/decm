@@ -69,6 +69,11 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 		return nil, customerror.Parse(&customerror.ErrNotFound, fmt.Errorf("event not found"))
 	}
 
+	// 2.5. Verify that current user is the event owner (only event owner can import certificates)
+	if event.OwnerCredentialId != currentUser.UserId {
+		return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("only the event owner can import certificate receivers"))
+	}
+
 	// 3. Get eventContract from eventContracts table using eventID
 	eventContract, err := uc.EventContractDataGateway.GetEventContractByEventID(ctx, eventID)
 	if err != nil {
@@ -278,8 +283,10 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 	signMessageJSON := string(signMessageJSONBytes)
 
 	// 8. Host signs the message
-	signMessageDigest := cyptoutils.HashMessage(signMessageJSON)
-	signature, err := cyptoutils.Sign(signMessageDigest[:], privateKey)
+	// Use HashEthereumMessage to match contract's recoverSigner which applies Ethereum prefix
+	// The contract expects the original message string and will apply the prefix itself
+	signMessageDigest := cyptoutils.HashEthereumMessage(signMessageJSON)
+	signature, err := cyptoutils.Sign(signMessageDigest.Bytes(), privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -294,6 +301,7 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 
 		// Create signature for each issuer
 		for _, issuer := range eventIssuers {
+			// Store the hash digest as hex string (for compatibility, though contract uses original message)
 			encodedSignMessageDigestStr := hexutil.Encode(signMessageDigest[:])
 			encodedHostSignature := hexutil.Encode(signature)
 

@@ -116,7 +116,7 @@ type UpdateEventCertificateTextConfigResponse struct {
 // @Failure 400 {object} customerror.ErrResponse "Invalid request"
 // @Failure 404 {object} customerror.ErrResponse "Certificate configuration not found"
 // @Failure 500 {object} customerror.ErrResponse "Internal server error"
-// @Router /events/{event_id}/certificates/text-config [put]
+// @Router /api/v1/events/{event_id}/certificates/text-config [put]
 func (h *Handler) UpdateEventCertificateTextConfig(ctx *fiber.Ctx) error {
 	// 1. Parse event ID from path
 	eventIDStr := ctx.Params("event_id")

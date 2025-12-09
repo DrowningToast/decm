@@ -5,10 +5,16 @@ import { Button } from "@/components/ui/button";
 interface EventActionsProps {
     type: "pending" | "signed";
     eventId: string;
+    certificateCount: number;
     onActionClick?: (eventId: string) => void;
 }
 
-export const EventActions: React.FC<EventActionsProps> = ({ type, eventId, onActionClick }) => {
+export const EventActions: React.FC<EventActionsProps> = ({
+    type,
+    eventId,
+    certificateCount,
+    onActionClick,
+}) => {
     const { t } = useTranslation();
 
     if (type === "pending") {
@@ -18,6 +24,7 @@ export const EventActions: React.FC<EventActionsProps> = ({ type, eventId, onAct
                 size="sm"
                 className="py-1 px-3 text-xs font-semibold"
                 onClick={() => onActionClick?.(eventId)}
+                disabled={certificateCount === 0}
             >
                 {t("issuer.sign.action.review")}
             </Button>
