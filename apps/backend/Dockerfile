@@ -28,12 +28,24 @@ FROM alpine:3.20 AS runtime
 
 WORKDIR /app
 
-# Install runtime dependencies including migrate CLI
-RUN apk add --no-cache ca-certificates tzdata wget curl && \
+# Install runtime dependencies including migrate CLI and Chromium for certificate image generation
+RUN apk add --no-cache \
+    ca-certificates \
+    tzdata \
+    wget \
+    curl \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ttf-freefont && \
     wget -O /tmp/migrate.tar.gz https://github.com/golang-migrate/migrate/releases/download/v4.18.1/migrate.linux-amd64.tar.gz && \
     tar -xzf /tmp/migrate.tar.gz -C /usr/local/bin && \
     chmod +x /usr/local/bin/migrate && \
-    rm /tmp/migrate.tar.gz
+    rm /tmp/migrate.tar.gz && \
+    # Create symlink for chromedp to find chromium
+    ln -s /usr/bin/chromium /usr/bin/google-chrome
 
 # Copy application binary and migration files
 COPY --from=builder /workspace/apps/backend/bin/decm-backend /app/decm-backend

@@ -168,10 +168,21 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		return nil, err
 	}
 
+	// Use provided values or fall back to existing event values
+	eventName := dbEvent.Title
+	if params.Name != nil {
+		eventName = *params.Name
+	}
+
+	eventDescription := dbEvent.LongDescription
+	if params.Description != nil {
+		eventDescription = *params.Description
+	}
+
 	tx, err := instance.UpdateEvent(
 		auth,
-		*params.Name,
-		*params.Description,
+		eventName,
+		eventDescription,
 		big.NewInt(int64(*params.SeatsCount)),
 		0,
 		signMessage,
