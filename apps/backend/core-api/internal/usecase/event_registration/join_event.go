@@ -3,6 +3,7 @@ package event_registration
 import (
 	"context"
 	"encoding/hex"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -344,6 +345,24 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 		println("🚀 Attempting to submit transaction...")
 		println("   Passing RAW sign message to contract (not hash)")
 		println("")
+
+		// Log sign message details before contract interaction
+		slog.InfoContext(ctx, "Attempting to add participant to contract",
+			slog.String("participant_address", participantAddr.Hex()),
+			slog.String("contract_address", entityEventContract.EventContractAddress),
+			slog.String("sign_message", signMessage),
+			slog.String("sign_message_hash", messageHash.String()),
+			slog.String("signature", hex.EncodeToString(signature)),
+			slog.Int("signature_length", len(signature)),
+			slog.String("transactor_address", transactor.From.Hex()),
+			slog.String("event_id", entityEventContract.EventID.String()),
+		)
+		if len(signature) == 65 {
+			slog.DebugContext(ctx, "Signature recovery ID",
+				slog.Uint64("v", uint64(signature[64])),
+				slog.String("note", "should be 27 or 28 for contract"),
+			)
+		}
 
 		// CRITICAL: Pass the RAW sign message, NOT the hash!
 		// The smart contract will hash it itself using toEthSignedMessageHash
