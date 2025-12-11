@@ -4,6 +4,7 @@ import (
 	"context"
 	"decm-database/go/generated"
 	"errors"
+	"fmt"
 
 	"apps/backend/common/customerror"
 	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
@@ -103,18 +104,23 @@ func (u *EventUsecase) UpdateEventIssuer(ctx context.Context, eventID uuid.UUID,
 	for _, currentIssuer := range currentIssuers {
 		if !desiredIssuerCredentialIDs[currentIssuer.IssuerCredentialID] {
 			// Delete certificate signature for this issuer (linked to config, not individual certificates)
+			// This should be done even if the issuer hasn't signed yet
 			signatures, err := u.EventCertificateSignatureDataGateway.GetEventCertificateSignaturesByEventCertificateConfigID(
 				ctx, certificateConfig.ID)
 			if err != nil {
-				// Continue even if this fails
+				// If we can't get signatures, log but continue with issuer deletion
+				// The signature might not exist if it was never created
 			} else {
 				for _, sig := range signatures {
 					if sig.IssuerCredentialId == currentIssuer.IssuerCredentialID {
 						err := u.EventCertificateSignatureDataGateway.DeleteEventCertificateSignature(ctx, sig.Id)
 						if err != nil {
-							// Log error but continue
-							continue
+							// Fail if we can't delete the signature - this ensures data consistency
+							return nil, customerror.Parse(&customerror.ErrInternalServer,
+								fmt.Errorf("failed to delete certificate signature for issuer %s: %w",
+									currentIssuer.IssuerCredentialID, err))
 						}
+						break // Only one signature per issuer per config
 					}
 				}
 			}

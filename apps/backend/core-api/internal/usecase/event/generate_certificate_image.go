@@ -244,6 +244,43 @@ func int32PtrToString(weight *int32, defaultValue string) string {
 	return fmt.Sprintf("%d", *weight)
 }
 
+// findChromeExecutable searches for Chrome/Chromium executable in common locations
+// Returns the path if found, empty string otherwise (chromedp will search PATH)
+func findChromeExecutable() string {
+	// Check environment variable first (highest priority)
+	if path := os.Getenv("CHROME_PATH"); path != "" {
+		if _, err := os.Stat(path); err == nil {
+			return path
+		}
+	}
+
+	// Common Chrome/Chromium paths to check
+	possiblePaths := []string{
+		// Alpine Linux (Docker containers)
+		"/usr/bin/chromium-browser",
+		"/usr/bin/chromium",
+		"/usr/bin/google-chrome",
+		// Debian/Ubuntu
+		"/usr/bin/google-chrome-stable",
+		"/usr/bin/google-chrome-unstable",
+		// macOS (development)
+		"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+		"/Applications/Chromium.app/Contents/MacOS/Chromium",
+		// Linux common locations
+		"/snap/bin/chromium",
+		"/opt/google/chrome/chrome",
+	}
+
+	for _, path := range possiblePaths {
+		if _, err := os.Stat(path); err == nil {
+			return path
+		}
+	}
+
+	// Return empty string - chromedp will search PATH
+	return ""
+}
+
 // renderSVGToPNG converts SVG string to PNG byte array
 // Uses chromedp with headless Chrome for full SVG specification support
 // This handles embedded images, patterns, custom fonts, and all SVG features
@@ -267,12 +304,27 @@ func renderSVGToPNG(svgContent string) ([]byte, error) {
 		chromedp.Flag("force-device-scale-factor", fmt.Sprintf("%d", scaleFactor)), // 2x device pixel ratio
 	)
 
-	// Add sandbox flags for CI environments where sandboxing is restricted
-	// Check for common CI environment variables
-	if os.Getenv("CI") != "" || os.Getenv("GITHUB_ACTIONS") != "" {
+	// Detect Chrome/Chromium executable path
+	// Priority: 1. Environment variable, 2. Common paths, 3. Default (chromedp will search PATH)
+	chromePath := findChromeExecutable()
+	if chromePath != "" {
+		opts = append(opts, chromedp.ExecPath(chromePath))
+	}
+
+	// Add sandbox flags for containerized/CI environments where sandboxing is restricted
+	// Check for common CI environment variables or production environment
+	isContainerized := os.Getenv("CI") != "" || 
+		os.Getenv("GITHUB_ACTIONS") != "" || 
+		os.Getenv("ENVIRONMENT") == "production" ||
+		os.Getenv("DOCKER_CONTAINER") != ""
+	
+	if isContainerized {
 		opts = append(opts,
 			chromedp.Flag("no-sandbox", true),
 			chromedp.Flag("disable-setuid-sandbox", true),
+			chromedp.Flag("disable-dev-shm-usage", true), // Overcome limited resource problems
+			chromedp.Flag("disable-gpu", true),           // Disable GPU hardware acceleration
+			chromedp.Flag("disable-software-rasterizer", true),
 		)
 	}
 

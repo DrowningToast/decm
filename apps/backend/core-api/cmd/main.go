@@ -142,6 +142,9 @@ func main() {
 		Use(cors.New(cors.Config{
 			AllowOrigins:     cfg.CorsAllowedOrigins,
 			AllowCredentials: true,
+			AllowHeaders:     "Origin, Content-Type, Accept, Authorization, X-Request-ID",
+			AllowMethods:     "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+			MaxAge:           86400,
 		})).
 		Use(requestid.New()).
 		Use(recover.New(recover.Config{
