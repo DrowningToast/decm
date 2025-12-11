@@ -594,30 +594,44 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 				fromBlock = currentBlock - lookbackBlocks
 			}
 
-			filterOpts := &bind.FilterOpts{
-				Start:   fromBlock,
-				End:     &currentBlock,
-				Context: ctx,
-			}
-
-			// Filter by indexed receiverAddress for efficient O(1) lookup
-			// Then iterate through filtered results to match certificateId (non-indexed string)
+			// Chunk block range queries to comply with RPC provider limits
+			// Free tier providers (e.g., Alchemy, Infura) typically limit to 10 blocks per request
+			// We query in chunks and aggregate results
+			const maxBlockRange = uint64(10) // Free tier limit for eth_getLogs
+			targetCertId := certificate.Id.String()
 			receiverAddresses := []common.Address{*participantAddress}
-			iter, err := certificateContractInstance.FilterCertificateMinted(filterOpts, nil, receiverAddresses)
-			if err != nil {
-				slog.Warn("Failed to filter CertificateMinted events for recovery",
-					"certificate_id", certificate.Id,
-					"receiver_address", participantAddress.Hex(),
-					"from_block", fromBlock,
-					"to_block", currentBlock,
-					"error", err.Error())
-			} else {
-				defer func() { _ = iter.Close() }()
+			var matchingEvents []*certificateContract.EventCertificateCertificateMinted
 
-				targetCertId := certificate.Id.String()
-				var matchingEvents []*certificateContract.EventCertificateCertificateMinted
+			// Query in chunks of maxBlockRange blocks
+			chunkStart := fromBlock
+			for chunkStart <= currentBlock {
+				chunkEnd := chunkStart + maxBlockRange - 1
+				if chunkEnd > currentBlock {
+					chunkEnd = currentBlock
+				}
 
-				// Collect all matching events (should typically be 0 or 1)
+				filterOpts := &bind.FilterOpts{
+					Start:   chunkStart,
+					End:     &chunkEnd,
+					Context: ctx,
+				}
+
+				// Filter by indexed receiverAddress for efficient O(1) lookup
+				// Then iterate through filtered results to match certificateId (non-indexed string)
+				iter, err := certificateContractInstance.FilterCertificateMinted(filterOpts, nil, receiverAddresses)
+				if err != nil {
+					slog.Warn("Failed to filter CertificateMinted events for recovery chunk",
+						"certificate_id", certificate.Id,
+						"receiver_address", participantAddress.Hex(),
+						"from_block", chunkStart,
+						"to_block", chunkEnd,
+						"error", err.Error())
+					// Continue to next chunk even if this one fails
+					chunkStart = chunkEnd + 1
+					continue
+				}
+
+				// Collect matching events from this chunk
 				for iter.Next() {
 					event := iter.Event
 					if event.CertificateId == targetCertId {
@@ -626,51 +640,59 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 				}
 
 				if iter.Error() != nil {
-					slog.Warn("Error iterating CertificateMinted events",
+					slog.Warn("Error iterating CertificateMinted events in chunk",
 						"certificate_id", certificate.Id,
+						"from_block", chunkStart,
+						"to_block", chunkEnd,
 						"error", iter.Error())
 				}
 
-				// Handle matching events
-				if len(matchingEvents) > 0 {
-					if len(matchingEvents) > 1 {
-						slog.Warn("Multiple CertificateMinted events found for certificate - using first match",
-							"certificate_id", certificate.Id,
-							"count", len(matchingEvents))
-					}
+				_ = iter.Close()
 
-					// Use the first (and typically only) matching event
-					event := matchingEvents[0]
-					tokenIdUint64 := event.TokenId.Uint64()
+				// If we found a match, we can stop searching (optional optimization)
+				// But continue searching to detect duplicates
+				chunkStart = chunkEnd + 1
+			}
 
-					// CRITICAL: Verify the token still exists on-chain before marking as minted
-					// This handles edge cases like token burns or contract state changes
-					tokenIdBigInt := new(big.Int).SetUint64(tokenIdUint64)
-					_, err := certificateContractInstance.GetTokenData(nil, tokenIdBigInt)
-					if err != nil {
-						slog.Warn("Found CertificateMinted event but token no longer exists on-chain - possible burn",
-							"certificate_id", certificate.Id,
-							"token_id", tokenIdUint64,
-							"tx_hash", event.Raw.TxHash.Hex(),
-							"error", err.Error())
-						// Don't mark as minted if token doesn't exist
-					} else {
-						isNftMinted = true
-						onChainTokenId = &tokenIdUint64
-						slog.Info("Recovery: Found already-minted NFT via event query",
-							"certificate_id", certificate.Id,
-							"token_id", tokenIdUint64,
-							"tx_hash", event.Raw.TxHash.Hex(),
-							"block_number", event.Raw.BlockNumber,
-							"receiver_address", event.ReceiverAddress.Hex())
-					}
-				} else {
-					slog.Debug("No CertificateMinted events found for certificate in lookback window",
+			// Handle matching events
+			if len(matchingEvents) > 0 {
+				if len(matchingEvents) > 1 {
+					slog.Warn("Multiple CertificateMinted events found for certificate - using first match",
 						"certificate_id", certificate.Id,
-						"receiver_address", participantAddress.Hex(),
-						"from_block", fromBlock,
-						"to_block", currentBlock)
+						"count", len(matchingEvents))
 				}
+
+				// Use the first (and typically only) matching event
+				event := matchingEvents[0]
+				tokenIdUint64 := event.TokenId.Uint64()
+
+				// CRITICAL: Verify the token still exists on-chain before marking as minted
+				// This handles edge cases like token burns or contract state changes
+				tokenIdBigInt := new(big.Int).SetUint64(tokenIdUint64)
+				_, err := certificateContractInstance.GetTokenData(nil, tokenIdBigInt)
+				if err != nil {
+					slog.Warn("Found CertificateMinted event but token no longer exists on-chain - possible burn",
+						"certificate_id", certificate.Id,
+						"token_id", tokenIdUint64,
+						"tx_hash", event.Raw.TxHash.Hex(),
+						"error", err.Error())
+					// Don't mark as minted if token doesn't exist
+				} else {
+					isNftMinted = true
+					onChainTokenId = &tokenIdUint64
+					slog.Info("Recovery: Found already-minted NFT via event query",
+						"certificate_id", certificate.Id,
+						"token_id", tokenIdUint64,
+						"tx_hash", event.Raw.TxHash.Hex(),
+						"block_number", event.Raw.BlockNumber,
+						"receiver_address", event.ReceiverAddress.Hex())
+				}
+			} else {
+				slog.Debug("No CertificateMinted events found for certificate in lookback window",
+					"certificate_id", certificate.Id,
+					"receiver_address", participantAddress.Hex(),
+					"from_block", fromBlock,
+					"to_block", currentBlock)
 			}
 		}
 	}
