@@ -47,8 +47,8 @@ INSERT INTO event_certificate_configs (
 type CreateEventCertificateConfigParams struct {
 	EventID                   uuid.UUID     `json:"event_id"`
 	BaseCertificateStorageKey string        `json:"base_certificate_storage_key"`
-	EventNamePosX             float64       `json:"event_name_pos_x"`
-	EventNamePosY             float64       `json:"event_name_pos_y"`
+	EventNamePosX             pgtype.Float8 `json:"event_name_pos_x"`
+	EventNamePosY             pgtype.Float8 `json:"event_name_pos_y"`
 	NamePosX                  float64       `json:"name_pos_x"`
 	NamePosY                  float64       `json:"name_pos_y"`
 	AcademicInstitutionPosX   pgtype.Float8 `json:"academic_institution_pos_x"`
@@ -273,8 +273,8 @@ RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_na
 
 type UpdateEventCertificateConfigParams struct {
 	BaseCertificateStorageKey       string        `json:"base_certificate_storage_key"`
-	EventNamePosX                   float64       `json:"event_name_pos_x"`
-	EventNamePosY                   float64       `json:"event_name_pos_y"`
+	EventNamePosX                   pgtype.Float8 `json:"event_name_pos_x"`
+	EventNamePosY                   pgtype.Float8 `json:"event_name_pos_y"`
 	NamePosX                        float64       `json:"name_pos_x"`
 	NamePosY                        float64       `json:"name_pos_y"`
 	AcademicInstitutionPosX         pgtype.Float8 `json:"academic_institution_pos_x"`

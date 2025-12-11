@@ -16,12 +16,16 @@ var _ datagateway.EventCertificateConfigDataGateway = (*Repository)(nil)
 
 // mapEventCertificateConfigToEntity maps generated.EventCertificateConfig to entity.EventCertificateConfig
 func mapEventCertificateConfigToEntity(gen generated.EventCertificateConfig) *entity.EventCertificateConfig {
+	// Convert float64 to *float64 for nullable fields
+	eventNamePosX := &gen.EventNamePosX
+	eventNamePosY := &gen.EventNamePosY
+
 	return &entity.EventCertificateConfig{
 		ID:                              gen.ID,
 		EventID:                         gen.EventID,
 		BaseCertificateStorageKey:       gen.BaseCertificateStorageKey,
-		EventNamePosX:                   gen.EventNamePosX,
-		EventNamePosY:                   gen.EventNamePosY,
+		EventNamePosX:                   eventNamePosX,
+		EventNamePosY:                   eventNamePosY,
 		NamePosX:                        gen.NamePosX,
 		NamePosY:                        gen.NamePosY,
 		AcademicInstitutionPosX:         pgFloat8ToFloat64Ptr(gen.AcademicInstitutionPosX),
