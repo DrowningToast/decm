@@ -313,11 +313,11 @@ func renderSVGToPNG(svgContent string) ([]byte, error) {
 
 	// Add sandbox flags for containerized/CI environments where sandboxing is restricted
 	// Check for common CI environment variables or production environment
-	isContainerized := os.Getenv("CI") != "" || 
-		os.Getenv("GITHUB_ACTIONS") != "" || 
+	isContainerized := os.Getenv("CI") != "" ||
+		os.Getenv("GITHUB_ACTIONS") != "" ||
 		os.Getenv("ENVIRONMENT") == "production" ||
 		os.Getenv("DOCKER_CONTAINER") != ""
-	
+
 	if isContainerized {
 		opts = append(opts,
 			chromedp.Flag("no-sandbox", true),
