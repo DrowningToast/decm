@@ -26,8 +26,3 @@ type CertificateMintReadinessResponse struct {
 
 
 
-
-
-
-
-

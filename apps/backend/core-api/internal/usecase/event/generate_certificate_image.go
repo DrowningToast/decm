@@ -117,8 +117,8 @@ func (uc *EventUsecase) addTextOverlaysToSVG(ctx context.Context, svgContent str
 	// Build text overlay elements with absolute positioning from config
 	var textOverlays strings.Builder
 
-	// Add name text (required field, always has position)
-	if data.Name != "" {
+	// Add name text (check both data and position are valid)
+	if data.Name != "" && config.NamePosX != 0 && config.NamePosY != 0 {
 		fontFamily := uc.getFontFamilyName(ctx, config.NameFontFamilyID)
 		fontWeight := int32PtrToString(config.NameFontWeight, "700")
 		textOverlays.WriteString(createTextElement(data.Name, config.NamePosX, config.NamePosY, fontFamily, fontWeight, 16))
