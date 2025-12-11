@@ -131,22 +131,63 @@ func TestCreateTextElement(t *testing.T) {
 }
 
 func TestHideTemplatePlaceholders(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	t.Run("Hide template placeholder elements", func(t *testing.T) {
-		svgTemplate := `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
-	<rect width="800" height="600" fill="#ffffff"/>
-	<text x="400" y="300" text-anchor="middle" font-size="32" fill="#000000">John Doe</text>
-	<text x="400" y="350" text-anchor="middle" font-size="24" fill="#666666">Tech Conference 2024</text>
+	t.Run("Hide template placeholder by ID", func(t *testing.T) {
+		svgTemplate := `<svg>
+	<text id="{{ name }}">Some text</text>
+	<text id="name">Other text</text>
+	<text id="eventName">Event</text>
 </svg>`
 
 		result := hideTemplatePlaceholders(svgTemplate)
-		assert.NotEmpty(t, result)
-		assert.Contains(t, result, "<svg")
-		assert.Contains(t, result, "</svg>")
+		assert.Contains(t, result, `id="{{ name }}"`)
+		assert.Contains(t, result, `visibility="hidden"`)
+		// Check that both ID variations are hidden
+		assert.Contains(t, result, `<text id="{{ name }}" visibility="hidden"`)
+		assert.Contains(t, result, `<text id="name" visibility="hidden"`)
+	})
+
+	t.Run("Hide template placeholder by content", func(t *testing.T) {
+		svgTemplate := `<svg>
+	<text x="100" y="200">{{ name }}</text>
+	<text x="200" y="300">{{ eventName }}</text>
+	<text x="300" y="400">Regular text</text>
+</svg>`
+
+		result := hideTemplatePlaceholders(svgTemplate)
+		// Check that placeholders in content are hidden
+		assert.Contains(t, result, `visibility="hidden"`)
+		// Regular text should not be hidden
+		assert.Contains(t, result, "Regular text")
+		assert.NotContains(t, result, `<text x="300" y="400" visibility="hidden"`)
+	})
+
+	t.Run("Hide template placeholder with both ID and content", func(t *testing.T) {
+		svgTemplate := `<svg>
+	<text id="name">{{ name }}</text>
+	<text id="eventName">{{ eventName }}</text>
+</svg>`
+
+		result := hideTemplatePlaceholders(svgTemplate)
+		// Should be hidden (by ID matching)
+		assert.Contains(t, result, `visibility="hidden"`)
+		// Should not be processed twice
+		hiddenCount := strings.Count(result, `visibility="hidden"`)
+		assert.Equal(t, 2, hiddenCount, "Should hide exactly 2 elements")
+	})
+
+	t.Run("Handle all placeholder types", func(t *testing.T) {
+		svgTemplate := `<svg>
+	<text id="name">{{ name }}</text>
+	<text id="eventName">{{ eventName }}</text>
+	<text id="academicInstitutionName">{{ academicInstitutionName }}</text>
+	<text id="certificateTitle">{{ certificateTitle }}</text>
+	<text id="certificateSubtitle">{{ certificateSubtitle }}</text>
+</svg>`
+
+		result := hideTemplatePlaceholders(svgTemplate)
+		// All placeholders should be hidden
+		hiddenCount := strings.Count(result, `visibility="hidden"`)
+		assert.Equal(t, 5, hiddenCount, "Should hide all 5 placeholder elements")
 	})
 }
 
