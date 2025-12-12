@@ -117,8 +117,8 @@ func (h *Handler) UpdateEventCertificateConfig(ctx *fiber.Ctx) error {
 	if dbEventCertConfig == nil {
 		_, err = h.EventConfigUc.CreateEventCertificateConfig(ctx.UserContext(), eventID, eventconfig.CreateEventCertificateConfigParams{
 			BaseCertificateImage:    *params.BaseCertificateImage,
-			EventNamePosX:           *params.EventNamePosX,
-			EventNamePosY:           *params.EventNamePosY,
+			EventNamePosX:           params.EventNamePosX,
+			EventNamePosY:           params.EventNamePosY,
 			NamePosX:                *params.NamePosX,
 			NamePosY:                *params.NamePosY,
 			AcademicInstitutionPosX: params.AcademicInstitutionPosX,

@@ -26,8 +26,6 @@ export const MainPage = () => {
         return t("participant.home.greeting.evening");
     };
 
-    const actionCount = 0; // TODO: Replace with actual action count
-
     // Map services with translated labels
     const participantServicesWithLabels = participantServices.map((service) => ({
         ...service,
@@ -52,14 +50,6 @@ export const MainPage = () => {
                         className="text-4xl md:text-[56px] leading-[40px] md:leading-[84px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px] font-header"
                     >
                         {getGreeting()}
-                    </Typography>
-                    <Typography
-                        variant="text"
-                        tag="p"
-                        color="foreground-alt"
-                        className="text-base md:text-lg [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
-                    >
-                        {t("participant.home.actionRequired", { count: actionCount })}
                     </Typography>
                 </div>
 
