@@ -16,16 +16,16 @@ export const PasswordInputPage: React.FC<PasswordInputPageProps> = ({
     onSwitchToPin,
     onLogout,
 }) => {
-    const { form } = useContext(OAuthOnboardContext)
+    const { form } = useContext(OAuthOnboardContext);
     const { setStep } = useContext(OnboardPageContext);
     const { t } = useTranslation();
     const [showPassword, setShowPassword] = useState(false);
 
-    const isValid = !form.formState.isValidating && !form.getFieldState('password').invalid
+    const isValid = !form.formState.isValidating && !form.getFieldState("password").invalid;
 
     const handleConfirm = () => {
         if (isValid) {
-            setStep(2)
+            setStep(2);
         }
     };
 
@@ -74,7 +74,6 @@ export const PasswordInputPage: React.FC<PasswordInputPageProps> = ({
                                             <FormMessage />
                                         </FormItem>
                                     </>
-
                                 )}
                             />
                             <button
@@ -136,4 +135,3 @@ export const PasswordInputPage: React.FC<PasswordInputPageProps> = ({
         </div>
     );
 };
-

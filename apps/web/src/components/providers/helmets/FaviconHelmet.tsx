@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from "react-helmet-async";
 
 interface FaviconHelmetProps {
     title?: string;
@@ -6,8 +6,8 @@ interface FaviconHelmetProps {
 }
 
 export const FaviconHelmet = ({
-    title = 'DECM - Decentralized Event Management',
-    description = 'Web 3.0 platform for NFT ticketing, digital credentials, and academic identity verification'
+    title = "DECM - Decentralized Event Management",
+    description = "Web 3.0 platform for NFT ticketing, digital credentials, and academic identity verification",
 }: FaviconHelmetProps) => {
     return (
         <Helmet>

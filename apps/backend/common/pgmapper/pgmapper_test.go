@@ -693,8 +693,3 @@ func int32Ptr(i int32) *int32 {
 func float64Ptr(f float64) *float64 {
 	return &f
 }
-
-
-
-
-

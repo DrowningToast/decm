@@ -5,13 +5,18 @@ import { useNavigate } from "@/router";
 import { OnboardPageContext } from "@/pages/onboard/[method]";
 import { useTranslation } from "react-i18next";
 
-type CheckStatusError = "unauthenticated_response" | "internal_error_response" | 'missing_access_token' | 'expired_token'
+type CheckStatusError =
+    | "unauthenticated_response"
+    | "internal_error_response"
+    | "missing_access_token"
+    | "expired_token";
 
 export const OAuthOnboardLoadingPage = () => {
     const { t } = useTranslation();
-    const { accessToken, expiresIn, setStep, onboardStatus, isStatusLoading } = useContext(OnboardPageContext)
+    const { accessToken, expiresIn, setStep, onboardStatus, isStatusLoading } =
+        useContext(OnboardPageContext);
 
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     const [error, setError] = useState<CheckStatusError | null>(null);
     const errorTitle = useMemo(() => {
@@ -60,16 +65,26 @@ export const OAuthOnboardLoadingPage = () => {
             }
 
             if (onboardStatus?.authentication_credential_id) {
-                setStep(2)
-                return
+                setStep(2);
+                return;
             }
 
             setStep(1);
-            return
-        }
+            return;
+        };
 
         init();
-    }, [accessToken, onboardStatus, expiresIn, navigate, setStep, error, isStatusLoading, onboardStatus?.authentication_credential_id, onboardStatus?.profile_id]);
+    }, [
+        accessToken,
+        onboardStatus,
+        expiresIn,
+        navigate,
+        setStep,
+        error,
+        isStatusLoading,
+        onboardStatus?.authentication_credential_id,
+        onboardStatus?.profile_id,
+    ]);
 
     if (error) {
         return <ErrorPage title={errorTitle} description={errorMessage} />;
@@ -78,7 +93,9 @@ export const OAuthOnboardLoadingPage = () => {
     // TODO: Implement
     return (
         <div>
-            <Typography variant="header" tag="h1">Loading...</Typography>
+            <Typography variant="header" tag="h1">
+                Loading...
+            </Typography>
         </div>
-    )
-}
+    );
+};

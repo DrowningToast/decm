@@ -1,7 +1,7 @@
-import { Typography } from '@/components/typography/typography';
-import { Button } from '@/components/ui/button';
-import { Link } from '@/router';
-import { useTranslation } from 'react-i18next';
+import { Typography } from "@/components/typography/typography";
+import { Button } from "@/components/ui/button";
+import { Link } from "@/router";
+import { useTranslation } from "react-i18next";
 
 export const NotFound = () => {
     const { t } = useTranslation();
@@ -24,7 +24,7 @@ export const NotFound = () => {
                         tag="h2"
                         className="text-3xl md:text-5xl font-bold text-foreground"
                     >
-                        {t('notFound.heading')}
+                        {t("notFound.heading")}
                     </Typography>
 
                     <Typography
@@ -32,7 +32,7 @@ export const NotFound = () => {
                         tag="p"
                         className="text-lg text-muted-foreground max-w-md mx-auto"
                     >
-                        {t('notFound.description')}
+                        {t("notFound.description")}
                     </Typography>
                 </div>
 
@@ -41,7 +41,7 @@ export const NotFound = () => {
                     <Link to="/">
                         <Button size="lg" className="min-w-[200px]">
                             <Typography variant="text" tag="span" className="font-medium">
-                                {t('notFound.backHome')}
+                                {t("notFound.backHome")}
                             </Typography>
                         </Button>
                     </Link>
@@ -54,14 +54,14 @@ export const NotFound = () => {
                         tag="p"
                         className="text-sm text-muted-foreground font-medium"
                     >
-                        {t('notFound.suggestions.title')}
+                        {t("notFound.suggestions.title")}
                     </Typography>
 
                     <div className="flex flex-wrap justify-center gap-3">
                         <Link to="/">
                             <Button variant="secondary-light" size="sm">
                                 <Typography variant="text" tag="span">
-                                    {t('notFound.suggestions.home')}
+                                    {t("notFound.suggestions.home")}
                                 </Typography>
                             </Button>
                         </Link>
@@ -69,7 +69,7 @@ export const NotFound = () => {
                         <Link to="/signup">
                             <Button variant="secondary-light" size="sm">
                                 <Typography variant="text" tag="span">
-                                    {t('notFound.suggestions.signup')}
+                                    {t("notFound.suggestions.signup")}
                                 </Typography>
                             </Button>
                         </Link>
@@ -79,4 +79,3 @@ export const NotFound = () => {
         </div>
     );
 };
-
