@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 // TestVerifyHostSignature_ImportCertificateReceivers verifies signatures created
 // during the import certificate receivers flow, which uses HashMessage() (no Ethereum prefix)
 // This matches the actual signing process in import_certificate_receivers.go

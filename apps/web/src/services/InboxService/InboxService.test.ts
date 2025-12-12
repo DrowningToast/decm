@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { CoreApiType } from "@/lib/api/api";
 import { InboxService } from "./InboxService";
+import { EntityInboxMessageType } from "@decm/api";
 
 // Mock the coreApiClient
 vi.mock("@/lib/api/api", () => ({
@@ -32,7 +33,7 @@ describe("InboxService", () => {
                 inbox_messages: [
                     {
                         id: "msg-1",
-                        message_type: "general",
+                        message_type: EntityInboxMessageType.InboxMessageTypeGeneral,
                         message_content: '{"en": "Hello", "th": "สวัสดี"}',
                         is_read: 0,
                         created_at: "2024-01-01T00:00:00Z",
@@ -52,7 +53,9 @@ describe("InboxService", () => {
         });
 
         it("should return empty array when inbox_messages is undefined", async () => {
-            vi.mocked(mockCoreApi.v1.v1InboxMessagesList).mockResolvedValue({});
+            vi.mocked(mockCoreApi.v1.v1InboxMessagesList).mockResolvedValue({
+                inbox_messages: [],
+            });
 
             const result = await inboxService.getInboxMessages();
 
@@ -65,14 +68,13 @@ describe("InboxService", () => {
             const mockResponse = {
                 inbox_message: {
                     id: "msg-1",
-                    message_type: "general",
+                    message_type: EntityInboxMessageType.InboxMessageTypeGeneral,
                     message_content: '{"en": "Hello", "th": "สวัสดี"}',
                     is_read: 0,
                     created_at: "2024-01-01T00:00:00Z",
                     updated_at: "2024-01-01T00:00:00Z",
                 },
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                inbox_message_type: "general" as any,
+                inbox_message_type: EntityInboxMessageType.InboxMessageTypeGeneral,
             };
 
             vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue(mockResponse);
@@ -88,7 +90,8 @@ describe("InboxService", () => {
 
         it("should return null when inbox_message is not found", async () => {
             vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue({
-                inbox_message: null,
+                inbox_message: undefined as any,
+                inbox_message_type: EntityInboxMessageType.InboxMessageTypeGeneral,
             });
 
             const result = await inboxService.getInboxMessageById("msg-1");
@@ -97,7 +100,6 @@ describe("InboxService", () => {
         });
 
         it("should map event registration invitation message correctly", async () => {
-            const { EntityInboxMessageType } = await import("@decm/api");
             const mockResponse = {
                 inbox_message: {
                     id: "msg-1",
@@ -111,6 +113,7 @@ describe("InboxService", () => {
                 inbox_message_type:
                     EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation,
                 event_registration_invitation: {
+                    id: "invitation-1",
                     event_id: "event-1",
                     code: "INV-123",
                     email: "test@example.com",
@@ -119,6 +122,12 @@ describe("InboxService", () => {
                     phone_number: "123-456-7890",
                     academic_institution: "University",
                     valid_until: "2024-12-31T00:00:00Z",
+                    message_type:
+                        EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation,
+                    message_content: '{"en": "Invitation", "th": "คำเชิญ"}',
+                    is_read: 0,
+                    created_at: "2024-01-01T00:00:00Z",
+                    updated_at: "2024-01-01T00:00:00Z",
                 },
             };
 
@@ -134,7 +143,6 @@ describe("InboxService", () => {
         });
 
         it("should map certificate invitation message correctly", async () => {
-            const { EntityInboxMessageType } = await import("@decm/api");
             const mockResponse = {
                 inbox_message: {
                     id: "msg-1",
@@ -147,11 +155,18 @@ describe("InboxService", () => {
                 inbox_message_type:
                     EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation,
                 event_certificate: {
+                    id: "cert-msg-1",
+                    event_id: "event-1",
                     event_name: "Test Event",
                     certificate_id: "cert-1",
                     certificate_title: "Test Certificate",
                     token_id: "1",
                     has_participant_joined_event: true,
+                    message_type: EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation,
+                    message_content: '{"en": "Certificate", "th": "ใบรับรอง"}',
+                    is_read: 0,
+                    created_at: "2024-01-01T00:00:00Z",
+                    updated_at: "2024-01-01T00:00:00Z",
                 },
             };
 
@@ -173,7 +188,7 @@ describe("InboxService", () => {
             const mockResponse = {
                 inbox_message: {
                     id: "msg-1",
-                    message_type: "general",
+                    message_type: EntityInboxMessageType.InboxMessageTypeGeneral,
                     message_content: '{"en": "Hello", "th": "สวัสดี"}',
                     is_read: 1,
                     created_at: "2024-01-01T00:00:00Z",
@@ -195,7 +210,7 @@ describe("InboxService", () => {
 
         it("should return null when inbox_message is not found", async () => {
             vi.mocked(mockCoreApi.v1.v1InboxMessagesReadUpdate).mockResolvedValue({
-                inbox_message: null,
+                inbox_message: undefined as any,
             });
 
             const result = await inboxService.markAsRead("msg-1");
@@ -210,7 +225,7 @@ describe("InboxService", () => {
                 inbox_messages: [
                     {
                         id: "msg-1",
-                        message_type: "general",
+                        message_type: EntityInboxMessageType.InboxMessageTypeGeneral,
                         message_content: '{"en": "Hello", "th": "สวัสดี"}',
                         is_read: 1,
                         created_at: "2024-01-01T00:00:00Z",
@@ -218,7 +233,7 @@ describe("InboxService", () => {
                     },
                     {
                         id: "msg-2",
-                        message_type: "general",
+                        message_type: EntityInboxMessageType.InboxMessageTypeGeneral,
                         message_content: '{"en": "World", "th": "โลก"}',
                         is_read: 1,
                         created_at: "2024-01-02T00:00:00Z",
@@ -238,7 +253,9 @@ describe("InboxService", () => {
         });
 
         it("should return empty array when inbox_messages is undefined", async () => {
-            vi.mocked(mockCoreApi.v1.v1InboxMessagesReadAllUpdate).mockResolvedValue({});
+            vi.mocked(mockCoreApi.v1.v1InboxMessagesReadAllUpdate).mockResolvedValue({
+                inbox_messages: [],
+            });
 
             const result = await inboxService.markAllAsRead();
 
