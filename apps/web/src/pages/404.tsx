@@ -1,6 +1,6 @@
-import { FaviconHelmet } from '@/components/providers/helmets/FaviconHelmet';
-import { NotFound } from '@/components/pages/NotFound';
-import { useTranslation } from 'react-i18next';
+import { FaviconHelmet } from "@/components/providers/helmets/FaviconHelmet";
+import { NotFound } from "@/components/pages/NotFound";
+import { useTranslation } from "react-i18next";
 
 const NotFoundPage = () => {
     const { t } = useTranslation();
@@ -8,8 +8,8 @@ const NotFoundPage = () => {
     return (
         <>
             <FaviconHelmet
-                title={`${t('notFound.title')} | ${t('common.appName')}`}
-                description={t('notFound.description')}
+                title={`${t("notFound.title")} | ${t("common.appName")}`}
+                description={t("notFound.description")}
             />
             <NotFound />
         </>
@@ -17,4 +17,3 @@ const NotFoundPage = () => {
 };
 
 export default NotFoundPage;
-

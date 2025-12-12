@@ -7,7 +7,7 @@ import { OAuthOnboardContext } from "../OAuthOnboardContext";
 export const OAuthOnboardConfirmPage: React.FC = () => {
     const { t } = useTranslation();
     const { setStep } = useContext(OnboardPageContext);
-    const { handleSubmit: onSubmit } = useContext(OAuthOnboardContext)
+    const { handleSubmit: onSubmit } = useContext(OAuthOnboardContext);
 
     const confirmations: ConfirmationItem[] = [
         {
@@ -38,13 +38,18 @@ export const OAuthOnboardConfirmPage: React.FC = () => {
             onBack={handleBack}
             requireAllChecked={true}
         >
-            <p className="mb-0" dangerouslySetInnerHTML={{
-                __html: t("onboard.confirm.oauth.description.part1")
-            }} />
+            <p
+                className="mb-0"
+                dangerouslySetInnerHTML={{
+                    __html: t("onboard.confirm.oauth.description.part1"),
+                }}
+            />
             <p className="mb-0">&nbsp;</p>
-            <p dangerouslySetInnerHTML={{
-                __html: t("onboard.confirm.oauth.description.part2")
-            }} />
+            <p
+                dangerouslySetInnerHTML={{
+                    __html: t("onboard.confirm.oauth.description.part2"),
+                }}
+            />
         </BaseConfirmPage>
     );
 };

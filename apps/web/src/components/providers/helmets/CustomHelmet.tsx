@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from "react-helmet-async";
 
 interface CustomHelmetProps {
     title?: string;
@@ -18,16 +18,16 @@ interface CustomHelmetProps {
 }
 
 export const CustomHelmet = ({
-    title = 'DECM - Decentralized Event Management',
-    description = 'Web 3.0 platform for NFT ticketing, digital credentials, and academic identity verification',
-    faviconUrl = '/favicon.ico',
-    appleTouchIconUrl = '/apple-touch-icon.png',
+    title = "DECM - Decentralized Event Management",
+    description = "Web 3.0 platform for NFT ticketing, digital credentials, and academic identity verification",
+    faviconUrl = "/favicon.ico",
+    appleTouchIconUrl = "/apple-touch-icon.png",
     androidIconUrls = {
-        icon192: '/android-chrome-192x192.png',
-        icon512: '/android-chrome-512x512.png'
+        icon192: "/android-chrome-192x192.png",
+        icon512: "/android-chrome-512x512.png",
     },
-    themeColor = '#ffffff',
-    additionalMeta = []
+    themeColor = "#ffffff",
+    additionalMeta = [],
 }: CustomHelmetProps) => {
     return (
         <Helmet>

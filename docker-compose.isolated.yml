@@ -1,71 +1,70 @@
 version: "3.8"
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: decm-postgres
-    restart: unless-stopped
-    command:
-      - "postgres"
-      - "-c"
-      - "log_statement=all" # Log all queries
-      - "-c"
-      - "log_min_duration_statement=0" # Log query duration
-      - "-c"
-      - "log_connections=on" # Log connections
-      - "-c"
-      - "log_disconnections=on" # Log disconnections
-      - "-c"
-      - "log_line_prefix=%t [%p]: [%l-1] user=%u,db=%d " # Better formatting
-      - "-c"
-      - "logging_collector=off" # Use stderr (easier with Docker)
-    environment:
-      POSTGRES_DB: ${DB_NAME:-decm}
-      POSTGRES_USER: ${DB_USER:-decm_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-decm_password}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
-    ports:
-      - "${DB_PORT:-5432}:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/backups:/backups
-    healthcheck:
-      test:
-        ["CMD-SHELL", "pg_isready -U ${DB_USER:-decm_user} -d ${DB_NAME:-decm}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    networks:
-      - decm-network
+    postgres:
+        image: postgres:16-alpine
+        container_name: decm-postgres
+        restart: unless-stopped
+        command:
+            - "postgres"
+            - "-c"
+            - "log_statement=all" # Log all queries
+            - "-c"
+            - "log_min_duration_statement=0" # Log query duration
+            - "-c"
+            - "log_connections=on" # Log connections
+            - "-c"
+            - "log_disconnections=on" # Log disconnections
+            - "-c"
+            - "log_line_prefix=%t [%p]: [%l-1] user=%u,db=%d " # Better formatting
+            - "-c"
+            - "logging_collector=off" # Use stderr (easier with Docker)
+        environment:
+            POSTGRES_DB: ${DB_NAME:-decm}
+            POSTGRES_USER: ${DB_USER:-decm_user}
+            POSTGRES_PASSWORD: ${DB_PASSWORD:-decm_password}
+            POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+        ports:
+            - "${DB_PORT:-5432}:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ./database/backups:/backups
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-decm_user} -d ${DB_NAME:-decm}"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+        networks:
+            - decm-network
 
-  # Optional: pgAdmin for database management UI
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: decm-pgadmin
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@decm.local}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-    ports:
-      - "${PGADMIN_PORT:-5050}:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - decm-network
-    profiles:
-      - tools # Only start when explicitly requested
+    # Optional: pgAdmin for database management UI
+    pgadmin:
+        image: dpage/pgadmin4:latest
+        container_name: decm-pgadmin
+        restart: unless-stopped
+        environment:
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@decm.local}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+            PGADMIN_CONFIG_SERVER_MODE: "False"
+        ports:
+            - "${PGADMIN_PORT:-5050}:80"
+        volumes:
+            - pgadmin_data:/var/lib/pgadmin
+        depends_on:
+            postgres:
+                condition: service_healthy
+        networks:
+            - decm-network
+        profiles:
+            - tools # Only start when explicitly requested
 
 volumes:
-  postgres_data:
-    driver: local
-  pgadmin_data:
-    driver: local
+    postgres_data:
+        driver: local
+    pgadmin_data:
+        driver: local
 
 networks:
-  decm-network:
-    driver: bridge
+    decm-network:
+        driver: bridge
