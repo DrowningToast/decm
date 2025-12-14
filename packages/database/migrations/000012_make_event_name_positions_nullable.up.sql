@@ -7,3 +7,4 @@ ALTER COLUMN event_name_pos_y DROP NOT NULL;
 
 
 
+
