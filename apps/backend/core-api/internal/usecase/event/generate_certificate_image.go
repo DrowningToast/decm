@@ -14,6 +14,7 @@ import (
 
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
+	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
 )
 
@@ -45,7 +46,14 @@ func (u *EventUsecase) GenerateCertificateImage(ctx context.Context, certificate
 	certificateConfig, err := u.EventCertificateConfigDg.GetEventCertificateConfigByEventID(ctx, certificate.EventId)
 	if err != nil {
 		u.logger.Error("failed to get certificate config", "error", err, "event_id", certificate.EventId)
-		return nil, customerror.ParseWithMessage(&customerror.ErrNotFound, err, "Certificate configuration not found")
+		var customErr *customerror.Err
+		if errors.As(err, &customErr) {
+			if *customErr.Code != customerror.ErrNotFound.Code {
+				return nil, customerror.ParseWithMessage(&customerror.ErrNotFound, err, "Certificate configuration not found")
+			}
+			return nil, errors.Wrap(err, "failed to get certificate config")
+		}
+		return nil, errors.Wrap(err, "failed to parse custom error")
 	}
 
 	// 3. Download SVG template from S3
@@ -108,8 +116,8 @@ func (uc *EventUsecase) addTextOverlaysToSVG(ctx context.Context, svgContent str
 	// Build text overlay elements with absolute positioning from config
 	var textOverlays strings.Builder
 
-	// Add name text (check both data and position are valid)
-	if data.Name != "" && config.NamePosX != 0 && config.NamePosY != 0 {
+	// Add name text (required field, always has position)
+	if data.Name != "" {
 		fontFamily := uc.getFontFamilyName(ctx, config.NameFontFamilyID)
 		fontWeight := int32PtrToString(config.NameFontWeight, "700")
 		textOverlays.WriteString(createTextElement(data.Name, config.NamePosX, config.NamePosY, fontFamily, fontWeight, 16))
@@ -191,28 +199,72 @@ func (uc *EventUsecase) getFontFamilyName(ctx context.Context, fontFamilyID *int
 }
 
 // hideTemplatePlaceholders hides or removes template placeholder text elements
-// by setting their opacity to 0 or removing them entirely
+// by setting their visibility="hidden". It handles placeholders in both:
+// 1. id attributes (e.g., id="{{ name }}" or id="name")
+// 2. text content (e.g., <text>{{ name }}</text>)
 func hideTemplatePlaceholders(svgContent string) string {
 	result := svgContent
 
-	// Hide text elements that contain template placeholders by setting visibility="hidden"
-	placeholders := []string{
-		"{{ name }}", "{{ eventName }}", "{{ academicInstitutionName }}",
-		"{{ certificateTitle }}", "{{ certificateSubtitle }}",
+	// Map of placeholder names to their full template syntax
+	placeholderMap := map[string]string{
+		"name":                    "{{ name }}",
+		"eventName":               "{{ eventName }}",
+		"academicInstitutionName": "{{ academicInstitutionName }}",
+		"certificateTitle":        "{{ certificateTitle }}",
+		"certificateSubtitle":     "{{ certificateSubtitle }}",
 	}
 
-	for _, placeholder := range placeholders {
-		// Find text elements containing this placeholder
+	// First pass: Hide elements by ID matching (both id="{{ name }}" and id="name" patterns)
+	for name, placeholder := range placeholderMap {
+		// Pattern 1: id="{{ name }}" (with template syntax)
 		escapedPlaceholder := regexp.QuoteMeta(placeholder)
-		pattern := fmt.Sprintf(`(<text[^>]*id="%s"[^>]*>)`, escapedPlaceholder)
-		re := regexp.MustCompile(pattern)
+		pattern1 := fmt.Sprintf(`(<text[^>]*id="%s"[^>]*>)`, escapedPlaceholder)
+		re1 := regexp.MustCompile(pattern1)
 
-		result = re.ReplaceAllStringFunc(result, func(match string) string {
+		result = re1.ReplaceAllStringFunc(result, func(match string) string {
 			// Add visibility="hidden" if not already present
 			if !strings.Contains(match, "visibility") {
 				return strings.TrimSuffix(match, ">") + ` visibility="hidden">`
 			}
 			return match
+		})
+
+		// Pattern 2: id="name" (without template syntax, just the name)
+		pattern2 := fmt.Sprintf(`(<text[^>]*id="%s"[^>]*>)`, regexp.QuoteMeta(name))
+		re2 := regexp.MustCompile(pattern2)
+
+		result = re2.ReplaceAllStringFunc(result, func(match string) string {
+			// Add visibility="hidden" if not already present
+			if !strings.Contains(match, "visibility") {
+				return strings.TrimSuffix(match, ">") + ` visibility="hidden">`
+			}
+			return match
+		})
+	}
+
+	// Second pass: Hide elements by content matching (text contains placeholder)
+	for _, placeholder := range placeholderMap {
+		escapedPlaceholder := regexp.QuoteMeta(placeholder)
+		// Match complete text elements that contain the placeholder in their content
+		// This pattern matches: <text...>...placeholder...</text>
+		pattern := fmt.Sprintf(`(<text[^>]*>)([^<]*%s[^<]*)(</text>)`, escapedPlaceholder)
+		re := regexp.MustCompile(pattern)
+
+		result = re.ReplaceAllStringFunc(result, func(match string) string {
+			// Extract the opening tag
+			openingTagMatch := regexp.MustCompile(`(<text[^>]*>)`)
+			openingTag := openingTagMatch.FindString(match)
+
+			// Skip if already has visibility="hidden"
+			if strings.Contains(openingTag, `visibility="hidden"`) {
+				return match
+			}
+
+			// Add visibility="hidden" to the opening tag
+			modifiedOpeningTag := strings.TrimSuffix(openingTag, ">") + ` visibility="hidden">`
+
+			// Replace the opening tag in the match
+			return strings.Replace(match, openingTag, modifiedOpeningTag, 1)
 		})
 	}
 

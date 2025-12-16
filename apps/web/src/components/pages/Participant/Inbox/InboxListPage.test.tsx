@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 
-// Helper functions from InboxListPage
+/**
+ * NOTE: These helper functions (getStatusColor, getStatusLabel) were removed from InboxListPage
+ * during refactoring. These tests are kept for reference but the functions are no longer
+ * exported or used in the component.
+ */
 type InboxStatus = "pending" | "available" | "expired" | "action-required";
 
 const getStatusColor = (status: InboxStatus) => {

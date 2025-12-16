@@ -234,7 +234,6 @@ type EventCertificateConfig struct {
 	NameFontWeight                  pgtype.Int4        `json:"name_font_weight"`
 	AcademicInstitutionFontWeight   pgtype.Int4        `json:"academic_institution_font_weight"`
 	CertificateTitleFontWeight      pgtype.Int4        `json:"certificate_title_font_weight"`
-	CertificateSubtitlesFontFamily  pgtype.Text        `json:"certificate_subtitles_font_family"`
 	CertificateSubtitleFontWeight   pgtype.Int4        `json:"certificate_subtitle_font_weight"`
 	EventNameFontFamilyID           pgtype.Int4        `json:"event_name_font_family_id"`
 	NameFontFamilyID                pgtype.Int4        `json:"name_font_family_id"`
