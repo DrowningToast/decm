@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { CoreApiType } from "@/lib/api/api";
 import { InboxService } from "./InboxService";
-import { EntityInboxMessageType } from "@decm/api";
+import { EntityInboxMessageType, type InboxInboxMessagesViewModel } from "@decm/api";
 
 // Mock the coreApiClient
 vi.mock("@/lib/api/api", () => ({
@@ -88,15 +88,13 @@ describe("InboxService", () => {
             expect(result?.id).toBe("msg-1");
         });
 
-        it("should return null when inbox_message is not found", async () => {
-            vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue({
-                inbox_message: undefined as any,
-                inbox_message_type: EntityInboxMessageType.InboxMessageTypeGeneral,
-            });
+        it("should throw error when inbox_message is not found", async () => {
+            const error = new Error("Inbox message not found");
+            vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockRejectedValue(error);
 
-            const result = await inboxService.getInboxMessageById("msg-1");
-
-            expect(result).toBeNull();
+            await expect(inboxService.getInboxMessageById("msg-1")).rejects.toThrow(
+                "Inbox message not found",
+            );
         });
 
         it("should map event registration invitation message correctly", async () => {
@@ -208,14 +206,11 @@ describe("InboxService", () => {
             expect(result?.isRead).toBe(true);
         });
 
-        it("should return null when inbox_message is not found", async () => {
-            vi.mocked(mockCoreApi.v1.v1InboxMessagesReadUpdate).mockResolvedValue({
-                inbox_message: undefined as any,
-            });
+        it("should throw error when inbox_message is not found", async () => {
+            const error = new Error("Message not found");
+            vi.mocked(mockCoreApi.v1.v1InboxMessagesReadUpdate).mockRejectedValue(error);
 
-            const result = await inboxService.markAsRead("msg-1");
-
-            expect(result).toBeNull();
+            await expect(inboxService.markAsRead("msg-1")).rejects.toThrow("Message not found");
         });
     });
 
