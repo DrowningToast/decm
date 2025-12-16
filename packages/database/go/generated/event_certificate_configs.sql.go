@@ -41,7 +41,7 @@ INSERT INTO event_certificate_configs (
     $11,
     $12,
     COALESCE($13, FALSE)
-) RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_weight, name_font_weight, academic_institution_font_weight, certificate_title_font_weight, certificate_subtitles_font_family, certificate_subtitle_font_weight, event_name_font_family_id, name_font_family_id, academic_institution_font_family_id, certificate_title_font_family_id, certificate_subtitle_font_family_id
+) RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_weight, name_font_weight, academic_institution_font_weight, certificate_title_font_weight, certificate_subtitle_font_weight, event_name_font_family_id, name_font_family_id, academic_institution_font_family_id, certificate_title_font_family_id, certificate_subtitle_font_family_id
 `
 
 type CreateEventCertificateConfigParams struct {
@@ -98,7 +98,6 @@ func (q *Queries) CreateEventCertificateConfig(ctx context.Context, arg CreateEv
 		&i.NameFontWeight,
 		&i.AcademicInstitutionFontWeight,
 		&i.CertificateTitleFontWeight,
-		&i.CertificateSubtitlesFontFamily,
 		&i.CertificateSubtitleFontWeight,
 		&i.EventNameFontFamilyID,
 		&i.NameFontFamilyID,
@@ -119,7 +118,7 @@ func (q *Queries) DeleteEventCertificateConfig(ctx context.Context, eventID uuid
 }
 
 const GetEventCertificateConfigByEventID = `-- name: GetEventCertificateConfigByEventID :one
-SELECT id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_weight, name_font_weight, academic_institution_font_weight, certificate_title_font_weight, certificate_subtitles_font_family, certificate_subtitle_font_weight, event_name_font_family_id, name_font_family_id, academic_institution_font_family_id, certificate_title_font_family_id, certificate_subtitle_font_family_id FROM event_certificate_configs WHERE event_id = $1
+SELECT id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_weight, name_font_weight, academic_institution_font_weight, certificate_title_font_weight, certificate_subtitle_font_weight, event_name_font_family_id, name_font_family_id, academic_institution_font_family_id, certificate_title_font_family_id, certificate_subtitle_font_family_id FROM event_certificate_configs WHERE event_id = $1
 `
 
 func (q *Queries) GetEventCertificateConfigByEventID(ctx context.Context, eventID uuid.UUID) (EventCertificateConfig, error) {
@@ -146,7 +145,6 @@ func (q *Queries) GetEventCertificateConfigByEventID(ctx context.Context, eventI
 		&i.NameFontWeight,
 		&i.AcademicInstitutionFontWeight,
 		&i.CertificateTitleFontWeight,
-		&i.CertificateSubtitlesFontFamily,
 		&i.CertificateSubtitleFontWeight,
 		&i.EventNameFontFamilyID,
 		&i.NameFontFamilyID,
@@ -158,7 +156,7 @@ func (q *Queries) GetEventCertificateConfigByEventID(ctx context.Context, eventI
 }
 
 const GetEventCertificateConfigByID = `-- name: GetEventCertificateConfigByID :one
-SELECT id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_weight, name_font_weight, academic_institution_font_weight, certificate_title_font_weight, certificate_subtitles_font_family, certificate_subtitle_font_weight, event_name_font_family_id, name_font_family_id, academic_institution_font_family_id, certificate_title_font_family_id, certificate_subtitle_font_family_id FROM event_certificate_configs WHERE id = $1
+SELECT id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_weight, name_font_weight, academic_institution_font_weight, certificate_title_font_weight, certificate_subtitle_font_weight, event_name_font_family_id, name_font_family_id, academic_institution_font_family_id, certificate_title_font_family_id, certificate_subtitle_font_family_id FROM event_certificate_configs WHERE id = $1
 `
 
 func (q *Queries) GetEventCertificateConfigByID(ctx context.Context, id uuid.UUID) (EventCertificateConfig, error) {
@@ -185,7 +183,6 @@ func (q *Queries) GetEventCertificateConfigByID(ctx context.Context, id uuid.UUI
 		&i.NameFontWeight,
 		&i.AcademicInstitutionFontWeight,
 		&i.CertificateTitleFontWeight,
-		&i.CertificateSubtitlesFontFamily,
 		&i.CertificateSubtitleFontWeight,
 		&i.EventNameFontFamilyID,
 		&i.NameFontFamilyID,
@@ -202,7 +199,7 @@ SET
     is_published = $1,
     updated_at = NOW()
 WHERE event_id = $2
-RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_weight, name_font_weight, academic_institution_font_weight, certificate_title_font_weight, certificate_subtitles_font_family, certificate_subtitle_font_weight, event_name_font_family_id, name_font_family_id, academic_institution_font_family_id, certificate_title_font_family_id, certificate_subtitle_font_family_id
+RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_weight, name_font_weight, academic_institution_font_weight, certificate_title_font_weight, certificate_subtitle_font_weight, event_name_font_family_id, name_font_family_id, academic_institution_font_family_id, certificate_title_font_family_id, certificate_subtitle_font_family_id
 `
 
 type ToggleEventCertificateConfigPublishedParams struct {
@@ -234,7 +231,6 @@ func (q *Queries) ToggleEventCertificateConfigPublished(ctx context.Context, arg
 		&i.NameFontWeight,
 		&i.AcademicInstitutionFontWeight,
 		&i.CertificateTitleFontWeight,
-		&i.CertificateSubtitlesFontFamily,
 		&i.CertificateSubtitleFontWeight,
 		&i.EventNameFontFamilyID,
 		&i.NameFontFamilyID,
@@ -272,7 +268,7 @@ SET
     is_published = COALESCE($22, is_published),
     updated_at = NOW()
 WHERE event_id = $23
-RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_weight, name_font_weight, academic_institution_font_weight, certificate_title_font_weight, certificate_subtitles_font_family, certificate_subtitle_font_weight, event_name_font_family_id, name_font_family_id, academic_institution_font_family_id, certificate_title_font_family_id, certificate_subtitle_font_family_id
+RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_weight, name_font_weight, academic_institution_font_weight, certificate_title_font_weight, certificate_subtitle_font_weight, event_name_font_family_id, name_font_family_id, academic_institution_font_family_id, certificate_title_font_family_id, certificate_subtitle_font_family_id
 `
 
 type UpdateEventCertificateConfigParams struct {
@@ -349,7 +345,6 @@ func (q *Queries) UpdateEventCertificateConfig(ctx context.Context, arg UpdateEv
 		&i.NameFontWeight,
 		&i.AcademicInstitutionFontWeight,
 		&i.CertificateTitleFontWeight,
-		&i.CertificateSubtitlesFontFamily,
 		&i.CertificateSubtitleFontWeight,
 		&i.EventNameFontFamilyID,
 		&i.NameFontFamilyID,
@@ -375,7 +370,7 @@ SET
     certificate_subtitle_font_weight = $10,
     updated_at = NOW()
 WHERE event_id = $11
-RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_weight, name_font_weight, academic_institution_font_weight, certificate_title_font_weight, certificate_subtitles_font_family, certificate_subtitle_font_weight, event_name_font_family_id, name_font_family_id, academic_institution_font_family_id, certificate_title_font_family_id, certificate_subtitle_font_family_id
+RETURNING id, event_id, base_certificate_storage_key, event_name_pos_x, event_name_pos_y, name_pos_x, name_pos_y, academic_institution_pos_x, academic_institution_pos_y, created_at, updated_at, certificate_title_pos_x, certificate_title_pos_y, certificate_subtitle_pos_x, certificate_subtitle_pos_y, is_published, event_name_font_weight, name_font_weight, academic_institution_font_weight, certificate_title_font_weight, certificate_subtitle_font_weight, event_name_font_family_id, name_font_family_id, academic_institution_font_family_id, certificate_title_font_family_id, certificate_subtitle_font_family_id
 `
 
 type UpdateEventCertificateTextConfigParams struct {
@@ -428,7 +423,6 @@ func (q *Queries) UpdateEventCertificateTextConfig(ctx context.Context, arg Upda
 		&i.NameFontWeight,
 		&i.AcademicInstitutionFontWeight,
 		&i.CertificateTitleFontWeight,
-		&i.CertificateSubtitlesFontFamily,
 		&i.CertificateSubtitleFontWeight,
 		&i.EventNameFontFamilyID,
 		&i.NameFontFamilyID,

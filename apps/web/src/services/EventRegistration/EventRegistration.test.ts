@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { CoreApiType } from "@/lib/api/api";
 import { EventRegistrationService } from "./EventRegistration";
-import { EntityInboxMessageType } from "@decm/api";
+import { EntityInboxMessageType, EntityEventType } from "@decm/api";
 
 // Mock the coreApiClient
 vi.mock("@/lib/api/api", () => ({
@@ -34,6 +34,7 @@ describe("EventRegistrationService", () => {
             const mockResponse = {
                 id: "config-1",
                 event_id: "event-1",
+                event_type: EntityEventType.EventTypePrivate,
                 first_name_requirement_status: 1,
                 last_name_requirement_status: 1,
                 email_requirement_status: 1,

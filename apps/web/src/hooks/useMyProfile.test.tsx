@@ -32,6 +32,7 @@ const mockProfile = {
     googleConnectorRef: undefined,
     githubConnectorRef: undefined,
     solutionStatus: "SYSTEM_MANAGED" as const,
+    unreadInboxMessageCount: 3,
     isFirstNamePublic: false,
     isLastNamePublic: false,
     isEmailPublic: false,
