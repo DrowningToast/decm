@@ -48,7 +48,7 @@ func (u *EventUsecase) GenerateCertificateImage(ctx context.Context, certificate
 		u.logger.Error("failed to get certificate config", "error", err, "event_id", certificate.EventId)
 		var customErr *customerror.Err
 		if errors.As(err, &customErr) {
-			if *customErr.Code != customerror.ErrNotFound.Code {
+			if *customErr.Code == customerror.ErrNotFound.Code {
 				return nil, customerror.ParseWithMessage(&customerror.ErrNotFound, err, "Certificate configuration not found")
 			}
 			return nil, errors.Wrap(err, "failed to get certificate config")
