@@ -16,8 +16,8 @@ import (
 // @Failure 400 {object} customerror.Err
 // @Failure 404 {object} customerror.Err
 // @Failure 500 {object} customerror.Err
-// @Router /api/v1/profile/my [get]
-func (h *Handler) GetMyProfile(c *fiber.Ctx) error {
+// @Router /api/v1/profile/viewmodel [get]
+func (h *Handler) GetProfileViewModel(c *fiber.Ctx) error {
 	user, err := h.AuthenticationService.RequireUserContext(c)
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInternalServer, err)

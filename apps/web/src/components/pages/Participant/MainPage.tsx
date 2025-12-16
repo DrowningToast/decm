@@ -26,16 +26,19 @@ export const MainPage = () => {
         return t("participant.home.greeting.evening");
     };
 
+    // Get status message based on unread messages
+    const getStatusMessage = () => {
+        const hasUnreadMessages = user.unreadInboxMessageCount > 0;
+        return hasUnreadMessages
+            ? t("participant.home.unreadMessages")
+            : t("participant.home.noRequiredAction");
+    };
+
     // Map services with translated labels
     const participantServicesWithLabels = participantServices.map((service) => ({
         ...service,
         label: t(service.translationKey),
     }));
-
-    // const generalServicesWithLabels = generalServices.map((service) => ({
-    //     ...service,
-    //     label: t(service.translationKey),
-    // }));
 
     return (
         <div className="relative w-full overflow-hidden">
@@ -50,6 +53,14 @@ export const MainPage = () => {
                         className="text-4xl md:text-[56px] leading-[40px] md:leading-[84px] [text-shadow:rgba(255,255,255,0.2)_0px_0px_4px] font-header"
                     >
                         {getGreeting()}
+                    </Typography>
+                    <Typography
+                        variant="text"
+                        tag="p"
+                        color="muted-foreground"
+                        className="text-base md:text-lg mt-2"
+                    >
+                        {getStatusMessage()}
                     </Typography>
                 </div>
 

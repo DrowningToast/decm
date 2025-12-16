@@ -3619,48 +3619,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/profile/my": {
-            "get": {
-                "description": "Get my profile",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Profile"
-                ],
-                "summary": "Get my profile",
-                "operationId": "get-my-profile",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/profile.GetMyProfileViewModel"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.Err"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.Err"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.Err"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/profile/password/verify": {
             "post": {
                 "description": "Verify password",
@@ -3695,6 +3653,48 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/profile/viewmodel": {
+            "get": {
+                "description": "Get my profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get my profile",
+                "operationId": "get-my-profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/profile.GetMyProfileViewModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.Err"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/customerror.Err"
                         }
@@ -6521,6 +6521,7 @@ const docTemplate = `{
                 "profile_id",
                 "profile_updated_at",
                 "solution_status",
+                "unread_inbox_message_count",
                 "wallet_address"
             ],
             "properties": {
@@ -6604,6 +6605,9 @@ const docTemplate = `{
                 },
                 "solution_status": {
                     "$ref": "#/definitions/common.SolutionStatus"
+                },
+                "unread_inbox_message_count": {
+                    "type": "integer"
                 },
                 "wallet_address": {
                     "type": "string"

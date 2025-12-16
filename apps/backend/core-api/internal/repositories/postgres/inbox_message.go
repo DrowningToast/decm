@@ -159,6 +159,40 @@ func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params 
 	return messages, nil
 }
 
+func (r *Repository) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
+	var err error
+	var encryptedReceiverEmail pgtype.Text
+	receiverEmail := params.ReceiverEmail
+	if receiverEmail != nil {
+		// Normalize email to lowercase for case-insensitive comparison
+		normalizedEmail := strings.ToLower(*receiverEmail)
+		encryptedReceiverEmail, err = pgmapper.EncryptStringPtrToPgText(&normalizedEmail, r.piiEncryptionKey)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	var encryptedReceiverWalletAddress pgtype.Text
+	receiverWalletAddress := params.ReceiverWalletAddress
+	if receiverWalletAddress != nil {
+		encryptedReceiverWalletAddress, err = pgmapper.EncryptStringPtrToPgText(receiverWalletAddress, r.piiEncryptionKey)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	count, err := r.queries.GetUnreadInboxMessageCountByCredentialID(ctx, generated.GetUnreadInboxMessageCountByCredentialIDParams{
+		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(&params.CredentialID),
+		ReceiverEmail:         encryptedReceiverEmail,
+		ReceiverWalletAddress: encryptedReceiverWalletAddress,
+	})
+	if err != nil {
+		return 0, pgerrutils.ParsePgError(err)
+	}
+
+	return int(count), nil
+}
+
 func (r *Repository) GetInboxMessagesByReceiverEmail(ctx context.Context, receiverEmail string) ([]*entity.InboxMessage, error) {
 	// Normalize email to lowercase for case-insensitive comparison
 	normalizedEmail := strings.ToLower(receiverEmail)
