@@ -289,10 +289,10 @@ describe("InboxService - Enhanced Coverage", () => {
             expect(Array.isArray(result)).toBe(true);
         });
 
-        it("should return empty array when inbox_messages is null", async () => {
+        it("should return empty array when inbox_messages is undefined", async () => {
             // Arrange
             vi.mocked(mockCoreApi.v1.v1InboxMessagesList).mockResolvedValue({
-                inbox_messages: null as any,
+                inbox_messages: undefined,
             });
 
             // Act
