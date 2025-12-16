@@ -63,7 +63,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @host localhost:8080
-// @BasePath /
+// main is the application's entry point. It initializes signal-aware context, loads and validates configuration, sets up logging, database pool, services, repositories, use cases, HTTP server and routes, starts the server, and performs a graceful shutdown when a termination signal is received.
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
