@@ -95,6 +95,7 @@ type Querier interface {
 	GetTotalIssuersCount(ctx context.Context, eventID uuid.UUID) (int64, error)
 	GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, arg GetUnclaimedReadyCertificatesByCredentialIDParams) ([]GetUnclaimedReadyCertificatesByCredentialIDRow, error)
 	GetUnclaimedReadyCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error)
+	GetUnreadInboxMessageCountByCredentialID(ctx context.Context, arg GetUnreadInboxMessageCountByCredentialIDParams) (int64, error)
 	HasSignedIssuers(ctx context.Context, eventID uuid.UUID) (bool, error)
 	ListAuthenticationCredentials(ctx context.Context, arg ListAuthenticationCredentialsParams) ([]AuthenticationCredential, error)
 	ListEventAttendeesByEventID(ctx context.Context, eventID uuid.UUID) ([]ListEventAttendeesByEventIDRow, error)

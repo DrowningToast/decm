@@ -6,36 +6,6 @@ import { useInboxListUsecase, type InboxItem } from "./useInboxListUsecase";
 import { Link, useNavigate } from "@/router";
 import { Inbox } from "lucide-react";
 
-const getStatusColor = (status: InboxItem["status"]) => {
-    switch (status) {
-        case "pending":
-            return "text-muted";
-        case "available":
-            return "text-success";
-        case "expired":
-            return "text-error";
-        case "action-required":
-            return "text-muted";
-        default:
-            return "text-muted";
-    }
-};
-
-const getStatusLabel = (status: InboxItem["status"], t: ReturnType<typeof useTranslation>["t"]) => {
-    switch (status) {
-        case "pending":
-            return t("participant.inbox.status.pending", "Pending");
-        case "available":
-            return t("participant.inbox.status.available", "Available");
-        case "expired":
-            return t("participant.inbox.status.expired", "Expired");
-        case "action-required":
-            return t("participant.inbox.status.actionRequired", "Action required");
-        default:
-            return "";
-    }
-};
-
 export const InboxListPage = () => {
     const { t } = useTranslation();
     const { inboxItems } = useInboxListUsecase();
@@ -177,13 +147,20 @@ const InboxItemComponent = ({ item }: { item: InboxItem }) => {
         >
             {/* Title and Date row */}
             <div className="flex items-center gap-3 justify-between">
-                <Typography
-                    variant="text"
-                    tag="p"
-                    className="text-base font-normal underline group-hover:text-primary transition-colors"
-                >
-                    {item.title}
-                </Typography>
+                <div className="flex gap-x-2 items-center">
+                    {!item.isRead ? (
+                        <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                    ) : (
+                        <div className="w-2 h-2 bg-foreground/80 rounded-full" />
+                    )}
+                    <Typography
+                        variant="text"
+                        tag="p"
+                        className="text-base font-normal underline group-hover:text-primary transition-colors"
+                    >
+                        {item.title}
+                    </Typography>
+                </div>
                 <Typography
                     variant="text"
                     tag="span"
@@ -196,14 +173,9 @@ const InboxItemComponent = ({ item }: { item: InboxItem }) => {
             {/* Sender and Status row */}
             <div className="flex items-center justify-between">
                 <Typography variant="text" tag="p" color="muted" className="text-sm">
-                    {item.sender}
-                </Typography>
-                <Typography
-                    variant="text"
-                    tag="p"
-                    className={`text-sm ${getStatusColor(item.status)}`}
-                >
-                    {getStatusLabel(item.status, t)}
+                    {t("participant.inbox.invitationFrom", "Invitation from: {{sender}}", {
+                        sender: item.sender,
+                    })}
                 </Typography>
             </div>
         </Link>

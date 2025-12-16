@@ -29,6 +29,8 @@ type InboxMessageDataGateway interface {
 	GetInboxMessageByID(ctx context.Context, id uuid.UUID) (*entity.InboxMessage, error)
 	// Search with receiver authentication credential ID
 	GetInboxMessagesByCredentialID(ctx context.Context, params GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error)
+	// Get unread message count with receiver authentication credential ID
+	GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params GetInboxMessagesByCredentialIDParameters) (int, error)
 	// Search with receiver email (doesn't search through receiver wallet address column, not authentication credential)
 	GetInboxMessagesByReceiverEmail(ctx context.Context, receiverEmail string) ([]*entity.InboxMessage, error)
 	// Search with receiver wallet address (doesn't search through receiver email column, not authentication credential)

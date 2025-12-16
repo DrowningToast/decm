@@ -1366,6 +1366,7 @@ export interface ProfileGetMyProfileViewModel {
     profile_picture_url?: string;
     profile_updated_at: string;
     solution_status: CommonSolutionStatus;
+    unread_inbox_message_count: number;
     wallet_address: string;
 }
 
@@ -3164,23 +3165,6 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Get my profile
-         *
-         * @tags Profile
-         * @name GetMyProfile
-         * @summary Get my profile
-         * @request GET:/api/v1/profile/my
-         */
-        getMyProfile: (params: RequestParams = {}) =>
-            this.http.request<GetMyProfileData, GetMyProfileError>({
-                path: `/api/v1/profile/my`,
-                method: "GET",
-                type: ContentType.Json,
-                format: "json",
-                ...params,
-            }),
-
-        /**
          * @description Verify password
          *
          * @tags Profile
@@ -3196,6 +3180,23 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/profile/password/verify`,
                 method: "POST",
                 body: verifyPasswordRequest,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get my profile
+         *
+         * @tags Profile
+         * @name GetMyProfile
+         * @summary Get my profile
+         * @request GET:/api/v1/profile/viewmodel
+         */
+        getMyProfile: (params: RequestParams = {}) =>
+            this.http.request<GetMyProfileData, GetMyProfileError>({
+                path: `/api/v1/profile/viewmodel`,
+                method: "GET",
                 type: ContentType.Json,
                 format: "json",
                 ...params,

@@ -703,6 +703,8 @@
             },
             "actionRequired": "You've {{count}} action required.",
             "actionRequired_plural": "You've {{count}} actions required.",
+            "unreadMessages": "You have unread messages",
+            "noRequiredAction": "You've no required action",
             "participantServices": "Participant services",
             "generalServices": "General services",
             "services": {
@@ -869,6 +871,7 @@
             },
             "noResults": "No item matches your search",
             "from": "From",
+            "invitationFrom": "Invitation from: {{sender}}",
             "date": "Date",
             "statusLabel": "Status",
             "viewEvent": "View Event",
