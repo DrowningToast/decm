@@ -148,7 +148,7 @@ describe("useMediaQuery", () => {
             });
             // Wrap in act since it updates state
             act(() => {
-                changeHandler();
+                changeHandler!();
             });
         }
 
@@ -201,7 +201,7 @@ describe("useMediaQuery", () => {
             });
             // Wrap in act since it updates state
             act(() => {
-                changeHandler();
+                changeHandler!();
             });
         }
 

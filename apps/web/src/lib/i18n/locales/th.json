@@ -706,6 +706,8 @@
             },
             "actionRequired": "คุณมี {{count}} รายการที่ต้องดำเนินการ",
             "actionRequired_plural": "คุณมี {{count}} รายการที่ต้องดำเนินการ",
+            "unreadMessages": "คุณมีข้อความที่ยังไม่ได้อ่าน",
+            "noRequiredAction": "คุณไม่มีรายการที่ต้องดำเนินการ",
             "participantServices": "บริการสำหรับผู้เข้าร่วม",
             "generalServices": "บริการทั่วไป",
             "services": {
@@ -846,6 +848,7 @@
             },
             "noResults": "ไม่มีรายการที่ตรงกับการค้นหาของคุณ",
             "from": "จาก",
+            "invitationFrom": "คำเชิญจาก: {{sender}}",
             "date": "วันที่",
             "statusLabel": "สถานะ",
             "viewEvent": "ดูกิจกรรม",

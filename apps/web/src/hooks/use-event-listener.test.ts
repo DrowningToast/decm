@@ -38,7 +38,9 @@ describe("useEventListener", () => {
 
         elementRef.current = mockElement;
 
-        renderHook(() => useEventListener("click", handler, elementRef));
+        renderHook(() =>
+            useEventListener("click", handler, elementRef as React.RefObject<HTMLDivElement>),
+        );
 
         expect(mockElement.addEventListener).toHaveBeenCalledWith(
             "click",
@@ -49,7 +51,9 @@ describe("useEventListener", () => {
 
     it("should call handler when event is triggered", () => {
         const handler = vi.fn();
-        let eventListener: ((event: Event) => void) | null = null;
+        let eventListener: ((event: Event) => void) | null = null as
+            | ((event: Event) => void)
+            | null;
 
         mockAddEventListener.mockImplementation((event, listener) => {
             if (event === "click") {
@@ -60,9 +64,7 @@ describe("useEventListener", () => {
         renderHook(() => useEventListener("click", handler));
 
         const mockEvent = new Event("click");
-        if (eventListener) {
-            eventListener(mockEvent);
-        }
+        eventListener?.(mockEvent);
 
         expect(handler).toHaveBeenCalledWith(mockEvent);
     });
@@ -70,7 +72,9 @@ describe("useEventListener", () => {
     it("should update handler when it changes", () => {
         const handler1 = vi.fn();
         const handler2 = vi.fn();
-        let eventListener: ((event: Event) => void) | null = null;
+        let eventListener: ((event: Event) => void) | null = null as
+            | ((event: Event) => void)
+            | null;
 
         mockAddEventListener.mockImplementation((event, listener) => {
             if (event === "click") {
@@ -83,18 +87,14 @@ describe("useEventListener", () => {
         });
 
         const mockEvent = new Event("click");
-        if (eventListener) {
-            eventListener(mockEvent);
-        }
+        eventListener?.(mockEvent);
 
         expect(handler1).toHaveBeenCalledTimes(1);
         expect(handler2).not.toHaveBeenCalled();
 
         rerender({ handler: handler2 });
 
-        if (eventListener) {
-            eventListener(mockEvent);
-        }
+        eventListener?.(mockEvent);
 
         expect(handler1).toHaveBeenCalledTimes(1);
         expect(handler2).toHaveBeenCalledTimes(1);
@@ -132,7 +132,9 @@ describe("useEventListener", () => {
 
         documentRef.current = mockDocument;
 
-        renderHook(() => useEventListener("scroll", handler, documentRef));
+        renderHook(() =>
+            useEventListener("scroll", handler, documentRef as React.RefObject<Document>),
+        );
 
         expect(mockDocument.addEventListener).toHaveBeenCalledWith(
             "scroll",
@@ -145,7 +147,9 @@ describe("useEventListener", () => {
         const handler = vi.fn();
         const elementRef = createRef<HTMLDivElement>();
 
-        renderHook(() => useEventListener("click", handler, elementRef));
+        renderHook(() =>
+            useEventListener("click", handler, elementRef as React.RefObject<HTMLDivElement>),
+        );
 
         // When element ref is provided but null, it falls back to window
         // So window.addEventListener should be called
@@ -159,7 +163,9 @@ describe("useEventListener", () => {
 
         elementRef.current = mockElement;
 
-        renderHook(() => useEventListener("click", handler, elementRef));
+        renderHook(() =>
+            useEventListener("click", handler, elementRef as React.RefObject<HTMLDivElement>),
+        );
 
         // Should not throw, just silently fail
         expect(mockAddEventListener).not.toHaveBeenCalled();
@@ -175,7 +181,9 @@ describe("useEventListener", () => {
 
         mediaQueryRef.current = mockMediaQuery;
 
-        renderHook(() => useEventListener("change", handler, mediaQueryRef));
+        renderHook(() =>
+            useEventListener("change", handler, mediaQueryRef as React.RefObject<MediaQueryList>),
+        );
 
         expect(mockMediaQuery.addEventListener).toHaveBeenCalledWith(
             "change",

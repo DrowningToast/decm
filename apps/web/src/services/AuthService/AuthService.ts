@@ -94,6 +94,7 @@ export interface ProfileWithAuth extends Profile {
 
     profileId: string;
     authenticationCredentialId: string;
+    unreadInboxMessageCount: number;
 }
 
 export class AuthService {

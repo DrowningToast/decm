@@ -159,15 +159,90 @@ func (m *MockAuthenticationCredentialDataGateway) DeleteAuthenticationCredential
 	return args.Error(0)
 }
 
+// MockInboxMessageDataGateway is a mock implementation of InboxMessageDataGateway
+type MockInboxMessageDataGateway struct {
+	mock.Mock
+}
+
+func (m *MockInboxMessageDataGateway) CreateInboxMessage(ctx context.Context, params datagateway.CreateInboxMessageParameters) (*entity.InboxMessage, error) {
+	args := m.Called(ctx, params)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.InboxMessage), args.Error(1)
+}
+
+func (m *MockInboxMessageDataGateway) GetInboxMessageByID(ctx context.Context, id uuid.UUID) (*entity.InboxMessage, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.InboxMessage), args.Error(1)
+}
+
+func (m *MockInboxMessageDataGateway) GetInboxMessagesByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
+	args := m.Called(ctx, params)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entity.InboxMessage), args.Error(1)
+}
+
+func (m *MockInboxMessageDataGateway) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
+	args := m.Called(ctx, params)
+	return args.Int(0), args.Error(1)
+}
+
+func (m *MockInboxMessageDataGateway) GetInboxMessagesByReceiverEmail(ctx context.Context, receiverEmail string) ([]*entity.InboxMessage, error) {
+	args := m.Called(ctx, receiverEmail)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entity.InboxMessage), args.Error(1)
+}
+
+func (m *MockInboxMessageDataGateway) GetInboxMessagesByReceiverWalletAddress(ctx context.Context, walletAddress string) ([]*entity.InboxMessage, error) {
+	args := m.Called(ctx, walletAddress)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entity.InboxMessage), args.Error(1)
+}
+
+func (m *MockInboxMessageDataGateway) GetInboxMessagesBySenderCredentialID(ctx context.Context, credentialID uuid.UUID) ([]*entity.InboxMessage, error) {
+	args := m.Called(ctx, credentialID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entity.InboxMessage), args.Error(1)
+}
+
+func (m *MockInboxMessageDataGateway) UpdateInboxMessageReadStatus(ctx context.Context, id uuid.UUID, isRead int) (*entity.InboxMessage, error) {
+	args := m.Called(ctx, id, isRead)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.InboxMessage), args.Error(1)
+}
+
+func (m *MockInboxMessageDataGateway) UpdateInboxMessageReadStatusAll(ctx context.Context, credentialID uuid.UUID) ([]*entity.InboxMessage, error) {
+	args := m.Called(ctx, credentialID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*entity.InboxMessage), args.Error(1)
+}
+
 func TestNewProfileUsecase(t *testing.T) {
 	t.Run("should create new profile usecase", func(t *testing.T) {
 		// Arrange
 		mockProfileDg := new(MockProfileDataGateway)
 		mockAuthCredDg := new(MockAuthenticationCredentialDataGateway)
 		mockAuthService := &auth.AuthService{}
+		mockInboxDg := new(MockInboxMessageDataGateway)
 
 		// Act
-		uc := NewProfileUsecase(mockProfileDg, mockAuthCredDg, mockAuthService)
+		uc := NewProfileUsecase(mockProfileDg, mockAuthCredDg, mockAuthService, mockInboxDg)
 
 		// Assert
 		require.NotNil(t, uc)
@@ -520,18 +595,23 @@ func TestProfileUsecase_GetMyProfileViewModel(t *testing.T) {
 		}
 
 		credential := &entity.AuthenticationCredential{
-			Id:             credentialID,
-			WalletAddress:  walletAddress,
-			SolutionStatus: common.SolutionStatusManaged,
-			CreatedAt:      time.Now(),
-			UpdatedAt:      time.Now(),
+			Id:                 credentialID,
+			WalletAddress:      walletAddress,
+			GoogleConnectorRef: &email,
+			SolutionStatus:     common.SolutionStatusManaged,
+			CreatedAt:          time.Now(),
+			UpdatedAt:          time.Now(),
 		}
 
 		mockProfileDg := new(MockProfileDataGateway)
 		mockProfileDg.On("GetProfileAndCredentialWithCredentialId", ctx, credentialID).Return(profile, credential, nil)
 
+		mockInboxDg := new(MockInboxMessageDataGateway)
+		mockInboxDg.On("GetUnreadInboxMessageCountByCredentialID", ctx, mock.Anything).Return(0, nil)
+
 		uc := &ProfileUsecase{
-			ProfileDg: mockProfileDg,
+			ProfileDg:      mockProfileDg,
+			InboxMessageDg: mockInboxDg,
 		}
 
 		// Act
@@ -547,6 +627,7 @@ func TestProfileUsecase_GetMyProfileViewModel(t *testing.T) {
 		assert.Equal(t, walletAddress, viewModel.WalletAddress)
 		assert.Equal(t, common.SolutionStatusManaged, viewModel.SolutionStatus)
 		mockProfileDg.AssertExpectations(t)
+		mockInboxDg.AssertExpectations(t)
 	})
 
 	t.Run("should return error when profile not found", func(t *testing.T) {
@@ -561,8 +642,11 @@ func TestProfileUsecase_GetMyProfileViewModel(t *testing.T) {
 		mockProfileDg := new(MockProfileDataGateway)
 		mockProfileDg.On("GetProfileAndCredentialWithCredentialId", ctx, credentialID).Return(nil, nil, errors.New("not found"))
 
+		mockInboxDg := new(MockInboxMessageDataGateway)
+
 		uc := &ProfileUsecase{
-			ProfileDg: mockProfileDg,
+			ProfileDg:      mockProfileDg,
+			InboxMessageDg: mockInboxDg,
 		}
 
 		// Act
@@ -870,4 +954,281 @@ func TestProfileUsecase_UpdateProfileByCredentialId(t *testing.T) {
 // Helper function
 func stringPtr(s string) *string {
 	return &s
+}
+
+// =============================================================================
+// Tests for GetMyProfileViewModel with UnreadInboxMessageCount
+// =============================================================================
+
+func TestProfileUsecase_GetMyProfileViewModel_WithUnreadInboxCount(t *testing.T) {
+	t.Run("should include unread inbox message count in view model", func(t *testing.T) {
+		// Arrange
+		ctx := context.Background()
+		credentialID := uuid.New()
+		profileID := uuid.New()
+		email := "user@example.com"
+		firstName := "Jane"
+		walletAddress := "0xabcdef1234567890"
+		unreadCount := 5
+
+		user := &auth.JwtClaims{
+			UserId: credentialID,
+			Email:  &email,
+		}
+
+		profile := &entity.Profile{
+			Id:                         profileID,
+			AuthenticationCredentialId: credentialID,
+			Email:                      &email,
+			FirstName:                  &firstName,
+			IsEmailPublic:              true,
+			IsFirstNamePublic:          true,
+			CreatedAt:                  time.Now(),
+			UpdatedAt:                  time.Now(),
+		}
+
+		credential := &entity.AuthenticationCredential{
+			Id:                 credentialID,
+			WalletAddress:      walletAddress,
+			GoogleConnectorRef: &email,
+			SolutionStatus:     common.SolutionStatusManaged,
+			CreatedAt:          time.Now(),
+			UpdatedAt:          time.Now(),
+		}
+
+		mockProfileDg := new(MockProfileDataGateway)
+		mockProfileDg.On("GetProfileAndCredentialWithCredentialId", ctx, credentialID).Return(profile, credential, nil)
+
+		mockInboxDg := new(MockInboxMessageDataGateway)
+		mockInboxDg.On("GetUnreadInboxMessageCountByCredentialID", ctx, mock.MatchedBy(func(params datagateway.GetInboxMessagesByCredentialIDParameters) bool {
+			return params.CredentialID == credentialID &&
+				params.ReceiverEmail != nil && *params.ReceiverEmail == email &&
+				params.ReceiverWalletAddress != nil && *params.ReceiverWalletAddress == walletAddress
+		})).Return(unreadCount, nil)
+
+		uc := &ProfileUsecase{
+			ProfileDg:      mockProfileDg,
+			InboxMessageDg: mockInboxDg,
+		}
+
+		// Act
+		viewModel, err := uc.GetMyProfileViewModel(ctx, user)
+
+		// Assert
+		require.NoError(t, err)
+		require.NotNil(t, viewModel)
+		assert.Equal(t, unreadCount, viewModel.UnreadInboxMessageCount)
+		assert.Equal(t, profileID.String(), viewModel.ProfileId)
+		assert.Equal(t, credentialID.String(), viewModel.AuthenticationCredentialId)
+		mockProfileDg.AssertExpectations(t)
+		mockInboxDg.AssertExpectations(t)
+	})
+
+	t.Run("should return zero unread count when no unread messages", func(t *testing.T) {
+		// Arrange
+		ctx := context.Background()
+		credentialID := uuid.New()
+		profileID := uuid.New()
+		walletAddress := "0x1234567890"
+
+		user := &auth.JwtClaims{
+			UserId: credentialID,
+		}
+
+		profile := &entity.Profile{
+			Id:                         profileID,
+			AuthenticationCredentialId: credentialID,
+			CreatedAt:                  time.Now(),
+			UpdatedAt:                  time.Now(),
+		}
+
+		credential := &entity.AuthenticationCredential{
+			Id:             credentialID,
+			WalletAddress:  walletAddress,
+			SolutionStatus: common.SolutionStatusBYOK,
+			CreatedAt:      time.Now(),
+			UpdatedAt:      time.Now(),
+		}
+
+		mockProfileDg := new(MockProfileDataGateway)
+		mockProfileDg.On("GetProfileAndCredentialWithCredentialId", ctx, credentialID).Return(profile, credential, nil)
+
+		mockInboxDg := new(MockInboxMessageDataGateway)
+		mockInboxDg.On("GetUnreadInboxMessageCountByCredentialID", ctx, mock.Anything).Return(0, nil)
+
+		uc := &ProfileUsecase{
+			ProfileDg:      mockProfileDg,
+			InboxMessageDg: mockInboxDg,
+		}
+
+		// Act
+		viewModel, err := uc.GetMyProfileViewModel(ctx, user)
+
+		// Assert
+		require.NoError(t, err)
+		require.NotNil(t, viewModel)
+		assert.Equal(t, 0, viewModel.UnreadInboxMessageCount)
+		mockProfileDg.AssertExpectations(t)
+		mockInboxDg.AssertExpectations(t)
+	})
+
+	t.Run("should return error when inbox message count fails", func(t *testing.T) {
+		// Arrange
+		ctx := context.Background()
+		credentialID := uuid.New()
+		profileID := uuid.New()
+		email := "test@example.com"
+
+		user := &auth.JwtClaims{
+			UserId: credentialID,
+			Email:  &email,
+		}
+
+		profile := &entity.Profile{
+			Id:                         profileID,
+			AuthenticationCredentialId: credentialID,
+			CreatedAt:                  time.Now(),
+			UpdatedAt:                  time.Now(),
+		}
+
+		credential := &entity.AuthenticationCredential{
+			Id:                 credentialID,
+			WalletAddress:      "0x1234",
+			GoogleConnectorRef: &email,
+			SolutionStatus:     common.SolutionStatusManaged,
+			CreatedAt:          time.Now(),
+			UpdatedAt:          time.Now(),
+		}
+
+		mockProfileDg := new(MockProfileDataGateway)
+		mockProfileDg.On("GetProfileAndCredentialWithCredentialId", ctx, credentialID).Return(profile, credential, nil)
+
+		mockInboxDg := new(MockInboxMessageDataGateway)
+		mockInboxDg.On("GetUnreadInboxMessageCountByCredentialID", ctx, mock.Anything).Return(0, errors.New("database connection failed"))
+
+		uc := &ProfileUsecase{
+			ProfileDg:      mockProfileDg,
+			InboxMessageDg: mockInboxDg,
+		}
+
+		// Act
+		viewModel, err := uc.GetMyProfileViewModel(ctx, user)
+
+		// Assert
+		require.Error(t, err)
+		assert.Nil(t, viewModel)
+		assert.Contains(t, err.Error(), "database connection failed")
+		mockProfileDg.AssertExpectations(t)
+		mockInboxDg.AssertExpectations(t)
+	})
+
+	t.Run("should handle large unread count", func(t *testing.T) {
+		// Arrange
+		ctx := context.Background()
+		credentialID := uuid.New()
+		profileID := uuid.New()
+		largeUnreadCount := 999
+
+		user := &auth.JwtClaims{
+			UserId: credentialID,
+		}
+
+		profile := &entity.Profile{
+			Id:                         profileID,
+			AuthenticationCredentialId: credentialID,
+			CreatedAt:                  time.Now(),
+			UpdatedAt:                  time.Now(),
+		}
+
+		credential := &entity.AuthenticationCredential{
+			Id:             credentialID,
+			WalletAddress:  "0xabcd",
+			SolutionStatus: common.SolutionStatusManaged,
+			CreatedAt:      time.Now(),
+			UpdatedAt:      time.Now(),
+		}
+
+		mockProfileDg := new(MockProfileDataGateway)
+		mockProfileDg.On("GetProfileAndCredentialWithCredentialId", ctx, credentialID).Return(profile, credential, nil)
+
+		mockInboxDg := new(MockInboxMessageDataGateway)
+		mockInboxDg.On("GetUnreadInboxMessageCountByCredentialID", ctx, mock.Anything).Return(largeUnreadCount, nil)
+
+		uc := &ProfileUsecase{
+			ProfileDg:      mockProfileDg,
+			InboxMessageDg: mockInboxDg,
+		}
+
+		// Act
+		viewModel, err := uc.GetMyProfileViewModel(ctx, user)
+
+		// Assert
+		require.NoError(t, err)
+		require.NotNil(t, viewModel)
+		assert.Equal(t, largeUnreadCount, viewModel.UnreadInboxMessageCount)
+		mockProfileDg.AssertExpectations(t)
+		mockInboxDg.AssertExpectations(t)
+	})
+
+	t.Run("should pass correct parameters to GetUnreadInboxMessageCountByCredentialID", func(t *testing.T) {
+		// Arrange
+		ctx := context.Background()
+		credentialID := uuid.New()
+		profileID := uuid.New()
+		email := "precise@example.com"
+		walletAddress := "0xPRECISE1234567890"
+
+		user := &auth.JwtClaims{
+			UserId: credentialID,
+		}
+
+		profile := &entity.Profile{
+			Id:                         profileID,
+			AuthenticationCredentialId: credentialID,
+			CreatedAt:                  time.Now(),
+			UpdatedAt:                  time.Now(),
+		}
+
+		credential := &entity.AuthenticationCredential{
+			Id:                 credentialID,
+			WalletAddress:      walletAddress,
+			GoogleConnectorRef: &email,
+			SolutionStatus:     common.SolutionStatusManaged,
+			CreatedAt:          time.Now(),
+			UpdatedAt:          time.Now(),
+		}
+
+		mockProfileDg := new(MockProfileDataGateway)
+		mockProfileDg.On("GetProfileAndCredentialWithCredentialId", ctx, credentialID).Return(profile, credential, nil)
+
+		// Verify exact parameter matching
+		mockInboxDg := new(MockInboxMessageDataGateway)
+		mockInboxDg.On("GetUnreadInboxMessageCountByCredentialID", ctx, mock.MatchedBy(func(params datagateway.GetInboxMessagesByCredentialIDParameters) bool {
+			if params.CredentialID != credentialID {
+				return false
+			}
+			if params.ReceiverEmail == nil || *params.ReceiverEmail != email {
+				return false
+			}
+			if params.ReceiverWalletAddress == nil || *params.ReceiverWalletAddress != walletAddress {
+				return false
+			}
+			return true
+		})).Return(3, nil)
+
+		uc := &ProfileUsecase{
+			ProfileDg:      mockProfileDg,
+			InboxMessageDg: mockInboxDg,
+		}
+
+		// Act
+		viewModel, err := uc.GetMyProfileViewModel(ctx, user)
+
+		// Assert
+		require.NoError(t, err)
+		require.NotNil(t, viewModel)
+		assert.Equal(t, 3, viewModel.UnreadInboxMessageCount)
+		mockProfileDg.AssertExpectations(t)
+		mockInboxDg.AssertExpectations(t)
+	})
 }

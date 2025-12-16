@@ -85,6 +85,11 @@ func (m *MockInboxMessageDataGateway) UpdateInboxMessageReadStatusAll(ctx contex
 	return args.Get(0).([]*entity.InboxMessage), args.Error(1)
 }
 
+func (m *MockInboxMessageDataGateway) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
+	args := m.Called(ctx, params)
+	return args.Int(0), args.Error(1)
+}
+
 func TestInboxUsecase_MarkMessageAsRead(t *testing.T) {
 	t.Run("should mark message as read when user is authorized", func(t *testing.T) {
 		// Arrange

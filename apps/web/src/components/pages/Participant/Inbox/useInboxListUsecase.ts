@@ -10,13 +10,8 @@ export interface InboxItem {
     title: string;
     sender: string;
     date: string;
-    status: "pending" | "available" | "expired" | "action-required";
+    isRead: boolean;
 }
-
-const deriveStatus = (isRead: boolean): "pending" | "available" | "expired" | "action-required" => {
-    if (!isRead) return "action-required";
-    return "available";
-};
 
 const formatDate = (date: Date): string => {
     return date.toLocaleDateString("en-US", {
@@ -56,7 +51,7 @@ const mapInboxMessageToInboxItem = (
         title: getMessageTitle(message.messageType, t),
         sender: message.senderCredentialEmail ?? message.senderCredentialWalletAddress ?? "Unknown",
         date: formatDate(message.createdAt),
-        status: deriveStatus(message.isRead),
+        isRead: message.isRead,
     };
 };
 

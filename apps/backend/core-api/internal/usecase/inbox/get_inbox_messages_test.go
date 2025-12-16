@@ -85,6 +85,11 @@ func (m *MockInboxMessageDg) UpdateInboxMessageReadStatusAll(ctx context.Context
 	return args.Get(0).([]*entity.InboxMessage), args.Error(1)
 }
 
+func (m *MockInboxMessageDg) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
+	args := m.Called(ctx, params)
+	return args.Int(0), args.Error(1)
+}
+
 // MockAuthenticationCredentialDg is a mock for AuthenticationCredentialDataGateway (reusing from inbox_test.go)
 type MockAuthenticationCredentialDg struct {
 	mock.Mock

@@ -77,5 +77,6 @@ export const mapProfileWithAuthViewModel = (
         githubConnectorRef: profile.github_connector_ref,
 
         profileId: profile.profile_id,
+        unreadInboxMessageCount: profile.unread_inbox_message_count,
     };
 };

@@ -663,6 +663,7 @@ describe("AuthService", () => {
                 solution_status: CommonSolutionStatus.SolutionStatusBYOK,
                 google_connector_ref: "google-123",
                 github_connector_ref: "github-456",
+                unread_inbox_message_count: 5,
             };
 
             (coreApiClient.v1.getMyProfile as ReturnType<typeof vi.fn>) = vi
@@ -698,6 +699,7 @@ describe("AuthService", () => {
                 solutionStatus: "BYOK",
                 googleConnectorRef: "google-123",
                 githubConnectorRef: "github-456",
+                unreadInboxMessageCount: 5,
             });
         });
     });

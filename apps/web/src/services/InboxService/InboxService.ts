@@ -73,7 +73,8 @@ export class InboxService {
 
     public async getInboxMessages(): Promise<InboxMessage[]> {
         const response = await this._coreApi.v1.v1InboxMessagesList();
-        return (response.inbox_messages ?? []).map(mapInboxMessagesViewModelToInboxMessage);
+        const result = (response.inbox_messages ?? []).map(mapInboxMessagesViewModelToInboxMessage);
+        return result;
     }
 
     public async getInboxMessageById(messageId: string): Promise<InboxMessageDetail | null> {

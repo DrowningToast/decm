@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"apps/backend/common"
+	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/services/auth"
 )
 
@@ -41,10 +42,21 @@ type GetMyProfileViewModel struct {
 	SolutionStatus     common.SolutionStatus `json:"solution_status"`
 	GoogleConnectorRef *string               `json:"google_connector_ref,omitempty"`
 	GithubConnectorRef *string               `json:"github_connector_ref,omitempty"`
+
+	UnreadInboxMessageCount int `json:"unread_inbox_message_count"`
 }
 
 func (u *ProfileUsecase) GetMyProfileViewModel(ctx context.Context, user *auth.JwtClaims) (*GetMyProfileViewModel, error) {
 	profile, authenticationCredential, err := u.ProfileDg.GetProfileAndCredentialWithCredentialId(ctx, user.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	unreadInboxMessageCount, err := u.InboxMessageDg.GetUnreadInboxMessageCountByCredentialID(ctx, datagateway.GetInboxMessagesByCredentialIDParameters{
+		CredentialID:          user.UserId,
+		ReceiverEmail:         authenticationCredential.GoogleConnectorRef,
+		ReceiverWalletAddress: &authenticationCredential.WalletAddress,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -78,5 +90,6 @@ func (u *ProfileUsecase) GetMyProfileViewModel(ctx context.Context, user *auth.J
 		AuthenticationCredentialUpdatedAt: authenticationCredential.UpdatedAt,
 		GoogleConnectorRef:                authenticationCredential.GoogleConnectorRef,
 		GithubConnectorRef:                authenticationCredential.GithubConnectorRef,
+		UnreadInboxMessageCount:           unreadInboxMessageCount,
 	}, nil
 }

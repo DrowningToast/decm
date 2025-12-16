@@ -26,18 +26,19 @@ export const MainPage = () => {
         return t("participant.home.greeting.evening");
     };
 
-    const actionCount = 0; // TODO: Replace with actual action count
+    // Get status message based on unread messages
+    const getStatusMessage = () => {
+        const hasUnreadMessages = user.unreadInboxMessageCount > 0;
+        return hasUnreadMessages
+            ? t("participant.home.unreadMessages")
+            : t("participant.home.noRequiredAction");
+    };
 
     // Map services with translated labels
     const participantServicesWithLabels = participantServices.map((service) => ({
         ...service,
         label: t(service.translationKey),
     }));
-
-    // const generalServicesWithLabels = generalServices.map((service) => ({
-    //     ...service,
-    //     label: t(service.translationKey),
-    // }));
 
     return (
         <div className="relative w-full overflow-hidden">
@@ -56,10 +57,10 @@ export const MainPage = () => {
                     <Typography
                         variant="text"
                         tag="p"
-                        color="foreground-alt"
-                        className="text-base md:text-lg [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                        color="muted-foreground"
+                        className="text-base md:text-lg mt-2"
                     >
-                        {t("participant.home.actionRequired", { count: actionCount })}
+                        {getStatusMessage()}
                     </Typography>
                 </div>
 

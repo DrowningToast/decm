@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import { useInboxMessage } from "@/hooks/inbox/useInboxMessage";
 import { type InboxMessageDetail } from "@/services/InboxService/InboxService";
 import { EntityInboxMessageType } from "@decm/api";
 import { useTranslation } from "react-i18next";
+import { useMarkInboxMessageAsRead } from "@/hooks/inbox/useMarkInboxMessageAsRead";
 
 export type InboxContentType = "event-invitation" | "certificate" | "general";
 
@@ -136,6 +138,20 @@ export const useInboxDetailUsecase = (options: UseInboxDetailOptions) => {
     } = useInboxMessage({
         messageId: options.inboxId,
     });
+
+    // Mutation to mark message as read
+    const { mutateAsync: markAsRead } = useMarkInboxMessageAsRead();
+
+    // Mark message as read when it's loaded and not already read
+    useEffect(() => {
+        if (apiMessage && !apiMessage.isRead) {
+            markAsRead(options.inboxId).catch((err) => {
+                // Silently fail - we don't want to show an error if marking as read fails
+                // The message will still be displayed, just not marked as read
+                console.error("Failed to mark message as read:", err);
+            });
+        }
+    }, [apiMessage, options.inboxId, markAsRead]);
 
     // Transform API response to match InboxDetail interface
     const inboxDetail: InboxDetail | null = apiMessage

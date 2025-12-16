@@ -28,6 +28,13 @@ OR receiver_email = sqlc.narg(receiver_email)
 OR receiver_wallet_address = sqlc.narg(receiver_wallet_address)
 ORDER BY created_at DESC;
 
+-- name: GetUnreadInboxMessageCountByCredentialID :one
+SELECT COUNT(*) FROM inbox_messages 
+WHERE (receiver_credential_id = sqlc.arg(receiver_credential_id)
+OR receiver_email = sqlc.narg(receiver_email)
+OR receiver_wallet_address = sqlc.narg(receiver_wallet_address))
+AND is_read = 0;
+
 -- name: GetInboxMessagesByReceiverEmail :many
 SELECT * FROM inbox_messages 
 WHERE receiver_email = sqlc.arg(receiver_email)
