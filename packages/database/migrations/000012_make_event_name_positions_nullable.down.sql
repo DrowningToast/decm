@@ -9,8 +9,3 @@ WHERE event_name_pos_x IS NULL OR event_name_pos_y IS NULL;
 ALTER TABLE event_certificate_configs
 ALTER COLUMN event_name_pos_x SET NOT NULL,
 ALTER COLUMN event_name_pos_y SET NOT NULL;
-
-
-
-
-
