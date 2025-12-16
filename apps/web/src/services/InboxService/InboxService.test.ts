@@ -438,17 +438,20 @@ describe("InboxService - Enhanced Coverage", () => {
             // Arrange
             const messageId = "msg-revoked";
             const revokedAt = "2024-12-01T12:00:00Z";
-            const mockMessage = {
-                id: messageId,
-                message_type: EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation,
-                is_read: 1,
-                created_at: "2024-01-01T00:00:00Z",
-                updated_at: "2024-01-01T00:00:00Z",
-                revoked_at: revokedAt,
-                certificate_id: "cert-123",
+            const mockResponse = {
+                inbox_message: {
+                    id: messageId,
+                    message_type: EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation,
+                    is_read: 1,
+                    created_at: "2024-01-01T00:00:00Z",
+                    updated_at: "2024-01-01T00:00:00Z",
+                    revoked_at: revokedAt,
+                    certificate_id: "cert-123",
+                },
+                inbox_message_type: EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation,
             };
 
-            vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue(mockMessage);
+            vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue(mockResponse);
 
             // Act
             const result = await inboxService.getInboxMessageById(messageId);
