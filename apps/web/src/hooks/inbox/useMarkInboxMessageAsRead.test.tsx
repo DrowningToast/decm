@@ -124,7 +124,7 @@ describe("useMarkInboxMessageAsRead", () => {
 
         // Assert
         expect(result.current.isIdle).toBe(true);
-        expect(result.current.isLoading).toBe(false);
+        expect(result.current.isPending).toBe(false);
         expect(result.current.isSuccess).toBe(false);
         expect(result.current.isError).toBe(false);
     });
@@ -146,7 +146,7 @@ describe("useMarkInboxMessageAsRead", () => {
 
         // Assert - should be loading
         await waitFor(() => {
-            expect(result.current.isLoading).toBe(true);
+            expect(result.current.isPending).toBe(true);
         });
 
         // Resolve the promise
@@ -305,4 +305,4 @@ describe("useMarkInboxMessageAsRead", () => {
         expect(invalidateCalls[0]).toContain(messageId); // Specific message query first
         expect(invalidateCalls[1]).toContain("inbox"); // Then list query
     });
-}
+});
