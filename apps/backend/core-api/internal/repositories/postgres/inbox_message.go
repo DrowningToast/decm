@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"decm-database/go/generated"
+	"strings"
 
 	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
@@ -104,7 +105,9 @@ func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params 
 	var encryptedReceiverEmail pgtype.Text
 	receiverEmail := params.ReceiverEmail
 	if receiverEmail != nil {
-		encryptedReceiverEmail, err = pgmapper.EncryptStringPtrToPgText(receiverEmail, r.piiEncryptionKey)
+		// Normalize email to lowercase for case-insensitive comparison
+		normalizedEmail := strings.ToLower(*receiverEmail)
+		encryptedReceiverEmail, err = pgmapper.EncryptStringPtrToPgText(&normalizedEmail, r.piiEncryptionKey)
 		if err != nil {
 			return nil, err
 		}
@@ -157,8 +160,10 @@ func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params 
 }
 
 func (r *Repository) GetInboxMessagesByReceiverEmail(ctx context.Context, receiverEmail string) ([]*entity.InboxMessage, error) {
+	// Normalize email to lowercase for case-insensitive comparison
+	normalizedEmail := strings.ToLower(receiverEmail)
 	// Encrypt search term
-	encryptedEmail, err := pgmapper.EncryptPII(receiverEmail, r.piiEncryptionKey)
+	encryptedEmail, err := pgmapper.EncryptPII(normalizedEmail, r.piiEncryptionKey)
 	if err != nil {
 		return nil, err
 	}
