@@ -1,57 +1,56 @@
 // Generouted, changes to this file will be overridden
-/* eslint-disable */
 
-import { components, hooks, utils } from '@generouted/react-router/client'
+import { components, hooks, utils } from "@generouted/react-router/client";
 
 export type Path =
-  | `/`
-  | `/app`
-  | `/app/certificates`
-  | `/app/certificates/:id`
-  | `/app/events`
-  | `/app/events/:id`
-  | `/app/inbox`
-  | `/app/inbox/:id`
-  | `/app/preference`
-  | `/app/settings`
-  | `/auth/success`
-  | `/error`
-  | `/host`
-  | `/host/events`
-  | `/host/events/:eventId`
-  | `/host/events/:eventId/edit`
-  | `/host/events/:eventId/imports/certificates`
-  | `/host/events/:eventId/imports/participants`
-  | `/host/events/:eventId/settings/certificate`
-  | `/host/events/:eventId/settings/participant`
-  | `/host/events/create`
-  | `/host/home`
-  | `/issuer/home`
-  | `/issuer/sign`
-  | `/issuer/sign/:eventId`
-  | `/onboard/:method`
-  | `/signin`
-  | `/signin/sign-message`
-  | `/signin/verify-oauth`
-  | `/signout`
-  | `/signup`
+    | `/`
+    | `/app`
+    | `/app/certificates`
+    | `/app/certificates/:id`
+    | `/app/events`
+    | `/app/events/:id`
+    | `/app/inbox`
+    | `/app/inbox/:id`
+    | `/app/preference`
+    | `/app/settings`
+    | `/auth/success`
+    | `/error`
+    | `/host`
+    | `/host/events`
+    | `/host/events/:eventId`
+    | `/host/events/:eventId/edit`
+    | `/host/events/:eventId/imports/certificates`
+    | `/host/events/:eventId/imports/participants`
+    | `/host/events/:eventId/settings/certificate`
+    | `/host/events/:eventId/settings/participant`
+    | `/host/events/create`
+    | `/host/home`
+    | `/issuer/home`
+    | `/issuer/sign`
+    | `/issuer/sign/:eventId`
+    | `/onboard/:method`
+    | `/signin`
+    | `/signin/sign-message`
+    | `/signin/verify-oauth`
+    | `/signout`
+    | `/signup`;
 
 export type Params = {
-  '/app/certificates/:id': { id: string }
-  '/app/events/:id': { id: string }
-  '/app/inbox/:id': { id: string }
-  '/host/events/:eventId': { eventId: string }
-  '/host/events/:eventId/edit': { eventId: string }
-  '/host/events/:eventId/imports/certificates': { eventId: string }
-  '/host/events/:eventId/imports/participants': { eventId: string }
-  '/host/events/:eventId/settings/certificate': { eventId: string }
-  '/host/events/:eventId/settings/participant': { eventId: string }
-  '/issuer/sign/:eventId': { eventId: string }
-  '/onboard/:method': { method: string }
-}
+    "/app/certificates/:id": { id: string };
+    "/app/events/:id": { id: string };
+    "/app/inbox/:id": { id: string };
+    "/host/events/:eventId": { eventId: string };
+    "/host/events/:eventId/edit": { eventId: string };
+    "/host/events/:eventId/imports/certificates": { eventId: string };
+    "/host/events/:eventId/imports/participants": { eventId: string };
+    "/host/events/:eventId/settings/certificate": { eventId: string };
+    "/host/events/:eventId/settings/participant": { eventId: string };
+    "/issuer/sign/:eventId": { eventId: string };
+    "/onboard/:method": { method: string };
+};
 
-export type ModalPath = never
+export type ModalPath = never;
 
-export const { Link, Navigate } = components<Path, Params>()
-export const { useModals, useNavigate, useParams } = hooks<Path, Params, ModalPath>()
-export const { redirect } = utils<Path, Params>()
+export const { Link, Navigate } = components<Path, Params>();
+export const { useModals, useNavigate, useParams } = hooks<Path, Params, ModalPath>();
+export const { redirect } = utils<Path, Params>();
