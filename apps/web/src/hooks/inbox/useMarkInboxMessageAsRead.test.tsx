@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+    QueryClient,
+    QueryClientProvider,
+    type InvalidateQueryFilters,
+} from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useMarkInboxMessageAsRead } from "./useMarkInboxMessageAsRead";
 import { QUERY_KEY } from "@/lib/queryKeys";
@@ -286,10 +290,12 @@ describe("useMarkInboxMessageAsRead", () => {
         vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(undefined);
 
         const invalidateCalls: string[] = [];
-        vi.spyOn(queryClient, "invalidateQueries").mockImplementation((options: any) => {
-            invalidateCalls.push(JSON.stringify(options.queryKey));
-            return Promise.resolve();
-        });
+        vi.spyOn(queryClient, "invalidateQueries").mockImplementation(
+            (options: InvalidateQueryFilters) => {
+                invalidateCalls.push(JSON.stringify(options.queryKey));
+                return Promise.resolve();
+            },
+        );
 
         const { result } = renderHook(() => useMarkInboxMessageAsRead(), { wrapper });
 
