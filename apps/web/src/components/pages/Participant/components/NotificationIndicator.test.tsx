@@ -355,4 +355,4 @@ describe("NotificationIndicator", () => {
         expect(badge).toBeInTheDocument();
         expect(text).toBeInTheDocument();
     });
-}
+});
