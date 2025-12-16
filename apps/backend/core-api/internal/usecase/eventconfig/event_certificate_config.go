@@ -74,7 +74,9 @@ type CreateEventCertificateConfigParams struct {
 	CertificateSubtitlePosY *float64
 }
 
-// float64PtrToPgFloat8 converts *float64 to pgtype.Float8
+// float64PtrToPgFloat8 converts a *float64 to a pgtype.Float8.
+// If f is nil the returned pgtype.Float8 has Valid set to false; otherwise
+// Float64 is set to *f and Valid is true.
 func float64PtrToPgFloat8(f *float64) pgtype.Float8 {
 	if f == nil {
 		return pgtype.Float8{Valid: false}

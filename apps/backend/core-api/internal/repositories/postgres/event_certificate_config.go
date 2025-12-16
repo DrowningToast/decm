@@ -14,7 +14,8 @@ import (
 
 var _ datagateway.EventCertificateConfigDataGateway = (*Repository)(nil)
 
-// mapEventCertificateConfigToEntity maps generated.EventCertificateConfig to entity.EventCertificateConfig
+// mapEventCertificateConfigToEntity converts a generated.EventCertificateConfig into an *entity.EventCertificateConfig.
+// It maps nullable numeric fields to Go pointers and converts generated timestamp types to time.Time for CreatedAt and UpdatedAt.
 func mapEventCertificateConfigToEntity(gen generated.EventCertificateConfig) *entity.EventCertificateConfig {
 	return &entity.EventCertificateConfig{
 		ID:                              gen.ID,
