@@ -35,10 +35,6 @@ RUN apk add --no-cache \
     wget \
     curl \
     chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
     ttf-freefont && \
     wget -O /tmp/migrate.tar.gz https://github.com/golang-migrate/migrate/releases/download/v4.18.1/migrate.linux-amd64.tar.gz && \
     tar -xzf /tmp/migrate.tar.gz -C /usr/local/bin && \

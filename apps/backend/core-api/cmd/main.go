@@ -109,7 +109,7 @@ func main() {
 	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo, authService, googleOAuthService)
 	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
 	authUc := auth_usecase.NewAuthUsecase(pgRepo) // No database dependency - reads from JWT claims
-	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo, authService)
+	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo, authService, pgRepo)
 	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService, &cfg)
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, logger)
 	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)

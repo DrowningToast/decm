@@ -22,8 +22,8 @@ type EventCertificateConfigResponse struct {
 	EventID                         uuid.UUID          `json:"event_id"`
 	BaseCertificateStorageKey       string             `json:"base_certificate_storage_key"`
 	BaseCertificatePresignedURL     string             `json:"base_certificate_presigned_url"`
-	EventNamePosX                   float64            `json:"event_name_pos_x"`
-	EventNamePosY                   float64            `json:"event_name_pos_y"`
+	EventNamePosX                   *float64           `json:"event_name_pos_x,omitempty"`
+	EventNamePosY                   *float64           `json:"event_name_pos_y,omitempty"`
 	NamePosX                        float64            `json:"name_pos_x"`
 	NamePosY                        float64            `json:"name_pos_y"`
 	AcademicInstitutionPosX         *float64           `json:"academic_institution_pos_x,omitempty"`
@@ -62,8 +62,8 @@ type MintReadinessInfo struct {
 
 type CreateEventCertificateConfigParams struct {
 	BaseCertificateImage    multipart.FileHeader
-	EventNamePosX           float64
-	EventNamePosY           float64
+	EventNamePosX           *float64
+	EventNamePosY           *float64
 	NamePosX                float64
 	NamePosY                float64
 	AcademicInstitutionPosX *float64
@@ -72,6 +72,14 @@ type CreateEventCertificateConfigParams struct {
 	CertificateTitlePosY    *float64
 	CertificateSubtitlePosX *float64
 	CertificateSubtitlePosY *float64
+}
+
+// float64PtrToPgFloat8 converts *float64 to pgtype.Float8
+func float64PtrToPgFloat8(f *float64) pgtype.Float8 {
+	if f == nil {
+		return pgtype.Float8{Valid: false}
+	}
+	return pgtype.Float8{Float64: *f, Valid: true}
 }
 
 func (uc *EventConfigUsecase) CreateEventCertificateConfig(ctx context.Context, eventID uuid.UUID, params CreateEventCertificateConfigParams) (*entity.EventCertificateConfig, error) {
@@ -90,8 +98,8 @@ func (uc *EventConfigUsecase) CreateEventCertificateConfig(ctx context.Context, 
 	createParams := generated.CreateEventCertificateConfigParams{
 		EventID:                   eventID,
 		BaseCertificateStorageKey: storageKey,
-		EventNamePosX:             params.EventNamePosX,
-		EventNamePosY:             params.EventNamePosY,
+		EventNamePosX:             float64PtrToPgFloat8(params.EventNamePosX),
+		EventNamePosY:             float64PtrToPgFloat8(params.EventNamePosY),
 		NamePosX:                  params.NamePosX,
 		NamePosY:                  params.NamePosY,
 	}
@@ -143,17 +151,21 @@ func (uc *EventConfigUsecase) UpdateEventCertificateConfig(ctx context.Context, 
 	}
 
 	if params.EventNamePosX != nil {
-		updateParams.EventNamePosX = *params.EventNamePosX
+		updateParams.EventNamePosX = pgtype.Float8{Float64: *params.EventNamePosX, Valid: true}
 	} else {
 		// Use existing value if not provided
-		updateParams.EventNamePosX = dbEventCertConfig.EventNamePosX
+		if dbEventCertConfig.EventNamePosX != nil {
+			updateParams.EventNamePosX = pgtype.Float8{Float64: *dbEventCertConfig.EventNamePosX, Valid: true}
+		}
 	}
 
 	if params.EventNamePosY != nil {
-		updateParams.EventNamePosY = *params.EventNamePosY
+		updateParams.EventNamePosY = pgtype.Float8{Float64: *params.EventNamePosY, Valid: true}
 	} else {
 		// Use existing value if not provided
-		updateParams.EventNamePosY = dbEventCertConfig.EventNamePosY
+		if dbEventCertConfig.EventNamePosY != nil {
+			updateParams.EventNamePosY = pgtype.Float8{Float64: *dbEventCertConfig.EventNamePosY, Valid: true}
+		}
 	}
 
 	if params.NamePosX != nil {

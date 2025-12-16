@@ -74,7 +74,7 @@ func NewWithPreset(preset *ErrSignature, err error) *Err {
 }
 
 func Parse(preset *ErrSignature, err error) *Err {
-	var defaultErrSignature = &ErrInternalServer
+	defaultErrSignature := &ErrInternalServer
 	if preset != nil {
 		defaultErrSignature = &ErrSignature{
 			Code:           preset.Code,
@@ -88,7 +88,7 @@ func Parse(preset *ErrSignature, err error) *Err {
 }
 
 func ParseWithMessage(preset *ErrSignature, err error, message string) *Err {
-	var defaultErrSignature = &ErrInternalServer
+	defaultErrSignature := &ErrInternalServer
 	if preset != nil {
 		defaultErrSignature = &ErrSignature{
 			Code:           preset.Code,
@@ -111,7 +111,7 @@ func ParseWithReasons(preset *ErrSignature, err error, reasons map[string]string
 	if reasons == nil {
 		return Parse(&ErrInternalServer, err)
 	}
-	var defaultErrSignature = &ErrInternalServer
+	defaultErrSignature := &ErrInternalServer
 	if preset != nil {
 		defaultErrSignature = &ErrSignature{
 			Code:           preset.Code,

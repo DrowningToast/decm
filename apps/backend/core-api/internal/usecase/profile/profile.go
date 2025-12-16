@@ -17,14 +17,16 @@ import (
 type ProfileUsecase struct {
 	ProfileDg                  datagateway.ProfileDataGateway
 	AuthenticationCredentialDg datagateway.AuthenticationCredentialDataGateway
+	InboxMessageDg             datagateway.InboxMessageDataGateway
 
 	AuthService *auth.AuthService
 }
 
-func NewProfileUsecase(profileDg datagateway.ProfileDataGateway, authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway, authService *auth.AuthService) *ProfileUsecase {
+func NewProfileUsecase(profileDg datagateway.ProfileDataGateway, authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway, authService *auth.AuthService, inboxMessageDg datagateway.InboxMessageDataGateway) *ProfileUsecase {
 	return &ProfileUsecase{
 		ProfileDg:                  profileDg,
 		AuthenticationCredentialDg: authenticationCredentialDg,
+		InboxMessageDg:             inboxMessageDg,
 		AuthService:                authService,
 	}
 }

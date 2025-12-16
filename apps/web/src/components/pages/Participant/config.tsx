@@ -1,7 +1,10 @@
+import { NotificationIndicator } from "./components/NotificationIndicator";
+
 export interface ServiceConfig {
     key: string;
     href: string;
     translationKey: string;
+    children?: React.ReactNode;
 }
 
 /**
@@ -23,19 +26,8 @@ export const participantServices: ServiceConfig[] = [
         key: "inbox",
         href: "/app/inbox",
         translationKey: "participant.home.services.inbox",
+        children: <NotificationIndicator />,
     },
-    // TODO: Add identities and profile services
-    // {
-    //     key: "identities",
-    //     href: "/app/identities",
-    //     translationKey: "participant.home.services.identities",
-    // },
-    // @deprecated Moved to navbar
-    // {
-    //     key: "profile",
-    //     href: "/app/profile",
-    //     translationKey: "participant.home.services.profile",
-    // },
 ] as const;
 
 /**

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { CoreApiType } from "@/lib/api/api";
 import { EventRegistrationService } from "./EventRegistration";
+import { EntityInboxMessageType, EntityEventType } from "@decm/api";
 
 // Mock the coreApiClient
 vi.mock("@/lib/api/api", () => ({
@@ -31,8 +32,9 @@ describe("EventRegistrationService", () => {
     describe("getConfiguration", () => {
         it("should fetch event registration configuration", async () => {
             const mockResponse = {
+                id: "config-1",
                 event_id: "event-1",
-                event_type: 0, // EntityEventType.EventTypePrivate
+                event_type: EntityEventType.EventTypePrivate,
                 first_name_requirement_status: 1,
                 last_name_requirement_status: 1,
                 email_requirement_status: 1,
@@ -41,7 +43,9 @@ describe("EventRegistrationService", () => {
                 address_requirement_status: 0,
                 academic_institution_requirement_status: 0,
                 academic_email_requirement_status: 0,
-                final_call_for_registration: null,
+                final_call_for_registration: undefined,
+                created_at: "2024-01-01T00:00:00Z",
+                updated_at: "2024-01-01T00:00:00Z",
             };
 
             vi.mocked(mockCoreApi.v1.getEventRegistrationConfig).mockResolvedValue(mockResponse);
@@ -86,6 +90,7 @@ describe("EventRegistrationService", () => {
                     id: "inv-1",
                     event_id: "event-1",
                     inbox_message_id: "msg-1",
+                    accepted_at: "",
                     created_at: "2024-01-01T00:00:00Z",
                     updated_at: "2024-01-01T00:00:00Z",
                 },
@@ -113,14 +118,16 @@ describe("EventRegistrationService", () => {
                     id: "inv-1",
                     event_id: "event-1",
                     inbox_message_id: "msg-1",
+                    accepted_at: "",
                     created_at: "2024-01-01T00:00:00Z",
                     updated_at: "2024-01-01T00:00:00Z",
                 },
                 inbox: {
                     id: "msg-1",
-                    message_type: "event_registration_invitation",
+                    message_type:
+                        EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation,
                     message_content: "{}",
-                    is_read: false,
+                    is_read: 0,
                     created_at: "2024-01-01T00:00:00Z",
                     updated_at: "2024-01-01T00:00:00Z",
                 },
@@ -145,8 +152,8 @@ describe("EventRegistrationService", () => {
             vi.mocked(
                 mockCoreApi.v1.getEventRegistrationInvitationByUserAndEvent,
             ).mockResolvedValue({
-                registration_invitation: null,
-                inbox: null,
+                registration_invitation: undefined,
+                inbox: undefined,
             });
 
             await expect(
@@ -169,7 +176,21 @@ describe("EventRegistrationService", () => {
                 academicEmail: "not_required" as const,
             };
 
-            vi.mocked(mockCoreApi.v1.updateEventRegistrationConfig).mockResolvedValue(undefined);
+            vi.mocked(mockCoreApi.v1.updateEventRegistrationConfig).mockResolvedValue({
+                id: "config-1",
+                event_id: "event-1",
+                first_name_requirement_status: 1,
+                last_name_requirement_status: 1,
+                email_requirement_status: 1,
+                bio_requirement_status: 0,
+                phone_number_requirement_status: 2,
+                address_requirement_status: 0,
+                academic_institution_requirement_status: 0,
+                academic_email_requirement_status: 0,
+                final_call_for_registration: undefined,
+                created_at: "2024-01-01T00:00:00Z",
+                updated_at: "2024-01-01T00:00:00Z",
+            });
 
             await eventRegistrationService.updateConfiguration("event-1", configuration);
 
@@ -219,7 +240,12 @@ describe("EventRegistrationService", () => {
             const mockResponse = {
                 id: "attendee-1",
                 event_id: "event-1",
-                credential_id: "cred-1",
+                attendee_credential_id: "cred-1",
+                contract_address: "0x123",
+                wallet_address: "0xabc",
+                created_at: "2024-01-01T00:00:00Z",
+                is_attendee_accepted: true,
+                updated_at: "2024-01-01T00:00:00Z",
             };
 
             vi.mocked(mockCoreApi.v1.joinEvent).mockResolvedValue(mockResponse);
@@ -234,6 +260,11 @@ describe("EventRegistrationService", () => {
                     firstName: "John",
                     lastName: "Doe",
                     email: "john@example.com",
+                    bio: undefined,
+                    phoneNumber: undefined,
+                    address: undefined,
+                    academicEmail: undefined,
+                    academicInstitution: undefined,
                 },
             });
 
@@ -260,7 +291,12 @@ describe("EventRegistrationService", () => {
             vi.mocked(mockCoreApi.v1.joinEvent).mockResolvedValue({
                 id: "attendee-1",
                 event_id: "event-1",
-                credential_id: "cred-1",
+                attendee_credential_id: "cred-1",
+                contract_address: "0x123",
+                wallet_address: "0xabc",
+                created_at: "2024-01-01T00:00:00Z",
+                is_attendee_accepted: true,
+                updated_at: "2024-01-01T00:00:00Z",
             });
 
             await eventRegistrationService.joinEventWithSignature({
@@ -271,6 +307,11 @@ describe("EventRegistrationService", () => {
                     firstName: "John",
                     lastName: "Doe",
                     email: "john@example.com",
+                    bio: undefined,
+                    phoneNumber: undefined,
+                    address: undefined,
+                    academicEmail: undefined,
+                    academicInstitution: undefined,
                 },
             });
 

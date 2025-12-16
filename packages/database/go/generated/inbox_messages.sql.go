@@ -265,6 +265,27 @@ func (q *Queries) GetInboxMessagesBySenderCredentialID(ctx context.Context, send
 	return items, nil
 }
 
+const GetUnreadInboxMessageCountByCredentialID = `-- name: GetUnreadInboxMessageCountByCredentialID :one
+SELECT COUNT(*) FROM inbox_messages 
+WHERE (receiver_credential_id = $1
+OR receiver_email = $2
+OR receiver_wallet_address = $3)
+AND is_read = 0
+`
+
+type GetUnreadInboxMessageCountByCredentialIDParams struct {
+	ReceiverCredentialID  pgtype.UUID `json:"receiver_credential_id"`
+	ReceiverEmail         pgtype.Text `json:"receiver_email"`
+	ReceiverWalletAddress pgtype.Text `json:"receiver_wallet_address"`
+}
+
+func (q *Queries) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, arg GetUnreadInboxMessageCountByCredentialIDParams) (int64, error) {
+	row := q.db.QueryRow(ctx, GetUnreadInboxMessageCountByCredentialID, arg.ReceiverCredentialID, arg.ReceiverEmail, arg.ReceiverWalletAddress)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const UpdateInboxMessageReadStatus = `-- name: UpdateInboxMessageReadStatus :one
 UPDATE inbox_messages 
 SET is_read = $1,

@@ -38,11 +38,12 @@ describe("CertificateService", () => {
     describe("getCertificateImage", () => {
         it("should fetch and map certificate image successfully", async () => {
             const mockBlob = new Blob(["image data"], { type: "image/png" });
+            const mockFile = new File([mockBlob], "certificate.png", { type: "image/png" });
             const mockCreateObjectURL = vi
                 .spyOn(URL, "createObjectURL")
                 .mockReturnValue("blob:url");
 
-            vi.mocked(mockCoreApi.v1.generateCertificateImage).mockResolvedValue(mockBlob);
+            vi.mocked(mockCoreApi.v1.generateCertificateImage).mockResolvedValue(mockFile);
 
             const result = await certificateService.getCertificateImage("cert-123");
 
@@ -50,15 +51,15 @@ describe("CertificateService", () => {
                 certificateId: "cert-123",
             });
             expect(result.url).toBe("blob:url");
-            expect(result.blob).toBe(mockBlob);
+            expect(result.blob).toBe(mockFile);
             expect(result.contentType).toBe("image/png");
-            expect(mockCreateObjectURL).toHaveBeenCalledWith(mockBlob);
+            expect(mockCreateObjectURL).toHaveBeenCalledWith(mockFile);
 
             mockCreateObjectURL.mockRestore();
         });
 
         it("should throw error when response is not a Blob", async () => {
-            vi.mocked(mockCoreApi.v1.generateCertificateImage).mockResolvedValue({} as Blob);
+            vi.mocked(mockCoreApi.v1.generateCertificateImage).mockResolvedValue({} as File);
 
             await expect(certificateService.getCertificateImage("cert-123")).rejects.toThrow(
                 "Invalid response: expected Blob",
@@ -131,7 +132,9 @@ describe("CertificateService", () => {
         });
 
         it("should return empty array when certificates is undefined", async () => {
-            vi.mocked(mockCoreApi.v1.getEventCertificates).mockResolvedValue({});
+            vi.mocked(mockCoreApi.v1.getEventCertificates).mockResolvedValue({
+                certificates: [],
+            });
 
             const result = await certificateService.getEventCertificates("event-1");
 
@@ -167,7 +170,9 @@ describe("CertificateService", () => {
         });
 
         it("should return empty array when font_families is undefined", async () => {
-            vi.mocked(mockCoreApi.v1.getEventCertificateFontFamilies).mockResolvedValue({});
+            vi.mocked(mockCoreApi.v1.getEventCertificateFontFamilies).mockResolvedValue({
+                font_families: [],
+            });
 
             const result = await certificateService.getFontFamilies();
 
@@ -183,6 +188,8 @@ describe("CertificateService", () => {
                         certificate: {
                             id: "cert-1",
                             event_id: "event-1",
+                            event_contract_address: "0x123",
+                            created_at: "2024-01-01T00:00:00Z",
                         },
                         signature: "sig-123",
                     },
@@ -206,12 +213,39 @@ describe("CertificateService", () => {
     describe("importCertificates", () => {
         it("should import certificate receivers", async () => {
             const mockResponse = {
+                event_id: "event-1",
+                event_certificate_address: "0x123",
                 certificates: [
-                    { id: "cert-1" },
-                    { id: "cert-2" },
-                    { id: "cert-3" },
-                    { id: "cert-4" },
-                    { id: "cert-5" },
+                    {
+                        id: "cert-1",
+                        event_id: "event-1",
+                        event_contract_address: "0x123",
+                        created_at: "2024-01-01T00:00:00Z",
+                    },
+                    {
+                        id: "cert-2",
+                        event_id: "event-1",
+                        event_contract_address: "0x123",
+                        created_at: "2024-01-01T00:00:00Z",
+                    },
+                    {
+                        id: "cert-3",
+                        event_id: "event-1",
+                        event_contract_address: "0x123",
+                        created_at: "2024-01-01T00:00:00Z",
+                    },
+                    {
+                        id: "cert-4",
+                        event_id: "event-1",
+                        event_contract_address: "0x123",
+                        created_at: "2024-01-01T00:00:00Z",
+                    },
+                    {
+                        id: "cert-5",
+                        event_id: "event-1",
+                        event_contract_address: "0x123",
+                        created_at: "2024-01-01T00:00:00Z",
+                    },
                 ],
             };
 
@@ -220,8 +254,12 @@ describe("CertificateService", () => {
                 hostPin: "1234",
                 receivers: [
                     {
-                        receiver_credential_id: "cred-1",
-                        receiver_email: "test@example.com",
+                        academic_institution: "Test University",
+                        certificate_subtitle: "Subtitle",
+                        certificate_title: "Title",
+                        email: "test@example.com",
+                        first_name: "John",
+                        last_name: "Doe",
                     },
                 ],
             };
@@ -246,7 +284,20 @@ describe("CertificateService", () => {
     describe("revokeCertificates", () => {
         it("should revoke specific certificates", async () => {
             const mockResponse = {
-                revoked_certificates: [{ id: "cert-1" }, { id: "cert-2" }],
+                revoked_certificates: [
+                    {
+                        id: "cert-1",
+                        event_id: "event-1",
+                        event_contract_address: "0x123",
+                        created_at: "2024-01-01T00:00:00Z",
+                    },
+                    {
+                        id: "cert-2",
+                        event_id: "event-1",
+                        event_contract_address: "0x123",
+                        created_at: "2024-01-01T00:00:00Z",
+                    },
+                ],
             };
 
             const params = {
@@ -269,7 +320,12 @@ describe("CertificateService", () => {
     describe("revokeAllCertificates", () => {
         it("should revoke all certificates for an event", async () => {
             const mockResponse = {
-                revoked_certificates: Array.from({ length: 10 }, (_, i) => ({ id: `cert-${i}` })),
+                revoked_certificates: Array.from({ length: 10 }, (_, i) => ({
+                    id: `cert-${i}`,
+                    event_id: "event-1",
+                    event_contract_address: "0x123",
+                    created_at: "2024-01-01T00:00:00Z",
+                })),
             };
 
             vi.mocked(mockCoreApi.v1.revokeAllEventCertificates).mockResolvedValue(mockResponse);
@@ -287,9 +343,12 @@ describe("CertificateService", () => {
     describe("publishCertificates", () => {
         it("should publish event certificates", async () => {
             const mockResponse = {
+                event_id: "event-1",
                 published_count: 5,
                 failed_count: 0,
                 errors: [],
+                is_published: true,
+                inbox_messages_created: 5,
             };
 
             vi.mocked(mockCoreApi.v1.publishEventCertificates).mockResolvedValue(mockResponse);
@@ -305,7 +364,19 @@ describe("CertificateService", () => {
 
     describe("toggleCertificatePublished", () => {
         it("should toggle certificate published status", async () => {
-            const mockResponse = { success: true };
+            const mockResponse = {
+                id: "config-1",
+                event_id: "event-1",
+                base_certificate_presigned_url: "https://example.com/cert.png",
+                base_certificate_storage_key: "certs/base.png",
+                event_name_pos_x: 100,
+                event_name_pos_y: 200,
+                name_pos_x: 150,
+                name_pos_y: 250,
+                is_published: true,
+                created_at: "2024-01-01T00:00:00Z",
+                updated_at: "2024-01-01T00:00:00Z",
+            };
             vi.mocked(mockCoreApi.v1.toggleCertificatePublished).mockResolvedValue(mockResponse);
 
             const result = await certificateService.toggleCertificatePublished("event-1", true);
@@ -326,6 +397,8 @@ describe("CertificateService", () => {
                 has_certificate_config: true,
                 has_certificate_contract: true,
                 total_issuers_count: 1,
+                all_issuers_have_signed: true,
+                signed_issuers_count: 1,
             };
 
             vi.mocked(mockCoreApi.v1.checkCertificateMintReadiness).mockResolvedValue(mockResponse);
@@ -344,6 +417,11 @@ describe("CertificateService", () => {
             const mockResponse = {
                 is_ready: false,
                 missing_requirements: ["Missing contract"],
+                has_certificate_config: false,
+                has_certificate_contract: false,
+                total_issuers_count: 0,
+                all_issuers_have_signed: false,
+                signed_issuers_count: 0,
             };
 
             vi.mocked(mockCoreApi.v1.checkCertificateMintReadiness).mockResolvedValue(mockResponse);
@@ -382,6 +460,8 @@ describe("CertificateService", () => {
                 id: "cert-123",
                 certificate_token_id: "0xabc",
                 created_at: "2024-01-01T00:00:00Z",
+                event_contract_address: "0x123",
+                event_id: "event-1",
             };
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
@@ -406,6 +486,8 @@ describe("CertificateService", () => {
                 id: "cert-123",
                 certificate_token_id: "0xabc",
                 created_at: "2024-01-01T00:00:00Z",
+                event_contract_address: "0x123",
+                event_id: "event-1",
             };
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
@@ -433,6 +515,8 @@ describe("CertificateService", () => {
                 id: "cert-123",
                 certificate_token_id: "0xabc",
                 created_at: "2024-01-01T00:00:00Z",
+                event_contract_address: "0x123",
+                event_id: "event-1",
             };
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
@@ -454,6 +538,8 @@ describe("CertificateService", () => {
                 id: "cert-123",
                 certificate_token_id: "0xabc",
                 created_at: "2024-01-01T00:00:00Z",
+                event_contract_address: "0x123",
+                event_id: "event-1",
             };
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);

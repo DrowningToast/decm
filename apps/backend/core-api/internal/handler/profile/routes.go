@@ -11,7 +11,7 @@ func (h *Handler) Mount(r fiber.Router) {
 	defer logger.Info("Mounted profile routes")
 
 	profileGroup := r.Group("/profile").Use(h.AuthenticationGuardMiddleware.Middleware)
-	profileGroup.Get("/my", h.GetMyProfile)
+	profileGroup.Get("/viewmodel", h.GetProfileViewModel)
 	profileGroup.Post("", h.CreateProfile)
 	profileGroup.Patch("/credential/:credential_id", h.UpdateProfileByCredentialId)
 	profileGroup.Post("/password/verify", h.VerifyPassword)
