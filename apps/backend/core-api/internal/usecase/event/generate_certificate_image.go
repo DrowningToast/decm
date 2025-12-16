@@ -51,9 +51,9 @@ func (u *EventUsecase) GenerateCertificateImage(ctx context.Context, certificate
 			if *customErr.Code == customerror.ErrNotFound.Code {
 				return nil, customerror.ParseWithMessage(&customerror.ErrNotFound, err, "Certificate configuration not found")
 			}
-			return nil, errors.Wrap(err, "failed to get certificate config")
+			return nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "Failed to get certificate config")
 		}
-		return nil, errors.Wrap(err, "failed to parse custom error")
+		return nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "Failed to get certificate config")
 	}
 
 	// 3. Download SVG template from S3
