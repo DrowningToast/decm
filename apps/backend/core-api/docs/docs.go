@@ -4001,8 +4001,6 @@ const docTemplate = `{
                 "base_certificate_storage_key",
                 "created_at",
                 "event_id",
-                "event_name_pos_x",
-                "event_name_pos_y",
                 "id",
                 "is_published",
                 "name_pos_x",

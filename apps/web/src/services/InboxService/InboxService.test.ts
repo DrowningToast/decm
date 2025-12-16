@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { CoreApiType } from "@/lib/api/api";
 import { InboxService } from "./InboxService";
-import { EntityInboxMessageType, type InboxInboxMessagesViewModel } from "@decm/api";
+import { EntityInboxMessageType } from "@decm/api";
 
 // Mock the coreApiClient
 vi.mock("@/lib/api/api", () => ({

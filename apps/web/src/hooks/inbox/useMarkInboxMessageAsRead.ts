@@ -11,7 +11,7 @@ export function useMarkInboxMessageAsRead() {
 
     return useMutation({
         mutationFn: (messageId: string) => defaultInboxService.markAsRead(messageId),
-        onSuccess: (data, messageId) => {
+        onSuccess: (_, messageId) => {
             // Invalidate the specific message query to refetch with updated read status
             queryClient.invalidateQueries({
                 queryKey: QUERY_KEY.inbox.byId(messageId),

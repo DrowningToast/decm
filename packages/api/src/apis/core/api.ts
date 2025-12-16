@@ -182,8 +182,8 @@ export interface CoreApiInternalHandlerEventconfigEventCertificateConfigResponse
     event_id: string;
     event_name_font_family_id?: number;
     event_name_font_weight?: number;
-    event_name_pos_x: number;
-    event_name_pos_y: number;
+    event_name_pos_x?: number;
+    event_name_pos_y?: number;
     id: string;
     is_published: boolean;
     mint_readiness?: CoreApiInternalHandlerEventconfigMintReadinessInfo;
