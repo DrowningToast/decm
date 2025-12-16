@@ -47,8 +47,6 @@ describe("useUpdateEventIssuer", () => {
         event_id: mockEventId,
         issuer_credential_id: "cred-1",
         is_signed: 0,
-        sign_message: "",
-        signature: "",
         created_at: "2024-01-01T00:00:00Z",
         updated_at: "2024-01-01T00:00:00Z",
     };
