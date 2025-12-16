@@ -1,6 +1,7 @@
 package event
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -221,7 +222,6 @@ func BenchmarkRenderSVGToPNG(b *testing.B) {
 	}
 }
 
-
 // =============================================================================
 // Tests for hideTemplatePlaceholders - Enhanced Coverage
 // =============================================================================
@@ -238,8 +238,8 @@ func TestHideTemplatePlaceholders_EnhancedCoverage(t *testing.T) {
 		result := hideTemplatePlaceholders(svgTemplate)
 
 		// Assert
-		assert.Contains(t, result, `id="name" visibility="hidden"`, "Should hide element with id='name'")
-		assert.Contains(t, result, `id="eventName" visibility="hidden"`, "Should hide element with id='eventName'")
+		assert.Contains(t, result, `<text id="name" x="100" y="100" visibility="hidden">`, "Should hide element with id='name'")
+		assert.Contains(t, result, `<text id="eventName" x="100" y="150" visibility="hidden">`, "Should hide element with id='eventName'")
 	})
 
 	t.Run("should hide placeholder with id matching template syntax", func(t *testing.T) {
@@ -253,8 +253,8 @@ func TestHideTemplatePlaceholders_EnhancedCoverage(t *testing.T) {
 		result := hideTemplatePlaceholders(svgTemplate)
 
 		// Assert
-		assert.Contains(t, result, `id="{{ name }}" visibility="hidden"`)
-		assert.Contains(t, result, `id="{{ eventName }}" visibility="hidden"`)
+		assert.Contains(t, result, `<text id="{{ name }}" x="100" y="100" visibility="hidden">`)
+		assert.Contains(t, result, `<text id="{{ eventName }}" x="100" y="150" visibility="hidden">`)
 	})
 
 	t.Run("should hide placeholder when content contains template syntax", func(t *testing.T) {
@@ -413,9 +413,9 @@ func TestHideTemplatePlaceholders_EnhancedCoverage(t *testing.T) {
 		// Assert
 		assert.Contains(t, result, `id="title"`, "Non-placeholder should be preserved")
 		assert.NotContains(t, result, `id="title" visibility="hidden"`, "Non-placeholder should not be hidden")
-		assert.Contains(t, result, `id="name" visibility="hidden"`)
-		assert.Contains(t, result, `id="eventName" visibility="hidden"`)
-		assert.Contains(t, result, `id="academicInstitutionName" visibility="hidden"`)
+		assert.Contains(t, result, `<text id="name" x="400" y="200" visibility="hidden">`)
+		assert.Contains(t, result, `<text id="eventName" x="400" y="300" visibility="hidden">`)
+		assert.Contains(t, result, `<text id="academicInstitutionName" x="400" y="450" visibility="hidden">`)
 	})
 }
 

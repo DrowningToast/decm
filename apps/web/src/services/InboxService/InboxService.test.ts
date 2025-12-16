@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { CoreApiType } from "@/lib/api/api";
 import { InboxService } from "./InboxService";
-import { EntityInboxMessageType } from "@decm/api";
+import {
+    EntityInboxMessageType,
+    type InboxInboxMessagesViewModel,
+    type V1InboxMessagesReadUpdateData,
+} from "@decm/api";
 
 // Mock the coreApiClient
 vi.mock("@/lib/api/api", () => ({
@@ -259,7 +263,6 @@ describe("InboxService", () => {
     });
 });
 
-
 // =============================================================================
 // Additional tests for InboxService - Enhanced Coverage
 // =============================================================================
@@ -278,7 +281,7 @@ describe("InboxService - Enhanced Coverage", () => {
         it("should return empty array when inbox_messages is undefined", async () => {
             // Arrange
             vi.mocked(mockCoreApi.v1.v1InboxMessagesList).mockResolvedValue({
-                inbox_messages: undefined,
+                inbox_messages: undefined as unknown as InboxInboxMessagesViewModel[],
             });
 
             // Act
@@ -292,7 +295,7 @@ describe("InboxService - Enhanced Coverage", () => {
         it("should return empty array when inbox_messages is undefined", async () => {
             // Arrange
             vi.mocked(mockCoreApi.v1.v1InboxMessagesList).mockResolvedValue({
-                inbox_messages: undefined,
+                inbox_messages: undefined as unknown as InboxInboxMessagesViewModel[],
             });
 
             // Act
@@ -319,7 +322,8 @@ describe("InboxService - Enhanced Coverage", () => {
                     id: "msg-2",
                     sender_credential_email: "sender2@example.com",
                     receiver_credential_id: "receiver-2",
-                    message_type: EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation,
+                    message_type:
+                        EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation,
                     message_content: "Message 2",
                     is_read: 1,
                     created_at: "2024-01-02T00:00:00Z",
@@ -380,7 +384,7 @@ describe("InboxService - Enhanced Coverage", () => {
                 revoked_at: null,
                 token_id: null,
                 valid_until: null,
-            };
+            } as unknown as InboxInboxMessagesViewModel;
 
             vi.mocked(mockCoreApi.v1.v1InboxMessagesList).mockResolvedValue({
                 inbox_messages: [mockMessage],
@@ -392,7 +396,7 @@ describe("InboxService - Enhanced Coverage", () => {
             // Assert
             expect(result).toHaveLength(1);
             expect(result[0].id).toBe("msg-minimal");
-            expect(result[0].messageContent).toBeUndefined();
+            expect(result[0].messageContent).toBe("");
             expect(result[0].eventId).toBeUndefined();
             expect(result[0].certificateId).toBeUndefined();
         });
@@ -402,13 +406,18 @@ describe("InboxService - Enhanced Coverage", () => {
         it("should call API with correct message ID", async () => {
             // Arrange
             const messageId = "msg-to-mark-read";
-            vi.mocked(mockCoreApi.v1.v1InboxMessagesReadUpdate).mockResolvedValue({});
+            vi.mocked(mockCoreApi.v1.v1InboxMessagesReadUpdate).mockResolvedValue(
+                {} as unknown as V1InboxMessagesReadUpdateData,
+            );
 
             // Act
             await inboxService.markAsRead(messageId);
 
             // Assert
-            expect(mockCoreApi.v1.v1InboxMessagesReadUpdate).toHaveBeenCalledWith(messageId);
+            expect(mockCoreApi.v1.v1InboxMessagesReadUpdate).toHaveBeenCalledWith(
+                { messageId },
+                { message_id: messageId },
+            );
             expect(mockCoreApi.v1.v1InboxMessagesReadUpdate).toHaveBeenCalledTimes(1);
         });
 
@@ -438,27 +447,38 @@ describe("InboxService - Enhanced Coverage", () => {
             // Arrange
             const messageId = "msg-revoked";
             const revokedAt = "2024-12-01T12:00:00Z";
-            const mockResponse = {
-                inbox_message: {
-                    id: messageId,
-                    message_type: EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation,
-                    is_read: 1,
-                    created_at: "2024-01-01T00:00:00Z",
-                    updated_at: "2024-01-01T00:00:00Z",
-                    revoked_at: revokedAt,
-                    certificate_id: "cert-123",
-                },
-                inbox_message_type: EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation,
+            const mockMessage = {
+                id: messageId,
+                message_type: EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation,
+                is_read: 1,
+                created_at: "2024-01-01T00:00:00Z",
+                updated_at: "2024-01-01T00:00:00Z",
+                message_content: "{}",
+                revoked_at: revokedAt,
+                certificate_id: "cert-123",
             };
 
-            vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue(mockResponse);
+            vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue({
+                inbox_message: mockMessage,
+                inbox_message_type:
+                    EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation,
+                event_certificate: {
+                    ...mockMessage,
+                    event_name: "Event",
+                    certificate_title: "Title",
+                    token_id: "1",
+                    has_participant_joined_event: false,
+                    event_id: "event-1",
+                    message_content: "{}",
+                },
+            });
 
             // Act
             const result = await inboxService.getInboxMessageById(messageId);
 
             // Assert
             expect(result).not.toBeNull();
-            expect(result?.revokedAt).toEqual(new Date(revokedAt));
+            expect(result).toHaveProperty("revokedAt", new Date(revokedAt));
         });
 
         it("should handle message with cancelled_at timestamp", async () => {
@@ -471,18 +491,33 @@ describe("InboxService - Enhanced Coverage", () => {
                 is_read: 1,
                 created_at: "2024-01-01T00:00:00Z",
                 updated_at: "2024-01-01T00:00:00Z",
+                message_content: "{}",
                 cancelled_at: cancelledAt,
                 event_id: "event-123",
             };
 
-            vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue(mockMessage);
+            vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue({
+                inbox_message: mockMessage,
+                inbox_message_type:
+                    EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation,
+                event_registration_invitation: {
+                    ...mockMessage,
+                    code: "CODE",
+                    email: "email",
+                    first_name: "First",
+                    last_name: "Last",
+                    phone_number: "123",
+                    academic_institution: "Inst",
+                    message_content: "{}",
+                },
+            });
 
             // Act
             const result = await inboxService.getInboxMessageById(messageId);
 
             // Assert
             expect(result).not.toBeNull();
-            expect(result?.cancelledAt).toEqual(new Date(cancelledAt));
+            expect(result).toHaveProperty("cancelledAt", new Date(cancelledAt));
         });
 
         it("should handle message with valid_until timestamp", async () => {
@@ -495,18 +530,33 @@ describe("InboxService - Enhanced Coverage", () => {
                 is_read: 0,
                 created_at: "2024-01-01T00:00:00Z",
                 updated_at: "2024-01-01T00:00:00Z",
+                message_content: "{}",
                 valid_until: validUntil,
                 event_id: "event-456",
             };
 
-            vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue(mockMessage);
+            vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue({
+                inbox_message: mockMessage,
+                inbox_message_type:
+                    EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation,
+                event_registration_invitation: {
+                    ...mockMessage,
+                    code: "CODE",
+                    email: "email",
+                    first_name: "First",
+                    last_name: "Last",
+                    phone_number: "123",
+                    academic_institution: "Inst",
+                    message_content: "{}",
+                },
+            });
 
             // Act
             const result = await inboxService.getInboxMessageById(messageId);
 
             // Assert
             expect(result).not.toBeNull();
-            expect(result?.validUntil).toEqual(new Date(validUntil));
+            expect(result).toHaveProperty("validUntil", new Date(validUntil));
         });
 
         it("should handle message with accepted_at timestamp", async () => {
@@ -519,18 +569,33 @@ describe("InboxService - Enhanced Coverage", () => {
                 is_read: 1,
                 created_at: "2024-01-01T00:00:00Z",
                 updated_at: "2024-01-01T00:00:00Z",
+                message_content: "{}",
                 accepted_at: acceptedAt,
                 event_id: "event-789",
             };
 
-            vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue(mockMessage);
+            vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue({
+                inbox_message: mockMessage,
+                inbox_message_type:
+                    EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation,
+                event_registration_invitation: {
+                    ...mockMessage,
+                    code: "CODE",
+                    email: "email",
+                    first_name: "First",
+                    last_name: "Last",
+                    phone_number: "123",
+                    academic_institution: "Inst",
+                    message_content: "{}",
+                },
+            });
 
             // Act
             const result = await inboxService.getInboxMessageById(messageId);
 
             // Assert
             expect(result).not.toBeNull();
-            expect(result?.acceptedAt).toEqual(new Date(acceptedAt));
+            expect(result).toHaveProperty("acceptedAt", new Date(acceptedAt));
         });
 
         it("should handle message with token_id for claimed certificate", async () => {
@@ -543,11 +608,24 @@ describe("InboxService - Enhanced Coverage", () => {
                 is_read: 1,
                 created_at: "2024-01-01T00:00:00Z",
                 updated_at: "2024-01-01T00:00:00Z",
+                message_content: "{}",
                 certificate_id: "cert-999",
                 token_id: tokenId,
             };
 
-            vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue(mockMessage);
+            vi.mocked(mockCoreApi.v1.v1InboxMessagesDetail).mockResolvedValue({
+                inbox_message: mockMessage,
+                inbox_message_type:
+                    EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation,
+                event_certificate: {
+                    ...mockMessage,
+                    event_name: "Event",
+                    certificate_title: "Title",
+                    has_participant_joined_event: false,
+                    event_id: "event-1",
+                    message_content: "{}",
+                },
+            });
 
             // Act
             const result = await inboxService.getInboxMessageById(messageId);
