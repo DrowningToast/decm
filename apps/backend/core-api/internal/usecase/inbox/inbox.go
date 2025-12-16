@@ -2,6 +2,7 @@ package inbox
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"apps/backend/common/customerror"
@@ -52,8 +53,8 @@ func (uc *InboxUsecase) isAuthorizedToReadMessage(message *entity.InboxMessage, 
 		return true
 	}
 
-	// Check if receiver email matches
-	if message.ReceiverEmail != nil && user.Email != nil && *message.ReceiverEmail == *user.Email {
+	// Check if receiver email matches (case-insensitive)
+	if message.ReceiverEmail != nil && user.Email != nil && strings.EqualFold(*message.ReceiverEmail, *user.Email) {
 		return true
 	}
 
