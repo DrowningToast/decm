@@ -1,4 +1,17 @@
 {
+    "systemStatus": {
+        "maintenance": {
+            "planned": {
+                "title": "Scheduled Maintenance",
+                "description": "We are currently performing scheduled maintenance to improve our services. We'll be back online shortly."
+            },
+            "unplanned": {
+                "title": "System Maintenance",
+                "description": "We are currently experiencing some technical difficulties and are working to resolve them. Please check back later."
+            },
+            "expectedEnd": "Expected completion:"
+        }
+    },
     "common": {
         "appName": "DECM",
         "welcome": "Welcome",
