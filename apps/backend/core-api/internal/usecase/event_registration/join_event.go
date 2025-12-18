@@ -461,7 +461,6 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 			if *customError.Code != customerror.ErrNotFound.Code {
 				return nil, errors.Wrap(err, "failed to get event attendee by event id and credential id")
 			}
-			slog.InfoContext(ctx, "No row found in event_attendees table (handled as Not Found)", "event_id", entityEventContract.EventID, "user_id", currentUser.UserId)
 		} else {
 			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 		}
