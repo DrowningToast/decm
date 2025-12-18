@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { systemStatusService } from "@/services/services";
 import { useTranslation } from "react-i18next";
-import { Loader2, AlertTriangle, Clock } from "lucide-react";
+import { Loader2, AlertTriangle, Clock, WifiOff } from "lucide-react";
 import { format } from "date-fns";
+import { Button } from "./ui/button";
 
 interface SystemStatusWrapperProps {
     children: React.ReactNode;
@@ -11,11 +12,12 @@ interface SystemStatusWrapperProps {
 export const SystemStatusWrapper = ({ children }: SystemStatusWrapperProps) => {
     const { t } = useTranslation();
 
-    const { data, isLoading, isError } = useQuery({
+    const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ["systemStatus", "latest"],
         queryFn: () => systemStatusService.getLatestSchedules(1),
         refetchInterval: 60 * 1000, // Refetch every 1 minute
         staleTime: 60 * 1000, // Consider data fresh for 1 minute
+        retry: 2, // Retry 2 times before showing error
     });
 
     if (isLoading) {
@@ -26,9 +28,30 @@ export const SystemStatusWrapper = ({ children }: SystemStatusWrapperProps) => {
         );
     }
 
-    if (isError || !data || data.length === 0) {
-        // Fallback to allowing access if we can't determine status
-        // Or could show an error state if strict
+    if (isError) {
+        return (
+            <div className="flex h-screen w-screen flex-col items-center justify-center bg-background p-4 text-center">
+                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
+                    <WifiOff className="h-10 w-10 text-destructive" />
+                </div>
+                <h1 className="mb-2 text-2xl font-bold text-foreground">
+                    {t("common.networkError", "Connection Error")}
+                </h1>
+                <p className="mb-6 max-w-md text-muted-foreground">
+                    {t(
+                        "errors.networkDescription",
+                        "We're having trouble connecting to our servers. Please check your internet connection and try again.",
+                    )}
+                </p>
+                <Button onClick={() => refetch()} variant="primary">
+                    {t("error.tryAgain", "Try Again")}
+                </Button>
+            </div>
+        );
+    }
+
+    if (!data || data.length === 0) {
+        // Fallback to allowing access if we can't determine status but no explicit error
         return <>{children}</>;
     }
 
