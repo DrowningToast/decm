@@ -681,6 +681,7 @@ definitions:
         type: string
       deleted_at:
         type: string
+        x-nullable: true
       id:
         type: integer
       is_planned:
@@ -689,6 +690,7 @@ definitions:
         type: integer
       planned_end_time:
         type: string
+        x-nullable: true
       start_time:
         type: string
       status:
@@ -697,11 +699,9 @@ definitions:
         type: string
     required:
     - created_at
-    - deleted_at
     - id
     - is_planned
     - order_id
-    - planned_end_time
     - start_time
     - status
     - updated_at
@@ -2223,11 +2223,20 @@ definitions:
   system_status.GetClosestIncomingScheduleResponse:
     properties:
       schedule:
-        $ref: '#/definitions/entity.SystemStatusSchedule'
-    required:
-    - schedule
+        allOf:
+        - $ref: '#/definitions/entity.SystemStatusSchedule'
+        x-nullable: true
     type: object
   system_status.GetLatestSchedulesResponse:
+    properties:
+      schedules:
+        items:
+          $ref: '#/definitions/entity.SystemStatusSchedule'
+        type: array
+    required:
+    - schedules
+    type: object
+  system_status.GetPlannedMaintenanceSchedulesResponse:
     properties:
       schedules:
         items:
@@ -4811,6 +4820,24 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get system status schedules between time period
+      tags:
+      - SystemStatus
+  /api/v1/system-status/planned-maintenance:
+    get:
+      description: Get all upcoming planned maintenance schedules
+      operationId: get-planned-maintenance-schedules
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system_status.GetPlannedMaintenanceSchedulesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get planned maintenance schedules
       tags:
       - SystemStatus
 swagger: "2.0"

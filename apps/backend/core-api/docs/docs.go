@@ -3819,6 +3819,33 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/system-status/planned-maintenance": {
+            "get": {
+                "description": "Get all upcoming planned maintenance schedules",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SystemStatus"
+                ],
+                "summary": "Get planned maintenance schedules",
+                "operationId": "get-planned-maintenance-schedules",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/system_status.GetPlannedMaintenanceSchedulesResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -4794,11 +4821,9 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "created_at",
-                "deleted_at",
                 "id",
                 "is_planned",
                 "order_id",
-                "planned_end_time",
                 "start_time",
                 "status",
                 "updated_at"
@@ -4808,7 +4833,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "deleted_at": {
-                    "type": "string"
+                    "type": "string",
+                    "x-nullable": true
                 },
                 "id": {
                     "type": "integer"
@@ -4820,7 +4846,8 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "planned_end_time": {
-                    "type": "string"
+                    "type": "string",
+                    "x-nullable": true
                 },
                 "start_time": {
                     "type": "string"
@@ -6984,16 +7011,32 @@ const docTemplate = `{
         },
         "system_status.GetClosestIncomingScheduleResponse": {
             "type": "object",
-            "required": [
-                "schedule"
-            ],
             "properties": {
                 "schedule": {
-                    "$ref": "#/definitions/entity.SystemStatusSchedule"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/entity.SystemStatusSchedule"
+                        }
+                    ],
+                    "x-nullable": true
                 }
             }
         },
         "system_status.GetLatestSchedulesResponse": {
+            "type": "object",
+            "required": [
+                "schedules"
+            ],
+            "properties": {
+                "schedules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.SystemStatusSchedule"
+                    }
+                }
+            }
+        },
+        "system_status.GetPlannedMaintenanceSchedulesResponse": {
             "type": "object",
             "required": [
                 "schedules"

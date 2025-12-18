@@ -48,6 +48,11 @@ export class SystemStatusService {
             ? mapEntitySystemStatusScheduleToSystemStatusSchedule(response.schedule)
             : undefined;
     }
+
+    public async getPlannedMaintenanceSchedules(): Promise<SystemStatusSchedule[]> {
+        const response = await this._coreApi.v1.getPlannedMaintenanceSchedules();
+        return response.schedules?.map(mapEntitySystemStatusScheduleToSystemStatusSchedule) ?? [];
+    }
 }
 
 export const defaultSystemStatusService = new SystemStatusService(coreApiClient);
