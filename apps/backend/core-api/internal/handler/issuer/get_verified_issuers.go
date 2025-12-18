@@ -1,7 +1,6 @@
 package issuer
 
 import (
-	"net/http"
 	"strconv"
 
 	issuer_usecase "apps/backend/core-api/internal/usecase/issuer"
@@ -29,11 +28,11 @@ func (h *Handler) GetVerifiedIssuers(c *fiber.Ctx) error {
 
 	limit, err := strconv.Atoi(queryLimit)
 	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid limit"})
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid limit")
 	}
 	offset, err := strconv.Atoi(queryOffset)
 	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid offset"})
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid offset")
 	}
 
 	issuers, err := h.IssuerUc.GetVerifiedIssuers(c.Context(), issuer_usecase.GetVerifiedIssuersRequest{
@@ -42,7 +41,7 @@ func (h *Handler) GetVerifiedIssuers(c *fiber.Ctx) error {
 		Offset:      offset,
 	})
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return err
 	}
 
 	return c.Status(fiber.StatusOK).JSON(issuers)
