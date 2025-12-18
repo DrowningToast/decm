@@ -35,8 +35,9 @@ COPY --from=prepare /app/out/json/ .
 
 # Install dependencies with cache mount for pnpm store
 # This caches downloaded packages across builds for faster installations
+# Skip prepare scripts (lefthook) as git hooks aren't needed in Docker
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile
+    pnpm install --frozen-lockfile --ignore-scripts
 
 # Then copy the full pruned source code
 COPY --from=prepare /app/out/full/ .
