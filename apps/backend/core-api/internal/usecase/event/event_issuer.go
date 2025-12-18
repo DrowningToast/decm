@@ -29,7 +29,7 @@ func (u *EventUsecase) IsUserIssuerForEvent(ctx context.Context, eventID uuid.UU
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			// User is not an issuer for this event
-			slog.Info("No row found in event_issuers table", "event_id", eventID, "user_id", userID)
+			u.logger.Info("No row found in event_issuers table", "event_id", eventID, "user_id", userID)
 			return false, nil
 		}
 		// Database or other error
