@@ -374,3 +374,21 @@ type Profile struct {
 	CreatedAt                   pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                   pgtype.Timestamptz `json:"updated_at"`
 }
+
+// Tracks system uptime and downtime schedules
+type SystemStatusSchedule struct {
+	ID int32 `json:"id"`
+	// Sequential ID for business/display reference
+	OrderID int32 `json:"order_id"`
+	// When this status takes immediate effect
+	StartTime time.Time `json:"start_time"`
+	// Estimated end time for display purposes only
+	PlannedEndTime pgtype.Timestamptz `json:"planned_end_time"`
+	// 0 = maintenance, 1 = operating
+	Status int32 `json:"status"`
+	// Indicates if this is a planned maintenance/status change
+	IsPlanned bool               `json:"is_planned"`
+	CreatedAt time.Time          `json:"created_at"`
+	UpdatedAt time.Time          `json:"updated_at"`
+	DeletedAt pgtype.Timestamptz `json:"deleted_at"`
+}
