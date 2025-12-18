@@ -101,7 +101,7 @@ func (uc *InboxUsecase) GetRelatedEventRegistrationInvitation(ctx context.Contex
 			if *customError.Code != customerror.ErrNotFound.Code {
 				return nil, nil, nil, errors.Wrap(err, "failed to get event attendee by event id and credential id")
 			}
-			slog.Info("No row found in event_attendees table (handled as Not Found)", "event_id", event.Id, "target_user_id", targetUser.Id)
+			slog.InfoContext(ctx, "No row found in event_attendees table (handled as Not Found)", "event_id", event.Id, "target_user_id", targetUser.Id)
 		} else {
 			return nil, nil, nil, errors.Wrap(err, "failed to get event attendee by event id and credential id")
 		}

@@ -114,7 +114,7 @@ func (u *EventUsecase) GetEventViewModelByEventId(ctx context.Context, eventId u
 			if *customError.Code != customerror.ErrNotFound.Code {
 				return nil, errors.Wrap(err, "failed to get event registration invitation by event id and credential")
 			}
-			slog.Info("No row found in event_registration_invitations table (handled as Not Found)", "event_id", eventId, "user_id", currentUser.UserId)
+			slog.InfoContext(ctx, "No row found in event_registration_invitations table (handled as Not Found)", "event_id", eventId, "user_id", currentUser.UserId)
 		}
 	}
 	if invitation != nil {
@@ -129,7 +129,7 @@ func (u *EventUsecase) GetEventViewModelByEventId(ctx context.Context, eventId u
 				if *customError.Code != customerror.ErrNotFound.Code {
 					return nil, errors.Wrap(err, "failed to get event attendee by event id and credential id")
 				}
-				slog.Info("No row found in event_attendees table (handled as Not Found)", "event_id", eventId, "user_id", currentUser.UserId)
+				slog.InfoContext(ctx, "No row found in event_attendees table (handled as Not Found)", "event_id", eventId, "user_id", currentUser.UserId)
 			} else {
 				return nil, err
 			}

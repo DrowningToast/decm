@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log/slog"
 	"os"
 	"regexp"
 	"strings"
@@ -50,7 +49,7 @@ func (u *EventUsecase) GenerateCertificateImage(ctx context.Context, certificate
 		var customErr *customerror.Err
 		if errors.As(err, &customErr) {
 			if *customErr.Code == customerror.ErrNotFound.Code {
-				u.logger.Info("No row found in event_certificate_configs table", "event_id", certificate.EventId)
+				u.logger.InfoContext(ctx, "No row found in event_certificate_configs table", "event_id", certificate.EventId)
 				return nil, customerror.ParseWithMessage(&customerror.ErrNotFound, err, "Certificate configuration not found")
 			}
 			return nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "Failed to get certificate config")
