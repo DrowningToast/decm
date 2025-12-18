@@ -41,7 +41,7 @@
         "contract:build:generate": "pnpm run contract:build && pnpm run contract:generate-go && pnpm run contract:generate-types",
         "contract:decm:setup:dev": "cd apps/contracts && make deployDecmAccessManager ARGS='--network sepolia'",
         "gen-icons:web": "rm -rf apps/web/src/components/icons/gen && pnpm dlx @svgr/cli --typescript --icon --out-dir apps/web/src/components/icons/gen apps/web/src/assets/icons/*",
-        "prepare": "husky install",
+        "prepare": "lefthook install",
         "test:web": "cd apps/web && pnpm test",
         "test:web:coverage": "cd apps/web && pnpm test:coverage",
         "test:web:coverage:report": "cd apps/web && pnpm test:coverage:report",
@@ -54,7 +54,7 @@
     "devDependencies": {
         "@types/node": "^24.10.1",
         "ethers": "^6.16.0",
-        "husky": "^9.1.7",
+        "lefthook": "^1.11.1",
         "lint-staged": "^16.2.6",
         "prettier": "^3.6.2",
         "tsx": "^4.21.0",
