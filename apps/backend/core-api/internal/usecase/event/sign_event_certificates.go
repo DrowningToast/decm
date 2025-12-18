@@ -119,12 +119,6 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 		// Convert signature to string for database storage
 		signatureStr := hexutil.Encode(signature)
 
-		// Log keys for debugging (remove in production)
-		// uc.logger.Debug("Private key", "private_key", fmt.Sprintf("%x", crypto.FromECDSA(privateKey)))
-		// uc.logger.Debug("Public key", "public_key", fmt.Sprintf("%x", crypto.FromECDSAPub(publicKey)))
-		// uc.logger.Debug("signatureStr", "signatureStr", signatureStr)
-		// uc.logger.Debug("digest", "digest", fmt.Sprintf("%x", signMessageDigest))
-
 		// Update certificate signature in database
 		_, err = uc.EventCertificateSignatureDataGateway.UpdateEventCertificateIssuerSignature(ctx, targetSignature.Id, &signatureStr)
 		if err != nil {
