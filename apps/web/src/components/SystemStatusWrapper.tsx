@@ -73,13 +73,13 @@ export const SystemStatusWrapper = ({ children }: SystemStatusWrapperProps) => {
                 <p className="mb-6 max-w-md text-muted-foreground">
                     {currentStatus.isPlanned
                         ? t(
-                              "systemStatus.maintenance.planned.description",
-                              "We are currently performing scheduled maintenance to improve our services.",
-                          )
+                            "systemStatus.maintenance.planned.description",
+                            "We are currently performing scheduled maintenance to improve our services.",
+                        )
                         : t(
-                              "systemStatus.maintenance.unplanned.description",
-                              "We are currently experiencing some technical difficulties and are working to resolve them.",
-                          )}
+                            "systemStatus.maintenance.unplanned.description",
+                            "We are currently experiencing some technical difficulties and are working to resolve them.",
+                        )}
                 </p>
 
                 {currentStatus.plannedEndTime && (
