@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"encoding/hex"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -92,6 +93,7 @@ func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMs
 	if *errNotFound.Code != customerror.ErrNotFound.Code {
 		return nil, nil, errNotFound.Extend("failed to get authentication credential by wallet address")
 	}
+	slog.InfoContext(ctx, "No row found in authentication_credentials table (handled as Not Found, creating new credential)", "wallet_address", walletAddress.Hex())
 
 	// Create new credential
 	credential = &entity.AuthenticationCredential{
@@ -145,6 +147,8 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 	if *cusErr.Code != customerror.ErrNotFound.Code {
 		return nil, nil, cusErr.Extend("failed to check for existing google connector ref")
 	}
+	slog.InfoContext(ctx, "No row found in authentication_credentials table (handled as Not Found, creating new credential)", "email", userInfo.Email)
+
 	if credential != nil {
 		return nil, nil, customerror.Parse(&customerror.ErrDuplicateEntry, errors.New("credential already exists"))
 	}
@@ -157,6 +161,8 @@ func (u *OnboardUsecase) RegisterWithGoogle(ctx context.Context, token *oauth2.T
 	if *cusErr.Code != customerror.ErrNotFound.Code {
 		return nil, nil, cusErr.Extend("failed to check for existing profile")
 	}
+	slog.InfoContext(ctx, "No row found in profiles table (handled as Not Found, creating new profile)", "email", userInfo.Email)
+
 	if customerr == nil || profile != nil {
 		return nil, nil, customerror.Parse(&customerror.ErrDuplicateEntry, errors.New("profile already exists"))
 	}
@@ -250,6 +256,7 @@ func (u *OnboardUsecase) CheckOnboardStatusWithJwt(ctx context.Context, currentU
 	if err != nil {
 		var notFoundErr *customerror.Err
 		if errors.As(err, &notFoundErr) {
+			slog.InfoContext(ctx, "No row found in profiles table (handled as Not Found)", "user_id", currentUser.UserId)
 			return jwt, nil, nil
 		}
 		return jwt, nil, errors.Wrap(err, "failed to check for existing profile")
@@ -280,6 +287,7 @@ func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Co
 	if err != nil {
 		var notFoundErr *customerror.Err
 		if errors.As(err, &notFoundErr) {
+			slog.InfoContext(ctx, "No row found in authentication_credentials table (handled as Not Found)", "email", userInfo.Email)
 			return nil, nil, nil
 		}
 		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err).Extend("failed to check for existing google connector ref")
@@ -296,6 +304,7 @@ func (u *OnboardUsecase) CheckOnboardStatusWithGoogleConnectorRef(ctx context.Co
 	if err != nil {
 		var notFoundErr *customerror.Err
 		if errors.As(err, &notFoundErr) {
+			slog.InfoContext(ctx, "No row found in profiles table (handled as Not Found)", "credential_id", credential.Id)
 			return jwt, nil, nil
 		}
 		return jwt, nil, errors.Wrap(err, "failed to check for existing profile")
@@ -318,6 +327,7 @@ func (u *OnboardUsecase) CheckOnboardStatusWithWalletAddress(ctx context.Context
 		if !errors.As(err, &notFoundErr) {
 			return nil, nil, errors.Wrap(err, "failed to check for existing wallet address")
 		}
+		slog.InfoContext(ctx, "No row found in authentication_credentials table (handled as Not Found)", "wallet_address", walletAddress.Hex())
 	}
 	if credential == nil {
 		return nil, nil, nil
@@ -329,6 +339,7 @@ func (u *OnboardUsecase) CheckOnboardStatusWithWalletAddress(ctx context.Context
 		if !errors.As(err, &notFoundErr) {
 			return nil, nil, errors.Wrap(err, "failed to check for existing profile")
 		}
+		slog.InfoContext(ctx, "No row found in profiles table (handled as Not Found)", "credential_id", credential.Id)
 	}
 	jwt := &auth.JwtPayload{
 		UserId:              credential.Id,

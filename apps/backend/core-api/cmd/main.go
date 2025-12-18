@@ -23,6 +23,7 @@ import (
 	"apps/backend/core-api/internal/handler/onboard"
 	"apps/backend/core-api/internal/handler/profile"
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
+	requestcontext "apps/backend/core-api/internal/middleware/request_context"
 	roleguard "apps/backend/core-api/internal/middleware/role_guard"
 	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
 	"apps/backend/core-api/internal/repositories/postgres"
@@ -147,6 +148,7 @@ func main() {
 			MaxAge:           86400,
 		})).
 		Use(requestid.New()).
+		Use(requestcontext.New()).
 		Use(recover.New(recover.Config{
 			EnableStackTrace: true,
 			StackTraceHandler: func(c *fiber.Ctx, e interface{}) {
