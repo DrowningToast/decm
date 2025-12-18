@@ -15,4 +15,5 @@ func (h *Handler) Mount(r fiber.Router) {
 	systemStatusGroup.Get("/latest", h.GetLatestSchedules)
 	systemStatusGroup.Get("/period", h.GetSchedulesBetween)
 	systemStatusGroup.Get("/closest-incoming", h.GetClosestIncomingSchedule)
+	systemStatusGroup.Get("/planned-maintenance", h.GetPlannedMaintenanceSchedules)
 }

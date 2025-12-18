@@ -495,11 +495,11 @@ export enum EntitySystemStatus {
 
 export interface EntitySystemStatusSchedule {
     created_at: string;
-    deleted_at: string;
+    deleted_at?: string | null;
     id: number;
     is_planned: boolean;
     order_id: number;
-    planned_end_time: string;
+    planned_end_time?: string | null;
     start_time: string;
     status: EntitySystemStatus;
     updated_at: string;
@@ -1079,6 +1079,10 @@ export type GetMyProfileData = ProfileGetMyProfileViewModel;
 
 export type GetMyProfileError = CustomerrorErr;
 
+export type GetPlannedMaintenanceSchedulesData = SystemStatusGetPlannedMaintenanceSchedulesResponse;
+
+export type GetPlannedMaintenanceSchedulesError = CustomerrorErrResponse;
+
 export type GetSchedulesBetweenData = SystemStatusGetSchedulesBetweenResponse;
 
 export type GetSchedulesBetweenError = CustomerrorErrResponse;
@@ -1542,10 +1546,14 @@ export interface SignEventCertificatesParams {
 }
 
 export interface SystemStatusGetClosestIncomingScheduleResponse {
-    schedule: EntitySystemStatusSchedule;
+    schedule?: EntitySystemStatusSchedule | null;
 }
 
 export interface SystemStatusGetLatestSchedulesResponse {
+    schedules: EntitySystemStatusSchedule[];
+}
+
+export interface SystemStatusGetPlannedMaintenanceSchedulesResponse {
     schedules: EntitySystemStatusSchedule[];
 }
 
@@ -3301,6 +3309,25 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/system-status/period`,
                 method: "GET",
                 query: query,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get all upcoming planned maintenance schedules
+         *
+         * @tags SystemStatus
+         * @name GetPlannedMaintenanceSchedules
+         * @summary Get planned maintenance schedules
+         * @request GET:/api/v1/system-status/planned-maintenance
+         */
+        getPlannedMaintenanceSchedules: (params: RequestParams = {}) =>
+            this.http.request<
+                GetPlannedMaintenanceSchedulesData,
+                GetPlannedMaintenanceSchedulesError
+            >({
+                path: `/api/v1/system-status/planned-maintenance`,
+                method: "GET",
                 format: "json",
                 ...params,
             }),

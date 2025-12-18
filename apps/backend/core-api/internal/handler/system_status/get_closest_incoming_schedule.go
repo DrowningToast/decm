@@ -7,7 +7,7 @@ import (
 )
 
 type GetClosestIncomingScheduleResponse struct {
-	Schedule *entity.SystemStatusSchedule `json:"schedule"`
+	Schedule *entity.SystemStatusSchedule `json:"schedule,omitempty" extensions:"x-nullable"`
 }
 
 // GetClosestIncomingSchedule godoc
