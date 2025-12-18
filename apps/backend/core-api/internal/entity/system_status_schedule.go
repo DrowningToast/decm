@@ -11,12 +11,12 @@ const (
 
 type SystemStatusSchedule struct {
 	ID             int32        `json:"id"`
-	OrderId        int32        `json:"orderId"`
-	StartTime      time.Time    `json:"startTime"`
-	PlannedEndTime *time.Time   `json:"plannedEndTime"`
+	OrderId        int32        `json:"order_id"`
+	StartTime      time.Time    `json:"start_time"`
+	PlannedEndTime *time.Time   `json:"planned_end_time"`
 	Status         SystemStatus `json:"status"`
-	IsPlanned      bool         `json:"isPlanned"`
-	CreatedAt      time.Time    `json:"createdAt"`
-	UpdatedAt      time.Time    `json:"updatedAt"`
-	DeletedAt      *time.Time   `json:"deletedAt"`
+	IsPlanned      bool         `json:"is_planned"`
+	CreatedAt      time.Time    `json:"created_at"`
+	UpdatedAt      time.Time    `json:"updated_at"`
+	DeletedAt      *time.Time   `json:"deleted_at"`
 }

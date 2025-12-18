@@ -4786,42 +4786,42 @@
         "entity.SystemStatusSchedule": {
             "type": "object",
             "required": [
-                "createdAt",
-                "deletedAt",
+                "created_at",
+                "deleted_at",
                 "id",
-                "isPlanned",
-                "orderId",
-                "plannedEndTime",
-                "startTime",
+                "is_planned",
+                "order_id",
+                "planned_end_time",
+                "start_time",
                 "status",
-                "updatedAt"
+                "updated_at"
             ],
             "properties": {
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
-                "deletedAt": {
+                "deleted_at": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "isPlanned": {
+                "is_planned": {
                     "type": "boolean"
                 },
-                "orderId": {
+                "order_id": {
                     "type": "integer"
                 },
-                "plannedEndTime": {
+                "planned_end_time": {
                     "type": "string"
                 },
-                "startTime": {
+                "start_time": {
                     "type": "string"
                 },
                 "status": {
                     "$ref": "#/definitions/entity.SystemStatus"
                 },
-                "updatedAt": {
+                "updated_at": {
                     "type": "string"
                 }
             }
