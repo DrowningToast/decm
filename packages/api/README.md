@@ -9,7 +9,7 @@ This package contains automatically generated TypeScript interfaces and API clie
 ## Usage
 
 ```typescript
-import { /* API classes and types */ } from '@decm/api';
+import {} from /* API classes and types */ "@decm/api";
 
 // Use the generated API client
 const api = new DefaultApi();
@@ -25,6 +25,7 @@ pnpm gen-api
 ```
 
 This will:
+
 1. Start the backend server to ensure latest OpenAPI spec
 2. Generate TypeScript client code using OpenAPI Generator
 3. Post-process and organize the generated files

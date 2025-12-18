@@ -7,13 +7,7 @@ const path = require("path");
 const OUTPUT_DIR = path.join(__dirname, "../apps/backend/contracts");
 
 // Directories to create
-const DIRECTORIES = [
-    "event",
-    "accessmanager", 
-    "ticket",
-    "certificate",
-    "decm"
-];
+const DIRECTORIES = ["event", "accessmanager", "ticket", "certificate", "decm"];
 
 console.log("📁 Creating directory structure for contract bindings...");
 
@@ -24,7 +18,7 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 }
 
 // Create subdirectories
-DIRECTORIES.forEach(dir => {
+DIRECTORIES.forEach((dir) => {
     const dirPath = path.join(OUTPUT_DIR, dir);
     if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true });

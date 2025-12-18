@@ -22,23 +22,23 @@ try {
     process.chdir(CONTRACTS_DIR);
     console.log("Running 'forge build'...");
     execSync("forge build", { stdio: "inherit" });
-    
+
     console.log("\n✅ Contract build completed successfully!");
-    
+
     // Verify that the output directory contains the expected files
     console.log("\n🔍 Verifying build artifacts...");
-    
+
     let allContractsFound = true;
     MAIN_CONTRACTS.forEach((contractFile) => {
         const contractName = contractFile.replace(".sol", "");
         const contractDir = path.join(OUTPUT_DIR, contractFile);
-        
+
         if (!fs.existsSync(contractDir)) {
             console.log(`❌ Directory not found for ${contractName} at ${contractDir}`);
             allContractsFound = false;
             return;
         }
-        
+
         // Check for ABI and BIN files
         const abiFile = path.join(contractDir, `${contractName}.json`);
         if (!fs.existsSync(abiFile)) {
@@ -48,7 +48,7 @@ try {
             console.log(`✅ Found ABI for ${contractName}`);
         }
     });
-    
+
     if (allContractsFound) {
         console.log("\n🎉 All contract artifacts verified successfully!");
         process.exit(0);
@@ -56,7 +56,6 @@ try {
         console.log("\n❌ Some contract artifacts are missing. Build may have failed.");
         process.exit(1);
     }
-    
 } catch (error) {
     console.error("\n❌ Contract build failed:");
     console.error(error.message);

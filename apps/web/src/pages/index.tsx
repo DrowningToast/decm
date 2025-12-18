@@ -1,6 +1,6 @@
-import { FaviconHelmet } from '@/components/providers/helmets/FaviconHelmet';
-import { LandingPage } from '@/components/pages/LandingPage/LandingPage';
-import { PublicNavbar } from '@/components/layouts/navigations/PublicNavbar';
+import { FaviconHelmet } from "@/components/providers/helmets/FaviconHelmet";
+import { LandingPage } from "@/components/pages/LandingPage/LandingPage";
+import { PublicNavbar } from "@/components/layouts/navigations/PublicNavbar";
 
 const IndexPage = () => {
     return (

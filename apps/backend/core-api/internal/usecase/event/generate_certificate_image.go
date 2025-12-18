@@ -337,7 +337,13 @@ func findChromeExecutable() string {
 // renderSVGToPNG converts SVG string to PNG byte array
 // Uses chromedp with headless Chrome for full SVG specification support
 // This handles embedded images, patterns, custom fonts, and all SVG features
-// Renders at 2x resolution for high-DPI displays (Retina quality)
+// renderSVGToPNG renders an SVG string to PNG image bytes at 2× resolution for high-DPI displays.
+//
+// The function determines the SVG's intrinsic dimensions, creates a headless Chrome context with a
+// scaled viewport, wraps the SVG in an HTML document that loads common web fonts, and captures a
+// full-page screenshot to produce PNG bytes. It uses a 30-second timeout and applies additional
+// sandbox-related flags when running in CI/containerized environments. Returns the rendered PNG bytes
+// or an error if rendering fails.
 func renderSVGToPNG(svgContent string) ([]byte, error) {
 	// Extract SVG dimensions from viewBox or width/height attributes
 	width, height := extractSVGDimensions(svgContent)
