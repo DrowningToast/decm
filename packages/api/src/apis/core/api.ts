@@ -494,15 +494,15 @@ export enum EntitySystemStatus {
 }
 
 export interface EntitySystemStatusSchedule {
-    createdAt: string;
-    deletedAt: string;
+    created_at: string;
+    deleted_at: string;
     id: number;
-    isPlanned: boolean;
-    orderId: number;
-    plannedEndTime: string;
-    startTime: string;
+    is_planned: boolean;
+    order_id: number;
+    planned_end_time: string;
+    start_time: string;
     status: EntitySystemStatus;
-    updatedAt: string;
+    updated_at: string;
 }
 
 export interface EventClaimCertificateBody {
