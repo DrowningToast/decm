@@ -667,6 +667,45 @@ definitions:
     - is_profile_picture_public
     - updated_at
     type: object
+  entity.SystemStatus:
+    enum:
+    - 0
+    - 1
+    type: integer
+    x-enum-varnames:
+    - SystemStatusMaintenance
+    - SystemStatusOperating
+  entity.SystemStatusSchedule:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+        x-nullable: true
+      id:
+        type: integer
+      is_planned:
+        type: boolean
+      order_id:
+        type: integer
+      planned_end_time:
+        type: string
+        x-nullable: true
+      start_time:
+        type: string
+      status:
+        $ref: '#/definitions/entity.SystemStatus'
+      updated_at:
+        type: string
+    required:
+    - created_at
+    - id
+    - is_planned
+    - order_id
+    - start_time
+    - status
+    - updated_at
+    type: object
   event.ClaimCertificateBody:
     properties:
       account_password:
@@ -2180,6 +2219,40 @@ definitions:
     required:
     - is_success
     - message
+    type: object
+  system_status.GetClosestIncomingScheduleResponse:
+    properties:
+      schedule:
+        allOf:
+        - $ref: '#/definitions/entity.SystemStatusSchedule'
+        x-nullable: true
+    type: object
+  system_status.GetLatestSchedulesResponse:
+    properties:
+      schedules:
+        items:
+          $ref: '#/definitions/entity.SystemStatusSchedule'
+        type: array
+    required:
+    - schedules
+    type: object
+  system_status.GetPlannedMaintenanceSchedulesResponse:
+    properties:
+      schedules:
+        items:
+          $ref: '#/definitions/entity.SystemStatusSchedule'
+        type: array
+    required:
+    - schedules
+    type: object
+  system_status.GetSchedulesBetweenResponse:
+    properties:
+      schedules:
+        items:
+          $ref: '#/definitions/entity.SystemStatusSchedule'
+        type: array
+    required:
+    - schedules
     type: object
 host: localhost:8080
 info:
@@ -4669,4 +4742,102 @@ paths:
       summary: Get my profile
       tags:
       - Profile
+  /api/v1/system-status/closest-incoming:
+    get:
+      description: Get the closest incoming status update scheduled for the future
+      operationId: get-closest-incoming-schedule
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system_status.GetClosestIncomingScheduleResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get closest incoming status update
+      tags:
+      - SystemStatus
+  /api/v1/system-status/latest:
+    get:
+      description: Get latest system status schedules in the past
+      operationId: get-latest-schedules
+      parameters:
+      - description: Number of records to return
+        in: query
+        name: page_size
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system_status.GetLatestSchedulesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get latest system status schedules
+      tags:
+      - SystemStatus
+  /api/v1/system-status/period:
+    get:
+      description: Get system status schedules updated within a specific time period
+        using unix timestamps
+      operationId: get-schedules-between
+      parameters:
+      - description: Start time unix timestamp
+        in: query
+        name: start_time
+        required: true
+        type: integer
+      - description: End time unix timestamp
+        in: query
+        name: end_time
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system_status.GetSchedulesBetweenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get system status schedules between time period
+      tags:
+      - SystemStatus
+  /api/v1/system-status/planned-maintenance:
+    get:
+      description: Get all upcoming planned maintenance schedules
+      operationId: get-planned-maintenance-schedules
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system_status.GetPlannedMaintenanceSchedulesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get planned maintenance schedules
+      tags:
+      - SystemStatus
 swagger: "2.0"

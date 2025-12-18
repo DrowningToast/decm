@@ -17,6 +17,7 @@ type Querier interface {
 	CountAuthenticationCredentials(ctx context.Context) (int64, error)
 	CountCredentialsByVerificationStatus(ctx context.Context) (CountCredentialsByVerificationStatusRow, error)
 	CountProfiles(ctx context.Context) (int64, error)
+	CountSystemStatusSchedules(ctx context.Context) (int64, error)
 	// Authentication Credentials CRUD queries
 	// Note: Encryption is handled at the repository layer using AES-GCM
 	CreateAuthenticationCredential(ctx context.Context, arg CreateAuthenticationCredentialParams) (AuthenticationCredential, error)
@@ -33,6 +34,7 @@ type Querier interface {
 	// Profiles CRUD queries
 	// Note: PII encryption is handled at the repository layer using AES-GCM
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
+	CreateSystemStatusSchedule(ctx context.Context, arg CreateSystemStatusScheduleParams) (SystemStatusSchedule, error)
 	DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error
 	DeleteEvent(ctx context.Context, id uuid.UUID) (Event, error)
 	DeleteEventCertificate(ctx context.Context, id uuid.UUID) error
@@ -45,6 +47,7 @@ type Querier interface {
 	DeleteEventRegistrationInvitation(ctx context.Context, id uuid.UUID) error
 	DeleteProfile(ctx context.Context, id uuid.UUID) error
 	DeleteProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) error
+	DeleteSystemStatusSchedule(ctx context.Context, id int32) error
 	GetAllEventCertificateFontFamilies(ctx context.Context) ([]EventCertificateFontFamily, error)
 	GetAllEventCertificateIDsByEventID(ctx context.Context, eventID uuid.UUID) ([]uuid.UUID, error)
 	GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef pgtype.Text) (AuthenticationCredential, error)
@@ -57,6 +60,7 @@ type Querier interface {
 	GetClaimedCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error)
 	GetCredentialsBySolutionStatus(ctx context.Context, arg GetCredentialsBySolutionStatusParams) ([]AuthenticationCredential, error)
 	GetCredentialsByVerificationStatus(ctx context.Context, arg GetCredentialsByVerificationStatusParams) ([]AuthenticationCredential, error)
+	GetCurrentSystemStatus(ctx context.Context) (SystemStatusSchedule, error)
 	GetDefaultEventCertificateFontFamily(ctx context.Context) (EventCertificateFontFamily, error)
 	GetEventAttendeeByEventIDAndCredentialID(ctx context.Context, arg GetEventAttendeeByEventIDAndCredentialIDParams) (EventAttendee, error)
 	GetEventById(ctx context.Context, id uuid.UUID) (GetEventByIdRow, error)
@@ -86,16 +90,22 @@ type Querier interface {
 	GetInboxMessagesByReceiverWalletAddress(ctx context.Context, receiverWalletAddress pgtype.Text) ([]InboxMessage, error)
 	GetInboxMessagesBySenderCredentialID(ctx context.Context, senderCredentialID uuid.UUID) ([]InboxMessage, error)
 	GetIssuerEventsWithDetails(ctx context.Context, arg GetIssuerEventsWithDetailsParams) ([]GetIssuerEventsWithDetailsRow, error)
+	GetPlannedMaintenanceSchedules(ctx context.Context) ([]SystemStatusSchedule, error)
 	GetProfileAndCredentialWithCredentialId(ctx context.Context, authenticationCredentialID uuid.UUID) (GetProfileAndCredentialWithCredentialIdRow, error)
 	GetProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) (Profile, error)
 	// Note: Searches encrypted email field directly (linear scan)
 	GetProfileByEmail(ctx context.Context, email pgtype.Text) (Profile, error)
 	GetProfileByID(ctx context.Context, id uuid.UUID) (Profile, error)
 	GetSignedIssuersCount(ctx context.Context, eventID uuid.UUID) (int64, error)
+	GetSystemStatusScheduleById(ctx context.Context, id int32) (SystemStatusSchedule, error)
+	GetSystemStatusScheduleByOrderId(ctx context.Context, orderID int32) (SystemStatusSchedule, error)
+	GetSystemStatusScheduleHistory(ctx context.Context, arg GetSystemStatusScheduleHistoryParams) ([]SystemStatusSchedule, error)
+	GetSystemStatusSchedulesUpdatedBetween(ctx context.Context, arg GetSystemStatusSchedulesUpdatedBetweenParams) ([]SystemStatusSchedule, error)
 	GetTotalIssuersCount(ctx context.Context, eventID uuid.UUID) (int64, error)
 	GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, arg GetUnclaimedReadyCertificatesByCredentialIDParams) ([]GetUnclaimedReadyCertificatesByCredentialIDRow, error)
 	GetUnclaimedReadyCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error)
 	GetUnreadInboxMessageCountByCredentialID(ctx context.Context, arg GetUnreadInboxMessageCountByCredentialIDParams) (int64, error)
+	GetUpcomingSystemStatusSchedules(ctx context.Context, limitCount int32) ([]SystemStatusSchedule, error)
 	HasSignedIssuers(ctx context.Context, eventID uuid.UUID) (bool, error)
 	ListAuthenticationCredentials(ctx context.Context, arg ListAuthenticationCredentialsParams) ([]AuthenticationCredential, error)
 	ListEventAttendeesByEventID(ctx context.Context, eventID uuid.UUID) ([]ListEventAttendeesByEventIDRow, error)
@@ -138,6 +148,7 @@ type Querier interface {
 	UpdateInboxMessageReadStatusAll(ctx context.Context, receiverCredentialID pgtype.UUID) ([]InboxMessage, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateProfileByAuthenticationCredentialId(ctx context.Context, arg UpdateProfileByAuthenticationCredentialIdParams) (Profile, error)
+	UpdateSystemStatusSchedule(ctx context.Context, arg UpdateSystemStatusScheduleParams) (SystemStatusSchedule, error)
 	UpdateVerificationStatus(ctx context.Context, arg UpdateVerificationStatusParams) (AuthenticationCredential, error)
 }
 

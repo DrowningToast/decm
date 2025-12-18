@@ -16,6 +16,8 @@ import { useTranslation } from "react-i18next";
 import i18n from "@/lib/i18n/config";
 import type { Language } from "@/lib/i18n/config";
 
+import { SystemStatusWrapper } from "@/components/SystemStatusWrapper";
+
 // Lazy load the DevTools to avoid bundle issues
 const ReactQueryDevtools = lazy(() =>
     import("@tanstack/react-query-devtools").then(({ ReactQueryDevtools }) => ({
@@ -54,23 +56,25 @@ const Layout = () => {
                 />
                 <AppKitProvider>
                     <WalletProvider>
-                        <main className="font-secondary bg-background text-foreground">
-                            <HelmetProvider>
-                                <Helmet>
-                                    <title>{t("common.appName")}</title>
-                                </Helmet>
-                                <AuthProvider>
-                                    <SignPasswordModalProvider>
-                                        <Outlet />
-                                    </SignPasswordModalProvider>
-                                    {process.env.NODE_ENV === "development" && (
-                                        <Suspense fallback={null}>
-                                            <ReactQueryDevtools initialIsOpen={false} />
-                                        </Suspense>
-                                    )}
-                                </AuthProvider>
-                            </HelmetProvider>
-                        </main>
+                        <SystemStatusWrapper>
+                            <main className="font-secondary bg-background text-foreground">
+                                <HelmetProvider>
+                                    <Helmet>
+                                        <title>{t("common.appName")}</title>
+                                    </Helmet>
+                                    <AuthProvider>
+                                        <SignPasswordModalProvider>
+                                            <Outlet />
+                                        </SignPasswordModalProvider>
+                                        {process.env.NODE_ENV === "development" && (
+                                            <Suspense fallback={null}>
+                                                <ReactQueryDevtools initialIsOpen={false} />
+                                            </Suspense>
+                                        )}
+                                    </AuthProvider>
+                                </HelmetProvider>
+                            </main>
+                        </SystemStatusWrapper>
                     </WalletProvider>
                 </AppKitProvider>
             </ErrorBoundary>

@@ -22,6 +22,7 @@ import (
 	"apps/backend/core-api/internal/handler/issuer"
 	"apps/backend/core-api/internal/handler/onboard"
 	"apps/backend/core-api/internal/handler/profile"
+	"apps/backend/core-api/internal/handler/system_status"
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
 	requestcontext "apps/backend/core-api/internal/middleware/request_context"
 	roleguard "apps/backend/core-api/internal/middleware/role_guard"
@@ -36,6 +37,7 @@ import (
 	oauth_usecase "apps/backend/core-api/internal/usecase/oauth"
 	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
 	profile_usecase "apps/backend/core-api/internal/usecase/profile"
+	system_status_usecase "apps/backend/core-api/internal/usecase/system_status"
 	"apps/backend/services/auth"
 	"apps/backend/services/oauth"
 	"apps/backend/services/s3"
@@ -111,6 +113,7 @@ func main() {
 	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
 	authUc := auth_usecase.NewAuthUsecase(pgRepo) // No database dependency - reads from JWT claims
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo, authService, pgRepo)
+	systemStatusUc := system_status_usecase.NewSystemStatusUsecase(pgRepo)
 	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService, &cfg)
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, logger)
 	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)
@@ -217,6 +220,9 @@ func main() {
 
 	inboxMessagesHandler := inboxmessages_handler.NewHandler(inboxUc, authenticationGuardMiddleware, authService, authUc)
 	inboxMessagesHandler.Mount(apiV1)
+
+	systemStatusHandler := system_status.NewHandler(systemStatusUc, logger)
+	systemStatusHandler.Mount(apiV1)
 
 	// Start HTTP Server
 	go func() {

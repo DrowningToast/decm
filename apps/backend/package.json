@@ -5,7 +5,8 @@
     "main": "go",
     "scripts": {
         "dev": "go run core-api/cmd/main.go",
-        "build": "go build -o dist/main core-api/cmd/main.go"
+        "build": "go build -o dist/main core-api/cmd/main.go",
+        "add-status": "go run scripts/add_system_status.go"
     },
     "keywords": [
         "go",
