@@ -111,7 +111,7 @@ func (u *ProfileUsecase) UpdateProfile(ctx context.Context, credentialId uuid.UU
 			if customErr.Code != &customerror.ErrNotFound.Code {
 				return nil, customErr.Extend("failed to check for existing profile")
 			}
-			slog.Info("No row found in profiles table (handled as Not Found)", "credential_id", credentialId)
+			slog.InfoContext(ctx, "No row found in profiles table (handled as Not Found)", "credential_id", credentialId)
 		}
 	}
 
@@ -152,7 +152,7 @@ func (u *ProfileUsecase) UpdateProfileByCredentialId(ctx context.Context, creden
 		if errors.As(err, &customErr) {
 			if customErr.Code != &customerror.ErrNotFound.Code {
 				// Profile not found, create new profile
-				slog.Info("No row found in profiles table (creating new profile)", "credential_id", credentialId)
+				slog.InfoContext(ctx, "No row found in profiles table (creating new profile)", "credential_id", credentialId)
 				return u.ProfileDg.CreateProfile(ctx, entity.Profile{
 					AuthenticationCredentialId: credentialId,
 					ProfilePictureUrl:          profile.ProfilePictureUrl,
