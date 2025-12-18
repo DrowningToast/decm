@@ -2,6 +2,7 @@ package event_registration
 
 import (
 	"context"
+	"log/slog"
 
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
@@ -22,6 +23,7 @@ func (uc *EventRegistrationUsecase) GetEventRegistrationByUserAndEvent(ctx conte
 			if *customError.Code != customerror.ErrNotFound.Code {
 				return nil, nil, errors.Wrap(err, "failed to get event registration invitation by event id and credential")
 			}
+			slog.Info("No row found in event_registration_invitations table (handled as Not Found)", "event_id", eventId, "user_id", currentUser.UserId)
 		}
 		// If not found, that's fine
 	}

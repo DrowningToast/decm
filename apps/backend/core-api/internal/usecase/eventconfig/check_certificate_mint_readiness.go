@@ -3,6 +3,7 @@ package eventconfig
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
@@ -38,6 +39,7 @@ func (uc *EventConfigUsecase) CheckCertificateMintReadiness(ctx context.Context,
 	certificateConfig, err := uc.EventCertificateDg.GetEventCertificateConfigByEventID(ctx, eventID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
+			slog.Info("No row found in event_certificate_configs table", "event_id", eventID)
 			response.MissingRequirements = append(response.MissingRequirements, "Certificate configuration is not set up")
 		} else {
 			return nil, errors.Wrap(err, "failed to check certificate config")
@@ -79,6 +81,7 @@ func (uc *EventConfigUsecase) CheckCertificateMintReadiness(ctx context.Context,
 	eventContract, err := uc.EventContractDg.GetEventContractByEventID(ctx, eventID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
+			slog.Info("No row found in event_contracts table", "event_id", eventID)
 			response.MissingRequirements = append(response.MissingRequirements, "Event contracts are not deployed")
 		} else {
 			return nil, errors.Wrap(err, "failed to check event contract")
@@ -97,23 +100,3 @@ func (uc *EventConfigUsecase) CheckCertificateMintReadiness(ctx context.Context,
 
 	return response, nil
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
