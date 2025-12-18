@@ -1,6 +1,7 @@
 package customerror
 
 import (
+	"fmt"
 	"log/slog"
 
 	"github.com/cockroachdb/errors"
@@ -13,19 +14,23 @@ type ErrApiResponse struct {
 
 func GetErrFiberHandler(logger *slog.Logger) func(ctx *fiber.Ctx, err error) error {
 	return func(ctx *fiber.Ctx, err error) error {
+		path := ctx.OriginalURL()
+		method := ctx.Method()
+
 		// Is custom error
 		var customErr *Err
 		if errors.As(err, &customErr) && customErr != nil {
 			// Log the error
+			stackTrace := fmt.Sprintf("%+v", err)
 			switch customErr.LoggerLevel {
 			case slog.LevelError:
-				logger.Error(errors.Wrap(err, customErr.Message).Error())
+				logger.ErrorContext(ctx.UserContext(), errors.Wrap(err, customErr.Message).Error(), slog.String("method", method), slog.String("path", path), slog.String("stack_trace", stackTrace))
 			case slog.LevelWarn:
-				logger.Warn(errors.Wrap(err, customErr.Message).Error())
+				logger.WarnContext(ctx.UserContext(), errors.Wrap(err, customErr.Message).Error(), slog.String("method", method), slog.String("path", path), slog.String("stack_trace", stackTrace))
 			case slog.LevelInfo:
-				logger.Info(errors.Wrap(err, customErr.Message).Error())
+				logger.InfoContext(ctx.UserContext(), errors.Wrap(err, customErr.Message).Error(), slog.String("method", method), slog.String("path", path), slog.String("stack_trace", stackTrace))
 			case slog.LevelDebug:
-				logger.Debug(errors.Wrap(err, customErr.Message).Error())
+				logger.DebugContext(ctx.UserContext(), errors.Wrap(err, customErr.Message).Error(), slog.String("method", method), slog.String("path", path), slog.String("stack_trace", stackTrace))
 			}
 			// Return the error
 			return ctx.Status(*customErr.HttpStatus).JSON(
@@ -37,17 +42,18 @@ func GetErrFiberHandler(logger *slog.Logger) func(ctx *fiber.Ctx, err error) err
 		var fiberErr *fiber.Error
 		if errors.As(err, &fiberErr) {
 			// Log fiber error
+			stackTrace := fmt.Sprintf("%+v", err)
 			switch fiberErr.Code {
 			case fiber.StatusBadRequest:
-				logger.WarnContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()))
+				logger.WarnContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()), slog.String("method", method), slog.String("path", path), slog.String("stack_trace", stackTrace))
 			case fiber.StatusUnauthorized:
-				logger.WarnContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()))
+				logger.WarnContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()), slog.String("method", method), slog.String("path", path), slog.String("stack_trace", stackTrace))
 			case fiber.StatusNotFound:
-				logger.WarnContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()))
+				logger.WarnContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()), slog.String("method", method), slog.String("path", path), slog.String("stack_trace", stackTrace))
 			case fiber.StatusInternalServerError:
-				logger.ErrorContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()))
+				logger.ErrorContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()), slog.String("method", method), slog.String("path", path), slog.String("stack_trace", stackTrace))
 			default:
-				logger.ErrorContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()))
+				logger.ErrorContext(ctx.UserContext(), "A Fiber error has occurred", slog.Int("status_code", fiberErr.Code), slog.String("error", fiberErr.Error()), slog.String("method", method), slog.String("path", path), slog.String("stack_trace", stackTrace))
 			}
 			// Return the error
 			return ctx.Status(fiberErr.Code).JSON(
@@ -57,7 +63,7 @@ func GetErrFiberHandler(logger *slog.Logger) func(ctx *fiber.Ctx, err error) err
 			)
 		}
 		// Is unknown general error
-		logger.Error(errors.Wrap(err, "an unknown error has occurred").Error())
+		logger.ErrorContext(ctx.UserContext(), errors.Wrap(err, "an unknown error has occurred").Error(), slog.String("method", method), slog.String("path", path), slog.String("stack_trace", fmt.Sprintf("%+v", err)))
 		return ctx.Status(fiber.StatusInternalServerError).JSON(
 			ErrApiResponse{
 				Message: "An unknown error has occurred. Please try again later.",
