@@ -49,8 +49,3 @@ func (h Handler) PublishEventCertificates(ctx *fiber.Ctx) error {
 		InboxMessagesCreated: response.InboxMessagesCreated,
 	})
 }
-
-
-
-
-

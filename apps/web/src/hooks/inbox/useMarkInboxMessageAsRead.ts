@@ -3,8 +3,9 @@ import { defaultInboxService } from "@/services/InboxService/InboxService";
 import { QUERY_KEY } from "@/lib/queryKeys";
 
 /**
- * Hook to mark an inbox message as read
- * @returns Mutation function to mark message as read
+ * Marks an inbox message as read and refreshes related inbox queries when the mutation succeeds.
+ *
+ * @returns The mutation object whose `mutate`/`mutateAsync` accepts a message ID string and, on success, invalidates the specific inbox message query and the inbox list query
  */
 export function useMarkInboxMessageAsRead() {
     const queryClient = useQueryClient();

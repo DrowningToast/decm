@@ -1,6 +1,6 @@
-import { FaviconHelmet } from '@/components/providers/helmets/FaviconHelmet';
-import { ErrorPage } from '@/components/pages/Error';
-import { useTranslation } from 'react-i18next';
+import { FaviconHelmet } from "@/components/providers/helmets/FaviconHelmet";
+import { ErrorPage } from "@/components/pages/Error";
+import { useTranslation } from "react-i18next";
 
 const Page = () => {
     const { t } = useTranslation();
@@ -8,8 +8,8 @@ const Page = () => {
     return (
         <>
             <FaviconHelmet
-                title={`${t('error.title')} | ${t('common.appName')}`}
-                description={t('error.description')}
+                title={`${t("error.title")} | ${t("common.appName")}`}
+                description={t("error.description")}
             />
             <ErrorPage />
         </>
@@ -17,4 +17,3 @@ const Page = () => {
 };
 
 export default Page;
-

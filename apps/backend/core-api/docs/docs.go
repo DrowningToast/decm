@@ -6817,7 +6817,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/",
+	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "DECM Core",
 	Description:      "DECM (Decentralized Event Management) platform API for NFT ticketing, digital credentials, and academic identity verification.",

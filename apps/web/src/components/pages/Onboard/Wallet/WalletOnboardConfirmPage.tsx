@@ -5,10 +5,9 @@ import { OnboardPageContext } from "@/pages/onboard/[method]";
 import { WalletOnboardContext } from "./WalletOnboardContext";
 
 export const WalletOnboardConfirmPage = () => {
-
     const { t } = useTranslation();
     const { setStep } = useContext(OnboardPageContext);
-    const { handleSubmit: onSubmit } = useContext(WalletOnboardContext)
+    const { handleSubmit: onSubmit } = useContext(WalletOnboardContext);
 
     const confirmations: ConfirmationItem[] = [
         {
@@ -39,13 +38,18 @@ export const WalletOnboardConfirmPage = () => {
             onBack={handleBack}
             requireAllChecked={true}
         >
-            <p className="mb-0" dangerouslySetInnerHTML={{
-                __html: t("onboard.confirm.wallet.description.part1")
-            }} />
+            <p
+                className="mb-0"
+                dangerouslySetInnerHTML={{
+                    __html: t("onboard.confirm.wallet.description.part1"),
+                }}
+            />
             <p className="mb-0">&nbsp;</p>
-            <p dangerouslySetInnerHTML={{
-                __html: t("onboard.confirm.wallet.description.part2")
-            }} />
+            <p
+                dangerouslySetInnerHTML={{
+                    __html: t("onboard.confirm.wallet.description.part2"),
+                }}
+            />
         </BaseConfirmPage>
-    )
-}
+    );
+};

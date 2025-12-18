@@ -63,6 +63,9 @@ func New(httpStatus int, code ErrCode, message string, inner error) *Err {
 	}
 }
 
+// NewWithPreset creates an *Err populated from the provided ErrSignature and inner error.
+// It copies the preset's HTTP status, error code, default message, and logger level into the returned Err and sets Inner to err.
+// It panics if preset is nil.
 func NewWithPreset(preset *ErrSignature, err error) *Err {
 	return &Err{
 		HttpStatus:  &preset.HttpStatus,
@@ -73,6 +76,9 @@ func NewWithPreset(preset *ErrSignature, err error) *Err {
 	}
 }
 
+// Parse constructs a custom Err from the provided error using the given preset signature.
+// If preset is nil, Parse uses ErrInternalServer. The returned Err copies the preset's
+// Code, DefaultMessage (used as Message), HttpStatus and LoggerLevel, and wraps err as Inner.
 func Parse(preset *ErrSignature, err error) *Err {
 	defaultErrSignature := &ErrInternalServer
 	if preset != nil {
@@ -87,6 +93,8 @@ func Parse(preset *ErrSignature, err error) *Err {
 	return AsPresetError(*defaultErrSignature, err)
 }
 
+// ParseWithMessage creates an *Err using the provided message and an error signature derived from preset (or ErrInternalServer if preset is nil).
+// The returned Err has HttpStatus and Code from the chosen signature, Message set to message, Inner set to err, and LoggerLevel from the signature.
 func ParseWithMessage(preset *ErrSignature, err error, message string) *Err {
 	defaultErrSignature := &ErrInternalServer
 	if preset != nil {
@@ -107,6 +115,9 @@ func ParseWithMessage(preset *ErrSignature, err error, message string) *Err {
 	}
 }
 
+// ParseWithReasons builds an *Err by combining a preset signature (or the internal-server default) with an inner error and an explicit reasons map.
+// If `reasons` is nil, it delegates to Parse using ErrInternalServer.
+// The returned *Err has HttpStatus, Code, Message, and LoggerLevel taken from the chosen signature, Reasons set to the provided map, and Inner set to `err`.
 func ParseWithReasons(preset *ErrSignature, err error, reasons map[string]string) *Err {
 	if reasons == nil {
 		return Parse(&ErrInternalServer, err)
