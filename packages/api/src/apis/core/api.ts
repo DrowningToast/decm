@@ -488,6 +488,23 @@ export interface EntityProfile {
     wallet_address?: string;
 }
 
+export enum EntitySystemStatus {
+    SystemStatusMaintenance = 0,
+    SystemStatusOperating = 1,
+}
+
+export interface EntitySystemStatusSchedule {
+    createdAt: string;
+    deletedAt: string;
+    id: number;
+    isPlanned: boolean;
+    orderId: number;
+    plannedEndTime: string;
+    startTime: string;
+    status: EntitySystemStatus;
+    updatedAt: string;
+}
+
 export interface EventClaimCertificateBody {
     account_password?: string;
     certificate_password?: string;
@@ -842,6 +859,10 @@ export interface GetClaimCertificateSignMessageParams {
     certificateId: string;
 }
 
+export type GetClosestIncomingScheduleData = SystemStatusGetClosestIncomingScheduleResponse;
+
+export type GetClosestIncomingScheduleError = CustomerrorErrResponse;
+
 export type GetEventByIdData = EventEventResponse;
 
 export type GetEventByIdError = CustomerrorErrResponse;
@@ -1041,6 +1062,15 @@ export interface GetJoinEventSignMessageParams {
     eventId: string;
 }
 
+export type GetLatestSchedulesData = SystemStatusGetLatestSchedulesResponse;
+
+export type GetLatestSchedulesError = CustomerrorErrResponse;
+
+export interface GetLatestSchedulesParams {
+    /** Number of records to return */
+    page_size: number;
+}
+
 export type GetMyCertificatesListViewmodelData = EventGetMyCertificatesListViewModelResponse;
 
 export type GetMyCertificatesListViewmodelError = CustomerrorErrResponse;
@@ -1048,6 +1078,17 @@ export type GetMyCertificatesListViewmodelError = CustomerrorErrResponse;
 export type GetMyProfileData = ProfileGetMyProfileViewModel;
 
 export type GetMyProfileError = CustomerrorErr;
+
+export type GetSchedulesBetweenData = SystemStatusGetSchedulesBetweenResponse;
+
+export type GetSchedulesBetweenError = CustomerrorErrResponse;
+
+export interface GetSchedulesBetweenParams {
+    /** End time unix timestamp */
+    end_time: number;
+    /** Start time unix timestamp */
+    start_time: number;
+}
 
 export type GetSignMessageData = OnboardGetSignMessageResponse;
 
@@ -1498,6 +1539,18 @@ export type SignEventCertificatesError = CustomerrorErrResponse;
 export interface SignEventCertificatesParams {
     /** Event ID */
     eventId: string;
+}
+
+export interface SystemStatusGetClosestIncomingScheduleResponse {
+    schedule: EntitySystemStatusSchedule;
+}
+
+export interface SystemStatusGetLatestSchedulesResponse {
+    schedules: EntitySystemStatusSchedule[];
+}
+
+export interface SystemStatusGetSchedulesBetweenResponse {
+    schedules: EntitySystemStatusSchedule[];
 }
 
 export type ToggleCertificatePublishedData =
@@ -3198,6 +3251,56 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/profile/viewmodel`,
                 method: "GET",
                 type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get the closest incoming status update scheduled for the future
+         *
+         * @tags SystemStatus
+         * @name GetClosestIncomingSchedule
+         * @summary Get closest incoming status update
+         * @request GET:/api/v1/system-status/closest-incoming
+         */
+        getClosestIncomingSchedule: (params: RequestParams = {}) =>
+            this.http.request<GetClosestIncomingScheduleData, GetClosestIncomingScheduleError>({
+                path: `/api/v1/system-status/closest-incoming`,
+                method: "GET",
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get latest system status schedules in the past
+         *
+         * @tags SystemStatus
+         * @name GetLatestSchedules
+         * @summary Get latest system status schedules
+         * @request GET:/api/v1/system-status/latest
+         */
+        getLatestSchedules: (query: GetLatestSchedulesParams, params: RequestParams = {}) =>
+            this.http.request<GetLatestSchedulesData, GetLatestSchedulesError>({
+                path: `/api/v1/system-status/latest`,
+                method: "GET",
+                query: query,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get system status schedules updated within a specific time period using unix timestamps
+         *
+         * @tags SystemStatus
+         * @name GetSchedulesBetween
+         * @summary Get system status schedules between time period
+         * @request GET:/api/v1/system-status/period
+         */
+        getSchedulesBetween: (query: GetSchedulesBetweenParams, params: RequestParams = {}) =>
+            this.http.request<GetSchedulesBetweenData, GetSchedulesBetweenError>({
+                path: `/api/v1/system-status/period`,
+                method: "GET",
+                query: query,
                 format: "json",
                 ...params,
             }),

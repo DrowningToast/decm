@@ -3694,6 +3694,124 @@
                     }
                 }
             }
+        },
+        "/api/v1/system-status/closest-incoming": {
+            "get": {
+                "description": "Get the closest incoming status update scheduled for the future",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SystemStatus"
+                ],
+                "summary": "Get closest incoming status update",
+                "operationId": "get-closest-incoming-schedule",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/system_status.GetClosestIncomingScheduleResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/system-status/latest": {
+            "get": {
+                "description": "Get latest system status schedules in the past",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SystemStatus"
+                ],
+                "summary": "Get latest system status schedules",
+                "operationId": "get-latest-schedules",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Number of records to return",
+                        "name": "page_size",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/system_status.GetLatestSchedulesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/system-status/period": {
+            "get": {
+                "description": "Get system status schedules updated within a specific time period using unix timestamps",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SystemStatus"
+                ],
+                "summary": "Get system status schedules between time period",
+                "operationId": "get-schedules-between",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Start time unix timestamp",
+                        "name": "start_time",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "End time unix timestamp",
+                        "name": "end_time",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/system_status.GetSchedulesBetweenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -4650,6 +4768,60 @@
                     "type": "string"
                 },
                 "wallet_address": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.SystemStatus": {
+            "type": "integer",
+            "enum": [
+                0,
+                1
+            ],
+            "x-enum-varnames": [
+                "SystemStatusMaintenance",
+                "SystemStatusOperating"
+            ]
+        },
+        "entity.SystemStatusSchedule": {
+            "type": "object",
+            "required": [
+                "createdAt",
+                "deletedAt",
+                "id",
+                "isPlanned",
+                "orderId",
+                "plannedEndTime",
+                "startTime",
+                "status",
+                "updatedAt"
+            ],
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isPlanned": {
+                    "type": "boolean"
+                },
+                "orderId": {
+                    "type": "integer"
+                },
+                "plannedEndTime": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/entity.SystemStatus"
+                },
+                "updatedAt": {
                     "type": "string"
                 }
             }
@@ -6800,6 +6972,45 @@
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "system_status.GetClosestIncomingScheduleResponse": {
+            "type": "object",
+            "required": [
+                "schedule"
+            ],
+            "properties": {
+                "schedule": {
+                    "$ref": "#/definitions/entity.SystemStatusSchedule"
+                }
+            }
+        },
+        "system_status.GetLatestSchedulesResponse": {
+            "type": "object",
+            "required": [
+                "schedules"
+            ],
+            "properties": {
+                "schedules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.SystemStatusSchedule"
+                    }
+                }
+            }
+        },
+        "system_status.GetSchedulesBetweenResponse": {
+            "type": "object",
+            "required": [
+                "schedules"
+            ],
+            "properties": {
+                "schedules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.SystemStatusSchedule"
+                    }
                 }
             }
         }
