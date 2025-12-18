@@ -461,6 +461,7 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 			if *customError.Code != customerror.ErrNotFound.Code {
 				return nil, errors.Wrap(err, "failed to get event attendee by event id and credential id")
 			}
+			slog.Info("No row found in event_attendees table (handled as Not Found)", "event_id", entityEventContract.EventID, "user_id", currentUser.UserId)
 		} else {
 			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 		}
@@ -499,6 +500,7 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 		if *customError.Code != customerror.ErrNotFound.Code {
 			return nil, errors.Wrap(err, "failed to get event registration invitation by event id and credential")
 		}
+		slog.Info("No row found in event_registration_invitations table (handled as Not Found)", "event_id", entityEventContract.EventID, "user_id", currentUser.UserId)
 	}
 	// If the invitation is found, mark it as accepted with current timestamp
 	if err == nil && invitation != nil {
