@@ -105,8 +105,9 @@ func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParam
 	if err != nil {
 		return nil, common.Address{}, common.Address{}, nil, err
 	}
+	defer client.Close()
 
-	auth, err := cyptoutils.GetKeyedTransactor()
+	auth, err := cyptoutils.GetKeyedTransactor(ctx, client)
 	if err != nil {
 		return nil, common.Address{}, common.Address{}, nil, err
 	}

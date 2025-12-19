@@ -13,13 +13,9 @@ import (
 	"apps/backend/core-api/config"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	// Load .env if it exists
-	_ = godotenv.Load()
-
 	startTimeUnix := flag.Int64("start", 0, "Start time in Unix timestamp (seconds)")
 	endTimeUnix := flag.Int64("end", 0, "Planned end time in Unix timestamp (seconds), optional")
 	startNow := flag.Bool("now", false, "Start immediately (overrides -start)")
@@ -29,7 +25,7 @@ func main() {
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "  go run scripts/add_system_status.go -status [0|1] [options]\n\n")
+		fmt.Fprintf(os.Stderr, "  pnpm add-status:core -status [0|1] [options]\n\n")
 		fmt.Fprintf(os.Stderr, "Options:\n")
 		flag.PrintDefaults()
 	}

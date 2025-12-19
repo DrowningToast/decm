@@ -15,6 +15,7 @@ import (
 	"apps/backend/common/pgclient"
 	"apps/backend/core-api/config"
 	auth_handler "apps/backend/core-api/internal/handler/auth"
+	blockchain_handler "apps/backend/core-api/internal/handler/blockchain"
 	"apps/backend/core-api/internal/handler/event"
 	"apps/backend/core-api/internal/handler/event_registration"
 	eventconfig_handler "apps/backend/core-api/internal/handler/eventconfig"
@@ -29,6 +30,7 @@ import (
 	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
 	"apps/backend/core-api/internal/repositories/postgres"
 	auth_usecase "apps/backend/core-api/internal/usecase/auth"
+	blockchain_usecase "apps/backend/core-api/internal/usecase/blockchain"
 	event_usecase "apps/backend/core-api/internal/usecase/event"
 	event_registration_invitation_usecase "apps/backend/core-api/internal/usecase/event_registration"
 	eventconfig_usecase "apps/backend/core-api/internal/usecase/eventconfig"
@@ -118,6 +120,7 @@ func main() {
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, logger)
 	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)
 	inboxUc := inbox_usecase.NewInboxUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo)
+	blockchainUc := blockchain_usecase.NewBlockchainUsecase(logger, &cfg)
 	eventRegistrationUc := event_registration_invitation_usecase.NewEventRegistrationUsecase(
 		pgRepo,   // InboxMessageDataGateway
 		pgRepo,   // EventRegistrationInvitationDataGateway
@@ -223,6 +226,9 @@ func main() {
 
 	systemStatusHandler := system_status.NewHandler(systemStatusUc, logger)
 	systemStatusHandler.Mount(apiV1)
+
+	blockchainHandler := blockchain_handler.NewHandler(blockchainUc)
+	blockchainHandler.Mount(apiV1)
 
 	// Start HTTP Server
 	go func() {

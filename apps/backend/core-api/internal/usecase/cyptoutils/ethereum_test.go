@@ -34,7 +34,7 @@ func TestGetKeyedTransactor(t *testing.T) {
 		return
 	}
 
-	auth, err := GetKeyedTransactor()
+	auth, err := GetKeyedTransactor(nil, nil)
 	if err != nil {
 		t.Skipf("Skipping test: cannot create transactor: %v", err)
 		return
@@ -48,12 +48,3 @@ func TestGetKeyedTransactor_InvalidPrivateKey(t *testing.T) {
 	// For now, we document the expected behavior
 	t.Skip("Skipping test that requires config mocking")
 }
-
-
-
-
-
-
-
-
-
