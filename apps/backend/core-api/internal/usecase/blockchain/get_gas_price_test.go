@@ -300,3 +300,4 @@ func TestGetGasPrice_CacheControl(t *testing.T) {
 	// - Users typically spend 1-2 minutes on a form before submitting
 	t.Log("5 minute cache balances freshness with RPC efficiency")
 }
+

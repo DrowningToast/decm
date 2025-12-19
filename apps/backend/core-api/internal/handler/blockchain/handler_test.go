@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	blockchainConfig "apps/backend/core-api/config/blockchain"
-
 	blockchain_usecase "apps/backend/core-api/internal/usecase/blockchain"
 
 	"github.com/gofiber/fiber/v2"
@@ -303,3 +302,4 @@ func TestHandler_Routes_WithStatus(t *testing.T) {
 	_ = app
 	t.Skip("Route testing requires full handler setup")
 }
+
