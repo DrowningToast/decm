@@ -1,9 +1,5 @@
 import type { SystemStatusSystemStatusViewModel } from "@decm/api";
-import type {
-    SystemStatusViewModel,
-    GasPriceInfo,
-    SystemStatusSchedule,
-} from "./BlockchainService";
+import type { SystemStatusViewModel, GasPriceInfo } from "./BlockchainService";
 import { mapEntitySystemStatusScheduleToSystemStatusSchedule } from "../SystemStatusService/mapper";
 
 export const mapGasPriceResponse = (
