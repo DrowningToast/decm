@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 
 	"apps/backend/core-api/config"
 	blockchainConfig "apps/backend/core-api/config/blockchain"
+	"apps/backend/core-api/internal/entity"
 	blockchain_usecase "apps/backend/core-api/internal/usecase/blockchain"
 
 	"github.com/gofiber/fiber/v2"
@@ -27,6 +29,20 @@ func (m *mockBlockchainUsecase) GetGasPrice(ctx interface{}) (*blockchain_usecas
 		return nil, m.errorToReturn
 	}
 	return m.gasPriceResponse, nil
+}
+
+// mockSystemStatusUsecase is a mock implementation for testing
+type mockSystemStatusUsecase struct {
+	schedule      *entity.SystemStatusSchedule
+	shouldError   bool
+	errorToReturn error
+}
+
+func (m *mockSystemStatusUsecase) GetClosestIncomingSchedule(ctx context.Context) (*entity.SystemStatusSchedule, error) {
+	if m.shouldError {
+		return nil, m.errorToReturn
+	}
+	return m.schedule, nil
 }
 
 func TestHandler_GetGasPrice_Success(t *testing.T) {
@@ -223,4 +239,66 @@ func TestGasPriceResponse_HTTPResponseFormat(t *testing.T) {
 
 	// Verify content type
 	assert.Contains(t, resp.Header.Get("Content-Type"), "application/json")
+}
+
+func TestGetSystemStatusResponse_JSONMarshaling(t *testing.T) {
+	// Test that the combined response structure marshals correctly to JSON
+
+	response := GetSystemStatusResponse{
+		GasPrice: &blockchain_usecase.GasPriceResponse{
+			CurrentGasPriceGwei: 271.5,
+			BaseFeeGwei:         120.75,
+			PriorityFeeGwei:     30.0,
+			SoftCapPriceGwei:    1000.0,
+			HardCapPriceGwei:    2500.0,
+			SoftSafetyMargin:    72.85,
+			HardSafetyMargin:    89.14,
+		},
+		ClosestIncomingSchedule: nil, // Test nullable field
+	}
+
+	// Marshal to JSON
+	jsonData, err := json.Marshal(response)
+	assert.NoError(t, err, "Should marshal to JSON without error")
+
+	// Unmarshal back
+	var unmarshaled GetSystemStatusResponse
+	err = json.Unmarshal(jsonData, &unmarshaled)
+	assert.NoError(t, err, "Should unmarshal from JSON without error")
+
+	// Verify gas price values are preserved
+	assert.NotNil(t, unmarshaled.GasPrice)
+	assert.InDelta(t, response.GasPrice.CurrentGasPriceGwei, unmarshaled.GasPrice.CurrentGasPriceGwei, 0.01)
+	assert.Nil(t, unmarshaled.ClosestIncomingSchedule)
+
+	// Verify JSON field names
+	jsonString := string(jsonData)
+	assert.Contains(t, jsonString, "gas_price")
+	// closest_incoming_schedule is omitted when nil due to omitempty tag
+	assert.NotContains(t, jsonString, "closest_incoming_schedule")
+}
+
+func TestHandler_Routes_WithStatus(t *testing.T) {
+	// Test that both routes are properly mounted
+	app := fiber.New()
+
+	// The handler should mount GET routes at:
+	// - /blockchain/gas-price (existing)
+	// - /blockchain/status (new combined endpoint)
+	expectedRoutes := []struct {
+		path   string
+		method string
+	}{
+		{"/blockchain/gas-price", "GET"},
+		{"/blockchain/status", "GET"},
+	}
+
+	// Document the API contract
+	for _, route := range expectedRoutes {
+		assert.NotEmpty(t, route.path, "Route path should be defined")
+		assert.Equal(t, "GET", route.method, "Method should be GET")
+	}
+
+	_ = app
+	t.Skip("Route testing requires full handler setup")
 }

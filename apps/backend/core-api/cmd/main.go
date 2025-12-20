@@ -224,10 +224,10 @@ func main() {
 	inboxMessagesHandler := inboxmessages_handler.NewHandler(inboxUc, authenticationGuardMiddleware, authService, authUc)
 	inboxMessagesHandler.Mount(apiV1)
 
-	systemStatusHandler := system_status.NewHandler(systemStatusUc, logger)
+	systemStatusHandler := system_status.NewHandler(systemStatusUc, blockchainUc, logger)
 	systemStatusHandler.Mount(apiV1)
 
-	blockchainHandler := blockchain_handler.NewHandler(blockchainUc)
+	blockchainHandler := blockchain_handler.NewHandler(blockchainUc, systemStatusUc)
 	blockchainHandler.Mount(apiV1)
 
 	// Start HTTP Server

@@ -7,6 +7,7 @@ import { Typography } from "@/components/typography/typography";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { BadgeCheck } from "lucide-react";
+import { GasPriceWarning } from "./GasPriceWarning";
 
 export interface StaggeredMenuItem {
     label: string;
@@ -544,16 +545,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                                 </Typography>
                             </div>
                         )}
-                        <div className="flex items-center gap-1.5">
-                            <Typography
-                                variant="text"
-                                tag="span"
-                                color="foreground-alt"
-                                className="text-[9px] md:text-xs opacity-70"
-                            >
-                                {t("nav.betaAccess")}
-                            </Typography>
-                        </div>
+                        <GasPriceWarning />
                     </div>
 
                     <button

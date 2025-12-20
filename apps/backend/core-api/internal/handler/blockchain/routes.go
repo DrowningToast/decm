@@ -13,5 +13,6 @@ func (h *Handler) Mount(r fiber.Router) {
 	blockchainGroup := r.Group("/blockchain")
 
 	blockchainGroup.Get("/gas-price", h.GetGasPrice)
+	blockchainGroup.Get("/status", h.GetSystemStatus)
 }
 

@@ -107,4 +107,9 @@ export const QUERY_KEY = {
         list: () => ["inbox", "list"] as const,
         byId: (messageId: string) => ["inbox", messageId] as const,
     },
+
+    // Blockchain
+    blockchain: {
+        systemStatus: ["blockchain", "system-status"] as const,
+    },
 } as const;
