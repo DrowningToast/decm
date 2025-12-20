@@ -302,4 +302,3 @@ func TestHandler_Routes_WithStatus(t *testing.T) {
 	_ = app
 	t.Skip("Route testing requires full handler setup")
 }
-
