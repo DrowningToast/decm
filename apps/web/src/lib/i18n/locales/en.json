@@ -94,6 +94,14 @@
         "menu": "Menu",
         "close": "Close"
     },
+    "blockchain": {
+        "gasPrice": {
+            "high": "High Gas Price",
+            "veryHigh": "Very High Gas Price",
+            "softCapTooltip": "Network gas prices are elevated. Transactions may take longer than usual to complete. Consider waiting for gas prices to decrease if your transaction is not time-sensitive.",
+            "hardCapTooltip": "Network gas prices have exceeded the maximum threshold. Transactions may experience significant delays or fail entirely. We recommend waiting for gas prices to decrease before performing blockchain operations. Please be patient."
+        }
+    },
     "walletDebug": {
         "noWallet": "No wallet connected",
         "initializingWallet": "⏸️ Initializing wallet...",

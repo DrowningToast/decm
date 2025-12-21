@@ -9,6 +9,44 @@ definitions:
       is_issuer:
         type: boolean
     type: object
+  blockchain.GasPriceResponse:
+    properties:
+      base_fee_gwei:
+        type: number
+      current_gas_price_gwei:
+        type: number
+      hard_cap_price_gwei:
+        type: number
+      hard_safety_margin:
+        description: Percentage remaining until hard cap
+        type: number
+      priority_fee_gwei:
+        type: number
+      soft_cap_price_gwei:
+        type: number
+      soft_safety_margin:
+        description: Percentage remaining until soft cap
+        type: number
+    required:
+    - base_fee_gwei
+    - current_gas_price_gwei
+    - hard_cap_price_gwei
+    - hard_safety_margin
+    - priority_fee_gwei
+    - soft_cap_price_gwei
+    - soft_safety_margin
+    type: object
+  blockchain.GetSystemStatusResponse:
+    properties:
+      closest_incoming_schedule:
+        allOf:
+        - $ref: '#/definitions/entity.SystemStatusSchedule'
+        x-nullable: true
+      gas_price:
+        $ref: '#/definitions/blockchain.GasPriceResponse'
+    required:
+    - gas_price
+    type: object
   common.SolutionStatus:
     enum:
     - 0
@@ -2254,6 +2292,17 @@ definitions:
     required:
     - schedules
     type: object
+  system_status.SystemStatusViewModel:
+    properties:
+      gas_price:
+        $ref: '#/definitions/blockchain.GasPriceResponse'
+      latest_schedule:
+        allOf:
+        - $ref: '#/definitions/entity.SystemStatusSchedule'
+        x-nullable: true
+    required:
+    - gas_price
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -2375,6 +2424,44 @@ paths:
       summary: Verify Google OAuth code
       tags:
       - Auth
+  /api/v1/blockchain/gas-price:
+    get:
+      description: Get current blockchain gas price and the configured maximum allowed
+        fee
+      operationId: get-gas-price
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/blockchain.GasPriceResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get current blockchain gas price
+      tags:
+      - Blockchain
+  /api/v1/blockchain/status:
+    get:
+      description: Get current blockchain gas price and upcoming system status schedule
+        in a single request
+      operationId: get-system-status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/blockchain.GetSystemStatusResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get system status including gas price
+      tags:
+      - Blockchain
   /api/v1/certificates/{certificate_id}/image:
     get:
       description: Generates a PNG certificate image for the authenticated user's
@@ -4838,6 +4925,25 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get planned maintenance schedules
+      tags:
+      - SystemStatus
+  /api/v1/system-status/viewmodel:
+    get:
+      description: Get the latest system status schedule combined with current gas
+        price information
+      operationId: get-system-status-viewmodel
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system_status.SystemStatusViewModel'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get system status viewmodel
       tags:
       - SystemStatus
 swagger: "2.0"

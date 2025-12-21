@@ -10,6 +10,23 @@
  * ---------------------------------------------------------------
  */
 
+export interface BlockchainGasPriceResponse {
+    base_fee_gwei: number;
+    current_gas_price_gwei: number;
+    hard_cap_price_gwei: number;
+    /** Percentage remaining until hard cap */
+    hard_safety_margin: number;
+    priority_fee_gwei: number;
+    soft_cap_price_gwei: number;
+    /** Percentage remaining until soft cap */
+    soft_safety_margin: number;
+}
+
+export interface BlockchainGetSystemStatusResponse {
+    closest_incoming_schedule?: EntitySystemStatusSchedule | null;
+    gas_price: BlockchainGasPriceResponse;
+}
+
 export type CancelEventRegistrationInvitationData = EntityEventRegistrationInvitation;
 
 export type CancelEventRegistrationInvitationError = CustomerrorErrResponse;
@@ -1015,6 +1032,10 @@ export interface GetEventsListParams {
     only_user_joined_events?: boolean;
 }
 
+export type GetGasPriceData = BlockchainGasPriceResponse;
+
+export type GetGasPriceError = CustomerrorErrResponse;
+
 export type GetIssuerEventsData = IssuerIssuerEventResponse[];
 
 export type GetIssuerEventsError = CustomerrorErrResponse;
@@ -1095,6 +1116,14 @@ export interface GetSchedulesBetweenParams {
 }
 
 export type GetSignMessageData = OnboardGetSignMessageResponse;
+
+export type GetSystemStatusData = BlockchainGetSystemStatusResponse;
+
+export type GetSystemStatusError = CustomerrorErrResponse;
+
+export type GetSystemStatusViewmodelData = SystemStatusSystemStatusViewModel;
+
+export type GetSystemStatusViewmodelError = CustomerrorErrResponse;
 
 export type GetVerifiedIssuersData = EntityProfile[];
 
@@ -1561,6 +1590,11 @@ export interface SystemStatusGetSchedulesBetweenResponse {
     schedules: EntitySystemStatusSchedule[];
 }
 
+export interface SystemStatusSystemStatusViewModel {
+    gas_price: BlockchainGasPriceResponse;
+    latest_schedule?: EntitySystemStatusSchedule | null;
+}
+
 export type ToggleCertificatePublishedData =
     CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
 
@@ -1992,6 +2026,38 @@ export class Api<SecurityDataType extends unknown> {
                 method: "GET",
                 query: query,
                 type: ContentType.Json,
+                ...params,
+            }),
+
+        /**
+         * @description Get current blockchain gas price and the configured maximum allowed fee
+         *
+         * @tags Blockchain
+         * @name GetGasPrice
+         * @summary Get current blockchain gas price
+         * @request GET:/api/v1/blockchain/gas-price
+         */
+        getGasPrice: (params: RequestParams = {}) =>
+            this.http.request<GetGasPriceData, GetGasPriceError>({
+                path: `/api/v1/blockchain/gas-price`,
+                method: "GET",
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get current blockchain gas price and upcoming system status schedule in a single request
+         *
+         * @tags Blockchain
+         * @name GetSystemStatus
+         * @summary Get system status including gas price
+         * @request GET:/api/v1/blockchain/status
+         */
+        getSystemStatus: (params: RequestParams = {}) =>
+            this.http.request<GetSystemStatusData, GetSystemStatusError>({
+                path: `/api/v1/blockchain/status`,
+                method: "GET",
+                format: "json",
                 ...params,
             }),
 
@@ -3327,6 +3393,22 @@ export class Api<SecurityDataType extends unknown> {
                 GetPlannedMaintenanceSchedulesError
             >({
                 path: `/api/v1/system-status/planned-maintenance`,
+                method: "GET",
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Get the latest system status schedule combined with current gas price information
+         *
+         * @tags SystemStatus
+         * @name GetSystemStatusViewmodel
+         * @summary Get system status viewmodel
+         * @request GET:/api/v1/system-status/viewmodel
+         */
+        getSystemStatusViewmodel: (params: RequestParams = {}) =>
+            this.http.request<GetSystemStatusViewmodelData, GetSystemStatusViewmodelError>({
+                path: `/api/v1/system-status/viewmodel`,
                 method: "GET",
                 format: "json",
                 ...params,

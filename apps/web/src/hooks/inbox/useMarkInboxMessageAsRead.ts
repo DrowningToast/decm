@@ -5,7 +5,7 @@ import { QUERY_KEY } from "@/lib/queryKeys";
 /**
  * Marks an inbox message as read and refreshes related inbox queries when the mutation succeeds.
  *
- * @returns The mutation object whose `mutate`/`mutateAsync` accepts a message ID string and, on success, invalidates the specific inbox message query and the inbox list query
+ * @returns The mutation object whose `mutate`/`mutateAsync` accepts a message ID string and, on success, invalidates the specific inbox message query, the inbox list query, and the user profile viewmodel
  */
 export function useMarkInboxMessageAsRead() {
     const queryClient = useQueryClient();
@@ -20,6 +20,10 @@ export function useMarkInboxMessageAsRead() {
             // Also invalidate the inbox list to update the read status in the list
             queryClient.invalidateQueries({
                 queryKey: QUERY_KEY.inbox.list(),
+            });
+            // Invalidate the user profile viewmodel to refresh unread count and other inbox-related data
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEY.user.profile,
             });
         },
     });

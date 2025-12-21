@@ -183,6 +183,60 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/blockchain/gas-price": {
+            "get": {
+                "description": "Get current blockchain gas price and the configured maximum allowed fee",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Blockchain"
+                ],
+                "summary": "Get current blockchain gas price",
+                "operationId": "get-gas-price",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/blockchain.GasPriceResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/blockchain/status": {
+            "get": {
+                "description": "Get current blockchain gas price and upcoming system status schedule in a single request",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Blockchain"
+                ],
+                "summary": "Get system status including gas price",
+                "operationId": "get-system-status",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/blockchain.GetSystemStatusResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/certificates/claim/{certificate_id}": {
             "post": {
                 "security": [
@@ -3846,6 +3900,33 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/system-status/viewmodel": {
+            "get": {
+                "description": "Get the latest system status schedule combined with current gas price information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SystemStatus"
+                ],
+                "summary": "Get system status viewmodel",
+                "operationId": "get-system-status-viewmodel",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/system_status.SystemStatusViewModel"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -3861,6 +3942,62 @@ const docTemplate = `{
                 },
                 "is_issuer": {
                     "type": "boolean"
+                }
+            }
+        },
+        "blockchain.GasPriceResponse": {
+            "type": "object",
+            "required": [
+                "base_fee_gwei",
+                "current_gas_price_gwei",
+                "hard_cap_price_gwei",
+                "hard_safety_margin",
+                "priority_fee_gwei",
+                "soft_cap_price_gwei",
+                "soft_safety_margin"
+            ],
+            "properties": {
+                "base_fee_gwei": {
+                    "type": "number"
+                },
+                "current_gas_price_gwei": {
+                    "type": "number"
+                },
+                "hard_cap_price_gwei": {
+                    "type": "number"
+                },
+                "hard_safety_margin": {
+                    "description": "Percentage remaining until hard cap",
+                    "type": "number"
+                },
+                "priority_fee_gwei": {
+                    "type": "number"
+                },
+                "soft_cap_price_gwei": {
+                    "type": "number"
+                },
+                "soft_safety_margin": {
+                    "description": "Percentage remaining until soft cap",
+                    "type": "number"
+                }
+            }
+        },
+        "blockchain.GetSystemStatusResponse": {
+            "type": "object",
+            "required": [
+                "gas_price"
+            ],
+            "properties": {
+                "closest_incoming_schedule": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/entity.SystemStatusSchedule"
+                        }
+                    ],
+                    "x-nullable": true
+                },
+                "gas_price": {
+                    "$ref": "#/definitions/blockchain.GasPriceResponse"
                 }
             }
         },
@@ -7061,6 +7198,25 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/entity.SystemStatusSchedule"
                     }
+                }
+            }
+        },
+        "system_status.SystemStatusViewModel": {
+            "type": "object",
+            "required": [
+                "gas_price"
+            ],
+            "properties": {
+                "gas_price": {
+                    "$ref": "#/definitions/blockchain.GasPriceResponse"
+                },
+                "latest_schedule": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/entity.SystemStatusSchedule"
+                        }
+                    ],
+                    "x-nullable": true
                 }
             }
         }

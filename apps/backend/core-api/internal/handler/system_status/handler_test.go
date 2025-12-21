@@ -85,7 +85,7 @@ func (m *MockSystemStatusScheduleDataGateway) CountSystemStatusSchedules(ctx con
 	return args.Get(0).(int64), args.Error(1)
 }
 
-func setupApp(h *Handler) *fiber.App {
+func setupApp() *fiber.App {
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	app := fiber.New(fiber.Config{
 		ErrorHandler: customerror.GetErrFiberHandler(logger),
@@ -97,8 +97,9 @@ func TestGetLatestSchedulesHandler(t *testing.T) {
 	t.Run("should return latest schedules", func(t *testing.T) {
 		mockRepo := new(MockSystemStatusScheduleDataGateway)
 		uc := system_status.NewSystemStatusUsecase(mockRepo)
-		h := NewHandler(uc, nil)
-		app := setupApp(h)
+		logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+		h := NewHandler(uc, nil, logger)
+		app := setupApp()
 		app.Get("/latest", h.GetLatestSchedules)
 
 		expectedSchedules := []*entity.SystemStatusSchedule{
@@ -123,8 +124,9 @@ func TestGetLatestSchedulesHandler(t *testing.T) {
 	t.Run("should return 400 when page_size is missing", func(t *testing.T) {
 		mockRepo := new(MockSystemStatusScheduleDataGateway)
 		uc := system_status.NewSystemStatusUsecase(mockRepo)
-		h := NewHandler(uc, nil)
-		app := setupApp(h)
+		logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+		h := NewHandler(uc, nil, logger)
+		app := setupApp()
 		app.Get("/latest", h.GetLatestSchedules)
 
 		req := httptest.NewRequest(http.MethodGet, "/latest", nil)
@@ -138,8 +140,9 @@ func TestGetSchedulesBetweenHandler(t *testing.T) {
 	t.Run("should return schedules between period", func(t *testing.T) {
 		mockRepo := new(MockSystemStatusScheduleDataGateway)
 		uc := system_status.NewSystemStatusUsecase(mockRepo)
-		h := NewHandler(uc, nil)
-		app := setupApp(h)
+		logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+		h := NewHandler(uc, nil, logger)
+		app := setupApp()
 		app.Get("/period", h.GetSchedulesBetween)
 
 		now := time.Now().Unix()
@@ -170,8 +173,9 @@ func TestGetClosestIncomingScheduleHandler(t *testing.T) {
 	t.Run("should return closest incoming schedule", func(t *testing.T) {
 		mockRepo := new(MockSystemStatusScheduleDataGateway)
 		uc := system_status.NewSystemStatusUsecase(mockRepo)
-		h := NewHandler(uc, nil)
-		app := setupApp(h)
+		logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+		h := NewHandler(uc, nil, logger)
+		app := setupApp()
 		app.Get("/closest-incoming", h.GetClosestIncomingSchedule)
 
 		expectedSchedule := &entity.SystemStatusSchedule{ID: 2, OrderId: 2, Status: entity.SystemStatusMaintenance}

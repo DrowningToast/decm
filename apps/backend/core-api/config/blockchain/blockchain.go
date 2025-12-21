@@ -11,6 +11,14 @@ type BlockchainConfig struct {
 	DecmAccessManagerAddress string `env:"DECM_ACCESS_MANAGER_ADDRESS" envDefault:""`
 	// Etherscan API Key
 	EtherscanAPIKey string `env:"ETHERSCAN_API_KEY" envDefault:""`
+
+	// Gas Management (Optional)
+	// MaxGasPriceGwei limits the total fee per gas (Base Fee + Priority Fee)
+	// On prod max out at 80 gwei
+	MaxGasPriceGwei float64 `env:"MAX_GAS_PRICE_GWEI" envDefault:"80"`
+	// SoftCapGasPriceGwei is a softer limit for UI warnings
+	// On prod set to 60 gwei
+	SoftCapGasPriceGwei float64 `env:"SOFT_CAP_GAS_PRICE_GWEI" envDefault:"60"`
 }
 
 func (c *BlockchainConfig) Validate() error {

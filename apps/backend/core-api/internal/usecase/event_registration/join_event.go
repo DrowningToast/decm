@@ -289,7 +289,7 @@ func (uc *EventRegistrationUsecase) joinEvent(ctx context.Context, client *ethcl
 
 	// If the data is not on chain, add participant on blockchain
 	if !hasJoinedOnChain {
-		transactor, err := cyptoutils.GetKeyedTransactor()
+		transactor, err := cyptoutils.GetKeyedTransactor(ctx, client)
 		if err != nil {
 			return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 		}

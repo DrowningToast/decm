@@ -1,9 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
-import { systemStatusService } from "@/services/services";
 import { useTranslation } from "react-i18next";
 import { Loader2, AlertTriangle, Clock, WifiOff } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "./ui/button";
+import { useSystemStatus } from "@/hooks/useSystemStatus";
 
 interface SystemStatusWrapperProps {
     children: React.ReactNode;
@@ -12,13 +11,7 @@ interface SystemStatusWrapperProps {
 export const SystemStatusWrapper = ({ children }: SystemStatusWrapperProps) => {
     const { t } = useTranslation();
 
-    const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ["systemStatus", "latest"],
-        queryFn: () => systemStatusService.getLatestSchedules(1),
-        refetchInterval: 60 * 1000, // Refetch every 1 minute
-        staleTime: 60 * 1000, // Consider data fresh for 1 minute
-        retry: 2, // Retry 2 times before showing error
-    });
+    const { data, isLoading, isError, refetch } = useSystemStatus();
 
     if (isLoading) {
         return (
@@ -50,12 +43,12 @@ export const SystemStatusWrapper = ({ children }: SystemStatusWrapperProps) => {
         );
     }
 
-    if (!data || data.length === 0) {
+    if (!data || !data.latestSchedule) {
         // Fallback to allowing access if we can't determine status but no explicit error
         return <>{children}</>;
     }
 
-    const currentStatus = data[0];
+    const currentStatus = data.latestSchedule;
 
     if (currentStatus.status === "maintenance") {
         return (
@@ -73,13 +66,13 @@ export const SystemStatusWrapper = ({ children }: SystemStatusWrapperProps) => {
                 <p className="mb-6 max-w-md text-muted-foreground">
                     {currentStatus.isPlanned
                         ? t(
-                              "systemStatus.maintenance.planned.description",
-                              "We are currently performing scheduled maintenance to improve our services.",
-                          )
+                            "systemStatus.maintenance.planned.description",
+                            "We are currently performing scheduled maintenance to improve our services.",
+                        )
                         : t(
-                              "systemStatus.maintenance.unplanned.description",
-                              "We are currently experiencing some technical difficulties and are working to resolve them.",
-                          )}
+                            "systemStatus.maintenance.unplanned.description",
+                            "We are currently experiencing some technical difficulties and are working to resolve them.",
+                        )}
                 </p>
 
                 {currentStatus.plannedEndTime && (
