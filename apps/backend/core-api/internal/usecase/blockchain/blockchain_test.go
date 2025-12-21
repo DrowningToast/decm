@@ -1,9 +1,9 @@
 package blockchain
 
 import (
+	"apps/backend/core-api/config"
 	"testing"
 
-	"apps/backend/core-api/config"
 	blockchainConfig "apps/backend/core-api/config/blockchain"
 
 	"github.com/stretchr/testify/assert"
