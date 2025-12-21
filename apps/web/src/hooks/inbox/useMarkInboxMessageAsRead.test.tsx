@@ -307,8 +307,9 @@ describe("useMarkInboxMessageAsRead", () => {
             expect(result.current.isSuccess).toBe(true);
         });
 
-        expect(invalidateCalls).toHaveLength(2);
+        expect(invalidateCalls).toHaveLength(3);
         expect(invalidateCalls[0]).toContain(messageId); // Specific message query first
         expect(invalidateCalls[1]).toContain("inbox"); // Then list query
+        expect(invalidateCalls[2]).toContain("user"); // Then user profile query
     });
 });

@@ -45,8 +45,9 @@ func (uc *EventUsecase) DeleteEvent(ctx context.Context, id uuid.UUID, currentUs
 	if err != nil {
 		return nil, err
 	}
+	defer client.Close()
 
-	auth, err := cyptoutils.GetKeyedTransactor()
+	auth, err := cyptoutils.GetKeyedTransactor(ctx, client)
 	if err != nil {
 		return nil, err
 	}

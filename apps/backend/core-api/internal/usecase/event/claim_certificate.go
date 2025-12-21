@@ -757,7 +757,7 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("participant sign message does not match certificate contract address or participant address"))
 	}
 
-	transactor, err := cyptoutils.GetKeyedTransactor()
+	transactor, err := cyptoutils.GetKeyedTransactor(ctx, client)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get system transactor"))
 	}
