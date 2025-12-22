@@ -16,4 +16,3 @@ func NewHandler(blockchainUc *blockchain.BlockchainUsecase, systemStatusUc *syst
 		systemStatusUc: systemStatusUc,
 	}
 }
-

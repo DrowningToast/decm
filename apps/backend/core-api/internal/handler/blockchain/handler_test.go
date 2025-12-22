@@ -1,8 +1,6 @@
 package blockchain
 
 import (
-	"apps/backend/core-api/config"
-	"apps/backend/core-api/internal/entity"
 	"context"
 	"encoding/json"
 	"errors"
@@ -10,8 +8,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	blockchainConfig "apps/backend/core-api/config/blockchain"
+	"apps/backend/core-api/config"
+	"apps/backend/core-api/internal/entity"
 
+	blockchainConfig "apps/backend/core-api/config/blockchain"
 	blockchain_usecase "apps/backend/core-api/internal/usecase/blockchain"
 
 	"github.com/gofiber/fiber/v2"
