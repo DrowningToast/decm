@@ -70,12 +70,8 @@ export const GasPriceWarning = () => {
                     </Typography>
                 </div>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-xs">
-                <Typography
-                    variant="text"
-                    tag="p"
-                    className="text-xs text-balance text-primary-foreground"
-                >
+            <TooltipContent side="bottom" className="max-w-sm">
+                <Typography variant="text" tag="p" className="text-xs text-wrap text-foreground">
                     {tooltipContent}
                 </Typography>
             </TooltipContent>
