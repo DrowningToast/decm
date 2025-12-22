@@ -53,7 +53,7 @@ export const GasPriceWarning = () => {
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <div className="flex items-center gap-1.5 cursor-help">
+                <div className="flex items-center gap-1.5 cursor-help touch-manipulation active:opacity-70 min-h-[44px] min-w-[44px] px-2 py-1.5 -mx-2 -my-1.5 md:min-h-0 md:min-w-0 md:px-0 md:py-0 md:mx-0 md:my-0">
                     {isHardWarning ? (
                         <AlertCircle className="size-3 md:size-4 text-red-500 flex-shrink-0 animate-pulse" />
                     ) : (
