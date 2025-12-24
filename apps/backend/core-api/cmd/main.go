@@ -1,6 +1,19 @@
 package main
 
 import (
+	"apps/backend/common/log"
+	"apps/backend/common/pgclient"
+	"apps/backend/core-api/config"
+	"apps/backend/core-api/internal/handler/event"
+	"apps/backend/core-api/internal/handler/event_registration"
+	"apps/backend/core-api/internal/handler/issuer"
+	"apps/backend/core-api/internal/handler/onboard"
+	"apps/backend/core-api/internal/handler/profile"
+	"apps/backend/core-api/internal/handler/system_status"
+	"apps/backend/core-api/internal/repositories/postgres"
+	"apps/backend/services/auth"
+	"apps/backend/services/oauth"
+	"apps/backend/services/s3"
 	"context"
 	"fmt"
 	"log/slog"
@@ -11,24 +24,18 @@ import (
 	"time"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/common/log"
-	"apps/backend/common/pgclient"
-	"apps/backend/core-api/config"
+
 	auth_handler "apps/backend/core-api/internal/handler/auth"
 	blockchain_handler "apps/backend/core-api/internal/handler/blockchain"
-	"apps/backend/core-api/internal/handler/event"
-	"apps/backend/core-api/internal/handler/event_registration"
+
 	eventconfig_handler "apps/backend/core-api/internal/handler/eventconfig"
 	inboxmessages_handler "apps/backend/core-api/internal/handler/inbox_messages"
-	"apps/backend/core-api/internal/handler/issuer"
-	"apps/backend/core-api/internal/handler/onboard"
-	"apps/backend/core-api/internal/handler/profile"
-	"apps/backend/core-api/internal/handler/system_status"
+
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
 	requestcontext "apps/backend/core-api/internal/middleware/request_context"
 	roleguard "apps/backend/core-api/internal/middleware/role_guard"
 	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
-	"apps/backend/core-api/internal/repositories/postgres"
+
 	auth_usecase "apps/backend/core-api/internal/usecase/auth"
 	blockchain_usecase "apps/backend/core-api/internal/usecase/blockchain"
 	event_usecase "apps/backend/core-api/internal/usecase/event"
@@ -40,14 +47,10 @@ import (
 	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
 	profile_usecase "apps/backend/core-api/internal/usecase/profile"
 	system_status_usecase "apps/backend/core-api/internal/usecase/system_status"
-	"apps/backend/services/auth"
-	"apps/backend/services/oauth"
-	"apps/backend/services/s3"
 
 	json "github.com/goccy/go-json"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
@@ -57,7 +60,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/timeout"
 	"github.com/gofiber/swagger"
 
-	"github.com/ansrivas/fiberprometheus/v2"
+	"apps/backend/core-api/internal/handler/metrics"
 
 	// fiber-swagger middleware
 	_ "apps/backend/core-api/docs"
@@ -148,17 +151,8 @@ func main() {
 		},
 	})
 
-	// Prometheus
-	prometheus := fiberprometheus.New(cfg.Name)
-	app.Use(prometheus.Middleware)
-
-	// Protect /metrics endpoint with Basic Auth
-	app.Use("/metrics", basicauth.New(basicauth.Config{
-		Users: map[string]string{
-			cfg.Metrics.Username: cfg.Metrics.Password,
-		},
-	}))
-	prometheus.RegisterAt(app, "/metrics")
+	metricsHandler := metrics.NewHandler(&cfg)
+	app.Use(metricsHandler.GetMiddleware())
 
 	app.Use(favicon.New()).
 		Use(cors.New(cors.Config{
@@ -244,6 +238,8 @@ func main() {
 
 	blockchainHandler := blockchain_handler.NewHandler(blockchainUc, systemStatusUc)
 	blockchainHandler.Mount(apiV1)
+
+	metricsHandler.Mount(app)
 
 	// Start HTTP Server
 	go func() {
