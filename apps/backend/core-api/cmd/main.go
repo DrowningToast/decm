@@ -47,6 +47,7 @@ import (
 	json "github.com/goccy/go-json"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
@@ -55,6 +56,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/fiber/v2/middleware/timeout"
 	"github.com/gofiber/swagger"
+
+	"github.com/ansrivas/fiberprometheus/v2"
 
 	// fiber-swagger middleware
 	_ "apps/backend/core-api/docs"
@@ -144,6 +147,18 @@ func main() {
 			return customerror.GetErrFiberHandler(logger)(ctx, err)
 		},
 	})
+
+	// Prometheus
+	prometheus := fiberprometheus.New(cfg.Name)
+	app.Use(prometheus.Middleware)
+
+	// Protect /metrics endpoint with Basic Auth
+	app.Use("/metrics", basicauth.New(basicauth.Config{
+		Users: map[string]string{
+			cfg.Metrics.Username: cfg.Metrics.Password,
+		},
+	}))
+	prometheus.RegisterAt(app, "/metrics")
 
 	app.Use(favicon.New()).
 		Use(cors.New(cors.Config{
