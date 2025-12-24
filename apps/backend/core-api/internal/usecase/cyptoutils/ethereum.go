@@ -3,7 +3,9 @@ package cyptoutils
 import (
 	"context"
 	"math/big"
+	"time"
 
+	"apps/backend/common/metrics"
 	"apps/backend/core-api/config"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -108,15 +110,23 @@ type GasPriceInfo struct {
 }
 
 func GetCurrentGasPrice(ctx context.Context, client *ethclient.Client) (*GasPriceInfo, error) {
+	start := time.Now()
+	operation := "get_current_gas_price"
+
 	// 1. Get SuggestPriorityFee
 	tipCap, err := client.SuggestGasTipCap(ctx)
+
 	if err != nil {
+		metrics.BlockchainOperationsTotal.WithLabelValues(operation, "error").Inc()
+		metrics.BlockchainOperationDuration.WithLabelValues(operation, "error").Observe(time.Since(start).Seconds())
 		return nil, errors.Wrap(err, "failed to suggest gas tip cap")
 	}
 
 	// 2. Get latest block header for Base Fee
 	header, err := client.HeaderByNumber(ctx, nil)
 	if err != nil {
+		metrics.BlockchainOperationsTotal.WithLabelValues(operation, "error").Inc()
+		metrics.BlockchainOperationDuration.WithLabelValues(operation, "error").Observe(time.Since(start).Seconds())
 		return nil, errors.Wrap(err, "failed to get latest block header")
 	}
 
@@ -125,22 +135,45 @@ func GetCurrentGasPrice(ctx context.Context, client *ethclient.Client) (*GasPric
 		// Fallback for non-EIP1559 networks
 		suggestedPrice, err := client.SuggestGasPrice(ctx)
 		if err != nil {
+			metrics.BlockchainOperationsTotal.WithLabelValues(operation, "error").Inc()
+			metrics.BlockchainOperationDuration.WithLabelValues(operation, "error").Observe(time.Since(start).Seconds())
 			return nil, errors.Wrap(err, "failed to suggest gas price")
 		}
-		return &GasPriceInfo{
+		
+		info := &GasPriceInfo{
 			MaxFeePerGasGwei:         WeiToGwei(suggestedPrice),
 			MaxPriorityFeePerGasGwei: WeiToGwei(tipCap),
 			BaseFeeGwei:              0,
-		}, nil
+		}
+		
+		metrics.BlockchainOperationsTotal.WithLabelValues(operation, "success").Inc()
+		metrics.BlockchainOperationDuration.WithLabelValues(operation, "success").Observe(time.Since(start).Seconds())
+		
+		// Record Gas Prices
+		metrics.BlockchainGasPrice.WithLabelValues("max_fee").Set(info.MaxFeePerGasGwei)
+		metrics.BlockchainGasPrice.WithLabelValues("priority_fee").Set(info.MaxPriorityFeePerGasGwei)
+		metrics.BlockchainGasPrice.WithLabelValues("base_fee").Set(info.BaseFeeGwei)
+		
+		return info, nil
 	}
 
 	// MaxFeePerGas = (2 * BaseFee) + PriorityFee (standard formula for safety)
 	maxFee := new(big.Int).Mul(baseFee, big.NewInt(2))
 	maxFee.Add(maxFee, tipCap)
 
-	return &GasPriceInfo{
+	info := &GasPriceInfo{
 		MaxFeePerGasGwei:         WeiToGwei(maxFee),
 		MaxPriorityFeePerGasGwei: WeiToGwei(tipCap),
 		BaseFeeGwei:              WeiToGwei(baseFee),
-	}, nil
+	}
+
+	metrics.BlockchainOperationsTotal.WithLabelValues(operation, "success").Inc()
+	metrics.BlockchainOperationDuration.WithLabelValues(operation, "success").Observe(time.Since(start).Seconds())
+
+	// Record Gas Prices
+	metrics.BlockchainGasPrice.WithLabelValues("max_fee").Set(info.MaxFeePerGasGwei)
+	metrics.BlockchainGasPrice.WithLabelValues("priority_fee").Set(info.MaxPriorityFeePerGasGwei)
+	metrics.BlockchainGasPrice.WithLabelValues("base_fee").Set(info.BaseFeeGwei)
+
+	return info, nil
 }

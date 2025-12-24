@@ -60,13 +60,17 @@ services:
     prometheus:
         image: prom/prometheus:v3.8.1
         container_name: prometheus
+        entrypoint:
+            - "sh"
+            - "-c"
+            - "envsubst < /etc/prometheus/prometheus.yml.template > /etc/prometheus/prometheus.yml && prometheus --config.file=/etc/prometheus/prometheus.yml"
+        environment:
+            METRICS_API_KEY: ${METRICS_API_KEY}
         volumes:
-            - ./prometheus/config.yaml:/etc/prometheus/prometheus.yml
-        command:
-            - "--config.file=/etc/prometheus/prometheus.yml"
+            - ./prometheus/prometheus.yml.template:/etc/prometheus/prometheus.yml.template
         ports:
             - "9090:9090"
-        restart: alwayss
+        restart: always
         networks:
             - decm-network
 

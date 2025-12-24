@@ -77,8 +77,7 @@ type JwtConfig struct {
 }
 
 type MetricsConfig struct {
-	Username string `env:"USERNAME" envDefault:"metrics"`
-	Password string `env:"PASSWORD" envDefault:"metrics"`
+	ApiKey string `env:"API_KEY" envDefault:"metrics-api-key"`
 }
 
 func LoadConfig() Config {
