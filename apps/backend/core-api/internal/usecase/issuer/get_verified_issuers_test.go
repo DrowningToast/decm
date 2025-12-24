@@ -1,13 +1,12 @@
 package issuer
 
 import (
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
 	"errors"
 	"testing"
 	"time"
-
-	"apps/backend/core-api/internal/entity"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

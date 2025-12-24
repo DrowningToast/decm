@@ -1,14 +1,13 @@
 package eventconfig
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/common/hashutils"
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
 	"errors"
 	"testing"
-
-	"apps/backend/common/customerror"
-	"apps/backend/common/hashutils"
-	"apps/backend/core-api/internal/entity"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

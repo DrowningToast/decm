@@ -1,6 +1,8 @@
 package main
 
 import (
+	"apps/backend/common/pgclient"
+	"apps/backend/core-api/config"
 	"context"
 	"decm-database/go/generated"
 	"flag"
@@ -8,9 +10,6 @@ import (
 	"log"
 	"os"
 	"time"
-
-	"apps/backend/common/pgclient"
-	"apps/backend/core-api/config"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )

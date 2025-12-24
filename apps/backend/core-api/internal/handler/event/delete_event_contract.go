@@ -1,14 +1,13 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
 	"context"
 	"net/http"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-
-	"apps/backend/common/customerror"
 )
 
 // DeleteEventContract godoc

@@ -1,15 +1,14 @@
 package event_registration
 
 import (
-	"context"
-	"errors"
-	"testing"
-	"time"
-
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
+	"errors"
+	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

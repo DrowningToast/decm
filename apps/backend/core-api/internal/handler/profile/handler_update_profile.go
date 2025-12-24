@@ -1,12 +1,11 @@
 package profile
 
 import (
-	"errors"
-
 	"apps/backend/common/customerror"
 	"apps/backend/common/validatorutils"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/profile"
+	"errors"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"

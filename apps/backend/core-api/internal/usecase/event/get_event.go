@@ -1,13 +1,12 @@
 package event
 
 import (
-	"context"
-	"log/slog"
-	"time"
-
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
+	"log/slog"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"

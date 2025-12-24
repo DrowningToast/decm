@@ -1,6 +1,8 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"fmt"
 	"io"
@@ -8,9 +10,6 @@ import (
 	"regexp"
 	"strings"
 	"time"
-
-	"apps/backend/common/customerror"
-	"apps/backend/core-api/internal/entity"
 
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"

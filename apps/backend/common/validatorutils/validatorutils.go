@@ -1,12 +1,11 @@
 package validatorutils
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/common/utils"
 	"errors"
 	"fmt"
 	"mime/multipart"
-
-	"apps/backend/common/customerror"
-	"apps/backend/common/utils"
 
 	"github.com/go-playground/validator/v10"
 )

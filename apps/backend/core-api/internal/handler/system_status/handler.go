@@ -1,10 +1,9 @@
 package system_status
 
 import (
-	"log/slog"
-
 	"apps/backend/core-api/internal/usecase/blockchain"
 	"apps/backend/core-api/internal/usecase/system_status"
+	"log/slog"
 )
 
 type Handler struct {

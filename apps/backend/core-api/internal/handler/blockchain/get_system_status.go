@@ -9,7 +9,7 @@ import (
 
 // GetSystemStatusResponse combines gas price and system status information
 type GetSystemStatusResponse struct {
-	GasPrice               *blockchain.GasPriceResponse  `json:"gas_price"`
+	GasPrice                *blockchain.GasPriceResponse `json:"gas_price"`
 	ClosestIncomingSchedule *entity.SystemStatusSchedule `json:"closest_incoming_schedule,omitempty" extensions:"x-nullable"`
 }
 
@@ -39,7 +39,7 @@ func (h *Handler) GetSystemStatus(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(&GetSystemStatusResponse{
-		GasPrice:               gasPrice,
+		GasPrice:                gasPrice,
 		ClosestIncomingSchedule: schedule,
 	})
 }

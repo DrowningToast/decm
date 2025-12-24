@@ -1,10 +1,9 @@
 package pgclient
 
 import (
-	"context"
-
 	"apps/backend/common/log"
 	"apps/backend/core-api/config/postgres"
+	"context"
 
 	"github.com/cockroachdb/errors"
 	"github.com/jackc/pgx/v5/pgxpool"

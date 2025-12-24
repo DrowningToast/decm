@@ -1,10 +1,10 @@
 package postgres
 
 import (
+	"apps/backend/common/pgerrutils"
 	"context"
 	"decm-database/go/generated"
 
-	"apps/backend/common/pgerrutils"
 	datagateway "apps/backend/core-api/internal/datagateway/event"
 )
 
@@ -33,15 +33,3 @@ func (r *Repository) GetDefaultEventCertificateFontFamily(ctx context.Context) (
 	}
 	return &result, nil
 }
-
-
-
-
-
-
-
-
-
-
-
-

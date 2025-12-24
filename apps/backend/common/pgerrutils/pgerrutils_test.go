@@ -1,9 +1,8 @@
 package pgerrutils
 
 import (
-	"testing"
-
 	"apps/backend/common/customerror"
+	"testing"
 
 	"github.com/cockroachdb/errors"
 	"github.com/jackc/pgerrcode"

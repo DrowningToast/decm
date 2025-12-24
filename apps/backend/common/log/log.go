@@ -1,11 +1,10 @@
 package log
 
 import (
+	"apps/backend/core-api/config"
 	"log/slog"
 	"os"
 	"sync"
-
-	"apps/backend/core-api/config"
 )
 
 var (

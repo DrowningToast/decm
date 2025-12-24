@@ -11,23 +11,3 @@ type CertificateMintReadinessResponse struct {
 	CertificateContractAddress *string  `json:"certificate_contract_address,omitempty" example:"0x1234567890abcdef"`
 	MissingRequirements        []string `json:"missing_requirements,omitempty"`
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

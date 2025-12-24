@@ -1,9 +1,8 @@
 package postgres
 
 import (
-	"decm-database/go/generated"
-
 	"apps/backend/common/pgclient"
+	"decm-database/go/generated"
 )
 
 type Repository struct {

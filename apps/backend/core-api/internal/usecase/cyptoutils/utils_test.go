@@ -1,11 +1,10 @@
 package cyptoutils
 
 import (
+	"apps/backend/common/encryptutils"
 	"crypto/ecdsa"
 	"encoding/hex"
 	"testing"
-
-	"apps/backend/common/encryptutils"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -294,12 +293,3 @@ func TestDecodeRevertReason_TruncatedErrorData(t *testing.T) {
 	reason := DecodeRevertReason(errData)
 	assert.Equal(t, "truncated error data", reason)
 }
-
-
-
-
-
-
-
-
-

@@ -1,12 +1,11 @@
 package cyptoutils
 
 import (
+	"apps/backend/common/metrics"
+	"apps/backend/core-api/config"
 	"context"
 	"math/big"
 	"time"
-
-	"apps/backend/common/metrics"
-	"apps/backend/core-api/config"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -120,7 +119,6 @@ func GetCurrentGasPrice(ctx context.Context, client *ethclient.Client) (*GasPric
 
 	// 1. Get SuggestPriorityFee
 	tipCap, err := client.SuggestGasTipCap(ctx)
-
 	if err != nil {
 		metrics.BlockchainOperationsTotal.WithLabelValues(operation, "error").Inc()
 		metrics.BlockchainOperationDuration.WithLabelValues(operation, "error").Observe(time.Since(start).Seconds())
@@ -144,21 +142,21 @@ func GetCurrentGasPrice(ctx context.Context, client *ethclient.Client) (*GasPric
 			metrics.BlockchainOperationDuration.WithLabelValues(operation, "error").Observe(time.Since(start).Seconds())
 			return nil, errors.Wrap(err, "failed to suggest gas price")
 		}
-		
+
 		info := &GasPriceInfo{
 			MaxFeePerGasGwei:         WeiToGwei(suggestedPrice),
 			MaxPriorityFeePerGasGwei: WeiToGwei(tipCap),
 			BaseFeeGwei:              0,
 		}
-		
+
 		metrics.BlockchainOperationsTotal.WithLabelValues(operation, "success").Inc()
 		metrics.BlockchainOperationDuration.WithLabelValues(operation, "success").Observe(time.Since(start).Seconds())
-		
+
 		// Record Gas Prices
 		metrics.BlockchainGasPrice.WithLabelValues("max_fee").Set(info.MaxFeePerGasGwei)
 		metrics.BlockchainGasPrice.WithLabelValues("priority_fee").Set(info.MaxPriorityFeePerGasGwei)
 		metrics.BlockchainGasPrice.WithLabelValues("base_fee").Set(info.BaseFeeGwei)
-		
+
 		return info, nil
 	}
 
