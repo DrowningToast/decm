@@ -2,6 +2,8 @@ package log
 
 import (
 	"apps/backend/core-api/config"
+	"apps/backend/core-api/constants/ctxkey"
+	"context"
 	"log/slog"
 	"os"
 	"sync"
@@ -15,6 +17,10 @@ var (
 func LoadLogger() *slog.Logger {
 	cfg := config.LoadConfig()
 	return LoadLoggerInEnvironment(cfg.Env)
+}
+
+func FromContext(ctx context.Context) *slog.Logger {
+	return ctx.Value(ctxkey.Logger{}).(*slog.Logger)
 }
 
 func LoadLoggerInEnvironment(environment string) *slog.Logger {
@@ -48,10 +54,7 @@ func LoadLoggerInEnvironment(environment string) *slog.Logger {
 				panic("invalid environment when loading environment level")
 			}
 
-			// Wrap the base handler with the RequestID handler
-			requestIDHandler := NewRequestIDHandler(handler)
-
-			Logger = slog.New(requestIDHandler)
+			Logger = slog.New(handler)
 			slog.SetDefault(Logger) // Set as default logger
 		},
 	)

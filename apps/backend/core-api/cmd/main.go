@@ -33,6 +33,7 @@ import (
 	inboxmessages_handler "apps/backend/core-api/internal/handler/inbox_messages"
 
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
+	loggermw "apps/backend/core-api/internal/middleware/logger"
 	requestcontext "apps/backend/core-api/internal/middleware/request_context"
 	roleguard "apps/backend/core-api/internal/middleware/role_guard"
 	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
@@ -163,6 +164,7 @@ func main() {
 		})).
 		Use(requestid.New()).
 		Use(requestcontext.New()).
+		Use(loggermw.New()).
 		Use(recover.New(recover.Config{
 			EnableStackTrace: true,
 			StackTraceHandler: func(c *fiber.Ctx, e interface{}) {
