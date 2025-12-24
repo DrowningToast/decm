@@ -4,6 +4,7 @@ go 1.24.1
 
 require (
 	decm-database v0.0.0-00010101000000-000000000000
+	github.com/ansrivas/fiberprometheus/v2 v2.14.0
 	github.com/aws/aws-sdk-go v1.55.8
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/chromedp/cdproto v0.0.0-20250803210736-d308e07a266d
@@ -110,6 +111,8 @@ require (
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.65.0 // indirect
+	go.opentelemetry.io/otel v1.37.0 // indirect
+	go.opentelemetry.io/otel/trace v1.37.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/mod v0.27.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
