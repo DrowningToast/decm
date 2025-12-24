@@ -19,6 +19,10 @@ type BlockchainConfig struct {
 	// SoftCapGasPriceGwei is a softer limit for UI warnings
 	// On prod set to 60 gwei
 	SoftCapGasPriceGwei float64 `env:"SOFT_CAP_GAS_PRICE_GWEI" envDefault:"60"`
+	// GasLimit is the maximum gas to use for transactions
+	// 0 means automatic estimation (unreliable on some networks)
+	// Recommended: 3000000 for contract deployments, 500000 for regular txs
+	GasLimit uint64 `env:"GAS_LIMIT" envDefault:"3000000"`
 }
 
 func (c *BlockchainConfig) Validate() error {
