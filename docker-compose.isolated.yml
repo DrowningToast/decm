@@ -60,17 +60,27 @@ services:
     prometheus:
         image: prom/prometheus:v3.8.1
         container_name: prometheus
-        entrypoint:
-            - "sh"
-            - "-c"
-            - "envsubst < /etc/prometheus/prometheus.yml.template > /etc/prometheus/prometheus.yml && prometheus --config.file=/etc/prometheus/prometheus.yml"
-        environment:
-            METRICS_API_KEY: ${METRICS_API_KEY}
         volumes:
-            - ./prometheus/prometheus.yml.template:/etc/prometheus/prometheus.yml.template
+            - ./prometheus/config.yaml:/etc/prometheus/prometheus.yml
         ports:
             - "9090:9090"
         restart: always
+        networks:
+            - decm-network
+
+    # Monitoring - Grafana
+    grafana:
+        image: grafana/grafana:latest
+        container_name: decm-grafana
+        volumes:
+            - grafana_data:/var/lib/grafana
+        environment:
+            - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+        ports:
+            - "3001:3000"
+        depends_on:
+            - prometheus
+        restart: unless-stopped
         networks:
             - decm-network
 
@@ -86,6 +96,8 @@ volumes:
     postgres_data:
         driver: local
     pgadmin_data:
+        driver: local
+    grafana_data:
         driver: local
 
 networks:

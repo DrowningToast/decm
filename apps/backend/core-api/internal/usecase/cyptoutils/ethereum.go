@@ -84,6 +84,11 @@ func GetKeyedTransactor(ctx context.Context, client *ethclient.Client) (*bind.Tr
 		auth.GasFeeCap = gweiToWei(maxPrice)
 	}
 
+	// Set explicit gas limit if configured
+	if cfg.GasLimit > 0 {
+		auth.GasLimit = cfg.GasLimit
+	}
+
 	return auth, nil
 }
 

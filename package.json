@@ -16,7 +16,7 @@
         "check-gas:core": "cd apps/backend && go run core-api/cmd/check_gas_price/main.go",
         "docs:core": "cd apps/backend && swag init -g core-api/cmd/main.go -o core-api/docs --requiredByDefault",
         "gen-api:core": "pnpm run docs:core && cd packages/api && pnpm install && pnpm generate:core",
-        "compose:up": "docker compose -f docker-compose.isolated.yml up -d",
+        "compose:up": "docker compose -f docker-compose.isolated.yml up -d --build",
         "compose:down": "docker compose -f docker-compose.isolated.yml down",
         "compose:prod:up": "docker compose -f docker-compose.prod.yml up -d --build",
         "compose:prod:down": "docker compose -f docker-compose.prod.yml down",
