@@ -1,17 +1,16 @@
 package eventconfig
 
 import (
-	"net/http"
-	"time"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
-
 	"apps/backend/common/customerror"
 	"apps/backend/common/pgmapper"
 	"apps/backend/common/validatorutils"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/eventconfig"
+	"net/http"
+	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 type UpdateEventRegistrationConfigRequest struct {

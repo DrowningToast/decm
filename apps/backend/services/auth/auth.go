@@ -1,10 +1,9 @@
 package auth
 
 import (
+	"apps/backend/common/customerror"
 	"errors"
 	"time"
-
-	"apps/backend/common/customerror"
 
 	"github.com/gofiber/fiber/v2"
 )

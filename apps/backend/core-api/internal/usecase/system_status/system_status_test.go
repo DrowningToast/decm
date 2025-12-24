@@ -1,12 +1,11 @@
 package system_status
 
 import (
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"errors"
 	"testing"
 	"time"
-
-	"apps/backend/core-api/internal/entity"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

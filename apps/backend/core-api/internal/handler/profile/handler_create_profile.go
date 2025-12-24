@@ -1,11 +1,10 @@
 package profile
 
 import (
-	"errors"
-
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/profile"
+	"errors"
 
 	"github.com/gofiber/fiber/v2"
 )

@@ -1,12 +1,11 @@
 package event_registration
 
 import (
-	"context"
-	"log/slog"
-
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
+	"log/slog"
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"

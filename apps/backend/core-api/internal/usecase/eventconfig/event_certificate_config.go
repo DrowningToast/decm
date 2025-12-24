@@ -1,15 +1,14 @@
 package eventconfig
 
 import (
+	"apps/backend/core-api/internal/datagateway"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/s3"
 	"context"
 	"decm-database/go/generated"
 	"encoding/json"
 	"fmt"
 	"mime/multipart"
-
-	"apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/s3"
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"

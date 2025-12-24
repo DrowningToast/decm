@@ -1,6 +1,10 @@
 package s3
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/common/log"
+	"apps/backend/common/metrics"
+	"apps/backend/common/utils"
 	"context"
 	"fmt"
 	"io"
@@ -8,10 +12,6 @@ import (
 	"mime/multipart"
 	"time"
 
-	"apps/backend/common/customerror"
-	"apps/backend/common/log"
-	"apps/backend/common/metrics"
-	"apps/backend/common/utils"
 	config "apps/backend/core-api/config"
 	s3Config "apps/backend/core-api/config/s3"
 
@@ -133,14 +133,14 @@ func (s *S3Service) GetS3UploadRequestObject(entityType StorageKeyType, entityID
 func (s *S3Service) PutFile(ctx context.Context, requestObject *S3UploadRequestObject) (string, error) {
 	start := time.Now()
 	operation := "put_object"
-	
+
 	_, err := s.uploader.UploadWithContext(ctx, &s3manager.UploadInput{
 		Bucket:      aws.String(s.s3Config.BucketName),
 		Key:         aws.String(requestObject.storageKey),
 		Body:        requestObject.file,
 		ContentType: aws.String(requestObject.contentType),
 	})
-	
+
 	duration := time.Since(start).Seconds()
 	status := "success"
 	if err != nil {
@@ -166,7 +166,7 @@ func (s *S3Service) GetFile(ctx context.Context, key string) (io.ReadCloser, err
 	}
 
 	result, err := s.s3Client.GetObjectWithContext(ctx, input)
-	
+
 	duration := time.Since(start).Seconds()
 	status := "success"
 	if err != nil {

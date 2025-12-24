@@ -1,6 +1,11 @@
 package oauth
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/common/log"
+	"apps/backend/common/metrics"
+	"apps/backend/common/utils"
+	"apps/backend/core-api/config"
 	"context"
 	"crypto/rand"
 	"encoding/base64"
@@ -11,12 +16,6 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
-
-	"apps/backend/common/customerror"
-	"apps/backend/common/log"
-	"apps/backend/common/metrics"
-	"apps/backend/common/utils"
-	"apps/backend/core-api/config"
 
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"golang.org/x/oauth2"
@@ -112,7 +111,7 @@ func (s *GoogleOAuthService) getUserDataFromGoogle(ctx context.Context, code str
 
 	// Use code to get token and get user info from Google.
 	token, err := s.googleConfig.Exchange(ctx, code)
-	
+
 	duration := time.Since(start).Seconds()
 	status := "success"
 
@@ -210,7 +209,7 @@ func (s *GoogleOAuthService) GetUserInfo(ctx context.Context, token *oauth2.Toke
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 
 	duration := time.Since(start).Seconds()
-	
+
 	if err != nil {
 		metrics.GoogleOAuthOperationsTotal.WithLabelValues(operation, "error").Inc()
 		metrics.GoogleOAuthOperationDuration.WithLabelValues(operation, "error").Observe(duration)

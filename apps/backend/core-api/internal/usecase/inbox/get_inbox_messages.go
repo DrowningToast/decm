@@ -1,11 +1,10 @@
 package inbox
 
 import (
-	"context"
-
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
 
 	"github.com/google/uuid"
 )

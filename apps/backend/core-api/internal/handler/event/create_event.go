@@ -1,14 +1,15 @@
 package event
 
 import (
+	"apps/backend/common/pgmapper"
+	"apps/backend/common/validatorutils"
 	"errors"
 	"fmt"
 	"strconv"
 	"time"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/common/pgmapper"
-	"apps/backend/common/validatorutils"
+
 	eventUc "apps/backend/core-api/internal/usecase/event"
 	eventconfig "apps/backend/core-api/internal/usecase/eventconfig"
 

@@ -1,14 +1,13 @@
 package event
 
 import (
-	"context"
-	"testing"
-
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/config"
 	"apps/backend/core-api/config/blockchain"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
+	"testing"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/google/uuid"

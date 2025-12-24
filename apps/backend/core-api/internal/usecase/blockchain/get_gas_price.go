@@ -1,9 +1,8 @@
 package blockchain
 
 import (
-	"context"
-
 	"apps/backend/core-api/internal/usecase/cyptoutils"
+	"context"
 
 	"github.com/pkg/errors"
 )
@@ -53,4 +52,3 @@ func (uc *BlockchainUsecase) GetGasPrice(ctx context.Context) (*GasPriceResponse
 		HardSafetyMargin:    hardMargin,
 	}, nil
 }
-

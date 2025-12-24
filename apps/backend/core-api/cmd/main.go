@@ -7,6 +7,7 @@ import (
 	"apps/backend/core-api/internal/handler/event"
 	"apps/backend/core-api/internal/handler/event_registration"
 	"apps/backend/core-api/internal/handler/issuer"
+	"apps/backend/core-api/internal/handler/metrics"
 	"apps/backend/core-api/internal/handler/onboard"
 	"apps/backend/core-api/internal/handler/profile"
 	"apps/backend/core-api/internal/handler/system_status"
@@ -59,8 +60,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/fiber/v2/middleware/timeout"
 	"github.com/gofiber/swagger"
-
-	"apps/backend/core-api/internal/handler/metrics"
 
 	// fiber-swagger middleware
 	_ "apps/backend/core-api/docs"

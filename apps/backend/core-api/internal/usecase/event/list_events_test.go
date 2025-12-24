@@ -1,14 +1,14 @@
 package event
 
 import (
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"errors"
 	"testing"
 	"time"
 
 	datagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

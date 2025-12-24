@@ -1,6 +1,10 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/core-api/internal/usecase/cyptoutils"
+	"apps/backend/services/auth"
 	"context"
 	"crypto/ecdsa"
 	"encoding/json"
@@ -9,11 +13,7 @@ import (
 	"math/big"
 	"strings"
 
-	"apps/backend/common/customerror"
 	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/core-api/internal/usecase/cyptoutils"
-	"apps/backend/services/auth"
 
 	"github.com/cockroachdb/errors"
 

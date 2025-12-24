@@ -1,12 +1,11 @@
 package config
 
 import (
-	"sync"
-	"time"
-
 	"apps/backend/core-api/config/blockchain"
 	"apps/backend/core-api/config/postgres"
 	"apps/backend/core-api/config/s3"
+	"sync"
+	"time"
 
 	google "apps/backend/core-api/config/google"
 
