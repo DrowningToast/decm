@@ -1,7 +1,6 @@
 package main
 
 import (
-	"apps/backend/common/log"
 	"apps/backend/common/pgclient"
 	"apps/backend/core-api/config"
 	"apps/backend/core-api/internal/handler/event"
@@ -13,6 +12,7 @@ import (
 	"apps/backend/core-api/internal/handler/system_status"
 	"apps/backend/core-api/internal/repositories/postgres"
 	"apps/backend/services/auth"
+	"apps/backend/services/log"
 	"apps/backend/services/oauth"
 	"apps/backend/services/s3"
 	"context"
@@ -33,7 +33,6 @@ import (
 	inboxmessages_handler "apps/backend/core-api/internal/handler/inbox_messages"
 
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
-	loggermw "apps/backend/core-api/internal/middleware/logger"
 	requestcontext "apps/backend/core-api/internal/middleware/request_context"
 	roleguard "apps/backend/core-api/internal/middleware/role_guard"
 	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
@@ -82,12 +81,12 @@ func main() {
 
 	// Validate configuration
 	if err := cfg.Validate(); err != nil {
-		logger := log.LoadLogger()
+		logger := log.NewLogger()
 		logger.ErrorContext(ctx, "Configuration validation failed", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 
-	logger := log.LoadLogger()
+	logger := log.NewLogger()
 
 	pgConn, err := pgclient.NewPool(ctx, &cfg.Postgres)
 	if err != nil {
@@ -164,7 +163,6 @@ func main() {
 		})).
 		Use(requestid.New()).
 		Use(requestcontext.New()).
-		Use(loggermw.New()).
 		Use(recover.New(recover.Config{
 			EnableStackTrace: true,
 			StackTraceHandler: func(c *fiber.Ctx, e interface{}) {

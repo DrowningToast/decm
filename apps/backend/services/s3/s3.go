@@ -2,9 +2,9 @@ package s3
 
 import (
 	"apps/backend/common/customerror"
-	"apps/backend/common/log"
 	"apps/backend/common/metrics"
 	"apps/backend/common/utils"
+	"apps/backend/services/log"
 	"context"
 	"fmt"
 	"io"
@@ -34,7 +34,7 @@ type S3Service struct {
 
 func NewS3Service() (*S3Service, error) {
 	cfg := config.LoadConfig()
-	logger := log.LoadLogger()
+	logger := log.NewLogger()
 
 	s3Cfg := &s3Config.S3Config{
 		AccessKeyID:     cfg.S3.AccessKeyID,

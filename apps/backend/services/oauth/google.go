@@ -2,10 +2,10 @@ package oauth
 
 import (
 	"apps/backend/common/customerror"
-	"apps/backend/common/log"
 	"apps/backend/common/metrics"
 	"apps/backend/common/utils"
 	"apps/backend/core-api/config"
+	"apps/backend/services/log"
 	"context"
 	"crypto/rand"
 	"encoding/base64"
@@ -92,7 +92,7 @@ func NewGoogleOAuthService() *GoogleOAuthService {
 		googleConfig: googleConfig,
 		SessionStore: sessionStore,
 		httpClient:   httpClient,
-		logger:       log.LoadLogger(),
+		logger:       log.NewLogger(),
 	}
 }
 
