@@ -92,7 +92,7 @@ func NewGoogleOAuthService() *GoogleOAuthService {
 		googleConfig: googleConfig,
 		SessionStore: sessionStore,
 		httpClient:   httpClient,
-		logger:       log.NewLogger(),
+		logger:       log.Logger, // Use singleton logger
 	}
 }
 

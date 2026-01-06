@@ -7,8 +7,8 @@ import (
 )
 
 func (h *Handler) Mount(r fiber.Router) {
-	logger := log.NewLogger()
-	defer logger.Info("Mounted profile routes")
+	// Logger singleton initialized in main.go
+	defer log.Logger.Info("Mounted profile routes")
 
 	profileGroup := r.Group("/profile").Use(h.AuthenticationGuardMiddleware.Middleware)
 	profileGroup.Get("/viewmodel", h.GetProfileViewModel)

@@ -68,18 +68,36 @@ services:
         networks:
             - decm-network
 
+    # Monitoring - Loki (Log Aggregation)
+    loki:
+        image: grafana/loki:latest
+        container_name: decm-loki
+        volumes:
+            - ./loki/config.yaml:/etc/loki/config.yaml
+            - loki_data:/loki
+        command: -config.file=/etc/loki/config.yaml
+        ports:
+            - "3100:3100"
+        restart: unless-stopped
+        networks:
+            - decm-network
+
     # Monitoring - Grafana
     grafana:
         image: grafana/grafana:latest
         container_name: decm-grafana
         volumes:
             - grafana_data:/var/lib/grafana
+            - ./grafana/provisioning:/etc/grafana/provisioning
         environment:
-            - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+            - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+            - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+            - GF_USERS_ALLOW_SIGN_UP=false
         ports:
             - "3001:3000"
         depends_on:
             - prometheus
+            - loki
         restart: unless-stopped
         networks:
             - decm-network
@@ -96,6 +114,8 @@ volumes:
     postgres_data:
         driver: local
     pgadmin_data:
+        driver: local
+    loki_data:
         driver: local
     grafana_data:
         driver: local
