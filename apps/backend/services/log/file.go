@@ -3,6 +3,7 @@ package log
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -45,12 +46,12 @@ func RotateHeadLogFile() error {
 	}
 	defer topFile.Close()
 
-	headLogFile := GetHeadLogFile()
-	defer headLogFile.Close()
-
 	var index int
+	var year, month, day int
 
-	_, err = fmt.Scanf(topFile.Name(), "%d_%d_%d_%d.log", &index)
+	// Extract just the filename from the full path
+	_, fileName := filepath.Split(topFile.Name())
+	_, err = fmt.Sscanf(fileName, "%d_%d_%d_%d.log", &index, &year, &month, &day)
 	if err != nil {
 		return err
 	}
@@ -98,6 +99,11 @@ func GetTopStackLogFile() (*os.File, error) {
 		}
 	}
 
+	// If no valid log files found, return nil
+	if topFileName == "" {
+		return nil, nil
+	}
+
 	topFile, err := os.OpenFile(dirPath+"/"+topFileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		return nil, err
@@ -107,6 +113,10 @@ func GetTopStackLogFile() (*os.File, error) {
 }
 
 func BeforeLogFileWrite(incomingData []byte) error {
+	// Lock to prevent concurrent rotation attempts
+	rotationMutex.Lock()
+	defer rotationMutex.Unlock()
+
 	size, err := GetHeadLogFileSize()
 	if err != nil {
 		return errors.Wrap(err, "failed to get head log file size, log is not recorded into the file")
@@ -121,5 +131,14 @@ func BeforeLogFileWrite(incomingData []byte) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to rotate head log file")
 	}
+
+	// Reopen the file handle to point to new head.log
+	if rotatingFile != nil {
+		err = rotatingFile.Reopen()
+		if err != nil {
+			return errors.Wrap(err, "failed to reopen log file after rotation")
+		}
+	}
+
 	return nil
 }

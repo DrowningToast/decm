@@ -6,7 +6,8 @@
     "scripts": {
         "dev": "go run core-api/cmd/main.go",
         "build": "go build -o dist/main core-api/cmd/main.go",
-        "add-status": "go run scripts/add_system_status.go"
+        "add-status": "go run scripts/add_system_status.go",
+        "logs:clean": "rm -rf logs/* && mkdir -p logs && touch logs/head.log && echo '✓ All logs cleared and fresh head.log created'"
     },
     "keywords": [
         "go",

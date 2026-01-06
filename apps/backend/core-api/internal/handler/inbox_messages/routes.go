@@ -7,8 +7,8 @@ import (
 )
 
 func (h *Handler) Mount(r fiber.Router) {
-	logger := log.NewLogger()
-	defer logger.Info("Mounted inbox messages routes")
+	// Logger singleton initialized in main.go
+	defer log.Logger.Info("Mounted inbox messages routes")
 
 	inboxMessagesGroup := r.Group("/inbox-messages")
 	inboxMessagesGroup.Use(h.AuthenticationGuardMiddleware.Middleware)

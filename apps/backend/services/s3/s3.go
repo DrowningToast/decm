@@ -34,7 +34,7 @@ type S3Service struct {
 
 func NewS3Service() (*S3Service, error) {
 	cfg := config.LoadConfig()
-	logger := log.NewLogger()
+	// Logger singleton initialized in main.go
 
 	s3Cfg := &s3Config.S3Config{
 		AccessKeyID:     cfg.S3.AccessKeyID,
@@ -45,7 +45,7 @@ func NewS3Service() (*S3Service, error) {
 
 	// Validate S3 configuration
 	if !s3Cfg.IsValid() {
-		logger.Error("S3 configuration is invalid or empty",
+		log.Logger.Error("S3 configuration is invalid or empty",
 			"access_key_id", s3Cfg.AccessKeyID != "",
 			"secret_access_key", s3Cfg.SecretAccessKey != "",
 			"bucket_name", s3Cfg.BucketName,
@@ -65,7 +65,7 @@ func NewS3Service() (*S3Service, error) {
 		},
 	})
 	if err != nil {
-		logger.Error("Failed to create S3 session", "error", err)
+		log.Logger.Error("Failed to create S3 session", "error", err)
 		return nil, fmt.Errorf("failed to create S3 session: %w", err)
 	}
 
@@ -76,7 +76,7 @@ func NewS3Service() (*S3Service, error) {
 
 	return &S3Service{
 		s3Config:   s3Cfg,
-		logger:     logger,
+		logger:     log.Logger, // Use singleton logger
 		session:    sess,
 		s3Client:   s3Client,
 		uploader:   uploader,

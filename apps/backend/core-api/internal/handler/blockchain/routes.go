@@ -7,8 +7,8 @@ import (
 )
 
 func (h *Handler) Mount(r fiber.Router) {
-	logger := log.NewLogger()
-	defer logger.Info("Mounted blockchain routes")
+	// Logger singleton initialized in main.go
+	defer log.Logger.Info("Mounted blockchain routes")
 
 	blockchainGroup := r.Group("/blockchain")
 

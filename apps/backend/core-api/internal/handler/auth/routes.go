@@ -7,8 +7,8 @@ import (
 )
 
 func (h Handler) Mount(r fiber.Router) {
-	logger := log.NewLogger()
-	defer logger.Info("Mounted auth routes")
+	// Logger singleton initialized in main.go
+	defer log.Logger.Info("Mounted auth routes")
 
 	authGroup := r.Group("/auth")
 	authGroup.Get("/request-google-oauth", h.RequestGoogleOAuth)

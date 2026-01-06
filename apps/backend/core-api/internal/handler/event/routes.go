@@ -7,8 +7,8 @@ import (
 )
 
 func (h *Handler) Mount(r fiber.Router) {
-	logger := log.NewLogger()
-	defer logger.Info("Mounted event routes")
+	// Logger singleton initialized in main.go
+	defer log.Logger.Info("Mounted event routes")
 
 	// Certificates routes (user-specific, not event-specific)
 	certificateGroup := r.Group("/certificates").Use(
