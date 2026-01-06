@@ -2,11 +2,11 @@ package postgres
 
 import (
 	"apps/backend/common"
-	"apps/backend/common/log"
 	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/log"
 	"context"
 	"decm-database/go/generated"
 
@@ -171,7 +171,7 @@ func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credent
 		encryptedPrivateKey = []byte(*credential.EncryptedPrivateKey)
 	}
 
-	logger := log.LoadLogger()
+	logger := log.FromContext(ctx)
 	logger.Info("Creating authentication credential", "credential", credential)
 
 	// Encrypt PII fields

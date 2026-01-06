@@ -1,8 +1,8 @@
 package logger
 
 import (
-	"apps/backend/common/log"
 	"apps/backend/core-api/constants/ctxkey"
+	"apps/backend/services/log"
 	"context"
 	"fmt"
 	"log/slog"
@@ -16,11 +16,11 @@ var ExcludedPaths = []string{"/swagger/*", "/metrics"}
 
 func New() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// get the request id from the context
-		requestId, _ := c.UserContext().Value("request_id").(string)
-		logger := log.LoadLogger()
+		// Get logger from context (creates new one if not found)
+		logger := log.FromContext(c.UserContext())
 
-		// Create a logger with requestId as a default attribute
+		// Get the request id from the context and add it to logger
+		requestId, _ := c.UserContext().Value("request_id").(string)
 		if requestId != "" {
 			logger = logger.With(slog.String("request_id", requestId))
 		}

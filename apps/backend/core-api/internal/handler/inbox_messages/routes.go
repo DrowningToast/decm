@@ -1,13 +1,13 @@
 package inboxmessages
 
 import (
-	"apps/backend/common/log"
+	"apps/backend/services/log"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func (h *Handler) Mount(r fiber.Router) {
-	logger := log.LoadLogger()
+	logger := log.NewLogger()
 	defer logger.Info("Mounted inbox messages routes")
 
 	inboxMessagesGroup := r.Group("/inbox-messages")
