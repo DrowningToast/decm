@@ -46,13 +46,14 @@ type HookWriter struct {
 //  4. Otherwise, write to underlying writer (stdout + file)
 //
 // Thread Safety:
-//  - Uses RLock/RUnlock to safely read the hook function pointer
-//  - Makes a defensive copy of data to prevent race if hook modifies it
+//   - Uses RLock/RUnlock to safely read the hook function pointer
+//   - Makes a defensive copy of data to prevent race if hook modifies it
 //
 // Current Behavior Note:
-//  If the hook returns an error, the write is aborted and the log entry is lost.
-//  This ensures rotation failures are visible, but may need reconsideration
-//  for production resilience (alternative: log hook errors but write anyway).
+//
+//	If the hook returns an error, the write is aborted and the log entry is lost.
+//	This ensures rotation failures are visible, but may need reconsideration
+//	for production resilience (alternative: log hook errors but write anyway).
 func (hw *HookWriter) Write(p []byte) (n int, err error) {
 	// Read current hook safely (allows concurrent log writes)
 	hookMutex.RLock()
@@ -78,12 +79,14 @@ func (hw *HookWriter) Write(p []byte) (n int, err error) {
 // Set to nil to remove the hook.
 //
 // Thread Safety:
-//  Uses full Lock (not RLock) to ensure exclusive access when updating the hook.
-//  This prevents torn reads where a writer might see a partially-updated pointer.
+//
+//	Uses full Lock (not RLock) to ensure exclusive access when updating the hook.
+//	This prevents torn reads where a writer might see a partially-updated pointer.
 //
 // Usage:
-//  SetWriteHook(BeforeLogFileWrite)  // Enable rotation checks
-//  SetWriteHook(nil)                 // Disable hook
+//
+//	SetWriteHook(BeforeLogFileWrite)  // Enable rotation checks
+//	SetWriteHook(nil)                 // Disable hook
 func SetWriteHook(hook func([]byte) error) {
 	hookMutex.Lock()
 	defer hookMutex.Unlock()
