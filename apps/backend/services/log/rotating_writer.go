@@ -13,9 +13,10 @@ import (
 // create a new file with the original name.
 //
 // Performance Optimization:
-//   Writes use atomic.Value for lock-free reads of the file handle, allowing
-//   high-concurrency logging without serialization. Only Reopen() acquires
-//   an exclusive lock to safely swap the file handle during rotation.
+//
+//	Writes use atomic.Value for lock-free reads of the file handle, allowing
+//	high-concurrency logging without serialization. Only Reopen() acquires
+//	an exclusive lock to safely swap the file handle during rotation.
 //
 // Thread Safety:
 //   - Write(): Lock-free reads via atomic.Value (scales with concurrency)
@@ -68,8 +69,9 @@ func (w *RotatingFileWriter) Write(p []byte) (n int, err error) {
 // This should be called after rotating (renaming) the file.
 //
 // Thread Safety:
-//   Uses rotateMu to ensure only one rotation happens at a time.
-//   File handle swap is atomic via atomic.Value.Store().
+//
+//	Uses rotateMu to ensure only one rotation happens at a time.
+//	File handle swap is atomic via atomic.Value.Store().
 //
 // Flow:
 //  1. Lock rotateMu (blocks concurrent rotations, but not writes)

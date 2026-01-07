@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"apps/backend/core-api/config"
+	"strings"
 
 	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/gofiber/fiber/v2"
@@ -40,8 +41,9 @@ func (h *Handler) authMiddleware(c *fiber.Ctx) error {
 	// Also support standard Bearer token for easier Prometheus config
 	if apiKey == "" {
 		authHeader := c.Get("Authorization")
-		if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
-			apiKey = authHeader[7:]
+		const bearerPrefix = "Bearer "
+		if token, ok := strings.CutPrefix(authHeader, bearerPrefix); ok {
+			apiKey = token
 		}
 	}
 

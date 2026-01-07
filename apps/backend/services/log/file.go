@@ -32,7 +32,7 @@ func GetHeadLogFileSize() (int64, error) {
 	return info.Size(), nil
 }
 
-func RotateHeadLogFile() error {
+func RotateHeadLogFile() (retErr error) {
 	currentDate := time.Now()
 
 	topFile, err := GetTopStackLogFile()
@@ -41,10 +41,16 @@ func RotateHeadLogFile() error {
 	}
 	if topFile == nil {
 		topFileName := fmt.Sprintf("%d_%d_%d_%d.log", 0, currentDate.Year(), int(currentDate.Month()), currentDate.Day())
-		os.Rename("logs/head.log", "logs/"+topFileName)
+		if err := os.Rename("logs/head.log", "logs/"+topFileName); err != nil {
+			return errors.Wrap(err, "failed to rename head.log")
+		}
 		return nil
 	}
-	defer topFile.Close()
+	defer func() {
+		if err := topFile.Close(); err != nil && retErr == nil {
+			retErr = errors.Wrap(err, "failed to close top file")
+		}
+	}()
 
 	var index int
 	var year, month, day int
@@ -58,7 +64,9 @@ func RotateHeadLogFile() error {
 
 	nextIndex := index + 1
 	nextFileName := fmt.Sprintf("%d_%d_%d_%d.log", nextIndex, currentDate.Year(), int(currentDate.Month()), currentDate.Day())
-	os.Rename("logs/head.log", "logs/"+nextFileName)
+	if err := os.Rename("logs/head.log", "logs/"+nextFileName); err != nil {
+		return errors.Wrap(err, "failed to rename head.log")
+	}
 	return nil
 }
 

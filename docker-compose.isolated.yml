@@ -62,11 +62,17 @@ services:
         container_name: prometheus
         volumes:
             - ./prometheus/config.yaml:/etc/prometheus/prometheus.yml
+            - prometheus_data:/prometheus
+        command:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
         ports:
             - "9090:9090"
-        restart: always
+        restart: unless-stopped
         networks:
             - decm-network
+        profiles:
+            - monitoring
 
     # Monitoring - Loki (Log Aggregation)
     loki:
@@ -81,6 +87,8 @@ services:
         restart: unless-stopped
         networks:
             - decm-network
+        profiles:
+            - monitoring
 
     # Monitoring - Alloy (Log Collection Agent)
     alloy:
@@ -104,6 +112,8 @@ services:
         restart: unless-stopped
         networks:
             - decm-network
+        profiles:
+            - monitoring
 
     # Monitoring - Grafana
     grafana:
@@ -124,19 +134,36 @@ services:
         restart: unless-stopped
         networks:
             - decm-network
+        profiles:
+            - monitoring
 
     node-exporter:
         image: prom/node-exporter:v1.10.2
         container_name: node-exporter
+        volumes:
+            - /proc:/host/proc:ro
+            - /sys:/host/sys:ro
+            - /:/rootfs:ro
+        command:
+            - "--path.procfs=/host/proc"
+            - "--path.sysfs=/host/sys"
+            - "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)"
         ports:
             - "9100:9100"
+        restart: unless-stopped
+        depends_on:
+            - prometheus
         networks:
             - decm-network
+        profiles:
+            - monitoring
 
 volumes:
     postgres_data:
         driver: local
     pgadmin_data:
+        driver: local
+    prometheus_data:
         driver: local
     loki_data:
         driver: local
