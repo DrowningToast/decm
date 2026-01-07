@@ -1,12 +1,13 @@
 package oauth
 
 import (
+	"apps/backend/core-api/internal/datagateway"
 	"context"
 
 	"github.com/cockroachdb/errors"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/core-api/internal/datagateway"
+
 	oauth_services "apps/backend/services/oauth"
 
 	"github.com/gofiber/fiber/v2/middleware/session"

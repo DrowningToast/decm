@@ -1,10 +1,9 @@
 package inbox
 
 import (
-	"testing"
-
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"testing"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

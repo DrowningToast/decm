@@ -1,13 +1,12 @@
 package event
 
 import (
-	"errors"
-	"fmt"
-
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/event"
 	"apps/backend/services/auth"
+	"errors"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"

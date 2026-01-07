@@ -1,17 +1,16 @@
 package profile
 
 import (
-	"context"
-	"errors"
-	"testing"
-	"time"
-
 	"apps/backend/common"
 	"apps/backend/common/customerror"
 	"apps/backend/common/hashutils"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
+	"errors"
+	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

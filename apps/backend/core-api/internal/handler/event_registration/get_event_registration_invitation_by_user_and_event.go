@@ -1,11 +1,11 @@
 package event_registration
 
 import (
+	"apps/backend/core-api/internal/entity"
 	"errors"
 	"fmt"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/core-api/internal/entity"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"

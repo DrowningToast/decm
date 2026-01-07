@@ -1,14 +1,13 @@
 package inbox
 
 import (
-	"context"
-	"errors"
-	"testing"
-
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
+	"errors"
+	"testing"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

@@ -1,12 +1,11 @@
 package main
 
 import (
+	"apps/backend/core-api/config"
+	"apps/backend/core-api/internal/usecase/cyptoutils"
 	"context"
 	"fmt"
 	"log"
-
-	"apps/backend/core-api/config"
-	"apps/backend/core-api/internal/usecase/cyptoutils"
 )
 
 func main() {

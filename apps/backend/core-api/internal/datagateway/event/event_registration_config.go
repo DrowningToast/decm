@@ -1,10 +1,9 @@
 package datagateway
 
 import (
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
-
-	"apps/backend/core-api/internal/entity"
 
 	"github.com/google/uuid"
 )

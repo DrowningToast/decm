@@ -1,14 +1,13 @@
 package auth
 
 import (
-	"context"
-	"errors"
-
 	"apps/backend/common"
 	"apps/backend/common/customerror"
 	"apps/backend/common/hashutils"
 	"apps/backend/core-api/internal/usecase/cyptoutils"
 	"apps/backend/services/auth"
+	"context"
+	"errors"
 
 	gocommon "github.com/ethereum/go-ethereum/common"
 )

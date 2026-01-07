@@ -1,11 +1,12 @@
 package event_registration
 
 import (
+	"apps/backend/common/validatorutils"
+	"apps/backend/core-api/internal/usecase/cyptoutils"
 	"encoding/hex"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/common/validatorutils"
-	"apps/backend/core-api/internal/usecase/cyptoutils"
+
 	event_registration_uc "apps/backend/core-api/internal/usecase/event_registration"
 
 	"github.com/cockroachdb/errors"

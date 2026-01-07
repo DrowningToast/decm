@@ -1,11 +1,10 @@
 package event_registration
 
 import (
-	"context"
-
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
 
 	"github.com/google/uuid"
 )

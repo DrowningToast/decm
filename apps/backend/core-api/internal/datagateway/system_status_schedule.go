@@ -1,10 +1,9 @@
 package datagateway
 
 import (
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"time"
-
-	"apps/backend/core-api/internal/entity"
 )
 
 type SystemStatusScheduleDataGateway interface {

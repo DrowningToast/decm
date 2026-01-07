@@ -1,15 +1,15 @@
 package inbox
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/datagateway"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"strings"
 	"time"
 
-	"apps/backend/common/customerror"
-	"apps/backend/core-api/internal/datagateway"
 	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"

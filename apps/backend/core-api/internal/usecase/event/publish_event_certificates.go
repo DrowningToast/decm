@@ -12,15 +12,15 @@ package event
 // TODO: Remove this file and the associated handler after migration is complete
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"decm-database/go/generated"
 	"encoding/json"
 	"fmt"
 
-	"apps/backend/common/customerror"
 	datagateway "apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
 
 	"github.com/google/uuid"
 )

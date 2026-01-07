@@ -1,20 +1,20 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/config"
+	"apps/backend/core-api/config/blockchain"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
+	"apps/backend/services/s3"
 	"context"
 	"errors"
 	"mime/multipart"
 	"testing"
 	"time"
 
-	"apps/backend/common/customerror"
-	"apps/backend/core-api/config"
-	"apps/backend/core-api/config/blockchain"
 	authDg "apps/backend/core-api/internal/datagateway"
 	datagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
-	"apps/backend/services/s3"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"

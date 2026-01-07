@@ -1,10 +1,9 @@
 package cyptoutils
 
 import (
+	"apps/backend/common/customerror"
 	"crypto/ecdsa"
 	"fmt"
-
-	"apps/backend/common/customerror"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/tyler-smith/go-bip32"

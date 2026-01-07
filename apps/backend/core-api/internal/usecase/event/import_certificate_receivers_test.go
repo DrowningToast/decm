@@ -1,17 +1,17 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/config"
+	"apps/backend/core-api/config/blockchain"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"decm-database/go/generated"
 	"errors"
 	"testing"
 
-	"apps/backend/common/customerror"
-	"apps/backend/core-api/config"
-	"apps/backend/core-api/config/blockchain"
 	datagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

@@ -1,10 +1,9 @@
 package issuer
 
 import (
+	"apps/backend/core-api/internal/datagateway"
 	"context"
 	"decm-database/go/generated"
-
-	"apps/backend/core-api/internal/datagateway"
 )
 
 type IssuerEventViewModel struct {

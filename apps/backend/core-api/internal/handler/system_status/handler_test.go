@@ -1,6 +1,9 @@
 package system_status
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/core-api/internal/usecase/system_status"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,10 +13,6 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
-
-	"apps/backend/common/customerror"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/core-api/internal/usecase/system_status"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"

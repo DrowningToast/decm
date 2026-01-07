@@ -19,6 +19,8 @@ func ParseEnvironment(s string) (Environment, error) {
 	switch s {
 	case "development":
 		return DevelopmentEnvironment, nil
+	case "testing":
+		return TestingEnvironment, nil
 	case "production":
 		return ProductionEnvironment, nil
 	default:

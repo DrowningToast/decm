@@ -1,9 +1,8 @@
 package datagateway
 
 import (
-	"context"
-
 	"apps/backend/core-api/internal/entity"
+	"context"
 
 	"github.com/google/uuid"
 )

@@ -1,0 +1,126 @@
+// Grafana Alloy Configuration (Development - File-based)
+// https://grafana.com/docs/alloy/latest/
+//
+// This config is for development where the backend runs on the host (not in Docker)
+// and logs to files. Alloy tails the log files directly.
+
+// Logging configuration for Alloy itself
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// ============================================
+// Loki Write Endpoint
+// ============================================
+loki.write "loki_endpoint" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+
+  // External labels applied to all logs
+  external_labels = {
+    cluster      = "decm",
+    environment  = env("ENVIRONMENT"),
+    service_name = "decm-backend",
+  }
+}
+
+// ============================================
+// Local File Discovery - Backend Logs
+// ============================================
+// Discovers all log files in the backend logs directory
+local.file_match "backend_logs" {
+  path_targets = [{
+    __address__ = "localhost",
+    __path__    = "/var/log/backend/logs/*.log",
+  }]
+}
+
+// ============================================
+// Log File Tailing
+// ============================================
+// Tail log files and process them
+loki.source.file "backend_logs" {
+  targets    = local.file_match.backend_logs.targets
+  forward_to = [loki.process.backend_json.receiver]
+
+  // Start from end on first run
+  tail_from_end = true
+}
+
+// ============================================
+// Log Processing Pipeline
+// ============================================
+// Process and parse logs (supports both JSON and logfmt)
+loki.process "backend_json" {
+  forward_to = [loki.write.loki_endpoint.receiver]
+
+  // Stage 1: Try to parse as JSON first
+  stage.json {
+    expressions = {
+      timestamp  = "time",
+      level      = "level",
+      message    = "msg",
+      source     = "source",
+      error      = "error",
+      request_id = "request_id",
+      method     = "method",
+      path       = "path",
+      status     = "status",
+      duration   = "duration",
+      user_id    = "user_id",
+    }
+  }
+
+  // Stage 2: If JSON fails, parse as logfmt (key=value format)
+  stage.logfmt {
+    mapping = {
+      timestamp  = "time",
+      level      = "level",
+      message    = "msg",
+      source     = "source",
+      error      = "err",
+    }
+  }
+
+  // Stage 3: Extract timestamp
+  stage.timestamp {
+    source = "timestamp"
+    format = "RFC3339"
+
+    // Fallback formats if RFC3339 fails
+    fallback_formats = [
+      "RFC3339Nano",
+      "2006-01-02T15:04:05.999999999Z07:00",
+    ]
+  }
+
+  // Stage 4: Convert level to lowercase for Grafana compatibility
+  stage.template {
+    source   = "level"
+    template = "{{ ToLower .Value }}"
+  }
+
+  // Stage 5: Add labels from parsed fields
+  stage.labels {
+    values = {
+      level      = "",
+      method     = "",
+      status     = "",
+      job        = "backend",
+      app        = "decm-backend",
+      service    = "decm-backend",
+    }
+  }
+
+  // Stage 6: Output - use message field as log line
+  stage.output {
+    source = "message"
+  }
+
+  // Stage 7: Drop empty log lines
+  stage.drop {
+    expression = "^\\s*$"
+  }
+}

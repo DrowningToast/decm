@@ -1,15 +1,14 @@
 package authenticationguard
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/services/auth"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
-
-	"apps/backend/common/customerror"
-	"apps/backend/services/auth"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"

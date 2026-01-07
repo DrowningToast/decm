@@ -1,9 +1,8 @@
 package event
 
 import (
-	"context"
-
 	"apps/backend/core-api/internal/entity"
+	"context"
 )
 
 func (u *EventUsecase) ToEventResponse(ctx context.Context, event *entity.Event) (*EventResponse, error) {

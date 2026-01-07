@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
     postgres:
         image: postgres:16-alpine
@@ -40,7 +38,7 @@ services:
 
     # Optional: pgAdmin for database management UI
     pgadmin:
-        image: dpage/pgadmin4:latest
+        image: dpage/pgadmin4:9.0
         container_name: decm-pgadmin
         restart: unless-stopped
         environment:
@@ -59,10 +57,119 @@ services:
         profiles:
             - tools # Only start when explicitly requested
 
+    prometheus:
+        image: prom/prometheus:v3.8.1
+        container_name: prometheus
+        volumes:
+            - ./prometheus/config.yaml:/etc/prometheus/prometheus.yml
+            - prometheus_data:/prometheus
+        command:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
+        ports:
+            - "9090:9090"
+        restart: unless-stopped
+        networks:
+            - decm-network
+        profiles:
+            - monitoring
+
+    # Monitoring - Loki (Log Aggregation)
+    loki:
+        image: grafana/loki:3.3.2
+        container_name: decm-loki
+        volumes:
+            - ./loki/config.yaml:/etc/loki/config.yaml
+            - loki_data:/loki
+        command: -config.file=/etc/loki/config.yaml
+        ports:
+            - "3100:3100"
+        restart: unless-stopped
+        networks:
+            - decm-network
+        profiles:
+            - monitoring
+
+    # Monitoring - Alloy (Log Collection Agent)
+    alloy:
+        image: grafana/alloy:v1.5.1
+        container_name: decm-alloy
+        volumes:
+            - ./alloy/config.dev.alloy:/etc/alloy/config.alloy
+            - ./apps/backend/logs:/var/log/backend/logs:ro
+            - alloy_data:/var/lib/alloy
+        command:
+            - run
+            - --server.http.listen-addr=0.0.0.0:12345
+            - --storage.path=/var/lib/alloy
+            - /etc/alloy/config.alloy
+        environment:
+            - ENVIRONMENT=${ENVIRONMENT:-development}
+        ports:
+            - "12345:12345"
+        depends_on:
+            - loki
+        restart: unless-stopped
+        networks:
+            - decm-network
+        profiles:
+            - monitoring
+
+    # Monitoring - Grafana
+    grafana:
+        image: grafana/grafana:11.4.0
+        container_name: decm-grafana
+        volumes:
+            - grafana_data:/var/lib/grafana
+            - ./grafana/provisioning:/etc/grafana/provisioning
+        environment:
+            - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+            - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+            - GF_USERS_ALLOW_SIGN_UP=false
+        ports:
+            - "3001:3000"
+        depends_on:
+            - prometheus
+            - loki
+        restart: unless-stopped
+        networks:
+            - decm-network
+        profiles:
+            - monitoring
+
+    node-exporter:
+        image: prom/node-exporter:v1.10.2
+        container_name: node-exporter
+        volumes:
+            - /proc:/host/proc:ro
+            - /sys:/host/sys:ro
+            - /:/rootfs:ro
+        command:
+            - "--path.procfs=/host/proc"
+            - "--path.sysfs=/host/sys"
+            - "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)"
+        ports:
+            - "9100:9100"
+        restart: unless-stopped
+        depends_on:
+            - prometheus
+        networks:
+            - decm-network
+        profiles:
+            - monitoring
+
 volumes:
     postgres_data:
         driver: local
     pgadmin_data:
+        driver: local
+    prometheus_data:
+        driver: local
+    loki_data:
+        driver: local
+    alloy_data:
+        driver: local
+    grafana_data:
         driver: local
 
 networks:

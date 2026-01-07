@@ -100,22 +100,3 @@ func (uc *EventConfigUsecase) CheckCertificateMintReadiness(ctx context.Context,
 
 	return response, nil
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

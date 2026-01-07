@@ -1,10 +1,9 @@
 package issuer
 
 import (
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"strings"
-
-	"apps/backend/core-api/internal/entity"
 )
 
 // GetVerifiedIssuersRequest contains parameters for fetching verified issuers

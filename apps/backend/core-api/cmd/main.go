@@ -1,6 +1,20 @@
 package main
 
 import (
+	"apps/backend/common/pgclient"
+	"apps/backend/core-api/config"
+	"apps/backend/core-api/internal/handler/event"
+	"apps/backend/core-api/internal/handler/event_registration"
+	"apps/backend/core-api/internal/handler/issuer"
+	"apps/backend/core-api/internal/handler/metrics"
+	"apps/backend/core-api/internal/handler/onboard"
+	"apps/backend/core-api/internal/handler/profile"
+	"apps/backend/core-api/internal/handler/system_status"
+	"apps/backend/core-api/internal/repositories/postgres"
+	"apps/backend/services/auth"
+	"apps/backend/services/log"
+	"apps/backend/services/oauth"
+	"apps/backend/services/s3"
 	"context"
 	"fmt"
 	"log/slog"
@@ -11,24 +25,19 @@ import (
 	"time"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/common/log"
-	"apps/backend/common/pgclient"
-	"apps/backend/core-api/config"
+
 	auth_handler "apps/backend/core-api/internal/handler/auth"
 	blockchain_handler "apps/backend/core-api/internal/handler/blockchain"
-	"apps/backend/core-api/internal/handler/event"
-	"apps/backend/core-api/internal/handler/event_registration"
+
 	eventconfig_handler "apps/backend/core-api/internal/handler/eventconfig"
 	inboxmessages_handler "apps/backend/core-api/internal/handler/inbox_messages"
-	"apps/backend/core-api/internal/handler/issuer"
-	"apps/backend/core-api/internal/handler/onboard"
-	"apps/backend/core-api/internal/handler/profile"
-	"apps/backend/core-api/internal/handler/system_status"
+
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
+	loggermiddleware "apps/backend/core-api/internal/middleware/logger"
 	requestcontext "apps/backend/core-api/internal/middleware/request_context"
 	roleguard "apps/backend/core-api/internal/middleware/role_guard"
 	verifyjwt "apps/backend/core-api/internal/middleware/verify_jwt"
-	"apps/backend/core-api/internal/repositories/postgres"
+
 	auth_usecase "apps/backend/core-api/internal/usecase/auth"
 	blockchain_usecase "apps/backend/core-api/internal/usecase/blockchain"
 	event_usecase "apps/backend/core-api/internal/usecase/event"
@@ -40,9 +49,6 @@ import (
 	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
 	profile_usecase "apps/backend/core-api/internal/usecase/profile"
 	system_status_usecase "apps/backend/core-api/internal/usecase/system_status"
-	"apps/backend/services/auth"
-	"apps/backend/services/oauth"
-	"apps/backend/services/s3"
 
 	json "github.com/goccy/go-json"
 
@@ -74,37 +80,37 @@ func main() {
 
 	cfg := config.LoadConfig()
 
+	// Initialize logger singleton once at startup
+	log.Init()
+
 	// Validate configuration
 	if err := cfg.Validate(); err != nil {
-		logger := log.LoadLogger()
-		logger.ErrorContext(ctx, "Configuration validation failed", slog.String("error", err.Error()))
+		log.Logger.ErrorContext(ctx, "Configuration validation failed", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 
-	logger := log.LoadLogger()
-
 	pgConn, err := pgclient.NewPool(ctx, &cfg.Postgres)
 	if err != nil {
-		logger.ErrorContext(ctx, "failed to create pgxpool", slog.String("error", err.Error()))
+		log.Logger.ErrorContext(ctx, "failed to create pgxpool", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 	defer func() {
 		pgConn.Close()
-		logger.InfoContext(ctx, "Gracefully closed pgxpool connection")
+		log.Logger.InfoContext(ctx, "Gracefully closed pgxpool connection")
 	}()
-	logger.Info("Sucessfully connected to pg pool")
+	log.Logger.Info("Sucessfully connected to pg pool")
 
 	// services
 	expiration, err := time.ParseDuration(cfg.Jwt.Expiration)
 	if err != nil {
-		logger.ErrorContext(ctx, "failed to parse jwt expiration", slog.String("error", err.Error()))
+		log.Logger.ErrorContext(ctx, "failed to parse jwt expiration", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 	authService := auth.NewAuthService(cfg.Jwt.Issuer, cfg.Jwt.SecretKey, expiration, cfg.CookieDomain)
 	googleOAuthService := oauth.NewGoogleOAuthService()
 	s3Service, err := s3.NewS3Service()
 	if err != nil {
-		logger.Error("Failed to initialize S3 service", "error", err)
+		log.Logger.Error("Failed to initialize S3 service", "error", err)
 		panic(fmt.Sprintf("S3 service initialization failed: %v", err))
 	}
 
@@ -116,11 +122,11 @@ func main() {
 	authUc := auth_usecase.NewAuthUsecase(pgRepo) // No database dependency - reads from JWT claims
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo, authService, pgRepo)
 	systemStatusUc := system_status_usecase.NewSystemStatusUsecase(pgRepo)
-	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, s3Service, logger, authService, &cfg)
-	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, logger)
+	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, s3Service, log.Logger, authService, &cfg)
+	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, log.Logger)
 	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)
 	inboxUc := inbox_usecase.NewInboxUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo)
-	blockchainUc := blockchain_usecase.NewBlockchainUsecase(logger, &cfg)
+	blockchainUc := blockchain_usecase.NewBlockchainUsecase(log.Logger, &cfg)
 	eventRegistrationUc := event_registration_invitation_usecase.NewEventRegistrationUsecase(
 		pgRepo,   // InboxMessageDataGateway
 		pgRepo,   // EventRegistrationInvitationDataGateway
@@ -141,9 +147,12 @@ func main() {
 		ReadBufferSize:     cfg.Api.MaxReadBufferSize,
 		EnableIPValidation: true,
 		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
-			return customerror.GetErrFiberHandler(logger)(ctx, err)
+			return customerror.GetErrFiberHandler(log.Logger)(ctx, err)
 		},
 	})
+
+	metricsHandler := metrics.NewHandler(&cfg)
+	app.Use(metricsHandler.GetMiddleware())
 
 	app.Use(favicon.New()).
 		Use(cors.New(cors.Config{
@@ -155,12 +164,13 @@ func main() {
 		})).
 		Use(requestid.New()).
 		Use(requestcontext.New()).
+		Use(loggermiddleware.New()).
 		Use(recover.New(recover.Config{
 			EnableStackTrace: true,
 			StackTraceHandler: func(c *fiber.Ctx, e interface{}) {
 				buf := make([]byte, 1024) // bufLen = 1024
 				buf = buf[:runtime.Stack(buf, false)]
-				logger.ErrorContext(c.UserContext(), "Something went wrong, panic in http handler", slog.Any("panic", e), slog.String("stacktrace", string(buf)))
+				log.Logger.ErrorContext(c.UserContext(), "Something went wrong, panic in http handler", slog.Any("panic", e), slog.String("stacktrace", string(buf)))
 			},
 		})).
 		Use(healthcheck.New(healthcheck.Config{
@@ -198,7 +208,7 @@ func main() {
 	// Onboard handler
 	onboardHandler, err := onboard.NewHandler(onboardUc, profileUc, authService, googleOAuthService, verifyJwtMiddleware)
 	if err != nil {
-		logger.ErrorContext(ctx, "failed to create onboard handler", slog.String("error", err.Error()))
+		log.Logger.ErrorContext(ctx, "failed to create onboard handler", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 	onboardHandler.Mount(apiV1)
@@ -209,10 +219,10 @@ func main() {
 	profileHandler := profile.NewHandler(profileUc, authService, authenticationGuardMiddleware)
 	profileHandler.Mount(apiV1)
 
-	eventHandler := event.NewHandler(eventUc, eventConfigUc, profileUc, eventRegistrationUc, authService, authenticationGuardMiddleware, logger)
+	eventHandler := event.NewHandler(eventUc, eventConfigUc, profileUc, eventRegistrationUc, authService, authenticationGuardMiddleware, log.Logger)
 	eventHandler.Mount(apiV1)
 
-	eventConfigHandler := eventconfig_handler.NewHandler(eventConfigUc, eventUc, authService, authenticationGuardMiddleware, roleGuardMiddleware, logger)
+	eventConfigHandler := eventconfig_handler.NewHandler(eventConfigUc, eventUc, authService, authenticationGuardMiddleware, roleGuardMiddleware, log.Logger)
 	eventConfigHandler.Mount(apiV1)
 
 	issuerHandler := issuer.NewHandler(issuerUc, authService, authenticationGuardMiddleware, roleGuardMiddleware)
@@ -224,21 +234,23 @@ func main() {
 	inboxMessagesHandler := inboxmessages_handler.NewHandler(inboxUc, authenticationGuardMiddleware, authService, authUc)
 	inboxMessagesHandler.Mount(apiV1)
 
-	systemStatusHandler := system_status.NewHandler(systemStatusUc, blockchainUc, logger)
+	systemStatusHandler := system_status.NewHandler(systemStatusUc, blockchainUc, log.Logger)
 	systemStatusHandler.Mount(apiV1)
 
 	blockchainHandler := blockchain_handler.NewHandler(blockchainUc, systemStatusUc)
 	blockchainHandler.Mount(apiV1)
 
+	metricsHandler.Mount(app)
+
 	// Start HTTP Server
 	go func() {
 		if err := app.Listen(fmt.Sprintf(":%d", cfg.Port)); err != nil {
-			logger.ErrorContext(ctx, "error while server listening", slog.String("error", err.Error()))
+			log.Logger.ErrorContext(ctx, "error while server listening", slog.String("error", err.Error()))
 			stop() // stop app if HTTP server is stopped
 		}
 	}()
 
-	logger.InfoContext(ctx, "Starting application...",
+	log.Logger.InfoContext(ctx, "Starting application...",
 		slog.String("name", cfg.Name),
 		slog.String("env", cfg.Env),
 		slog.Int("port", cfg.Port),
@@ -249,24 +261,24 @@ func main() {
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		defer logger.InfoContext(ctx, "Gracefully shutting down server")
+		defer log.Logger.InfoContext(ctx, "Gracefully shutting down server")
 
 		go func() {
 			<-ctx.Done()
 			if ctx.Err() == context.DeadlineExceeded {
-				logger.ErrorContext(ctx, "Graceful shutdown timeout, force shutdown", slog.String("error", "graceful shutdown timeout"))
+				log.Logger.ErrorContext(ctx, "Graceful shutdown timeout, force shutdown", slog.String("error", "graceful shutdown timeout"))
 				os.Exit(1)
 			}
 		}()
 
 		if err := app.ShutdownWithContext(ctx); err != nil {
-			logger.ErrorContext(ctx, "error in shutdown http server", slog.String("error", err.Error()))
+			log.Logger.ErrorContext(ctx, "error in shutdown http server", slog.String("error", err.Error()))
 		} else {
-			logger.InfoContext(ctx, "Gracefully stopped HTTP server")
+			log.Logger.InfoContext(ctx, "Gracefully stopped HTTP server")
 		}
 	}()
 
 	// Listen for signals
 	<-ctx.Done()
-	logger.InfoContext(ctx, "Received signal to terminate application")
+	log.Logger.InfoContext(ctx, "Received signal to terminate application")
 }
