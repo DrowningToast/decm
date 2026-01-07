@@ -34,16 +34,14 @@ func New() fiber.Handler {
 
 		err := c.Next()
 
-		duration := time.Since(start).Seconds()
+		duration := time.Since(start)
 		status := c.Response().StatusCode()
-
-		prefix := fmt.Sprintf("[%d] %s, %s, %f", status, method, path, duration)
 
 		// Skip logging for excluded paths
 		for _, excludedPath := range ExcludedPaths {
 			matched, matchErr := regexp.MatchString(excludedPath, path)
 			if matchErr != nil {
-				logger.Error("An error has occured", slog.String("error", matchErr.Error()))
+				logger.Error("Pattern match error", slog.String("error", matchErr.Error()))
 				continue
 			}
 			if matched {
@@ -51,12 +49,24 @@ func New() fiber.Handler {
 			}
 		}
 
+		// Log with structured fields
 		if err != nil {
-			logger.Error(prefix, "An error has occured", slog.String("error", err.Error()))
+			logger.ErrorContext(c.UserContext(), fmt.Sprintf("HTTP request error: %s %s", method, path),
+				slog.String("method", method),
+				slog.String("path", path),
+				slog.Int("status", status),
+				slog.Duration("duration", duration),
+				slog.String("error", err.Error()),
+			)
 			return err
 		}
 
-		logger.Info(prefix, slog.Bool("success", true))
+		logger.InfoContext(c.UserContext(), fmt.Sprintf("HTTP request completed: %s %s", method, path),
+			slog.String("method", method),
+			slog.String("path", path),
+			slog.Int("status", status),
+			slog.Duration("duration", duration),
+		)
 		return nil
 	}
 }
