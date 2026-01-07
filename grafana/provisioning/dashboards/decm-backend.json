@@ -1,0 +1,810 @@
+{
+    "title": "DECM Backend Metrics",
+    "tags": ["backend", "decm", "api"],
+    "timezone": "browser",
+    "editable": true,
+    "graphTooltip": 1,
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "refresh": "10s",
+    "panels": [
+        {
+            "id": 1,
+            "title": "HTTP Request Rate",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 0
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(http_requests_total{job=\"decm-backend\"}[5m]))",
+                    "legendFormat": "Total Requests/sec",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Requests/sec",
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 2,
+                        "pointSize": 5,
+                        "showPoints": "never"
+                    },
+                    "unit": "reqps"
+                }
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            }
+        },
+        {
+            "id": 2,
+            "title": "HTTP Error Rate",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 0
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(http_requests_total{job=\"decm-backend\",status_code=~\"4..\"}[5m]))",
+                    "legendFormat": "4xx Errors/sec",
+                    "refId": "A"
+                },
+                {
+                    "expr": "sum(rate(http_requests_total{job=\"decm-backend\",status_code=~\"5..\"}[5m]))",
+                    "legendFormat": "5xx Errors/sec",
+                    "refId": "B"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Errors/sec",
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "unit": "reqps"
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "4xx Errors/sec"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "yellow",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "5xx Errors/sec"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "red",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": 3,
+            "title": "HTTP Request Duration (p95, p99)",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 8
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"decm-backend\"}[5m])) by (le))",
+                    "legendFormat": "p95",
+                    "refId": "A"
+                },
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"decm-backend\"}[5m])) by (le))",
+                    "legendFormat": "p99",
+                    "refId": "B"
+                },
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"decm-backend\"}[5m])) by (le))",
+                    "legendFormat": "p50 (median)",
+                    "refId": "C"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Duration",
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "unit": "s"
+                }
+            }
+        },
+        {
+            "id": 4,
+            "title": "Requests by Status Code",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 8
+            },
+            "targets": [
+                {
+                    "expr": "sum by (status_code) (rate(http_requests_total{job=\"decm-backend\"}[5m]))",
+                    "legendFormat": "{{status_code}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Requests/sec",
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 2,
+                        "stacking": {
+                            "mode": "normal"
+                        }
+                    },
+                    "unit": "reqps"
+                }
+            }
+        },
+        {
+            "id": 5,
+            "title": "Top 10 Endpoints by Request Rate",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 16
+            },
+            "targets": [
+                {
+                    "expr": "topk(10, sum by (path, method) (rate(http_requests_total{job=\"decm-backend\"}[5m])))",
+                    "legendFormat": "{{method}} {{path}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Requests/sec",
+                        "drawStyle": "line",
+                        "fillOpacity": 5,
+                        "lineWidth": 1
+                    },
+                    "unit": "reqps"
+                }
+            }
+        },
+        {
+            "id": 6,
+            "title": "Active Requests",
+            "type": "stat",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 12,
+                "y": 16
+            },
+            "targets": [
+                {
+                    "expr": "sum(http_requests_in_progress_total{job=\"decm-backend\"})",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 10
+                            },
+                            {
+                                "color": "red",
+                                "value": 50
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                }
+            },
+            "options": {
+                "graphMode": "area",
+                "colorMode": "value",
+                "textMode": "auto"
+            }
+        },
+        {
+            "id": 7,
+            "title": "Total Requests (Last 5min)",
+            "type": "stat",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 18,
+                "y": 16
+            },
+            "targets": [
+                {
+                    "expr": "sum(increase(http_requests_total{job=\"decm-backend\"}[5m]))",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                }
+            },
+            "options": {
+                "graphMode": "area",
+                "colorMode": "value",
+                "textMode": "auto"
+            }
+        },
+        {
+            "id": 8,
+            "title": "S3 Operations Rate",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 20
+            },
+            "targets": [
+                {
+                    "expr": "sum by (operation) (rate(s3_operations_total{job=\"decm-backend\"}[5m]))",
+                    "legendFormat": "{{operation}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Operations/sec",
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "unit": "ops"
+                }
+            }
+        },
+        {
+            "id": 9,
+            "title": "S3 Operation Duration (p95)",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 24
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.95, sum by (operation, le) (rate(s3_operation_duration_bucket{job=\"decm-backend\"}[5m])))",
+                    "legendFormat": "{{operation}} p95",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Duration",
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "unit": "s"
+                }
+            }
+        },
+        {
+            "id": 10,
+            "title": "Google OAuth Operations",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 24
+            },
+            "targets": [
+                {
+                    "expr": "sum by (operation) (rate(google_oauth_operations_total{job=\"decm-backend\"}[5m]))",
+                    "legendFormat": "{{operation}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Operations/sec",
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "unit": "ops"
+                }
+            }
+        },
+        {
+            "id": 11,
+            "title": "CPU Usage",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 32
+            },
+            "targets": [
+                {
+                    "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+                    "legendFormat": "CPU Usage %",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "CPU %",
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "unit": "percent"
+                }
+            }
+        },
+        {
+            "id": 12,
+            "title": "Memory Usage",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 32
+            },
+            "targets": [
+                {
+                    "expr": "100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)",
+                    "legendFormat": "Memory Usage %",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Memory %",
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "unit": "percent"
+                }
+            }
+        },
+        {
+            "id": 13,
+            "title": "System Load Average",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 40
+            },
+            "targets": [
+                {
+                    "expr": "node_load1",
+                    "legendFormat": "1 min",
+                    "refId": "A"
+                },
+                {
+                    "expr": "node_load5",
+                    "legendFormat": "5 min",
+                    "refId": "B"
+                },
+                {
+                    "expr": "node_load15",
+                    "legendFormat": "15 min",
+                    "refId": "C"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Load",
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "unit": "short"
+                }
+            }
+        },
+        {
+            "id": 14,
+            "title": "Disk Usage",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 40
+            },
+            "targets": [
+                {
+                    "expr": "100 - ((node_filesystem_avail_bytes{mountpoint=\"/\"} * 100) / node_filesystem_size_bytes{mountpoint=\"/\"})",
+                    "legendFormat": "Root (/) Usage %",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Disk %",
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "unit": "percent",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 70
+                            },
+                            {
+                                "color": "red",
+                                "value": 90
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": 15,
+            "title": "Network I/O",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 48
+            },
+            "targets": [
+                {
+                    "expr": "rate(node_network_receive_bytes_total[5m])",
+                    "legendFormat": "{{device}} RX",
+                    "refId": "A"
+                },
+                {
+                    "expr": "rate(node_network_transmit_bytes_total[5m])",
+                    "legendFormat": "{{device}} TX",
+                    "refId": "B"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Bytes/sec",
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "unit": "Bps"
+                }
+            }
+        },
+        {
+            "id": 16,
+            "title": "Disk I/O",
+            "type": "timeseries",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 48
+            },
+            "targets": [
+                {
+                    "expr": "rate(node_disk_read_bytes_total[5m])",
+                    "legendFormat": "{{device}} Read",
+                    "refId": "A"
+                },
+                {
+                    "expr": "rate(node_disk_written_bytes_total[5m])",
+                    "legendFormat": "{{device}} Write",
+                    "refId": "B"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisLabel": "Bytes/sec",
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "unit": "Bps"
+                }
+            }
+        },
+        {
+            "id": 17,
+            "title": "System Uptime",
+            "type": "stat",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 0,
+                "y": 56
+            },
+            "targets": [
+                {
+                    "expr": "node_time_seconds - node_boot_time_seconds",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "s"
+                }
+            },
+            "options": {
+                "graphMode": "none",
+                "colorMode": "value",
+                "textMode": "auto"
+            }
+        },
+        {
+            "id": 18,
+            "title": "Total Memory",
+            "type": "stat",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 6,
+                "y": 56
+            },
+            "targets": [
+                {
+                    "expr": "node_memory_MemTotal_bytes",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "bytes"
+                }
+            },
+            "options": {
+                "graphMode": "none",
+                "colorMode": "value",
+                "textMode": "auto"
+            }
+        },
+        {
+            "id": 19,
+            "title": "Total Disk Space (/)",
+            "type": "stat",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 12,
+                "y": 56
+            },
+            "targets": [
+                {
+                    "expr": "node_filesystem_size_bytes{mountpoint=\"/\"}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "bytes"
+                }
+            },
+            "options": {
+                "graphMode": "none",
+                "colorMode": "value",
+                "textMode": "auto"
+            }
+        },
+        {
+            "id": 20,
+            "title": "CPU Count",
+            "type": "stat",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 18,
+                "y": 56
+            },
+            "targets": [
+                {
+                    "expr": "count(count by (cpu) (node_cpu_seconds_total{mode=\"idle\"}))",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                }
+            },
+            "options": {
+                "graphMode": "none",
+                "colorMode": "value",
+                "textMode": "auto"
+            }
+        }
+    ],
+    "schemaVersion": 38,
+    "version": 1
+}

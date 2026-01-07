@@ -38,7 +38,7 @@ services:
 
     # Optional: pgAdmin for database management UI
     pgadmin:
-        image: dpage/pgadmin4:latest
+        image: dpage/pgadmin4:9.0
         container_name: decm-pgadmin
         restart: unless-stopped
         environment:
@@ -70,7 +70,7 @@ services:
 
     # Monitoring - Loki (Log Aggregation)
     loki:
-        image: grafana/loki:latest
+        image: grafana/loki:3.3.2
         container_name: decm-loki
         volumes:
             - ./loki/config.yaml:/etc/loki/config.yaml
@@ -82,9 +82,32 @@ services:
         networks:
             - decm-network
 
+    # Monitoring - Alloy (Log Collection Agent)
+    alloy:
+        image: grafana/alloy:v1.5.1
+        container_name: decm-alloy
+        volumes:
+            - ./alloy/config.dev.alloy:/etc/alloy/config.alloy
+            - ./apps/backend/logs:/var/log/backend/logs:ro
+            - alloy_data:/var/lib/alloy
+        command:
+            - run
+            - --server.http.listen-addr=0.0.0.0:12345
+            - --storage.path=/var/lib/alloy
+            - /etc/alloy/config.alloy
+        environment:
+            - ENVIRONMENT=${ENVIRONMENT:-development}
+        ports:
+            - "12345:12345"
+        depends_on:
+            - loki
+        restart: unless-stopped
+        networks:
+            - decm-network
+
     # Monitoring - Grafana
     grafana:
-        image: grafana/grafana:latest
+        image: grafana/grafana:11.4.0
         container_name: decm-grafana
         volumes:
             - grafana_data:/var/lib/grafana
@@ -116,6 +139,8 @@ volumes:
     pgadmin_data:
         driver: local
     loki_data:
+        driver: local
+    alloy_data:
         driver: local
     grafana_data:
         driver: local
