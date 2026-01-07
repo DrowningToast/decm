@@ -1,14 +1,14 @@
 package postgres
 
 import (
+	"apps/backend/common/pgerrutils"
+	"apps/backend/common/pgmapper"
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
 	"time"
 
-	"apps/backend/common/pgerrutils"
-	"apps/backend/common/pgmapper"
 	datagateway "apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
 )
 
 var _ datagateway.SystemStatusScheduleDataGateway = (*Repository)(nil)

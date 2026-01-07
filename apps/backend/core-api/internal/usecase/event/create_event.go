@@ -1,16 +1,16 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"errors"
 	"math/big"
 	"mime/multipart"
 	"time"
 
-	"apps/backend/common/customerror"
 	datagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
 
 	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 

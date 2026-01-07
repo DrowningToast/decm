@@ -1,12 +1,12 @@
 package event
 
 import (
+	"apps/backend/common/validatorutils"
+	"apps/backend/core-api/internal/usecase/cyptoutils"
 	"encoding/hex"
 	"strings"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/common/validatorutils"
-	"apps/backend/core-api/internal/usecase/cyptoutils"
 
 	"github.com/cockroachdb/errors"
 	"github.com/ethereum/go-ethereum/common"

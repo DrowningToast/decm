@@ -1,15 +1,15 @@
 package event_registration
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 
-	"apps/backend/common/customerror"
 	datagateway "apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
 
 	"github.com/google/uuid"
 )

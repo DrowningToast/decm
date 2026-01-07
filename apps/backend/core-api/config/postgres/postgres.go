@@ -34,10 +34,10 @@ func (c *Config) String() string {
 }
 
 func (c *Config) QueryTracer(logger slog.Logger) pgx.QueryTracer {
-	loglevel := DefaultLogLevel
-	if c.Debug {
-		loglevel = tracelog.LogLevelTrace
+	if !c.Debug {
+		return nil
 	}
+	loglevel := tracelog.LogLevelDebug
 	return &tracelog.TraceLog{
 		Logger:   pgxslog.NewLogger(&logger),
 		LogLevel: loglevel,

@@ -1,13 +1,13 @@
 package auth
 
 import (
+	"apps/backend/core-api/config"
 	"errors"
 	"net/url"
 	"strconv"
 	"time"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/core-api/config"
 
 	"github.com/gofiber/fiber/v2"
 )

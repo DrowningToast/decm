@@ -1,12 +1,11 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
 	"context"
 	"decm-database/go/generated"
 
 	"github.com/google/uuid"
-
-	"apps/backend/common/customerror"
 )
 
 type CreateEventIssuerParams struct {

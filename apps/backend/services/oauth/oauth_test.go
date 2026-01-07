@@ -22,12 +22,3 @@ func TestParseToken_EmptyToken(t *testing.T) {
 	assert.NotNil(t, token)
 	assert.Empty(t, token.AccessToken)
 }
-
-
-
-
-
-
-
-
-

@@ -1,10 +1,9 @@
 package eventconfig
 
 import (
+	"apps/backend/common/customerror"
 	"errors"
 	"time"
-
-	"apps/backend/common/customerror"
 
 	"github.com/google/uuid"
 )

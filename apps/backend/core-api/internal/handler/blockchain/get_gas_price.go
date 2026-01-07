@@ -24,4 +24,3 @@ func (h *Handler) GetGasPrice(ctx *fiber.Ctx) error {
 
 	return ctx.JSON(gasPrice)
 }
-

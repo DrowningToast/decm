@@ -1,9 +1,8 @@
 package entity
 
 import (
-	"time"
-
 	"apps/backend/common"
+	"time"
 
 	"github.com/google/uuid"
 )

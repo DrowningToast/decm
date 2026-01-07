@@ -1,14 +1,13 @@
 package eventconfig
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/common/validatorutils"
+	"apps/backend/core-api/internal/usecase/eventconfig"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-
-	"apps/backend/common/customerror"
-	"apps/backend/common/validatorutils"
-	"apps/backend/core-api/internal/usecase/eventconfig"
 )
 
 type UpdateEventCertificateConfigRequest struct {

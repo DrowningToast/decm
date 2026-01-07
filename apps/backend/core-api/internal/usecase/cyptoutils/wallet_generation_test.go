@@ -1,10 +1,9 @@
 package cyptoutils
 
 import (
+	"apps/backend/common/customerror"
 	"strings"
 	"testing"
-
-	"apps/backend/common/customerror"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/tyler-smith/go-bip39"

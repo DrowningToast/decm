@@ -1,13 +1,13 @@
 package eventconfig
 
 import (
+	"apps/backend/services/auth"
 	"log/slog"
 
 	authenticationguard "apps/backend/core-api/internal/middleware/authentication_guard"
 	roleguard "apps/backend/core-api/internal/middleware/role_guard"
 	event_usecase "apps/backend/core-api/internal/usecase/event"
 	usecase "apps/backend/core-api/internal/usecase/eventconfig"
-	"apps/backend/services/auth"
 )
 
 type Handler struct {

@@ -1,10 +1,9 @@
 package pgclient
 
 import (
-	"context"
-
-	"apps/backend/common/log"
 	"apps/backend/core-api/config/postgres"
+	"apps/backend/services/log"
+	"context"
 
 	"github.com/cockroachdb/errors"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,8 +18,8 @@ func NewPool(ctx context.Context, pgConfig *postgres.Config) (*pgxpool.Pool, err
 
 	connConfig.MaxConns = lo.CoalesceOrEmpty(pgConfig.MaxConns, int32(postgres.MaxConnections))
 	connConfig.MinConns = lo.CoalesceOrEmpty(pgConfig.MinConns, int32(postgres.MinConnections))
-	logger := log.LoadLogger()
-	connConfig.ConnConfig.Tracer = pgConfig.QueryTracer(*logger)
+	// Use logger singleton for query tracing
+	connConfig.ConnConfig.Tracer = pgConfig.QueryTracer(*log.Logger)
 
 	// Create connection pool
 	pool, err := pgxpool.NewWithConfig(ctx, connConfig)

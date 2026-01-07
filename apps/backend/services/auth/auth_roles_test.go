@@ -230,12 +230,3 @@ func TestAuthService_SetUserContext_WithRoles(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
-
-
-
-
-
-
-
-
-

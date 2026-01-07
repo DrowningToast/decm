@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"apps/backend/services/log"
 	"context"
 	"net/http/httptest"
 	"os"
@@ -15,17 +16,24 @@ import (
 
 func TestMain(m *testing.M) {
 	// Set required environment variables before any tests run
-	_ = os.Setenv("ENVIRONMENT", "development")
+	_ = os.Setenv("ENVIRONMENT", "testing")
 	_ = os.Setenv("PII_ENCRYPTION_KEY", "test-encryption-key-32-bytes-long!!")
 	_ = os.Setenv("JWT_SECRET", "test-jwt-secret-key-32-bytes-long!!")
 	_ = os.Setenv("GOOGLE_OAUTH_CLIENT_ID", "test-client-id")
 	_ = os.Setenv("GOOGLE_OAUTH_CLIENT_SECRET", "test-client-secret")
 	_ = os.Setenv("GOOGLE_OAUTH_REDIRECT_URL", "http://localhost:8080/api/v1/auth/google/callback")
 
+	// Create logs directory for test logger (relative to apps/backend when running tests)
+	_ = os.MkdirAll("logs", 0755)
+
+	// Initialize logger for tests
+	log.Init()
+
 	// Run tests
 	code := m.Run()
 
-	// Cleanup if needed
+	// Cleanup
+	_ = os.RemoveAll("logs")
 	os.Exit(code)
 }
 

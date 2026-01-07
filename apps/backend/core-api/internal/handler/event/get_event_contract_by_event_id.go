@@ -1,13 +1,12 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
 	"net/http"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-
-	"apps/backend/common/customerror"
 )
 
 // GetEventContractByEventID godoc

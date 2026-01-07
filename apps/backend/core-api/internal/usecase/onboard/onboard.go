@@ -1,6 +1,13 @@
 package usecase
 
 import (
+	"apps/backend/common"
+	"apps/backend/common/encryptutils"
+	"apps/backend/common/hashutils"
+	"apps/backend/core-api/internal/datagateway"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/core-api/internal/usecase/cyptoutils"
+	"apps/backend/services/auth"
 	"context"
 	"encoding/hex"
 	"log/slog"
@@ -11,14 +18,8 @@ import (
 	ethutils "github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 
-	"apps/backend/common"
 	customerror "apps/backend/common/customerror"
-	"apps/backend/common/encryptutils"
-	"apps/backend/common/hashutils"
-	"apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/core-api/internal/usecase/cyptoutils"
-	"apps/backend/services/auth"
+
 	oauth_services "apps/backend/services/oauth"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"

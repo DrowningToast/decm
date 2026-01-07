@@ -1,17 +1,17 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/common/pgmapper"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"decm-database/go/generated"
 	"encoding/json"
 	"fmt"
 	"strings"
 
-	"apps/backend/common/customerror"
-	"apps/backend/common/pgmapper"
 	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
 
 	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 

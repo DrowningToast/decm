@@ -1,12 +1,11 @@
 package auth
 
 import (
-	"context"
-	"time"
-
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
