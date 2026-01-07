@@ -1,11 +1,10 @@
 package auth
 
 import (
+	"apps/backend/common/customerror"
 	"net/http/httptest"
 	"testing"
 	"time"
-
-	"apps/backend/common/customerror"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -178,12 +177,3 @@ func TestAuthService_Logout_NoDomain(t *testing.T) {
 	cookies := resp.Header.Values("Set-Cookie")
 	assert.NotEmpty(t, cookies)
 }
-
-
-
-
-
-
-
-
-

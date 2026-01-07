@@ -1,14 +1,13 @@
 package postgres
 
 import (
-	"context"
-	"decm-database/go/generated"
-
 	"apps/backend/common"
 	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
+	"context"
+	"decm-database/go/generated"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"

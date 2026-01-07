@@ -1,12 +1,12 @@
 package postgres
 
 import (
+	"apps/backend/common/pgmapper"
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
 
-	"apps/backend/common/pgmapper"
 	datagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
 
 	"github.com/google/uuid"
 )

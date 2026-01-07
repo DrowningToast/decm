@@ -1,11 +1,11 @@
 package eventconfig
 
 import (
+	"apps/backend/core-api/internal/datagateway"
+	"apps/backend/services/s3"
 	"log/slog"
 
-	"apps/backend/core-api/internal/datagateway"
 	eventDg "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/services/s3"
 )
 
 type EventConfigUsecase struct {

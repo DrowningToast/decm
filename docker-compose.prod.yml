@@ -100,6 +100,8 @@ services:
         restart: unless-stopped
         networks:
             - decm-prod
+        labels:
+            - "logging=alloy"
 
     # Frontend Web App
     frontend:
@@ -151,6 +153,98 @@ services:
         networks:
             - decm-prod
 
+    # Monitoring - Prometheus
+    prometheus:
+        image: prom/prometheus:v3.8.1
+        container_name: decm-prometheus
+        volumes:
+            - ./prometheus/config.yaml:/etc/prometheus/prometheus.yml
+            - prometheus_data:/prometheus
+        command:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
+            - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+            - "--web.console.templates=/usr/share/prometheus/consoles"
+        ports:
+            - "9090:9090"
+        restart: unless-stopped
+        networks:
+            - decm-prod
+
+    # Monitoring - Loki (Log Aggregation)
+    loki:
+        image: grafana/loki:3.3.2
+        container_name: decm-loki
+        volumes:
+            - ./loki/config.yaml:/etc/loki/config.yaml
+            - loki_data:/loki
+        command: -config.file=/etc/loki/config.yaml
+        ports:
+            - "3100:3100"
+        restart: unless-stopped
+        networks:
+            - decm-prod
+
+    # Monitoring - Alloy (Log Collection Agent)
+    alloy:
+        image: grafana/alloy:v1.5.1
+        container_name: decm-alloy
+        volumes:
+            - ./alloy/config.alloy:/etc/alloy/config.alloy
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - alloy_data:/var/lib/alloy
+        command:
+            - run
+            - --server.http.listen-addr=0.0.0.0:12345
+            - --storage.path=/var/lib/alloy
+            - /etc/alloy/config.alloy
+        environment:
+            - ENVIRONMENT=${CORE_ENVIRONMENT:-production}
+        ports:
+            - "12345:12345"
+        depends_on:
+            - loki
+            - backend
+        restart: unless-stopped
+        networks:
+            - decm-prod
+
+    # Monitoring - Grafana
+    grafana:
+        image: grafana/grafana:11.4.0
+        container_name: decm-grafana
+        volumes:
+            - grafana_data:/var/lib/grafana
+            - ./grafana/provisioning:/etc/grafana/provisioning
+        environment:
+            - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+            - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+            - GF_USERS_ALLOW_SIGN_UP=false
+        ports:
+            - "3001:3000"
+        depends_on:
+            - prometheus
+            - loki
+        restart: unless-stopped
+        networks:
+            - decm-prod
+
+    # Monitoring - Node Exporter
+    node-exporter:
+        image: prom/node-exporter:v1.10.2
+        container_name: decm-node-exporter
+        volumes:
+            - /proc:/host/proc:ro
+            - /sys:/host/sys:ro
+            - /:/rootfs:ro
+        command:
+            - "--path.procfs=/host/proc"
+            - "--path.sysfs=/host/sys"
+            - "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)"
+        restart: unless-stopped
+        networks:
+            - decm-prod
+
 networks:
     decm-prod:
         driver: bridge
@@ -161,4 +255,12 @@ volumes:
     npm_data:
         driver: local
     npm_letsencrypt:
+        driver: local
+    prometheus_data:
+        driver: local
+    loki_data:
+        driver: local
+    alloy_data:
+        driver: local
+    grafana_data:
         driver: local

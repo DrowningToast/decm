@@ -1,11 +1,12 @@
 package event_registration
 
 import (
+	"apps/backend/common/validatorutils"
 	"errors"
 	"fmt"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/common/validatorutils"
+
 	eventRegistrationUc "apps/backend/core-api/internal/usecase/event_registration"
 
 	"github.com/gofiber/fiber/v2"

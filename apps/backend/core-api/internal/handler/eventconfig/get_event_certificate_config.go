@@ -1,13 +1,12 @@
 package eventconfig
 
 import (
+	"apps/backend/common/customerror"
 	"net/http"
 
 	"github.com/cockroachdb/errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-
-	"apps/backend/common/customerror"
 )
 
 // GetEventCertificateConfig godoc

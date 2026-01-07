@@ -1,18 +1,18 @@
 package event_registration
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/common/hashutils"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/core-api/internal/usecase/cyptoutils"
+	"apps/backend/services/auth"
 	"context"
 	"encoding/hex"
 	"log/slog"
 	"strings"
 	"time"
 
-	"apps/backend/common/customerror"
-	"apps/backend/common/hashutils"
 	datagateway "apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/core-api/internal/usecase/cyptoutils"
-	"apps/backend/services/auth"
 
 	"github.com/cockroachdb/errors"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"

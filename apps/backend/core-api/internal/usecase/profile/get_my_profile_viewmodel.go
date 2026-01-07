@@ -1,12 +1,11 @@
 package profile
 
 import (
-	"context"
-	"time"
-
 	"apps/backend/common"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/services/auth"
+	"context"
+	"time"
 )
 
 type GetMyProfileViewModel struct {

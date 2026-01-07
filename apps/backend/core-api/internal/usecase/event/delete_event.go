@@ -1,15 +1,16 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"errors"
 	"math/big"
 
-	"apps/backend/common/customerror"
 	eventContract "apps/backend/contracts/event"
-	"apps/backend/core-api/internal/entity"
+
 	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
-	"apps/backend/services/auth"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"

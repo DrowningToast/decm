@@ -1,11 +1,10 @@
 package auth
 
 import (
+	"apps/backend/services/auth"
 	"context"
 	"testing"
 	"time"
-
-	"apps/backend/services/auth"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"

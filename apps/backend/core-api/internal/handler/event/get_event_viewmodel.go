@@ -1,10 +1,9 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
 	"context"
 	"time"
-
-	"apps/backend/common/customerror"
 
 	"github.com/cockroachdb/errors"
 	"github.com/gofiber/fiber/v2"

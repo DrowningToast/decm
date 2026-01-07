@@ -1,6 +1,10 @@
 package s3
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/common/metrics"
+	"apps/backend/common/utils"
+	"apps/backend/services/log"
 	"context"
 	"fmt"
 	"io"
@@ -8,9 +12,6 @@ import (
 	"mime/multipart"
 	"time"
 
-	"apps/backend/common/customerror"
-	"apps/backend/common/log"
-	"apps/backend/common/utils"
 	config "apps/backend/core-api/config"
 	s3Config "apps/backend/core-api/config/s3"
 
@@ -33,7 +34,7 @@ type S3Service struct {
 
 func NewS3Service() (*S3Service, error) {
 	cfg := config.LoadConfig()
-	logger := log.LoadLogger()
+	// Logger singleton initialized in main.go
 
 	s3Cfg := &s3Config.S3Config{
 		AccessKeyID:     cfg.S3.AccessKeyID,
@@ -44,7 +45,7 @@ func NewS3Service() (*S3Service, error) {
 
 	// Validate S3 configuration
 	if !s3Cfg.IsValid() {
-		logger.Error("S3 configuration is invalid or empty",
+		log.Logger.Error("S3 configuration is invalid or empty",
 			"access_key_id", s3Cfg.AccessKeyID != "",
 			"secret_access_key", s3Cfg.SecretAccessKey != "",
 			"bucket_name", s3Cfg.BucketName,
@@ -64,7 +65,7 @@ func NewS3Service() (*S3Service, error) {
 		},
 	})
 	if err != nil {
-		logger.Error("Failed to create S3 session", "error", err)
+		log.Logger.Error("Failed to create S3 session", "error", err)
 		return nil, fmt.Errorf("failed to create S3 session: %w", err)
 	}
 
@@ -75,7 +76,7 @@ func NewS3Service() (*S3Service, error) {
 
 	return &S3Service{
 		s3Config:   s3Cfg,
-		logger:     logger,
+		logger:     log.Logger, // Use singleton logger
 		session:    sess,
 		s3Client:   s3Client,
 		uploader:   uploader,
@@ -130,41 +131,77 @@ func (s *S3Service) GetS3UploadRequestObject(entityType StorageKeyType, entityID
 }
 
 func (s *S3Service) PutFile(ctx context.Context, requestObject *S3UploadRequestObject) (string, error) {
+	start := time.Now()
+	operation := "put_object"
+
 	_, err := s.uploader.UploadWithContext(ctx, &s3manager.UploadInput{
 		Bucket:      aws.String(s.s3Config.BucketName),
 		Key:         aws.String(requestObject.storageKey),
 		Body:        requestObject.file,
 		ContentType: aws.String(requestObject.contentType),
 	})
+
+	duration := time.Since(start).Seconds()
+	status := "success"
 	if err != nil {
+		status = "error"
+		metrics.S3OperationsTotal.WithLabelValues(operation, status).Inc()
+		metrics.S3OperationDuration.WithLabelValues(operation, status).Observe(duration)
 		return "", customerror.Parse(&customerror.ErrInternalServer, err)
 	}
+
+	metrics.S3OperationsTotal.WithLabelValues(operation, status).Inc()
+	metrics.S3OperationDuration.WithLabelValues(operation, status).Observe(duration)
 
 	return requestObject.storageKey, nil
 }
 
 func (s *S3Service) GetFile(ctx context.Context, key string) (io.ReadCloser, error) {
+	start := time.Now()
+	operation := "get_object"
+
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(s.s3Config.BucketName),
 		Key:    aws.String(key),
 	}
 
 	result, err := s.s3Client.GetObjectWithContext(ctx, input)
+
+	duration := time.Since(start).Seconds()
+	status := "success"
 	if err != nil {
+		status = "error"
+		metrics.S3OperationsTotal.WithLabelValues(operation, status).Inc()
+		metrics.S3OperationDuration.WithLabelValues(operation, status).Observe(duration)
 		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
+
+	metrics.S3OperationsTotal.WithLabelValues(operation, status).Inc()
+	metrics.S3OperationDuration.WithLabelValues(operation, status).Observe(duration)
 
 	return result.Body, nil
 }
 
 func (s *S3Service) DeleteFile(ctx context.Context, key string) error {
+	start := time.Now()
+	operation := "delete_object"
+
 	_, err := s.s3Client.DeleteObjectWithContext(ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(s.s3Config.BucketName),
 		Key:    aws.String(key),
 	})
+
+	duration := time.Since(start).Seconds()
+	status := "success"
 	if err != nil {
+		status = "error"
+		metrics.S3OperationsTotal.WithLabelValues(operation, status).Inc()
+		metrics.S3OperationDuration.WithLabelValues(operation, status).Observe(duration)
 		return customerror.Parse(&customerror.ErrInternalServer, err)
 	}
+
+	metrics.S3OperationsTotal.WithLabelValues(operation, status).Inc()
+	metrics.S3OperationDuration.WithLabelValues(operation, status).Observe(duration)
 
 	return nil
 }
@@ -184,15 +221,27 @@ func (s *S3Service) GetPresignedURL(ctx context.Context, key string) (string, er
 }
 
 func (s *S3Service) ListFiles(ctx context.Context, prefix string) ([]string, error) {
+	start := time.Now()
+	operation := "list_objects"
+
 	input := &s3.ListObjectsV2Input{
 		Bucket: aws.String(s.s3Config.BucketName),
 		Prefix: aws.String(prefix),
 	}
 
 	result, err := s.s3Client.ListObjectsV2WithContext(ctx, input)
+
+	duration := time.Since(start).Seconds()
+	status := "success"
 	if err != nil {
+		status = "error"
+		metrics.S3OperationsTotal.WithLabelValues(operation, status).Inc()
+		metrics.S3OperationDuration.WithLabelValues(operation, status).Observe(duration)
 		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
+
+	metrics.S3OperationsTotal.WithLabelValues(operation, status).Inc()
+	metrics.S3OperationDuration.WithLabelValues(operation, status).Observe(duration)
 
 	keys := make([]string, len(result.Contents))
 	for i, obj := range result.Contents {
@@ -203,15 +252,27 @@ func (s *S3Service) ListFiles(ctx context.Context, prefix string) ([]string, err
 }
 
 func (s *S3Service) GetFileInfo(ctx context.Context, key string) (*s3.GetObjectOutput, error) {
+	start := time.Now()
+	operation := "get_object_info"
+
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(s.s3Config.BucketName),
 		Key:    aws.String(key),
 	}
 
 	result, err := s.s3Client.GetObjectWithContext(ctx, input)
+
+	duration := time.Since(start).Seconds()
+	status := "success"
 	if err != nil {
+		status = "error"
+		metrics.S3OperationsTotal.WithLabelValues(operation, status).Inc()
+		metrics.S3OperationDuration.WithLabelValues(operation, status).Observe(duration)
 		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
+
+	metrics.S3OperationsTotal.WithLabelValues(operation, status).Inc()
+	metrics.S3OperationDuration.WithLabelValues(operation, status).Observe(duration)
 
 	return result, nil
 }

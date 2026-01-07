@@ -1,0 +1,86 @@
+# Loki Configuration
+# https://grafana.com/docs/loki/latest/configuration/
+
+auth_enabled: false
+
+server:
+    http_listen_port: 3100
+    grpc_listen_port: 9096
+    log_level: info
+
+common:
+    path_prefix: /loki
+    storage:
+        filesystem:
+            chunks_directory: /loki/chunks
+            rules_directory: /loki/rules
+    replication_factor: 1
+    ring:
+        instance_addr: 127.0.0.1
+        kvstore:
+            store: inmemory
+
+# Query configuration
+query_range:
+    results_cache:
+        cache:
+            embedded_cache:
+                enabled: true
+                max_size_mb: 100
+
+# Schema configuration
+schema_config:
+    configs:
+        - from: 2024-01-01
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+              prefix: index_
+              period: 24h
+
+# Storage configuration
+storage_config:
+    tsdb_shipper:
+        active_index_directory: /loki/tsdb-index
+        cache_location: /loki/tsdb-cache
+    filesystem:
+        directory: /loki/chunks
+
+# Limits configuration
+limits_config:
+    # Ingestion rate limit in MB
+    ingestion_rate_mb: 10
+    # Max entries per query
+    max_entries_limit_per_query: 5000
+    # Max streams per user
+    max_streams_per_user: 0
+    # Reject old samples (30 days)
+    reject_old_samples: true
+    reject_old_samples_max_age: 720h
+    # Retention period (90 days)
+    retention_period: 2160h
+
+# Compactor configuration (for log retention and cleanup)
+compactor:
+    working_directory: /loki/compactor
+    compaction_interval: 10m
+    retention_enabled: true
+    retention_delete_delay: 2h
+    retention_delete_worker_count: 150
+    delete_request_store: filesystem
+
+# Ruler configuration (for alerting - optional)
+ruler:
+    storage:
+        type: local
+        local:
+            directory: /loki/rules
+    rule_path: /loki/rules-temp
+    ring:
+        kvstore:
+            store: inmemory
+    enable_api: true
+
+# Analytics
+analytics:

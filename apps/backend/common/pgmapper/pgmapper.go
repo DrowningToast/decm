@@ -1,10 +1,9 @@
 package pgmapper
 
 import (
+	"apps/backend/common/encryptutils"
 	"strings"
 	"time"
-
-	"apps/backend/common/encryptutils"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"

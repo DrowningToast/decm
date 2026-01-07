@@ -1,9 +1,8 @@
 package blockchain
 
 import (
-	"log/slog"
-
 	"apps/backend/core-api/config"
+	"log/slog"
 )
 
 type BlockchainUsecase struct {
@@ -17,4 +16,3 @@ func NewBlockchainUsecase(logger *slog.Logger, config *config.Config) *Blockchai
 		config: config,
 	}
 }
-

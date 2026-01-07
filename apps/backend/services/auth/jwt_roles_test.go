@@ -1,10 +1,9 @@
 package auth
 
 import (
+	"apps/backend/common"
 	"testing"
 	"time"
-
-	"apps/backend/common"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -211,12 +210,3 @@ func TestAuthService_CreateToken_RoleIndependence(t *testing.T) {
 	// Verify tokens are different
 	assert.NotEqual(t, token1, token2)
 }
-
-
-
-
-
-
-
-
-

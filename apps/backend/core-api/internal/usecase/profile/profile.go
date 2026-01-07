@@ -1,16 +1,15 @@
 package profile
 
 import (
-	"context"
-	"errors"
-	"log/slog"
-
 	"apps/backend/common/customerror"
 	"apps/backend/common/hashutils"
 	"apps/backend/common/validatorutils"
 	"apps/backend/core-api/internal/datagateway"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
+	"errors"
+	"log/slog"
 
 	"github.com/google/uuid"
 )

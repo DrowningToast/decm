@@ -1,10 +1,9 @@
 package cyptoutils
 
 import (
+	"apps/backend/core-api/config"
 	"math/big"
 	"testing"
-
-	"apps/backend/core-api/config"
 
 	"github.com/stretchr/testify/assert"
 )

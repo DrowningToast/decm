@@ -1,16 +1,15 @@
 package eventconfig
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/common/validatorutils"
+	"apps/backend/core-api/internal/usecase/eventconfig"
 	"net/http"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-
-	"apps/backend/common/customerror"
-	"apps/backend/common/validatorutils"
-	"apps/backend/core-api/internal/usecase/eventconfig"
 )
 
 // Request/Response structures

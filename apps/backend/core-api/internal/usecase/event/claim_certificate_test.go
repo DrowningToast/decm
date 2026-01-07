@@ -1,6 +1,10 @@
 package event_test
 
 import (
+	"apps/backend/common/pgmapper"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/core-api/internal/usecase/cyptoutils"
+	"apps/backend/services/auth"
 	"context"
 	"crypto/ecdsa"
 	"encoding/hex"
@@ -9,11 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"apps/backend/common/pgmapper"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/core-api/internal/usecase/cyptoutils"
 	event_usecase "apps/backend/core-api/internal/usecase/event"
-	"apps/backend/services/auth"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
