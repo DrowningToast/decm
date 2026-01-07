@@ -93,7 +93,7 @@ func New() fiber.Handler {
 			if suspicious {
 				logger.WarnContext(c.UserContext(), fmt.Sprintf("Security probe detected: %s %s", method, path),
 					slog.String("category", "security"),
-					slog.String("ip", c.IP()), // Full IP for security analysis and blocking
+					slog.String("ip", c.IP()),                                          // Full IP for security analysis and blocking
 					slog.String("user_agent", AnonymizeUserAgent(c.Get("User-Agent"))), // Anonymized for privacy
 					slog.String("method", method),
 					slog.String("path", path),
