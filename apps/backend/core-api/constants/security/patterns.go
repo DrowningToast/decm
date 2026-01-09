@@ -82,7 +82,8 @@ var SuspiciousPathPatterns = []SuspiciousPattern{
 	{Pattern: "/wp-includes", MatchType: MatchContains, Comment: "WordPress includes"},
 	{Pattern: "/cgi-bin", MatchType: MatchContains, Comment: "CGI directory"},
 	{Pattern: "/manager/html", MatchType: MatchContains, Comment: "Tomcat manager"},
-	{Pattern: "/dashboard", MatchType: MatchContains, Comment: "Generic dashboards"},
+	{Pattern: "/dashboard", MatchType: MatchExact, Comment: "Generic dashboard root"},
+	{Pattern: "/dashboard/", MatchType: MatchPrefix, Comment: "Generic dashboard paths"},
 	{Pattern: "/webmail", MatchType: MatchContains, Comment: "Webmail interfaces"},
 
 	// Java/Enterprise Application Servers
