@@ -47,6 +47,9 @@ RUN apk add --no-cache \
 COPY --from=builder /workspace/apps/backend/bin/decm-backend /app/decm-backend
 COPY --from=builder /workspace/packages/database/migrations /app/migrations
 
+# Create logs directory for application logging
+RUN mkdir -p /app/logs && chmod 755 /app/logs
+
 # Create simple entrypoint script
 RUN printf '#!/bin/sh\nset -e\nmigrate -path /app/migrations -database "$DATABASE_URL" up || { echo "Migration failed" >&2; exit 1; }\nexec /app/decm-backend\n' > /app/entrypoint.sh && \
     chmod +x /app/entrypoint.sh
