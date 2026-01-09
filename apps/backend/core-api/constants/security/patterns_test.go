@@ -236,7 +236,11 @@ func TestSuspiciousPatternMatching(t *testing.T) {
 // matchPattern is a helper function that mimics the logic in the middleware
 func matchPattern(path string, sp SuspiciousPattern) bool {
 	pathLower := toLower(path)
-	patternLower := toLower(sp.Pattern)
+	// Compute lowercase for test patterns that may not be from the global list
+	patternLower := sp.LowerPattern
+	if patternLower == "" {
+		patternLower = toLower(sp.Pattern)
+	}
 
 	switch sp.MatchType {
 	case MatchPrefix:

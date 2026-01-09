@@ -3,35 +3,44 @@ package logger
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
+	"net"
 	"strings"
 )
 
 // AnonymizeIP anonymizes an IP address for PDPA/GDPR compliance.
 // For IPv4: masks the last octet (192.168.1.xxx)
-// For IPv6: keeps only the first 3 segments
+// For IPv6: masks the last 80 bits, keeping /48 prefix (2001:0db8:85a3::xxxx)
 //
 // This allows threat analysis while protecting user privacy.
+// Uses proper IP parsing to handle compressed IPv6 addresses correctly.
 func AnonymizeIP(ip string) string {
 	if ip == "" {
 		return "unknown"
 	}
 
-	// Handle IPv4
-	if strings.Contains(ip, ".") && !strings.Contains(ip, ":") {
-		parts := strings.Split(ip, ".")
-		if len(parts) == 4 {
-			// Mask last octet: 192.168.1.xxx
-			return parts[0] + "." + parts[1] + "." + parts[2] + ".xxx"
-		}
+	// Parse IP address properly to handle both IPv4 and IPv6 (including compressed formats)
+	parsedIP := net.ParseIP(ip)
+	if parsedIP == nil {
+		// Invalid IP format, hash it
+		return HashIP(ip)
 	}
 
-	// Handle IPv6
-	if strings.Contains(ip, ":") {
-		parts := strings.Split(ip, ":")
-		if len(parts) >= 3 {
-			// Keep first 3 segments: 2001:0db8:85a3::xxxx
-			return parts[0] + ":" + parts[1] + ":" + parts[2] + "::xxxx"
-		}
+	// Check if IPv4
+	if ipv4 := parsedIP.To4(); ipv4 != nil {
+		// Mask last octet: 192.168.1.xxx
+		return fmt.Sprintf("%d.%d.%d.xxx", ipv4[0], ipv4[1], ipv4[2])
+	}
+
+	// Handle IPv6 - keep first 48 bits (3 hextets), mask the rest
+	// Properly handles compressed formats like 2001::8a2e:370:7334
+	if ipv6 := parsedIP.To16(); ipv6 != nil {
+		// Create anonymized IPv6 with first 6 bytes (48 bits), rest zeros
+		anonymized := make(net.IP, 16)
+		copy(anonymized, ipv6[0:6]) // Copy first 48 bits
+		// Rest is already zeros
+		// Format as xxxx:xxxx:xxxx::xxxx for consistency
+		return anonymized.String() + ":xxxx"
 	}
 
 	// Fallback: hash the IP

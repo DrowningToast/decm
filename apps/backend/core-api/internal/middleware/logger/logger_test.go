@@ -199,7 +199,7 @@ func BenchmarkIsSuspiciousPath(b *testing.B) {
 	}
 
 	b.ResetTimer()
-	for b.Loop() {
+	for i := 0; i < b.N; i++ {
 		for _, path := range testPaths {
 			isSuspiciousPath(path)
 		}
