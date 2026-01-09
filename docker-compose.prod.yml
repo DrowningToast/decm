@@ -98,6 +98,8 @@ services:
             retries: 3
             start_period: 40s
         restart: unless-stopped
+        volumes:
+            - backend_logs:/app/logs
         networks:
             - decm-prod
         labels:
@@ -251,6 +253,8 @@ networks:
 
 volumes:
     postgres_data:
+        driver: local
+    backend_logs:
         driver: local
     npm_data:
         driver: local
