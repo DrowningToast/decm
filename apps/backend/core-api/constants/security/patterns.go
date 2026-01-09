@@ -122,7 +122,6 @@ var SuspiciousPathPatterns = []SuspiciousPattern{
 
 	// OpenID/OAuth reconnaissance
 	{Pattern: "/.well-known/openid-configuration", MatchType: MatchContains, Comment: "OpenID discovery"},
-	{Pattern: "/oauth", MatchType: MatchContains, Comment: "OAuth endpoints"},
 
 	// Common vulnerability paths and shells
 	{Pattern: "/eval-stdin.php", MatchType: MatchContains, Comment: "PHP eval shell"},
