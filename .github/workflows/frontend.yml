@@ -1,0 +1,92 @@
+name: Frontend Checks
+
+on:
+    workflow_call:
+        inputs:
+            node-version:
+                required: true
+                type: string
+            pnpm-version:
+                required: true
+                type: string
+        secrets:
+            CODECOV_TOKEN:
+                required: false
+
+jobs:
+    # ESLint Check
+    eslint:
+        name: Frontend ESLint Check
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Frontend Environment
+              uses: ./.github/actions/setup-frontend
+              with:
+                  node-version: ${{ inputs.node-version }}
+                  pnpm-version: ${{ inputs.pnpm-version }}
+
+            - name: Run ESLint
+              run: pnpm lint
+
+    # Build
+    build:
+        name: Frontend Build
+        runs-on: ubuntu-latest
+        needs: [eslint]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Frontend Environment
+              uses: ./.github/actions/setup-frontend
+              with:
+                  node-version: ${{ inputs.node-version }}
+                  pnpm-version: ${{ inputs.pnpm-version }}
+
+            - name: Build frontend
+              run: pnpm build
+
+            - name: Verify build artifacts
+              run: |
+                  if [ ! -d apps/web/dist ]; then
+                    echo "❌ Frontend build artifacts not found!"
+                    exit 1
+                  else
+                    echo "✅ Frontend built successfully"
+                  fi
+
+    # Unit Tests
+    tests:
+        name: Frontend Unit Tests
+        runs-on: ubuntu-latest
+        needs: [build, eslint]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Frontend Environment
+              uses: ./.github/actions/setup-frontend
+              with:
+                  node-version: ${{ inputs.node-version }}
+                  pnpm-version: ${{ inputs.pnpm-version }}
+
+            - name: Run Web Tests
+              run: pnpm --filter @decm/web run test:coverage
+              env:
+                  VITE_CORE_BACKEND_API: http://localhost:8080
+                  VITE_ENVIRONMENT: test
+
+            - name: Upload frontend coverage
+              if: ${{ secrets.CODECOV_TOKEN != '' }}
+              uses: codecov/codecov-action@v4
+              with:
+                  files: ./apps/web/coverage/coverage-final.json
+                  flags: frontend
+                  name: frontend-coverage
+                  token: ${{ secrets.CODECOV_TOKEN }}
