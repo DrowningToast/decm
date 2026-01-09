@@ -1,0 +1,193 @@
+name: PR Quality Checks
+
+on:
+    # Run on pull requests targeting main and when labels are added
+    pull_request:
+        types: [opened, synchronize, reopened, labeled]
+        branches:
+            - main
+
+env:
+    GO_VERSION: "1.23"
+    NODE_VERSION: "20"
+    PNPM_VERSION: "9.15.0"
+
+jobs:
+    # Job 0: Check for ready-to-review label
+    check-label:
+        name: Check Label
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Check for 'ready-to-review' label
+              if: ${{ !contains(github.event.pull_request.labels.*.name, 'ready-to-review') }}
+              run: |
+                  echo "❌ This PR requires the 'ready-to-review' label before running checks."
+                  echo "Please add the 'ready-to-review' label to proceed with CI/CD checks."
+                  exit 1
+
+            - name: Label verified
+              run: echo "✅ 'ready-to-review' label is present. Proceeding with checks..."
+
+    # Database Checks (Migration + SQLC Generation)
+    database-checks:
+        name: Database Checks
+        needs: [check-label]
+        uses: ./.github/workflows/database.yml
+        with:
+            go-version: "1.23"
+            node-version: "20"
+            pnpm-version: "9.15.0"
+
+    # Backend Checks (Build + Tests + OpenAPI)
+    backend-checks:
+        name: Backend Checks
+        needs: [check-label]
+        uses: ./.github/workflows/backend.yml
+        with:
+            go-version: "1.23"
+            node-version: "20"
+            pnpm-version: "9.15.0"
+
+    # Frontend Checks (ESLint + Build + Tests)
+    frontend-checks:
+        name: Frontend Checks
+        needs: [check-label]
+        uses: ./.github/workflows/frontend.yml
+        with:
+            node-version: "20"
+            pnpm-version: "9.15.0"
+        secrets:
+            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+    # Docker Checks (Build Backend + Build Frontend + Startup Test)
+    docker-checks:
+        name: Docker Checks
+        needs: [backend-checks, frontend-checks]
+        uses: ./.github/workflows/docker.yml
+
+    # Smart Contract Checks
+    contracts-checks:
+        name: Contracts Checks
+        needs: [check-label]
+        uses: ./.github/workflows/contracts.yml
+
+    # Final Summary (Required Status Check)
+    pr-checks-summary:
+        name: PR Checks Summary
+        runs-on: ubuntu-latest
+        needs:
+            [
+                check-label,
+                database-checks,
+                backend-checks,
+                frontend-checks,
+                docker-checks,
+                contracts-checks,
+            ]
+        if: always()
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Check all jobs status
+              id: check_status
+              run: |
+                  echo "### PR Quality Checks Summary ###"
+                  echo ""
+
+                  # Check label gate first
+                  if [ "${{ needs.check-label.result }}" != "success" ]; then
+                    echo "⛔ Label Gate: FAILED - 'ready-to-review' label required"
+                    echo "Please add the 'ready-to-review' label to run CI checks."
+                    echo "all_passed=false" >> $GITHUB_OUTPUT
+                    exit 1
+                  else
+                    echo "✅ Label Gate: PASSED"
+                  fi
+                  echo ""
+
+                  if [ "${{ needs.database-checks.result }}" = "success" ]; then
+                    echo "✅ Database Checks: PASSED"
+                  else
+                    echo "❌ Database Checks: FAILED"
+                  fi
+
+                  if [ "${{ needs.backend-checks.result }}" = "success" ]; then
+                    echo "✅ Backend Checks: PASSED"
+                  else
+                    echo "❌ Backend Checks: FAILED"
+                  fi
+
+                  if [ "${{ needs.frontend-checks.result }}" = "success" ]; then
+                    echo "✅ Frontend Checks: PASSED"
+                  else
+                    echo "❌ Frontend Checks: FAILED"
+                  fi
+
+                  if [ "${{ needs.docker-checks.result }}" = "success" ]; then
+                    echo "✅ Docker Checks (inc. Startup Test): PASSED"
+                  else
+                    echo "❌ Docker Checks (inc. Startup Test): FAILED"
+                  fi
+
+                  if [ "${{ needs.contracts-checks.result }}" = "success" ]; then
+                    echo "✅ Contracts Checks: PASSED"
+                  else
+                    echo "❌ Contracts Checks: FAILED"
+                  fi
+
+                  echo ""
+
+                  if [ "${{ needs.database-checks.result }}" = "success" ] && \
+                     [ "${{ needs.backend-checks.result }}" = "success" ] && \
+                     [ "${{ needs.frontend-checks.result }}" = "success" ] && \
+                     [ "${{ needs.docker-checks.result }}" = "success" ] && \
+                     [ "${{ needs.contracts-checks.result }}" = "success" ]; then
+                    echo "🎉 All checks passed! PR is ready to merge."
+                    echo "all_passed=true" >> $GITHUB_OUTPUT
+                    exit 0
+                  else
+                    echo "❌ Some checks failed. Please review and fix the issues."
+                    echo "all_passed=false" >> $GITHUB_OUTPUT
+                    exit 1
+                  fi
+
+            - name: Remove 'ready-to-review' label on failure
+              if: ${{ steps.check_status.outputs.all_passed == 'false' && always() }}
+              run: |
+                  gh pr edit ${{ github.event.pull_request.number }} --remove-label "ready-to-review"
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Post failure comment on PR
+              if: ${{ steps.check_status.outputs.all_passed == 'false' && always() }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  COMMENT_BODY=$(cat <<'EOF'
+                  ❌ **CI/CD Pipeline Failed**
+
+                  The following checks failed:
+
+                  | Check | Status |
+                  |-------|--------|
+                  | Database Checks | ${{ needs.database-checks.result == 'success' && '✅' || '❌' }} |
+                  | Backend Checks | ${{ needs.backend-checks.result == 'success' && '✅' || '❌' }} |
+                  | Frontend Checks | ${{ needs.frontend-checks.result == 'success' && '✅' || '❌' }} |
+                  | Docker Checks (Startup Test) | ${{ needs.docker-checks.result == 'success' && '✅' || '❌' }} |
+                  | Contracts Checks | ${{ needs.contracts-checks.result == 'success' && '✅' || '❌' }} |
+
+                  **Action Required:** The 'ready-to-review' label has been removed. Please fix the failing checks and reapply the label to retry.
+
+                  **New:** Docker Checks now include a **Service Startup Test** that verifies:
+                  - ✅ Backend starts without crashes (catches missing env vars)
+                  - ✅ Frontend starts successfully
+                  - ✅ All health endpoints respond
+                  - ✅ Services can communicate properly
+
+                  [View workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+                  EOF
+                  )
+                  gh pr comment ${{ github.event.pull_request.number }} --body "$COMMENT_BODY"

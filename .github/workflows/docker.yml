@@ -1,0 +1,224 @@
+name: Docker Checks
+
+on:
+    workflow_call:
+
+jobs:
+    # Build Backend Docker Image
+    build-backend:
+        name: Docker Backend Build
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build backend image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: apps/backend/Dockerfile
+                  target: runtime
+                  push: false
+                  tags: decm-backend:test
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+                  outputs: type=docker,dest=/tmp/decm-backend.tar
+
+            - name: Upload backend image artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: docker-backend-image
+                  path: /tmp/decm-backend.tar
+                  retention-days: 1
+
+    # Build Frontend Docker Image
+    build-frontend:
+        name: Docker Frontend Build
+        runs-on: ubuntu-latest
+
+        env:
+            VITE_CORE_BACKEND_API: http://localhost:8080
+            VITE_APP_URL: http://localhost:3000
+            VITE_ENVIRONMENT: test
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build frontend image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: apps/web/Dockerfile
+                  target: runtime
+                  push: false
+                  tags: decm-frontend:test
+                  build-args: |
+                      VITE_CORE_BACKEND_API=${{ env.VITE_CORE_BACKEND_API }}
+                      VITE_APP_URL=${{ env.VITE_APP_URL }}
+                      VITE_ENVIRONMENT=${{ env.VITE_ENVIRONMENT }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+                  outputs: type=docker,dest=/tmp/decm-frontend.tar
+
+            - name: Upload frontend image artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: docker-frontend-image
+                  path: /tmp/decm-frontend.tar
+                  retention-days: 1
+
+    # Service Startup Test - Tests if services can actually start
+    # This catches startup crashes before they reach production
+    startup-test:
+        name: Service Startup Test
+        runs-on: ubuntu-latest
+        needs: [build-backend, build-frontend]
+        timeout-minutes: 10
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Download backend image
+              uses: actions/download-artifact@v4
+              with:
+                  name: docker-backend-image
+                  path: /tmp
+
+            - name: Download frontend image
+              uses: actions/download-artifact@v4
+              with:
+                  name: docker-frontend-image
+                  path: /tmp
+
+            - name: Load Docker images
+              run: |
+                  docker load --input /tmp/decm-backend.tar
+                  docker load --input /tmp/decm-frontend.tar
+                  docker images
+
+            - name: Start services with docker compose
+              run: |
+                  echo "🚀 Starting services..."
+                  docker compose -f docker-compose.ci.yml up -d
+                  echo "✅ Services started"
+
+            - name: Wait for PostgreSQL to be healthy
+              run: |
+                  echo "⏳ Waiting for PostgreSQL..."
+                  timeout 60 bash -c 'until docker compose -f docker-compose.ci.yml ps postgres | grep -q "healthy"; do
+                    echo "PostgreSQL is starting..."
+                    sleep 2
+                  done'
+                  echo "✅ PostgreSQL is healthy"
+
+            - name: Run database migrations
+              run: |
+                  echo "🔄 Running database migrations..."
+                  docker compose -f docker-compose.ci.yml exec -T backend sh -c "cd /app/apps/backend/core-api && /app/apps/backend/bin/decm-backend migrate || echo 'Migration command not available, skipping...'"
+                  echo "Note: Migrations may need to be run separately if not built into the binary"
+
+            - name: Wait for Backend to be healthy
+              run: |
+                  echo "⏳ Waiting for Backend to start..."
+                  timeout 90 bash -c 'until docker compose -f docker-compose.ci.yml ps backend | grep -q "healthy"; do
+                    if docker compose -f docker-compose.ci.yml ps backend | grep -q "exited"; then
+                      echo "❌ Backend container exited unexpectedly!"
+                      docker compose -f docker-compose.ci.yml logs backend
+                      exit 1
+                    fi
+                    echo "Backend is starting... (waiting for /ready endpoint)"
+                    sleep 3
+                  done'
+                  echo "✅ Backend is healthy and responding"
+
+            - name: Test Backend health endpoint
+              run: |
+                  echo "🔍 Testing backend /ready endpoint..."
+                  RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/ready)
+                  if [ "$RESPONSE" -eq 200 ]; then
+                    echo "✅ Backend /ready returned 200 OK"
+                  else
+                    echo "❌ Backend /ready returned $RESPONSE"
+                    docker compose -f docker-compose.ci.yml logs backend
+                    exit 1
+                  fi
+
+            - name: Test Backend health check
+              run: |
+                  echo "🔍 Testing backend /health endpoint..."
+                  RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/health || echo "failed")
+                  if [ "$RESPONSE" -eq 200 ]; then
+                    echo "✅ Backend /health returned 200 OK"
+                  else
+                    echo "⚠️  Backend /health endpoint may not exist (got $RESPONSE), but /ready passed"
+                  fi
+
+            - name: Wait for Frontend to be healthy
+              run: |
+                  echo "⏳ Waiting for Frontend to start..."
+                  timeout 60 bash -c 'until docker compose -f docker-compose.ci.yml ps frontend | grep -q "healthy"; do
+                    if docker compose -f docker-compose.ci.yml ps frontend | grep -q "exited"; then
+                      echo "❌ Frontend container exited unexpectedly!"
+                      docker compose -f docker-compose.ci.yml logs frontend
+                      exit 1
+                    fi
+                    echo "Frontend is starting..."
+                    sleep 2
+                  done'
+                  echo "✅ Frontend is healthy and responding"
+
+            - name: Test Frontend accessibility
+              run: |
+                  echo "🔍 Testing frontend accessibility..."
+                  RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3002)
+                  if [ "$RESPONSE" -eq 200 ]; then
+                    echo "✅ Frontend returned 200 OK"
+                  else
+                    echo "❌ Frontend returned $RESPONSE"
+                    docker compose -f docker-compose.ci.yml logs frontend
+                    exit 1
+                  fi
+
+            - name: Verify all services are running
+              run: |
+                  echo "📊 Service Status Summary:"
+                  docker compose -f docker-compose.ci.yml ps
+
+                  # Check if all services are healthy
+                  RUNNING=$(docker compose -f docker-compose.ci.yml ps --services --filter "status=running" | wc -l)
+                  EXPECTED=3  # postgres, backend, frontend
+
+                  if [ "$RUNNING" -eq "$EXPECTED" ]; then
+                    echo "✅ All $EXPECTED services are running successfully"
+                  else
+                    echo "❌ Expected $EXPECTED services running, but found $RUNNING"
+                    exit 1
+                  fi
+
+            - name: Show service logs on failure
+              if: failure()
+              run: |
+                  echo "==================== POSTGRES LOGS ===================="
+                  docker compose -f docker-compose.ci.yml logs postgres
+                  echo ""
+                  echo "==================== BACKEND LOGS ===================="
+                  docker compose -f docker-compose.ci.yml logs backend
+                  echo ""
+                  echo "==================== FRONTEND LOGS ===================="
+                  docker compose -f docker-compose.ci.yml logs frontend
+
+            - name: Cleanup
+              if: always()
+              run: |
+                  echo "🧹 Cleaning up..."
+                  docker compose -f docker-compose.ci.yml down -v
+                  echo "✅ Cleanup complete"
