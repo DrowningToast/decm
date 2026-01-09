@@ -1,5 +1,7 @@
 package security
 
+import "strings"
+
 // MatchType defines how a pattern should be matched against a request path
 type MatchType int
 
@@ -16,9 +18,10 @@ const (
 
 // SuspiciousPattern defines a pattern and how it should be matched
 type SuspiciousPattern struct {
-	Pattern   string
-	MatchType MatchType
-	Comment   string // Optional description for documentation
+	Pattern      string
+	LowerPattern string    // Pre-computed lowercase version for performance
+	MatchType    MatchType
+	Comment      string // Optional description for documentation
 }
 
 // SuspiciousPathPatterns contains URL patterns that indicate security probes or attacks.
@@ -152,4 +155,13 @@ var SuspiciousPathPatterns = []SuspiciousPattern{
 	{Pattern: "karma.conf.js", MatchType: MatchContains, Comment: "Karma test config"},
 	{Pattern: "jsconfig.json", MatchType: MatchContains, Comment: "JS config"},
 	{Pattern: "keycloak.json", MatchType: MatchContains, Comment: "Keycloak config"},
+}
+
+// init pre-computes lowercase versions of all patterns for performance.
+// This is called once at package initialization, avoiding repeated
+// strings.ToLower() calls on every HTTP request.
+func init() {
+	for i := range SuspiciousPathPatterns {
+		SuspiciousPathPatterns[i].LowerPattern = strings.ToLower(SuspiciousPathPatterns[i].Pattern)
+	}
 }

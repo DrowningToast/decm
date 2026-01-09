@@ -19,27 +19,29 @@ var ExcludedPaths = []string{"/swagger/*", "/metrics"}
 // isSuspiciousPath checks if the request path matches known attack patterns.
 // Patterns are defined in constants/security/patterns.go for easy maintenance.
 // Supports prefix, suffix, exact, and contains matching for precise detection.
+//
+// Performance: Patterns are pre-computed to lowercase at initialization,
+// avoiding repeated strings.ToLower() calls on every HTTP request.
 func isSuspiciousPath(path string) bool {
 	pathLower := strings.ToLower(path)
 
 	for _, sp := range security.SuspiciousPathPatterns {
-		patternLower := strings.ToLower(sp.Pattern)
-
+		// Use pre-computed lowercase pattern for performance
 		switch sp.MatchType {
 		case security.MatchPrefix:
-			if strings.HasPrefix(pathLower, patternLower) {
+			if strings.HasPrefix(pathLower, sp.LowerPattern) {
 				return true
 			}
 		case security.MatchSuffix:
-			if strings.HasSuffix(pathLower, patternLower) {
+			if strings.HasSuffix(pathLower, sp.LowerPattern) {
 				return true
 			}
 		case security.MatchExact:
-			if pathLower == patternLower {
+			if pathLower == sp.LowerPattern {
 				return true
 			}
 		case security.MatchContains:
-			if strings.Contains(pathLower, patternLower) {
+			if strings.Contains(pathLower, sp.LowerPattern) {
 				return true
 			}
 		}
