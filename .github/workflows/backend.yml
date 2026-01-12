@@ -1,0 +1,155 @@
+name: Backend Checks
+
+on:
+    workflow_call:
+        inputs:
+            go-version:
+                required: true
+                type: string
+            node-version:
+                required: true
+                type: string
+            pnpm-version:
+                required: true
+                type: string
+
+jobs:
+    # Backend Build
+    build:
+        name: Backend Build
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js and pnpm
+              uses: ./.github/actions/setup-node-pnpm
+              with:
+                  node-version: ${{ inputs.node-version }}
+                  pnpm-version: ${{ inputs.pnpm-version }}
+
+            - name: Setup Go Backend
+              uses: ./.github/actions/setup-go-backend
+              with:
+                  go-version: ${{ inputs.go-version }}
+
+            - name: Build Core API
+              run: pnpm build:core
+
+            - name: Verify binary exists
+              run: |
+                  if [ ! -f apps/backend/bin/decm-backend ]; then
+                    echo "❌ Core API binary not found!"
+                    exit 1
+                  else
+                    echo "✅ Core API binary built successfully"
+                  fi
+
+    # Backend Unit Tests
+    tests:
+        name: Backend Unit Tests
+        runs-on: ubuntu-latest
+        needs: [build]
+
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_DB: decm_test
+                    POSTGRES_USER: decm_user
+                    POSTGRES_PASSWORD: decm_test_password
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd pg_isready
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js and pnpm
+              uses: ./.github/actions/setup-node-pnpm
+              with:
+                  node-version: ${{ inputs.node-version }}
+                  pnpm-version: ${{ inputs.pnpm-version }}
+
+            - name: Setup Go Backend
+              uses: ./.github/actions/setup-go-backend
+              with:
+                  go-version: ${{ inputs.go-version }}
+
+            - name: Install Database Tools
+              uses: ./.github/actions/install-db-tools
+              with:
+                  install-sqlc: "false"
+
+            - name: Wait for PostgreSQL
+              run: |
+                  until pg_isready -h localhost -p 5432 -U decm_user; do
+                    echo "Waiting for PostgreSQL..."
+                    sleep 2
+                  done
+
+            - name: Run database migrations
+              run: pnpm db:migrate
+              env:
+                  DB_HOST: localhost
+                  DB_PORT: 5432
+                  DB_USER: decm_user
+                  DB_PASSWORD: decm_test_password
+                  DB_NAME: decm_test
+
+            - name: Run Core Tests
+              run: pnpm test:core
+              env:
+                  DB_HOST: localhost
+                  DB_PORT: 5432
+                  DB_USER: decm_user
+                  DB_PASSWORD: decm_test_password
+                  DB_NAME: decm_test
+                  PII_ENCRYPTION_KEY: test-encryption-key-for-ci-pipeline-only-32bytes
+                  JWT_SECRET: test-jwt-secret-key-for-ci-pipeline-only
+                  JWT_ISSUER: decm-service-test
+                  JWT_EXPIRATION: 24h
+
+    # OpenAPI & Swagger Generation
+    openapi:
+        name: Backend OpenAPI & Swagger
+        runs-on: ubuntu-latest
+        needs: [build]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js and pnpm
+              uses: ./.github/actions/setup-node-pnpm
+              with:
+                  node-version: ${{ inputs.node-version }}
+                  pnpm-version: ${{ inputs.pnpm-version }}
+
+            - name: Setup Go Backend
+              uses: ./.github/actions/setup-go-backend
+              with:
+                  go-version: ${{ inputs.go-version }}
+
+            - name: Install swag
+              run: go install github.com/swaggo/swag/cmd/swag@latest
+
+            - name: Generate OpenAPI documentation
+              run: pnpm docs:core
+
+            - name: Check OpenAPI documentation matches committed files
+              run: |
+                  if ! git diff --exit-code apps/backend/core-api/docs/; then
+                    echo "❌ OpenAPI documentation does not match committed files!"
+                    echo "Run 'pnpm docs:core' locally and commit the changes."
+                    git diff apps/backend/core-api/docs/
+                    exit 1
+                  else
+                    echo "✅ OpenAPI documentation matches committed files"
+                  fi

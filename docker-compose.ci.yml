@@ -1,0 +1,117 @@
+# Docker Compose for CI/CD - Service Startup Tests
+# This minimal configuration tests if services can start successfully
+# Used in GitHub Actions to catch startup crashes before production
+
+version: "3.9"
+
+services:
+    # PostgreSQL Database
+    postgres:
+        image: postgres:16-alpine
+        container_name: decm-postgres-ci
+        environment:
+            POSTGRES_DB: decm_ci
+            POSTGRES_USER: decm_ci
+            POSTGRES_PASSWORD: decm_ci_test_password
+        ports:
+            - "5433:5432"
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U decm_ci -d decm_ci"]
+            interval: 5s
+            timeout: 3s
+            retries: 5
+            start_period: 10s
+        networks:
+            - decm-ci
+
+    # Backend API
+    backend:
+        image: decm-backend:test
+        container_name: decm-backend-ci
+        environment:
+            # Core settings
+            ENVIRONMENT: "production"
+            PORT: "8080"
+
+            # Database configuration
+            DB_HOST: postgres
+            DB_PORT: 5432
+            DB_USER: decm_ci
+            DB_PASSWORD: decm_ci_test_password
+            DB_NAME: decm_ci
+            DB_SSL_MODE: disable
+            DATABASE_URL: "postgres://decm_ci:decm_ci_test_password@postgres:5432/decm_ci?sslmode=disable"
+
+            # Security (CI test values)
+            PII_ENCRYPTION_KEY: "test-encryption-key-for-ci-only-32bytes-minimum"
+            JWT_SECRET: "test-jwt-secret-key-for-ci-only-do-not-use-in-production"
+            JWT_ISSUER: "decm-service-ci"
+            JWT_EXPIRATION: "24h"
+            COOKIE_DOMAIN: "localhost"
+
+            # CORS
+            CORS_ALLOWED_ORIGINS: "http://localhost:3000"
+
+            # Blockchain (mock values for CI)
+            BLOCKCHAIN_NETWORK: "sepolia"
+            BLOCKCHAIN_RPC_URL: "https://eth-sepolia.g.alchemy.com/v2/test"
+            BLOCKCHAIN_PRIVATE_KEY: "0x0000000000000000000000000000000000000000000000000000000000000001"
+            BLOCKCHAIN_CHAIN_ID: "11155111"
+            BLOCKCHAIN_ETHERSCAN_API_KEY: "test-api-key"
+            BLOCKCHAIN_DECM_ACCESS_MANAGER_ADDRESS: "0x0000000000000000000000000000000000000000"
+
+            # OAuth (mock values for CI)
+            GOOGLE_OAUTH_CLIENT_ID: "test-client-id"
+            GOOGLE_OAUTH_CLIENT_SECRET: "test-client-secret"
+            GOOGLE_OAUTH_REDIRECT_URL: "http://localhost:8080/api/v1/authentication/oauth/google/callback"
+            GOOGLE_OAUTH_SUCCESS_URL: "http://localhost:3000/auth/success"
+
+            # S3 Storage (mock values for CI)
+            S3_ACCESS_KEY_ID: "test-access-key"
+            S3_SECRET_ACCESS_KEY: "test-secret-key"
+            S3_BUCKET_NAME: "test-bucket"
+            S3_ENDPOINT: "http://localhost:9000"
+        ports:
+            - "8081:8080"
+        depends_on:
+            postgres:
+                condition: service_healthy
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "wget",
+                    "--quiet",
+                    "--tries=1",
+                    "-O",
+                    "/dev/null",
+                    "http://localhost:8080/ready",
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+        networks:
+            - decm-ci
+
+    # Frontend Web App
+    frontend:
+        image: decm-frontend:test
+        container_name: decm-frontend-ci
+        depends_on:
+            backend:
+                condition: service_healthy
+        ports:
+            - "3002:80"
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost/"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
+        networks:
+            - decm-ci
+
+networks:
+    decm-ci:
+        driver: bridge
