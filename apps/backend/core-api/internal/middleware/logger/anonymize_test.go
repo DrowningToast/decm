@@ -140,6 +140,38 @@ func TestHashIP(t *testing.T) {
 	}
 }
 
+func TestAnonymizeIP_MalformedAddresses(t *testing.T) {
+	// Test that malformed IPs are handled gracefully and hashed
+	tests := []struct {
+		name string
+		ip   string
+	}{
+		{"Invalid format", "not-an-ip"},
+		{"Partial IPv4", "192.168.1"},
+		{"Too many octets", "192.168.1.1.1"},
+		{"Invalid characters", "192.168.1.abc"},
+		{"Port included", "192.168.1.1:8080"},
+		{"URL instead of IP", "http://example.com"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := AnonymizeIP(tt.ip)
+
+			// Should fall back to hashing
+			if !strings.HasPrefix(result, "hash_") {
+				t.Errorf("AnonymizeIP(%q) = %q, expected hash prefix for malformed IP", tt.ip, result)
+			}
+
+			// Should be consistent
+			result2 := AnonymizeIP(tt.ip)
+			if result != result2 {
+				t.Errorf("AnonymizeIP(%q) not consistent: %q vs %q", tt.ip, result, result2)
+			}
+		})
+	}
+}
+
 func TestAnonymizeUserAgent(t *testing.T) {
 	tests := []struct {
 		name string
@@ -210,5 +242,79 @@ func TestAnonymizeUserAgentRemovesVersions(t *testing.T) {
 	// Should be short and generic
 	if len(result) > 20 {
 		t.Errorf("AnonymizeUserAgent result too long: %q", result)
+	}
+}
+
+func TestAnonymizeUserAgent_BrowserDetectionOrder(t *testing.T) {
+	// Test that browser detection handles overlapping patterns correctly
+	// Edge contains "Edg/" + "Chrome" + "Safari"
+	// Chrome contains "Chrome" + "Safari"
+	// Safari contains "Safari" only
+	tests := []struct {
+		name           string
+		ua             string
+		expectedBrowser string
+		description    string
+	}{
+		{
+			name:           "Edge (modern) - should detect as Edge, not Chrome",
+			ua:             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59",
+			expectedBrowser: "edge",
+			description:    "Edge user agent contains 'Edg/', 'Chrome', and 'Safari'",
+		},
+		{
+			name:           "Edge (older) - should detect as Edge, not Chrome",
+			ua:             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.18362",
+			expectedBrowser: "edge",
+			description:    "Older Edge user agent contains 'Edge/'",
+		},
+		{
+			name:           "Chrome - should detect as Chrome, not Safari",
+			ua:             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+			expectedBrowser: "chrome",
+			description:    "Chrome user agent contains 'Chrome' and 'Safari'",
+		},
+		{
+			name:           "Safari (macOS) - should detect as Safari",
+			ua:             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15",
+			expectedBrowser: "safari",
+			description:    "Safari user agent contains 'Safari' but not 'Chrome'",
+		},
+		{
+			name:           "Safari (iOS) - should detect as Safari",
+			ua:             "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+			expectedBrowser: "safari",
+			description:    "iOS Safari contains 'Safari' but not 'Chrome'",
+		},
+		{
+			name:           "Firefox - should detect as Firefox",
+			ua:             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+			expectedBrowser: "firefox",
+			description:    "Firefox user agent is independent",
+		},
+		{
+			name:           "Case insensitive - EDG uppercase",
+			ua:             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 EDG/91.0.864.59",
+			expectedBrowser: "edge",
+			description:    "Should handle case-insensitive detection",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := AnonymizeUserAgent(tt.ua)
+
+			// Result format is "os/browser"
+			parts := strings.Split(result, "/")
+			if len(parts) != 2 {
+				t.Fatalf("Expected result format 'os/browser', got: %q", result)
+			}
+
+			gotBrowser := parts[1]
+			if gotBrowser != tt.expectedBrowser {
+				t.Errorf("AnonymizeUserAgent(%q)\n  got browser: %q\n  want: %q\n  context: %s",
+					tt.ua, gotBrowser, tt.expectedBrowser, tt.description)
+			}
+		})
 	}
 }

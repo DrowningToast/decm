@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"log/slog"
 	"net"
 	"strings"
 )
@@ -22,7 +23,10 @@ func AnonymizeIP(ip string) string {
 	// Parse IP address properly to handle both IPv4 and IPv6 (including compressed formats)
 	parsedIP := net.ParseIP(ip)
 	if parsedIP == nil {
-		// Invalid IP format, hash it
+		// Invalid IP format - log warning as this may indicate proxy misconfiguration
+		slog.Warn("Malformed IP address detected, falling back to hash",
+			slog.String("ip", ip),
+			slog.String("hint", "Check proxy configuration or IP extraction logic"))
 		return HashIP(ip)
 	}
 
@@ -85,14 +89,21 @@ func AnonymizeUserAgent(ua string) string {
 	}
 
 	// Detect Browser
-	if strings.Contains(ua, "chrome") {
+	// Order matters: Check most specific patterns first to handle overlapping cases.
+	// - Edge user agents contain: "Edg/" + "Chrome" + "Safari"
+	// - Chrome user agents contain: "Chrome" + "Safari"
+	// - Safari user agents contain: "Safari" (but not "Chrome")
+	if strings.Contains(ua, "edg/") || strings.Contains(ua, "edge/") {
+		// Edge (modern versions use "Edg/", older used "Edge/")
+		browser = "edge"
+	} else if strings.Contains(ua, "chrome") {
+		// Chrome (but not Edge, since we checked Edge first)
 		browser = "chrome"
 	} else if strings.Contains(ua, "firefox") {
 		browser = "firefox"
 	} else if strings.Contains(ua, "safari") {
+		// Safari (but not Chrome/Edge, since we checked them first)
 		browser = "safari"
-	} else if strings.Contains(ua, "edge") {
-		browser = "edge"
 	} else if strings.Contains(ua, "curl") {
 		browser = "curl"
 	} else if strings.Contains(ua, "python") {

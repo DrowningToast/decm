@@ -176,6 +176,9 @@ func TestIsSuspiciousPathNoFalsePositives(t *testing.T) {
 		"/metrics",
 		"/swagger/index.html",
 		"/swagger/doc.json",
+		"/.well-known/acme-challenge/token123", // Let's Encrypt SSL validation (RFC 8615)
+		"/.well-known/security.txt",            // Security disclosure (RFC 9116)
+		"/.well-known/change-password",         // Password change endpoint (WICG spec)
 	}
 
 	for _, path := range legitimatePaths {
