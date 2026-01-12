@@ -43,7 +43,8 @@ var SuspiciousPathPatterns = []SuspiciousPattern{
 	{Pattern: "/.htaccess", MatchType: MatchPrefix, Comment: "Apache config"},
 	{Pattern: "/.idea", MatchType: MatchPrefix, Comment: "IntelliJ IDEA config"},
 	{Pattern: "/.config", MatchType: MatchPrefix, Comment: "Config directory"},
-	{Pattern: "/.well-known", MatchType: MatchPrefix, Comment: "Well-known URIs"},
+	// Note: Don't flag ALL .well-known paths (RFC 8615) as some are legitimate
+	// (e.g., .well-known/acme-challenge for SSL). Only flag specific suspicious ones below.
 
 	// Suspicious file extensions (SUFFIX matching)
 	// Technologies we don't use (ASP.NET, JSP, CGI, Perl, PHP, etc.)
@@ -123,8 +124,9 @@ var SuspiciousPathPatterns = []SuspiciousPattern{
 	{Pattern: "/jackett", MatchType: MatchContains, Comment: "Jackett"},
 	{Pattern: "/UtilServlet", MatchType: MatchContains, Comment: "Util servlet exploits"},
 
-	// OpenID/OAuth reconnaissance
+	// OpenID/OAuth reconnaissance (only specific paths, not all .well-known)
 	{Pattern: "/.well-known/openid-configuration", MatchType: MatchContains, Comment: "OpenID discovery"},
+	{Pattern: "/.well-known/jwks", MatchType: MatchContains, Comment: "JWKS endpoint probe"},
 
 	// Common vulnerability paths and shells
 	{Pattern: "/eval-stdin.php", MatchType: MatchContains, Comment: "PHP eval shell"},

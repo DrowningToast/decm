@@ -55,8 +55,8 @@ func TestSuspiciousPatternMatching(t *testing.T) {
 			want:     true,
 		},
 		{
-			name:     "Prefix match - .well-known/openid-configuration",
-			pattern:  SuspiciousPattern{Pattern: "/.well-known", MatchType: MatchPrefix},
+			name:     "Contains match - .well-known/openid-configuration (specific, not all .well-known)",
+			pattern:  SuspiciousPattern{Pattern: "/.well-known/openid-configuration", MatchType: MatchContains},
 			testPath: "/.well-known/openid-configuration",
 			want:     true,
 		},
@@ -343,6 +343,9 @@ func TestNoFalsePositives(t *testing.T) {
 		"/health",
 		"/metrics",
 		"/swagger/index.html",
+		"/.well-known/acme-challenge/token123", // Let's Encrypt SSL certificate validation (RFC 8615)
+		"/.well-known/security.txt",            // Security disclosure (RFC 9116)
+		"/.well-known/change-password",         // Password change endpoint (WICG spec)
 	}
 
 	for _, path := range legitimatePaths {

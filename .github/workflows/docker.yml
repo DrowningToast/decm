@@ -120,13 +120,9 @@ jobs:
                   done'
                   echo "✅ PostgreSQL is healthy"
 
-            - name: Run database migrations
-              run: |
-                  echo "🔄 Running database migrations..."
-                  docker compose -f docker-compose.ci.yml exec -T backend sh -c "cd /app/apps/backend/core-api && /app/apps/backend/bin/decm-backend migrate || echo 'Migration command not available, skipping...'"
-                  echo "Note: Migrations may need to be run separately if not built into the binary"
-
             - name: Wait for Backend to be healthy
+              # Note: Migrations run automatically via container entrypoint (/app/entrypoint.sh)
+              # If migrations fail, the backend container will exit with an error
               run: |
                   echo "⏳ Waiting for Backend to start..."
                   timeout 90 bash -c 'until docker compose -f docker-compose.ci.yml ps backend | grep -q "healthy"; do
