@@ -7,14 +7,14 @@ import (
 	"context"
 	"decm-database/go/generated"
 
-	datagateway "apps/backend/core-api/internal/datagateway/event"
+	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/google/uuid"
 )
 
-var _ datagateway.EventCertificateSignatureDataGateway = (*Repository)(nil)
+var _ eventdatagateway.EventCertificateSignatureDataGateway = (*Repository)(nil)
 
-func (r *Repository) CreateEventCertificateSignature(ctx context.Context, params datagateway.CreateEventCertificateSignatureParameters) (*entity.EventCertificateSignature, error) {
+func (r *Repository) CreateEventCertificateSignature(ctx context.Context, params eventdatagateway.CreateEventCertificateSignatureParameters) (*entity.EventCertificateSignature, error) {
 	result, err := r.queries.CreateEventCertificateSignature(ctx, generated.CreateEventCertificateSignatureParams{
 		EventCertificateConfigID: params.EventCertificateConfigID,
 		IssuerCredentialID:       params.IssuerCredentialID,
@@ -77,7 +77,7 @@ func (r *Repository) GetEventCertificateSignaturesByEventCertificateConfigID(ctx
 	return signatures, nil
 }
 
-func (r *Repository) UpdateEventCertificateSignature(ctx context.Context, id uuid.UUID, params datagateway.UpdateEventCertificateSignatureParameters) (*entity.EventCertificateSignature, error) {
+func (r *Repository) UpdateEventCertificateSignature(ctx context.Context, id uuid.UUID, params eventdatagateway.UpdateEventCertificateSignatureParameters) (*entity.EventCertificateSignature, error) {
 	result, err := r.queries.UpdateEventCertificateSignature(ctx, generated.UpdateEventCertificateSignatureParams{
 		ID:                id,
 		IssuerSignature:   pgmapper.StringPtrToPgText(params.IssuerSignature),

@@ -35,7 +35,24 @@ func PgTimestampzToTimePtr(timestampz pgtype.Timestamptz) *time.Time {
 	return nil
 }
 
+func PgTimestamptzToTimePtr(timestamptz pgtype.Timestamptz) *time.Time {
+	if timestamptz.Valid {
+		return &timestamptz.Time
+	}
+	return nil
+}
+
 func TimePtrToPgTimestampz(time *time.Time) pgtype.Timestamptz {
+	if time != nil {
+		return pgtype.Timestamptz{
+			Time:  *time,
+			Valid: true,
+		}
+	}
+	return pgtype.Timestamptz{}
+}
+
+func TimePtrToPgTimestamptz(time *time.Time) pgtype.Timestamptz {
 	if time != nil {
 		return pgtype.Timestamptz{
 			Time:  *time,
@@ -113,7 +130,24 @@ func Int32ToPgInt4(value int32) pgtype.Int4 {
 	}
 }
 
+func Int32ToPgInt2(value int32) pgtype.Int2 {
+	return pgtype.Int2{
+		Int16: int16(value),
+		Valid: true,
+	}
+}
+
 func UUIDToPgUUID(value *uuid.UUID) pgtype.UUID {
+	if value == nil {
+		return pgtype.UUID{}
+	}
+	return pgtype.UUID{
+		Bytes: *value,
+		Valid: true,
+	}
+}
+
+func UUIDPtrToPgUUID(value *uuid.UUID) pgtype.UUID {
 	if value == nil {
 		return pgtype.UUID{}
 	}
@@ -143,6 +177,14 @@ func PgInt4ToInt32Ptr(i4 pgtype.Int4) *int32 {
 		return nil
 	}
 	return &i4.Int32
+}
+
+func PgInt2ToInt32Ptr(i2 pgtype.Int2) *int32 {
+	if !i2.Valid {
+		return nil
+	}
+	v := int32(i2.Int16)
+	return &v
 }
 
 // ========== PII Encryption Functions ==========

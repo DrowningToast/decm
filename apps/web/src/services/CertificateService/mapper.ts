@@ -1,5 +1,6 @@
 import type {
-    EventGetMyCertificatesListViewModelResponse,
+    CertificateGetMyCertificatesListViewModelResponse,
+    CertificateClaimCertificateResponse,
     CoreApiInternalHandlerEventSignEventCertificatesResponse,
     CoreApiInternalHandlerEventImportCertificateReceiversResponse,
     CoreApiInternalHandlerEventRevokeEventCertificatesResponse,
@@ -34,6 +35,10 @@ export interface Certificate {
     issuerSignature?: string;
     certificateContractAddress?: string;
     inboxMessageId?: string;
+    broadcastedAt?: string;
+    estimatedDeadline?: string;
+    abortedAt?: string;
+    userClaimSignatureId?: string;
 }
 
 export interface MyCertificatesViewModel {
@@ -98,6 +103,8 @@ export interface ClaimCertificateResult {
     transactionHash: string;
     claimedAt: string;
     message: string;
+    status: string;
+    estimatedDeadline?: string;
 }
 
 export interface ClaimCertificateWithPinParams {
@@ -145,6 +152,10 @@ export const mapCertificate = (cert: EntityEventCertificate): Certificate => {
         createdAt: cert.created_at,
         revokedAt: cert.revoked_at,
         inboxMessageId: cert.inbox_message_id,
+        broadcastedAt: cert.broadcasted_at,
+        estimatedDeadline: cert.estimated_deadline,
+        abortedAt: cert.aborted_at,
+        userClaimSignatureId: cert.user_claim_signature_id,
     };
 };
 
@@ -152,7 +163,7 @@ export const mapCertificate = (cert: EntityEventCertificate): Certificate => {
  * Maps API response to MyCertificatesViewModel
  */
 export const mapToMyCertificatesViewModel = (
-    response: EventGetMyCertificatesListViewModelResponse,
+    response: CertificateGetMyCertificatesListViewModelResponse,
 ): MyCertificatesViewModel => {
     return {
         claimedCertificates: (response.claimed_certificates || []).map(mapCertificate),
@@ -246,15 +257,17 @@ export const mapClaimCertificateSignMessage = (response: {
 /**
  * Maps claim certificate response
  */
-export const mapClaimCertificateResponse = (response: {
-    id: string;
-    certificate_token_id?: string;
-    created_at: string;
-}): ClaimCertificateResult => {
+export const mapClaimCertificateResponse = (
+    response: CertificateClaimCertificateResponse,
+): ClaimCertificateResult => {
+    const cert = response.certificate as EntityEventCertificate;
+    const sig = response.user_signature as { estimated_deadline?: string } | null;
     return {
-        certificateId: response.id || "",
-        transactionHash: response.certificate_token_id || "", // Use token ID as transaction hash indicator
-        claimedAt: response.created_at || "",
-        message: "Certificate claimed successfully",
+        certificateId: cert?.id || "",
+        transactionHash: cert?.certificate_token_id || "", // Use token ID as transaction hash indicator
+        claimedAt: cert?.created_at || "",
+        message: response.message || "Certificate claimed successfully",
+        status: response.status || "success",
+        estimatedDeadline: sig?.estimated_deadline,
     };
 };

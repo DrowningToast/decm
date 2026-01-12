@@ -26,10 +26,19 @@ export function useClaimCertificate() {
         error: claimError,
     } = useMutation({
         mutationFn: (params: ClaimCertificateParams) => certificateService.claimCertificate(params),
-        onSuccess: () => {
-            toast.success(
-                t("participant.certificates.claimSuccess", "Certificate claimed successfully!"),
-            );
+        onSuccess: (result) => {
+            if (result.status === "queued") {
+                toast.success(
+                    t(
+                        "participant.certificates.claimQueued",
+                        "Certificate claim submitted — minting in progress!",
+                    ),
+                );
+            } else {
+                toast.success(
+                    t("participant.certificates.claimSuccess", "Certificate claimed successfully!"),
+                );
+            }
 
             // Invalidate related queries to refresh certificate data
             queryClient.invalidateQueries({

@@ -1,14 +1,14 @@
 package system_status
 
 import (
-	"apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 )
 
 type SystemStatusUsecase struct {
-	systemStatusRepo datagateway.SystemStatusScheduleDataGateway
+	systemStatusRepo offchain_datagateway.SystemStatusScheduleDataGateway
 }
 
-func NewSystemStatusUsecase(systemStatusRepo datagateway.SystemStatusScheduleDataGateway) *SystemStatusUsecase {
+func NewSystemStatusUsecase(systemStatusRepo offchain_datagateway.SystemStatusScheduleDataGateway) *SystemStatusUsecase {
 	return &SystemStatusUsecase{
 		systemStatusRepo: systemStatusRepo,
 	}

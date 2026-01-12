@@ -51,6 +51,7 @@ const createMockUser = (overrides = {}) => ({
     isLastNamePublic: false,
     isPhoneNumberPublic: false,
     isProfilePicturePublic: false,
+    unreadInboxMessageCount: 0,
     ...overrides,
 });
 

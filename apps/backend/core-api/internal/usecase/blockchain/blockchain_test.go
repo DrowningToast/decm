@@ -2,15 +2,69 @@ package blockchain
 
 import (
 	"apps/backend/core-api/config"
+	blockchainclient_datagateway "apps/backend/core-api/internal/datagateway/onchain/blockchain_client"
+	"context"
+	"math/big"
 	"testing"
+	"time"
 
 	blockchainConfig "apps/backend/core-api/config/blockchain"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
+// MockBlockchainClientDg is a mock implementation of BlockchainClientDataGateway
+type MockBlockchainClientDg struct {
+	mock.Mock
+}
+
+func (m *MockBlockchainClientDg) GetCurrentBlockNumber(ctx context.Context) (uint64, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(uint64), args.Error(1)
+}
+
+func (m *MockBlockchainClientDg) GetCalculatedDeadlineBlock(ctx context.Context) (uint64, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(uint64), args.Error(1)
+}
+
+func (m *MockBlockchainClientDg) EstimateDeadlineTime(ctx context.Context, deadlineBlock uint64) (*time.Time, error) {
+	args := m.Called(ctx, deadlineBlock)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*time.Time), args.Error(1)
+}
+
+func (m *MockBlockchainClientDg) GetTransactOpts(ctx context.Context) (*bind.TransactOpts, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*bind.TransactOpts), args.Error(1)
+}
+
+func (m *MockBlockchainClientDg) GetGasPrice(ctx context.Context) (*blockchainclient_datagateway.GasPriceInfo, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*blockchainclient_datagateway.GasPriceInfo), args.Error(1)
+}
+
+func (m *MockBlockchainClientDg) WeiToGwei(wei *big.Int) float64 {
+	args := m.Called(wei)
+	return args.Get(0).(float64)
+}
+
 func TestBlockchainUsecase_GetGasPrice_Success(t *testing.T) {
-	// Skip if no valid blockchain config
+	// Arrange
+	ctx := context.Background()
+	mockBlockchainDg := new(MockBlockchainClientDg)
+
 	cfg := &config.Config{
 		Blockchain: blockchainConfig.BlockchainConfig{
 			MaxGasPriceGwei:     2500.0,
@@ -18,10 +72,149 @@ func TestBlockchainUsecase_GetGasPrice_Success(t *testing.T) {
 		},
 	}
 
-	// Note: We can't easily test this without refactoring to use dependency injection
-	// This test documents the expected behavior
-	_ = cfg
-	t.Skip("Requires refactoring to inject ethclient dependency")
+	uc := NewBlockchainUsecase(nil, cfg, mockBlockchainDg)
+
+	// Mock gas price info from blockchain
+	gasPriceInfo := &blockchainclient_datagateway.GasPriceInfo{
+		MaxFeePerGasGwei:         100.0,
+		MaxPriorityFeePerGasGwei: 2.0,
+		BaseFeeGwei:              98.0,
+	}
+
+	mockBlockchainDg.On("GetGasPrice", ctx).Return(gasPriceInfo, nil)
+
+	// Act
+	result, err := uc.GetGasPrice(ctx)
+
+	// Assert
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	// Verify gas price values are correctly passed through
+	assert.Equal(t, 100.0, result.CurrentGasPriceGwei)
+	assert.Equal(t, 98.0, result.BaseFeeGwei)
+	assert.Equal(t, 2.0, result.PriorityFeeGwei)
+
+	// Verify caps are set from config
+	assert.Equal(t, 1000.0, result.SoftCapPriceGwei)
+	assert.Equal(t, 2500.0, result.HardCapPriceGwei)
+
+	// Verify safety margin calculations
+	// Soft margin: ((1000 - 100) / 1000) * 100 = 90.0%
+	assert.InDelta(t, 90.0, result.SoftSafetyMargin, 0.1)
+	// Hard margin: ((2500 - 100) / 2500) * 100 = 96.0%
+	assert.InDelta(t, 96.0, result.HardSafetyMargin, 0.1)
+
+	mockBlockchainDg.AssertExpectations(t)
+}
+
+func TestBlockchainUsecase_GetGasPrice_Error(t *testing.T) {
+	// Arrange
+	ctx := context.Background()
+	mockBlockchainDg := new(MockBlockchainClientDg)
+
+	cfg := &config.Config{
+		Blockchain: blockchainConfig.BlockchainConfig{
+			MaxGasPriceGwei:     2500.0,
+			SoftCapGasPriceGwei: 1000.0,
+		},
+	}
+
+	uc := NewBlockchainUsecase(nil, cfg, mockBlockchainDg)
+
+	// Mock error from blockchain client
+	mockBlockchainDg.On("GetGasPrice", ctx).Return(nil, assert.AnError)
+
+	// Act
+	result, err := uc.GetGasPrice(ctx)
+
+	// Assert
+	require.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "failed to get current gas price")
+
+	mockBlockchainDg.AssertExpectations(t)
+}
+
+func TestBlockchainUsecase_GetGasPrice_ExceedingSoftCap(t *testing.T) {
+	// Arrange
+	ctx := context.Background()
+	mockBlockchainDg := new(MockBlockchainClientDg)
+
+	cfg := &config.Config{
+		Blockchain: blockchainConfig.BlockchainConfig{
+			MaxGasPriceGwei:     2500.0,
+			SoftCapGasPriceGwei: 1000.0,
+		},
+	}
+
+	uc := NewBlockchainUsecase(nil, cfg, mockBlockchainDg)
+
+	// Gas price exceeds soft cap but within hard cap
+	gasPriceInfo := &blockchainclient_datagateway.GasPriceInfo{
+		MaxFeePerGasGwei:         1500.0,
+		MaxPriorityFeePerGasGwei: 3.0,
+		BaseFeeGwei:              1497.0,
+	}
+
+	mockBlockchainDg.On("GetGasPrice", ctx).Return(gasPriceInfo, nil)
+
+	// Act
+	result, err := uc.GetGasPrice(ctx)
+
+	// Assert
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	assert.Equal(t, 1500.0, result.CurrentGasPriceGwei)
+
+	// Soft margin: ((1000 - 1500) / 1000) * 100 = -50.0% (negative = exceeded)
+	assert.InDelta(t, -50.0, result.SoftSafetyMargin, 0.1)
+	// Hard margin: ((2500 - 1500) / 2500) * 100 = 40.0%
+	assert.InDelta(t, 40.0, result.HardSafetyMargin, 0.1)
+
+	mockBlockchainDg.AssertExpectations(t)
+}
+
+func TestBlockchainUsecase_GetGasPrice_ExceedingBothCaps(t *testing.T) {
+	// Arrange
+	ctx := context.Background()
+	mockBlockchainDg := new(MockBlockchainClientDg)
+
+	cfg := &config.Config{
+		Blockchain: blockchainConfig.BlockchainConfig{
+			MaxGasPriceGwei:     2500.0,
+			SoftCapGasPriceGwei: 1000.0,
+		},
+	}
+
+	uc := NewBlockchainUsecase(nil, cfg, mockBlockchainDg)
+
+	// Gas price exceeds both caps
+	gasPriceInfo := &blockchainclient_datagateway.GasPriceInfo{
+		MaxFeePerGasGwei:         3000.0,
+		MaxPriorityFeePerGasGwei: 5.0,
+		BaseFeeGwei:              2995.0,
+	}
+
+	mockBlockchainDg.On("GetGasPrice", ctx).Return(gasPriceInfo, nil)
+
+	// Act
+	result, err := uc.GetGasPrice(ctx)
+
+	// Assert
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	assert.Equal(t, 3000.0, result.CurrentGasPriceGwei)
+
+	// Both margins should be negative (exceeded)
+	// Soft margin: ((1000 - 3000) / 1000) * 100 = -200.0%
+	assert.InDelta(t, -200.0, result.SoftSafetyMargin, 0.1)
+	// Hard margin: ((2500 - 3000) / 2500) * 100 = -20.0%
+	assert.InDelta(t, -20.0, result.HardSafetyMargin, 0.1)
+
+	mockBlockchainDg.AssertExpectations(t)
 }
 
 func TestBlockchainUsecase_GetGasPrice_CalculatesSafetyMargins(t *testing.T) {

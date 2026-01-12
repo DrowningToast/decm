@@ -8,15 +8,15 @@ import (
 	"decm-database/go/generated"
 	"strings"
 
-	datagateway "apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-var _ datagateway.InboxMessageDataGateway = (*Repository)(nil)
+var _ offchain_datagateway.InboxMessageDataGateway = (*Repository)(nil)
 
-func (r *Repository) CreateInboxMessage(ctx context.Context, params datagateway.CreateInboxMessageParameters) (*entity.InboxMessage, error) {
+func (r *Repository) CreateInboxMessage(ctx context.Context, params offchain_datagateway.CreateInboxMessageParameters) (*entity.InboxMessage, error) {
 	// Encrypt PII field (receiver_email)
 	encryptedEmail, err := pgmapper.EncryptStringPtrToPgText(&params.ReceiverEmail, r.piiEncryptionKey)
 	if err != nil {
@@ -100,7 +100,7 @@ func (r *Repository) GetInboxMessageByID(ctx context.Context, id uuid.UUID) (*en
 	}, nil
 }
 
-func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
+func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
 	var err error
 	var encryptedReceiverEmail pgtype.Text
 	receiverEmail := params.ReceiverEmail
@@ -159,7 +159,7 @@ func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params 
 	return messages, nil
 }
 
-func (r *Repository) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
+func (r *Repository) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
 	var err error
 	var encryptedReceiverEmail pgtype.Text
 	receiverEmail := params.ReceiverEmail

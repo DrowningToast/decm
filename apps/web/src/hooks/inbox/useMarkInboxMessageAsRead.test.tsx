@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useMarkInboxMessageAsRead } from "./useMarkInboxMessageAsRead";
+import type { InboxMessage } from "@/services/InboxService/InboxService";
 import { QUERY_KEY } from "@/lib/queryKeys";
 
 // Mock the InboxService
@@ -42,7 +43,7 @@ describe("useMarkInboxMessageAsRead", () => {
     it("should mark message as read successfully", async () => {
         // Arrange
         const messageId = "message-123";
-        vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(undefined);
+        vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(null);
 
         const { result } = renderHook(() => useMarkInboxMessageAsRead(), { wrapper });
 
@@ -61,7 +62,7 @@ describe("useMarkInboxMessageAsRead", () => {
     it("should invalidate inbox list query on success", async () => {
         // Arrange
         const messageId = "message-456";
-        vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(undefined);
+        vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(null);
 
         const invalidateQueriesSpy = vi.spyOn(queryClient, "invalidateQueries");
 
@@ -83,7 +84,7 @@ describe("useMarkInboxMessageAsRead", () => {
     it("should invalidate specific message query on success", async () => {
         // Arrange
         const messageId = "message-789";
-        vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(undefined);
+        vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(null);
 
         const invalidateQueriesSpy = vi.spyOn(queryClient, "invalidateQueries");
 
@@ -136,8 +137,8 @@ describe("useMarkInboxMessageAsRead", () => {
     it("should transition through loading state", async () => {
         // Arrange
         const messageId = "message-loading";
-        let resolveMarkAsRead: () => void;
-        const markAsReadPromise = new Promise<void>((resolve) => {
+        let resolveMarkAsRead: (value: InboxMessage | null) => void;
+        const markAsReadPromise = new Promise<InboxMessage | null>((resolve) => {
             resolveMarkAsRead = resolve;
         });
 
@@ -154,7 +155,7 @@ describe("useMarkInboxMessageAsRead", () => {
         });
 
         // Resolve the promise
-        resolveMarkAsRead!();
+        resolveMarkAsRead!(null);
 
         // Assert - should be success
         await waitFor(() => {
@@ -166,7 +167,7 @@ describe("useMarkInboxMessageAsRead", () => {
         // Arrange
         const messageId1 = "message-1";
         const messageId2 = "message-2";
-        vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(undefined);
+        vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(null);
 
         const { result } = renderHook(() => useMarkInboxMessageAsRead(), { wrapper });
 
@@ -193,7 +194,7 @@ describe("useMarkInboxMessageAsRead", () => {
     it("should support mutateAsync for promise-based usage", async () => {
         // Arrange
         const messageId = "message-async";
-        vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(undefined);
+        vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(null);
 
         const { result } = renderHook(() => useMarkInboxMessageAsRead(), { wrapper });
 
@@ -201,7 +202,7 @@ describe("useMarkInboxMessageAsRead", () => {
         const promise = result.current.mutateAsync(messageId);
 
         // Assert
-        await expect(promise).resolves.toBeUndefined();
+        await expect(promise).resolves.toBeNull();
         expect(defaultInboxService.markAsRead).toHaveBeenCalledWith(messageId);
     });
 
@@ -223,7 +224,7 @@ describe("useMarkInboxMessageAsRead", () => {
     it("should reset mutation state", async () => {
         // Arrange
         const messageId = "message-reset";
-        vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(undefined);
+        vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(null);
 
         const { result } = renderHook(() => useMarkInboxMessageAsRead(), { wrapper });
 
@@ -287,15 +288,15 @@ describe("useMarkInboxMessageAsRead", () => {
     it("should invalidate both queries in correct order", async () => {
         // Arrange
         const messageId = "message-order";
-        vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(undefined);
+        vi.mocked(defaultInboxService.markAsRead).mockResolvedValue(null);
 
         const invalidateCalls: string[] = [];
-        vi.spyOn(queryClient, "invalidateQueries").mockImplementation(
-            (options: InvalidateQueryFilters) => {
-                invalidateCalls.push(JSON.stringify(options.queryKey));
-                return Promise.resolve();
-            },
-        );
+        vi.spyOn(queryClient, "invalidateQueries").mockImplementation(((
+            options?: InvalidateQueryFilters,
+        ) => {
+            invalidateCalls.push(JSON.stringify(options?.queryKey));
+            return Promise.resolve();
+        }) as typeof queryClient.invalidateQueries);
 
         const { result } = renderHook(() => useMarkInboxMessageAsRead(), { wrapper });
 

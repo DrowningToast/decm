@@ -1,6 +1,9 @@
 package blockchain
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 type BlockchainConfig struct {
 	Network    string `env:"NETWORK" envDefault:"localhost"`
@@ -19,10 +22,10 @@ type BlockchainConfig struct {
 	// SoftCapGasPriceGwei is a softer limit for UI warnings
 	// On prod set to 60 gwei
 	SoftCapGasPriceGwei float64 `env:"SOFT_CAP_GAS_PRICE_GWEI" envDefault:"60"`
-	// GasLimit is the maximum gas to use for transactions
-	// 0 means automatic estimation (unreliable on some networks)
-	// Recommended: 3000000 for contract deployments, 500000 for regular txs
-	GasLimit uint64 `env:"GAS_LIMIT" envDefault:"3000000"`
+
+	// PollInterval is the duration between worker runs
+	// Default: 1h
+	PollInterval time.Duration `env:"POLL_INTERVAL" envDefault:"1h"`
 }
 
 func (c *BlockchainConfig) Validate() error {
@@ -42,4 +45,30 @@ func (c *BlockchainConfig) Validate() error {
 		return errors.New("etherscan API key is required")
 	}
 	return nil
+}
+
+// GetBlockTimeSeconds returns the average block time in seconds based on the chain ID
+// This is used for deadline calculations and time estimations
+func (c *BlockchainConfig) GetBlockTimeSeconds() int {
+	switch c.ChainID {
+	case 1: // Ethereum Mainnet
+		return 12
+	case 137: // Polygon PoS Mainnet
+		return 2
+	case 80001, 80002: // Polygon Mumbai Testnet / Amoy Testnet
+		return 2
+	case 56: // BSC Mainnet
+		return 3
+	case 97: // BSC Testnet
+		return 3
+	case 11155111: // Sepolia Testnet
+		return 12
+	case 5: // Goerli Testnet (deprecated)
+		return 12
+	case 1337, 31337: // Localhost (Hardhat/Ganache)
+		return 2
+	default:
+		// Default to 2 seconds for unknown chains (conservative estimate)
+		return 2
+	}
 }

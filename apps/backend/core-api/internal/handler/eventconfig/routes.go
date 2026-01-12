@@ -26,6 +26,7 @@ func (h *Handler) Mount(r fiber.Router) {
 	// GET: Handler checks if user is organizer or event-specific issuer (authorization in handler)
 	// IMPORTANT: Must be registered BEFORE any .Use() calls to avoid inheriting role guard middleware
 	eventConfigGroup.Get("/certificate", h.GetEventCertificateConfig)
+	eventConfigGroup.Get("/certificate/template", h.GetEventCertificateTemplate)
 	eventConfigGroup.Get("/certificate/mint-readiness", h.CheckCertificateMintReadiness)
 
 	// Event Registration Config routes (with role guard)

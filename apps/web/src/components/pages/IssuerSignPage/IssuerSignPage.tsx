@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "@/router";
 import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,10 @@ import SectionContainer from "@/components/container/SectionContainer";
 import { IssuerStatusBadge } from "./IssuerStatusBadge";
 import { IssuersStatus } from "./IssuersStatus";
 import { useAuth } from "@/context/AuthContext";
+import { CertificatePreview } from "@/components/CertificatePreview";
+import { useFetchedCertificateSvg } from "@/components/pages/HostPages/EventPages/useFetchedCertificateSvg";
+import type { CertificateFontConfig } from "@/lib/certificateRenderer";
+import type { DetectedKeyword } from "@/hooks/useCertificateTemplate";
 
 interface IssuerSignPageProps {
     eventId: string;
@@ -39,6 +43,98 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
     const { data: eventCertificateConfig } = useEventCertificateConfig(eventId);
     const { data: eventContract } = useEventContract(eventId);
     const { signEventCertificates, isSigning } = useSignEventCertificates();
+
+    // Fetch SVG template through the backend proxy (avoids CORS on S3 presigned URLs)
+    const fetchedSvg = useFetchedCertificateSvg(eventId, false);
+
+    // Derive font config from the saved certificate config
+    const fontConfig = useMemo<CertificateFontConfig | undefined>(() => {
+        if (!eventCertificateConfig) return undefined;
+        return {
+            event_name_font_family_id: eventCertificateConfig.event_name_font_family_id,
+            event_name_font_weight: eventCertificateConfig.event_name_font_weight,
+            name_font_family_id: eventCertificateConfig.name_font_family_id,
+            name_font_weight: eventCertificateConfig.name_font_weight,
+            academic_institution_font_family_id:
+                eventCertificateConfig.academic_institution_font_family_id,
+            academic_institution_font_weight:
+                eventCertificateConfig.academic_institution_font_weight,
+            certificate_title_font_family_id:
+                eventCertificateConfig.certificate_title_font_family_id,
+            certificate_title_font_weight: eventCertificateConfig.certificate_title_font_weight,
+            certificate_subtitle_font_family_id:
+                eventCertificateConfig.certificate_subtitle_font_family_id,
+            certificate_subtitle_font_weight:
+                eventCertificateConfig.certificate_subtitle_font_weight,
+        };
+    }, [eventCertificateConfig]);
+
+    // Reconstruct keyword positions from the saved config (same logic as CertificateSettingsPage)
+    const detectedKeywords = useMemo<DetectedKeyword[]>(() => {
+        if (!eventCertificateConfig) return [];
+        const keywords: DetectedKeyword[] = [];
+
+        if (
+            eventCertificateConfig.name_pos_x !== undefined &&
+            eventCertificateConfig.name_pos_y !== undefined &&
+            (eventCertificateConfig.name_pos_x !== 0 || eventCertificateConfig.name_pos_y !== 0)
+        ) {
+            keywords.push({
+                keyword: "{{ name }}",
+                x: eventCertificateConfig.name_pos_x,
+                y: eventCertificateConfig.name_pos_y,
+                count: 1,
+            });
+        }
+        if (
+            eventCertificateConfig.event_name_pos_x !== undefined &&
+            eventCertificateConfig.event_name_pos_y !== undefined &&
+            (eventCertificateConfig.event_name_pos_x !== 0 ||
+                eventCertificateConfig.event_name_pos_y !== 0)
+        ) {
+            keywords.push({
+                keyword: "{{ eventName }}",
+                x: eventCertificateConfig.event_name_pos_x,
+                y: eventCertificateConfig.event_name_pos_y,
+                count: 1,
+            });
+        }
+        if (
+            eventCertificateConfig.academic_institution_pos_x !== undefined &&
+            eventCertificateConfig.academic_institution_pos_y !== undefined
+        ) {
+            keywords.push({
+                keyword: "{{ academicInstitutionName }}",
+                x: eventCertificateConfig.academic_institution_pos_x,
+                y: eventCertificateConfig.academic_institution_pos_y,
+                count: 1,
+            });
+        }
+        if (
+            eventCertificateConfig.certificate_title_pos_x !== undefined &&
+            eventCertificateConfig.certificate_title_pos_y !== undefined
+        ) {
+            keywords.push({
+                keyword: "{{ certificateTitle }}",
+                x: eventCertificateConfig.certificate_title_pos_x,
+                y: eventCertificateConfig.certificate_title_pos_y,
+                count: 1,
+            });
+        }
+        if (
+            eventCertificateConfig.certificate_subtitle_pos_x !== undefined &&
+            eventCertificateConfig.certificate_subtitle_pos_y !== undefined
+        ) {
+            keywords.push({
+                keyword: "{{ certificateSubtitle }}",
+                x: eventCertificateConfig.certificate_subtitle_pos_x,
+                y: eventCertificateConfig.certificate_subtitle_pos_y,
+                count: 1,
+            });
+        }
+
+        return keywords;
+    }, [eventCertificateConfig]);
 
     // Get current issuer's information
     const currentIssuer = eventIssuers?.find(
@@ -247,23 +343,28 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                         {t("issuer.sign.certificatePreview")}
                                     </Typography>
                                     <div className="bg-[#1a1a1a] border border-[#333333] rounded-lg p-4">
-                                        <div className="aspect-w-16 aspect-h-9  rounded flex items-center justify-center border border-dashed border-[#333333]">
-                                            {eventCertificateConfig?.base_certificate_presigned_url ? (
-                                                <img
-                                                    src={
-                                                        eventCertificateConfig.base_certificate_presigned_url
-                                                    }
-                                                    alt="Certificate Preview"
-                                                    className="w-full h-full object-contain rounded-md"
-                                                />
-                                            ) : (
+                                        {eventCertificateConfig ? (
+                                            <CertificatePreview
+                                                svgPreview={fetchedSvg || undefined}
+                                                imageUrl={
+                                                    eventCertificateConfig.base_certificate_presigned_url ??
+                                                    undefined
+                                                }
+                                                fontConfig={fontConfig}
+                                                detectedKeywords={detectedKeywords}
+                                                previewData={{
+                                                    eventName: event?.title ?? undefined,
+                                                }}
+                                            />
+                                        ) : (
+                                            <div className="flex items-center justify-center border border-dashed border-[#333333] rounded aspect-video">
                                                 <div className="text-center text-[#a0a0a0]">
                                                     <Typography variant="text" tag="p">
                                                         {t("issuer.sign.templateNotAvailable")}
                                                     </Typography>
                                                 </div>
-                                            )}
-                                        </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

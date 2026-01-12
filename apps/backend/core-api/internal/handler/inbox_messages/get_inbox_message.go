@@ -64,7 +64,7 @@ func (h *Handler) GetInboxMessage(c *fiber.Ctx) error {
 		if result.EventRegistrationInvitation == nil || result.Event == nil {
 			return customerror.Parse(&customerror.ErrNotFound, errors.New("event registration invitation or event not found"))
 		}
-		eventRegistrationInvitationViewModel, err := h.InboxUc.ToWithEventRegistrationInvitationViewModel(c.Context(), result.InboxMessage, *result.EventRegistrationInvitation, *result.Event, result.EventAttendee)
+		eventRegistrationInvitationViewModel, err := h.InboxUc.ToWithEventRegistrationInvitationViewModel(c.Context(), result.InboxMessage, *result.EventRegistrationInvitation, *result.Event, result.EventAttendee, result.UserSignature)
 		if err != nil {
 			return errors.Wrap(err, "failed to convert event registration invitation to view model")
 		}

@@ -2,16 +2,20 @@ package event
 
 import (
 	"apps/backend/common/customerror"
+	"apps/backend/common/encryptutils"
 	"apps/backend/core-api/config"
 	"apps/backend/core-api/config/blockchain"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"
+	"encoding/hex"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Helper function to create a mock config for testing
@@ -227,19 +231,183 @@ func TestSignEventCertificates(t *testing.T) {
 	})
 
 	t.Run("should fail when issuer has no certificates to sign", func(t *testing.T) {
-		t.Skip("Skipping: requires valid encrypted key data or implementation refactoring")
-		// TODO: This test requires either:
-		// 1. Valid encrypted test data that can be decrypted
-		// 2. Refactoring the implementation to decrypt the key only when needed
-		// Currently fails at decryption step before reaching the certificate check
+		// Arrange - Create valid encrypted private key for testing
+		privateKey, err := crypto.GenerateKey()
+		require.NoError(t, err)
+		privateKeyBytes := crypto.FromECDSA(privateKey)
+		privateKeyHex := hex.EncodeToString(privateKeyBytes)
+		password := "test-password"
+		encryptedKey, err := encryptutils.EncryptAESGCM(privateKeyHex, password)
+		require.NoError(t, err)
+
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+		credential := &entity.AuthenticationCredential{
+			Id:                  userId,
+			IsVerifiedIssuer:    true,
+			EncryptedPrivateKey: &encryptedKey,
+		}
+		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
+			Return(credential, nil)
+
+		mockEventDg := new(MockEventDataGateway)
+		event := &entity.Event{
+			Id: eventID,
+		}
+		mockEventDg.On("GetEventById", ctx, eventID).Return(event, nil)
+
+		mockCertDg := new(MockEventCertificateDataGateway)
+		certificates := []*entity.EventCertificate{
+			{Id: certificateID1},
+		}
+		mockCertDg.On("GetEventCertificatesByEventID", ctx, eventID).
+			Return(certificates, nil)
+
+		mockContractDg := new(MockEventContractDataGateway)
+		contractAddress := "0xD8F0b257d1150E35E0351E9eb735b1229396D6fa"
+		contract := &entity.EventContract{
+			EventId:                      eventID,
+			CertificateContractAddress:   &contractAddress,
+			EventContractAddress:         contractAddress,
+			AccessManagerContractAddress: "0x1234567890123456789012345678901234567890",
+		}
+		mockContractDg.On("GetEventContractByEventID", ctx, eventID).Return(contract, nil)
+
+		configID := uuid.New()
+		mockCertConfigDg := new(MockEventCertificateConfigDataGateway)
+		mockCertConfigDg.On("GetEventCertificateConfigByEventID", ctx, eventID).
+			Return(&entity.EventCertificateConfig{ID: configID, EventID: eventID}, nil)
+
+		mockSigDg := new(MockEventCertificateSignatureDataGateway)
+		// Return signatures but none for the current issuer
+		otherIssuerID := uuid.New()
+		signaturesForConfig := []*entity.EventCertificateSignature{
+			{
+				Id:                       uuid.New(),
+				EventCertificateConfigId: configID,
+				IssuerCredentialId:       otherIssuerID, // Different issuer
+				SignMessage:              nil,
+				IssuerSignature:          nil,
+			},
+		}
+		mockSigDg.On("GetEventCertificateSignaturesByEventCertificateConfigID", ctx, configID).
+			Return(signaturesForConfig, nil)
+
+		uc := &EventUsecase{
+			AuthenticationCredentialDg:           mockAuthDg,
+			EventDataGateway:                     mockEventDg,
+			EventCertificateDataGateway:          mockCertDg,
+			EventContractDataGateway:             mockContractDg,
+			EventCertificateSignatureDataGateway: mockSigDg,
+			EventCertificateConfigDg:             mockCertConfigDg,
+			cfg:                                  createMockConfigForSign(),
+		}
+
+		currentUser := &auth.JwtClaims{UserId: userId}
+		request := SignEventCertificatesRequest{IssuerPin: password}
+
+		// Act
+		result, err := uc.SignEventCertificates(ctx, eventID, request, currentUser)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "no certificates found with signatures for this issuer")
+		mockAuthDg.AssertExpectations(t)
+		mockEventDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+		mockContractDg.AssertExpectations(t)
+		mockSigDg.AssertExpectations(t)
+		mockCertConfigDg.AssertExpectations(t)
 	})
 
 	t.Run("should fail when sign message is missing", func(t *testing.T) {
-		t.Skip("Skipping: requires valid encrypted key data or implementation refactoring")
-		// TODO: This test requires either:
-		// 1. Valid encrypted test data that can be decrypted
-		// 2. Refactoring the implementation to decrypt the key only when needed
-		// Currently fails at decryption step before reaching the sign message check
+		// Arrange - Create valid encrypted private key for testing
+		privateKey, err := crypto.GenerateKey()
+		require.NoError(t, err)
+		privateKeyBytes := crypto.FromECDSA(privateKey)
+		privateKeyHex := hex.EncodeToString(privateKeyBytes)
+		password := "test-password"
+		encryptedKey, err := encryptutils.EncryptAESGCM(privateKeyHex, password)
+		require.NoError(t, err)
+
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+		credential := &entity.AuthenticationCredential{
+			Id:                  userId,
+			IsVerifiedIssuer:    true,
+			EncryptedPrivateKey: &encryptedKey,
+		}
+		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
+			Return(credential, nil)
+
+		mockEventDg := new(MockEventDataGateway)
+		event := &entity.Event{
+			Id: eventID,
+		}
+		mockEventDg.On("GetEventById", ctx, eventID).Return(event, nil)
+
+		mockCertDg := new(MockEventCertificateDataGateway)
+		certificates := []*entity.EventCertificate{
+			{Id: certificateID1},
+		}
+		mockCertDg.On("GetEventCertificatesByEventID", ctx, eventID).
+			Return(certificates, nil)
+
+		mockContractDg := new(MockEventContractDataGateway)
+		contractAddress := "0xD8F0b257d1150E35E0351E9eb735b1229396D6fa"
+		contract := &entity.EventContract{
+			EventId:                      eventID,
+			CertificateContractAddress:   &contractAddress,
+			EventContractAddress:         contractAddress,
+			AccessManagerContractAddress: "0x1234567890123456789012345678901234567890",
+		}
+		mockContractDg.On("GetEventContractByEventID", ctx, eventID).Return(contract, nil)
+
+		configID := uuid.New()
+		mockCertConfigDg := new(MockEventCertificateConfigDataGateway)
+		mockCertConfigDg.On("GetEventCertificateConfigByEventID", ctx, eventID).
+			Return(&entity.EventCertificateConfig{ID: configID, EventID: eventID}, nil)
+
+		mockSigDg := new(MockEventCertificateSignatureDataGateway)
+		signatureID := uuid.New()
+		// Return signature for current issuer but with nil SignMessage
+		signaturesForConfig := []*entity.EventCertificateSignature{
+			{
+				Id:                       signatureID,
+				EventCertificateConfigId: configID,
+				IssuerCredentialId:       userId, // Current issuer
+				SignMessage:              nil,     // Missing sign message
+				IssuerSignature:          nil,
+			},
+		}
+		mockSigDg.On("GetEventCertificateSignaturesByEventCertificateConfigID", ctx, configID).
+			Return(signaturesForConfig, nil)
+
+		uc := &EventUsecase{
+			AuthenticationCredentialDg:           mockAuthDg,
+			EventDataGateway:                     mockEventDg,
+			EventCertificateDataGateway:          mockCertDg,
+			EventContractDataGateway:             mockContractDg,
+			EventCertificateSignatureDataGateway: mockSigDg,
+			EventCertificateConfigDg:             mockCertConfigDg,
+			cfg:                                  createMockConfigForSign(),
+		}
+
+		currentUser := &auth.JwtClaims{UserId: userId}
+		request := SignEventCertificatesRequest{IssuerPin: password}
+
+		// Act
+		result, err := uc.SignEventCertificates(ctx, eventID, request, currentUser)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "sign message not found")
+		mockAuthDg.AssertExpectations(t)
+		mockEventDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+		mockContractDg.AssertExpectations(t)
+		mockSigDg.AssertExpectations(t)
+		mockCertConfigDg.AssertExpectations(t)
 	})
 }
 
@@ -288,7 +456,7 @@ func TestSignEventCertificates_MultipleIssuers(t *testing.T) {
 		mockContractDg := new(MockEventContractDataGateway)
 		contractAddress := "0xD8F0b257d1150E35E0351E9eb735b1229396D6fa"
 		contract := &entity.EventContract{
-			EventID:                      eventID,
+			EventId:                      eventID,
 			CertificateContractAddress:   &contractAddress,
 			EventContractAddress:         contractAddress,
 			AccessManagerContractAddress: "0x1234567890123456789012345678901234567890",

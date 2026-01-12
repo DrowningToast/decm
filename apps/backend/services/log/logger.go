@@ -38,6 +38,20 @@ func NewLogger() *slog.Logger {
 	return Logger
 }
 
+// For returns a child of the singleton logger with a "component" attribute
+// pre-attached. Use this to create component-scoped loggers (e.g. "worker",
+// "http") so that log aggregators like Grafana/Loki can filter by component
+// without relying on source-file path matching.
+//
+//	workerLogger := log.For("worker")
+//	httpLogger   := log.For("http")
+func For(component string) *slog.Logger {
+	if Logger == nil {
+		Init()
+	}
+	return Logger.With(slog.String("component", component))
+}
+
 // FromContext returns a logger from the context, or the singleton if not found.
 // This is useful in HTTP handlers where logger may be stored in request context.
 func FromContext(ctx context.Context) *slog.Logger {

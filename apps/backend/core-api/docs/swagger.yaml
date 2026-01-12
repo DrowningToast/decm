@@ -47,6 +47,52 @@ definitions:
     required:
     - gas_price
     type: object
+  certificate.ClaimCertificateBody:
+    properties:
+      account_password:
+        type: string
+      certificate_password:
+        type: string
+      sign_message:
+        type: string
+      signature:
+        type: string
+    type: object
+  certificate.ClaimCertificateResponse:
+    properties:
+      certificate: {}
+      message:
+        type: string
+      status:
+        type: string
+      user_signature: {}
+    required:
+    - certificate
+    - message
+    - status
+    - user_signature
+    type: object
+  certificate.GetClaimCertificateSignMessageResponse:
+    properties:
+      sign_message:
+        type: string
+    required:
+    - sign_message
+    type: object
+  certificate.GetMyCertificatesListViewModelResponse:
+    properties:
+      claimed_certificates: {}
+      total_claimed:
+        type: integer
+      total_unclaimed:
+        type: integer
+      unclaimed_certificates: {}
+    required:
+    - claimed_certificates
+    - total_claimed
+    - total_unclaimed
+    - unclaimed_certificates
+    type: object
   common.SolutionStatus:
     enum:
     - 0
@@ -483,6 +529,8 @@ definitions:
         type: string
       updated_at:
         type: string
+      user_signature_id:
+        type: string
       wallet_address:
         type: string
     required:
@@ -499,6 +547,8 @@ definitions:
     properties:
       academic_institution:
         type: string
+      broadcasted_at:
+        type: string
       certificate_digest:
         type: string
       certificate_subtitle:
@@ -508,6 +558,8 @@ definitions:
       certificate_token_id:
         type: string
       created_at:
+        type: string
+      estimated_deadline:
         type: string
       event_certificate_address:
         type: string
@@ -528,6 +580,10 @@ definitions:
       receiver_email:
         type: string
       revoked_at:
+        type: string
+      signature_created_at:
+        type: string
+      user_claim_signature_id:
         type: string
     required:
     - created_at
@@ -744,17 +800,6 @@ definitions:
     - status
     - updated_at
     type: object
-  event.ClaimCertificateBody:
-    properties:
-      account_password:
-        type: string
-      certificate_password:
-        type: string
-      sign_message:
-        type: string
-      signature:
-        type: string
-    type: object
   event.CreateEventContractRequest:
     properties:
       access_manager_contract_address:
@@ -935,6 +980,12 @@ definitions:
         type: integer
       banner_presigned_url:
         type: string
+      broadcasted_at:
+        type: string
+      broadcasted_at_deadline_block:
+        type: integer
+      broadcasted_at_estimated_deadline:
+        type: string
       chain_id:
         type: integer
       contact_address:
@@ -971,6 +1022,17 @@ definitions:
         type: boolean
       is_verified:
         type: boolean
+      joined_at:
+        type: string
+      joined_is_accepted:
+        type: boolean
+      joined_sign_message:
+        type: string
+      joined_signature:
+        description: |-
+          JoinedTxBroadcasted            *bool      `json:"joined_tx_broadcasted,omitempty"`
+          JoinedBroadcastedAt            *time.Time `json:"joined_broadcasted_at,omitempty"`
+        type: string
       location:
         type: string
       long_description:
@@ -1033,13 +1095,6 @@ definitions:
     - total_unclaimed
     - unclaimed_certificates
     type: object
-  event.GetClaimCertificateSignMessageResponse:
-    properties:
-      sign_message:
-        type: string
-    required:
-    - sign_message
-    type: object
   event.GetEventCertificatesResponse:
     properties:
       certificates:
@@ -1057,20 +1112,6 @@ definitions:
         type: array
     required:
     - events
-    type: object
-  event.GetMyCertificatesListViewModelResponse:
-    properties:
-      claimed_certificates: {}
-      total_claimed:
-        type: integer
-      total_unclaimed:
-        type: integer
-      unclaimed_certificates: {}
-    required:
-    - claimed_certificates
-    - total_claimed
-    - total_unclaimed
-    - unclaimed_certificates
     type: object
   event.ImportCertificateReceiverRequest:
     properties:
@@ -1597,6 +1638,8 @@ definitions:
       academic_institution:
         type: string
       accepted_at:
+        type: string
+      broadcasted_at:
         type: string
       cancelled_at:
         type: string
@@ -2506,8 +2549,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Claim a certificate using account password or wallet signature
-        (requires authentication)
+      description: Queue a certificate claim using account password or wallet signature
+        (requires authentication). The certificate will be minted asynchronously.
       operationId: claim-certificate
       parameters:
       - description: Certificate ID
@@ -2520,14 +2563,14 @@ paths:
         name: claimCertificateBody
         required: true
         schema:
-          $ref: '#/definitions/event.ClaimCertificateBody'
+          $ref: '#/definitions/certificate.ClaimCertificateBody'
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Accepted
           schema:
-            $ref: '#/definitions/entity.EventCertificate'
+            $ref: '#/definitions/certificate.ClaimCertificateResponse'
         "400":
           description: Bad Request
           schema:
@@ -2571,7 +2614,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/event.GetClaimCertificateSignMessageResponse'
+            $ref: '#/definitions/certificate.GetClaimCertificateSignMessageResponse'
         "400":
           description: Bad Request
           schema:
@@ -2612,7 +2655,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/event.GetMyCertificatesListViewModelResponse'
+            $ref: '#/definitions/certificate.GetMyCertificatesListViewModelResponse'
         "401":
           description: Unauthorized - missing or invalid authentication
           schema:

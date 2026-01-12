@@ -6,16 +6,18 @@ import (
 	"apps/backend/services/auth"
 	"context"
 	"errors"
+	"fmt"
 	"math/big"
 	"mime/multipart"
 	"time"
 
-	datagateway "apps/backend/core-api/internal/datagateway/event"
+	datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/google/uuid"
 
 	eventContract "apps/backend/contracts/event"
@@ -71,7 +73,7 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 	// Only upload new banner if a new file is provided
 	if params.EventBanner != nil {
 		previousBannerStorageKey := dbEvent.BannerStorageKey
-		err := uc.S3Service.DeleteFile(ctx, previousBannerStorageKey)
+		err := uc.S3DataGateway.DeleteFile(ctx, previousBannerStorageKey)
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +95,7 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		}
 		newEventIconStorageKey = newIconStorageKey
 
-		err = uc.S3Service.DeleteFile(ctx, previousIconStorageKey)
+		err = uc.S3DataGateway.DeleteFile(ctx, previousIconStorageKey)
 		if err != nil {
 			return nil, err
 		}
@@ -130,13 +132,7 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		return nil, err
 	}
 
-	client, err := cyptoutils.GetEthereumClient()
-	if err != nil {
-		return nil, err
-	}
-	defer client.Close()
-
-	auth, err := cyptoutils.GetKeyedTransactor(ctx, client)
+	transactor, err := uc.BlockchainClientDg.GetTransactOpts(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -149,12 +145,12 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		return nil, err
 	}
 
-	instance, err := eventContract.NewEvent(eventContractAddress, client)
+	instance, err := eventContract.NewEvent(eventContractAddress, uc.ethClient)
 	if err != nil {
 		return nil, err
 	}
 
-	calculatedDeadlineBlock, err := cyptoutils.GetCalculatedDeadlineBlock(client)
+	calculatedDeadlineBlock, err := uc.BlockchainClientDg.GetCalculatedDeadlineBlock(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +178,7 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 	}
 
 	tx, err := instance.UpdateEvent(
-		auth,
+		transactor,
 		eventName,
 		eventDescription,
 		big.NewInt(int64(*params.SeatsCount)),
@@ -194,9 +190,12 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		return nil, err
 	}
 
-	_, err = bind.WaitMined(ctx, client, tx)
+	receipt, err := bind.WaitMined(ctx, uc.ethClient, tx)
 	if err != nil {
 		return nil, err
+	}
+	if receipt.Status != types.ReceiptStatusSuccessful {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, fmt.Errorf("transaction reverted (tx=%s)", tx.Hash().Hex()))
 	}
 
 	return event, nil

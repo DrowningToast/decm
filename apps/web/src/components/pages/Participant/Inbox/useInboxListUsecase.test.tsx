@@ -171,16 +171,13 @@ describe("useInboxListUsecase", () => {
             expect(result.current.isLoading).toBe(false);
         });
 
-        // Skip status check if no inbox items returned
+        // InboxItem has: id, title, sender, date, isRead
         if (result.current.inboxItems && result.current.inboxItems.length > 0) {
-            const statuses = result.current.inboxItems.map((item) => item.status);
-            const uniqueStatuses = new Set(statuses);
-            expect(uniqueStatuses.size).toBeGreaterThan(0);
-            expect(Array.from(uniqueStatuses)).toEqual(
-                expect.arrayContaining([
-                    expect.stringMatching(/pending|available|expired|action-required/),
-                ]),
-            );
+            for (const item of result.current.inboxItems) {
+                expect(item).toHaveProperty("id");
+                expect(item).toHaveProperty("title");
+                expect(item).toHaveProperty("isRead");
+            }
         } else {
             // No inbox items - acceptable for mock data
             expect(result.current.inboxItems).toEqual([]);

@@ -23,8 +23,8 @@ func GetCalculatedDeadlineBlock(client *ethclient.Client) (uint64, error) {
 
 	// Polygon PoS (Proof of Stake) mainnet is approximately 2 seconds
 	// https://polygonscan.com/chart/blocktime
-	// 30 blocks = 60 seconds
-	deadlineBlock := 30
+	// 302,400 blocks = 1 week (604,800 seconds)
+	deadlineBlock := 302400
 
 	return latestBlockNumber + uint64(deadlineBlock), nil
 }

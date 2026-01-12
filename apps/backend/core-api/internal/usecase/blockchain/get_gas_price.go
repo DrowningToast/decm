@@ -1,7 +1,6 @@
 package blockchain
 
 import (
-	"apps/backend/core-api/internal/usecase/cyptoutils"
 	"context"
 
 	"github.com/pkg/errors"
@@ -18,13 +17,7 @@ type GasPriceResponse struct {
 }
 
 func (uc *BlockchainUsecase) GetGasPrice(ctx context.Context) (*GasPriceResponse, error) {
-	client, err := cyptoutils.GetEthereumClient()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get ethereum client")
-	}
-	defer client.Close()
-
-	info, err := cyptoutils.GetCurrentGasPrice(ctx, client)
+	info, err := uc.blockchainClientDg.GetGasPrice(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get current gas price")
 	}

@@ -2,7 +2,7 @@ package inbox
 
 import (
 	"apps/backend/common/customerror"
-	"apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"
@@ -20,7 +20,7 @@ type MockInboxMessageDg struct {
 	mock.Mock
 }
 
-func (m *MockInboxMessageDg) CreateInboxMessage(ctx context.Context, params datagateway.CreateInboxMessageParameters) (*entity.InboxMessage, error) {
+func (m *MockInboxMessageDg) CreateInboxMessage(ctx context.Context, params offchain_datagateway.CreateInboxMessageParameters) (*entity.InboxMessage, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -28,7 +28,7 @@ func (m *MockInboxMessageDg) CreateInboxMessage(ctx context.Context, params data
 	return args.Get(0).(*entity.InboxMessage), args.Error(1)
 }
 
-func (m *MockInboxMessageDg) GetInboxMessagesByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
+func (m *MockInboxMessageDg) GetInboxMessagesByCredentialID(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -84,7 +84,7 @@ func (m *MockInboxMessageDg) UpdateInboxMessageReadStatusAll(ctx context.Context
 	return args.Get(0).([]*entity.InboxMessage), args.Error(1)
 }
 
-func (m *MockInboxMessageDg) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
+func (m *MockInboxMessageDg) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
 	args := m.Called(ctx, params)
 	return args.Int(0), args.Error(1)
 }
@@ -126,7 +126,7 @@ func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByGoogleConn
 	return args.Get(0).(*entity.AuthenticationCredential), args.Error(1)
 }
 
-func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx context.Context, params datagateway.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters) (*entity.AuthenticationCredential, error) {
+func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx context.Context, params offchain_datagateway.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters) (*entity.AuthenticationCredential, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -142,7 +142,7 @@ func (m *MockAuthenticationCredentialDg) CreateAuthenticationCredential(ctx cont
 	return args.Get(0).(*entity.AuthenticationCredential), args.Error(1)
 }
 
-func (m *MockAuthenticationCredentialDg) UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params datagateway.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, error) {
+func (m *MockAuthenticationCredentialDg) UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params offchain_datagateway.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, error) {
 	args := m.Called(ctx, id, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -439,7 +439,7 @@ func TestInboxUsecase_GetInboxMessagesByCredentailID(t *testing.T) {
 			WalletAddress:      walletAddress,
 		}, nil)
 
-		mockInboxDg.On("GetInboxMessagesByCredentialID", ctx, mock.MatchedBy(func(params datagateway.GetInboxMessagesByCredentialIDParameters) bool {
+		mockInboxDg.On("GetInboxMessagesByCredentialID", ctx, mock.MatchedBy(func(params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) bool {
 			return params.CredentialID == credentialID
 		})).Return(messages, nil)
 

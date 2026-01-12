@@ -10,7 +10,8 @@ import (
 	"fmt"
 	"time"
 
-	datagateway "apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
+	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/google/uuid"
 )
@@ -48,7 +49,7 @@ func (uc *EventRegistrationUsecase) CancelEventRegistrationInvitation(ctx contex
 
 	// Cancel the invitation by setting cancelled_at timestamp
 	now := time.Now()
-	updateParams := datagateway.UpdateEventRegistrationInvitationParameters{
+	updateParams := event_datagateway.UpdateEventRegistrationInvitationParameters{
 		CancelledAt: &now,
 	}
 
@@ -82,7 +83,7 @@ func (uc *EventRegistrationUsecase) CancelEventRegistrationInvitation(ctx contex
 	}
 
 	// Create inbox message to notify about revocation
-	inboxMessageParams := datagateway.CreateInboxMessageParameters{
+	inboxMessageParams := offchain_datagateway.CreateInboxMessageParameters{
 		SenderCredentialID:     &currentUser.UserId,
 		ReceiverCredentialID:   originalInboxMessage.ReceiverCredentialId,
 		ReceiverEmail:          receiverEmail,

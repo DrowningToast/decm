@@ -54,23 +54,23 @@ loki.source.docker "containers" {
   refresh_interval = "5s"
 
   // Relabel rules to extract container metadata
-  relabel_rules = rule {
+  relabel_rules {
     source_labels = ["__meta_docker_container_name"]
     regex         = "/(.*)"
     target_label  = "container"
   }
 
-  relabel_rules = rule {
+  relabel_rules {
     source_labels = ["__meta_docker_container_id"]
     target_label  = "container_id"
   }
 
-  relabel_rules = rule {
+  relabel_rules {
     source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
     target_label  = "compose_service"
   }
 
-  relabel_rules = rule {
+  relabel_rules {
     source_labels = ["__meta_docker_container_log_stream"]
     target_label  = "stream"
   }
@@ -83,70 +83,53 @@ loki.source.docker "containers" {
 loki.process "backend_json" {
   forward_to = [loki.write.loki_endpoint.receiver]
 
-  // Stage 1: Try to parse as JSON first
+  // Stage 1: Extract low-cardinality fields needed for labels and timestamp.
+  // High-cardinality fields (user_id, request_id, error, path, duration, etc.)
+  // are NOT extracted here — they stay in the raw JSON body and are accessible
+  // in Grafana Explore via `| json <field>` without any cardinality cost.
   stage.json {
     expressions = {
-      timestamp  = "time",
-      level      = "level",
-      message    = "msg",
-      source     = "source",
-      error      = "error",
-      request_id = "request_id",
-      method     = "method",
-      path       = "path",
-      status     = "status",
-      duration   = "duration",
-      user_id    = "user_id",
+      timestamp = "time",
+      level     = "level",
+      component = "component",
+      method    = "method",
+      status    = "status",
     }
   }
 
-  // Stage 2: If JSON fails, parse as logfmt (key=value format)
-  stage.logfmt {
-    mapping = {
-      timestamp  = "time",
-      level      = "level",
-      message    = "msg",
-      source     = "source",
-      error      = "err",
-    }
-  }
-
-  // Stage 3: Extract timestamp
+  // Stage 2: Extract timestamp
+  // Go slog emits sub-second precision (e.g. .879657Z), so RFC3339Nano is primary.
   stage.timestamp {
     source = "timestamp"
-    format = "RFC3339"
+    format = "RFC3339Nano"
 
-    // Fallback formats if RFC3339 fails
     fallback_formats = [
-      "RFC3339Nano",
-      "2006-01-02T15:04:05.999999999Z07:00",
+      "RFC3339",
     ]
   }
 
-  // Stage 4: Convert level to lowercase for Grafana compatibility
+  // Stage 3: Convert level to lowercase for Grafana compatibility
   stage.template {
     source   = "level"
     template = "{{ ToLower .Value }}"
   }
 
-  // Stage 5: Add labels from parsed fields
+  // Stage 4: Promote only low-cardinality fields to Loki labels.
+  // Everything else (msg, error, user_id, request_id, source, path, duration)
+  // remains in the raw JSON log line and is queryable via `| json`.
   stage.labels {
     values = {
-      level      = "",
-      method     = "",
-      status     = "",
-      job        = "backend",
-      app        = "decm-backend",
-      service    = "decm-backend",
+      level     = "",
+      component = "",
+      method    = "",
+      status    = "",
+      job       = "backend",
+      app       = "decm-backend",
+      service   = "decm-backend",
     }
   }
 
-  // Stage 6: Output - use message field as log line
-  stage.output {
-    source = "message"
-  }
-
-  // Stage 7: Drop empty log lines
+  // Stage 5: Drop empty log lines
   stage.drop {
     expression = "^\\s*$"
   }

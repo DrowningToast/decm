@@ -193,6 +193,8 @@ type EventAttendee struct {
 	AcademicEmail        pgtype.Text        `json:"academic_email"`
 	CreatedAt            pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
+	// Reference to the signature used when joining this event (optional)
+	UserSignatureID pgtype.UUID `json:"user_signature_id"`
 }
 
 type EventCertificate struct {
@@ -211,6 +213,8 @@ type EventCertificate struct {
 	CreatedAt               pgtype.Timestamptz `json:"created_at"`
 	RevokedAt               pgtype.Timestamptz `json:"revoked_at"`
 	InboxMessageID          pgtype.UUID        `json:"inbox_message_id"`
+	// Reference to the signature used when claiming this certificate (optional)
+	UserClaimSignatureID pgtype.UUID `json:"user_claim_signature_id"`
 }
 
 type EventCertificateConfig struct {
@@ -391,4 +395,29 @@ type SystemStatusSchedule struct {
 	CreatedAt time.Time          `json:"created_at"`
 	UpdatedAt time.Time          `json:"updated_at"`
 	DeletedAt pgtype.Timestamptz `json:"deleted_at"`
+}
+
+// Stores user signatures sent to system or generated on runtime from user PIN
+type UserSignature struct {
+	ID uuid.UUID `json:"id"`
+	// Reference to the user that created this signature
+	AuthenticationCredentialID uuid.UUID `json:"authentication_credential_id"`
+	// The message that was signed
+	SignMessage pgtype.Text `json:"sign_message"`
+	// The signature hash
+	Signature pgtype.Text `json:"signature"`
+	// Blockchain deadline block number (optional)
+	DeadlineBlock pgtype.Int4 `json:"deadline_block"`
+	// Estimated deadline datetime for display purposes (optional)
+	EstimatedDeadline pgtype.Timestamptz `json:"estimated_deadline"`
+	// Timestamp when the action was broadcasted to blockchain (NULL if not broadcasted)
+	BroadcastedAt pgtype.Timestamptz `json:"broadcasted_at"`
+	CreatedAt     time.Time          `json:"created_at"`
+	UpdatedAt     time.Time          `json:"updated_at"`
+	// Timestamp when the worker marked this signature as expired (deadline passed without successful broadcast). NULL means not expired.
+	MarkAsExpiredAt pgtype.Timestamptz `json:"mark_as_expired_at"`
+	// Timestamp when the worker permanently aborted this signature (e.g. participant never joined). NULL means not aborted.
+	AbortedAt pgtype.Timestamptz `json:"aborted_at"`
+	// Integer reason code for the abort (see UserSignatureAbortReason in Go code). NULL if not aborted.
+	AbortedReason pgtype.Int2 `json:"aborted_reason"`
 }

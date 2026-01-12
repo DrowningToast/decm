@@ -85,6 +85,9 @@ export const mapInboxMessagesDetailViewModelToInboxMessageDetail = (
         acceptedAt: response.event_registration_invitation?.accepted_at
             ? new Date(response.event_registration_invitation?.accepted_at)
             : undefined,
+        broadcastedAt: response.event_registration_invitation?.broadcasted_at
+            ? new Date(response.event_registration_invitation?.broadcasted_at)
+            : undefined,
     } as const;
     if (
         response.inbox_message_type ===

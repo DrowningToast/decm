@@ -6,13 +6,13 @@ import (
 	"context"
 	"decm-database/go/generated"
 
-	datagateway "apps/backend/core-api/internal/datagateway/event"
+	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-var _ datagateway.EventCertificateConfigDataGateway = (*Repository)(nil)
+var _ event_datagateway.EventCertificateConfigDataGateway = (*Repository)(nil)
 
 // mapEventCertificateConfigToEntity converts a generated.EventCertificateConfig into an *entity.EventCertificateConfig.
 // It maps nullable numeric fields to Go pointers and converts generated timestamp types to time.Time for CreatedAt and UpdatedAt.
