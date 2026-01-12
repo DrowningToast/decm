@@ -2,17 +2,52 @@ package logger
 
 import (
 	"apps/backend/core-api/constants/ctxkey"
+	"apps/backend/core-api/constants/security"
 	"apps/backend/services/log"
 	"context"
 	"fmt"
 	"log/slog"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 var ExcludedPaths = []string{"/swagger/*", "/metrics"}
+
+// isSuspiciousPath checks if the request path matches known attack patterns.
+// Patterns are defined in constants/security/patterns.go for easy maintenance.
+// Supports prefix, suffix, exact, and contains matching for precise detection.
+//
+// Performance: Patterns are pre-computed to lowercase at initialization,
+// avoiding repeated strings.ToLower() calls on every HTTP request.
+func isSuspiciousPath(path string) bool {
+	pathLower := strings.ToLower(path)
+
+	for _, sp := range security.SuspiciousPathPatterns {
+		// Use pre-computed lowercase pattern for performance
+		switch sp.MatchType {
+		case security.MatchPrefix:
+			if strings.HasPrefix(pathLower, sp.LowerPattern) {
+				return true
+			}
+		case security.MatchSuffix:
+			if strings.HasSuffix(pathLower, sp.LowerPattern) {
+				return true
+			}
+		case security.MatchExact:
+			if pathLower == sp.LowerPattern {
+				return true
+			}
+		case security.MatchContains:
+			if strings.Contains(pathLower, sp.LowerPattern) {
+				return true
+			}
+		}
+	}
+	return false
+}
 
 func New() fiber.Handler {
 	return func(c *fiber.Ctx) error {
@@ -49,24 +84,44 @@ func New() fiber.Handler {
 			}
 		}
 
+		// Check if this is a suspicious security probe
+		suspicious := isSuspiciousPath(path)
+
 		// Log with structured fields
 		if err != nil {
-			logger.ErrorContext(c.UserContext(), fmt.Sprintf("HTTP request error: %s %s", method, path),
+			// If suspicious, log with security category and extra context
+			if suspicious {
+				logger.WarnContext(c.UserContext(), fmt.Sprintf("Security probe detected: %s %s", method, path),
+					slog.String("category", "security"),
+					slog.String("ip", c.IP()), // Full IP for security analysis and blocking
+					slog.String("user_agent", AnonymizeUserAgent(c.Get("User-Agent"))), // Anonymized for privacy
+					slog.String("method", method),
+					slog.String("path", path),
+					slog.Int("status", status),
+					slog.Duration("duration", duration),
+					slog.String("error", err.Error()),
+				)
+			} else {
+				logger.ErrorContext(c.UserContext(), fmt.Sprintf("HTTP request error: %s %s", method, path),
+					slog.String("method", method),
+					slog.String("path", path),
+					slog.Int("status", status),
+					slog.Duration("duration", duration),
+					slog.String("error", err.Error()),
+				)
+			}
+			return err
+		}
+
+		// For successful requests, only log if not suspicious (reduce noise)
+		if !suspicious {
+			logger.InfoContext(c.UserContext(), fmt.Sprintf("HTTP request completed: %s %s", method, path),
 				slog.String("method", method),
 				slog.String("path", path),
 				slog.Int("status", status),
 				slog.Duration("duration", duration),
-				slog.String("error", err.Error()),
 			)
-			return err
 		}
-
-		logger.InfoContext(c.UserContext(), fmt.Sprintf("HTTP request completed: %s %s", method, path),
-			slog.String("method", method),
-			slog.String("path", path),
-			slog.Int("status", status),
-			slog.Duration("duration", duration),
-		)
 		return nil
 	}
 }
