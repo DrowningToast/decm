@@ -67,11 +67,13 @@ SELECT
     updated_at,
     event_status,
     COALESCE(
-        (SELECT COUNT(event_attendees.id) 
-         FROM event_attendees 
-         WHERE event_attendees.event_id = events.id 
-           AND event_attendees.is_attendee_accepted::INTEGER = 1
-        ), 
+        (SELECT COUNT(ea.id)
+         FROM event_attendees ea
+         LEFT JOIN user_signature us ON ea.user_signature_id = us.id
+         WHERE ea.event_id = events.id
+           AND ea.is_attendee_accepted::INTEGER = 1
+           AND (us.mark_as_expired_at IS NULL OR us.broadcasted_at IS NOT NULL)
+        ),
     0)::INTEGER AS attendees_count
 FROM events
 WHERE events.id = sqlc.arg(id);
@@ -82,11 +84,13 @@ SELECT
     event_registration_configs.*,
     event_contracts.*,
     COALESCE(
-        (SELECT COUNT(event_attendees.id) 
-         FROM event_attendees 
-         WHERE event_attendees.event_id = events.id 
-           AND event_attendees.is_attendee_accepted::INTEGER = 1
-        ), 
+        (SELECT COUNT(ea.id)
+         FROM event_attendees ea
+         LEFT JOIN user_signature us ON ea.user_signature_id = us.id
+         WHERE ea.event_id = events.id
+           AND ea.is_attendee_accepted::INTEGER = 1
+           AND (us.mark_as_expired_at IS NULL OR us.broadcasted_at IS NOT NULL)
+        ),
     0)::INTEGER AS attendees_count
 FROM events
 INNER JOIN event_registration_configs 

@@ -4,7 +4,7 @@ import (
 	"apps/backend/common"
 	"apps/backend/common/customerror"
 	"apps/backend/common/hashutils"
-	"apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"
@@ -63,7 +63,7 @@ func (m *MockProfileDataGateway) GetProfileByEmail(ctx context.Context, email st
 	return args.Get(0).(*entity.Profile), args.Error(1)
 }
 
-func (m *MockProfileDataGateway) UpdateProfile(ctx context.Context, id uuid.UUID, params datagateway.UpdateProfileParameters) (*entity.Profile, error) {
+func (m *MockProfileDataGateway) UpdateProfile(ctx context.Context, id uuid.UUID, params offchain_datagateway.UpdateProfileParameters) (*entity.Profile, error) {
 	args := m.Called(ctx, id, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -71,7 +71,7 @@ func (m *MockProfileDataGateway) UpdateProfile(ctx context.Context, id uuid.UUID
 	return args.Get(0).(*entity.Profile), args.Error(1)
 }
 
-func (m *MockProfileDataGateway) UpdateProfileByAuthenticationCredentialId(ctx context.Context, credentialId uuid.UUID, params datagateway.UpdateProfileParameters) (*entity.Profile, error) {
+func (m *MockProfileDataGateway) UpdateProfileByAuthenticationCredentialId(ctx context.Context, credentialId uuid.UUID, params offchain_datagateway.UpdateProfileParameters) (*entity.Profile, error) {
 	args := m.Called(ctx, credentialId, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -129,7 +129,7 @@ func (m *MockAuthenticationCredentialDataGateway) GetAuthenticationCredentialByG
 	return args.Get(0).(*entity.AuthenticationCredential), args.Error(1)
 }
 
-func (m *MockAuthenticationCredentialDataGateway) GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx context.Context, params datagateway.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters) (*entity.AuthenticationCredential, error) {
+func (m *MockAuthenticationCredentialDataGateway) GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx context.Context, params offchain_datagateway.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters) (*entity.AuthenticationCredential, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -145,7 +145,7 @@ func (m *MockAuthenticationCredentialDataGateway) CreateAuthenticationCredential
 	return args.Get(0).(*entity.AuthenticationCredential), args.Error(1)
 }
 
-func (m *MockAuthenticationCredentialDataGateway) UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params datagateway.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, error) {
+func (m *MockAuthenticationCredentialDataGateway) UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params offchain_datagateway.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, error) {
 	args := m.Called(ctx, id, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -163,7 +163,7 @@ type MockInboxMessageDataGateway struct {
 	mock.Mock
 }
 
-func (m *MockInboxMessageDataGateway) CreateInboxMessage(ctx context.Context, params datagateway.CreateInboxMessageParameters) (*entity.InboxMessage, error) {
+func (m *MockInboxMessageDataGateway) CreateInboxMessage(ctx context.Context, params offchain_datagateway.CreateInboxMessageParameters) (*entity.InboxMessage, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -179,7 +179,7 @@ func (m *MockInboxMessageDataGateway) GetInboxMessageByID(ctx context.Context, i
 	return args.Get(0).(*entity.InboxMessage), args.Error(1)
 }
 
-func (m *MockInboxMessageDataGateway) GetInboxMessagesByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
+func (m *MockInboxMessageDataGateway) GetInboxMessagesByCredentialID(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -187,7 +187,7 @@ func (m *MockInboxMessageDataGateway) GetInboxMessagesByCredentialID(ctx context
 	return args.Get(0).([]*entity.InboxMessage), args.Error(1)
 }
 
-func (m *MockInboxMessageDataGateway) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
+func (m *MockInboxMessageDataGateway) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
 	args := m.Called(ctx, params)
 	return args.Int(0), args.Error(1)
 }
@@ -686,7 +686,7 @@ func TestProfileUsecase_UpdateProfile(t *testing.T) {
 
 		mockProfileDg := new(MockProfileDataGateway)
 		mockProfileDg.On("GetProfileByAuthenticationCredentialId", ctx, credentialID).Return(existingProfile, nil)
-		mockProfileDg.On("UpdateProfile", ctx, profileID, mock.AnythingOfType("datagateway.UpdateProfileParameters")).Return(updatedProfile, nil)
+		mockProfileDg.On("UpdateProfile", ctx, profileID, mock.AnythingOfType("offchain_datagateway.UpdateProfileParameters")).Return(updatedProfile, nil)
 
 		uc := &ProfileUsecase{
 			ProfileDg: mockProfileDg,
@@ -770,7 +770,7 @@ func TestProfileUsecase_UpdateProfile(t *testing.T) {
 
 		mockProfileDg := new(MockProfileDataGateway)
 		mockProfileDg.On("GetProfileByAuthenticationCredentialId", ctx, credentialID).Return(existingProfile, nil)
-		mockProfileDg.On("UpdateProfile", ctx, profileID, mock.AnythingOfType("datagateway.UpdateProfileParameters")).Return(nil, errors.New("database error"))
+		mockProfileDg.On("UpdateProfile", ctx, profileID, mock.AnythingOfType("offchain_datagateway.UpdateProfileParameters")).Return(nil, errors.New("database error"))
 
 		uc := &ProfileUsecase{
 			ProfileDg: mockProfileDg,
@@ -811,7 +811,7 @@ func TestProfileUsecase_UpdateProfileByCredentialId(t *testing.T) {
 
 		mockProfileDg := new(MockProfileDataGateway)
 		mockProfileDg.On("GetProfileByAuthenticationCredentialId", ctx, credentialID).Return(existingProfile, nil)
-		mockProfileDg.On("UpdateProfileByAuthenticationCredentialId", ctx, credentialID, mock.AnythingOfType("datagateway.UpdateProfileParameters")).Return(updatedProfile, nil)
+		mockProfileDg.On("UpdateProfileByAuthenticationCredentialId", ctx, credentialID, mock.AnythingOfType("offchain_datagateway.UpdateProfileParameters")).Return(updatedProfile, nil)
 
 		uc := &ProfileUsecase{
 			ProfileDg: mockProfileDg,
@@ -934,7 +934,7 @@ func TestProfileUsecase_UpdateProfileByCredentialId(t *testing.T) {
 
 		mockProfileDg := new(MockProfileDataGateway)
 		mockProfileDg.On("GetProfileByAuthenticationCredentialId", ctx, credentialID).Return(existingProfile, nil)
-		mockProfileDg.On("UpdateProfileByAuthenticationCredentialId", ctx, credentialID, mock.AnythingOfType("datagateway.UpdateProfileParameters")).Return(nil, errors.New("database error"))
+		mockProfileDg.On("UpdateProfileByAuthenticationCredentialId", ctx, credentialID, mock.AnythingOfType("offchain_datagateway.UpdateProfileParameters")).Return(nil, errors.New("database error"))
 
 		uc := &ProfileUsecase{
 			ProfileDg: mockProfileDg,
@@ -999,7 +999,7 @@ func TestProfileUsecase_GetMyProfileViewModel_WithUnreadInboxCount(t *testing.T)
 		mockProfileDg.On("GetProfileAndCredentialWithCredentialId", ctx, credentialID).Return(profile, credential, nil)
 
 		mockInboxDg := new(MockInboxMessageDataGateway)
-		mockInboxDg.On("GetUnreadInboxMessageCountByCredentialID", ctx, mock.MatchedBy(func(params datagateway.GetInboxMessagesByCredentialIDParameters) bool {
+		mockInboxDg.On("GetUnreadInboxMessageCountByCredentialID", ctx, mock.MatchedBy(func(params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) bool {
 			return params.CredentialID == credentialID &&
 				params.ReceiverEmail != nil && *params.ReceiverEmail == email &&
 				params.ReceiverWalletAddress != nil && *params.ReceiverWalletAddress == walletAddress
@@ -1202,7 +1202,7 @@ func TestProfileUsecase_GetMyProfileViewModel_WithUnreadInboxCount(t *testing.T)
 
 		// Verify exact parameter matching
 		mockInboxDg := new(MockInboxMessageDataGateway)
-		mockInboxDg.On("GetUnreadInboxMessageCountByCredentialID", ctx, mock.MatchedBy(func(params datagateway.GetInboxMessagesByCredentialIDParameters) bool {
+		mockInboxDg.On("GetUnreadInboxMessageCountByCredentialID", ctx, mock.MatchedBy(func(params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) bool {
 			if params.CredentialID != credentialID {
 				return false
 			}

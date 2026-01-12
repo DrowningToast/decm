@@ -57,10 +57,16 @@ func (u *EventUsecase) GenerateCertificateImage(ctx context.Context, certificate
 	}
 
 	// 3. Download SVG template from S3
-	svgReader, err := u.S3Service.GetFile(ctx, certificateConfig.BaseCertificateStorageKey)
+	svgReaderRaw, err := u.S3DataGateway.GetFile(ctx, certificateConfig.BaseCertificateStorageKey)
 	if err != nil {
 		u.logger.Error("failed to download SVG template from S3", "error", err, "storage_key", certificateConfig.BaseCertificateStorageKey)
 		return nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "Failed to retrieve certificate template")
+	}
+	// Type assert to io.ReadCloser
+	svgReader, ok := svgReaderRaw.(io.ReadCloser)
+	if !ok {
+		u.logger.Error("S3DataGateway.GetFile did not return io.ReadCloser")
+		return nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, errors.New("unexpected return type from S3DataGateway.GetFile"), "Failed to retrieve certificate template")
 	}
 	defer func() { _ = svgReader.Close() }()
 

@@ -6,6 +6,7 @@ package generated
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -15,9 +16,12 @@ type Querier interface {
 	AddParticipant(ctx context.Context, arg AddParticipantParams) (EventAttendee, error)
 	AllIssuersHaveSigned(ctx context.Context, eventID uuid.UUID) (bool, error)
 	CountAuthenticationCredentials(ctx context.Context) (int64, error)
+	CountBroadcastedUserSignatures(ctx context.Context) (int64, error)
 	CountCredentialsByVerificationStatus(ctx context.Context) (CountCredentialsByVerificationStatusRow, error)
+	CountPendingUserSignatures(ctx context.Context) (int64, error)
 	CountProfiles(ctx context.Context) (int64, error)
 	CountSystemStatusSchedules(ctx context.Context) (int64, error)
+	CountUserSignaturesByCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) (int64, error)
 	// Authentication Credentials CRUD queries
 	// Note: Encryption is handled at the repository layer using AES-GCM
 	CreateAuthenticationCredential(ctx context.Context, arg CreateAuthenticationCredentialParams) (AuthenticationCredential, error)
@@ -35,8 +39,11 @@ type Querier interface {
 	// Note: PII encryption is handled at the repository layer using AES-GCM
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	CreateSystemStatusSchedule(ctx context.Context, arg CreateSystemStatusScheduleParams) (SystemStatusSchedule, error)
+	CreateUserSignature(ctx context.Context, arg CreateUserSignatureParams) (UserSignature, error)
 	DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error
 	DeleteEvent(ctx context.Context, id uuid.UUID) (Event, error)
+	DeleteEventAttendeeByEventIDAndCredentialID(ctx context.Context, arg DeleteEventAttendeeByEventIDAndCredentialIDParams) error
+	DeleteEventAttendeeByID(ctx context.Context, id uuid.UUID) error
 	DeleteEventCertificate(ctx context.Context, id uuid.UUID) error
 	DeleteEventCertificateConfig(ctx context.Context, eventID uuid.UUID) error
 	DeleteEventCertificateFontFamily(ctx context.Context, id int32) error
@@ -48,6 +55,7 @@ type Querier interface {
 	DeleteProfile(ctx context.Context, id uuid.UUID) error
 	DeleteProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) error
 	DeleteSystemStatusSchedule(ctx context.Context, id int32) error
+	DeleteUserSignature(ctx context.Context, id uuid.UUID) error
 	GetAllEventCertificateFontFamilies(ctx context.Context) ([]EventCertificateFontFamily, error)
 	GetAllEventCertificateIDsByEventID(ctx context.Context, eventID uuid.UUID) ([]uuid.UUID, error)
 	GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef pgtype.Text) (AuthenticationCredential, error)
@@ -56,6 +64,8 @@ type Querier interface {
 	GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx context.Context, arg GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParams) (AuthenticationCredential, error)
 	GetAuthenticationCredentialById(ctx context.Context, id uuid.UUID) (AuthenticationCredential, error)
 	GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (AuthenticationCredential, error)
+	GetBroadcastedUserSignatures(ctx context.Context) ([]GetBroadcastedUserSignaturesRow, error)
+	GetCertificateClaimSignatures(ctx context.Context) ([]GetCertificateClaimSignaturesRow, error)
 	GetClaimedCertificatesByCredentialID(ctx context.Context, arg GetClaimedCertificatesByCredentialIDParams) ([]GetClaimedCertificatesByCredentialIDRow, error)
 	GetClaimedCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error)
 	GetCredentialsBySolutionStatus(ctx context.Context, arg GetCredentialsBySolutionStatusParams) ([]AuthenticationCredential, error)
@@ -63,6 +73,7 @@ type Querier interface {
 	GetCurrentSystemStatus(ctx context.Context) (SystemStatusSchedule, error)
 	GetDefaultEventCertificateFontFamily(ctx context.Context) (EventCertificateFontFamily, error)
 	GetEventAttendeeByEventIDAndCredentialID(ctx context.Context, arg GetEventAttendeeByEventIDAndCredentialIDParams) (EventAttendee, error)
+	GetEventAttendeeWithSignature(ctx context.Context, arg GetEventAttendeeWithSignatureParams) (GetEventAttendeeWithSignatureRow, error)
 	GetEventById(ctx context.Context, id uuid.UUID) (GetEventByIdRow, error)
 	GetEventCertificateByID(ctx context.Context, id uuid.UUID) (EventCertificate, error)
 	GetEventCertificateByInboxMessageID(ctx context.Context, inboxMessageID pgtype.UUID) (EventCertificate, error)
@@ -72,12 +83,14 @@ type Querier interface {
 	GetEventCertificateFontFamilyByName(ctx context.Context, fontFamilyName string) (EventCertificateFontFamily, error)
 	GetEventCertificateSignatureByID(ctx context.Context, id uuid.UUID) (EventCertificateSignature, error)
 	GetEventCertificateSignaturesByEventCertificateConfigID(ctx context.Context, eventCertificateConfigID uuid.UUID) ([]EventCertificateSignature, error)
+	GetEventCertificateWithSignature(ctx context.Context, arg GetEventCertificateWithSignatureParams) (GetEventCertificateWithSignatureRow, error)
 	GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error)
 	GetEventContractByEventID(ctx context.Context, eventID uuid.UUID) (EventContract, error)
 	GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Context, arg GetEventIssuerByEventIDAndIssuerCredentialIDParams) (EventIssuer, error)
 	GetEventIssuerByID(ctx context.Context, id uuid.UUID) (EventIssuer, error)
 	GetEventIssuersByCredentialID(ctx context.Context, arg GetEventIssuersByCredentialIDParams) ([]GetEventIssuersByCredentialIDRow, error)
 	GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUID) ([]EventIssuer, error)
+	GetEventJoinSignatures(ctx context.Context) ([]GetEventJoinSignaturesRow, error)
 	GetEventRegistrationConfigByEventID(ctx context.Context, eventID uuid.UUID) (EventRegistrationConfig, error)
 	GetEventRegistrationInvitationByEventIdAndCredentialId(ctx context.Context, arg GetEventRegistrationInvitationByEventIdAndCredentialIdParams) (GetEventRegistrationInvitationByEventIdAndCredentialIdRow, error)
 	GetEventRegistrationInvitationByID(ctx context.Context, id uuid.UUID) (EventRegistrationInvitation, error)
@@ -90,13 +103,17 @@ type Querier interface {
 	GetInboxMessagesByReceiverWalletAddress(ctx context.Context, receiverWalletAddress pgtype.Text) ([]InboxMessage, error)
 	GetInboxMessagesBySenderCredentialID(ctx context.Context, senderCredentialID uuid.UUID) ([]InboxMessage, error)
 	GetIssuerEventsWithDetails(ctx context.Context, arg GetIssuerEventsWithDetailsParams) ([]GetIssuerEventsWithDetailsRow, error)
+	GetOrphanedUserSignatures(ctx context.Context, createdBefore time.Time) ([]GetOrphanedUserSignaturesRow, error)
+	GetPendingUserSignatures(ctx context.Context) ([]GetPendingUserSignaturesRow, error)
 	GetPlannedMaintenanceSchedules(ctx context.Context) ([]SystemStatusSchedule, error)
 	GetProfileAndCredentialWithCredentialId(ctx context.Context, authenticationCredentialID uuid.UUID) (GetProfileAndCredentialWithCredentialIdRow, error)
 	GetProfileByAuthCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) (Profile, error)
 	// Note: Searches encrypted email field directly (linear scan)
 	GetProfileByEmail(ctx context.Context, email pgtype.Text) (Profile, error)
 	GetProfileByID(ctx context.Context, id uuid.UUID) (Profile, error)
+	GetRecentUserSignatureActivity(ctx context.Context, since time.Time) ([]GetRecentUserSignatureActivityRow, error)
 	GetSignedIssuersCount(ctx context.Context, eventID uuid.UUID) (int64, error)
+	GetStaleUserSignatures(ctx context.Context, createdBefore time.Time) ([]GetStaleUserSignaturesRow, error)
 	GetSystemStatusScheduleById(ctx context.Context, id int32) (SystemStatusSchedule, error)
 	GetSystemStatusScheduleByOrderId(ctx context.Context, orderID int32) (SystemStatusSchedule, error)
 	GetSystemStatusScheduleHistory(ctx context.Context, arg GetSystemStatusScheduleHistoryParams) ([]SystemStatusSchedule, error)
@@ -106,6 +123,12 @@ type Querier interface {
 	GetUnclaimedReadyCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error)
 	GetUnreadInboxMessageCountByCredentialID(ctx context.Context, arg GetUnreadInboxMessageCountByCredentialIDParams) (int64, error)
 	GetUpcomingSystemStatusSchedules(ctx context.Context, limitCount int32) ([]SystemStatusSchedule, error)
+	GetUserSignatureByID(ctx context.Context, id uuid.UUID) (UserSignature, error)
+	GetUserSignatureWithUsageDetails(ctx context.Context, id uuid.UUID) (GetUserSignatureWithUsageDetailsRow, error)
+	GetUserSignaturesByCredentialID(ctx context.Context, authenticationCredentialID uuid.UUID) ([]UserSignature, error)
+	GetUserSignaturesByDeadlineBlockRange(ctx context.Context, arg GetUserSignaturesByDeadlineBlockRangeParams) ([]UserSignature, error)
+	GetUserSignaturesExpiringBefore(ctx context.Context, deadline pgtype.Timestamptz) ([]GetUserSignaturesExpiringBeforeRow, error)
+	HasPendingEventJoinByEventAndCredential(ctx context.Context, arg HasPendingEventJoinByEventAndCredentialParams) (bool, error)
 	HasSignedIssuers(ctx context.Context, eventID uuid.UUID) (bool, error)
 	ListAuthenticationCredentials(ctx context.Context, arg ListAuthenticationCredentialsParams) ([]AuthenticationCredential, error)
 	ListEventAttendeesByEventID(ctx context.Context, eventID uuid.UUID) ([]ListEventAttendeesByEventIDRow, error)
@@ -149,6 +172,9 @@ type Querier interface {
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateProfileByAuthenticationCredentialId(ctx context.Context, arg UpdateProfileByAuthenticationCredentialIdParams) (Profile, error)
 	UpdateSystemStatusSchedule(ctx context.Context, arg UpdateSystemStatusScheduleParams) (SystemStatusSchedule, error)
+	UpdateUserSignatureAbortedAt(ctx context.Context, arg UpdateUserSignatureAbortedAtParams) (UserSignature, error)
+	UpdateUserSignatureBroadcastedAt(ctx context.Context, arg UpdateUserSignatureBroadcastedAtParams) (UserSignature, error)
+	UpdateUserSignatureMarkAsExpiredAt(ctx context.Context, arg UpdateUserSignatureMarkAsExpiredAtParams) (UserSignature, error)
 	UpdateVerificationStatus(ctx context.Context, arg UpdateVerificationStatusParams) (AuthenticationCredential, error)
 }
 

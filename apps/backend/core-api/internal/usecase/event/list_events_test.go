@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	datagateway "apps/backend/core-api/internal/datagateway/event"
+	datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

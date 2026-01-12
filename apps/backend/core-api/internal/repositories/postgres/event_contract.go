@@ -6,17 +6,17 @@ import (
 	"context"
 	"decm-database/go/generated"
 
-	datagateway "apps/backend/core-api/internal/datagateway/event"
+	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/google/uuid"
 )
 
-var _ datagateway.EventContractDataGateway = (*Repository)(nil)
+var _ event_datagateway.EventContractDataGateway = (*Repository)(nil)
 
 func mapGeneratedToEntityEventContract(generatedEventContract *generated.EventContract) *entity.EventContract {
 	return &entity.EventContract{
 		ID:                           generatedEventContract.ID,
-		EventID:                      generatedEventContract.EventID,
+		EventId:                      generatedEventContract.EventID,
 		AccessManagerContractAddress: generatedEventContract.AccessManagerContractAddress,
 		EventContractAddress:         generatedEventContract.EventContractAddress,
 		TicketContractAddress:        pgmapper.PgTextToStringPtr(generatedEventContract.TicketContractAddress),

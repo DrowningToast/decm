@@ -180,6 +180,9 @@ vi.mock("lucide-react", () => {
         "ArrowRight",
         "PartyPopper",
         "AlertCircle",
+        "CircleCheck",
+        "Download",
+        "Send",
     ];
 
     const iconMocks: Record<string, unknown> = {};

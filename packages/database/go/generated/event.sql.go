@@ -197,11 +197,13 @@ SELECT
     updated_at,
     event_status,
     COALESCE(
-        (SELECT COUNT(event_attendees.id) 
-         FROM event_attendees 
-         WHERE event_attendees.event_id = events.id 
-           AND event_attendees.is_attendee_accepted::INTEGER = 1
-        ), 
+        (SELECT COUNT(ea.id)
+         FROM event_attendees ea
+         LEFT JOIN user_signature us ON ea.user_signature_id = us.id
+         WHERE ea.event_id = events.id
+           AND ea.is_attendee_accepted::INTEGER = 1
+           AND (us.mark_as_expired_at IS NULL OR us.broadcasted_at IS NOT NULL)
+        ),
     0)::INTEGER AS attendees_count
 FROM events
 WHERE events.id = $1
@@ -272,11 +274,13 @@ SELECT
     event_registration_configs.id, event_registration_configs.event_id, event_registration_configs.final_call_for_registration, event_registration_configs.registration_password, event_registration_configs.is_identity_verification_required, event_registration_configs.first_name_requirement_status, event_registration_configs.last_name_requirement_status, event_registration_configs.email_requirement_status, event_registration_configs.bio_requirement_status, event_registration_configs.phone_number_requirement_status, event_registration_configs.address_requirement_status, event_registration_configs.academic_institution_requirement_status, event_registration_configs.academic_email_requirement_status, event_registration_configs.created_at, event_registration_configs.updated_at,
     event_contracts.id, event_contracts.event_id, event_contracts.access_manager_contract_address, event_contracts.event_contract_address, event_contracts.ticket_contract_address, event_contracts.certificate_contract_address, event_contracts.created_at, event_contracts.updated_at,
     COALESCE(
-        (SELECT COUNT(event_attendees.id) 
-         FROM event_attendees 
-         WHERE event_attendees.event_id = events.id 
-           AND event_attendees.is_attendee_accepted::INTEGER = 1
-        ), 
+        (SELECT COUNT(ea.id)
+         FROM event_attendees ea
+         LEFT JOIN user_signature us ON ea.user_signature_id = us.id
+         WHERE ea.event_id = events.id
+           AND ea.is_attendee_accepted::INTEGER = 1
+           AND (us.mark_as_expired_at IS NULL OR us.broadcasted_at IS NOT NULL)
+        ),
     0)::INTEGER AS attendees_count
 FROM events
 INNER JOIN event_registration_configs 
@@ -452,7 +456,7 @@ func (q *Queries) ListEvents(ctx context.Context, arg ListEventsParams) ([]Event
 }
 
 const ListEventsByEventAttendeeCredentialID = `-- name: ListEventsByEventAttendeeCredentialID :many
-SELECT events.id, event_type, event_status, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, events.created_at, events.updated_at, deleted_at, event_attendees.id, event_id, attendee_credential_id, contract_address, is_attendee_accepted, first_name, last_name, email, bio, phone_number, address, academic_institution, academic_email, event_attendees.created_at, event_attendees.updated_at 
+SELECT events.id, event_type, event_status, chain_id, contact_number, contact_address, owner_credential_id, banner_storage_key, icon_storage_key, title, short_description, long_description, start_date, end_date, location, google_map_query, max_attendees, is_public, is_booking_request_required, is_verified, is_ticket_transferable, events.created_at, events.updated_at, deleted_at, event_attendees.id, event_id, attendee_credential_id, contract_address, is_attendee_accepted, first_name, last_name, email, bio, phone_number, address, academic_institution, academic_email, event_attendees.created_at, event_attendees.updated_at, user_signature_id 
 FROM events 
 INNER JOIN event_attendees ON events.id = event_attendees.event_id
 WHERE event_attendees.attendee_credential_id = $1
@@ -509,6 +513,7 @@ type ListEventsByEventAttendeeCredentialIDRow struct {
 	AcademicEmail            pgtype.Text        `json:"academic_email"`
 	CreatedAt_2              pgtype.Timestamptz `json:"created_at_2"`
 	UpdatedAt_2              pgtype.Timestamptz `json:"updated_at_2"`
+	UserSignatureID          pgtype.UUID        `json:"user_signature_id"`
 }
 
 func (q *Queries) ListEventsByEventAttendeeCredentialID(ctx context.Context, arg ListEventsByEventAttendeeCredentialIDParams) ([]ListEventsByEventAttendeeCredentialIDRow, error) {
@@ -560,6 +565,7 @@ func (q *Queries) ListEventsByEventAttendeeCredentialID(ctx context.Context, arg
 			&i.AcademicEmail,
 			&i.CreatedAt_2,
 			&i.UpdatedAt_2,
+			&i.UserSignatureID,
 		); err != nil {
 			return nil, err
 		}

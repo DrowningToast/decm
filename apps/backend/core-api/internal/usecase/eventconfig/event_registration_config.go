@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 
-	eventDg "apps/backend/core-api/internal/datagateway/event"
+	eventDg "apps/backend/core-api/internal/datagateway/offchain/event"
 )
 
 type CreateEventRegistrationConfigParams struct {

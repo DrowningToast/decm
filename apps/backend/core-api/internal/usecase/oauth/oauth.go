@@ -1,7 +1,7 @@
 package oauth
 
 import (
-	"apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"context"
 
 	"github.com/cockroachdb/errors"
@@ -18,7 +18,7 @@ type OAuthUsecase struct {
 	googleOAuthService *oauth_services.GoogleOAuthService
 }
 
-func NewOAuthUsecase(googleOAuthService *oauth_services.GoogleOAuthService, authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway) *OAuthUsecase {
+func NewOAuthUsecase(googleOAuthService *oauth_services.GoogleOAuthService, authenticationCredentialDg offchain_datagateway.AuthenticationCredentialDataGateway) *OAuthUsecase {
 	return &OAuthUsecase{
 		googleOAuthService: googleOAuthService,
 	}

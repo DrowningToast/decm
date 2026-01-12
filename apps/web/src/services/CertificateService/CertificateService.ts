@@ -44,6 +44,15 @@ export interface CertificateMintReadiness {
     };
 }
 
+export interface CertificateFontFamily {
+    id: number;
+    font_family_name: string;
+    css_font_name: string;
+    is_default: boolean;
+    available_font_weights: number[];
+    is_support_italic: boolean;
+}
+
 export class CertificateService {
     private _coreApi: CoreApiType;
 
@@ -93,16 +102,7 @@ export class CertificateService {
      * Fetches available font families for certificates
      * @returns Array of font families in the format expected by the component
      */
-    public async getFontFamilies(): Promise<
-        Array<{
-            id: number;
-            font_family_name: string;
-            css_font_name: string;
-            is_default: boolean;
-            available_font_weights: number[];
-            is_support_italic: boolean;
-        }>
-    > {
+    public async getFontFamilies(): Promise<CertificateFontFamily[]> {
         const response = await this._coreApi.v1.getEventCertificateFontFamilies();
         return response.font_families || [];
     }

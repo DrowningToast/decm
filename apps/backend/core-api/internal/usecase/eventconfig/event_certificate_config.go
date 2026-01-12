@@ -1,13 +1,14 @@
 package eventconfig
 
 import (
-	"apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/s3"
 	"context"
 	"decm-database/go/generated"
 	"encoding/json"
 	"fmt"
+	"io"
 	"mime/multipart"
 
 	"github.com/cockroachdb/errors"
@@ -491,7 +492,7 @@ func (uc *EventConfigUsecase) createInboxMessagesForCertificates(ctx context.Con
 		fallbackMessage := "You have been invited to claim your certificate"
 
 		// Create inbox message
-		inboxMessage, err := uc.InboxMessageDg.CreateInboxMessage(ctx, datagateway.CreateInboxMessageParameters{
+		inboxMessage, err := uc.InboxMessageDg.CreateInboxMessage(ctx, offchain_datagateway.CreateInboxMessageParameters{
 			SenderCredentialID:     &currentUserID,
 			ReceiverCredentialID:   certificate.ReceiverCredentialId,
 			ReceiverEmail:          *certificate.ReceiverEmail,
@@ -530,6 +531,23 @@ type UpdateEventCertificateTextConfigParams struct {
 	CertificateTitleFontWeight      *int32 `json:"certificate_title_font_weight"`
 	CertificateSubtitleFontFamilyID *int32 `json:"certificate_subtitle_font_family_id"`
 	CertificateSubtitleFontWeight   *int32 `json:"certificate_subtitle_font_weight"`
+}
+
+// GetEventCertificateTemplateSVG fetches the raw SVG template file from storage and
+// returns it as a ReadCloser so the handler can stream it to the client.
+// The caller is responsible for closing the returned ReadCloser.
+func (uc *EventConfigUsecase) GetEventCertificateTemplateSVG(ctx context.Context, eventID uuid.UUID) (io.ReadCloser, error) {
+	eventCertConfig, err := uc.EventCertificateDg.GetEventCertificateConfigByEventID(ctx, eventID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get event certificate config")
+	}
+
+	svgReader, err := uc.S3Service.GetFile(ctx, eventCertConfig.BaseCertificateStorageKey)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get certificate template from storage")
+	}
+
+	return svgReader, nil
 }
 
 // UpdateEventCertificateTextConfig updates font family and weight for certificate text templates

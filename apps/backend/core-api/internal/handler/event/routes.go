@@ -10,15 +10,6 @@ func (h *Handler) Mount(r fiber.Router) {
 	// Logger singleton initialized in main.go
 	defer log.Logger.Info("Mounted event routes")
 
-	// Certificates routes (user-specific, not event-specific)
-	certificateGroup := r.Group("/certificates").Use(
-		h.AuthenticationGuardMiddleware.Middleware,
-	)
-	certificateGroup.Get("/my-list-viewmodel", h.GetMyCertificatesListViewModel)
-	certificateGroup.Get("/:certificate_id/image", h.GenerateCertificateImage)
-	certificateGroup.Get("/claim/:certificate_id/sign-message", h.GetClaimCertificateSignMessage)
-	certificateGroup.Post("/claim/:certificate_id", h.ClaimCertificate)
-
 	eventGroup := r.Group("/events").Use(
 		h.AuthenticationGuardMiddleware.Middleware,
 	)

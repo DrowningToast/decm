@@ -3,6 +3,7 @@ package main
 import (
 	"apps/backend/common/pgclient"
 	"apps/backend/core-api/config"
+	"apps/backend/core-api/internal/handler/certificate"
 	"apps/backend/core-api/internal/handler/event"
 	"apps/backend/core-api/internal/handler/event_registration"
 	"apps/backend/core-api/internal/handler/issuer"
@@ -24,7 +25,13 @@ import (
 	"syscall"
 	"time"
 
+	contract_repo "apps/backend/core-api/internal/repositories/contract/event"
+	blockchain_repo "apps/backend/core-api/internal/repositories/contract/blockchain"
+	s3_repo "apps/backend/core-api/internal/repositories/storage/s3"
+
 	customerror "apps/backend/common/customerror"
+
+	"github.com/ethereum/go-ethereum/ethclient"
 
 	auth_handler "apps/backend/core-api/internal/handler/auth"
 	blockchain_handler "apps/backend/core-api/internal/handler/blockchain"
@@ -40,6 +47,7 @@ import (
 
 	auth_usecase "apps/backend/core-api/internal/usecase/auth"
 	blockchain_usecase "apps/backend/core-api/internal/usecase/blockchain"
+
 	event_usecase "apps/backend/core-api/internal/usecase/event"
 	event_registration_invitation_usecase "apps/backend/core-api/internal/usecase/event_registration"
 	eventconfig_usecase "apps/backend/core-api/internal/usecase/eventconfig"
@@ -49,6 +57,7 @@ import (
 	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
 	profile_usecase "apps/backend/core-api/internal/usecase/profile"
 	system_status_usecase "apps/backend/core-api/internal/usecase/system_status"
+	"apps/backend/core-api/internal/worker"
 
 	json "github.com/goccy/go-json"
 
@@ -116,28 +125,53 @@ func main() {
 
 	// repo
 	pgRepo := postgres.NewRepository(pgConn, cfg.PIIEncryptionKey)
+	s3Repo := s3_repo.NewS3Repository(s3Service)
+
+	// Create ethereum client for blockchain operations
+	ethClient, err := ethclient.Dial(cfg.Blockchain.RPCURL)
+	if err != nil {
+		log.Logger.ErrorContext(ctx, "failed to create ethereum client", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+	defer func() {
+		ethClient.Close()
+		log.Logger.InfoContext(ctx, "Gracefully closed ethereum client connection")
+	}()
+	log.Logger.Info("Successfully connected to ethereum client")
+
+	blockchainClientRepo := blockchain_repo.NewBlockchainClientRepository(ethClient, &cfg.Blockchain)
+	eventContractFactoryRepo := contract_repo.NewEventContractFactoryRepository(ethClient, blockchainClientRepo)
 
 	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo, authService, googleOAuthService)
 	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
-	authUc := auth_usecase.NewAuthUsecase(pgRepo) // No database dependency - reads from JWT claims
+	authUc := auth_usecase.NewAuthUsecase(pgRepo, blockchainClientRepo)
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo, authService, pgRepo)
 	systemStatusUc := system_status_usecase.NewSystemStatusUsecase(pgRepo)
-	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, s3Service, log.Logger, authService, &cfg)
+	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, eventContractFactoryRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, blockchainClientRepo, ethClient, s3Repo, log.Logger, authService, &cfg)
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, log.Logger)
 	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)
 	inboxUc := inbox_usecase.NewInboxUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo)
-	blockchainUc := blockchain_usecase.NewBlockchainUsecase(log.Logger, &cfg)
+	blockchainUc := blockchain_usecase.NewBlockchainUsecase(log.Logger, &cfg, blockchainClientRepo)
 	eventRegistrationUc := event_registration_invitation_usecase.NewEventRegistrationUsecase(
-		pgRepo,   // InboxMessageDataGateway
-		pgRepo,   // EventRegistrationInvitationDataGateway
-		pgRepo,   // EventDataGateway
-		pgRepo,   // EventContractDataGateway
-		pgRepo,   // EventAttendeeDataGateway
-		pgRepo,   // EventRegistrationConfigDataGateway
-		pgRepo,   // AuthenticationCredentialDataGateway
-		*authUc,  // AuthUsecase (dereference pointer to value)
-		*eventUc, // EventUsecase (dereference pointer to value)
+		pgRepo,                    // InboxMessageDataGateway
+		pgRepo,                    // EventRegistrationInvitationDataGateway
+		pgRepo,                    // EventDataGateway
+		pgRepo,                    // EventContractDataGateway
+		pgRepo,                    // EventAttendeeDataGateway
+		pgRepo,                    // EventRegistrationConfigDataGateway
+		pgRepo,                    // AuthenticationCredentialDataGateway
+		*authUc,                   // AuthUsecase (dereference pointer to value)
+		*eventUc,                  // EventUsecase (dereference pointer to value)
+		pgRepo,                   // UserSignatureDataGateway
+		eventContractFactoryRepo, // EventContractFactoryDataGateway
+		blockchainClientRepo,     // BlockchainClientDataGateway
 	)
+
+	// Start blockchain submission background worker (join event + certificate claims)
+	workerLogger := log.For("worker")
+	claimWorker := worker.NewBlockchainSubmissionWorker(eventRegistrationUc, eventUc, pgRepo, blockchainClientRepo, cfg.Blockchain.MaxGasPriceGwei, workerLogger, cfg.Blockchain.PollInterval)
+	go claimWorker.Start(ctx)
+	workerLogger.InfoContext(ctx, "Blockchain submission worker started", slog.String("poll_interval", cfg.Blockchain.PollInterval.String()))
 
 	// Setup HTTP server
 	app := fiber.New(fiber.Config{
@@ -218,6 +252,9 @@ func main() {
 
 	profileHandler := profile.NewHandler(profileUc, authService, authenticationGuardMiddleware)
 	profileHandler.Mount(apiV1)
+
+	certificateHandler := certificate.NewHandler(eventUc, authService, authenticationGuardMiddleware, log.Logger)
+	certificateHandler.Mount(apiV1)
 
 	eventHandler := event.NewHandler(eventUc, eventConfigUc, profileUc, eventRegistrationUc, authService, authenticationGuardMiddleware, log.Logger)
 	eventHandler.Mount(apiV1)

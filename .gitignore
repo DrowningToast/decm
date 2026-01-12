@@ -48,6 +48,7 @@ apps/backend/logs/
 apps/*/pkg/mod/*
 apps/backend/main
 apps/backend/bin/
+apps/backend/logs/
 claude_code_zai_env.sh
 
 # Docker

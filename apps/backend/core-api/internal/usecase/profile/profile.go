@@ -4,7 +4,7 @@ import (
 	"apps/backend/common/customerror"
 	"apps/backend/common/hashutils"
 	"apps/backend/common/validatorutils"
-	"apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"
@@ -15,14 +15,14 @@ import (
 )
 
 type ProfileUsecase struct {
-	ProfileDg                  datagateway.ProfileDataGateway
-	AuthenticationCredentialDg datagateway.AuthenticationCredentialDataGateway
-	InboxMessageDg             datagateway.InboxMessageDataGateway
+	ProfileDg                  offchain_datagateway.ProfileDataGateway
+	AuthenticationCredentialDg offchain_datagateway.AuthenticationCredentialDataGateway
+	InboxMessageDg             offchain_datagateway.InboxMessageDataGateway
 
 	AuthService *auth.AuthService
 }
 
-func NewProfileUsecase(profileDg datagateway.ProfileDataGateway, authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway, authService *auth.AuthService, inboxMessageDg datagateway.InboxMessageDataGateway) *ProfileUsecase {
+func NewProfileUsecase(profileDg offchain_datagateway.ProfileDataGateway, authenticationCredentialDg offchain_datagateway.AuthenticationCredentialDataGateway, authService *auth.AuthService, inboxMessageDg offchain_datagateway.InboxMessageDataGateway) *ProfileUsecase {
 	return &ProfileUsecase{
 		ProfileDg:                  profileDg,
 		AuthenticationCredentialDg: authenticationCredentialDg,
@@ -118,7 +118,7 @@ func (u *ProfileUsecase) UpdateProfile(ctx context.Context, credentialId uuid.UU
 		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("profile not found"))
 	}
 
-	return u.ProfileDg.UpdateProfile(ctx, existingProfile.Id, datagateway.UpdateProfileParameters{
+	return u.ProfileDg.UpdateProfile(ctx, existingProfile.Id, offchain_datagateway.UpdateProfileParameters{
 		IsProfilePicturePublic:      profile.IsProfilePicturePublic,
 		ProfilePictureUrl:           profile.ProfilePictureUrl,
 		IsFirstNamePublic:           profile.IsFirstNamePublic,
@@ -166,7 +166,7 @@ func (u *ProfileUsecase) UpdateProfileByCredentialId(ctx context.Context, creden
 		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("profile not found"))
 	}
 
-	return u.ProfileDg.UpdateProfileByAuthenticationCredentialId(ctx, credentialId, datagateway.UpdateProfileParameters{
+	return u.ProfileDg.UpdateProfileByAuthenticationCredentialId(ctx, credentialId, offchain_datagateway.UpdateProfileParameters{
 		ProfilePictureUrl:           profile.ProfilePictureUrl,
 		IsFirstNamePublic:           profile.IsFirstNamePublic,
 		FirstName:                   profile.FirstName,

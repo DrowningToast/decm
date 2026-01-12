@@ -11,6 +11,8 @@ export interface CertificateTemplateUploadProps {
     availableKeywords: AvailableKeyword[];
     onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
     fileInputRef: React.RefObject<HTMLInputElement | null>;
+    /** Presigned URL of an already-saved certificate template. Shown as the filename when no new file has been selected. */
+    existingCertificateUrl?: string;
 }
 
 export const CertificateTemplateUpload = ({
@@ -18,6 +20,7 @@ export const CertificateTemplateUpload = ({
     availableKeywords,
     onFileSelect,
     fileInputRef,
+    existingCertificateUrl,
 }: CertificateTemplateUploadProps) => {
     const { t } = useTranslation();
 
@@ -126,7 +129,21 @@ export const CertificateTemplateUpload = ({
                             color="current"
                             className="font-medium"
                         >
-                            {svgFile ? svgFile.name : t("certificateSettings.step2.upload.button")}
+                            {svgFile
+                                ? svgFile.name
+                                : existingCertificateUrl
+                                  ? (() => {
+                                        try {
+                                            return decodeURIComponent(
+                                                new URL(existingCertificateUrl).pathname
+                                                    .split("/")
+                                                    .pop() ?? "",
+                                            );
+                                        } catch {
+                                            return t("certificateSettings.step2.upload.button");
+                                        }
+                                    })()
+                                  : t("certificateSettings.step2.upload.button")}
                         </Typography>
                     </Button>
                 </div>

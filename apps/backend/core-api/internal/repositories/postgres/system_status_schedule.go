@@ -8,10 +8,10 @@ import (
 	"decm-database/go/generated"
 	"time"
 
-	datagateway "apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 )
 
-var _ datagateway.SystemStatusScheduleDataGateway = (*Repository)(nil)
+var _ offchain_datagateway.SystemStatusScheduleDataGateway = (*Repository)(nil)
 
 func (r *Repository) mapSystemStatusScheduleToEntity(row generated.SystemStatusSchedule) *entity.SystemStatusSchedule {
 	return &entity.SystemStatusSchedule{

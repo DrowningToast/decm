@@ -2,6 +2,7 @@ package log
 
 import (
 	"os"
+	"path/filepath"
 	"sync"
 	"sync/atomic"
 
@@ -28,8 +29,14 @@ type RotatingFileWriter struct {
 }
 
 // NewRotatingFileWriter creates a new rotating file writer.
-// The file is auto-created if it doesn't exist (O_CREATE flag).
+// The file and parent directory are auto-created if they don't exist.
 func NewRotatingFileWriter(path string) (*RotatingFileWriter, error) {
+	// Create parent directory if it doesn't exist
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return nil, errors.Wrap(err, "failed to create log directory")
+	}
+
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open log file")
@@ -76,9 +83,10 @@ func (w *RotatingFileWriter) Write(p []byte) (n int, err error) {
 // Flow:
 //  1. Lock rotateMu (blocks concurrent rotations, but not writes)
 //  2. Close old file handle
-//  3. Open new file with original path
-//  4. Atomically swap file handles
-//  5. Unlock
+//  3. Ensure parent directory exists
+//  4. Open new file with original path
+//  5. Atomically swap file handles
+//  6. Unlock
 //
 // Note: Writes happening during rotation will use either old or new handle,
 // both are valid - logs won't be lost.
@@ -94,6 +102,12 @@ func (w *RotatingFileWriter) Reopen() error {
 				return errors.Wrap(err, "failed to close old file handle")
 			}
 		}
+	}
+
+	// Ensure parent directory exists (in case it was deleted)
+	dir := filepath.Dir(w.path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return errors.Wrap(err, "failed to create log directory")
 	}
 
 	// Open new file with same path (creates if doesn't exist)

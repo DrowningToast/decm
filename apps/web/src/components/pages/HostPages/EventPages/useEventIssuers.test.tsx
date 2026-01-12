@@ -52,8 +52,6 @@ describe("useEventIssuers", () => {
                 isPhoneNumberPublic: false,
                 isProfilePicturePublic: false,
             },
-            signMessage: "sign-message-1",
-            signature: "signature-1",
             createdAt: new Date("2024-01-01"),
             updatedAt: new Date("2024-01-01"),
         },
@@ -161,9 +159,9 @@ describe("useEventIssuers", () => {
         const unsignedIssuer = result.current.eventIssuers?.find((i) => !i.isSigned);
 
         expect(signedIssuer).toBeDefined();
-        expect(signedIssuer?.signature).toBe("signature-1");
+        expect(signedIssuer?.isSigned).toBe(true);
         expect(unsignedIssuer).toBeDefined();
-        expect(unsignedIssuer?.signature).toBeUndefined();
+        expect(unsignedIssuer?.isSigned).toBe(false);
     });
 
     it("should handle API errors gracefully", async () => {

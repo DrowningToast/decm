@@ -116,6 +116,22 @@ export const mapEventViewModelExtended = (
         isInvited: eventViewModel.is_invited,
         isJoined: eventViewModel.is_joined,
         isFull: eventViewModel.is_full,
+        // Joined status fields
+        joinedSignature: eventViewModel.joined_signature,
+        joinedSignMessage: eventViewModel.joined_sign_message,
+        joinedAt: eventViewModel.joined_at ? new Date(eventViewModel.joined_at) : undefined,
+        joinedIsAccepted: eventViewModel.joined_is_accepted,
+        broadcastedAtEstimatedDeadline: eventViewModel.broadcasted_at_estimated_deadline
+            ? new Date(eventViewModel.broadcasted_at_estimated_deadline)
+            : undefined,
+        broadcastedAtDeadlineBlock: eventViewModel.broadcasted_at_deadline_block,
+        broadcastedAt: eventViewModel.broadcasted_at
+            ? new Date(eventViewModel.broadcasted_at)
+            : undefined,
+        signatureExpiredAt: eventViewModel.signature_expired_at
+            ? new Date(eventViewModel.signature_expired_at)
+            : undefined,
+        // Registration and contract fields
         finalCallDate: eventViewModel.registration_config?.final_call_for_registration,
         registrationRequirement: mapEntityEventRegistrationConfigToEventRegistrationConfiguration(
             eventViewModel.registration_config,

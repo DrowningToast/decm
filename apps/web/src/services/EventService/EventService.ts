@@ -76,6 +76,16 @@ export interface EventViewModelExtended extends EventViewModel {
     isJoined?: boolean;
     isFull?: boolean;
 
+    // Joined status fields
+    joinedSignature?: string;
+    joinedSignMessage?: string;
+    joinedAt?: Date;
+    joinedIsAccepted?: boolean;
+    broadcastedAtEstimatedDeadline?: Date;
+    broadcastedAtDeadlineBlock?: number;
+    broadcastedAt?: Date;
+    signatureExpiredAt?: Date;
+
     finalCallDate?: string;
     registrationRequirement?: EventRegistrationConfiguration;
 

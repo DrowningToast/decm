@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
+	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/google/uuid"
 )

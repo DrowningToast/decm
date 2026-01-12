@@ -51,8 +51,9 @@ func isSuspiciousPath(path string) bool {
 
 func New() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// Get logger from context (creates new one if not found)
-		logger := log.FromContext(c.UserContext())
+		// Get logger from context (creates new one if not found) and stamp the
+		// component so Grafana/Loki can filter HTTP traffic with component="http".
+		logger := log.FromContext(c.UserContext()).With(slog.String("component", "http"))
 
 		// Get the request id from the context and add it to logger
 		requestId, _ := c.UserContext().Value("request_id").(string)

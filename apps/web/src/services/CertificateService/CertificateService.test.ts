@@ -457,11 +457,16 @@ describe("CertificateService", () => {
     describe("claimCertificateWithPin", () => {
         it("should claim certificate with PIN", async () => {
             const mockResponse = {
-                id: "cert-123",
-                certificate_token_id: "0xabc",
-                created_at: "2024-01-01T00:00:00Z",
-                event_contract_address: "0x123",
-                event_id: "event-1",
+                certificate: {
+                    id: "cert-123",
+                    certificate_token_id: "0xabc",
+                    created_at: "2024-01-01T00:00:00Z",
+                    event_contract_address: "0x123",
+                    event_id: "event-1",
+                },
+                message: "Certificate claimed successfully",
+                status: "success",
+                user_signature: null,
             };
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
@@ -477,17 +482,50 @@ describe("CertificateService", () => {
             );
             expect(result.certificateId).toBe("cert-123");
             expect(result.transactionHash).toBe("0xabc");
+            expect(result.status).toBe("success");
+            expect(result.estimatedDeadline).toBeUndefined();
+        });
+
+        it("should return status=queued and estimatedDeadline when backend queues the claim", async () => {
+            const mockResponse = {
+                certificate: {
+                    id: "cert-123",
+                    certificate_token_id: undefined,
+                    created_at: "2024-01-01T00:00:00Z",
+                    event_contract_address: "0x123",
+                    event_id: "event-1",
+                },
+                message: "Certificate claim has been queued for processing.",
+                status: "queued",
+                user_signature: { estimated_deadline: "2024-01-02T00:00:00Z" },
+            };
+
+            vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
+
+            const result = await certificateService.claimCertificateWithPin({
+                certificateId: "cert-123",
+                accountPassword: "password123",
+            });
+
+            expect(result.status).toBe("queued");
+            expect(result.estimatedDeadline).toBe("2024-01-02T00:00:00Z");
+            expect(result.transactionHash).toBe("");
         });
     });
 
     describe("claimCertificateWithSignature", () => {
         it("should claim certificate with signature", async () => {
             const mockResponse = {
-                id: "cert-123",
-                certificate_token_id: "0xabc",
-                created_at: "2024-01-01T00:00:00Z",
-                event_contract_address: "0x123",
-                event_id: "event-1",
+                certificate: {
+                    id: "cert-123",
+                    certificate_token_id: "0xabc",
+                    created_at: "2024-01-01T00:00:00Z",
+                    event_contract_address: "0x123",
+                    event_id: "event-1",
+                },
+                message: "Certificate claimed successfully",
+                status: "success",
+                user_signature: null,
             };
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
@@ -512,11 +550,16 @@ describe("CertificateService", () => {
     describe("claimCertificate", () => {
         it("should claim certificate with PIN when accountPassword is provided", async () => {
             const mockResponse = {
-                id: "cert-123",
-                certificate_token_id: "0xabc",
-                created_at: "2024-01-01T00:00:00Z",
-                event_contract_address: "0x123",
-                event_id: "event-1",
+                certificate: {
+                    id: "cert-123",
+                    certificate_token_id: "0xabc",
+                    created_at: "2024-01-01T00:00:00Z",
+                    event_contract_address: "0x123",
+                    event_id: "event-1",
+                },
+                message: "Certificate claimed successfully",
+                status: "success",
+                user_signature: null,
             };
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
@@ -535,11 +578,16 @@ describe("CertificateService", () => {
 
         it("should claim certificate with signature when signature is provided", async () => {
             const mockResponse = {
-                id: "cert-123",
-                certificate_token_id: "0xabc",
-                created_at: "2024-01-01T00:00:00Z",
-                event_contract_address: "0x123",
-                event_id: "event-1",
+                certificate: {
+                    id: "cert-123",
+                    certificate_token_id: "0xabc",
+                    created_at: "2024-01-01T00:00:00Z",
+                    event_contract_address: "0x123",
+                    event_id: "event-1",
+                },
+                message: "Certificate claimed successfully",
+                status: "success",
+                user_signature: null,
             };
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);

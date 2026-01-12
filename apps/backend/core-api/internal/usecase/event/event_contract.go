@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (u *EventUsecase) GetEventContractByEventID(ctx context.Context, eventID uuid.UUID) (*entity.EventContract, error) {
+func (u *EventUsecase) GetEventContractByEventId(ctx context.Context, eventID uuid.UUID) (*entity.EventContract, error) {
 	return u.EventContractDataGateway.GetEventContractByEventID(ctx, eventID)
 }
 

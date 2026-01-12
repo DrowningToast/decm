@@ -2,147 +2,25 @@ package event
 
 import (
 	"apps/backend/common/customerror"
-	"apps/backend/core-api/config"
-	"apps/backend/core-api/config/blockchain"
+	"apps/backend/common/encryptutils"
+	eventcontract_datagateway "apps/backend/core-api/internal/datagateway/onchain/event_contract"
+	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
-	"apps/backend/services/s3"
 	"context"
+	"encoding/hex"
 	"errors"
 	"mime/multipart"
 	"testing"
 	"time"
 
-	authDg "apps/backend/core-api/internal/datagateway"
-	datagateway "apps/backend/core-api/internal/datagateway/event"
-
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
-
-// Mock implementations for testing
-type MockEventDataGateway struct {
-	mock.Mock
-}
-
-func (m *MockEventDataGateway) CreateEvent(ctx context.Context, params datagateway.CreateEventParameters) (*entity.Event, error) {
-	args := m.Called(ctx, params)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.Event), args.Error(1)
-}
-
-func (m *MockEventDataGateway) GetEventById(ctx context.Context, id uuid.UUID) (*entity.Event, error) {
-	args := m.Called(ctx, id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.Event), args.Error(1)
-}
-
-func (m *MockEventDataGateway) GetViewModelById(ctx context.Context, id uuid.UUID) (*entity.Event, *entity.EventRegistrationConfig, *entity.EventContract, error) {
-	return nil, nil, nil, errors.New("not implemented")
-}
-
-func (m *MockEventDataGateway) ListEventsByOwnerCredentialID(ctx context.Context, ownerCredentialID uuid.UUID, limitCount int32, offsetCount int32) ([]*entity.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventDataGateway) UpdateEvent(ctx context.Context, id uuid.UUID, params datagateway.UpdateEventParameters) (*entity.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventDataGateway) DeleteEvent(ctx context.Context, id uuid.UUID) (*entity.Event, error) {
-	args := m.Called(ctx, id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.Event), args.Error(1)
-}
-
-func (m *MockEventDataGateway) ListEvents(ctx context.Context, limitCount *int32, offsetCount *int32) ([]*entity.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventDataGateway) ListEventsByEventAttendeeCredentialID(ctx context.Context, eventAttendeeCredentialID uuid.UUID, limitCount *int32, offsetCount *int32) ([]*entity.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
-type MockAuthenticationCredentialDg struct {
-	mock.Mock
-}
-
-func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx context.Context, credentialId uuid.UUID) (*entity.AuthenticationCredential, error) {
-	args := m.Called(ctx, credentialId)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.AuthenticationCredential), args.Error(1)
-}
-
-func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialById(ctx context.Context, id uuid.UUID) (*entity.AuthenticationCredential, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (*entity.AuthenticationCredential, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef string) (*entity.AuthenticationCredential, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx context.Context, params authDg.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters) (*entity.AuthenticationCredential, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockAuthenticationCredentialDg) CreateAuthenticationCredential(ctx context.Context, credential entity.AuthenticationCredential) (*entity.AuthenticationCredential, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockAuthenticationCredentialDg) UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params authDg.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockAuthenticationCredentialDg) DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error {
-	return errors.New("not implemented")
-}
-
-type MockS3Service struct {
-	mock.Mock
-}
-
-func (m *MockS3Service) UploadFile(ctx context.Context, key string, file *multipart.FileHeader) (string, error) {
-	args := m.Called(ctx, key, file)
-	return args.String(0), args.Error(1)
-}
-
-func (m *MockS3Service) DeleteFile(ctx context.Context, key string) error {
-	args := m.Called(ctx, key)
-	return args.Error(0)
-}
-
-func (m *MockS3Service) PutFile(ctx context.Context, requestObject interface{}) (string, error) {
-	return "", errors.New("not implemented")
-}
-
-func (m *MockS3Service) GetS3UploadRequestObject(storageKeyType interface{}, entityID uuid.UUID, file *multipart.FileHeader) (interface{}, error) {
-	return nil, errors.New("not implemented")
-}
-
-// Helper function to create a mock config for testing
-func createMockConfig() *config.Config {
-	return &config.Config{
-		Blockchain: blockchain.BlockchainConfig{
-			ChainID:                  1,
-			DecmAccessManagerAddress: "0x1234567890123456789012345678901234567890",
-		},
-	}
-}
 
 func TestCreateEvent(t *testing.T) {
 	ctx := context.Background()
@@ -285,20 +163,21 @@ func TestCreateEvent(t *testing.T) {
 	})
 
 	t.Run("should create event with valid parameters", func(t *testing.T) {
-		// SKIP: This test requires actual blockchain deployment which needs:
-		// 1. Real Ethereum client connection via cyptoutils.GetEthereumClient()
-		// 2. Actual smart contract deployment (EventAccessManager, Event contracts)
-		// 3. Environment configuration (.env file) and blockchain RPC endpoint
-		// TODO: Refactor CreateEvent to make blockchain operations injectable/mockable
-		t.Skip("Integration test: requires blockchain connection and contract deployment - needs refactoring to support mocking")
+		// Arrange - Create valid encrypted private key for testing
+		privateKey, err := crypto.GenerateKey()
+		require.NoError(t, err)
+		privateKeyBytes := crypto.FromECDSA(privateKey)
+		privateKeyHex := hex.EncodeToString(privateKeyBytes)
+		password := "test-password"
+		encryptedKey, err := encryptutils.EncryptAESGCM(privateKeyHex, password)
+		require.NoError(t, err)
 
-		// Arrange
 		mockAuthDg := new(MockAuthenticationCredentialDg)
 		credential := &entity.AuthenticationCredential{
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: nil,
+			EncryptedPrivateKey: &encryptedKey,
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -310,15 +189,28 @@ func TestCreateEvent(t *testing.T) {
 			CreatedAt:    time.Now(),
 			MaxAttendees: 100,
 		}
-		mockEventDg.On("CreateEvent", ctx, mock.MatchedBy(func(params datagateway.CreateEventParameters) bool {
+		mockEventDg.On("CreateEvent", ctx, mock.MatchedBy(func(params event_datagateway.CreateEventParameters) bool {
 			return params.Name == "Test Event" &&
 				params.SeatsCount == 100 &&
 				params.OwnerCredentialID == userId
 		})).Return(expectedEvent, nil)
 
+		mockContractFactoryDg := new(MockEventContractFactoryDg)
+		accessManagerAddr := common.HexToAddress("0xACCE55")
+		eventContractAddr := common.HexToAddress("0xEVE47")
+		contractResponse := &eventcontract_datagateway.CreateContractResponse{
+			AccessManagerContractAddress: accessManagerAddr,
+			EventContractAddress:         eventContractAddr,
+		}
+		mockContractFactoryDg.On("CreateContract", ctx, mock.MatchedBy(func(params eventcontract_datagateway.CreateContractParams) bool {
+			return params.EventName == expectedEvent.Title &&
+				params.SeatsCount == int64(expectedEvent.MaxAttendees)
+		})).Return(contractResponse, nil)
+
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
 			EventDataGateway:           mockEventDg,
+			EventContractFactoryDg:     mockContractFactoryDg,
 			cfg:                        createMockConfig(),
 		}
 		uc.UploadEventBanner = func(ctx context.Context, id uuid.UUID, file *multipart.FileHeader) (string, error) {
@@ -331,31 +223,28 @@ func TestCreateEvent(t *testing.T) {
 		currentUser := &auth.JwtClaims{UserId: userId}
 
 		params := CreateEventParameters{
-			Name:       "Test Event",
-			SeatsCount: 100,
-			StartDate:  time.Now(),
-			EndDate:    time.Now().Add(24 * time.Hour),
+			Name:         "Test Event",
+			SeatsCount:   100,
+			StartDate:    time.Now(),
+			EndDate:      time.Now().Add(24 * time.Hour),
+			HostPassword: password, // Use the same password we used for encryption
 		}
 
 		// Act
-		event, _, _, _, err := uc.CreateEvent(ctx, params, currentUser)
+		event, accessManager, eventContract, _, err := uc.CreateEvent(ctx, params, currentUser)
 
 		// Assert
 		require.NoError(t, err)
 		assert.NotNil(t, event)
 		assert.Equal(t, expectedEvent.Id, event.Id)
+		assert.Equal(t, accessManagerAddr, accessManager)
+		assert.Equal(t, eventContractAddr, eventContract)
 		mockAuthDg.AssertExpectations(t)
 		mockEventDg.AssertExpectations(t)
+		mockContractFactoryDg.AssertExpectations(t)
 	})
 
 	t.Run("should cleanup files when database creation fails", func(t *testing.T) {
-		// SKIP: This test tries to test S3 cleanup behavior but:
-		// 1. S3Service.DeleteFile() is called directly on lines 94-95 of create_event.go
-		// 2. Cannot properly mock S3Service without dependency injection refactoring
-		// 3. Setting S3Service to nil causes nil pointer dereference
-		// TODO: Refactor CreateEvent to make S3Service properly injectable/mockable
-		t.Skip("Integration test: requires proper S3Service mocking - needs refactoring")
-
 		// Arrange
 		mockAuthDg := new(MockAuthenticationCredentialDg)
 		credential := &entity.AuthenticationCredential{
@@ -371,18 +260,17 @@ func TestCreateEvent(t *testing.T) {
 		mockEventDg.On("CreateEvent", ctx, mock.Anything).
 			Return(nil, errors.New("database error"))
 
-		// Create a mock S3 service
-		mockS3 := new(MockS3Service)
-		mockS3.On("DeleteFile", ctx, "banner-key").Return(nil)
-		mockS3.On("DeleteFile", ctx, "icon-key").Return(nil)
+		// Create a mock S3 datagateway
+		mockS3Dg := new(MockS3DataGateway)
+		mockS3Dg.On("DeleteFile", ctx, "banner-key").Return(nil)
+		mockS3Dg.On("DeleteFile", ctx, "icon-key").Return(nil)
 
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
 			EventDataGateway:           mockEventDg,
+			S3DataGateway:              mockS3Dg,
 			cfg:                        createMockConfig(),
 		}
-		// Set S3Service field via interface{} to avoid type assertion issues
-		uc.S3Service = (*s3.S3Service)(nil) // Will be replaced by UploadEventBanner functions
 		uc.UploadEventBanner = func(ctx context.Context, id uuid.UUID, file *multipart.FileHeader) (string, error) {
 			return "banner-key", nil
 		}
@@ -402,19 +290,13 @@ func TestCreateEvent(t *testing.T) {
 		// Assert
 		assert.Error(t, err)
 		assert.Nil(t, event)
-		mockS3.AssertExpectations(t)
+		assert.Contains(t, err.Error(), "database error")
+		mockS3Dg.AssertExpectations(t)
 		mockEventDg.AssertExpectations(t)
+		mockAuthDg.AssertExpectations(t)
 	})
 
 	t.Run("should validate required parameters", func(t *testing.T) {
-		// SKIP: This test triggers S3 cleanup on database error:
-		// 1. When EventDataGateway.CreateEvent fails (validation error)
-		// 2. Code calls S3Service.DeleteFile() on lines 94-95 of create_event.go
-		// 3. S3Service is concrete type (*s3.S3Service), not interface - cannot mock
-		// 4. Test crashes with nil pointer dereference when S3Service is nil
-		// TODO: Make S3Service an interface for proper mocking
-		t.Skip("Unit test: requires S3Service interface for proper mocking")
-
 		// Arrange
 		mockAuthDg := new(MockAuthenticationCredentialDg)
 		credential := &entity.AuthenticationCredential{
@@ -431,9 +313,15 @@ func TestCreateEvent(t *testing.T) {
 		mockEventDg.On("CreateEvent", ctx, mock.Anything).
 			Return(nil, errors.New("validation error: name is required"))
 
+		// Create mock S3 datagateway to handle cleanup after validation failure
+		mockS3Dg := new(MockS3DataGateway)
+		mockS3Dg.On("DeleteFile", ctx, "banner-key").Return(nil)
+		mockS3Dg.On("DeleteFile", ctx, "icon-key").Return(nil)
+
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
 			EventDataGateway:           mockEventDg,
+			S3DataGateway:              mockS3Dg,
 			cfg:                        createMockConfig(),
 		}
 		uc.UploadEventBanner = func(ctx context.Context, id uuid.UUID, file *multipart.FileHeader) (string, error) {
@@ -457,7 +345,9 @@ func TestCreateEvent(t *testing.T) {
 		// The specific validation error depends on implementation
 		assert.Error(t, err)
 		assert.Nil(t, event)
+		assert.Contains(t, err.Error(), "validation error")
 		mockAuthDg.AssertExpectations(t)
 		mockEventDg.AssertExpectations(t)
+		mockS3Dg.AssertExpectations(t)
 	})
 }
