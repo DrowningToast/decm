@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { useCertificateDetailUsecase } from "./useCertificateDetailUsecase";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
-import { CircleCheckBig, Award, Loader2 } from "lucide-react";
+import { CircleCheckBig, Award, Loader2, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
@@ -11,6 +11,7 @@ import { useClaimCertificate } from "@/hooks/useClaimCertificate";
 import { useCertificateImage } from "@/hooks/useCertificateImage";
 import { useCertificateDetailNavStore } from "@/components/BottomNav/stores/certificates";
 import { EthExplorerLink } from "@/components/common/EthscanLink";
+import { useEvent } from "@/hooks/events/useEvent";
 
 interface CertificateDetailProps {
     certificateId: string;
@@ -24,6 +25,9 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
     const { claimCertificate, isClaiming } = useClaimCertificate();
     const [isProcessing, setIsProcessing] = useState(false);
     const { setImageUrl } = useCertificateDetailNavStore();
+
+    // Fetch event details to check if user has joined
+    const { event, isLoadingEvent } = useEvent(certificate?.eventId || "");
 
     // Fetch certificate image with authentication
     const {
@@ -360,36 +364,69 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                 {/* Claim Certificate Button - Only show if not claimed yet */}
                 {!isCertificateClaimed && (
                     <div className="mt-6">
-                        <Button
-                            variant="primary"
-                            size="lg"
-                            className="w-full"
-                            onClick={handleClaimCertificate}
-                            disabled={!canClaimCertificate}
-                        >
-                            {isClaiming || isProcessing ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                    {t("participant.certificates.claiming", "Claiming...")}
-                                </>
-                            ) : (
-                                <>
-                                    <Award className="w-5 h-5" />
-                                    {t("participant.certificates.claimButton", "Claim Certificate")}
-                                </>
-                            )}
-                        </Button>
-                        <Typography
-                            variant="text"
-                            tag="p"
-                            color="muted"
-                            className="text-xs text-center mt-2"
-                        >
-                            {t(
-                                "participant.certificates.claimNote",
-                                "Sign this certificate to add it to your blockchain credentials",
-                            )}
-                        </Typography>
+                        {/* Check if user has joined the event */}
+                        {!isLoadingEvent && event && !event.is_joined ? (
+                            <>
+                                <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mb-4">
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        color="foreground"
+                                        className="text-sm text-center"
+                                    >
+                                        {t(
+                                            "participant.certificates.mustJoinEventFirst",
+                                            "You need to join this event as a participant before claiming the certificate",
+                                        )}
+                                    </Typography>
+                                </div>
+                                <Link to={`/app/events/${certificate.eventId}`}>
+                                    <Button variant="primary" size="lg" className="w-full">
+                                        <UserPlus className="w-5 h-5" />
+                                        {t(
+                                            "participant.certificates.goToEvent",
+                                            "Go to Event Page",
+                                        )}
+                                    </Button>
+                                </Link>
+                            </>
+                        ) : (
+                            <>
+                                <Button
+                                    variant="primary"
+                                    size="lg"
+                                    className="w-full"
+                                    onClick={handleClaimCertificate}
+                                    disabled={!canClaimCertificate || isLoadingEvent}
+                                >
+                                    {isClaiming || isProcessing ? (
+                                        <>
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                            {t("participant.certificates.claiming", "Claiming...")}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Award className="w-5 h-5" />
+                                            {t(
+                                                "participant.certificates.claimButton",
+                                                "Claim Certificate",
+                                            )}
+                                        </>
+                                    )}
+                                </Button>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="muted"
+                                    className="text-xs text-center mt-2"
+                                >
+                                    {t(
+                                        "participant.certificates.claimNote",
+                                        "Sign this certificate to add it to your blockchain credentials",
+                                    )}
+                                </Typography>
+                            </>
+                        )}
                     </div>
                 )}
 
