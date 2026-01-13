@@ -62,20 +62,9 @@ export const useInboxListUsecase = () => {
     // Fetch inbox messages from API
     const { data: apiMessages, isLoading, error } = useInboxMessages();
 
-    // Filter out certificate invitations from events the user hasn't joined yet
+    // Show all messages regardless of event participation status
     const filteredMessages = useMemo(() => {
-        return apiMessages.filter((message) => {
-            // For certificate invitation messages, only show if user has joined the event
-            if (message.messageType === "event_certificate_invitation") {
-                const hasJoined = message.hasParticipantJoinedEvent === true;
-
-                // Filter out if: user has NOT joined the event
-                if (!hasJoined) {
-                    return false;
-                }
-            }
-            return true;
-        });
+        return apiMessages;
     }, [apiMessages]);
 
     // Transform API response to match InboxItem interface

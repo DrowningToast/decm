@@ -9,7 +9,7 @@ export function useEvent(eventId: string) {
         isError: isLoadingEventError,
     } = useQuery({
         queryKey: QUERY_KEY.event.byId(eventId),
-        queryFn: async () => coreApiClient.v1.getEventById({ eventId }),
+        queryFn: async () => coreApiClient.v1.getEventViewmodelById({ eventId }),
     });
 
     return {
