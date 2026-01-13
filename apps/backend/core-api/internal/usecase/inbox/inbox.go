@@ -187,8 +187,13 @@ func (uc *InboxUsecase) ToWithCertificateInvitationViewModel(ctx context.Context
 	// check if the user has joined or not (allow nil if user hasn't joined)
 	eventAttendee, err := uc.EventAttendeeDg.GetEventAttendeeByEventIdAndCredentialId(ctx, eventCertificate.EventId, user.UserId)
 	if err != nil {
-		// User hasn't joined the event yet - this is okay, set eventAttendee to nil
-		eventAttendee = nil
+		customErr := customerror.TryParseAsCustomErr(err)
+		if customErr != nil && *customErr.Code == customerror.ErrNotFound.Code {
+			// User hasn't joined the event yet - this is okay, set eventAttendee to nil
+			eventAttendee = nil
+		} else {
+			return nil, errors.Wrap(err, "failed to get event attendee by event id and credential id")
+		}
 	}
 	return &InboxMessageCertificateInvitationViewModel{
 		InboxMessagesViewModel:    *inboxMessageViewModel,

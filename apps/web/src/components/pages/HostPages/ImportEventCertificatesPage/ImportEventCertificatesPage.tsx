@@ -8,11 +8,11 @@ import { ExcelPreview } from "./ExcelPreview";
 import type { EventImportCertificateReceiverRequest } from "@decm/api";
 import { useImportCertificates } from "@/hooks/events/useImportCertificates";
 import * as XLSX from "xlsx";
-import type { EventEventResponse } from "@decm/api";
+import type { EventViewModelExtended } from "@/services/EventService/EventService";
 
 interface ImportEventCertificatesPageProps {
     eventId: string;
-    event: EventEventResponse;
+    event: EventViewModelExtended;
 }
 
 export const ImportEventCertificatesPage = ({
@@ -164,12 +164,12 @@ export const ImportEventCertificatesPage = ({
                                 color="background-alt"
                                 className="font-medium"
                             >
-                                {event.start_date
-                                    ? new Date(event.start_date).toLocaleDateString()
+                                {event.startDate
+                                    ? new Date(event.startDate).toLocaleDateString()
                                     : "N/A"}{" "}
                                 -{" "}
-                                {event.end_date
-                                    ? new Date(event.end_date).toLocaleDateString()
+                                {event.endDate
+                                    ? new Date(event.endDate).toLocaleDateString()
                                     : "N/A"}
                             </Typography>
                         </div>
@@ -206,7 +206,7 @@ export const ImportEventCertificatesPage = ({
                                 color="background-alt"
                                 className="font-medium"
                             >
-                                {event.max_attendees}
+                                {event.maxAttendees}
                             </Typography>
                         </div>
                     </div>

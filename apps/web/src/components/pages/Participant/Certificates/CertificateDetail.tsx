@@ -365,7 +365,7 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                 {!isCertificateClaimed && (
                     <div className="mt-6">
                         {/* Check if user has joined the event */}
-                        {!isLoadingEvent && event && !event.is_joined ? (
+                        {!isLoadingEvent && event && !event.isJoined ? (
                             <>
                                 <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mb-4">
                                     <Typography
