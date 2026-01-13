@@ -208,8 +208,9 @@ func TestInboxUsecase_ToWithCertificateInvitationViewModel(t *testing.T) {
 			Id: senderID,
 		}, nil)
 
-		// Simulate GetEventAttendeeByEventIdAndCredentialId returning an error (user hasn't joined)
-		mockAttendeeDg.On("GetEventAttendeeByEventIdAndCredentialId", ctx, eventID, userID).Return(nil, errors.New("not found"))
+		// Simulate GetEventAttendeeByEventIdAndCredentialId returning a NotFound error (user hasn't joined)
+		notFoundErr := customerror.NewWithPreset(&customerror.ErrNotFound, errors.New("not found"))
+		mockAttendeeDg.On("GetEventAttendeeByEventIdAndCredentialId", ctx, eventID, userID).Return(nil, notFoundErr)
 
 		uc := &InboxUsecase{
 			EventAttendeeDg:            mockAttendeeDg,
@@ -221,6 +222,32 @@ func TestInboxUsecase_ToWithCertificateInvitationViewModel(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, vm)
 		assert.False(t, vm.HasParticipantJoinedEvent)
+		mockAttendeeDg.AssertExpectations(t)
+		mockAuthDg.AssertExpectations(t)
+	})
+
+	t.Run("should fail if getting event attendee returns a real error", func(t *testing.T) {
+		mockAttendeeDg := new(MockEventAttendeeDg)
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+
+		mockAuthDg.On("GetAuthenticationCredentialById", ctx, senderID).Return(&entity.AuthenticationCredential{
+			Id: senderID,
+		}, nil)
+
+		// Simulate GetEventAttendeeByEventIdAndCredentialId returning a real error (e.g. internal server error)
+		internalErr := customerror.NewWithPreset(&customerror.ErrInternalServer, errors.New("db error"))
+		mockAttendeeDg.On("GetEventAttendeeByEventIdAndCredentialId", ctx, eventID, userID).Return(nil, internalErr)
+
+		uc := &InboxUsecase{
+			EventAttendeeDg:            mockAttendeeDg,
+			AuthenticationCredentialDg: mockAuthDg,
+		}
+
+		vm, err := uc.ToWithCertificateInvitationViewModel(ctx, inboxMsg, cert, user)
+
+		assert.Error(t, err)
+		assert.Nil(t, vm)
+		assert.Contains(t, err.Error(), "failed to get event attendee")
 		mockAttendeeDg.AssertExpectations(t)
 		mockAuthDg.AssertExpectations(t)
 	})

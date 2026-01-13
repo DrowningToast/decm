@@ -13,7 +13,7 @@ interface CertificateDetailNavProps {
 }
 
 export const CertificateDetailNav = ({ className: propClassName }: CertificateDetailNavProps) => {
-    const { certificateId, isClaimed } = useCertificateDetailNavStore();
+    const { certificateId } = useCertificateDetailNavStore();
     const { onBack, className: contextClassName } = useBottomContainerContext();
     const { t } = useTranslation();
     const [isDownloading, setIsDownloading] = useState(false);
