@@ -352,7 +352,7 @@ func (q *Queries) GetEventCertificatesByEventID(ctx context.Context, eventID uui
 }
 
 const GetUnclaimedReadyCertificatesByCredentialID = `-- name: GetUnclaimedReadyCertificatesByCredentialID :many
-SELECT 
+SELECT
     ec.id,
     ec.event_id,
     ec.receiver_credential_id,
@@ -372,7 +372,6 @@ SELECT
 FROM event_certificates ec
 INNER JOIN event_certificate_configs ecc ON ec.event_id = ecc.event_id
 INNER JOIN events e ON ec.event_id = e.id
-INNER JOIN event_attendees ea ON ec.event_id = ea.event_id AND ea.attendee_credential_id = $1
 WHERE (
     ec.receiver_credential_id = $1
     OR ec.receiver_email = $2
@@ -384,7 +383,7 @@ ORDER BY ec.created_at DESC
 `
 
 type GetUnclaimedReadyCertificatesByCredentialIDParams struct {
-	ReceiverCredentialID uuid.UUID   `json:"receiver_credential_id"`
+	ReceiverCredentialID pgtype.UUID `json:"receiver_credential_id"`
 	ReceiverEmail        pgtype.Text `json:"receiver_email"`
 }
 

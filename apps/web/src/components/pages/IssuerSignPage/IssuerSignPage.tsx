@@ -224,11 +224,11 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
 
                                 <TextLabelValue
                                     label="Start Date"
-                                    value={new Date(event.start_date ?? "").toLocaleDateString()}
+                                    value={new Date(event.startDate ?? "").toLocaleDateString()}
                                 />
                                 <TextLabelValue
                                     label="End Date"
-                                    value={new Date(event.end_date ?? "").toLocaleDateString()}
+                                    value={new Date(event.endDate ?? "").toLocaleDateString()}
                                 />
                             </div>
                         </div>
@@ -382,32 +382,32 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                                     <div className="space-y-4">
                                         <TextLabelValue
                                             label={t("events.details.status")}
-                                            value={event.event_status?.toUpperCase() ?? "NA"}
+                                            value={event.eventStatus?.toUpperCase() ?? "NA"}
                                         />
                                         <TextLabelValue
                                             label={t("events.details.participationRequest")}
                                             value={
-                                                event.is_booking_request_required
+                                                event.isBookingRequestRequired
                                                     ? t("common.required")
                                                     : t("common.notRequired")
                                             }
                                         />
                                         <TextLabelValue
                                             label={t("events.details.seatsCount")}
-                                            value={`${event.attendees_count ?? 0} / ${event.max_attendees}`}
+                                            value={`${event.attendeesCount ?? 0} / ${event.maxAttendees}`}
                                         />
                                         <TextLabelValue
                                             label={t("events.details.eventContractAddress")}
                                             value={
-                                                eventContract?.event_contract_address
+                                                eventContract?.certificate_contract_address
                                                     ? formatEthereumAddress(
-                                                          eventContract.event_contract_address,
+                                                          eventContract.certificate_contract_address,
                                                       )
                                                     : "NA"
                                             }
                                             endIcon={<ExternalLinkIcon size={16} />}
                                             valueClassName="cursor-pointer underline"
-                                            href={`https://www.etherscan.io/address/${eventContract?.event_contract_address}`}
+                                            href={`https://www.etherscan.io/address/${eventContract?.certificate_contract_address}`}
                                         />
                                     </div>
                                 </div>

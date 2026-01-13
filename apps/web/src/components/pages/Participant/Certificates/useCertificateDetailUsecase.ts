@@ -2,6 +2,7 @@ import { useMemo, useEffect } from "react";
 import { useCertificateDetailNavStore } from "@/components/BottomNav/stores/certificates";
 import { useMyCertificatesListViewModel } from "@/hooks/useMyCertificatesListViewModel";
 import type { Certificate as CertificateData } from "@/services/CertificateService/mapper";
+import { useTranslation } from "react-i18next";
 
 interface CertificateViewModel {
     id: string;
@@ -41,6 +42,7 @@ export const useCertificateDetailUsecase = (certificateId: string) => {
     const { setCertificateId, setIsClaimed } = useCertificateDetailNavStore();
     const { claimedCertificates, unclaimedCertificates, isLoading, isError } =
         useMyCertificatesListViewModel();
+    const { i18n } = useTranslation();
 
     const certificate = useMemo(() => {
         // Combine claimed and unclaimed certificates
@@ -56,12 +58,13 @@ export const useCertificateDetailUsecase = (certificateId: string) => {
 
     const formattedDate = useMemo(() => {
         if (!certificate) return "";
-        return new Date(certificate.issuedAt).toLocaleDateString("en-US", {
+        const locale = i18n.language === "th" ? "th-TH" : "en-US";
+        return new Date(certificate.issuedAt).toLocaleDateString(locale, {
             year: "numeric",
             month: "short",
             day: "numeric",
         });
-    }, [certificate]);
+    }, [certificate, i18n.language]);
 
     // Set the certificate ID and claimed status in the nav store when component mounts
     useEffect(() => {

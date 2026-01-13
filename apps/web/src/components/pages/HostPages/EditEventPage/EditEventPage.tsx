@@ -3,16 +3,13 @@ import type { EventFormData } from "@/lib/schemas/eventFormSchema";
 
 import SectionContainer from "@/components/container/SectionContainer";
 import TitleSubtitle from "@/components/TitleSubtitle";
-import type {
-    EventEventResponse,
-    GetEventContractByEventIdData,
-    UpdateEventPayload,
-} from "@decm/api";
+import type { GetEventContractByEventIdData, UpdateEventPayload } from "@decm/api";
 import { useEditEvent } from "./useEditEvent";
 import { useDeleteEvent } from "./useDeleteEvent";
+import type { EventViewModelExtended } from "@/services/EventService/EventService";
 
 interface EditEventPageProps {
-    event: EventEventResponse;
+    event: EventViewModelExtended;
     eventContract?: GetEventContractByEventIdData;
 }
 export const EditEventPage = ({ event, eventContract }: EditEventPageProps) => {
@@ -65,18 +62,18 @@ export const EditEventPage = ({ event, eventContract }: EditEventPageProps) => {
                     isLoading={isEditingEvent || isDeletingEvent}
                     defaultValues={{
                         contactAddress: event?.location ?? "",
-                        contactNumber: event?.contact_number ?? "",
+                        contactNumber: event?.contactNumber ?? "",
                         name: event?.title ?? "",
-                        shortDescription: event?.short_description ?? "",
-                        description: event?.long_description ?? "",
-                        startDate: new Date(event?.start_date ?? ""),
-                        endDate: new Date(event?.end_date ?? ""),
+                        shortDescription: event?.shortDescription ?? "",
+                        description: event?.longDescription ?? "",
+                        startDate: new Date(event?.startDate ?? ""),
+                        endDate: new Date(event?.endDate ?? ""),
                         location: event?.location ?? "",
-                        googleMapQuery: event?.google_map_query ?? "",
-                        seatsCount: event?.max_attendees ?? 0,
+                        googleMapQuery: event?.googleMapQuery ?? "",
+                        seatsCount: event?.maxAttendees ?? 0,
                     }}
-                    previewBannerUrl={event?.banner_presigned_url ?? ""}
-                    previewIconUrl={event?.icon_presigned_url ?? ""}
+                    previewBannerUrl={event?.bannerPresignedUrl ?? ""}
+                    previewIconUrl={event?.iconPresignedUrl ?? ""}
                     eventContract={eventContract}
                 />
             </SectionContainer>
