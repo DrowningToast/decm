@@ -155,6 +155,133 @@ func (m *MockAuthenticationCredentialDg) DeleteAuthenticationCredential(ctx cont
 	return args.Error(0)
 }
 
+// MockEventAttendeeDg is a mock for EventAttendeeDataGateway
+type MockEventAttendeeDg struct {
+	mock.Mock
+}
+
+func (m *MockEventAttendeeDg) GetEventAttendeeByEventIdAndCredentialId(ctx context.Context, eventID uuid.UUID, credentialID uuid.UUID) (*entity.EventAttendee, error) {
+	args := m.Called(ctx, eventID, credentialID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.EventAttendee), args.Error(1)
+}
+
+func (m *MockEventAttendeeDg) AddParticipant(ctx context.Context, params datagateway.AddParticipantParameters) (*entity.EventAttendee, error) {
+	return nil, nil
+}
+func (m *MockEventAttendeeDg) ListEventAttendeesByEventID(ctx context.Context, eventId uuid.UUID) ([]entity.EventAttendee, error) {
+	return nil, nil
+}
+
+func TestInboxUsecase_ToWithCertificateInvitationViewModel(t *testing.T) {
+	ctx := context.Background()
+	userID := uuid.New()
+	senderID := uuid.New()
+	eventID := uuid.New()
+	certID := uuid.New()
+
+	inboxMsg := entity.InboxMessage{
+		Id:                   uuid.New(),
+		ReceiverCredentialId: &userID,
+		SenderCredentialId:   &senderID,
+		MessageType:          entity.InboxMessageTypeEventCertificateInvitation,
+	}
+
+	eventName := "Test Event"
+	cert := entity.EventCertificate{
+		Id:      certID,
+		EventId: eventID,
+		Name:    &eventName,
+	}
+
+	user := auth.JwtClaims{
+		UserId: userID,
+	}
+
+	t.Run("should succeed even if user has not joined the event", func(t *testing.T) {
+		mockAttendeeDg := new(MockEventAttendeeDg)
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+
+		mockAuthDg.On("GetAuthenticationCredentialById", ctx, senderID).Return(&entity.AuthenticationCredential{
+			Id: senderID,
+		}, nil)
+
+		// Simulate GetEventAttendeeByEventIdAndCredentialId returning a NotFound error (user hasn't joined)
+		notFoundErr := customerror.NewWithPreset(&customerror.ErrNotFound, errors.New("not found"))
+		mockAttendeeDg.On("GetEventAttendeeByEventIdAndCredentialId", ctx, eventID, userID).Return(nil, notFoundErr)
+
+		uc := &InboxUsecase{
+			EventAttendeeDg:            mockAttendeeDg,
+			AuthenticationCredentialDg: mockAuthDg,
+		}
+
+		vm, err := uc.ToWithCertificateInvitationViewModel(ctx, inboxMsg, cert, user)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, vm)
+		assert.False(t, vm.HasParticipantJoinedEvent)
+		mockAttendeeDg.AssertExpectations(t)
+		mockAuthDg.AssertExpectations(t)
+	})
+
+	t.Run("should fail if getting event attendee returns a real error", func(t *testing.T) {
+		mockAttendeeDg := new(MockEventAttendeeDg)
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+
+		mockAuthDg.On("GetAuthenticationCredentialById", ctx, senderID).Return(&entity.AuthenticationCredential{
+			Id: senderID,
+		}, nil)
+
+		// Simulate GetEventAttendeeByEventIdAndCredentialId returning a real error (e.g. internal server error)
+		internalErr := customerror.NewWithPreset(&customerror.ErrInternalServer, errors.New("db error"))
+		mockAttendeeDg.On("GetEventAttendeeByEventIdAndCredentialId", ctx, eventID, userID).Return(nil, internalErr)
+
+		uc := &InboxUsecase{
+			EventAttendeeDg:            mockAttendeeDg,
+			AuthenticationCredentialDg: mockAuthDg,
+		}
+
+		vm, err := uc.ToWithCertificateInvitationViewModel(ctx, inboxMsg, cert, user)
+
+		assert.Error(t, err)
+		assert.Nil(t, vm)
+		assert.Contains(t, err.Error(), "failed to get event attendee")
+		mockAttendeeDg.AssertExpectations(t)
+		mockAuthDg.AssertExpectations(t)
+	})
+
+	t.Run("should succeed if user has joined the event", func(t *testing.T) {
+		mockAttendeeDg := new(MockEventAttendeeDg)
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+
+		mockAuthDg.On("GetAuthenticationCredentialById", ctx, senderID).Return(&entity.AuthenticationCredential{
+			Id: senderID,
+		}, nil)
+
+		attendee := &entity.EventAttendee{
+			Id:                   uuid.New(),
+			EventId:              eventID,
+			AttendeeCredentialId: userID,
+		}
+		mockAttendeeDg.On("GetEventAttendeeByEventIdAndCredentialId", ctx, eventID, userID).Return(attendee, nil)
+
+		uc := &InboxUsecase{
+			EventAttendeeDg:            mockAttendeeDg,
+			AuthenticationCredentialDg: mockAuthDg,
+		}
+
+		vm, err := uc.ToWithCertificateInvitationViewModel(ctx, inboxMsg, cert, user)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, vm)
+		assert.True(t, vm.HasParticipantJoinedEvent)
+		mockAttendeeDg.AssertExpectations(t)
+		mockAuthDg.AssertExpectations(t)
+	})
+}
+
 func TestInboxUsecase_GetMyInboxMessages(t *testing.T) {
 	t.Run("should get user's inbox messages by credential ID", func(t *testing.T) {
 		// Arrange

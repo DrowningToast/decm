@@ -295,18 +295,23 @@ export const InboxDetailPage: React.FC<InboxDetailPageProps> = ({ inboxId }) => 
                         {inboxDetail.contentType === "certificate" &&
                             inboxDetail.certificateId &&
                             !inboxDetail.isUserInEvent && (
-                                <div className="mt-6 p-4 rounded-lg bg-muted/20 border border-border">
-                                    <Typography
-                                        variant="text"
-                                        tag="p"
-                                        color="muted"
-                                        className="text-sm text-center"
+                                <div className="mt-6">
+                                    <Button
+                                        variant="primary"
+                                        size="lg"
+                                        className="w-full"
+                                        onClick={() =>
+                                            navigate("/app/certificates/:id", {
+                                                params: { id: inboxDetail.certificateId! },
+                                            })
+                                        }
                                     >
+                                        <Award className="w-5 h-5" />
                                         {t(
-                                            "participant.inbox.mustJoinEventFirst",
-                                            "You must join the event first before you can claim this certificate.",
+                                            "participant.inbox.goToCertificate",
+                                            "Go to Certificate",
                                         )}
-                                    </Typography>
+                                    </Button>
                                 </div>
                             )}
                     </div>
