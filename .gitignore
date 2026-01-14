@@ -55,3 +55,7 @@ apps/contracts/libss
 
 # Debug files (VSCode golang)
 __debug*
+
+# Log files
+*.log
+apps/backend/logs/

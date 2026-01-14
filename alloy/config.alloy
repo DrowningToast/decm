@@ -54,23 +54,23 @@ loki.source.docker "containers" {
   refresh_interval = "5s"
 
   // Relabel rules to extract container metadata
-  relabel_rules = rule {
+  relabel_rules {
     source_labels = ["__meta_docker_container_name"]
     regex         = "/(.*)"
     target_label  = "container"
   }
 
-  relabel_rules = rule {
+  relabel_rules {
     source_labels = ["__meta_docker_container_id"]
     target_label  = "container_id"
   }
 
-  relabel_rules = rule {
+  relabel_rules {
     source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
     target_label  = "compose_service"
   }
 
-  relabel_rules = rule {
+  relabel_rules {
     source_labels = ["__meta_docker_container_log_stream"]
     target_label  = "stream"
   }
