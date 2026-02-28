@@ -29,8 +29,8 @@ func (r *Repository) CreateInboxMessage(ctx context.Context, params offchain_dat
 
 	// Create inbox message
 	result, err := r.queries.CreateInboxMessage(ctx, generated.CreateInboxMessageParams{
-		SenderCredentialID:     pgmapper.UUIDToPgUUID(params.SenderCredentialID),
-		ReceiverCredentialID:   pgmapper.UUIDToPgUUID(params.ReceiverCredentialID),
+		SenderCredentialID:     pgmapper.UUIDPtrToPgUUID(params.SenderCredentialID),
+		ReceiverCredentialID:   pgmapper.UUIDPtrToPgUUID(params.ReceiverCredentialID),
 		ReceiverEmail:          encryptedEmail,
 		MessageType:            int32(params.MessageType),
 		MessageContent:         messageContent,
@@ -123,7 +123,7 @@ func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params 
 	}
 
 	results, err := r.queries.GetInboxMessagesByCredentialID(ctx, generated.GetInboxMessagesByCredentialIDParams{
-		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(&params.CredentialID),
+		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(params.CredentialID),
 		ReceiverEmail:         encryptedReceiverEmail,
 		ReceiverWalletAddress: encryptedReceiverWalletAddress,
 	})
@@ -182,7 +182,7 @@ func (r *Repository) GetUnreadInboxMessageCountByCredentialID(ctx context.Contex
 	}
 
 	count, err := r.queries.GetUnreadInboxMessageCountByCredentialID(ctx, generated.GetUnreadInboxMessageCountByCredentialIDParams{
-		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(&params.CredentialID),
+		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(params.CredentialID),
 		ReceiverEmail:         encryptedReceiverEmail,
 		ReceiverWalletAddress: encryptedReceiverWalletAddress,
 	})
@@ -357,7 +357,7 @@ func (r *Repository) UpdateInboxMessageReadStatus(ctx context.Context, id uuid.U
 }
 
 func (r *Repository) UpdateInboxMessageReadStatusAll(ctx context.Context, credentialID uuid.UUID) ([]*entity.InboxMessage, error) {
-	results, err := r.queries.UpdateInboxMessageReadStatusAll(ctx, pgmapper.UUIDToPgUUID(&credentialID))
+	results, err := r.queries.UpdateInboxMessageReadStatusAll(ctx, pgmapper.UUIDToPgUUID(credentialID))
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
 	}

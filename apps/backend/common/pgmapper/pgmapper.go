@@ -137,12 +137,9 @@ func Int32ToPgInt2(value int32) pgtype.Int2 {
 	}
 }
 
-func UUIDToPgUUID(value *uuid.UUID) pgtype.UUID {
-	if value == nil {
-		return pgtype.UUID{}
-	}
+func UUIDToPgUUID(value uuid.UUID) pgtype.UUID {
 	return pgtype.UUID{
-		Bytes: *value,
+		Bytes: value,
 		Valid: true,
 	}
 }

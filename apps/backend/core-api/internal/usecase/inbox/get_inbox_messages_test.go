@@ -3,6 +3,7 @@ package inbox
 import (
 	"apps/backend/common/customerror"
 	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
+	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"
@@ -168,11 +169,32 @@ func (m *MockEventAttendeeDg) GetEventAttendeeByEventIdAndCredentialId(ctx conte
 	return args.Get(0).(*entity.EventAttendee), args.Error(1)
 }
 
-func (m *MockEventAttendeeDg) AddParticipant(ctx context.Context, params datagateway.AddParticipantParameters) (*entity.EventAttendee, error) {
+func (m *MockEventAttendeeDg) GetEventAttendeeWithSignature(ctx context.Context, eventID uuid.UUID, credentialID uuid.UUID) (*eventdatagateway.EventAttendeeWithSignature, error) {
+	args := m.Called(ctx, eventID, credentialID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*eventdatagateway.EventAttendeeWithSignature), args.Error(1)
+}
+
+func (m *MockEventAttendeeDg) AddParticipant(ctx context.Context, params eventdatagateway.AddParticipantParameters) (*entity.EventAttendee, error) {
 	return nil, nil
 }
+
 func (m *MockEventAttendeeDg) ListEventAttendeesByEventID(ctx context.Context, eventId uuid.UUID) ([]entity.EventAttendee, error) {
 	return nil, nil
+}
+
+func (m *MockEventAttendeeDg) DeleteEventAttendeeById(ctx context.Context, id uuid.UUID) error {
+	return nil
+}
+
+func (m *MockEventAttendeeDg) DeleteEventAttendeeByEventIDAndCredentialID(ctx context.Context, eventId uuid.UUID, credentialId uuid.UUID) error {
+	return nil
+}
+
+func (m *MockEventAttendeeDg) HasPendingEventJoinByEventAndCredential(ctx context.Context, eventId uuid.UUID, credentialId uuid.UUID) (bool, error) {
+	return false, nil
 }
 
 func TestInboxUsecase_ToWithCertificateInvitationViewModel(t *testing.T) {
@@ -208,9 +230,9 @@ func TestInboxUsecase_ToWithCertificateInvitationViewModel(t *testing.T) {
 			Id: senderID,
 		}, nil)
 
-		// Simulate GetEventAttendeeByEventIdAndCredentialId returning a NotFound error (user hasn't joined)
+		// Simulate GetEventAttendeeWithSignature returning a NotFound error (user hasn't joined)
 		notFoundErr := customerror.NewWithPreset(&customerror.ErrNotFound, errors.New("not found"))
-		mockAttendeeDg.On("GetEventAttendeeByEventIdAndCredentialId", ctx, eventID, userID).Return(nil, notFoundErr)
+		mockAttendeeDg.On("GetEventAttendeeWithSignature", ctx, eventID, userID).Return(nil, notFoundErr)
 
 		uc := &InboxUsecase{
 			EventAttendeeDg:            mockAttendeeDg,
@@ -234,9 +256,9 @@ func TestInboxUsecase_ToWithCertificateInvitationViewModel(t *testing.T) {
 			Id: senderID,
 		}, nil)
 
-		// Simulate GetEventAttendeeByEventIdAndCredentialId returning a real error (e.g. internal server error)
+		// Simulate GetEventAttendeeWithSignature returning a real error (e.g. internal server error)
 		internalErr := customerror.NewWithPreset(&customerror.ErrInternalServer, errors.New("db error"))
-		mockAttendeeDg.On("GetEventAttendeeByEventIdAndCredentialId", ctx, eventID, userID).Return(nil, internalErr)
+		mockAttendeeDg.On("GetEventAttendeeWithSignature", ctx, eventID, userID).Return(nil, internalErr)
 
 		uc := &InboxUsecase{
 			EventAttendeeDg:            mockAttendeeDg,
@@ -247,7 +269,7 @@ func TestInboxUsecase_ToWithCertificateInvitationViewModel(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Nil(t, vm)
-		assert.Contains(t, err.Error(), "failed to get event attendee")
+		assert.Contains(t, err.Error(), "failed to get event attendee with signature")
 		mockAttendeeDg.AssertExpectations(t)
 		mockAuthDg.AssertExpectations(t)
 	})
@@ -260,12 +282,12 @@ func TestInboxUsecase_ToWithCertificateInvitationViewModel(t *testing.T) {
 			Id: senderID,
 		}, nil)
 
-		attendee := &entity.EventAttendee{
-			Id:                   uuid.New(),
-			EventId:              eventID,
-			AttendeeCredentialId: userID,
+		attendeeWithSignature := &eventdatagateway.EventAttendeeWithSignature{
+			Id:           uuid.New(),
+			EventId:      eventID,
+			CredentialId: userID,
 		}
-		mockAttendeeDg.On("GetEventAttendeeByEventIdAndCredentialId", ctx, eventID, userID).Return(attendee, nil)
+		mockAttendeeDg.On("GetEventAttendeeWithSignature", ctx, eventID, userID).Return(attendeeWithSignature, nil)
 
 		uc := &InboxUsecase{
 			EventAttendeeDg:            mockAttendeeDg,
