@@ -108,6 +108,25 @@ JOIN events e ON ea.event_id = e.id
 JOIN authentication_credentials ac ON us.authentication_credential_id = ac.id
 ORDER BY us.created_at DESC;
 
+-- name: GetPendingEventJoinSignatures :many
+SELECT
+    us.id,
+    us.authentication_credential_id,
+    us.sign_message,
+    us.signature,
+    us.deadline_block,
+    us.estimated_deadline,
+    us.created_at,
+    ea.event_id,
+    ac.wallet_address
+FROM user_signature us
+JOIN event_attendees ea ON us.id = ea.user_signature_id
+JOIN authentication_credentials ac ON us.authentication_credential_id = ac.id
+WHERE us.broadcasted_at IS NULL
+  AND us.mark_as_expired_at IS NULL
+  AND us.aborted_at IS NULL
+ORDER BY us.created_at ASC;
+
 -- name: GetCertificateClaimSignatures :many
 SELECT
     us.id,
@@ -130,6 +149,27 @@ JOIN event_certificates ec ON us.id = ec.user_claim_signature_id
 JOIN events e ON ec.event_id = e.id
 JOIN authentication_credentials ac ON us.authentication_credential_id = ac.id
 ORDER BY us.created_at DESC;
+
+-- name: GetPendingCertificateClaimSignatures :many
+SELECT
+    us.id,
+    us.authentication_credential_id,
+    us.sign_message,
+    us.signature,
+    us.deadline_block,
+    us.estimated_deadline,
+    us.created_at,
+    ec.id as certificate_id,
+    ec.event_id,
+    ac.wallet_address
+FROM user_signature us
+JOIN event_certificates ec ON us.id = ec.user_claim_signature_id
+JOIN authentication_credentials ac ON us.authentication_credential_id = ac.id
+WHERE us.broadcasted_at IS NULL
+  AND us.mark_as_expired_at IS NULL
+  AND us.aborted_at IS NULL
+  AND ec.certificate_token_id IS NULL
+ORDER BY us.created_at ASC;
 
 -- name: GetOrphanedUserSignatures :many
 SELECT

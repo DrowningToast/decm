@@ -250,17 +250,13 @@ func (r *Repository) GetEventJoinSignatures(ctx context.Context) ([]entity.UserS
 }
 
 func (r *Repository) GetPendingEventJoinSignatures(ctx context.Context) ([]entity.PendingEventJoin, error) {
-	rows, err := r.queries.GetEventJoinSignatures(ctx)
+	rows, err := r.queries.GetPendingEventJoinSignatures(ctx)
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
 	}
 
 	joins := make([]entity.PendingEventJoin, 0, len(rows))
 	for _, row := range rows {
-		// Skip rows that are already broadcasted, explicitly marked as expired, or aborted.
-		if row.BroadcastedAt.Valid || row.MarkAsExpiredAt.Valid || row.AbortedAt.Valid {
-			continue
-		}
 		joins = append(joins, entity.PendingEventJoin{
 			SignatureId:                row.ID,
 			AuthenticationCredentialId: row.AuthenticationCredentialID,
@@ -300,17 +296,13 @@ func (r *Repository) GetCertificateClaimSignatures(ctx context.Context) ([]entit
 }
 
 func (r *Repository) GetPendingCertificateClaimSignatures(ctx context.Context) ([]entity.PendingCertificateClaim, error) {
-	rows, err := r.queries.GetCertificateClaimSignatures(ctx)
+	rows, err := r.queries.GetPendingCertificateClaimSignatures(ctx)
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
 	}
 
 	claims := make([]entity.PendingCertificateClaim, 0, len(rows))
 	for _, row := range rows {
-		// Skip rows that are already broadcasted, explicitly marked as expired, aborted, or already minted.
-		if row.BroadcastedAt.Valid || row.MarkAsExpiredAt.Valid || row.AbortedAt.Valid || row.CertificateTokenID.Valid {
-			continue
-		}
 		claims = append(claims, entity.PendingCertificateClaim{
 			SignatureId:                row.ID,
 			AuthenticationCredentialId: row.AuthenticationCredentialID,

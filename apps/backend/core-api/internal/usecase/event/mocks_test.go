@@ -11,6 +11,7 @@ import (
 	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
+	"io"
 	"math/big"
 	"mime/multipart"
 	"time"
@@ -197,9 +198,12 @@ func (m *MockS3DataGateway) GetPresignedURL(ctx context.Context, key string) (st
 	return args.String(0), args.Error(1)
 }
 
-func (m *MockS3DataGateway) GetFile(ctx context.Context, key string) (interface{}, error) {
+func (m *MockS3DataGateway) GetFile(ctx context.Context, key string) (io.ReadCloser, error) {
 	args := m.Called(ctx, key)
-	return args.Get(0), args.Error(1)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(io.ReadCloser), args.Error(1)
 }
 
 // MockEventContractFactoryDg implements eventcontract_datagateway.EventContractFactoryDataGateway

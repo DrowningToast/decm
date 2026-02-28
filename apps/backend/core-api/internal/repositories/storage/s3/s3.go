@@ -5,6 +5,7 @@ import (
 	storage_datagateway "apps/backend/core-api/internal/datagateway/storage"
 	"apps/backend/services/s3"
 	"context"
+	"io"
 	"mime/multipart"
 
 	"github.com/google/uuid"
@@ -82,6 +83,6 @@ func (r *S3Repository) GetPresignedURL(ctx context.Context, key string) (string,
 }
 
 // GetFile retrieves a file from S3 as a readable stream
-func (r *S3Repository) GetFile(ctx context.Context, key string) (interface{}, error) {
+func (r *S3Repository) GetFile(ctx context.Context, key string) (io.ReadCloser, error) {
 	return r.s3Service.GetFile(ctx, key)
 }
