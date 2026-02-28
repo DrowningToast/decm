@@ -201,7 +201,7 @@ function mintNft(
 #### Build Verification
 
 ```bash
-cd /Users/supratouchsuwatno/Desktop/decm/apps/backend
+cd apps/backend
 go build -o /dev/null ./core-api/internal/usecase/event
 # Exit code: 0 ✅ (Success)
 ```

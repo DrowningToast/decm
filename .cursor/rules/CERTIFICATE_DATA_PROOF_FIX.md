@@ -322,4 +322,4 @@ The core logic is implemented correctly. Need to:
 ---
 
 **Last Updated**: December 8, 2024
-**File**: `/Users/supratouchsuwatno/Desktop/decm/apps/backend/core-api/internal/usecase/event/claim_certificate.go`
+**File**: `apps/backend/core-api/internal/usecase/event/claim_certificate.go`
