@@ -377,6 +377,134 @@ func (q *Queries) GetOrphanedUserSignatures(ctx context.Context, createdBefore t
 	return items, nil
 }
 
+const GetPendingCertificateClaimSignatures = `-- name: GetPendingCertificateClaimSignatures :many
+SELECT
+    us.id,
+    us.authentication_credential_id,
+    us.sign_message,
+    us.signature,
+    us.deadline_block,
+    us.estimated_deadline,
+    us.created_at,
+    ec.id as certificate_id,
+    ec.event_id,
+    ac.wallet_address
+FROM user_signature us
+JOIN event_certificates ec ON us.id = ec.user_claim_signature_id
+JOIN authentication_credentials ac ON us.authentication_credential_id = ac.id
+WHERE us.broadcasted_at IS NULL
+  AND us.mark_as_expired_at IS NULL
+  AND us.aborted_at IS NULL
+  AND ec.certificate_token_id IS NULL
+ORDER BY us.created_at ASC
+`
+
+type GetPendingCertificateClaimSignaturesRow struct {
+	ID                         uuid.UUID          `json:"id"`
+	AuthenticationCredentialID uuid.UUID          `json:"authentication_credential_id"`
+	SignMessage                pgtype.Text        `json:"sign_message"`
+	Signature                  pgtype.Text        `json:"signature"`
+	DeadlineBlock              pgtype.Int4        `json:"deadline_block"`
+	EstimatedDeadline          pgtype.Timestamptz `json:"estimated_deadline"`
+	CreatedAt                  time.Time          `json:"created_at"`
+	CertificateID              uuid.UUID          `json:"certificate_id"`
+	EventID                    uuid.UUID          `json:"event_id"`
+	WalletAddress              string             `json:"wallet_address"`
+}
+
+func (q *Queries) GetPendingCertificateClaimSignatures(ctx context.Context) ([]GetPendingCertificateClaimSignaturesRow, error) {
+	rows, err := q.db.Query(ctx, GetPendingCertificateClaimSignatures)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetPendingCertificateClaimSignaturesRow{}
+	for rows.Next() {
+		var i GetPendingCertificateClaimSignaturesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.AuthenticationCredentialID,
+			&i.SignMessage,
+			&i.Signature,
+			&i.DeadlineBlock,
+			&i.EstimatedDeadline,
+			&i.CreatedAt,
+			&i.CertificateID,
+			&i.EventID,
+			&i.WalletAddress,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const GetPendingEventJoinSignatures = `-- name: GetPendingEventJoinSignatures :many
+SELECT
+    us.id,
+    us.authentication_credential_id,
+    us.sign_message,
+    us.signature,
+    us.deadline_block,
+    us.estimated_deadline,
+    us.created_at,
+    ea.event_id,
+    ac.wallet_address
+FROM user_signature us
+JOIN event_attendees ea ON us.id = ea.user_signature_id
+JOIN authentication_credentials ac ON us.authentication_credential_id = ac.id
+WHERE us.broadcasted_at IS NULL
+  AND us.mark_as_expired_at IS NULL
+  AND us.aborted_at IS NULL
+ORDER BY us.created_at ASC
+`
+
+type GetPendingEventJoinSignaturesRow struct {
+	ID                         uuid.UUID          `json:"id"`
+	AuthenticationCredentialID uuid.UUID          `json:"authentication_credential_id"`
+	SignMessage                pgtype.Text        `json:"sign_message"`
+	Signature                  pgtype.Text        `json:"signature"`
+	DeadlineBlock              pgtype.Int4        `json:"deadline_block"`
+	EstimatedDeadline          pgtype.Timestamptz `json:"estimated_deadline"`
+	CreatedAt                  time.Time          `json:"created_at"`
+	EventID                    uuid.UUID          `json:"event_id"`
+	WalletAddress              string             `json:"wallet_address"`
+}
+
+func (q *Queries) GetPendingEventJoinSignatures(ctx context.Context) ([]GetPendingEventJoinSignaturesRow, error) {
+	rows, err := q.db.Query(ctx, GetPendingEventJoinSignatures)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetPendingEventJoinSignaturesRow{}
+	for rows.Next() {
+		var i GetPendingEventJoinSignaturesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.AuthenticationCredentialID,
+			&i.SignMessage,
+			&i.Signature,
+			&i.DeadlineBlock,
+			&i.EstimatedDeadline,
+			&i.CreatedAt,
+			&i.EventID,
+			&i.WalletAddress,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const GetPendingUserSignatures = `-- name: GetPendingUserSignatures :many
 SELECT
     us.id, us.authentication_credential_id, us.sign_message, us.signature, us.deadline_block, us.estimated_deadline, us.broadcasted_at, us.created_at, us.updated_at, us.mark_as_expired_at, us.aborted_at, us.aborted_reason,

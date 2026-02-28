@@ -104,6 +104,8 @@ type Querier interface {
 	GetInboxMessagesBySenderCredentialID(ctx context.Context, senderCredentialID uuid.UUID) ([]InboxMessage, error)
 	GetIssuerEventsWithDetails(ctx context.Context, arg GetIssuerEventsWithDetailsParams) ([]GetIssuerEventsWithDetailsRow, error)
 	GetOrphanedUserSignatures(ctx context.Context, createdBefore time.Time) ([]GetOrphanedUserSignaturesRow, error)
+	GetPendingCertificateClaimSignatures(ctx context.Context) ([]GetPendingCertificateClaimSignaturesRow, error)
+	GetPendingEventJoinSignatures(ctx context.Context) ([]GetPendingEventJoinSignaturesRow, error)
 	GetPendingUserSignatures(ctx context.Context) ([]GetPendingUserSignaturesRow, error)
 	GetPlannedMaintenanceSchedules(ctx context.Context) ([]SystemStatusSchedule, error)
 	GetProfileAndCredentialWithCredentialId(ctx context.Context, authenticationCredentialID uuid.UUID) (GetProfileAndCredentialWithCredentialIdRow, error)

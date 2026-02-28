@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"io"
 	"mime/multipart"
 
 	"github.com/google/uuid"
@@ -46,5 +47,5 @@ type S3DataGateway interface {
 	GetPresignedURL(ctx context.Context, key string) (string, error)
 
 	// GetFile retrieves a file from S3 as a readable stream
-	GetFile(ctx context.Context, key string) (interface{}, error) // Returns io.ReadCloser but defined as interface{} to avoid import
+	GetFile(ctx context.Context, key string) (io.ReadCloser, error)
 }
