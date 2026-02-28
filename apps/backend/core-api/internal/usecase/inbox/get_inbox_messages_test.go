@@ -1,14 +1,14 @@
 package inbox
 
 import (
+	"apps/backend/common/customerror"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
+	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"errors"
 	"testing"
-
-	"apps/backend/common/customerror"
-	"apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -21,7 +21,7 @@ type MockInboxMessageDg struct {
 	mock.Mock
 }
 
-func (m *MockInboxMessageDg) CreateInboxMessage(ctx context.Context, params datagateway.CreateInboxMessageParameters) (*entity.InboxMessage, error) {
+func (m *MockInboxMessageDg) CreateInboxMessage(ctx context.Context, params offchain_datagateway.CreateInboxMessageParameters) (*entity.InboxMessage, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -29,7 +29,7 @@ func (m *MockInboxMessageDg) CreateInboxMessage(ctx context.Context, params data
 	return args.Get(0).(*entity.InboxMessage), args.Error(1)
 }
 
-func (m *MockInboxMessageDg) GetInboxMessagesByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
+func (m *MockInboxMessageDg) GetInboxMessagesByCredentialID(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -85,7 +85,7 @@ func (m *MockInboxMessageDg) UpdateInboxMessageReadStatusAll(ctx context.Context
 	return args.Get(0).([]*entity.InboxMessage), args.Error(1)
 }
 
-func (m *MockInboxMessageDg) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
+func (m *MockInboxMessageDg) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
 	args := m.Called(ctx, params)
 	return args.Int(0), args.Error(1)
 }
@@ -127,7 +127,7 @@ func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByGoogleConn
 	return args.Get(0).(*entity.AuthenticationCredential), args.Error(1)
 }
 
-func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx context.Context, params datagateway.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters) (*entity.AuthenticationCredential, error) {
+func (m *MockAuthenticationCredentialDg) GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx context.Context, params offchain_datagateway.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters) (*entity.AuthenticationCredential, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -143,7 +143,7 @@ func (m *MockAuthenticationCredentialDg) CreateAuthenticationCredential(ctx cont
 	return args.Get(0).(*entity.AuthenticationCredential), args.Error(1)
 }
 
-func (m *MockAuthenticationCredentialDg) UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params datagateway.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, error) {
+func (m *MockAuthenticationCredentialDg) UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params offchain_datagateway.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, error) {
 	args := m.Called(ctx, id, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -154,6 +154,154 @@ func (m *MockAuthenticationCredentialDg) UpdateAuthenticationCredential(ctx cont
 func (m *MockAuthenticationCredentialDg) DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
+}
+
+// MockEventAttendeeDg is a mock for EventAttendeeDataGateway
+type MockEventAttendeeDg struct {
+	mock.Mock
+}
+
+func (m *MockEventAttendeeDg) GetEventAttendeeByEventIdAndCredentialId(ctx context.Context, eventID uuid.UUID, credentialID uuid.UUID) (*entity.EventAttendee, error) {
+	args := m.Called(ctx, eventID, credentialID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.EventAttendee), args.Error(1)
+}
+
+func (m *MockEventAttendeeDg) GetEventAttendeeWithSignature(ctx context.Context, eventID uuid.UUID, credentialID uuid.UUID) (*eventdatagateway.EventAttendeeWithSignature, error) {
+	args := m.Called(ctx, eventID, credentialID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*eventdatagateway.EventAttendeeWithSignature), args.Error(1)
+}
+
+func (m *MockEventAttendeeDg) AddParticipant(ctx context.Context, params eventdatagateway.AddParticipantParameters) (*entity.EventAttendee, error) {
+	return nil, nil
+}
+
+func (m *MockEventAttendeeDg) ListEventAttendeesByEventID(ctx context.Context, eventId uuid.UUID) ([]entity.EventAttendee, error) {
+	return nil, nil
+}
+
+func (m *MockEventAttendeeDg) DeleteEventAttendeeById(ctx context.Context, id uuid.UUID) error {
+	return nil
+}
+
+func (m *MockEventAttendeeDg) DeleteEventAttendeeByEventIDAndCredentialID(ctx context.Context, eventId uuid.UUID, credentialId uuid.UUID) error {
+	return nil
+}
+
+func (m *MockEventAttendeeDg) HasPendingEventJoinByEventAndCredential(ctx context.Context, eventId uuid.UUID, credentialId uuid.UUID) (bool, error) {
+	return false, nil
+}
+
+func TestInboxUsecase_ToWithCertificateInvitationViewModel(t *testing.T) {
+	ctx := context.Background()
+	userID := uuid.New()
+	senderID := uuid.New()
+	eventID := uuid.New()
+	certID := uuid.New()
+
+	inboxMsg := entity.InboxMessage{
+		Id:                   uuid.New(),
+		ReceiverCredentialId: &userID,
+		SenderCredentialId:   &senderID,
+		MessageType:          entity.InboxMessageTypeEventCertificateInvitation,
+	}
+
+	eventName := "Test Event"
+	cert := entity.EventCertificate{
+		Id:      certID,
+		EventId: eventID,
+		Name:    &eventName,
+	}
+
+	user := auth.JwtClaims{
+		UserId: userID,
+	}
+
+	t.Run("should succeed even if user has not joined the event", func(t *testing.T) {
+		mockAttendeeDg := new(MockEventAttendeeDg)
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+
+		mockAuthDg.On("GetAuthenticationCredentialById", ctx, senderID).Return(&entity.AuthenticationCredential{
+			Id: senderID,
+		}, nil)
+
+		// Simulate GetEventAttendeeWithSignature returning a NotFound error (user hasn't joined)
+		notFoundErr := customerror.NewWithPreset(&customerror.ErrNotFound, errors.New("not found"))
+		mockAttendeeDg.On("GetEventAttendeeWithSignature", ctx, eventID, userID).Return(nil, notFoundErr)
+
+		uc := &InboxUsecase{
+			EventAttendeeDg:            mockAttendeeDg,
+			AuthenticationCredentialDg: mockAuthDg,
+		}
+
+		vm, err := uc.ToWithCertificateInvitationViewModel(ctx, inboxMsg, cert, user)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, vm)
+		assert.False(t, vm.HasParticipantJoinedEvent)
+		mockAttendeeDg.AssertExpectations(t)
+		mockAuthDg.AssertExpectations(t)
+	})
+
+	t.Run("should fail if getting event attendee returns a real error", func(t *testing.T) {
+		mockAttendeeDg := new(MockEventAttendeeDg)
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+
+		mockAuthDg.On("GetAuthenticationCredentialById", ctx, senderID).Return(&entity.AuthenticationCredential{
+			Id: senderID,
+		}, nil)
+
+		// Simulate GetEventAttendeeWithSignature returning a real error (e.g. internal server error)
+		internalErr := customerror.NewWithPreset(&customerror.ErrInternalServer, errors.New("db error"))
+		mockAttendeeDg.On("GetEventAttendeeWithSignature", ctx, eventID, userID).Return(nil, internalErr)
+
+		uc := &InboxUsecase{
+			EventAttendeeDg:            mockAttendeeDg,
+			AuthenticationCredentialDg: mockAuthDg,
+		}
+
+		vm, err := uc.ToWithCertificateInvitationViewModel(ctx, inboxMsg, cert, user)
+
+		assert.Error(t, err)
+		assert.Nil(t, vm)
+		assert.Contains(t, err.Error(), "failed to get event attendee with signature")
+		mockAttendeeDg.AssertExpectations(t)
+		mockAuthDg.AssertExpectations(t)
+	})
+
+	t.Run("should succeed if user has joined the event", func(t *testing.T) {
+		mockAttendeeDg := new(MockEventAttendeeDg)
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+
+		mockAuthDg.On("GetAuthenticationCredentialById", ctx, senderID).Return(&entity.AuthenticationCredential{
+			Id: senderID,
+		}, nil)
+
+		attendeeWithSignature := &eventdatagateway.EventAttendeeWithSignature{
+			Id:           uuid.New(),
+			EventId:      eventID,
+			CredentialId: userID,
+		}
+		mockAttendeeDg.On("GetEventAttendeeWithSignature", ctx, eventID, userID).Return(attendeeWithSignature, nil)
+
+		uc := &InboxUsecase{
+			EventAttendeeDg:            mockAttendeeDg,
+			AuthenticationCredentialDg: mockAuthDg,
+		}
+
+		vm, err := uc.ToWithCertificateInvitationViewModel(ctx, inboxMsg, cert, user)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, vm)
+		assert.True(t, vm.HasParticipantJoinedEvent)
+		mockAttendeeDg.AssertExpectations(t)
+		mockAuthDg.AssertExpectations(t)
+	})
 }
 
 func TestInboxUsecase_GetMyInboxMessages(t *testing.T) {
@@ -313,7 +461,7 @@ func TestInboxUsecase_GetInboxMessagesByCredentailID(t *testing.T) {
 			WalletAddress:      walletAddress,
 		}, nil)
 
-		mockInboxDg.On("GetInboxMessagesByCredentialID", ctx, mock.MatchedBy(func(params datagateway.GetInboxMessagesByCredentialIDParameters) bool {
+		mockInboxDg.On("GetInboxMessagesByCredentialID", ctx, mock.MatchedBy(func(params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) bool {
 			return params.CredentialID == credentialID
 		})).Return(messages, nil)
 

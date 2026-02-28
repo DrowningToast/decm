@@ -1,12 +1,11 @@
 package roleguard
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/services/auth"
 	"errors"
 	"fmt"
 	"strings"
-
-	"apps/backend/common/customerror"
-	"apps/backend/services/auth"
 
 	"github.com/gofiber/fiber/v2"
 )

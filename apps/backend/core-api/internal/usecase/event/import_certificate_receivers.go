@@ -1,17 +1,17 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/common/pgmapper"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"decm-database/go/generated"
 	"encoding/json"
 	"fmt"
 	"strings"
 
-	"apps/backend/common/customerror"
-	"apps/backend/common/pgmapper"
-	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
+	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 
@@ -20,6 +20,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/google/uuid"
 )
 
@@ -127,29 +128,18 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 		}
 	}
 
-	privateKey, _, err := cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, requests[0].HostPin)
-	if err != nil {
-		return nil, err
-	}
-
 	eventCertificateAddressStr := ""
 
 	if eventContract.CertificateContractAddress == nil {
 		// 4. Deploy event certificate contract
-		client, err := cyptoutils.GetEthereumClient()
-		if err != nil {
-			return nil, err
-		}
-		defer client.Close()
-
-		auth, err := cyptoutils.GetKeyedTransactor(ctx, client)
+		transactor, err := uc.BlockchainClientDg.GetTransactOpts(ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		eventCertificateAddress, tx, _, err := eventCertificateContract.DeployEventCertificate(
-			auth,
-			client,
+		eventCertificateAddress, err := uc.deployCertificateContract(
+			ctx,
+			transactor,
 			common.HexToAddress(eventContract.AccessManagerContractAddress),
 			common.HexToAddress(eventContract.EventContractAddress),
 		)
@@ -157,15 +147,14 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 			return nil, err
 		}
 
-		// Wait for transaction to be mined
-		_, err = bind.WaitMined(ctx, client, tx)
-		if err != nil {
-			return nil, err
-		}
-
 		eventCertificateAddressStr = eventCertificateAddress.Hex()
 	} else {
 		eventCertificateAddressStr = *eventContract.CertificateContractAddress
+	}
+
+	privateKey, _, err := cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, requests[0].HostPin)
+	if err != nil {
+		return nil, err
 	}
 
 	// 5. Update eventContract.certificate_contract_address
@@ -337,4 +326,27 @@ func stringPtrIfNotEmpty(s string) *string {
 		return nil
 	}
 	return &trimmed
+}
+
+func (uc *EventUsecase) deployCertificateContractImpl(ctx context.Context, transactor *bind.TransactOpts, accessManagerAddr, eventAddr common.Address) (common.Address, error) {
+	eventCertificateAddress, tx, _, err := eventCertificateContract.DeployEventCertificate(
+		transactor,
+		uc.ethClient,
+		accessManagerAddr,
+		eventAddr,
+	)
+	if err != nil {
+		return common.Address{}, err
+	}
+
+	receipt, err := bind.WaitMined(ctx, uc.ethClient, tx)
+	if err != nil {
+		return common.Address{}, customerror.Parse(&customerror.ErrInternalServer, fmt.Errorf("transaction mining failed: tx=%s: %w", tx.Hash().Hex(), err))
+	}
+
+	if receipt.Status != types.ReceiptStatusSuccessful {
+		return common.Address{}, customerror.Parse(&customerror.ErrInternalServer, fmt.Errorf("transaction reverted (tx=%s)", tx.Hash().Hex()))
+	}
+
+	return eventCertificateAddress, nil
 }

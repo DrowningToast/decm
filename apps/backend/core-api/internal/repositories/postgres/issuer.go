@@ -1,20 +1,19 @@
 package postgres
 
 import (
-	"context"
-	"decm-database/go/generated"
-
 	"apps/backend/common"
 	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
-	"apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"apps/backend/core-api/internal/entity"
+	"context"
+	"decm-database/go/generated"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-var _ datagateway.IssuerDataGateway = (*Repository)(nil)
+var _ offchain_datagateway.IssuerDataGateway = (*Repository)(nil)
 
 func (r *Repository) ListVerifiedIssuerProfiles(ctx context.Context, limitCount int, offsetCount int) ([]entity.Profile, error) {
 	query, err := r.queries.ListVerifiedIssuerProfiles(ctx, generated.ListVerifiedIssuerProfilesParams{

@@ -5,13 +5,14 @@ import { useTranslation } from "react-i18next";
 import { ExcelUpload } from "./ExcelUpload";
 import { ExcelPreview } from "./ExcelPreview";
 
-import type { EventEventResponse, EventRegistrationParticipantRequestItem } from "@decm/api";
+import type { EventRegistrationParticipantRequestItem } from "@decm/api";
 import * as XLSX from "xlsx";
 import { useImportParticipants } from "@/hooks/events/useImportParticipants";
+import type { EventViewModelExtended } from "@/services/EventService/EventService";
 
 interface ParticipantImportPageProps {
     eventId: string;
-    event: EventEventResponse;
+    event: EventViewModelExtended;
 }
 
 export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageProps) => {
@@ -145,12 +146,12 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
                                 color="background-alt"
                                 className="font-medium"
                             >
-                                {event.start_date
-                                    ? new Date(event.start_date).toLocaleDateString()
+                                {event.startDate
+                                    ? new Date(event.startDate).toLocaleDateString()
                                     : "N/A"}{" "}
                                 -{" "}
-                                {event.end_date
-                                    ? new Date(event.end_date).toLocaleDateString()
+                                {event.endDate
+                                    ? new Date(event.endDate).toLocaleDateString()
                                     : "N/A"}
                             </Typography>
                         </div>
@@ -187,7 +188,7 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
                                 color="background-alt"
                                 className="font-medium"
                             >
-                                {event.max_attendees}
+                                {event.maxAttendees}
                             </Typography>
                         </div>
                     </div>

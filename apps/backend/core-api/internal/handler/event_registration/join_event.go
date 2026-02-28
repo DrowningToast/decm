@@ -1,11 +1,11 @@
 package event_registration
 
 import (
+	"apps/backend/common/validatorutils"
 	"encoding/hex"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/common/validatorutils"
-	"apps/backend/core-api/internal/usecase/cyptoutils"
+
 	event_registration_uc "apps/backend/core-api/internal/usecase/event_registration"
 
 	"github.com/cockroachdb/errors"
@@ -40,7 +40,7 @@ func (h *Handler) GetJoinEventSignMessage(ctx *fiber.Ctx) error {
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
-	eventContract, err := h.EventUc.GetEventContractByEventID(ctx.UserContext(), eventId)
+	eventContract, err := h.EventUc.GetEventContractByEventId(ctx.UserContext(), eventId)
 	if err != nil {
 		return errors.Wrap(err, "failed to get event contract by event id")
 	}
@@ -53,12 +53,7 @@ func (h *Handler) GetJoinEventSignMessage(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	client, err := cyptoutils.GetEthereumClient()
-	if err != nil {
-		return errors.Wrap(err, "failed to get ethereum client")
-	}
-
-	signMessage, _, err := h.EventRegistrationUc.GetJoinEventSignMessage(ctx.UserContext(), client, common.HexToAddress(currentUser.WalletAddress), *currentUser, common.HexToAddress(eventContract.EventContractAddress), nil)
+	signMessage, _, err := h.EventRegistrationUc.GetJoinEventSignMessage(ctx.UserContext(), common.HexToAddress(currentUser.WalletAddress), *currentUser, common.HexToAddress(eventContract.EventContractAddress), nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to get join event sign message")
 	}
@@ -133,11 +128,6 @@ func (h *Handler) JoinEvent(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	client, err := cyptoutils.GetEthereumClient()
-	if err != nil {
-		return errors.Wrap(err, "failed to get ethereum client")
-	}
-
 	proof := event_registration_uc.CheckRegistrationEligibilityParams{
 		EventPassword: req.EventPassword,
 	}
@@ -150,13 +140,13 @@ func (h *Handler) JoinEvent(ctx *fiber.Ctx) error {
 		if req.SignMessage == nil {
 			return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("original sign message is required"))
 		}
-		eventAttendee, err := h.EventRegistrationUc.JoinEventWithSignature(ctx.UserContext(), client, currentUser, eventId, proof, event_registration_uc.JoinEventPayload(req.RegistrationData), signature, *req.SignMessage)
+		eventAttendee, err := h.EventRegistrationUc.JoinEventWithSignature(ctx.UserContext(), currentUser, eventId, proof, event_registration_uc.JoinEventPayload(req.RegistrationData), signature, *req.SignMessage)
 		if err != nil {
 			return errors.Wrap(err, "failed to join event with signature")
 		}
 		return ctx.Status(fiber.StatusOK).JSON(eventAttendee)
 	} else {
-		eventAttendee, err := h.EventRegistrationUc.JoinEventWithPin(ctx.UserContext(), client, currentUser, eventId, proof, event_registration_uc.JoinEventPayload(req.RegistrationData), *req.AccountPassword)
+		eventAttendee, err := h.EventRegistrationUc.JoinEventWithPin(ctx.UserContext(), currentUser, eventId, proof, event_registration_uc.JoinEventPayload(req.RegistrationData), *req.AccountPassword)
 		if err != nil {
 			return errors.Wrap(err, "failed to join event with pin")
 		}

@@ -1,20 +1,21 @@
 package blockchain
 
 import (
-	"log/slog"
-
 	"apps/backend/core-api/config"
+	blockchainclient_datagateway "apps/backend/core-api/internal/datagateway/onchain/blockchain_client"
+	"log/slog"
 )
 
 type BlockchainUsecase struct {
-	logger *slog.Logger
-	config *config.Config
+	logger             *slog.Logger
+	config             *config.Config
+	blockchainClientDg blockchainclient_datagateway.BlockchainClientDataGateway
 }
 
-func NewBlockchainUsecase(logger *slog.Logger, config *config.Config) *BlockchainUsecase {
+func NewBlockchainUsecase(logger *slog.Logger, config *config.Config, blockchainClientDg blockchainclient_datagateway.BlockchainClientDataGateway) *BlockchainUsecase {
 	return &BlockchainUsecase{
-		logger: logger,
-		config: config,
+		logger:             logger,
+		config:             config,
+		blockchainClientDg: blockchainClientDg,
 	}
 }
-

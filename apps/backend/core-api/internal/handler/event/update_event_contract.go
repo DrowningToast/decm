@@ -1,6 +1,8 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/common/validatorutils"
 	"context"
 	"net/http"
 	"time"
@@ -9,8 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"apps/backend/common/customerror"
-	"apps/backend/common/validatorutils"
 	eventUc "apps/backend/core-api/internal/usecase/event"
 )
 
@@ -70,7 +70,7 @@ func (h *Handler) UpdateEventContract(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusOK).JSON(EventContractResponse{
 		ID:                           contract.ID,
-		EventID:                      contract.EventID,
+		EventID:                      contract.EventId,
 		AccessManagerContractAddress: contract.AccessManagerContractAddress,
 		EventContractAddress:         contract.EventContractAddress,
 		TicketContractAddress:        contract.TicketContractAddress,

@@ -1,19 +1,19 @@
 package postgres
 
 import (
+	"apps/backend/common/pgerrutils"
+	"apps/backend/common/pgmapper"
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
 	"time"
 
-	"apps/backend/common/pgerrutils"
-	"apps/backend/common/pgmapper"
-	datagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
+	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/google/uuid"
 )
 
-var _ datagateway.EventRegistrationConfigDataGateway = (*Repository)(nil)
+var _ event_datagateway.EventRegistrationConfigDataGateway = (*Repository)(nil)
 
 func (r *Repository) CreateEventRegistrationConfig(ctx context.Context, params generated.CreateEventRegistrationConfigParams) (*entity.EventRegistrationConfig, error) {
 	result, err := r.queries.CreateEventRegistrationConfig(ctx, params)

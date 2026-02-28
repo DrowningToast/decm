@@ -1,6 +1,8 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"fmt"
 	"io"
@@ -8,9 +10,6 @@ import (
 	"regexp"
 	"strings"
 	"time"
-
-	"apps/backend/common/customerror"
-	"apps/backend/core-api/internal/entity"
 
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
@@ -58,7 +57,7 @@ func (u *EventUsecase) GenerateCertificateImage(ctx context.Context, certificate
 	}
 
 	// 3. Download SVG template from S3
-	svgReader, err := u.S3Service.GetFile(ctx, certificateConfig.BaseCertificateStorageKey)
+	svgReader, err := u.S3DataGateway.GetFile(ctx, certificateConfig.BaseCertificateStorageKey)
 	if err != nil {
 		u.logger.Error("failed to download SVG template from S3", "error", err, "storage_key", certificateConfig.BaseCertificateStorageKey)
 		return nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "Failed to retrieve certificate template")

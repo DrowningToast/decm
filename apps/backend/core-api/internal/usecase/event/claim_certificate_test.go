@@ -1,6 +1,10 @@
 package event_test
 
 import (
+	"apps/backend/common/pgmapper"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/core-api/internal/usecase/cyptoutils"
+	"apps/backend/services/auth"
 	"context"
 	"crypto/ecdsa"
 	"encoding/hex"
@@ -9,11 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"apps/backend/common/pgmapper"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/core-api/internal/usecase/cyptoutils"
 	event_usecase "apps/backend/core-api/internal/usecase/event"
-	"apps/backend/services/auth"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -519,9 +519,64 @@ func TestGetClaimCertificateSignMessage(t *testing.T) {
 }
 
 func TestExtractDeadlineBlockFromSignMessage(t *testing.T) {
-	// Use the actual format that ExtractDeadlineBlockFromSignMessage expects
-	// Looking at the implementation, it might expect a specific format
-	// Let's test with a valid format
+	// The sign message format is: "signerAddress,contractAddress,deadlineBlock"
+	// Example: "0x1234567890123456789012345678901234567890,0xAbCdEf1234567890123456789012345678901234,12345678"
 
-	t.Skip("Skipping ExtractDeadlineBlockFromSignMessage - requires correct message format")
+	t.Run("should extract deadline block from valid sign message", func(t *testing.T) {
+		signMessage := "0x1234567890123456789012345678901234567890,0xAbCdEf1234567890123456789012345678901234,12345678"
+
+		deadlineBlock, err := cyptoutils.ExtractDeadlineBlockFromSignMessage(signMessage)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, deadlineBlock)
+		assert.Equal(t, uint64(12345678), *deadlineBlock)
+	})
+
+	t.Run("should fail when sign message has wrong number of parts", func(t *testing.T) {
+		signMessage := "0x1234567890123456789012345678901234567890,12345678" // Only 2 parts
+
+		deadlineBlock, err := cyptoutils.ExtractDeadlineBlockFromSignMessage(signMessage)
+
+		assert.Error(t, err)
+		assert.Nil(t, deadlineBlock)
+		assert.Contains(t, err.Error(), "invalid sign message")
+	})
+
+	t.Run("should fail when deadline block is not a valid number", func(t *testing.T) {
+		signMessage := "0x1234567890123456789012345678901234567890,0xAbCdEf1234567890123456789012345678901234,invalid"
+
+		deadlineBlock, err := cyptoutils.ExtractDeadlineBlockFromSignMessage(signMessage)
+
+		assert.Error(t, err)
+		assert.Nil(t, deadlineBlock)
+	})
+
+	t.Run("should handle large deadline block numbers", func(t *testing.T) {
+		signMessage := "0x1234567890123456789012345678901234567890,0xAbCdEf1234567890123456789012345678901234,18446744073709551615" // Max uint64
+
+		deadlineBlock, err := cyptoutils.ExtractDeadlineBlockFromSignMessage(signMessage)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, deadlineBlock)
+		assert.Equal(t, uint64(18446744073709551615), *deadlineBlock)
+	})
+
+	t.Run("should fail when deadline block is negative", func(t *testing.T) {
+		signMessage := "0x1234567890123456789012345678901234567890,0xAbCdEf1234567890123456789012345678901234,-1"
+
+		deadlineBlock, err := cyptoutils.ExtractDeadlineBlockFromSignMessage(signMessage)
+
+		assert.Error(t, err)
+		assert.Nil(t, deadlineBlock)
+	})
+
+	t.Run("should extract zero as valid deadline block", func(t *testing.T) {
+		signMessage := "0x1234567890123456789012345678901234567890,0xAbCdEf1234567890123456789012345678901234,0"
+
+		deadlineBlock, err := cyptoutils.ExtractDeadlineBlockFromSignMessage(signMessage)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, deadlineBlock)
+		assert.Equal(t, uint64(0), *deadlineBlock)
+	})
 }

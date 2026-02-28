@@ -47,12 +47,3 @@ func TestGetCalculatedDeadlineBlock_DeadlineOffset(t *testing.T) {
 
 	assert.Equal(t, uint64(1030), expectedDeadline)
 }
-
-
-
-
-
-
-
-
-

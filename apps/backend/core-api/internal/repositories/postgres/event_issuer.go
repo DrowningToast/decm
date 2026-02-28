@@ -4,12 +4,12 @@ import (
 	"context"
 	"decm-database/go/generated"
 
-	datagateway "apps/backend/core-api/internal/datagateway/event"
+	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/google/uuid"
 )
 
-var _ datagateway.EventIssuerDataGateway = (*Repository)(nil)
+var _ event_datagateway.EventIssuerDataGateway = (*Repository)(nil)
 
 func (r *Repository) CreateEventIssuer(ctx context.Context, params generated.CreateEventIssuerParams) (*generated.EventIssuer, error) {
 	result, err := r.queries.CreateEventIssuer(ctx, params)

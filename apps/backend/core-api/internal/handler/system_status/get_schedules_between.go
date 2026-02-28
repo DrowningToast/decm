@@ -1,10 +1,9 @@
 package system_status
 
 import (
-	"time"
-
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"

@@ -1,14 +1,13 @@
 package inbox
 
 import (
+	"apps/backend/common/customerror"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"errors"
 	"testing"
-
-	"apps/backend/common/customerror"
-	"apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +28,7 @@ func (m *MockInboxMessageDataGateway) GetInboxMessageByID(ctx context.Context, i
 	return args.Get(0).(*entity.InboxMessage), args.Error(1)
 }
 
-func (m *MockInboxMessageDataGateway) CreateInboxMessage(ctx context.Context, params datagateway.CreateInboxMessageParameters) (*entity.InboxMessage, error) {
+func (m *MockInboxMessageDataGateway) CreateInboxMessage(ctx context.Context, params offchain_datagateway.CreateInboxMessageParameters) (*entity.InboxMessage, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -37,7 +36,7 @@ func (m *MockInboxMessageDataGateway) CreateInboxMessage(ctx context.Context, pa
 	return args.Get(0).(*entity.InboxMessage), args.Error(1)
 }
 
-func (m *MockInboxMessageDataGateway) GetInboxMessagesByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
+func (m *MockInboxMessageDataGateway) GetInboxMessagesByCredentialID(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
 	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -85,7 +84,7 @@ func (m *MockInboxMessageDataGateway) UpdateInboxMessageReadStatusAll(ctx contex
 	return args.Get(0).([]*entity.InboxMessage), args.Error(1)
 }
 
-func (m *MockInboxMessageDataGateway) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
+func (m *MockInboxMessageDataGateway) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
 	args := m.Called(ctx, params)
 	return args.Int(0), args.Error(1)
 }

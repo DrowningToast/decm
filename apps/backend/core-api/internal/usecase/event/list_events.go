@@ -1,10 +1,9 @@
 package event
 
 import (
-	"context"
-
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
 )
 
 type ListEventsParameters struct {

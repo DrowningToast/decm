@@ -13,9 +13,9 @@ import (
 )
 
 const AddParticipant = `-- name: AddParticipant :one
-INSERT INTO event_attendees (event_id, attendee_credential_id, contract_address, is_attendee_accepted, first_name, last_name, email, bio, phone_number, address, academic_institution, academic_email)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-RETURNING id, event_id, attendee_credential_id, contract_address, is_attendee_accepted, first_name, last_name, email, bio, phone_number, address, academic_institution, academic_email, created_at, updated_at
+INSERT INTO event_attendees (event_id, attendee_credential_id, contract_address, is_attendee_accepted, first_name, last_name, email, bio, phone_number, address, academic_institution, academic_email, user_signature_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+RETURNING id, event_id, attendee_credential_id, contract_address, is_attendee_accepted, first_name, last_name, email, bio, phone_number, address, academic_institution, academic_email, created_at, updated_at, user_signature_id
 `
 
 type AddParticipantParams struct {
@@ -31,6 +31,7 @@ type AddParticipantParams struct {
 	Address              pgtype.Text `json:"address"`
 	AcademicInstitution  pgtype.Text `json:"academic_institution"`
 	AcademicEmail        pgtype.Text `json:"academic_email"`
+	UserSignatureID      pgtype.UUID `json:"user_signature_id"`
 }
 
 func (q *Queries) AddParticipant(ctx context.Context, arg AddParticipantParams) (EventAttendee, error) {
@@ -47,6 +48,7 @@ func (q *Queries) AddParticipant(ctx context.Context, arg AddParticipantParams) 
 		arg.Address,
 		arg.AcademicInstitution,
 		arg.AcademicEmail,
+		arg.UserSignatureID,
 	)
 	var i EventAttendee
 	err := row.Scan(
@@ -65,12 +67,39 @@ func (q *Queries) AddParticipant(ctx context.Context, arg AddParticipantParams) 
 		&i.AcademicEmail,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.UserSignatureID,
 	)
 	return i, err
 }
 
+const DeleteEventAttendeeByEventIDAndCredentialID = `-- name: DeleteEventAttendeeByEventIDAndCredentialID :exec
+DELETE FROM event_attendees
+WHERE event_id = $1
+AND attendee_credential_id = $2
+`
+
+type DeleteEventAttendeeByEventIDAndCredentialIDParams struct {
+	EventID              uuid.UUID `json:"event_id"`
+	AttendeeCredentialID uuid.UUID `json:"attendee_credential_id"`
+}
+
+func (q *Queries) DeleteEventAttendeeByEventIDAndCredentialID(ctx context.Context, arg DeleteEventAttendeeByEventIDAndCredentialIDParams) error {
+	_, err := q.db.Exec(ctx, DeleteEventAttendeeByEventIDAndCredentialID, arg.EventID, arg.AttendeeCredentialID)
+	return err
+}
+
+const DeleteEventAttendeeByID = `-- name: DeleteEventAttendeeByID :exec
+DELETE FROM event_attendees
+WHERE id = $1
+`
+
+func (q *Queries) DeleteEventAttendeeByID(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, DeleteEventAttendeeByID, id)
+	return err
+}
+
 const GetEventAttendeeByEventIDAndCredentialID = `-- name: GetEventAttendeeByEventIDAndCredentialID :one
-SELECT id, event_id, attendee_credential_id, contract_address, is_attendee_accepted, first_name, last_name, email, bio, phone_number, address, academic_institution, academic_email, created_at, updated_at
+SELECT id, event_id, attendee_credential_id, contract_address, is_attendee_accepted, first_name, last_name, email, bio, phone_number, address, academic_institution, academic_email, created_at, updated_at, user_signature_id
 FROM event_attendees
 WHERE event_id = $1
 AND attendee_credential_id = $2
@@ -100,8 +129,110 @@ func (q *Queries) GetEventAttendeeByEventIDAndCredentialID(ctx context.Context, 
 		&i.AcademicEmail,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.UserSignatureID,
 	)
 	return i, err
+}
+
+const GetEventAttendeeWithSignature = `-- name: GetEventAttendeeWithSignature :one
+SELECT
+    ea.id,
+    ea.event_id,
+    ea.attendee_credential_id,
+    ea.contract_address,
+    ea.is_attendee_accepted,
+    ea.user_signature_id,
+    ea.created_at as joined_at,
+    ac.wallet_address,
+    us.id as signature_id,
+    us.sign_message,
+    us.signature,
+    us.deadline_block,
+    us.estimated_deadline,
+    us.broadcasted_at,
+    us.mark_as_expired_at,
+    us.created_at as signature_created_at,
+    us.updated_at as signature_updated_at
+FROM event_attendees ea
+INNER JOIN authentication_credentials ac ON ea.attendee_credential_id = ac.id
+LEFT JOIN user_signature us ON ea.user_signature_id = us.id
+WHERE ea.event_id = $1
+  AND ea.attendee_credential_id = $2
+`
+
+type GetEventAttendeeWithSignatureParams struct {
+	EventID              uuid.UUID `json:"event_id"`
+	AttendeeCredentialID uuid.UUID `json:"attendee_credential_id"`
+}
+
+type GetEventAttendeeWithSignatureRow struct {
+	ID                   uuid.UUID          `json:"id"`
+	EventID              uuid.UUID          `json:"event_id"`
+	AttendeeCredentialID uuid.UUID          `json:"attendee_credential_id"`
+	ContractAddress      string             `json:"contract_address"`
+	IsAttendeeAccepted   int32              `json:"is_attendee_accepted"`
+	UserSignatureID      pgtype.UUID        `json:"user_signature_id"`
+	JoinedAt             pgtype.Timestamptz `json:"joined_at"`
+	WalletAddress        string             `json:"wallet_address"`
+	SignatureID          pgtype.UUID        `json:"signature_id"`
+	SignMessage          pgtype.Text        `json:"sign_message"`
+	Signature            pgtype.Text        `json:"signature"`
+	DeadlineBlock        pgtype.Int4        `json:"deadline_block"`
+	EstimatedDeadline    pgtype.Timestamptz `json:"estimated_deadline"`
+	BroadcastedAt        pgtype.Timestamptz `json:"broadcasted_at"`
+	MarkAsExpiredAt      pgtype.Timestamptz `json:"mark_as_expired_at"`
+	SignatureCreatedAt   pgtype.Timestamptz `json:"signature_created_at"`
+	SignatureUpdatedAt   pgtype.Timestamptz `json:"signature_updated_at"`
+}
+
+func (q *Queries) GetEventAttendeeWithSignature(ctx context.Context, arg GetEventAttendeeWithSignatureParams) (GetEventAttendeeWithSignatureRow, error) {
+	row := q.db.QueryRow(ctx, GetEventAttendeeWithSignature, arg.EventID, arg.AttendeeCredentialID)
+	var i GetEventAttendeeWithSignatureRow
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.AttendeeCredentialID,
+		&i.ContractAddress,
+		&i.IsAttendeeAccepted,
+		&i.UserSignatureID,
+		&i.JoinedAt,
+		&i.WalletAddress,
+		&i.SignatureID,
+		&i.SignMessage,
+		&i.Signature,
+		&i.DeadlineBlock,
+		&i.EstimatedDeadline,
+		&i.BroadcastedAt,
+		&i.MarkAsExpiredAt,
+		&i.SignatureCreatedAt,
+		&i.SignatureUpdatedAt,
+	)
+	return i, err
+}
+
+const HasPendingEventJoinByEventAndCredential = `-- name: HasPendingEventJoinByEventAndCredential :one
+SELECT EXISTS (
+    SELECT 1
+    FROM event_attendees ea
+    LEFT JOIN user_signature us ON ea.user_signature_id = us.id
+    WHERE ea.event_id = $1
+      AND ea.attendee_credential_id = $2
+      AND us.broadcasted_at IS NULL
+      AND us.mark_as_expired_at IS NULL
+      AND us.aborted_at IS NULL
+) AS has_pending
+`
+
+type HasPendingEventJoinByEventAndCredentialParams struct {
+	EventID              uuid.UUID `json:"event_id"`
+	AttendeeCredentialID uuid.UUID `json:"attendee_credential_id"`
+}
+
+func (q *Queries) HasPendingEventJoinByEventAndCredential(ctx context.Context, arg HasPendingEventJoinByEventAndCredentialParams) (bool, error) {
+	row := q.db.QueryRow(ctx, HasPendingEventJoinByEventAndCredential, arg.EventID, arg.AttendeeCredentialID)
+	var has_pending bool
+	err := row.Scan(&has_pending)
+	return has_pending, err
 }
 
 const ListEventAttendeesByEventID = `-- name: ListEventAttendeesByEventID :many

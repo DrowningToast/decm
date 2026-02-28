@@ -1,18 +1,19 @@
 package postgres
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/common/pgerrutils"
+	"apps/backend/common/pgmapper"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
 
-	"apps/backend/common/pgerrutils"
-	"apps/backend/common/pgmapper"
-	"apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
-
+	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
 )
 
-var _ datagateway.EventAttendeeDataGateway = (*Repository)(nil)
+var _ offchain_datagateway.EventAttendeeDataGateway = (*Repository)(nil)
 
 func (r *Repository) GetEventAttendeeByEventIdAndCredentialId(ctx context.Context, eventID uuid.UUID, credentialID uuid.UUID) (*entity.EventAttendee, error) {
 	query, err := r.queries.GetEventAttendeeByEventIDAndCredentialID(ctx, generated.GetEventAttendeeByEventIDAndCredentialIDParams{
@@ -72,10 +73,11 @@ func (r *Repository) GetEventAttendeeByEventIdAndCredentialId(ctx context.Contex
 		AcademicEmail:        academicEmail,
 		CreatedAt:            query.CreatedAt.Time,
 		UpdatedAt:            query.UpdatedAt.Time,
+		UserSignatureID:      pgmapper.PgUUIDToUUIDPtr(query.UserSignatureID),
 	}, nil
 }
 
-func (r *Repository) AddParticipant(ctx context.Context, params datagateway.AddParticipantParameters) (*entity.EventAttendee, error) {
+func (r *Repository) AddParticipant(ctx context.Context, params offchain_datagateway.AddParticipantParameters) (*entity.EventAttendee, error) {
 	// Encrypt PII fields before storing
 	firstNameEnc, err := pgmapper.EncryptStringPtrToPgText(params.FirstName, r.piiEncryptionKey)
 	if err != nil {
@@ -123,6 +125,7 @@ func (r *Repository) AddParticipant(ctx context.Context, params datagateway.AddP
 		AcademicEmail:        academicEmailEnc,
 		Address:              addressEnc,
 		Bio:                  bioEnc,
+		UserSignatureID:      pgmapper.UUIDPtrToPgUUID(params.UserSignatureId),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
@@ -177,7 +180,78 @@ func (r *Repository) AddParticipant(ctx context.Context, params datagateway.AddP
 		AcademicEmail:        academicEmail,
 		CreatedAt:            query.CreatedAt.Time,
 		UpdatedAt:            query.UpdatedAt.Time,
+		UserSignatureID:      pgmapper.PgUUIDToUUIDPtr(query.UserSignatureID),
 	}, nil
+}
+
+func (r *Repository) GetEventAttendeeWithSignature(ctx context.Context, eventId uuid.UUID, credentialId uuid.UUID) (*offchain_datagateway.EventAttendeeWithSignature, error) {
+	row, err := r.queries.GetEventAttendeeWithSignature(ctx, generated.GetEventAttendeeWithSignatureParams{
+		EventID:              eventId,
+		AttendeeCredentialID: credentialId,
+	})
+	if err != nil {
+		return nil, pgerrutils.ParsePgError(err)
+	}
+
+	var userSignature *entity.UserSignature = nil
+	if row.SignatureID.Valid {
+		signatureID, err := uuid.Parse(row.SignatureID.String())
+		if err != nil {
+			return nil, customerror.AsPresetError(customerror.ErrInternalServer, errors.Wrap(err, "failed to parse signature id"))
+		}
+		userSignature = &entity.UserSignature{
+			Id:                         signatureID,
+			AuthenticationCredentialId: credentialId,
+			SignMessage:                row.SignMessage.String,
+			Signature:                  row.Signature.String,
+			DeadlineBlock:              pgmapper.PgInt4ToInt32Ptr(row.DeadlineBlock),
+			EstimatedDeadline:          pgmapper.PgTimestamptzToTimePtr(row.EstimatedDeadline),
+			BroadcastedAt:              pgmapper.PgTimestamptzToTimePtr(row.BroadcastedAt),
+			MarkAsExpiredAt:            pgmapper.PgTimestamptzToTimePtr(row.MarkAsExpiredAt),
+			CreatedAt:                  row.SignatureCreatedAt.Time,
+			UpdatedAt:                  row.SignatureUpdatedAt.Time,
+		}
+	}
+
+	return &offchain_datagateway.EventAttendeeWithSignature{
+		Id:            row.ID,
+		EventId:       row.EventID,
+		CredentialId:  row.AttendeeCredentialID,
+		WalletAddress: row.WalletAddress,
+		JoinedAt:      row.JoinedAt.Time,
+		IsAccepted:    row.IsAttendeeAccepted == 1,
+		UserSignature: userSignature,
+	}, nil
+}
+
+func (r *Repository) DeleteEventAttendeeById(ctx context.Context, id uuid.UUID) error {
+	err := r.queries.DeleteEventAttendeeByID(ctx, id)
+	if err != nil {
+		return pgerrutils.ParsePgError(err)
+	}
+	return nil
+}
+
+func (r *Repository) DeleteEventAttendeeByEventIDAndCredentialID(ctx context.Context, eventId uuid.UUID, credentialId uuid.UUID) error {
+	err := r.queries.DeleteEventAttendeeByEventIDAndCredentialID(ctx, generated.DeleteEventAttendeeByEventIDAndCredentialIDParams{
+		EventID:              eventId,
+		AttendeeCredentialID: credentialId,
+	})
+	if err != nil {
+		return pgerrutils.ParsePgError(err)
+	}
+	return nil
+}
+
+func (r *Repository) HasPendingEventJoinByEventAndCredential(ctx context.Context, eventId uuid.UUID, credentialId uuid.UUID) (bool, error) {
+	has, err := r.queries.HasPendingEventJoinByEventAndCredential(ctx, generated.HasPendingEventJoinByEventAndCredentialParams{
+		EventID:              eventId,
+		AttendeeCredentialID: credentialId,
+	})
+	if err != nil {
+		return false, pgerrutils.ParsePgError(err)
+	}
+	return has, nil
 }
 
 func (r *Repository) ListEventAttendeesByEventID(ctx context.Context, eventId uuid.UUID) ([]entity.EventAttendee, error) {
@@ -224,6 +298,7 @@ func (r *Repository) ListEventAttendeesByEventID(ctx context.Context, eventId uu
 			WalletAddress:        row.WalletAddress,
 			CreatedAt:            row.CreatedAt.Time,
 			UpdatedAt:            row.UpdatedAt.Time,
+			// UserSignatureID is not available in the List query currently
 		})
 	}
 

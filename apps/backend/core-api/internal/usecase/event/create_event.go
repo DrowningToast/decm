@@ -1,23 +1,17 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	eventcontract_datagateway "apps/backend/core-api/internal/datagateway/onchain/event_contract"
+	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
+	"apps/backend/core-api/internal/entity"
+	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
+	"apps/backend/services/auth"
 	"context"
 	"errors"
-	"math/big"
 	"mime/multipart"
 	"time"
 
-	"apps/backend/common/customerror"
-	datagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
-
-	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
-
-	eventAccessManagerContract "apps/backend/contracts/accessmanager"
-	eventContract "apps/backend/contracts/event"
-
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/google/uuid"
@@ -67,7 +61,7 @@ func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParam
 	if chainId <= 0 {
 		return nil, common.Address{}, common.Address{}, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid blockchain chain ID"))
 	}
-	createEventParams := datagateway.CreateEventParameters{
+	createEventParams := event_datagateway.CreateEventParameters{
 		ChainId:                  chainId,
 		Name:                     params.Name,
 		ShortDescription:         params.ShortDescription,
@@ -91,8 +85,8 @@ func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParam
 
 	event, err := uc.EventDataGateway.CreateEvent(ctx, createEventParams)
 	if err != nil {
-		uc.S3Service.DeleteFile(ctx, bannerStorageKey)
-		uc.S3Service.DeleteFile(ctx, iconStorageKey)
+		uc.S3DataGateway.DeleteFile(ctx, bannerStorageKey)
+		uc.S3DataGateway.DeleteFile(ctx, iconStorageKey)
 		return nil, common.Address{}, common.Address{}, nil, err
 	}
 
@@ -101,55 +95,22 @@ func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParam
 		return nil, common.Address{}, common.Address{}, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("DecmAccessManagerAddress is required"))
 	}
 
-	client, err := cyptoutils.GetEthereumClient()
-	if err != nil {
-		return nil, common.Address{}, common.Address{}, nil, err
-	}
-	defer client.Close()
-
-	auth, err := cyptoutils.GetKeyedTransactor(ctx, client)
-	if err != nil {
-		return nil, common.Address{}, common.Address{}, nil, err
-	}
-
 	_, hostAddress, err := cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, params.HostPassword)
 	if err != nil {
 		return nil, common.Address{}, common.Address{}, nil, err
 	}
 
-	eventAccessManagerAddress, tx, _, err := eventAccessManagerContract.DeployEventAccessManager(
-		auth,
-		client,
-		decmAccessManagerAddress,
-		*hostAddress,
-	)
+	// Create smart contracts using the factory
+	contractResponse, err := uc.EventContractFactoryDg.CreateContract(ctx, eventcontract_datagateway.CreateContractParams{
+		AccessManagerContractAddress: decmAccessManagerAddress,
+		HostAddress:                  *hostAddress,
+		EventName:                    event.Title,
+		EventDescription:             event.ShortDescription,
+		SeatsCount:                   int64(event.MaxAttendees),
+	})
 	if err != nil {
 		return nil, common.Address{}, common.Address{}, nil, err
 	}
 
-	// Wait for transaction to be mined
-	_, err = bind.WaitMined(ctx, client, tx)
-	if err != nil {
-		return nil, common.Address{}, common.Address{}, nil, err
-	}
-
-	eventContractAddress, tx, _, err := eventContract.DeployEvent(
-		auth,
-		client,
-		eventAccessManagerAddress,             // DecmAccessManager address
-		event.Title,                           // Event name
-		event.ShortDescription,                // Event description
-		big.NewInt(int64(event.MaxAttendees)), // Seats count
-	)
-	if err != nil {
-		return nil, common.Address{}, common.Address{}, nil, err
-	}
-
-	// Wait for transaction to be mined
-	_, err = bind.WaitMined(ctx, client, tx)
-	if err != nil {
-		return nil, common.Address{}, common.Address{}, nil, err
-	}
-
-	return event, eventAccessManagerAddress, eventContractAddress, tx, nil
+	return event, contractResponse.AccessManagerContractAddress, contractResponse.EventContractAddress, nil, nil
 }

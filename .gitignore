@@ -34,6 +34,11 @@ dist
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+
+# Logs
+*.log
+apps/backend/logs/
 
 # Misc
 .DS_Store
@@ -43,6 +48,7 @@ yarn-error.log*
 apps/*/pkg/mod/*
 apps/backend/main
 apps/backend/bin/
+apps/backend/logs/
 claude_code_zai_env.sh
 
 # Docker

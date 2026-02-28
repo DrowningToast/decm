@@ -17,18 +17,18 @@ interface ActionMenuProps {
 }
 
 export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { user } = useAuth();
     const { joinWithAccountPassword } = useJoinEventMutation();
 
-    const { bottomNavVariant } = useEventViewModelUsecase({ eventId });
+    const { bottomNavVariant, event: eventViewModel } = useEventViewModelUsecase({ eventId });
     const { showPreviewModal: _showPreviewModal, closePreviewModal } =
         usePreviewRegistrationUsecase(eventId);
     const { invitation, isLoading: isInvitationLoading } = useEventInvitationByUserAndEvent(
         eventId,
         user?.walletAddress,
     );
-    const { event: eventViewModel } = useEventViewModelUsecase({ eventId });
+
     const { mutateAsync: openPasswordPrompt } = usePasswordPrompt();
 
     const { isOpen: isPinModalOpen } = useSignPasswordModalStore();
@@ -75,6 +75,66 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
         }
         return "";
     }, [bottomNavVariant, t]);
+
+    // Format dates for display
+    const locale = i18n.language === "th" ? "th-TH" : "en-US";
+    const dateFormatOptions: Intl.DateTimeFormatOptions = {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    };
+
+    const formattedDeadline = eventViewModel?.broadcastedAtEstimatedDeadline
+        ? new Date(eventViewModel.broadcastedAtEstimatedDeadline).toLocaleDateString(
+              locale,
+              dateFormatOptions,
+          )
+        : undefined;
+
+    const formattedBroadcastedAt = eventViewModel?.broadcastedAt
+        ? new Date(eventViewModel.broadcastedAt).toLocaleDateString(locale, dateFormatOptions)
+        : undefined;
+
+    // Determine broadcast status for joined users
+    const broadcastStatus = useMemo(() => {
+        if (!eventViewModel?.isJoined) return null;
+
+        if (eventViewModel.broadcastedAt) {
+            return "confirmed";
+        }
+        if (eventViewModel.signatureExpiredAt) {
+            return "expired";
+        }
+        if (eventViewModel.broadcastedAtEstimatedDeadline) {
+            const deadline = new Date(eventViewModel.broadcastedAtEstimatedDeadline);
+            if (deadline < new Date()) {
+                return "expired";
+            }
+            return "pending";
+        }
+        return null;
+    }, [
+        eventViewModel?.isJoined,
+        eventViewModel?.broadcastedAt,
+        eventViewModel?.signatureExpiredAt,
+        eventViewModel?.broadcastedAtEstimatedDeadline,
+    ]);
+
+    // Pre-compute broadcast status display conditions
+    const showBroadcastConfirmed = broadcastStatus === "confirmed" && !!formattedBroadcastedAt;
+    const showBroadcastPending = broadcastStatus === "pending" && !!formattedDeadline;
+    const showBroadcastExpired = broadcastStatus === "expired";
+    const broadcastPendingText = showBroadcastPending
+        ? t("participant.events.detail.broadcast.pending", { deadline: formattedDeadline })
+        : "";
+    const broadcastConfirmedText = showBroadcastConfirmed
+        ? t("participant.events.detail.broadcast.confirmed", { date: formattedBroadcastedAt })
+        : "";
+    const broadcastExpiredText = showBroadcastExpired
+        ? t("participant.events.detail.broadcast.expired")
+        : "";
 
     const handleSubmit = async (data: RegistrationConfirmDataForm) => {
         try {
@@ -135,7 +195,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
                 )}
 
                 {/* Always show instruction text and BottomNav */}
-                <div className="hidden md:inline-block w-full text-center">
+                <div className="flex flex-col gap-y-2">
                     <Typography
                         variant="text"
                         tag="p"
@@ -144,6 +204,38 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
                     >
                         {instructionText}
                     </Typography>
+
+                    {/* Broadcast status for joined users */}
+                    {showBroadcastConfirmed && (
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="primary"
+                            className="text-center text-sm font-medium [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                        >
+                            {broadcastConfirmedText}
+                        </Typography>
+                    )}
+                    {showBroadcastPending && (
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="muted"
+                            className="text-center text-xs [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                        >
+                            {broadcastPendingText}
+                        </Typography>
+                    )}
+                    {showBroadcastExpired && (
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="muted"
+                            className="text-center text-xs text-destructive [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px]"
+                        >
+                            {broadcastExpiredText}
+                        </Typography>
+                    )}
                 </div>
                 {bottomNavVariant && (
                     <BottomNav

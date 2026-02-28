@@ -1,12 +1,11 @@
 package profile
 
 import (
+	"apps/backend/common"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
+	"apps/backend/services/auth"
 	"context"
 	"time"
-
-	"apps/backend/common"
-	"apps/backend/core-api/internal/datagateway"
-	"apps/backend/services/auth"
 )
 
 type GetMyProfileViewModel struct {
@@ -52,7 +51,7 @@ func (u *ProfileUsecase) GetMyProfileViewModel(ctx context.Context, user *auth.J
 		return nil, err
 	}
 
-	unreadInboxMessageCount, err := u.InboxMessageDg.GetUnreadInboxMessageCountByCredentialID(ctx, datagateway.GetInboxMessagesByCredentialIDParameters{
+	unreadInboxMessageCount, err := u.InboxMessageDg.GetUnreadInboxMessageCountByCredentialID(ctx, offchain_datagateway.GetInboxMessagesByCredentialIDParameters{
 		CredentialID:          user.UserId,
 		ReceiverEmail:         authenticationCredential.GoogleConnectorRef,
 		ReceiverWalletAddress: &authenticationCredential.WalletAddress,

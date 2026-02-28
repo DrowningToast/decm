@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { useNavigate } from "@/router";
 import { useUpdateEventIssuer } from "./useUpdateEventIssuer";
 import { useDeleteEventIssuer } from "./useDeleteEventIssuer";
+import { useFetchedCertificateSvg } from "./useFetchedCertificateSvg";
 import type { EventIssuer } from "@/services/EventService/EventService";
 import type { Profile } from "@/services/AuthService/AuthService";
 import { queryClient } from "@/lib/api/queryClient";
@@ -57,8 +58,29 @@ export const CertificateSettingsPage = ({
     // Check if certificate is published - if so, disable issuer editing
     const isCertificatePublished = eventCertificateConfig?.is_published ?? false;
 
-    // Track font settings changes
-    const [fontSettings, setFontSettings] = React.useState<CertificateFontConfig | null>(null);
+    // Track font settings changes — pre-seed from existing config so the preview works immediately
+    const [fontSettings, setFontSettings] = React.useState<CertificateFontConfig | null>(
+        eventCertificateConfig
+            ? {
+                  event_name_font_family_id: eventCertificateConfig.event_name_font_family_id,
+                  event_name_font_weight: eventCertificateConfig.event_name_font_weight,
+                  name_font_family_id: eventCertificateConfig.name_font_family_id,
+                  name_font_weight: eventCertificateConfig.name_font_weight,
+                  academic_institution_font_family_id:
+                      eventCertificateConfig.academic_institution_font_family_id,
+                  academic_institution_font_weight:
+                      eventCertificateConfig.academic_institution_font_weight,
+                  certificate_title_font_family_id:
+                      eventCertificateConfig.certificate_title_font_family_id,
+                  certificate_title_font_weight:
+                      eventCertificateConfig.certificate_title_font_weight,
+                  certificate_subtitle_font_family_id:
+                      eventCertificateConfig.certificate_subtitle_font_family_id,
+                  certificate_subtitle_font_weight:
+                      eventCertificateConfig.certificate_subtitle_font_weight,
+              }
+            : null,
+    );
 
     // Use custom hooks for state management
     // Extract issuer profiles from event issuers
@@ -129,6 +151,19 @@ export const CertificateSettingsPage = ({
             };
         });
     const certificateTemplate = useCertificateTemplate();
+
+    // Fetch SVG through the backend proxy when no new file has been uploaded.
+    // Using the proxy avoids CORS issues with S3 presigned URLs when called via fetch().
+    const fetchedSvgContent = useFetchedCertificateSvg(
+        eventCertificateConfig ? eventId : undefined,
+        !!certificateTemplate.svgFile,
+    );
+
+    // Effective SVG preview: newly uploaded file takes precedence, then fetched existing content
+    const effectiveSvgPreview = certificateTemplate.svgPreview || fetchedSvgContent;
+
+    // State for local keyword positions (to support dragging)
+    const [localKeywords, setLocalKeywords] = React.useState<DetectedKeyword[]>([]);
 
     // Reconstruct detected keywords from saved config when template already exists
     // Only include keywords that have meaningful positions (not 0,0) since required fields
@@ -209,15 +244,23 @@ export const CertificateSettingsPage = ({
         return keywords;
     }, [eventCertificateConfig]);
 
-    // Merge saved keywords with newly detected keywords (new upload takes precedence)
-    const allDetectedKeywords = React.useMemo(() => {
-        // If there's a new upload, use those keywords
+    // Initialize local keywords when template or saved config changes
+    React.useEffect(() => {
         if (certificateTemplate.detectedKeywords.length > 0) {
-            return certificateTemplate.detectedKeywords;
+            setLocalKeywords(certificateTemplate.detectedKeywords);
+        } else {
+            setLocalKeywords(savedDetectedKeywords);
         }
-        // Otherwise, use saved keywords
-        return savedDetectedKeywords;
     }, [certificateTemplate.detectedKeywords, savedDetectedKeywords]);
+
+    const handleKeywordMove = useCallback((keyword: string, x: number, y: number) => {
+        setLocalKeywords((prev) =>
+            prev.map((kw) => (kw.keyword === keyword ? { ...kw, x, y } : kw)),
+        );
+    }, []);
+
+    // Merge saved keywords with newly detected keywords (new upload takes precedence)
+    const allDetectedKeywords = localKeywords;
 
     // Handle form submission
     const handleSubmit = async () => {
@@ -563,18 +606,36 @@ export const CertificateSettingsPage = ({
                             availableKeywords={certificateTemplate.availableKeywords}
                             onFileSelect={certificateTemplate.handleFileSelect}
                             fileInputRef={certificateTemplate.fileInputRef}
+                            existingCertificateUrl={
+                                eventCertificateConfig?.base_certificate_presigned_url
+                            }
                         />
 
                         {/* Certificate Preview Component */}
                         <CertificatePreview
-                            svgPreview={certificateTemplate.svgPreview}
+                            svgPreview={effectiveSvgPreview}
                             imageUrl={
-                                certificateTemplate.svgPreview
+                                effectiveSvgPreview
                                     ? undefined
                                     : eventCertificateConfig?.base_certificate_presigned_url
                             }
                             detectedKeywords={allDetectedKeywords}
                             availableKeywords={certificateTemplate.availableKeywords}
+                            fontConfig={fontSettings || undefined}
+                            previewData={{
+                                eventName: t("certificateSettings.step2.preview.sampleEventName"),
+                                name: t("certificateSettings.step2.preview.sampleParticipantName"),
+                                academicInstitution: t(
+                                    "certificateSettings.step2.preview.sampleInstitution",
+                                ),
+                                certificateTitle: t(
+                                    "certificateSettings.step2.preview.sampleTitle",
+                                ),
+                                certificateSubtitle: t(
+                                    "certificateSettings.step2.preview.sampleSubtitle",
+                                ),
+                            }}
+                            onKeywordMove={handleKeywordMove}
                         />
                     </div>
 

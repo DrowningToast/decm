@@ -1,13 +1,12 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
 	"net/http"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-
-	"apps/backend/common/customerror"
 )
 
 // GetEventContractByEventID godoc
@@ -29,14 +28,14 @@ func (h *Handler) GetEventContractByEventID(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
-	contract, err := h.EventUc.GetEventContractByEventID(ctx.UserContext(), eventID)
+	contract, err := h.EventUc.GetEventContractByEventId(ctx.UserContext(), eventID)
 	if err != nil {
 		return err
 	}
 
 	return ctx.Status(http.StatusOK).JSON(EventContractResponse{
 		ID:                           contract.ID,
-		EventID:                      contract.EventID,
+		EventID:                      contract.EventId,
 		AccessManagerContractAddress: contract.AccessManagerContractAddress,
 		EventContractAddress:         contract.EventContractAddress,
 		TicketContractAddress:        contract.TicketContractAddress,

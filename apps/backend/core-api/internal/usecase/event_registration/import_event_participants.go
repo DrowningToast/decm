@@ -1,15 +1,16 @@
 package event_registration
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 
-	"apps/backend/common/customerror"
-	datagateway "apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
+	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/google/uuid"
 )
@@ -56,7 +57,7 @@ func (uc *EventRegistrationUsecase) ImportEventParticipants(ctx context.Context,
 		}
 
 		// Create inbox message
-		inboxMessageParams := datagateway.CreateInboxMessageParameters{
+		inboxMessageParams := offchain_datagateway.CreateInboxMessageParameters{
 			SenderCredentialID:     &currentUser.UserId,
 			ReceiverCredentialID:   nil, // Empty as specified
 			ReceiverEmail:          participant.Email,
@@ -75,7 +76,7 @@ func (uc *EventRegistrationUsecase) ImportEventParticipants(ctx context.Context,
 		code := uuid.New().String()[:8]
 
 		// Create event registration invitation
-		invitationParams := datagateway.CreateEventRegistrationInvitationParameters{
+		invitationParams := event_datagateway.CreateEventRegistrationInvitationParameters{
 			EventID:             params.EventID,
 			InboxMessageID:      inboxMessage.Id,
 			ValidUntil:          nil, // No expiration by default

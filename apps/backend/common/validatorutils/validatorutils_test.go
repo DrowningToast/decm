@@ -1,10 +1,9 @@
 package validatorutils
 
 import (
+	"apps/backend/common/customerror"
 	"mime/multipart"
 	"testing"
-
-	"apps/backend/common/customerror"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -262,7 +261,7 @@ func TestValidateStruct_ComplexValidation(t *testing.T) {
 
 func TestValidateStruct_NonStruct(t *testing.T) {
 	// This should not panic, but may not validate properly
-	var s = "test"
+	s := "test"
 	err := ValidateStruct(s)
 	// validator should handle this gracefully
 	_ = err
@@ -301,12 +300,3 @@ func TestValidateImageFile_AllAllowedTypes(t *testing.T) {
 		})
 	}
 }
-
-
-
-
-
-
-
-
-

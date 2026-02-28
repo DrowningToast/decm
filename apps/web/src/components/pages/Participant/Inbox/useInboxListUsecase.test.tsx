@@ -171,16 +171,13 @@ describe("useInboxListUsecase", () => {
             expect(result.current.isLoading).toBe(false);
         });
 
-        // Skip status check if no inbox items returned
+        // InboxItem has: id, title, sender, date, isRead
         if (result.current.inboxItems && result.current.inboxItems.length > 0) {
-            const statuses = result.current.inboxItems.map((item) => item.status);
-            const uniqueStatuses = new Set(statuses);
-            expect(uniqueStatuses.size).toBeGreaterThan(0);
-            expect(Array.from(uniqueStatuses)).toEqual(
-                expect.arrayContaining([
-                    expect.stringMatching(/pending|available|expired|action-required/),
-                ]),
-            );
+            for (const item of result.current.inboxItems) {
+                expect(item).toHaveProperty("id");
+                expect(item).toHaveProperty("title");
+                expect(item).toHaveProperty("isRead");
+            }
         } else {
             // No inbox items - acceptable for mock data
             expect(result.current.inboxItems).toEqual([]);
@@ -225,7 +222,7 @@ describe("useInboxListUsecase", () => {
             expect(result.current.inboxItems[0].id).toBe("1");
         });
 
-        it("filters out certificate invitation when user has not joined the event", async () => {
+        it("shows certificate invitation even when user has not joined the event", async () => {
             const { useInboxMessages } = await import("@/hooks/inbox/useInboxMessages");
 
             const mockMessages: InboxMessage[] = [
@@ -258,10 +255,10 @@ describe("useInboxListUsecase", () => {
                 expect(result.current.isLoading).toBe(false);
             });
 
-            expect(result.current.inboxItems).toHaveLength(0);
+            expect(result.current.inboxItems).toHaveLength(1);
         });
 
-        it("filters out certificate invitation when hasParticipantJoinedEvent is undefined", async () => {
+        it("shows certificate invitation when hasParticipantJoinedEvent is undefined", async () => {
             const { useInboxMessages } = await import("@/hooks/inbox/useInboxMessages");
 
             const mockMessages: InboxMessage[] = [
@@ -294,7 +291,7 @@ describe("useInboxListUsecase", () => {
                 expect(result.current.isLoading).toBe(false);
             });
 
-            expect(result.current.inboxItems).toHaveLength(0);
+            expect(result.current.inboxItems).toHaveLength(1);
         });
 
         it("shows non-certificate messages regardless of hasParticipantJoinedEvent", async () => {
@@ -336,7 +333,7 @@ describe("useInboxListUsecase", () => {
             expect(result.current.inboxItems).toHaveLength(2);
         });
 
-        it("correctly filters mixed message types", async () => {
+        it("shows all messages regardless of event participation status", async () => {
             const { useInboxMessages } = await import("@/hooks/inbox/useInboxMessages");
 
             const mockMessages: InboxMessage[] = [
@@ -348,7 +345,7 @@ describe("useInboxListUsecase", () => {
                     isRead: false,
                     createdAt: new Date("2025-01-01"),
                     updatedAt: new Date("2025-01-01"),
-                    hasParticipantJoinedEvent: true, // Should show
+                    hasParticipantJoinedEvent: true,
                     certificateId: "cert-1",
                     certificateTitle: "Test Certificate",
                     eventId: "event-1",
@@ -362,7 +359,7 @@ describe("useInboxListUsecase", () => {
                     isRead: false,
                     createdAt: new Date("2025-01-01"),
                     updatedAt: new Date("2025-01-01"),
-                    hasParticipantJoinedEvent: false, // Should filter out
+                    hasParticipantJoinedEvent: false,
                     certificateId: "cert-2",
                     certificateTitle: "Test Certificate 2",
                     eventId: "event-2",
@@ -375,7 +372,7 @@ describe("useInboxListUsecase", () => {
                     isRead: false,
                     createdAt: new Date("2025-01-01"),
                     updatedAt: new Date("2025-01-01"),
-                    hasParticipantJoinedEvent: false, // Should show (not a certificate invitation)
+                    hasParticipantJoinedEvent: false,
                 },
             ];
 
@@ -392,8 +389,8 @@ describe("useInboxListUsecase", () => {
                 expect(result.current.isLoading).toBe(false);
             });
 
-            expect(result.current.inboxItems).toHaveLength(2);
-            expect(result.current.inboxItems.map((item) => item.id)).toEqual(["1", "3"]);
+            expect(result.current.inboxItems).toHaveLength(3);
+            expect(result.current.inboxItems.map((item) => item.id)).toEqual(["1", "2", "3"]);
         });
     });
 });

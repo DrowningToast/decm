@@ -1,10 +1,9 @@
 package eventconfig
 
 import (
-	"context"
-
 	"apps/backend/common/customerror"
 	"apps/backend/common/hashutils"
+	"context"
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"

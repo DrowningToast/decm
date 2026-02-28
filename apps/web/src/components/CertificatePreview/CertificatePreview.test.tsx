@@ -17,6 +17,20 @@ vi.mock("dompurify", () => ({
     },
 }));
 
+// Mock useCertificateFontFamilies so CertificatePreview doesn't need a QueryClientProvider
+vi.mock("@/hooks/events/useCertificateFontFamilies", () => ({
+    useCertificateFontFamilies: vi.fn(() => ({
+        fontFamilies: [],
+        isLoading: false,
+        error: null,
+    })),
+}));
+
+// Mock processCertificateSVG so it doesn't transform SVG in tests
+vi.mock("@/lib/certificateRenderer", () => ({
+    processCertificateSVG: vi.fn((svgContent: string) => svgContent),
+}));
+
 describe("CertificatePreview", () => {
     const mockSvgPreview =
         '<svg width="100" height="100"><rect width="100" height="100" fill="red"/></svg>';
@@ -297,5 +311,53 @@ describe("CertificatePreview", () => {
         expect(
             screen.getByText("certificateSettings.step2.keywordStatus.table.count"),
         ).toBeInTheDocument();
+    });
+
+    // ---
+    // BoundingBoxOverlay re-measurement when SVG loads asynchronously
+    // ---
+
+    it("should render the overlay container when keywords are present with an SVG", () => {
+        // The overlay itself relies on getBoundingClientRect / getBBox which return
+        // zeroes in happy-dom, so we just assert the structural elements are mounted.
+        const { container } = render(
+            <CertificatePreview
+                svgPreview={mockSvgPreview}
+                detectedKeywords={mockDetectedKeywords}
+                availableKeywords={mockAvailableKeywords}
+            />,
+        );
+
+        // The outer wrapper that positions the overlay must be present
+        const previewWrapper = container.querySelector(".relative");
+        expect(previewWrapper).toBeInTheDocument();
+    });
+
+    it("should still render the SVG when svgPreview updates after initial render", async () => {
+        const { container, rerender } = render(
+            <CertificatePreview
+                svgPreview=""
+                imageUrl="https://example.com/fallback.png"
+                detectedKeywords={mockDetectedKeywords}
+                availableKeywords={mockAvailableKeywords}
+            />,
+        );
+
+        // Initially renders the image fallback — no certificate <rect> in the DOM
+        expect(screen.getByAltText("Certificate preview")).toBeInTheDocument();
+        expect(container.querySelector("rect")).not.toBeInTheDocument();
+
+        // Simulate SVG loading asynchronously (e.g., fetched from presigned URL)
+        rerender(
+            <CertificatePreview
+                svgPreview={mockSvgPreview}
+                detectedKeywords={mockDetectedKeywords}
+                availableKeywords={mockAvailableKeywords}
+            />,
+        );
+
+        // Now the certificate SVG content (rect) is rendered and the img is gone
+        expect(container.querySelector("rect")).toBeInTheDocument();
+        expect(screen.queryByAltText("Certificate preview")).not.toBeInTheDocument();
     });
 });

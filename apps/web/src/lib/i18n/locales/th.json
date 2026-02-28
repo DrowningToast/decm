@@ -785,6 +785,11 @@
                     "invitationRequired": "กิจกรรมนี้ต้องการคำเชิญ",
                     "passwordRequired": "กิจกรรมนี้ต้องใช้รหัสผ่านเพื่อเข้าร่วม",
                     "signatureRequest": "กรุณาลงนามคำขอการลงทะเบียนด้วยกระเป๋าเงินของคุณ"
+                },
+                "broadcast": {
+                    "confirmed": "ยืนยันบนบล็อกเชนเมื่อ {{date}}",
+                    "pending": "จะถูกยืนยันบนบล็อกเชนภายใน {{deadline}}",
+                    "expired": "การลงทะเบียนบนบล็อกเชนหมดอายุ — กำหนดเวลาผ่านไปก่อนที่ธุรกรรมจะได้รับการยืนยัน"
                 }
             },
             "shortlisted": "คัดเลือก",
@@ -815,12 +820,29 @@
             "claimTitle": "รับใบรับรอง",
             "claimDescription": "กรอกรหัสผ่านบัญชีของคุณเพื่อรับใบรับรองบนบล็อกเชน",
             "claimButton": "รับใบรับรอง",
+            "retryClaimButton": "ลองรับใบรับรองอีกครั้ง",
             "claiming": "กำลังรับใบรับรอง...",
             "claimingCertificate": "กำลังรับใบรับรอง: {{name}}",
             "claimSuccess": "รับใบรับรองสำเร็จ!",
+            "claimQueued": "ส่งคำขอรับใบรับรองแล้ว — กำลังสร้างบนบล็อกเชน!",
             "claimError": "ไม่สามารถรับใบรับรองได้ กรุณาลองอีกครั้ง",
             "claimNote": "ลงนามในใบรับรองนี้เพื่อเพิ่มลงในข้อมูลบล็อกเชนของคุณ",
             "claimed": "รับใบรับรองแล้ว",
+            "mustJoinEventFirst": "คุณต้องเข้าร่วมกิจกรรมนี้ในฐานะผู้เข้าร่วมก่อนจึงจะรับใบรับรองได้",
+            "goToEvent": "ไปยังหน้ากิจกรรม",
+            "queued": "กำลังสร้างใบรับรองบนบล็อกเชน...",
+            "mintingBy": "คาดว่าจะอยู่บนบล็อกเชนภายใน {{deadline}}",
+            "minted": "ใบรับรองถูกสร้างบนบล็อกเชนแล้ว",
+            "status": {
+                "completed": "เสร็จสิ้น",
+                "pending": "รอดำเนินการ",
+                "queued": "กำลังสร้าง",
+                "expired": "หมดอายุ",
+                "aborted": "ยกเลิกแล้ว"
+            },
+            "claimExpired": "การรับใบรับรองหมดอายุแล้ว",
+            "claimAborted": "ไม่สามารถดำเนินการรับใบรับรองได้",
+            "claimAbortedDescription": "คำขอรับใบรับรองนี้ถูกยกเลิกเนื่องจากคุณยังไม่ได้เข้าร่วมกิจกรรมบนบล็อกเชน กรุณาตรวจสอบให้แน่ใจว่าคุณได้เข้าร่วมกิจกรรมแล้ว จากนั้นลองรับใบรับรองอีกครั้ง",
             "errorLoadingCertificate": "ไม่สามารถโหลดรายละเอียดใบรับรองได้",
             "notFound": "ไม่พบใบรับรอง",
             "notFoundDescription": "ไม่พบใบรับรองที่คุณกำลังค้นหา หรือคุณอาจไม่มีสิทธิ์เข้าถึง",
@@ -874,19 +896,27 @@
             "statusLabel": "สถานะ",
             "viewEvent": "ดูกิจกรรม",
             "viewCertificate": "ดูใบรับรอง",
+            "goToCertificate": "ไปที่ใบรับรอง",
             "mustBeInEvent": "ต้องเข้าร่วมกิจกรรมก่อน",
+            "mustJoinEventFirst": "คุณต้องเข้าร่วมกิจกรรมก่อนจึงจะสามารถรับใบรับรองนี้ได้",
             "loadingDetails": "กำลังโหลดรายละเอียดกล่องข้อความ...",
             "failedToLoadDetails": "ไม่สามารถโหลดรายละเอียดกล่องข้อความได้",
             "notFoundHint": "ไม่พบข้อความนี้ ข้อความอาจถูกลบไปแล้ว หรือคุณอาจยังไม่ได้เข้าร่วมกิจกรรมที่กำหนด",
             "messageType": {
                 "eventRegistrationInvitation": "คำเชิญลงทะเบียนกิจกรรม",
+                "eventRegistrationInvitationWithEvent": "คำเชิญลงทะเบียนกิจกรรม: {{eventName}}",
                 "certificateInvitation": "คำเชิญรับใบรับรอง",
+                "certificateInvitationWithDetails": "คำเชิญรับใบรับรอง: {{certificateTitle}} จาก {{eventName}}",
                 "general": "ข้อความ"
             },
             "actionLabel": "การดำเนินการ",
+            "userAcceptedLabel": "ผู้ใช้ยอมรับ",
+            "blockchainConfirmedLabel": "ยืนยันบนบล็อกเชน",
             "actionStatus": {
                 "accepted": "ยอมรับแล้ว",
                 "notAccepted": "ยังไม่ยอมรับ",
+                "confirmed": "ยืนยันแล้ว",
+                "notConfirmed": "ยังไม่ยืนยัน",
                 "claimed": "รับแล้ว",
                 "notClaimed": "ยังไม่ได้รับ"
             }
@@ -1001,6 +1031,8 @@
         "missingColumnsTitle": "ไฟล์ Excel ของคุณขาดคอลัมน์ที่จำเป็น:",
         "emptyFile": "ไฟล์ Excel ดูเห็นว่างหรือไม่มีข้อมูล",
         "parseError": "ไม่สามารถอ่านไฟล์ Excel กรุณาตรวจสอบรูปแบบไฟล์",
+        "invalidRowsFound": "พบข้อมูลที่ไม่ถูกต้องในบางแถว",
+        "invalidRowsDescription": "แถวที่ไฮไลท์ด้วยสีแดงมีข้อมูลที่จำเป็นไม่ครบถ้วน (ชื่อ, นามสกุล หรืออีเมล) กรุณาแก้ไขในไฟล์ Excel ของคุณและอัปโหลดใหม่อีกครั้ง",
         "requiredFormat": "รูปแบบ Excel ที่กำหนด",
         "requiredFormatDescription": "ไฟล์ Excel ของคุณต้องมีคอลัมน์หัวตองเหล่านี้:",
         "columnHeader": "คอลัมน์ที่จำเป็น",
@@ -1155,7 +1187,14 @@
                 "hint": "รองรับเฉพาะไฟล์ SVG ขนาดไฟล์สูงสุด: 5MB"
             },
             "preview": {
-                "title": "ตัวอย่างเทมเพลต"
+                "title": "ตัวอย่างเทมเพลต",
+                "showPositions": "แสดงตำแหน่งข้อความ",
+                "showActualContent": "แสดงเนื้อหาจริง",
+                "sampleEventName": "ชื่อกิจกรรมตัวอย่าง",
+                "sampleParticipantName": "ชื่อผู้เข้าร่วมตัวอย่าง",
+                "sampleInstitution": "ชื่อสถาบันการศึกษาตัวอย่าง",
+                "sampleTitle": "หัวข้อประกาศนียบัตรตัวอย่าง",
+                "sampleSubtitle": "หัวข้อย่อยประกาศนียบัตรตัวอย่าง"
             },
             "detectedKeywords": {
                 "title": "คำสำคัญที่ตรวจพบในเทมเพลต",
@@ -1178,7 +1217,7 @@
                 },
                 "required": "จำเป็น",
                 "optional": "ไม่บังคับ",
-                "detected": "ครั้ง",
+                "detected": "พบ",
                 "detectedPlural": "ครั้ง",
                 "notDetected": "ไม่พบ"
             },

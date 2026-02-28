@@ -8,8 +8,8 @@ import (
 )
 
 type SystemStatusViewModel struct {
-	LatestSchedule *entity.SystemStatusSchedule     `json:"latest_schedule,omitempty" extensions:"x-nullable"`
-	GasPrice       *blockchain.GasPriceResponse     `json:"gas_price"`
+	LatestSchedule *entity.SystemStatusSchedule `json:"latest_schedule,omitempty" extensions:"x-nullable"`
+	GasPrice       *blockchain.GasPriceResponse `json:"gas_price"`
 }
 
 // GetSystemStatusViewModel godoc

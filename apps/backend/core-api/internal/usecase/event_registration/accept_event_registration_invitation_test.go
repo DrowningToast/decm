@@ -1,15 +1,12 @@
 package event_registration
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"errors"
 	"testing"
-	"time"
-
-	"apps/backend/common/customerror"
-	"apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -17,71 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Mock for EventRegistrationInvitationDataGateway
-type MockEventRegistrationInvitationDataGateway struct {
-	mock.Mock
-}
-
-func (m *MockEventRegistrationInvitationDataGateway) CreateEventRegistrationInvitation(ctx context.Context, params datagateway.CreateEventRegistrationInvitationParameters) (*entity.EventRegistrationInvitation, error) {
-	args := m.Called(ctx, params)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.EventRegistrationInvitation), args.Error(1)
-}
-
-func (m *MockEventRegistrationInvitationDataGateway) GetEventRegistrationInvitationByID(ctx context.Context, invitationID uuid.UUID) (*entity.EventRegistrationInvitation, error) {
-	args := m.Called(ctx, invitationID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.EventRegistrationInvitation), args.Error(1)
-}
-
-func (m *MockEventRegistrationInvitationDataGateway) GetEventRegistrationInvitationsByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventRegistrationInvitation, error) {
-	args := m.Called(ctx, eventID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]*entity.EventRegistrationInvitation), args.Error(1)
-}
-
-func (m *MockEventRegistrationInvitationDataGateway) GetEventRegistrationInvitationByInboxMessageID(ctx context.Context, inboxMessageID uuid.UUID) (*entity.EventRegistrationInvitation, error) {
-	args := m.Called(ctx, inboxMessageID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.EventRegistrationInvitation), args.Error(1)
-}
-
-func (m *MockEventRegistrationInvitationDataGateway) GetEventRegistrationInvitationByEventIDAndCredential(ctx context.Context, eventID uuid.UUID, credentialID uuid.UUID, email *string, walletAddress *string) (*entity.EventRegistrationInvitation, *entity.InboxMessage, error) {
-	args := m.Called(ctx, eventID, credentialID, email, walletAddress)
-	if args.Get(0) == nil {
-		return nil, nil, args.Error(2)
-	}
-	return args.Get(0).(*entity.EventRegistrationInvitation), nil, args.Error(2)
-}
-
-func (m *MockEventRegistrationInvitationDataGateway) UpdateEventRegistrationInvitation(ctx context.Context, id uuid.UUID, params datagateway.UpdateEventRegistrationInvitationParameters) (*entity.EventRegistrationInvitation, error) {
-	args := m.Called(ctx, id, params)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.EventRegistrationInvitation), args.Error(1)
-}
-
-func (m *MockEventRegistrationInvitationDataGateway) UpdateEventRegistrationInvitationAcceptedStatus(ctx context.Context, invitationID uuid.UUID, acceptedAt *time.Time) (*entity.EventRegistrationInvitation, error) {
-	args := m.Called(ctx, invitationID, acceptedAt)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.EventRegistrationInvitation), args.Error(1)
-}
-
-func (m *MockEventRegistrationInvitationDataGateway) DeleteEventRegistrationInvitation(ctx context.Context, id uuid.UUID) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
-}
+// All mocks are now in mocks_test.go for reusability across test files
 
 func TestEventRegistrationUsecase_AcceptEventRegistrationInvitation(t *testing.T) {
 	t.Run("should accept invitation successfully", func(t *testing.T) {

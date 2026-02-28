@@ -1,14 +1,14 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/services/auth"
 	"context"
 	"decm-database/go/generated"
 	"errors"
 	"fmt"
 
-	"apps/backend/common/customerror"
-	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/services/auth"
+	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/google/uuid"
 )

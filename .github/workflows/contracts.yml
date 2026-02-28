@@ -1,0 +1,36 @@
+name: Contracts Checks
+
+on:
+    workflow_call:
+
+jobs:
+    # Smart Contracts Build
+    build:
+        name: Contract Build
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  submodules: recursive
+
+            - name: Install Foundry
+              uses: foundry-rs/foundry-toolchain@v1
+              with:
+                  version: stable
+
+            - name: Compile smart contracts
+              working-directory: apps/contracts
+              run: |
+                  forge install
+                  forge build
+
+            - name: Verify contract artifacts
+              run: |
+                  if [ ! -d apps/contracts/out ]; then
+                    echo "❌ Contract compilation artifacts not found!"
+                    exit 1
+                  else
+                    echo "✅ Contracts compiled successfully"
+                  fi

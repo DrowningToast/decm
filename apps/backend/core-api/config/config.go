@@ -1,12 +1,11 @@
 package config
 
 import (
-	"sync"
-	"time"
-
 	"apps/backend/core-api/config/blockchain"
 	"apps/backend/core-api/config/postgres"
 	"apps/backend/core-api/config/s3"
+	"sync"
+	"time"
 
 	google "apps/backend/core-api/config/google"
 
@@ -46,6 +45,8 @@ type Config struct {
 	S3 s3.S3Config `envPrefix:"S3_"`
 	// Blockchain Configuration
 	Blockchain blockchain.BlockchainConfig `envPrefix:"BLOCKCHAIN_"`
+	// Metrics Configuration
+	Metrics MetricsConfig `envPrefix:"METRICS_"`
 }
 
 // Validate validates the configuration and returns an error if any required configuration is invalid
@@ -72,6 +73,10 @@ type JwtConfig struct {
 	Issuer     string `env:"ISSUER" envDefault:"decm-service"`
 	SecretKey  string `env:"SECRET,required"`
 	Expiration string `env:"EXPIRATION" envDefault:"24h"`
+}
+
+type MetricsConfig struct {
+	ApiKey string `env:"API_KEY" envDefault:"metrics-api-key"`
 }
 
 func LoadConfig() Config {

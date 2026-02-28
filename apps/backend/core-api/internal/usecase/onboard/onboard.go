@@ -1,6 +1,13 @@
 package usecase
 
 import (
+	"apps/backend/common"
+	"apps/backend/common/encryptutils"
+	"apps/backend/common/hashutils"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/core-api/internal/usecase/cyptoutils"
+	"apps/backend/services/auth"
 	"context"
 	"encoding/hex"
 	"log/slog"
@@ -11,14 +18,8 @@ import (
 	ethutils "github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 
-	"apps/backend/common"
 	customerror "apps/backend/common/customerror"
-	"apps/backend/common/encryptutils"
-	"apps/backend/common/hashutils"
-	"apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/core-api/internal/usecase/cyptoutils"
-	"apps/backend/services/auth"
+
 	oauth_services "apps/backend/services/oauth"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
@@ -30,11 +31,11 @@ type OnboardUsecase struct {
 	googleOAuthService  *oauth_services.GoogleOAuthService
 	registerSignMessage string
 
-	AuthenticationCredentialDg datagateway.AuthenticationCredentialDataGateway
-	ProfileDg                  datagateway.ProfileDataGateway
+	AuthenticationCredentialDg offchain_datagateway.AuthenticationCredentialDataGateway
+	ProfileDg                  offchain_datagateway.ProfileDataGateway
 }
 
-func NewOnboardUsecase(authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway, profileDg datagateway.ProfileDataGateway, authService *auth.AuthService, googleOAuthService *oauth_services.GoogleOAuthService) *OnboardUsecase {
+func NewOnboardUsecase(authenticationCredentialDg offchain_datagateway.AuthenticationCredentialDataGateway, profileDg offchain_datagateway.ProfileDataGateway, authService *auth.AuthService, googleOAuthService *oauth_services.GoogleOAuthService) *OnboardUsecase {
 	return &OnboardUsecase{
 		authService:                authService,
 		googleOAuthService:         googleOAuthService,

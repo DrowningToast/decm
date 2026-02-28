@@ -1,6 +1,7 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
 	"context"
 	"net/http"
 	"time"
@@ -9,7 +10,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"apps/backend/common/customerror"
 	eventUc "apps/backend/core-api/internal/usecase/event"
 )
 
@@ -60,7 +60,7 @@ func (h *Handler) CreateEventContract(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusCreated).JSON(EventContractResponse{
 		ID:                           contract.ID,
-		EventID:                      contract.EventID,
+		EventID:                      contract.EventId,
 		AccessManagerContractAddress: contract.AccessManagerContractAddress,
 		EventContractAddress:         contract.EventContractAddress,
 		TicketContractAddress:        contract.TicketContractAddress,

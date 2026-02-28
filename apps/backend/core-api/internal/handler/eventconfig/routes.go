@@ -1,14 +1,14 @@
 package eventconfig
 
 import (
-	"apps/backend/common/log"
+	"apps/backend/services/log"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func (h *Handler) Mount(r fiber.Router) {
-	logger := log.LoadLogger()
-	defer logger.Info("Mounted event config routes")
+	// Logger singleton initialized in main.go
+	defer log.Logger.Info("Mounted event config routes")
 
 	// Public routes for certificate font families (no authentication required)
 	publicGroup := r.Group("/eventconfig")
@@ -26,6 +26,7 @@ func (h *Handler) Mount(r fiber.Router) {
 	// GET: Handler checks if user is organizer or event-specific issuer (authorization in handler)
 	// IMPORTANT: Must be registered BEFORE any .Use() calls to avoid inheriting role guard middleware
 	eventConfigGroup.Get("/certificate", h.GetEventCertificateConfig)
+	eventConfigGroup.Get("/certificate/template", h.GetEventCertificateTemplate)
 	eventConfigGroup.Get("/certificate/mint-readiness", h.CheckCertificateMintReadiness)
 
 	// Event Registration Config routes (with role guard)

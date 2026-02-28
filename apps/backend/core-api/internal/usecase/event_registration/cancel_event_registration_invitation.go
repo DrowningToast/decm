@@ -1,16 +1,17 @@
 package event_registration
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
-	"apps/backend/common/customerror"
-	datagateway "apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
+	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/google/uuid"
 )
@@ -48,7 +49,7 @@ func (uc *EventRegistrationUsecase) CancelEventRegistrationInvitation(ctx contex
 
 	// Cancel the invitation by setting cancelled_at timestamp
 	now := time.Now()
-	updateParams := datagateway.UpdateEventRegistrationInvitationParameters{
+	updateParams := event_datagateway.UpdateEventRegistrationInvitationParameters{
 		CancelledAt: &now,
 	}
 
@@ -82,7 +83,7 @@ func (uc *EventRegistrationUsecase) CancelEventRegistrationInvitation(ctx contex
 	}
 
 	// Create inbox message to notify about revocation
-	inboxMessageParams := datagateway.CreateInboxMessageParameters{
+	inboxMessageParams := offchain_datagateway.CreateInboxMessageParameters{
 		SenderCredentialID:     &currentUser.UserId,
 		ReceiverCredentialID:   originalInboxMessage.ReceiverCredentialId,
 		ReceiverEmail:          receiverEmail,

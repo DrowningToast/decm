@@ -1,0 +1,136 @@
+// Grafana Alloy Configuration
+// https://grafana.com/docs/alloy/latest/
+
+// Logging configuration for Alloy itself
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// ============================================
+// Loki Write Endpoint
+// ============================================
+loki.write "loki_endpoint" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+
+    // Optional: Add basic auth if Loki has auth enabled
+    // basic_auth {
+    //   username = env("LOKI_USERNAME")
+    //   password = env("LOKI_PASSWORD")
+    // }
+  }
+
+  // External labels applied to all logs
+  external_labels = {
+    cluster      = "decm",
+    environment  = env("ENVIRONMENT"),
+    service_name = "decm-backend",
+  }
+}
+
+// ============================================
+// Docker Container Discovery
+// ============================================
+// Discovers Docker containers to collect logs from
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+
+  // Filter: only collect logs from containers with label logging=alloy
+  filter {
+    name   = "label"
+    values = ["logging=alloy"]
+  }
+}
+
+// ============================================
+// Docker Logs Collection
+// ============================================
+// Collect stdout/stderr from Docker containers
+loki.source.docker "containers" {
+  host             = "unix:///var/run/docker.sock"
+  targets          = discovery.docker.containers.targets
+  forward_to       = [loki.process.backend_json.receiver]
+  refresh_interval = "5s"
+
+  // Relabel rules to extract container metadata
+  relabel_rules {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  relabel_rules {
+    source_labels = ["__meta_docker_container_id"]
+    target_label  = "container_id"
+  }
+
+  relabel_rules {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "compose_service"
+  }
+
+  relabel_rules {
+    source_labels = ["__meta_docker_container_log_stream"]
+    target_label  = "stream"
+  }
+}
+
+// ============================================
+// Log Processing Pipeline
+// ============================================
+// Process and parse logs (supports both JSON and logfmt)
+loki.process "backend_json" {
+  forward_to = [loki.write.loki_endpoint.receiver]
+
+  // Stage 1: Extract low-cardinality fields needed for labels and timestamp.
+  // High-cardinality fields (user_id, request_id, error, path, duration, etc.)
+  // are NOT extracted here — they stay in the raw JSON body and are accessible
+  // in Grafana Explore via `| json <field>` without any cardinality cost.
+  stage.json {
+    expressions = {
+      timestamp = "time",
+      level     = "level",
+      component = "component",
+      method    = "method",
+      status    = "status",
+    }
+  }
+
+  // Stage 2: Extract timestamp
+  // Go slog emits sub-second precision (e.g. .879657Z), so RFC3339Nano is primary.
+  stage.timestamp {
+    source = "timestamp"
+    format = "RFC3339Nano"
+
+    fallback_formats = [
+      "RFC3339",
+    ]
+  }
+
+  // Stage 3: Convert level to lowercase for Grafana compatibility
+  stage.template {
+    source   = "level"
+    template = "{{ ToLower .Value }}"
+  }
+
+  // Stage 4: Promote only low-cardinality fields to Loki labels.
+  // Everything else (msg, error, user_id, request_id, source, path, duration)
+  // remains in the raw JSON log line and is queryable via `| json`.
+  stage.labels {
+    values = {
+      level     = "",
+      component = "",
+      method    = "",
+      status    = "",
+      job       = "backend",
+      app       = "decm-backend",
+      service   = "decm-backend",
+    }
+  }
+
+  // Stage 5: Drop empty log lines
+  stage.drop {
+    expression = "^\\s*$"
+  }
+}

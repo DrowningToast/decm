@@ -14,7 +14,12 @@ interface ExcelPreviewProps {
 }
 
 interface PreviewData {
-    [key: string]: string | number;
+    [key: string]: string | number | undefined;
+}
+
+interface RowValidationResult {
+    isValid: boolean;
+    missingFields: string[];
 }
 
 // Fixed column names that Excel files must have
@@ -43,12 +48,32 @@ const normalizeOptional = (value: unknown): string | undefined => {
     return trimmed || undefined;
 };
 
+// Helper to validate a row
+const validateRow = (row: PreviewData): RowValidationResult => {
+    const missingFields: string[] = [];
+
+    if (!normalizeOptional(row[REQUIRED_COLUMNS.firstName])) {
+        missingFields.push(REQUIRED_COLUMNS.firstName);
+    }
+    if (!normalizeOptional(row[REQUIRED_COLUMNS.lastName])) {
+        missingFields.push(REQUIRED_COLUMNS.lastName);
+    }
+    if (!normalizeOptional(row[REQUIRED_COLUMNS.email])) {
+        missingFields.push(REQUIRED_COLUMNS.email);
+    }
+
+    return {
+        isValid: missingFields.length === 0,
+        missingFields,
+    };
+};
+
 // Helper to build participant from Excel row data
 const buildParticipant = (row: PreviewData): EventRegistrationParticipantRequestItem => {
     const participant: EventRegistrationParticipantRequestItem = {
-        first_name: String(row.first_name),
-        last_name: String(row.last_name),
-        email: String(row.email),
+        first_name: String(row.first_name || ""),
+        last_name: String(row.last_name || ""),
+        email: String(row.email || ""),
     };
 
     const phoneNumber = normalizeOptional(row.phone_number);
@@ -72,15 +97,19 @@ export const ExcelPreview = ({
 }: ExcelPreviewProps) => {
     const { t } = useTranslation();
     const [previewData, setPreviewData] = useState<PreviewData[]>([]);
+    const [rowValidations, setRowValidations] = useState<RowValidationResult[]>([]);
     const [validationError, setValidationError] = useState<string | null>(null);
     const [missingColumns, setMissingColumns] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+
+    const hasInvalidRows = rowValidations.some((v) => !v.isValid);
 
     useEffect(() => {
         if (file) {
             setIsLoading(true);
             setValidationError(null);
             setMissingColumns([]);
+            setRowValidations([]);
             const reader = new FileReader();
 
             reader.onload = (e) => {
@@ -99,6 +128,10 @@ export const ExcelPreview = ({
                             (col) => !excelColumns.includes(col),
                         );
 
+                        const validations = jsonData.map(validateRow);
+                        setPreviewData(jsonData);
+                        setRowValidations(validations);
+
                         if (missing.length > 0) {
                             setMissingColumns(missing);
                             setValidationError(
@@ -106,8 +139,8 @@ export const ExcelPreview = ({
                                     columns: missing.join(", "),
                                 }),
                             );
-                        } else {
-                            setPreviewData(jsonData);
+                        } else if (validations.some((v) => !v.isValid)) {
+                            setValidationError(t("participantImport.invalidRowsFound"));
                         }
                     } else {
                         setValidationError(t("participantImport.emptyFile"));
@@ -125,7 +158,9 @@ export const ExcelPreview = ({
     }, [file, t]);
 
     const handleConfirm = () => {
-        if (validationError) return;
+        if (validationError && !hasInvalidRows) return;
+        if (hasInvalidRows) return;
+
         const request = previewData.map(buildParticipant);
         onConfirm(request);
     };
@@ -187,15 +222,34 @@ export const ExcelPreview = ({
                 </Alert>
             )}
 
-            {/* Other Validation Errors */}
-            {validationError && missingColumns.length === 0 && (
+            {/* Row Validation Errors */}
+            {hasInvalidRows && (
+                <Alert variant="destructive" className="mb-4">
+                    <AlertDescription>
+                        <Typography
+                            variant="text"
+                            tag="p"
+                            color="destructive"
+                            className="font-semibold"
+                        >
+                            {t("participantImport.invalidRowsFound")}
+                        </Typography>
+                        <Typography variant="text" tag="p" color="destructive" className="text-sm">
+                            {t("participantImport.invalidRowsDescription")}
+                        </Typography>
+                    </AlertDescription>
+                </Alert>
+            )}
+
+            {/* Other Validation Errors (e.g., Empty File, Parse Error) */}
+            {validationError && missingColumns.length === 0 && !hasInvalidRows && (
                 <Alert variant="destructive" className="mb-4">
                     <AlertDescription>{validationError}</AlertDescription>
                 </Alert>
             )}
 
             {/* Preview Table */}
-            {!validationError && (
+            {previewData.length > 0 && (
                 <div className="overflow-x-auto">
                     <Typography
                         variant="header"
@@ -220,18 +274,40 @@ export const ExcelPreview = ({
                             </tr>
                         </thead>
                         <tbody>
-                            {previewData.map((row, index) => (
-                                <tr key={index} className="bg-background">
-                                    {Object.values(ALL_COLUMNS).map((column) => (
-                                        <td
-                                            key={column}
-                                            className="border border-border p-2 text-sm"
-                                        >
-                                            {row[column] !== undefined ? String(row[column]) : "-"}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
+                            {previewData.map((row, index) => {
+                                const validation = rowValidations[index];
+                                const isRowInvalid = validation && !validation.isValid;
+
+                                return (
+                                    <tr
+                                        key={index}
+                                        className={`${
+                                            isRowInvalid ? "bg-destructive/50" : "bg-background"
+                                        }`}
+                                    >
+                                        {Object.values(ALL_COLUMNS).map((column) => {
+                                            const isFieldMissing =
+                                                isRowInvalid &&
+                                                validation.missingFields.includes(column);
+
+                                            return (
+                                                <td
+                                                    key={column}
+                                                    className={`border border-border p-2 text-sm text-foreground ${
+                                                        isFieldMissing
+                                                            ? "text-destructive font-bold"
+                                                            : "text-foreground"
+                                                    }`}
+                                                >
+                                                    {row[column] !== undefined && row[column] !== ""
+                                                        ? String(row[column])
+                                                        : "-"}
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -249,7 +325,10 @@ export const ExcelPreview = ({
                         {t("common.cancel")}
                     </Typography>
                 </Button>
-                <Button onClick={handleConfirm} disabled={disabled || !!validationError}>
+                <Button
+                    onClick={handleConfirm}
+                    disabled={disabled || !!validationError || hasInvalidRows}
+                >
                     <Typography
                         variant="text"
                         tag="span"

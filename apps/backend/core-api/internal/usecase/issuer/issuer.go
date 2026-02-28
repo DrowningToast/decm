@@ -1,10 +1,9 @@
 package issuer
 
 import (
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"context"
 	"decm-database/go/generated"
-
-	"apps/backend/core-api/internal/datagateway"
 )
 
 type IssuerEventViewModel struct {
@@ -28,10 +27,10 @@ type IssuerEventViewModel struct {
 }
 
 type IssuerUsecase struct {
-	IssuerDg datagateway.IssuerDataGateway
+	IssuerDg offchain_datagateway.IssuerDataGateway
 }
 
-func NewIssuerUsecase(issuerDg datagateway.IssuerDataGateway) *IssuerUsecase {
+func NewIssuerUsecase(issuerDg offchain_datagateway.IssuerDataGateway) *IssuerUsecase {
 	return &IssuerUsecase{
 		IssuerDg: issuerDg,
 	}

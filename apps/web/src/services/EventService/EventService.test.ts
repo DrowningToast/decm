@@ -176,8 +176,8 @@ describe("EventService", () => {
                 is_joined: true,
                 is_full: false,
                 registration_config: {
+                    id: "regconfig-1",
                     event_id: "event-1",
-                    event_type: EntityEventType.EventTypePrivate,
                     first_name_requirement_status: 1,
                     last_name_requirement_status: 1,
                     email_requirement_status: 1,
@@ -186,9 +186,16 @@ describe("EventService", () => {
                     address_requirement_status: 0,
                     academic_institution_requirement_status: 0,
                     academic_email_requirement_status: 0,
-                    final_call_for_registration: null,
+                    final_call_for_registration: undefined,
+                    is_identity_verification_required: false,
+                    is_registration_password_required: false,
                 },
-                event_contract: undefined,
+                event_contract: {
+                    access_manager_contract_address: "0xaccessmanager",
+                    event_contract_address: "0xeventcontract",
+                    event_id: "event-1",
+                    id: "contract-1",
+                },
             };
 
             vi.mocked(mockCoreApi.v1.getEventViewmodelById).mockResolvedValue(mockResponse);

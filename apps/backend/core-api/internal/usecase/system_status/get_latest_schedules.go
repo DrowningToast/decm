@@ -1,9 +1,8 @@
 package system_status
 
 import (
-	"context"
-
 	"apps/backend/core-api/internal/entity"
+	"context"
 )
 
 func (uc *SystemStatusUsecase) GetLatestSchedules(ctx context.Context, pageSize int32) ([]*entity.SystemStatusSchedule, error) {

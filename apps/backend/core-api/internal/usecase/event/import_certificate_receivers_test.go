@@ -1,264 +1,19 @@
 package event
 
 import (
-	"context"
-	"decm-database/go/generated"
-	"errors"
-	"testing"
-
 	"apps/backend/common/customerror"
-	"apps/backend/core-api/config"
-	"apps/backend/core-api/config/blockchain"
-	datagateway "apps/backend/core-api/internal/datagateway/event"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
+	"errors"
+	"fmt"
+	"testing"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
-
-// Mock implementations for testing
-type MockEventCertificateDataGateway struct {
-	mock.Mock
-}
-
-func (m *MockEventCertificateDataGateway) CreateEventCertificate(ctx context.Context, params datagateway.CreateEventCertificateParameters) (*entity.EventCertificate, error) {
-	args := m.Called(ctx, params)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.EventCertificate), args.Error(1)
-}
-
-func (m *MockEventCertificateDataGateway) GetEventCertificateByID(ctx context.Context, id uuid.UUID) (*entity.EventCertificate, error) {
-	args := m.Called(ctx, id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.EventCertificate), args.Error(1)
-}
-
-func (m *MockEventCertificateDataGateway) GetEventCertificateByInboxMessageID(ctx context.Context, inboxMessageID uuid.UUID) (*entity.EventCertificate, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventCertificateDataGateway) GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error) {
-	args := m.Called(ctx, eventID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]*entity.EventCertificate), args.Error(1)
-}
-
-func (m *MockEventCertificateDataGateway) GetAllEventCertificateIDsByEventID(ctx context.Context, eventID uuid.UUID) ([]uuid.UUID, error) {
-	args := m.Called(ctx, eventID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]uuid.UUID), args.Error(1)
-}
-
-func (m *MockEventCertificateDataGateway) UpdateEventCertificate(ctx context.Context, id uuid.UUID, params datagateway.UpdateEventCertificateParameters) (*entity.EventCertificate, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventCertificateDataGateway) UpdateEventCertificateInboxMessageID(ctx context.Context, id uuid.UUID, inboxMessageID uuid.UUID) (*entity.EventCertificate, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventCertificateDataGateway) DeleteEventCertificate(ctx context.Context, id uuid.UUID) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
-}
-
-func (m *MockEventCertificateDataGateway) GetClaimedCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventCertificateDataGateway) GetClaimedCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
-	return nil, errors.New("not implemented")
-}
-
-type MockEventCertificateSignatureDataGateway struct {
-	mock.Mock
-}
-
-func (m *MockEventCertificateSignatureDataGateway) CreateEventCertificateSignature(ctx context.Context, params datagateway.CreateEventCertificateSignatureParameters) (*entity.EventCertificateSignature, error) {
-	args := m.Called(ctx, params)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.EventCertificateSignature), args.Error(1)
-}
-
-func (m *MockEventCertificateSignatureDataGateway) GetEventCertificateSignatureByID(ctx context.Context, id uuid.UUID) (*entity.EventCertificateSignature, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventCertificateSignatureDataGateway) GetEventCertificateSignaturesByEventCertificateConfigID(ctx context.Context, eventCertificateConfigID uuid.UUID) ([]*entity.EventCertificateSignature, error) {
-	args := m.Called(ctx, eventCertificateConfigID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]*entity.EventCertificateSignature), args.Error(1)
-}
-
-func (m *MockEventCertificateSignatureDataGateway) UpdateEventCertificateSignature(ctx context.Context, id uuid.UUID, params datagateway.UpdateEventCertificateSignatureParameters) (*entity.EventCertificateSignature, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventCertificateSignatureDataGateway) UpdateEventCertificateIssuerSignature(ctx context.Context, id uuid.UUID, issuerSignature *string) (*entity.EventCertificateSignature, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventCertificateSignatureDataGateway) DeleteEventCertificateSignature(ctx context.Context, id uuid.UUID) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
-}
-
-type MockEventIssuerDataGateway struct {
-	mock.Mock
-}
-
-func (m *MockEventIssuerDataGateway) CreateEventIssuer(ctx context.Context, params generated.CreateEventIssuerParams) (*generated.EventIssuer, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventIssuerDataGateway) GetEventIssuerByID(ctx context.Context, id uuid.UUID) (generated.EventIssuer, error) {
-	return generated.EventIssuer{}, errors.New("not implemented")
-}
-
-func (m *MockEventIssuerDataGateway) GetEventIssuersByEventID(ctx context.Context, eventID uuid.UUID) ([]generated.EventIssuer, error) {
-	args := m.Called(ctx, eventID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]generated.EventIssuer), args.Error(1)
-}
-
-func (m *MockEventIssuerDataGateway) UpdateEventIssuer(ctx context.Context, params generated.UpdateEventIssuerParams) (*generated.EventIssuer, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventIssuerDataGateway) DeleteEventIssuer(ctx context.Context, eventID uuid.UUID) error {
-	return errors.New("not implemented")
-}
-
-func (m *MockEventIssuerDataGateway) GetEventIssuerByEventIDAndIssuerCredentialID(ctx context.Context, eventID uuid.UUID, issuerCredentialID uuid.UUID) (generated.EventIssuer, error) {
-	return generated.EventIssuer{}, errors.New("not implemented")
-}
-
-func (m *MockEventIssuerDataGateway) UpdateEventIssuerSigningStatus(ctx context.Context, eventID uuid.UUID, issuerCredentialID uuid.UUID, isSigned int32) error {
-	return errors.New("not implemented")
-}
-
-func (m *MockEventIssuerDataGateway) ResetAllEventIssuersSigningStatus(ctx context.Context, eventID uuid.UUID) error {
-	args := m.Called(ctx, eventID)
-	return args.Error(0)
-}
-
-func (m *MockEventIssuerDataGateway) AllIssuersHaveSigned(ctx context.Context, eventID uuid.UUID) (bool, error) {
-	args := m.Called(ctx, eventID)
-	return args.Bool(0), args.Error(1)
-}
-
-func (m *MockEventIssuerDataGateway) GetSignedIssuersCount(ctx context.Context, eventID uuid.UUID) (int64, error) {
-	args := m.Called(ctx, eventID)
-	return int64(args.Int(0)), args.Error(1)
-}
-
-func (m *MockEventIssuerDataGateway) GetTotalIssuersCount(ctx context.Context, eventID uuid.UUID) (int64, error) {
-	args := m.Called(ctx, eventID)
-	return int64(args.Int(0)), args.Error(1)
-}
-
-func (m *MockEventIssuerDataGateway) HasSignedIssuers(ctx context.Context, eventID uuid.UUID) (bool, error) {
-	args := m.Called(ctx, eventID)
-	return args.Bool(0), args.Error(1)
-}
-
-type MockEventCertificateConfigDataGateway struct {
-	mock.Mock
-}
-
-func (m *MockEventCertificateConfigDataGateway) CreateEventCertificateConfig(ctx context.Context, params generated.CreateEventCertificateConfigParams) (*entity.EventCertificateConfig, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventCertificateConfigDataGateway) GetEventCertificateConfigByID(ctx context.Context, id uuid.UUID) (*entity.EventCertificateConfig, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventCertificateConfigDataGateway) GetEventCertificateConfigByEventID(ctx context.Context, eventId uuid.UUID) (*entity.EventCertificateConfig, error) {
-	args := m.Called(ctx, eventId)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.EventCertificateConfig), args.Error(1)
-}
-
-func (m *MockEventCertificateConfigDataGateway) UpdateEventCertificateConfig(ctx context.Context, params generated.UpdateEventCertificateConfigParams) (*entity.EventCertificateConfig, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventCertificateConfigDataGateway) UpdateEventCertificateTextConfig(ctx context.Context, params generated.UpdateEventCertificateTextConfigParams) (*entity.EventCertificateConfig, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventCertificateConfigDataGateway) ToggleEventCertificateConfigPublished(ctx context.Context, params generated.ToggleEventCertificateConfigPublishedParams) (*entity.EventCertificateConfig, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventCertificateConfigDataGateway) DeleteEventCertificateConfig(ctx context.Context, eventID uuid.UUID) error {
-	return errors.New("not implemented")
-}
-
-type MockEventContractDataGateway struct {
-	mock.Mock
-}
-
-func (m *MockEventContractDataGateway) CreateEventContract(ctx context.Context, params generated.CreateEventContractParams) (*entity.EventContract, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *MockEventContractDataGateway) GetEventContractByEventID(ctx context.Context, eventID uuid.UUID) (*entity.EventContract, error) {
-	args := m.Called(ctx, eventID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.EventContract), args.Error(1)
-}
-
-func (m *MockEventContractDataGateway) UpdateEventContract(ctx context.Context, params generated.UpdateEventContractParams) (*entity.EventContract, error) {
-	args := m.Called(ctx, params)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*entity.EventContract), args.Error(1)
-}
-
-func (m *MockEventContractDataGateway) DeleteEventContract(ctx context.Context, eventID uuid.UUID) error {
-	return errors.New("not implemented")
-}
-
-// Helper function to create a mock config for testing
-func createMockConfigForImport() *config.Config {
-	return &config.Config{
-		Blockchain: blockchain.BlockchainConfig{
-			ChainID:                  1,
-			DecmAccessManagerAddress: "0x1234567890123456789012345678901234567890",
-		},
-	}
-}
 
 func TestImportCertificateReceivers(t *testing.T) {
 	ctx := context.Background()
@@ -274,7 +29,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
-			cfg:                        createMockConfigForImport(),
+			cfg:                        createMockConfig(),
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
@@ -305,7 +60,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
-			cfg:                        createMockConfigForImport(),
+			cfg:                        createMockConfig(),
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
@@ -332,7 +87,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: stringPtr("encrypted-key"),
+			EncryptedPrivateKey: strPtr("encrypted-key"),
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -344,7 +99,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
 			EventDataGateway:           mockEventDg,
-			cfg:                        createMockConfigForImport(),
+			cfg:                        createMockConfig(),
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
@@ -372,7 +127,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: stringPtr("encrypted-key"),
+			EncryptedPrivateKey: strPtr("encrypted-key"),
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -394,7 +149,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			AuthenticationCredentialDg: mockAuthDg,
 			EventDataGateway:           mockEventDg,
 			EventContractDataGateway:   mockEventContractDg,
-			cfg:                        createMockConfigForImport(),
+			cfg:                        createMockConfig(),
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
@@ -423,7 +178,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: stringPtr("encrypted-key"),
+			EncryptedPrivateKey: strPtr("encrypted-key"),
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -440,7 +195,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 		mockEventContractDg := new(MockEventContractDataGateway)
 		certificateAddress := "0xCertificateContractAddress"
 		eventContract := &entity.EventContract{
-			EventID:                    eventID,
+			EventId:                    eventID,
 			EventContractAddress:       "0xEventContractAddress",
 			CertificateContractAddress: &certificateAddress,
 		}
@@ -498,7 +253,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			EventCertificateDataGateway:          mockCertDg,
 			EventCertificateSignatureDataGateway: mockCertSigDg,
 			EventCertificateConfigDg:             mockCertConfigDg,
-			cfg:                                  createMockConfigForImport(),
+			cfg:                                  createMockConfig(),
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
@@ -525,7 +280,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: stringPtr("encrypted-key"),
+			EncryptedPrivateKey: strPtr("encrypted-key"),
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -542,7 +297,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 		mockEventContractDg := new(MockEventContractDataGateway)
 		certificateAddress := "0xCertificateContractAddress"
 		eventContract := &entity.EventContract{
-			EventID:                    eventID,
+			EventId:                    eventID,
 			EventContractAddress:       "0xEventContractAddress",
 			CertificateContractAddress: &certificateAddress,
 		}
@@ -563,7 +318,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			EventContractDataGateway:    mockEventContractDg,
 			EventIssuerDataGateway:      mockEventIssuerDg,
 			EventCertificateDataGateway: mockCertDg,
-			cfg:                         createMockConfigForImport(),
+			cfg:                         createMockConfig(),
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
@@ -587,7 +342,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: stringPtr("encrypted-key"),
+			EncryptedPrivateKey: strPtr("encrypted-key"),
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -604,7 +359,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 		mockEventContractDg := new(MockEventContractDataGateway)
 		certificateAddress := "0xCertificateContractAddress"
 		eventContract := &entity.EventContract{
-			EventID:                    eventID,
+			EventId:                    eventID,
 			EventContractAddress:       "0xEventContractAddress",
 			CertificateContractAddress: &certificateAddress,
 		}
@@ -649,7 +404,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			EventCertificateDataGateway:          mockCertDg,
 			EventCertificateSignatureDataGateway: mockCertSigDg,
 			EventCertificateConfigDg:             mockCertConfigDg,
-			cfg:                                  createMockConfigForImport(),
+			cfg:                                  createMockConfig(),
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
@@ -673,7 +428,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: stringPtr("encrypted-key"),
+			EncryptedPrivateKey: strPtr("encrypted-key"),
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -690,7 +445,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 		mockEventContractDg := new(MockEventContractDataGateway)
 		certificateAddress := "0xCertificateContractAddress"
 		eventContract := &entity.EventContract{
-			EventID:                    eventID,
+			EventId:                    eventID,
 			EventContractAddress:       "0xEventContractAddress",
 			CertificateContractAddress: &certificateAddress,
 		}
@@ -730,7 +485,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			EventCertificateDataGateway:          mockCertDg,
 			EventCertificateSignatureDataGateway: mockCertSigDg,
 			EventCertificateConfigDg:             mockCertConfigDg,
-			cfg:                                  createMockConfigForImport(),
+			cfg:                                  createMockConfig(),
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
@@ -761,7 +516,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		uc := &EventUsecase{
 			AuthenticationCredentialDg: mockAuthDg,
-			cfg:                        createMockConfigForImport(),
+			cfg:                        createMockConfig(),
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
@@ -780,9 +535,169 @@ func TestImportCertificateReceivers(t *testing.T) {
 		assert.Equal(t, customerror.ErrUnauthorized.Code, *customErr.Code)
 		mockAuthDg.AssertExpectations(t)
 	})
-}
 
-// Helper function to create string pointer
-func stringPtr(s string) *string {
-	return &s
+	t.Run("should fail when certificate contract deployment reverts", func(t *testing.T) {
+		// Arrange
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+		credential := &entity.AuthenticationCredential{
+			Id:                  userId,
+			IsVerifiedOrganizer: true,
+			IsVerifiedIssuer:    false,
+			EncryptedPrivateKey: strPtr("encrypted-key"),
+		}
+		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
+			Return(credential, nil)
+
+		mockEventDg := new(MockEventDataGateway)
+		event := &entity.Event{
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userId,
+		}
+		mockEventDg.On("GetEventById", ctx, eventID).
+			Return(event, nil)
+
+		mockEventContractDg := new(MockEventContractDataGateway)
+		eventContractNoAddr := &entity.EventContract{
+			EventId:                      eventID,
+			AccessManagerContractAddress: "0xAccessManager",
+			EventContractAddress:         "0xEventContract",
+			CertificateContractAddress:   nil, // No existing certificate contract
+		}
+		mockEventContractDg.On("GetEventContractByEventID", ctx, eventID).
+			Return(eventContractNoAddr, nil)
+
+		mockEventIssuerDg := new(MockEventIssuerDataGateway)
+		mockEventIssuerDg.On("ResetAllEventIssuersSigningStatus", ctx, eventID).
+			Return(nil)
+
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockCertDg.On("GetEventCertificatesByEventID", ctx, eventID).
+			Return([]*entity.EventCertificate{}, nil)
+
+		configID := uuid.New()
+		mockCertConfigDg := new(MockEventCertificateConfigDataGateway)
+		mockCertConfigDg.On("GetEventCertificateConfigByEventID", ctx, eventID).
+			Return(&entity.EventCertificateConfig{ID: configID, EventID: eventID}, nil)
+
+		mockCertSigDg := new(MockEventCertificateSignatureDataGateway)
+		mockCertSigDg.On("GetEventCertificateSignaturesByEventCertificateConfigID", ctx, configID).
+			Return([]*entity.EventCertificateSignature{}, nil)
+
+		mockBlockchainDg := new(MockBlockchainClientDataGateway)
+		mockBlockchainDg.On("GetTransactOpts", ctx).
+			Return(&bind.TransactOpts{}, nil)
+
+		deployErr := customerror.Parse(&customerror.ErrInternalServer, fmt.Errorf("transaction reverted"))
+
+		uc := &EventUsecase{
+			AuthenticationCredentialDg:           mockAuthDg,
+			EventDataGateway:                     mockEventDg,
+			EventContractDataGateway:             mockEventContractDg,
+			EventIssuerDataGateway:               mockEventIssuerDg,
+			EventCertificateDataGateway:          mockCertDg,
+			EventCertificateSignatureDataGateway: mockCertSigDg,
+			EventCertificateConfigDg:             mockCertConfigDg,
+			BlockchainClientDg:                   mockBlockchainDg,
+			cfg:                                  createMockConfig(),
+			deployCertificateContract: func(_ context.Context, _ *bind.TransactOpts, _, _ common.Address) (common.Address, error) {
+				return common.Address{}, deployErr
+			},
+		}
+
+		currentUser := &auth.JwtClaims{UserId: userId}
+		requests := []ImportCertificateReceiversRequest{
+			{Email: "test@example.com", HostPin: hostPin},
+		}
+
+		// Act
+		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, currentUser)
+
+		// Assert
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		customErr := customerror.TryParseAsCustomErr(err)
+		assert.NotNil(t, customErr)
+		assert.Equal(t, customerror.ErrInternalServer.Code, *customErr.Code)
+		mockEventContractDg.AssertExpectations(t) // UpdateEventContract must NOT have been called
+		mockBlockchainDg.AssertExpectations(t)
+	})
+
+	t.Run("should not call deployCertificateContract when certificate contract address already exists", func(t *testing.T) {
+		// Arrange
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+		credential := &entity.AuthenticationCredential{
+			Id:                  userId,
+			IsVerifiedOrganizer: true,
+			IsVerifiedIssuer:    false,
+			EncryptedPrivateKey: strPtr("encrypted-key"),
+		}
+		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
+			Return(credential, nil)
+
+		mockEventDg := new(MockEventDataGateway)
+		event := &entity.Event{
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userId,
+		}
+		mockEventDg.On("GetEventById", ctx, eventID).
+			Return(event, nil)
+
+		mockEventContractDg := new(MockEventContractDataGateway)
+		existingCertAddr := "0xExistingCertificateContract"
+		eventContractWithAddr := &entity.EventContract{
+			EventId:                      eventID,
+			AccessManagerContractAddress: "0xAccessManager",
+			EventContractAddress:         "0xEventContract",
+			CertificateContractAddress:   &existingCertAddr,
+		}
+		mockEventContractDg.On("GetEventContractByEventID", ctx, eventID).
+			Return(eventContractWithAddr, nil)
+
+		mockEventIssuerDg := new(MockEventIssuerDataGateway)
+		mockEventIssuerDg.On("ResetAllEventIssuersSigningStatus", ctx, eventID).
+			Return(nil)
+
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockCertDg.On("GetEventCertificatesByEventID", ctx, eventID).
+			Return([]*entity.EventCertificate{}, nil)
+
+		configID := uuid.New()
+		mockCertConfigDg := new(MockEventCertificateConfigDataGateway)
+		mockCertConfigDg.On("GetEventCertificateConfigByEventID", ctx, eventID).
+			Return(&entity.EventCertificateConfig{ID: configID, EventID: eventID}, nil)
+
+		mockCertSigDg := new(MockEventCertificateSignatureDataGateway)
+		mockCertSigDg.On("GetEventCertificateSignaturesByEventCertificateConfigID", ctx, configID).
+			Return([]*entity.EventCertificateSignature{}, nil)
+
+		uc := &EventUsecase{
+			AuthenticationCredentialDg:           mockAuthDg,
+			EventDataGateway:                     mockEventDg,
+			EventContractDataGateway:             mockEventContractDg,
+			EventIssuerDataGateway:               mockEventIssuerDg,
+			EventCertificateDataGateway:          mockCertDg,
+			EventCertificateSignatureDataGateway: mockCertSigDg,
+			EventCertificateConfigDg:             mockCertConfigDg,
+			cfg:                                  createMockConfig(),
+			// If called, this panics — proving it is NOT called when address already exists
+			deployCertificateContract: func(_ context.Context, _ *bind.TransactOpts, _, _ common.Address) (common.Address, error) {
+				panic("deployCertificateContract must not be called when certificate address already exists")
+			},
+		}
+
+		currentUser := &auth.JwtClaims{UserId: userId}
+		requests := []ImportCertificateReceiversRequest{
+			{Email: "test@example.com", HostPin: hostPin},
+		}
+
+		// Act — expects error from DecryptPrivateKey (fake key), but deployCertificateContract must NOT be called
+		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, currentUser)
+
+		// Assert
+		assert.Error(t, err) // Error from DecryptPrivateKey with fake key
+		assert.Nil(t, result)
+		// No panic = deployCertificateContract was never called
+	})
 }

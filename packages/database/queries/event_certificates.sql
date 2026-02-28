@@ -10,7 +10,8 @@ INSERT INTO event_certificates (
     event_contract_address,
     event_certificate_address,
     certificate_token_id,
-    certificate_digest
+    certificate_digest,
+    user_claim_signature_id
 ) VALUES (
     sqlc.arg('event_id'),
     sqlc.arg('receiver_credential_id'),
@@ -22,7 +23,8 @@ INSERT INTO event_certificates (
     sqlc.arg('event_contract_address'),
     sqlc.arg('event_certificate_address'),
     sqlc.arg('certificate_token_id'),
-    sqlc.arg('certificate_digest')
+    sqlc.arg('certificate_digest'),
+    sqlc.narg('user_claim_signature_id')
 ) RETURNING *;
 
 -- name: GetEventCertificateByID :one
@@ -43,6 +45,7 @@ SET
     event_contract_address = sqlc.arg('event_contract_address'),
     event_certificate_address = sqlc.arg('event_certificate_address'),
     certificate_token_id = sqlc.arg('certificate_token_id'),
+    user_claim_signature_id = sqlc.narg('user_claim_signature_id'),
     revoked_at = sqlc.arg('revoked_at')
 WHERE id = sqlc.arg('id')
 RETURNING *;
@@ -52,6 +55,27 @@ DELETE FROM event_certificates WHERE id = sqlc.arg('id');
 
 -- name: GetAllEventCertificateIDsByEventID :many
 SELECT id FROM event_certificates WHERE event_id = sqlc.arg('event_id');
+
+-- name: GetEventCertificateWithSignature :one
+SELECT 
+    ec.id,
+    ec.event_id,
+    ec.receiver_credential_id,
+    ec.certificate_token_id,
+    ec.user_claim_signature_id,
+    ec.created_at,
+    us.id as signature_id,
+    us.sign_message,
+    us.signature,
+    us.deadline_block,
+    us.estimated_deadline,
+    us.broadcasted_at,
+    us.created_at as signature_created_at
+FROM event_certificates ec
+LEFT JOIN user_signature us ON ec.user_claim_signature_id = us.id
+WHERE ec.event_id = sqlc.arg('event_id')
+  AND ec.receiver_credential_id = sqlc.arg('receiver_credential_id')
+  AND ec.revoked_at IS NULL;
 
 -- name: GetEventCertificateByInboxMessageID :one
 SELECT * FROM event_certificates WHERE inbox_message_id = sqlc.arg('inbox_message_id');
@@ -66,7 +90,7 @@ RETURNING *;
 SELECT ec.* 
 FROM event_certificates ec
 WHERE ec.event_id = sqlc.arg('event_id') 
-  AND ec.certificate_token_id IS NOT NULL
+  AND (ec.certificate_token_id IS NOT NULL OR ec.user_claim_signature_id IS NOT NULL)
   AND ec.revoked_at IS NULL
 ORDER BY ec.created_at DESC;
 
@@ -75,7 +99,8 @@ SELECT ec.*
 FROM event_certificates ec
 INNER JOIN event_certificate_configs ecc ON ec.event_id = ecc.event_id
 WHERE ec.event_id = sqlc.arg('event_id') 
-  AND ec.certificate_token_id IS NULL
+  AND ec.certificate_token_id IS NULL 
+  AND ec.user_claim_signature_id IS NULL
   AND ecc.is_published = TRUE
   AND ec.revoked_at IS NULL
 ORDER BY ec.created_at DESC;
@@ -95,21 +120,27 @@ SELECT
     ec.certificate_token_id,
     ec.certificate_digest,
     ec.inbox_message_id,
+    ec.user_claim_signature_id,
     ec.created_at,
     ec.revoked_at,
-    e.title as event_name
+    e.title as event_name,
+    us.broadcasted_at,
+    us.created_at as signature_created_at,
+    us.estimated_deadline,
+    us.aborted_at
 FROM event_certificates ec
 INNER JOIN events e ON ec.event_id = e.id
+LEFT JOIN user_signature us ON ec.user_claim_signature_id = us.id
 WHERE (
     ec.receiver_credential_id = sqlc.arg('receiver_credential_id')
     OR ec.receiver_email = sqlc.arg('receiver_email')
   )
-  AND ec.certificate_token_id IS NOT NULL
+  AND (ec.certificate_token_id IS NOT NULL OR ec.user_claim_signature_id IS NOT NULL)
   AND ec.revoked_at IS NULL
 ORDER BY ec.created_at DESC;
 
 -- name: GetUnclaimedReadyCertificatesByCredentialID :many
-SELECT 
+SELECT
     ec.id,
     ec.event_id,
     ec.receiver_credential_id,
@@ -123,18 +154,19 @@ SELECT
     ec.certificate_token_id,
     ec.certificate_digest,
     ec.inbox_message_id,
+    ec.user_claim_signature_id,
     ec.created_at,
     ec.revoked_at,
     e.title as event_name
 FROM event_certificates ec
 INNER JOIN event_certificate_configs ecc ON ec.event_id = ecc.event_id
 INNER JOIN events e ON ec.event_id = e.id
-INNER JOIN event_attendees ea ON ec.event_id = ea.event_id AND ea.attendee_credential_id = sqlc.arg('receiver_credential_id')
 WHERE (
     ec.receiver_credential_id = sqlc.arg('receiver_credential_id')
     OR ec.receiver_email = sqlc.arg('receiver_email')
   )
-  AND ec.certificate_token_id IS NULL
+  AND ec.certificate_token_id IS NULL 
+  AND ec.user_claim_signature_id IS NULL
   AND ecc.is_published = TRUE
   AND ec.revoked_at IS NULL
 ORDER BY ec.created_at DESC;

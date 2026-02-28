@@ -1,17 +1,16 @@
 package event
 
 import (
-	"context"
-
 	"apps/backend/core-api/internal/entity"
+	"context"
 )
 
 func (u *EventUsecase) ToEventResponse(ctx context.Context, event *entity.Event) (*EventResponse, error) {
-	bannerPresignedURL, err := u.S3Service.GetPresignedURL(ctx, event.BannerStorageKey)
+	bannerPresignedURL, err := u.S3DataGateway.GetPresignedURL(ctx, event.BannerStorageKey)
 	if err != nil {
 		return nil, err
 	}
-	iconPresignedURL, err := u.S3Service.GetPresignedURL(ctx, event.IconStorageKey)
+	iconPresignedURL, err := u.S3DataGateway.GetPresignedURL(ctx, event.IconStorageKey)
 	if err != nil {
 		return nil, err
 	}

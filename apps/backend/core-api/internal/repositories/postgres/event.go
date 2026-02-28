@@ -1,14 +1,14 @@
 package postgres
 
 import (
+	"apps/backend/common/pgerrutils"
+	"apps/backend/common/pgmapper"
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
 	"time"
 
-	"apps/backend/common/pgerrutils"
-	"apps/backend/common/pgmapper"
-	datagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
+	datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/google/uuid"
 )
@@ -185,7 +185,7 @@ func (r *Repository) GetViewModelById(ctx context.Context, id uuid.UUID) (*entit
 
 	eventContract := &entity.EventContract{
 		ID:                           result.ID_3,
-		EventID:                      result.EventID_2,
+		EventId:                      result.EventID_2,
 		AccessManagerContractAddress: result.AccessManagerContractAddress,
 		EventContractAddress:         result.EventContractAddress,
 		TicketContractAddress:        ticketContractAddress,

@@ -1,6 +1,8 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/common/validatorutils"
 	"errors"
 	"net/http"
 	"time"
@@ -9,8 +11,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 
-	"apps/backend/common/customerror"
-	"apps/backend/common/validatorutils"
 	eventUc "apps/backend/core-api/internal/usecase/event"
 )
 

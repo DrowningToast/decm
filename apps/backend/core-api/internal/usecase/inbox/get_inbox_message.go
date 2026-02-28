@@ -1,12 +1,11 @@
 package inbox
 
 import (
-	"context"
-
 	"apps/backend/common/customerror"
-	"apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
@@ -16,6 +15,8 @@ type GetInboxMessageResult struct {
 	InboxMessage                entity.InboxMessage
 	EventRegistrationInvitation *entity.EventRegistrationInvitation
 	EventAttendee               *entity.EventAttendee
+
+	UserSignature *entity.UserSignature
 
 	EventCertificate *entity.EventCertificate
 
@@ -82,7 +83,7 @@ func (uc *InboxUsecase) GetRelatedEventRegistrationInvitation(ctx context.Contex
 		return nil, nil, nil, customerror.Parse(&customerror.ErrNotFound, errors.New("event not found"))
 	}
 	// check if the invited is onboarded or not
-	targetUser, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx, datagateway.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters{
+	targetUser, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx, offchain_datagateway.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters{
 		GoogleConnectorRef: eventRegistrationInvitation.Email,
 		// TODO: Allow wallet address to be used as well
 		WalletAddress: nil,
@@ -93,15 +94,28 @@ func (uc *InboxUsecase) GetRelatedEventRegistrationInvitation(ctx context.Contex
 	if targetUser == nil {
 		return nil, nil, nil, customerror.Parse(&customerror.ErrNotFound, errors.New("target user not found"))
 	}
-	eventAttendee, err := uc.EventAttendeeDg.GetEventAttendeeByEventIdAndCredentialId(ctx, event.Id, targetUser.Id)
+	attendeeWithSignature, err := uc.EventAttendeeDg.GetEventAttendeeWithSignature(ctx, event.Id, targetUser.Id)
 	if err != nil {
 		var customError *customerror.Err
 		if errors.As(err, &customError) {
 			if *customError.Code != customerror.ErrNotFound.Code {
-				return nil, nil, nil, errors.Wrap(err, "failed to get event attendee by event id and credential id")
+				return nil, nil, nil, errors.Wrap(err, "failed to get event attendee with signature")
 			}
 		} else {
-			return nil, nil, nil, errors.Wrap(err, "failed to get event attendee by event id and credential id")
+			return nil, nil, nil, errors.Wrap(err, "failed to get event attendee with signature")
+		}
+	}
+
+	// Convert to entity.EventAttendee for return type compatibility
+	var eventAttendee *entity.EventAttendee
+	if attendeeWithSignature != nil {
+		eventAttendee = &entity.EventAttendee{
+			Id:                   attendeeWithSignature.Id,
+			EventId:              attendeeWithSignature.EventId,
+			AttendeeCredentialId: attendeeWithSignature.CredentialId,
+			WalletAddress:        attendeeWithSignature.WalletAddress,
+			IsAttendeeAccepted:   attendeeWithSignature.IsAccepted,
+			CreatedAt:            attendeeWithSignature.JoinedAt,
 		}
 	}
 	return eventRegistrationInvitation, event, eventAttendee, nil

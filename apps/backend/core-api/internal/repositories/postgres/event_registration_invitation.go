@@ -1,21 +1,21 @@
 package postgres
 
 import (
+	"apps/backend/common/pgerrutils"
+	"apps/backend/common/pgmapper"
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
 	"time"
 
-	"apps/backend/common/pgerrutils"
-	"apps/backend/common/pgmapper"
-	datagateway "apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
+	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/google/uuid"
 )
 
-var _ datagateway.EventRegistrationInvitationDataGateway = (*Repository)(nil)
+var _ event_datagateway.EventRegistrationInvitationDataGateway = (*Repository)(nil)
 
-func (r *Repository) CreateEventRegistrationInvitation(ctx context.Context, params datagateway.CreateEventRegistrationInvitationParameters) (*entity.EventRegistrationInvitation, error) {
+func (r *Repository) CreateEventRegistrationInvitation(ctx context.Context, params event_datagateway.CreateEventRegistrationInvitationParameters) (*entity.EventRegistrationInvitation, error) {
 	// Encrypt PII fields using pgmapper
 	firstNameEnc, err := pgmapper.EncryptStringPtrToPgText(params.FirstName, r.piiEncryptionKey)
 	if err != nil {
@@ -242,7 +242,7 @@ func (r *Repository) GetEventRegistrationInvitationByEventIDAndCredential(ctx co
 	}
 	params := generated.GetEventRegistrationInvitationByEventIdAndCredentialIdParams{
 		EventID:       eventId,
-		CredentialID:  pgmapper.UUIDToPgUUID(&credentialId),
+		CredentialID:  pgmapper.UUIDToPgUUID(credentialId),
 		Email:         encryptedEmail,
 		WalletAddress: pgmapper.StringPtrToPgText(walletAddress),
 	}
@@ -309,7 +309,7 @@ func (r *Repository) GetEventRegistrationInvitationByEventIDAndCredential(ctx co
 	return registrationInvitation, inboxMessage, nil
 }
 
-func (r *Repository) UpdateEventRegistrationInvitation(ctx context.Context, id uuid.UUID, params datagateway.UpdateEventRegistrationInvitationParameters) (*entity.EventRegistrationInvitation, error) {
+func (r *Repository) UpdateEventRegistrationInvitation(ctx context.Context, id uuid.UUID, params event_datagateway.UpdateEventRegistrationInvitationParameters) (*entity.EventRegistrationInvitation, error) {
 	// Encrypt PII fields using pgmapper
 	firstNameEnc, err := pgmapper.EncryptStringPtrToPgText(params.FirstName, r.piiEncryptionKey)
 	if err != nil {

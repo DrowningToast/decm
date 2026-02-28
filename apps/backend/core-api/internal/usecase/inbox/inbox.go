@@ -1,36 +1,36 @@
 package inbox
 
 import (
+	"apps/backend/common/customerror"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"strings"
 	"time"
 
-	"apps/backend/common/customerror"
-	"apps/backend/core-api/internal/datagateway"
-	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/services/auth"
+	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
 )
 
 type InboxUsecase struct {
-	AuthenticationCredentialDg    datagateway.AuthenticationCredentialDataGateway
-	InboxMessageDg                datagateway.InboxMessageDataGateway
-	EventRegistrationInvitationDg datagateway.EventRegistrationInvitationDataGateway
+	AuthenticationCredentialDg    offchain_datagateway.AuthenticationCredentialDataGateway
+	InboxMessageDg                offchain_datagateway.InboxMessageDataGateway
+	EventRegistrationInvitationDg eventdatagateway.EventRegistrationInvitationDataGateway
 	EventDg                       eventdatagateway.EventDataGateway
 	EventCertificateDg            eventdatagateway.EventCertificateDataGateway
-	EventAttendeeDg               datagateway.EventAttendeeDataGateway
+	EventAttendeeDg               eventdatagateway.EventAttendeeDataGateway
 }
 
 func NewInboxUsecase(
-	authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway,
-	inboxMessageDg datagateway.InboxMessageDataGateway,
-	eventRegistrationInvitationDg datagateway.EventRegistrationInvitationDataGateway,
+	authenticationCredentialDg offchain_datagateway.AuthenticationCredentialDataGateway,
+	inboxMessageDg offchain_datagateway.InboxMessageDataGateway,
+	eventRegistrationInvitationDg eventdatagateway.EventRegistrationInvitationDataGateway,
 	eventDg eventdatagateway.EventDataGateway,
 	eventCertificateDg eventdatagateway.EventCertificateDataGateway,
-	eventAttendeeDg datagateway.EventAttendeeDataGateway,
+	eventAttendeeDg eventdatagateway.EventAttendeeDataGateway,
 ) *InboxUsecase {
 	return &InboxUsecase{
 		AuthenticationCredentialDg:    authenticationCredentialDg,
@@ -126,21 +126,28 @@ type InboxMessagesEventRegistrationInvitationViewModel struct {
 	PhoneNumber         *string    `json:"phone_number,omitempty"`
 	AcademicInstitution *string    `json:"academic_institution,omitempty"`
 
-	AcceptedAt *time.Time `json:"accepted_at,omitempty"`
+	AcceptedAt    *time.Time `json:"accepted_at,omitempty"`
+	BroadcastedAt *time.Time `json:"broadcasted_at,omitempty"`
 
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 	CancelledAt *time.Time `json:"cancelled_at,omitempty"`
 }
 
-func (uc *InboxUsecase) ToWithEventRegistrationInvitationViewModel(ctx context.Context, inboxMessage entity.InboxMessage, eventRegistrationInvitation entity.EventRegistrationInvitation, event entity.Event, eventAttendee *entity.EventAttendee) (*InboxMessagesEventRegistrationInvitationViewModel, error) {
+func (uc *InboxUsecase) ToWithEventRegistrationInvitationViewModel(ctx context.Context, inboxMessage entity.InboxMessage, eventRegistrationInvitation entity.EventRegistrationInvitation, event entity.Event, eventAttendee *entity.EventAttendee, userSignature *entity.UserSignature) (*InboxMessagesEventRegistrationInvitationViewModel, error) {
 	inboxMessageViewModel, err := uc.ToViewModel(ctx, inboxMessage)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert inbox message to view model")
 	}
 	var acceptedAt *time.Time = nil
-	if eventAttendee != nil {
+	var broadcastedAt *time.Time = nil
+	if userSignature != nil {
+		acceptedAt = &userSignature.CreatedAt
+		broadcastedAt = userSignature.BroadcastedAt
+	} else if eventAttendee != nil {
+		// BACKWARD COMPATIBILITY: If userSignature is nil, use the event attendee created at as the accepted at and already broadcasted
 		acceptedAt = &eventAttendee.CreatedAt
+		broadcastedAt = &eventAttendee.CreatedAt
 	}
 	return &InboxMessagesEventRegistrationInvitationViewModel{
 		InboxMessagesViewModel: *inboxMessageViewModel,
@@ -156,6 +163,7 @@ func (uc *InboxUsecase) ToWithEventRegistrationInvitationViewModel(ctx context.C
 		UpdatedAt:              eventRegistrationInvitation.UpdatedAt,
 		CancelledAt:            eventRegistrationInvitation.CancelledAt,
 		AcceptedAt:             acceptedAt,
+		BroadcastedAt:          broadcastedAt,
 	}, nil
 }
 
@@ -184,10 +192,17 @@ func (uc *InboxUsecase) ToWithCertificateInvitationViewModel(ctx context.Context
 	if err != nil {
 		return nil, err
 	}
-	// check if the user has joined or not
-	eventAttendee, err := uc.EventAttendeeDg.GetEventAttendeeByEventIdAndCredentialId(ctx, eventCertificate.EventId, user.UserId)
+	// check if the user has joined or not (allow nil if user hasn't joined)
+	attendeeWithSignature, err := uc.EventAttendeeDg.GetEventAttendeeWithSignature(ctx, eventCertificate.EventId, user.UserId)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get event attendee by event id and credential id")
+		var customError *customerror.Err
+		if errors.As(err, &customError) {
+			if *customError.Code != customerror.ErrNotFound.Code {
+				return nil, errors.Wrap(err, "failed to get event attendee with signature")
+			}
+		} else {
+			return nil, err
+		}
 	}
 	return &InboxMessageCertificateInvitationViewModel{
 		InboxMessagesViewModel:    *inboxMessageViewModel,
@@ -198,7 +213,7 @@ func (uc *InboxUsecase) ToWithCertificateInvitationViewModel(ctx context.Context
 		CreatedAt:                 eventCertificate.CreatedAt,
 		RevokedAt:                 eventCertificate.RevokedAt,
 		TokenId:                   eventCertificate.CertificateTokenId,
-		HasParticipantJoinedEvent: eventAttendee != nil,
+		HasParticipantJoinedEvent: attendeeWithSignature != nil,
 	}, nil
 }
 
@@ -225,13 +240,13 @@ func (uc *InboxUsecase) ToEnrichedCertificateViewModel(ctx context.Context, inbo
 	}
 
 	// Check if the user has joined the event
-	eventAttendee, err := uc.EventAttendeeDg.GetEventAttendeeByEventIdAndCredentialId(ctx, eventCertificate.EventId, user.UserId)
+	attendeeWithSignature, err := uc.EventAttendeeDg.GetEventAttendeeWithSignature(ctx, eventCertificate.EventId, user.UserId)
 	if err != nil {
 		// If error getting attendee, assume not joined
 		hasJoined := false
 		inboxMessageViewModel.HasParticipantJoinedEvent = &hasJoined
 	} else {
-		hasJoined := eventAttendee != nil
+		hasJoined := attendeeWithSignature != nil
 		inboxMessageViewModel.HasParticipantJoinedEvent = &hasJoined
 	}
 

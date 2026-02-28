@@ -1,11 +1,10 @@
 package auth
 
 import (
+	"apps/backend/services/auth"
 	"context"
 	"testing"
 	"time"
-
-	"apps/backend/services/auth"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
@@ -16,7 +15,7 @@ import (
 func TestAuthUsecase_CheckRole_Authentication(t *testing.T) {
 	t.Run("should return true when user has valid token", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil) // nil data gateway is fine since CheckRole doesn't use it
+		uc := NewAuthUsecase(nil, nil) // nil data gateways are fine since CheckRole doesn't use them
 		ctx := context.Background()
 
 		validClaims := &auth.JwtClaims{
@@ -46,7 +45,7 @@ func TestAuthUsecase_CheckRole_Authentication(t *testing.T) {
 
 	t.Run("should return false when token is expired", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		expiredClaims := &auth.JwtClaims{
@@ -74,7 +73,7 @@ func TestAuthUsecase_CheckRole_Authentication(t *testing.T) {
 
 	t.Run("should return false when claims are nil", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		params := CheckRoleParams{
@@ -96,7 +95,7 @@ func TestAuthUsecase_CheckRole_Authentication(t *testing.T) {
 func TestAuthUsecase_CheckRole_HostRole(t *testing.T) {
 	t.Run("should return true when user is verified organizer", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		isVerifiedOrganizer := true
@@ -128,7 +127,7 @@ func TestAuthUsecase_CheckRole_HostRole(t *testing.T) {
 
 	t.Run("should return false when user is not verified organizer", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		isVerifiedOrganizer := false
@@ -158,7 +157,7 @@ func TestAuthUsecase_CheckRole_HostRole(t *testing.T) {
 
 	t.Run("should return false when IsVerifiedOrganizer is nil in claims", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		validClaims := &auth.JwtClaims{
@@ -187,7 +186,7 @@ func TestAuthUsecase_CheckRole_HostRole(t *testing.T) {
 
 	t.Run("should return false when token is expired", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		isVerifiedOrganizer := true
@@ -217,7 +216,7 @@ func TestAuthUsecase_CheckRole_HostRole(t *testing.T) {
 
 	t.Run("should return false when claims are nil", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		params := CheckRoleParams{
@@ -239,7 +238,7 @@ func TestAuthUsecase_CheckRole_HostRole(t *testing.T) {
 func TestAuthUsecase_CheckRole_IssuerRole(t *testing.T) {
 	t.Run("should return true when user is verified issuer", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		isVerifiedIssuer := true
@@ -271,7 +270,7 @@ func TestAuthUsecase_CheckRole_IssuerRole(t *testing.T) {
 
 	t.Run("should return false when user is not verified issuer", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		isVerifiedIssuer := false
@@ -301,7 +300,7 @@ func TestAuthUsecase_CheckRole_IssuerRole(t *testing.T) {
 
 	t.Run("should return false when IsVerifiedIssuer is nil in claims", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		validClaims := &auth.JwtClaims{
@@ -332,7 +331,7 @@ func TestAuthUsecase_CheckRole_IssuerRole(t *testing.T) {
 func TestAuthUsecase_CheckRole_MultipleRoles(t *testing.T) {
 	t.Run("should check all requested roles", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		isVerifiedOrganizer := true
@@ -374,7 +373,7 @@ func TestAuthUsecase_CheckRole_MultipleRoles(t *testing.T) {
 
 	t.Run("should only return requested fields", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		isVerifiedOrganizer := true
@@ -413,7 +412,7 @@ func TestAuthUsecase_CheckRole_MultipleRoles(t *testing.T) {
 
 	t.Run("should return all false when token expired and all roles requested", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		isVerifiedOrganizer := true
@@ -456,7 +455,7 @@ func TestAuthUsecase_CheckRole_MultipleRoles(t *testing.T) {
 func TestAuthUsecase_CheckRole_EdgeCases(t *testing.T) {
 	t.Run("should handle no checks requested", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		validClaims := &auth.JwtClaims{
@@ -489,7 +488,7 @@ func TestAuthUsecase_CheckRole_EdgeCases(t *testing.T) {
 
 	t.Run("should handle claims without expiration", func(t *testing.T) {
 		// Arrange
-		uc := NewAuthUsecase(nil)
+		uc := NewAuthUsecase(nil, nil)
 		ctx := context.Background()
 
 		claimsNoExpiry := &auth.JwtClaims{
@@ -519,7 +518,7 @@ func TestAuthUsecase_CheckRole_EdgeCases(t *testing.T) {
 }
 
 func TestAuthUsecase_isTokenValid(t *testing.T) {
-	uc := NewAuthUsecase(nil)
+	uc := NewAuthUsecase(nil, nil)
 
 	t.Run("should return false for nil claims", func(t *testing.T) {
 		assert.False(t, uc.isTokenValid(nil))

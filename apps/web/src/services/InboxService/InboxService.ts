@@ -53,6 +53,7 @@ export type InboxMessageDetail =
           validUntil?: Date;
           cancelledAt?: Date;
           acceptedAt?: Date;
+          broadcastedAt?: Date;
       })
     | (InboxMessage & {
           entityInboxMessageType: EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation;

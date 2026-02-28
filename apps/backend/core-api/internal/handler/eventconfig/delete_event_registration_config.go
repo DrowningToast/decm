@@ -1,12 +1,11 @@
 package eventconfig
 
 import (
+	"apps/backend/common/customerror"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-
-	"apps/backend/common/customerror"
 )
 
 // DeleteEventRegistrationConfig godoc

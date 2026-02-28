@@ -85,7 +85,7 @@ export const CertificateDetailNav = ({ className: propClassName }: CertificateDe
                 <ChevronLeft className="w-5 h-5 text-white" />
             </button>
 
-            {/* Download Button - Only show if certificate is claimed */}
+            {/* Download Button - only shown when certificate is claimed */}
             {isClaimed && (
                 <button
                     onClick={handleDownload}

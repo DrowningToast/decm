@@ -36,6 +36,31 @@ export interface CancelEventRegistrationInvitationParams {
     event_registration_invitation_id: string;
 }
 
+export interface CertificateClaimCertificateBody {
+    account_password?: string;
+    certificate_password?: string;
+    sign_message?: string;
+    signature?: string;
+}
+
+export interface CertificateClaimCertificateResponse {
+    certificate: any;
+    message: string;
+    status: string;
+    user_signature: any;
+}
+
+export interface CertificateGetClaimCertificateSignMessageResponse {
+    sign_message: string;
+}
+
+export interface CertificateGetMyCertificatesListViewModelResponse {
+    claimed_certificates: any;
+    total_claimed: number;
+    total_unclaimed: number;
+    unclaimed_certificates: any;
+}
+
 export type CheckCertificateMintReadinessData =
     CoreApiInternalHandlerEventconfigCertificateMintReadinessResponse;
 
@@ -79,7 +104,7 @@ export interface CheckRoleResponse {
     is_issuer?: boolean;
 }
 
-export type ClaimCertificateData = EntityEventCertificate;
+export type ClaimCertificateData = CertificateClaimCertificateResponse;
 
 export type ClaimCertificateError = CustomerrorErrResponse;
 
@@ -404,16 +429,20 @@ export interface EntityEventAttendee {
     last_name?: string;
     phone_number?: string;
     updated_at: string;
+    user_signature_id?: string;
     wallet_address: string;
 }
 
 export interface EntityEventCertificate {
+    aborted_at?: string;
     academic_institution?: string;
+    broadcasted_at?: string;
     certificate_digest?: string;
     certificate_subtitle?: string;
     certificate_title?: string;
     certificate_token_id?: string;
     created_at: string;
+    estimated_deadline?: string;
     event_certificate_address?: string;
     event_contract_address: string;
     event_id: string;
@@ -424,6 +453,8 @@ export interface EntityEventCertificate {
     receiver_credential_id?: string;
     receiver_email?: string;
     revoked_at?: string;
+    signature_created_at?: string;
+    user_claim_signature_id?: string;
 }
 
 export interface EntityEventRegistrationInvitation {
@@ -522,13 +553,6 @@ export interface EntitySystemStatusSchedule {
     updated_at: string;
 }
 
-export interface EventClaimCertificateBody {
-    account_password?: string;
-    certificate_password?: string;
-    sign_message?: string;
-    signature?: string;
-}
-
 export interface EventCreateEventContractRequest {
     access_manager_contract_address: string;
     certificate_contract_address: string;
@@ -601,6 +625,9 @@ export interface EventEventResponse {
 export interface EventEventViewModel {
     attendees_count: number;
     banner_presigned_url: string;
+    broadcasted_at?: string;
+    broadcasted_at_deadline_block?: number;
+    broadcasted_at_estimated_deadline?: string;
     chain_id: number;
     contact_address: string;
     contact_number: string;
@@ -619,12 +646,21 @@ export interface EventEventViewModel {
     is_public: boolean;
     is_ticket_transferable: boolean;
     is_verified: boolean;
+    joined_at?: string;
+    joined_is_accepted?: boolean;
+    joined_sign_message?: string;
+    /**
+     * JoinedTxBroadcasted            *bool      `json:"joined_tx_broadcasted,omitempty"`
+     * JoinedBroadcastedAt            *time.Time `json:"joined_broadcasted_at,omitempty"`
+     */
+    joined_signature?: string;
     location: string;
     long_description: string;
     max_attendees: number;
     owner_credential_id: string;
     registration_config: EventRegistrationConfigResponse;
     short_description: string;
+    signature_expired_at?: string;
     start_date: string;
     title: string;
     updated_at: string;
@@ -637,23 +673,12 @@ export interface EventGetCertificatesListViewModelResponse {
     unclaimed_certificates: any;
 }
 
-export interface EventGetClaimCertificateSignMessageResponse {
-    sign_message: string;
-}
-
 export interface EventGetEventCertificatesResponse {
     certificates: EntityEventCertificate[];
 }
 
 export interface EventGetEventListResponse {
     events: EntityEvent[];
-}
-
-export interface EventGetMyCertificatesListViewModelResponse {
-    claimed_certificates: any;
-    total_claimed: number;
-    total_unclaimed: number;
-    unclaimed_certificates: any;
 }
 
 export interface EventImportCertificateReceiverRequest {
@@ -867,7 +892,7 @@ export interface GetCertificatesListViewmodelParams {
     eventId: string;
 }
 
-export type GetClaimCertificateSignMessageData = EventGetClaimCertificateSignMessageResponse;
+export type GetClaimCertificateSignMessageData = CertificateGetClaimCertificateSignMessageResponse;
 
 export type GetClaimCertificateSignMessageError = CustomerrorErrResponse;
 
@@ -903,6 +928,15 @@ export type GetEventCertificateFontFamiliesData =
     EventconfigGetEventCertificateFontFamiliesResponse;
 
 export type GetEventCertificateFontFamiliesError = CustomerrorErrResponse;
+
+export type GetEventCertificateTemplateData = string;
+
+export type GetEventCertificateTemplateError = CustomerrorErrResponse;
+
+export interface GetEventCertificateTemplateParams {
+    /** Event ID */
+    eventId: string;
+}
 
 export type GetEventCertificatesData = EventGetEventCertificatesResponse;
 
@@ -1092,7 +1126,7 @@ export interface GetLatestSchedulesParams {
     page_size: number;
 }
 
-export type GetMyCertificatesListViewmodelData = EventGetMyCertificatesListViewModelResponse;
+export type GetMyCertificatesListViewmodelData = CertificateGetMyCertificatesListViewModelResponse;
 
 export type GetMyCertificatesListViewmodelError = CustomerrorErrResponse;
 
@@ -1181,6 +1215,7 @@ export interface InboxInboxMessageCertificateInvitationViewModel {
 export interface InboxInboxMessagesEventRegistrationInvitationViewModel {
     academic_institution?: string;
     accepted_at?: string;
+    broadcasted_at?: string;
     cancelled_at?: string;
     certificate_id?: string;
     certificate_title?: string;
@@ -2062,7 +2097,7 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Claim a certificate using account password or wallet signature (requires authentication)
+         * @description Queue a certificate claim using account password or wallet signature (requires authentication). The certificate will be minted asynchronously.
          *
          * @tags Certificates
          * @name ClaimCertificate
@@ -2072,7 +2107,7 @@ export class Api<SecurityDataType extends unknown> {
          */
         claimCertificate: (
             { certificateId, ...query }: ClaimCertificateParams,
-            claimCertificateBody: EventClaimCertificateBody,
+            claimCertificateBody: CertificateClaimCertificateBody,
             params: RequestParams = {},
         ) =>
             this.http.request<ClaimCertificateData, ClaimCertificateError>({
@@ -2694,6 +2729,24 @@ export class Api<SecurityDataType extends unknown> {
                 body: request,
                 type: ContentType.Json,
                 format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Proxy the base certificate SVG template from storage so the frontend can access it without CORS restrictions from presigned URLs. Accessible by the event owner or issuers assigned to the event.
+         *
+         * @name GetEventCertificateTemplate
+         * @summary Get event certificate template SVG
+         * @request GET:/api/v1/events/{event_id}/config/certificate/template
+         */
+        getEventCertificateTemplate: (
+            { eventId, ...query }: GetEventCertificateTemplateParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetEventCertificateTemplateData, GetEventCertificateTemplateError>({
+                path: `/api/v1/events/${eventId}/config/certificate/template`,
+                method: "GET",
+                format: "blob",
                 ...params,
             }),
 

@@ -1,12 +1,11 @@
 package auth
 
 import (
+	"apps/backend/common"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
-
-	"apps/backend/common"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -215,12 +214,3 @@ func stringPtr(s string) *string {
 func boolPtr(b bool) *bool {
 	return &b
 }
-
-
-
-
-
-
-
-
-

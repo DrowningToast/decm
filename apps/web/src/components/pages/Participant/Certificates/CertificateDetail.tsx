@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { useCertificateDetailUsecase } from "./useCertificateDetailUsecase";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
-import { CircleCheckBig, Award, Loader2 } from "lucide-react";
+import { CircleCheckBig, Award, Loader2, UserPlus, CircleX } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
@@ -11,19 +11,23 @@ import { useClaimCertificate } from "@/hooks/useClaimCertificate";
 import { useCertificateImage } from "@/hooks/useCertificateImage";
 import { useCertificateDetailNavStore } from "@/components/BottomNav/stores/certificates";
 import { EthExplorerLink } from "@/components/common/EthscanLink";
+import { useEvent } from "@/hooks/events/useEvent";
 
 interface CertificateDetailProps {
     certificateId: string;
 }
 
 export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { certificate, formattedDate, isLoading, isError } =
         useCertificateDetailUsecase(certificateId);
     const { mutateAsync: openPasswordPrompt } = usePasswordPrompt();
     const { claimCertificate, isClaiming } = useClaimCertificate();
     const [isProcessing, setIsProcessing] = useState(false);
     const { setImageUrl } = useCertificateDetailNavStore();
+
+    // Fetch event details to check if user has joined
+    const { event, isLoadingEvent } = useEvent(certificate?.eventId || "");
 
     // Fetch certificate image with authentication
     const {
@@ -87,7 +91,28 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
     };
 
     const isCertificateClaimed = certificate?.status === "completed";
-    const canClaimCertificate = !isCertificateClaimed && !isClaiming && !isProcessing;
+    const isCertificateQueued = certificate?.status === "queued";
+    const isCertificateExpired = certificate?.status === "expired";
+    const isCertificateAborted = certificate?.status === "aborted";
+    const canClaimCertificate =
+        !isCertificateClaimed &&
+        !isCertificateQueued &&
+        !isCertificateExpired &&
+        !isClaiming &&
+        !isProcessing;
+
+    const formattedDeadline = certificate?.estimatedDeadline
+        ? new Date(certificate.estimatedDeadline).toLocaleDateString(
+              i18n.language === "th" ? "th-TH" : "en-US",
+              {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+              },
+          )
+        : undefined;
 
     // Loading state
     if (isLoading) {
@@ -357,39 +382,166 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                     </div>
                 )}
 
-                {/* Claim Certificate Button - Only show if not claimed yet */}
-                {!isCertificateClaimed && (
+                {/* Queued Status — minting in progress */}
+                {isCertificateQueued && (
+                    <div className="p-4 rounded-lg bg-muted/20 border border-muted/40">
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="muted"
+                                    className="text-sm font-medium"
+                                >
+                                    {t(
+                                        "participant.certificates.queued",
+                                        "Certificate minting in progress...",
+                                    )}
+                                </Typography>
+                            </div>
+                            {formattedDeadline && (
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="muted"
+                                    className="text-xs text-center"
+                                >
+                                    {t(
+                                        "participant.certificates.mintingBy",
+                                        "Expected on blockchain by {{deadline}}",
+                                        { deadline: formattedDeadline },
+                                    )}
+                                </Typography>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Expired Status — minting deadline passed without broadcast */}
+                {isCertificateExpired && (
+                    <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                        <div className="flex items-center gap-2 justify-center">
+                            <CircleX className="w-5 h-5 text-destructive" />
+                            <Typography
+                                variant="text"
+                                tag="p"
+                                color="muted"
+                                className="text-sm font-medium text-destructive"
+                            >
+                                {t(
+                                    "participant.certificates.claimExpired",
+                                    "Certificate claim expired",
+                                )}
+                            </Typography>
+                        </div>
+                    </div>
+                )}
+
+                {/* Aborted Status — claim was aborted (e.g. not joined on-chain at the time) */}
+                {isCertificateAborted && (
+                    <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="flex items-center gap-2">
+                                <CircleX className="w-5 h-5 text-destructive" />
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="muted"
+                                    className="text-sm font-medium text-destructive"
+                                >
+                                    {t(
+                                        "participant.certificates.claimAborted",
+                                        "Certificate claim could not be processed",
+                                    )}
+                                </Typography>
+                            </div>
+                            <Typography
+                                variant="text"
+                                tag="p"
+                                color="muted"
+                                className="text-xs text-center"
+                            >
+                                {t(
+                                    "participant.certificates.claimAbortedDescription",
+                                    "This claim was cancelled because you have not joined the event on the blockchain. Please ensure you have joined the event and try claiming again.",
+                                )}
+                            </Typography>
+                        </div>
+                    </div>
+                )}
+
+                {/* Claim / Retry Certificate Button */}
+                {!isCertificateClaimed && !isCertificateQueued && !isCertificateExpired && (
                     <div className="mt-6">
-                        <Button
-                            variant="primary"
-                            size="lg"
-                            className="w-full"
-                            onClick={handleClaimCertificate}
-                            disabled={!canClaimCertificate}
-                        >
-                            {isClaiming || isProcessing ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                    {t("participant.certificates.claiming", "Claiming...")}
-                                </>
-                            ) : (
-                                <>
-                                    <Award className="w-5 h-5" />
-                                    {t("participant.certificates.claimButton", "Claim Certificate")}
-                                </>
-                            )}
-                        </Button>
-                        <Typography
-                            variant="text"
-                            tag="p"
-                            color="muted"
-                            className="text-xs text-center mt-2"
-                        >
-                            {t(
-                                "participant.certificates.claimNote",
-                                "Sign this certificate to add it to your blockchain credentials",
-                            )}
-                        </Typography>
+                        {/* Check if user has joined the event */}
+                        {!isLoadingEvent && event && !event.isJoined ? (
+                            <>
+                                <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mb-4">
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        color="foreground"
+                                        className="text-sm text-center"
+                                    >
+                                        {t(
+                                            "participant.certificates.mustJoinEventFirst",
+                                            "You need to join this event as a participant before claiming the certificate",
+                                        )}
+                                    </Typography>
+                                </div>
+                                <Link to={`/app/events/${certificate.eventId}`}>
+                                    <Button variant="primary" size="lg" className="w-full">
+                                        <UserPlus className="w-5 h-5" />
+                                        {t(
+                                            "participant.certificates.goToEvent",
+                                            "Go to Event Page",
+                                        )}
+                                    </Button>
+                                </Link>
+                            </>
+                        ) : (
+                            <>
+                                <Button
+                                    variant="primary"
+                                    size="lg"
+                                    className="w-full"
+                                    onClick={handleClaimCertificate}
+                                    disabled={!canClaimCertificate || isLoadingEvent}
+                                >
+                                    {isClaiming || isProcessing ? (
+                                        <>
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                            {t("participant.certificates.claiming", "Claiming...")}
+                                        </>
+                                    ) : isCertificateAborted ? (
+                                        <>
+                                            <Award className="w-5 h-5" />
+                                            {t("participant.certificates.retryClaimButton", "Retry Claim")}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Award className="w-5 h-5" />
+                                            {t(
+                                                "participant.certificates.claimButton",
+                                                "Claim Certificate",
+                                            )}
+                                        </>
+                                    )}
+                                </Button>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="muted"
+                                    className="text-xs text-center mt-2"
+                                >
+                                    {t(
+                                        "participant.certificates.claimNote",
+                                        "Sign this certificate to add it to your blockchain credentials",
+                                    )}
+                                </Typography>
+                            </>
+                        )}
                     </div>
                 )}
 

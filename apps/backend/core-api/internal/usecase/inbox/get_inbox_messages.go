@@ -1,11 +1,10 @@
 package inbox
 
 import (
-	"context"
-
-	"apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
 
 	"github.com/google/uuid"
 )
@@ -20,7 +19,7 @@ func (uc *InboxUsecase) GetInboxMessagesByCredentailID(ctx context.Context, cred
 		return nil, err
 	}
 
-	return uc.InboxMessageDg.GetInboxMessagesByCredentialID(ctx, datagateway.GetInboxMessagesByCredentialIDParameters{
+	return uc.InboxMessageDg.GetInboxMessagesByCredentialID(ctx, offchain_datagateway.GetInboxMessagesByCredentialIDParameters{
 		CredentialID:          credentialID,
 		ReceiverEmail:         authenticationCredential.GoogleConnectorRef,
 		ReceiverWalletAddress: &authenticationCredential.WalletAddress,

@@ -1,6 +1,11 @@
 package oauth
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/common/metrics"
+	"apps/backend/common/utils"
+	"apps/backend/core-api/config"
+	"apps/backend/services/log"
 	"context"
 	"crypto/rand"
 	"encoding/base64"
@@ -11,11 +16,6 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
-
-	"apps/backend/common/customerror"
-	"apps/backend/common/log"
-	"apps/backend/common/utils"
-	"apps/backend/core-api/config"
 
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"golang.org/x/oauth2"
@@ -92,7 +92,7 @@ func NewGoogleOAuthService() *GoogleOAuthService {
 		googleConfig: googleConfig,
 		SessionStore: sessionStore,
 		httpClient:   httpClient,
-		logger:       log.LoadLogger(),
+		logger:       log.Logger, // Use singleton logger
 	}
 }
 
@@ -106,12 +106,26 @@ func generateState() (string, error) {
 }
 
 func (s *GoogleOAuthService) getUserDataFromGoogle(ctx context.Context, code string) (*oauth2.Token, error) {
+	start := time.Now()
+	operation := "token_exchange"
+
 	// Use code to get token and get user info from Google.
 	token, err := s.googleConfig.Exchange(ctx, code)
+
+	duration := time.Since(start).Seconds()
+	status := "success"
+
 	if err != nil {
+		status = "error"
+		metrics.GoogleOAuthOperationsTotal.WithLabelValues(operation, status).Inc()
+		metrics.GoogleOAuthOperationDuration.WithLabelValues(operation, status).Observe(duration)
+
 		s.logger.Error("Code exchange wrong: %s", slog.String("error", err.Error()))
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("code exchange wrong: %s"))
 	}
+
+	metrics.GoogleOAuthOperationsTotal.WithLabelValues(operation, status).Inc()
+	metrics.GoogleOAuthOperationDuration.WithLabelValues(operation, status).Observe(duration)
 
 	return token, nil
 }
@@ -179,6 +193,9 @@ func (s *GoogleOAuthService) validateToken(token *oauth2.Token) error {
 
 // getUserInfoFromGoogle fetches user information using OAuth2 client
 func (s *GoogleOAuthService) GetUserInfo(ctx context.Context, token *oauth2.Token) (*OAuthUser, error) {
+	start := time.Now()
+	operation := "get_user_info"
+
 	// Validate token first
 	if err := s.validateToken(token); err != nil {
 		s.logger.Warn("Invalid token: %v", slog.String("error", err.Error()))
@@ -190,11 +207,24 @@ func (s *GoogleOAuthService) GetUserInfo(ctx context.Context, token *oauth2.Toke
 
 	// Make request to Google's userinfo endpoint
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
+
+	duration := time.Since(start).Seconds()
+
 	if err != nil {
+		metrics.GoogleOAuthOperationsTotal.WithLabelValues(operation, "error").Inc()
+		metrics.GoogleOAuthOperationDuration.WithLabelValues(operation, "error").Observe(duration)
+
 		s.logger.Warn("Failed to get user info: %v", slog.String("error", err.Error()))
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("failed to get user info"))
 	}
 	defer func() { _ = resp.Body.Close() }()
+
+	status := "success"
+	if resp.StatusCode >= 400 {
+		status = "error"
+	}
+	metrics.GoogleOAuthOperationsTotal.WithLabelValues(operation, status).Inc()
+	metrics.GoogleOAuthOperationDuration.WithLabelValues(operation, status).Observe(duration)
 
 	// Read response body
 	body, err := io.ReadAll(resp.Body)

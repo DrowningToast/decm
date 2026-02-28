@@ -1,19 +1,20 @@
 package main
 
 import (
+	"apps/backend/core-api/config"
+	blockchain_repo "apps/backend/core-api/internal/repositories/contract/blockchain"
 	"context"
 	"fmt"
 	"log"
 
-	"apps/backend/core-api/config"
-	"apps/backend/core-api/internal/usecase/cyptoutils"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 func main() {
 	cfg := config.LoadConfig()
 
 	// 2. Connect to Ethereum Client
-	client, err := cyptoutils.GetEthereumClient()
+	client, err := ethclient.Dial(cfg.Blockchain.RPCURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to blockchain: %v", err)
 	}
@@ -25,7 +26,8 @@ func main() {
 
 	// 3. Fetch Gas Price Info
 	ctx := context.Background()
-	gasInfo, err := cyptoutils.GetCurrentGasPrice(ctx, client)
+	blockchainRepo := blockchain_repo.NewBlockchainClientRepository(client, &cfg.Blockchain)
+	gasInfo, err := blockchainRepo.GetGasPrice(ctx)
 	if err != nil {
 		log.Fatalf("Failed to fetch gas price: %v", err)
 	}

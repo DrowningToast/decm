@@ -1,10 +1,9 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
 	"context"
 	"fmt"
-
-	"apps/backend/common/customerror"
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"

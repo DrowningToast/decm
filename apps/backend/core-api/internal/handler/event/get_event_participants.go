@@ -1,6 +1,7 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
 	"context"
 	"errors"
 	"net/http"
@@ -8,8 +9,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-
-	"apps/backend/common/customerror"
 )
 
 type EventParticipantResponse struct {

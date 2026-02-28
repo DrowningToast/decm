@@ -11,6 +11,8 @@ export interface InboxItem {
     sender: string;
     date: string;
     isRead: boolean;
+    eventName?: string;
+    certificateTitle?: string;
 }
 
 const formatDate = (date: Date): string => {
@@ -24,17 +26,24 @@ const formatDate = (date: Date): string => {
 const getMessageTitle = (
     messageType: InboxMessageType,
     t: ReturnType<typeof useTranslation>["t"],
+    eventName?: string,
+    certificateTitle?: string,
 ): string => {
     switch (messageType) {
         case "event_registration_invitation":
             return t(
-                "participant.inbox.messageType.eventRegistrationInvitation",
-                "Event Registration Invitation",
+                "participant.inbox.messageType.eventRegistrationInvitationWithEvent",
+                "Event Registration Invitation: {{eventName}}",
+                { eventName: eventName ?? t("common.notAvailable") },
             );
         case "event_certificate_invitation":
             return t(
-                "participant.inbox.messageType.certificateInvitation",
-                "Certificate Invitation",
+                "participant.inbox.messageType.certificateInvitationWithDetails",
+                "Certificate Invitation: {{certificateTitle}} from {{eventName}}",
+                {
+                    certificateTitle: certificateTitle ?? t("common.notAvailable"),
+                    eventName: eventName ?? t("common.notAvailable"),
+                },
             );
         case "general":
         default:
@@ -48,10 +57,12 @@ const mapInboxMessageToInboxItem = (
 ): InboxItem => {
     return {
         id: message.id,
-        title: getMessageTitle(message.messageType, t),
+        title: getMessageTitle(message.messageType, t, message.eventName, message.certificateTitle),
         sender: message.senderCredentialEmail ?? message.senderCredentialWalletAddress ?? "Unknown",
         date: formatDate(message.createdAt),
         isRead: message.isRead,
+        eventName: message.eventName,
+        certificateTitle: message.certificateTitle,
     };
 };
 
@@ -62,20 +73,9 @@ export const useInboxListUsecase = () => {
     // Fetch inbox messages from API
     const { data: apiMessages, isLoading, error } = useInboxMessages();
 
-    // Filter out certificate invitations from events the user hasn't joined yet
+    // Show all messages regardless of event participation status
     const filteredMessages = useMemo(() => {
-        return apiMessages.filter((message) => {
-            // For certificate invitation messages, only show if user has joined the event
-            if (message.messageType === "event_certificate_invitation") {
-                const hasJoined = message.hasParticipantJoinedEvent === true;
-
-                // Filter out if: user has NOT joined the event
-                if (!hasJoined) {
-                    return false;
-                }
-            }
-            return true;
-        });
+        return apiMessages;
     }, [apiMessages]);
 
     // Transform API response to match InboxItem interface

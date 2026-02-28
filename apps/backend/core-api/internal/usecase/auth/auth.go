@@ -1,23 +1,25 @@
 package auth
 
 import (
-	"context"
-	"time"
-
-	"apps/backend/core-api/internal/datagateway"
+	blockchainclient_datagateway "apps/backend/core-api/internal/datagateway/onchain/blockchain_client"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 type AuthUsecase struct {
-	AuthenticationCredentialDg datagateway.AuthenticationCredentialDataGateway
+	AuthenticationCredentialDg offchain_datagateway.AuthenticationCredentialDataGateway
+	BlockchainClientDg         blockchainclient_datagateway.BlockchainClientDataGateway
 }
 
-func NewAuthUsecase(authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway) *AuthUsecase {
+func NewAuthUsecase(authenticationCredentialDg offchain_datagateway.AuthenticationCredentialDataGateway, blockchainClientDg blockchainclient_datagateway.BlockchainClientDataGateway) *AuthUsecase {
 	return &AuthUsecase{
 		AuthenticationCredentialDg: authenticationCredentialDg,
+		BlockchainClientDg:         blockchainClientDg,
 	}
 }
 

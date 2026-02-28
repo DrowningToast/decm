@@ -1,22 +1,22 @@
 package postgres
 
 import (
+	"apps/backend/common/pgerrutils"
+	"apps/backend/common/pgmapper"
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
 	"strings"
 
-	"apps/backend/common/pgerrutils"
-	"apps/backend/common/pgmapper"
-	datagateway "apps/backend/core-api/internal/datagateway"
-	"apps/backend/core-api/internal/entity"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-var _ datagateway.InboxMessageDataGateway = (*Repository)(nil)
+var _ offchain_datagateway.InboxMessageDataGateway = (*Repository)(nil)
 
-func (r *Repository) CreateInboxMessage(ctx context.Context, params datagateway.CreateInboxMessageParameters) (*entity.InboxMessage, error) {
+func (r *Repository) CreateInboxMessage(ctx context.Context, params offchain_datagateway.CreateInboxMessageParameters) (*entity.InboxMessage, error) {
 	// Encrypt PII field (receiver_email)
 	encryptedEmail, err := pgmapper.EncryptStringPtrToPgText(&params.ReceiverEmail, r.piiEncryptionKey)
 	if err != nil {
@@ -29,8 +29,8 @@ func (r *Repository) CreateInboxMessage(ctx context.Context, params datagateway.
 
 	// Create inbox message
 	result, err := r.queries.CreateInboxMessage(ctx, generated.CreateInboxMessageParams{
-		SenderCredentialID:     pgmapper.UUIDToPgUUID(params.SenderCredentialID),
-		ReceiverCredentialID:   pgmapper.UUIDToPgUUID(params.ReceiverCredentialID),
+		SenderCredentialID:     pgmapper.UUIDPtrToPgUUID(params.SenderCredentialID),
+		ReceiverCredentialID:   pgmapper.UUIDPtrToPgUUID(params.ReceiverCredentialID),
 		ReceiverEmail:          encryptedEmail,
 		MessageType:            int32(params.MessageType),
 		MessageContent:         messageContent,
@@ -100,7 +100,7 @@ func (r *Repository) GetInboxMessageByID(ctx context.Context, id uuid.UUID) (*en
 	}, nil
 }
 
-func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
+func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
 	var err error
 	var encryptedReceiverEmail pgtype.Text
 	receiverEmail := params.ReceiverEmail
@@ -123,7 +123,7 @@ func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params 
 	}
 
 	results, err := r.queries.GetInboxMessagesByCredentialID(ctx, generated.GetInboxMessagesByCredentialIDParams{
-		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(&params.CredentialID),
+		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(params.CredentialID),
 		ReceiverEmail:         encryptedReceiverEmail,
 		ReceiverWalletAddress: encryptedReceiverWalletAddress,
 	})
@@ -159,7 +159,7 @@ func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params 
 	return messages, nil
 }
 
-func (r *Repository) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
+func (r *Repository) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
 	var err error
 	var encryptedReceiverEmail pgtype.Text
 	receiverEmail := params.ReceiverEmail
@@ -182,7 +182,7 @@ func (r *Repository) GetUnreadInboxMessageCountByCredentialID(ctx context.Contex
 	}
 
 	count, err := r.queries.GetUnreadInboxMessageCountByCredentialID(ctx, generated.GetUnreadInboxMessageCountByCredentialIDParams{
-		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(&params.CredentialID),
+		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(params.CredentialID),
 		ReceiverEmail:         encryptedReceiverEmail,
 		ReceiverWalletAddress: encryptedReceiverWalletAddress,
 	})
@@ -357,7 +357,7 @@ func (r *Repository) UpdateInboxMessageReadStatus(ctx context.Context, id uuid.U
 }
 
 func (r *Repository) UpdateInboxMessageReadStatusAll(ctx context.Context, credentialID uuid.UUID) ([]*entity.InboxMessage, error) {
-	results, err := r.queries.UpdateInboxMessageReadStatusAll(ctx, pgmapper.UUIDToPgUUID(&credentialID))
+	results, err := r.queries.UpdateInboxMessageReadStatusAll(ctx, pgmapper.UUIDToPgUUID(credentialID))
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
 	}

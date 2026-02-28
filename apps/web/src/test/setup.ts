@@ -8,6 +8,76 @@ afterEach(() => {
     cleanup();
 });
 
+// Mock localStorage with full Storage interface implementation
+const localStorageMock: Storage = (() => {
+    let store: Record<string, string> = {};
+
+    return {
+        getItem: (key: string) => store[key] || null,
+        setItem: (key: string, value: string) => {
+            store[key] = value.toString();
+        },
+        removeItem: (key: string) => {
+            delete store[key];
+        },
+        clear: () => {
+            store = {};
+        },
+        key: (index: number) => {
+            const keys = Object.keys(store);
+            return keys[index] || null;
+        },
+        get length() {
+            return Object.keys(store).length;
+        },
+    };
+})();
+
+Object.defineProperty(global, "localStorage", {
+    value: localStorageMock,
+    writable: true,
+});
+
+Object.defineProperty(window, "localStorage", {
+    value: localStorageMock,
+    writable: true,
+});
+
+// Mock sessionStorage with the same implementation
+const sessionStorageMock: Storage = (() => {
+    let store: Record<string, string> = {};
+
+    return {
+        getItem: (key: string) => store[key] || null,
+        setItem: (key: string, value: string) => {
+            store[key] = value.toString();
+        },
+        removeItem: (key: string) => {
+            delete store[key];
+        },
+        clear: () => {
+            store = {};
+        },
+        key: (index: number) => {
+            const keys = Object.keys(store);
+            return keys[index] || null;
+        },
+        get length() {
+            return Object.keys(store).length;
+        },
+    };
+})();
+
+Object.defineProperty(global, "sessionStorage", {
+    value: sessionStorageMock,
+    writable: true,
+});
+
+Object.defineProperty(window, "sessionStorage", {
+    value: sessionStorageMock,
+    writable: true,
+});
+
 // Mock environment variables
 vi.stubEnv("VITE_CORE_BACKEND_API", "http://localhost:8080");
 vi.stubEnv("VITE_WALLETCONNECT_PROJECT_ID", "test-walletconnect-project-id");
@@ -110,6 +180,9 @@ vi.mock("lucide-react", () => {
         "ArrowRight",
         "PartyPopper",
         "AlertCircle",
+        "CircleCheck",
+        "Download",
+        "Send",
     ];
 
     const iconMocks: Record<string, unknown> = {};

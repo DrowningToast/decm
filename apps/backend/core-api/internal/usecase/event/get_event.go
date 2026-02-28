@@ -1,13 +1,12 @@
 package event
 
 import (
-	"context"
-	"log/slog"
-	"time"
-
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
+	"log/slog"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
@@ -74,6 +73,16 @@ type EventViewModel struct {
 	IsInvited bool `json:"is_invited"`
 	IsJoined  bool `json:"is_joined,omitempty"`
 	IsFull    bool `json:"is_full"`
+	// JoinedTxBroadcasted            *bool      `json:"joined_tx_broadcasted,omitempty"`
+	// JoinedBroadcastedAt            *time.Time `json:"joined_broadcasted_at,omitempty"`
+	JoinedSignature                *string    `json:"joined_signature,omitempty"`
+	JoinedSignMessage              *string    `json:"joined_sign_message,omitempty"`
+	JoinedAt                       *time.Time `json:"joined_at,omitempty"`
+	JoinedIsAccepted               *bool      `json:"joined_is_accepted,omitempty"`
+	BroadcastedAtEstimatedDeadline *time.Time `json:"broadcasted_at_estimated_deadline,omitempty"`
+	BroadcastedAtDeadlineBlock     *int32     `json:"broadcasted_at_deadline_block,omitempty"`
+	BroadcastedAt                  *time.Time `json:"broadcasted_at,omitempty"`
+	SignatureExpiredAt             *time.Time `json:"signature_expired_at,omitempty"`
 }
 
 func (u *EventUsecase) ListEventsByOwnerCredentialID(ctx context.Context, ownerCredentialID uuid.UUID, limitCount int32, offsetCount int32) ([]*entity.Event, error) {
@@ -106,6 +115,14 @@ func (u *EventUsecase) GetEventViewModelByEventId(ctx context.Context, eventId u
 
 	isInvited := false
 	isJoined := false
+	var joinedSignature *string
+	var joinedSignMessage *string
+	var joinedAt *time.Time
+	var joinedIsAccepted *bool
+	var broadcastedAtEstimatedDeadline *time.Time
+	var broadcastedAtDeadlineBlock *int32
+	var broadcastedAt *time.Time
+	var signatureExpiredAt *time.Time
 
 	invitation, _, err := u.EventRegistrationInvitationDg.GetEventRegistrationInvitationByEventIDAndCredential(ctx, eventId, currentUser.UserId, email, &walletAddress)
 	if err != nil {
@@ -122,19 +139,27 @@ func (u *EventUsecase) GetEventViewModelByEventId(ctx context.Context, eventId u
 	}
 	// check if user is invited to the event, checks if the user is joined or not
 	if isInvited {
-		attendee, err := u.EventAttendeeDg.GetEventAttendeeByEventIdAndCredentialId(ctx, eventId, currentUser.UserId)
+		joinStatus, err := u.IsUserJoined(ctx, eventId, currentUser.UserId)
 		if err != nil {
 			var customError *customerror.Err
 			if errors.As(err, &customError) {
 				if *customError.Code != customerror.ErrNotFound.Code {
-					return nil, errors.Wrap(err, "failed to get event attendee by event id and credential id")
+					return nil, errors.Wrap(err, "failed to check if user joined event")
 				}
 			} else {
 				return nil, err
 			}
 		}
-		if attendee != nil {
+		if joinStatus != nil {
 			isJoined = true
+			joinedSignature = &joinStatus.Signature
+			joinedSignMessage = &joinStatus.SignMessage
+			joinedAt = &joinStatus.JoinedAt
+			joinedIsAccepted = &joinStatus.IsAccepted
+			broadcastedAtEstimatedDeadline = joinStatus.EstimatedDeadline
+			broadcastedAtDeadlineBlock = joinStatus.DeadlineBlock
+			broadcastedAt = joinStatus.BroadcastedAt
+			signatureExpiredAt = joinStatus.SignatureExpiredAt
 		}
 	}
 
@@ -166,7 +191,7 @@ func (u *EventUsecase) GetEventViewModelByEventId(ctx context.Context, eventId u
 	// Convert EventContract to response format
 	eventContractResponse := EventContractResponse{
 		ID:                           eventContract.ID,
-		EventID:                      eventContract.EventID,
+		EventID:                      eventContract.EventId,
 		AccessManagerContractAddress: eventContract.AccessManagerContractAddress,
 		EventContractAddress:         eventContract.EventContractAddress,
 		TicketContractAddress:        eventContract.TicketContractAddress,
@@ -174,12 +199,20 @@ func (u *EventUsecase) GetEventViewModelByEventId(ctx context.Context, eventId u
 	}
 
 	return &EventViewModel{
-		EventResponse:      *eventResponse,
-		RegistrationConfig: registrationConfigResponse,
-		EventContract:      eventContractResponse,
-		IsInvited:          isInvited,
-		IsJoined:           isJoined,
-		IsFull:             event.MaxAttendees > 0 && event.AttendeesCount >= event.MaxAttendees,
+		EventResponse:                  *eventResponse,
+		RegistrationConfig:             registrationConfigResponse,
+		EventContract:                  eventContractResponse,
+		IsInvited:                      isInvited,
+		IsJoined:                       isJoined,
+		IsFull:                         event.MaxAttendees > 0 && event.AttendeesCount >= event.MaxAttendees,
+		JoinedSignature:                joinedSignature,
+		JoinedSignMessage:              joinedSignMessage,
+		JoinedAt:                       joinedAt,
+		JoinedIsAccepted:               joinedIsAccepted,
+		BroadcastedAtEstimatedDeadline: broadcastedAtEstimatedDeadline,
+		BroadcastedAtDeadlineBlock:     broadcastedAtDeadlineBlock,
+		BroadcastedAt:                  broadcastedAt,
+		SignatureExpiredAt:             signatureExpiredAt,
 	}, nil
 }
 

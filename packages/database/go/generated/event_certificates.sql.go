@@ -24,7 +24,8 @@ INSERT INTO event_certificates (
     event_contract_address,
     event_certificate_address,
     certificate_token_id,
-    certificate_digest
+    certificate_digest,
+    user_claim_signature_id
 ) VALUES (
     $1,
     $2,
@@ -36,8 +37,9 @@ INSERT INTO event_certificates (
     $8,
     $9,
     $10,
-    $11
-) RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id
+    $11,
+    $12
+) RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id, user_claim_signature_id
 `
 
 type CreateEventCertificateParams struct {
@@ -52,6 +54,7 @@ type CreateEventCertificateParams struct {
 	EventCertificateAddress pgtype.Text `json:"event_certificate_address"`
 	CertificateTokenID      pgtype.Text `json:"certificate_token_id"`
 	CertificateDigest       pgtype.Text `json:"certificate_digest"`
+	UserClaimSignatureID    pgtype.UUID `json:"user_claim_signature_id"`
 }
 
 func (q *Queries) CreateEventCertificate(ctx context.Context, arg CreateEventCertificateParams) (EventCertificate, error) {
@@ -67,6 +70,7 @@ func (q *Queries) CreateEventCertificate(ctx context.Context, arg CreateEventCer
 		arg.EventCertificateAddress,
 		arg.CertificateTokenID,
 		arg.CertificateDigest,
+		arg.UserClaimSignatureID,
 	)
 	var i EventCertificate
 	err := row.Scan(
@@ -85,6 +89,7 @@ func (q *Queries) CreateEventCertificate(ctx context.Context, arg CreateEventCer
 		&i.CreatedAt,
 		&i.RevokedAt,
 		&i.InboxMessageID,
+		&i.UserClaimSignatureID,
 	)
 	return i, err
 }
@@ -137,16 +142,22 @@ SELECT
     ec.certificate_token_id,
     ec.certificate_digest,
     ec.inbox_message_id,
+    ec.user_claim_signature_id,
     ec.created_at,
     ec.revoked_at,
-    e.title as event_name
+    e.title as event_name,
+    us.broadcasted_at,
+    us.created_at as signature_created_at,
+    us.estimated_deadline,
+    us.aborted_at
 FROM event_certificates ec
 INNER JOIN events e ON ec.event_id = e.id
+LEFT JOIN user_signature us ON ec.user_claim_signature_id = us.id
 WHERE (
     ec.receiver_credential_id = $1
     OR ec.receiver_email = $2
   )
-  AND ec.certificate_token_id IS NOT NULL
+  AND (ec.certificate_token_id IS NOT NULL OR ec.user_claim_signature_id IS NOT NULL)
   AND ec.revoked_at IS NULL
 ORDER BY ec.created_at DESC
 `
@@ -170,9 +181,14 @@ type GetClaimedCertificatesByCredentialIDRow struct {
 	CertificateTokenID      pgtype.Text        `json:"certificate_token_id"`
 	CertificateDigest       pgtype.Text        `json:"certificate_digest"`
 	InboxMessageID          pgtype.UUID        `json:"inbox_message_id"`
+	UserClaimSignatureID    pgtype.UUID        `json:"user_claim_signature_id"`
 	CreatedAt               pgtype.Timestamptz `json:"created_at"`
 	RevokedAt               pgtype.Timestamptz `json:"revoked_at"`
 	EventName               string             `json:"event_name"`
+	BroadcastedAt           pgtype.Timestamptz `json:"broadcasted_at"`
+	SignatureCreatedAt      pgtype.Timestamptz `json:"signature_created_at"`
+	EstimatedDeadline       pgtype.Timestamptz `json:"estimated_deadline"`
+	AbortedAt               pgtype.Timestamptz `json:"aborted_at"`
 }
 
 func (q *Queries) GetClaimedCertificatesByCredentialID(ctx context.Context, arg GetClaimedCertificatesByCredentialIDParams) ([]GetClaimedCertificatesByCredentialIDRow, error) {
@@ -198,9 +214,14 @@ func (q *Queries) GetClaimedCertificatesByCredentialID(ctx context.Context, arg 
 			&i.CertificateTokenID,
 			&i.CertificateDigest,
 			&i.InboxMessageID,
+			&i.UserClaimSignatureID,
 			&i.CreatedAt,
 			&i.RevokedAt,
 			&i.EventName,
+			&i.BroadcastedAt,
+			&i.SignatureCreatedAt,
+			&i.EstimatedDeadline,
+			&i.AbortedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -213,10 +234,10 @@ func (q *Queries) GetClaimedCertificatesByCredentialID(ctx context.Context, arg 
 }
 
 const GetClaimedCertificatesByEventID = `-- name: GetClaimedCertificatesByEventID :many
-SELECT ec.id, ec.event_id, ec.receiver_credential_id, ec.receiver_email, ec.name, ec.academic_institution, ec.certificate_title, ec.certificate_subtitle, ec.event_contract_address, ec.event_certificate_address, ec.certificate_token_id, ec.certificate_digest, ec.created_at, ec.revoked_at, ec.inbox_message_id 
+SELECT ec.id, ec.event_id, ec.receiver_credential_id, ec.receiver_email, ec.name, ec.academic_institution, ec.certificate_title, ec.certificate_subtitle, ec.event_contract_address, ec.event_certificate_address, ec.certificate_token_id, ec.certificate_digest, ec.created_at, ec.revoked_at, ec.inbox_message_id, ec.user_claim_signature_id 
 FROM event_certificates ec
 WHERE ec.event_id = $1 
-  AND ec.certificate_token_id IS NOT NULL
+  AND (ec.certificate_token_id IS NOT NULL OR ec.user_claim_signature_id IS NOT NULL)
   AND ec.revoked_at IS NULL
 ORDER BY ec.created_at DESC
 `
@@ -246,6 +267,7 @@ func (q *Queries) GetClaimedCertificatesByEventID(ctx context.Context, eventID u
 			&i.CreatedAt,
 			&i.RevokedAt,
 			&i.InboxMessageID,
+			&i.UserClaimSignatureID,
 		); err != nil {
 			return nil, err
 		}
@@ -258,7 +280,7 @@ func (q *Queries) GetClaimedCertificatesByEventID(ctx context.Context, eventID u
 }
 
 const GetEventCertificateByID = `-- name: GetEventCertificateByID :one
-SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id FROM event_certificates WHERE id = $1
+SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id, user_claim_signature_id FROM event_certificates WHERE id = $1
 `
 
 func (q *Queries) GetEventCertificateByID(ctx context.Context, id uuid.UUID) (EventCertificate, error) {
@@ -280,12 +302,13 @@ func (q *Queries) GetEventCertificateByID(ctx context.Context, id uuid.UUID) (Ev
 		&i.CreatedAt,
 		&i.RevokedAt,
 		&i.InboxMessageID,
+		&i.UserClaimSignatureID,
 	)
 	return i, err
 }
 
 const GetEventCertificateByInboxMessageID = `-- name: GetEventCertificateByInboxMessageID :one
-SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id FROM event_certificates WHERE inbox_message_id = $1
+SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id, user_claim_signature_id FROM event_certificates WHERE inbox_message_id = $1
 `
 
 func (q *Queries) GetEventCertificateByInboxMessageID(ctx context.Context, inboxMessageID pgtype.UUID) (EventCertificate, error) {
@@ -307,12 +330,77 @@ func (q *Queries) GetEventCertificateByInboxMessageID(ctx context.Context, inbox
 		&i.CreatedAt,
 		&i.RevokedAt,
 		&i.InboxMessageID,
+		&i.UserClaimSignatureID,
+	)
+	return i, err
+}
+
+const GetEventCertificateWithSignature = `-- name: GetEventCertificateWithSignature :one
+SELECT 
+    ec.id,
+    ec.event_id,
+    ec.receiver_credential_id,
+    ec.certificate_token_id,
+    ec.user_claim_signature_id,
+    ec.created_at,
+    us.id as signature_id,
+    us.sign_message,
+    us.signature,
+    us.deadline_block,
+    us.estimated_deadline,
+    us.broadcasted_at,
+    us.created_at as signature_created_at
+FROM event_certificates ec
+LEFT JOIN user_signature us ON ec.user_claim_signature_id = us.id
+WHERE ec.event_id = $1
+  AND ec.receiver_credential_id = $2
+  AND ec.revoked_at IS NULL
+`
+
+type GetEventCertificateWithSignatureParams struct {
+	EventID              uuid.UUID   `json:"event_id"`
+	ReceiverCredentialID pgtype.UUID `json:"receiver_credential_id"`
+}
+
+type GetEventCertificateWithSignatureRow struct {
+	ID                   uuid.UUID          `json:"id"`
+	EventID              uuid.UUID          `json:"event_id"`
+	ReceiverCredentialID pgtype.UUID        `json:"receiver_credential_id"`
+	CertificateTokenID   pgtype.Text        `json:"certificate_token_id"`
+	UserClaimSignatureID pgtype.UUID        `json:"user_claim_signature_id"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	SignatureID          pgtype.UUID        `json:"signature_id"`
+	SignMessage          pgtype.Text        `json:"sign_message"`
+	Signature            pgtype.Text        `json:"signature"`
+	DeadlineBlock        pgtype.Int4        `json:"deadline_block"`
+	EstimatedDeadline    pgtype.Timestamptz `json:"estimated_deadline"`
+	BroadcastedAt        pgtype.Timestamptz `json:"broadcasted_at"`
+	SignatureCreatedAt   pgtype.Timestamptz `json:"signature_created_at"`
+}
+
+func (q *Queries) GetEventCertificateWithSignature(ctx context.Context, arg GetEventCertificateWithSignatureParams) (GetEventCertificateWithSignatureRow, error) {
+	row := q.db.QueryRow(ctx, GetEventCertificateWithSignature, arg.EventID, arg.ReceiverCredentialID)
+	var i GetEventCertificateWithSignatureRow
+	err := row.Scan(
+		&i.ID,
+		&i.EventID,
+		&i.ReceiverCredentialID,
+		&i.CertificateTokenID,
+		&i.UserClaimSignatureID,
+		&i.CreatedAt,
+		&i.SignatureID,
+		&i.SignMessage,
+		&i.Signature,
+		&i.DeadlineBlock,
+		&i.EstimatedDeadline,
+		&i.BroadcastedAt,
+		&i.SignatureCreatedAt,
 	)
 	return i, err
 }
 
 const GetEventCertificatesByEventID = `-- name: GetEventCertificatesByEventID :many
-SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id FROM event_certificates WHERE event_id = $1 AND revoked_at IS NULL
+SELECT id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id, user_claim_signature_id FROM event_certificates WHERE event_id = $1 AND revoked_at IS NULL
 `
 
 func (q *Queries) GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error) {
@@ -340,6 +428,7 @@ func (q *Queries) GetEventCertificatesByEventID(ctx context.Context, eventID uui
 			&i.CreatedAt,
 			&i.RevokedAt,
 			&i.InboxMessageID,
+			&i.UserClaimSignatureID,
 		); err != nil {
 			return nil, err
 		}
@@ -352,7 +441,7 @@ func (q *Queries) GetEventCertificatesByEventID(ctx context.Context, eventID uui
 }
 
 const GetUnclaimedReadyCertificatesByCredentialID = `-- name: GetUnclaimedReadyCertificatesByCredentialID :many
-SELECT 
+SELECT
     ec.id,
     ec.event_id,
     ec.receiver_credential_id,
@@ -366,25 +455,26 @@ SELECT
     ec.certificate_token_id,
     ec.certificate_digest,
     ec.inbox_message_id,
+    ec.user_claim_signature_id,
     ec.created_at,
     ec.revoked_at,
     e.title as event_name
 FROM event_certificates ec
 INNER JOIN event_certificate_configs ecc ON ec.event_id = ecc.event_id
 INNER JOIN events e ON ec.event_id = e.id
-INNER JOIN event_attendees ea ON ec.event_id = ea.event_id AND ea.attendee_credential_id = $1
 WHERE (
     ec.receiver_credential_id = $1
     OR ec.receiver_email = $2
   )
-  AND ec.certificate_token_id IS NULL
+  AND ec.certificate_token_id IS NULL 
+  AND ec.user_claim_signature_id IS NULL
   AND ecc.is_published = TRUE
   AND ec.revoked_at IS NULL
 ORDER BY ec.created_at DESC
 `
 
 type GetUnclaimedReadyCertificatesByCredentialIDParams struct {
-	ReceiverCredentialID uuid.UUID   `json:"receiver_credential_id"`
+	ReceiverCredentialID pgtype.UUID `json:"receiver_credential_id"`
 	ReceiverEmail        pgtype.Text `json:"receiver_email"`
 }
 
@@ -402,6 +492,7 @@ type GetUnclaimedReadyCertificatesByCredentialIDRow struct {
 	CertificateTokenID      pgtype.Text        `json:"certificate_token_id"`
 	CertificateDigest       pgtype.Text        `json:"certificate_digest"`
 	InboxMessageID          pgtype.UUID        `json:"inbox_message_id"`
+	UserClaimSignatureID    pgtype.UUID        `json:"user_claim_signature_id"`
 	CreatedAt               pgtype.Timestamptz `json:"created_at"`
 	RevokedAt               pgtype.Timestamptz `json:"revoked_at"`
 	EventName               string             `json:"event_name"`
@@ -430,6 +521,7 @@ func (q *Queries) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Contex
 			&i.CertificateTokenID,
 			&i.CertificateDigest,
 			&i.InboxMessageID,
+			&i.UserClaimSignatureID,
 			&i.CreatedAt,
 			&i.RevokedAt,
 			&i.EventName,
@@ -445,11 +537,12 @@ func (q *Queries) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Contex
 }
 
 const GetUnclaimedReadyCertificatesByEventID = `-- name: GetUnclaimedReadyCertificatesByEventID :many
-SELECT ec.id, ec.event_id, ec.receiver_credential_id, ec.receiver_email, ec.name, ec.academic_institution, ec.certificate_title, ec.certificate_subtitle, ec.event_contract_address, ec.event_certificate_address, ec.certificate_token_id, ec.certificate_digest, ec.created_at, ec.revoked_at, ec.inbox_message_id 
+SELECT ec.id, ec.event_id, ec.receiver_credential_id, ec.receiver_email, ec.name, ec.academic_institution, ec.certificate_title, ec.certificate_subtitle, ec.event_contract_address, ec.event_certificate_address, ec.certificate_token_id, ec.certificate_digest, ec.created_at, ec.revoked_at, ec.inbox_message_id, ec.user_claim_signature_id 
 FROM event_certificates ec
 INNER JOIN event_certificate_configs ecc ON ec.event_id = ecc.event_id
 WHERE ec.event_id = $1 
-  AND ec.certificate_token_id IS NULL
+  AND ec.certificate_token_id IS NULL 
+  AND ec.user_claim_signature_id IS NULL
   AND ecc.is_published = TRUE
   AND ec.revoked_at IS NULL
 ORDER BY ec.created_at DESC
@@ -480,6 +573,7 @@ func (q *Queries) GetUnclaimedReadyCertificatesByEventID(ctx context.Context, ev
 			&i.CreatedAt,
 			&i.RevokedAt,
 			&i.InboxMessageID,
+			&i.UserClaimSignatureID,
 		); err != nil {
 			return nil, err
 		}
@@ -503,9 +597,10 @@ SET
     event_contract_address = $7,
     event_certificate_address = $8,
     certificate_token_id = $9,
-    revoked_at = $10
-WHERE id = $11
-RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id
+    user_claim_signature_id = $10,
+    revoked_at = $11
+WHERE id = $12
+RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id, user_claim_signature_id
 `
 
 type UpdateEventCertificateParams struct {
@@ -518,6 +613,7 @@ type UpdateEventCertificateParams struct {
 	EventContractAddress    pgtype.Text        `json:"event_contract_address"`
 	EventCertificateAddress pgtype.Text        `json:"event_certificate_address"`
 	CertificateTokenID      pgtype.Text        `json:"certificate_token_id"`
+	UserClaimSignatureID    pgtype.UUID        `json:"user_claim_signature_id"`
 	RevokedAt               pgtype.Timestamptz `json:"revoked_at"`
 	ID                      uuid.UUID          `json:"id"`
 }
@@ -533,6 +629,7 @@ func (q *Queries) UpdateEventCertificate(ctx context.Context, arg UpdateEventCer
 		arg.EventContractAddress,
 		arg.EventCertificateAddress,
 		arg.CertificateTokenID,
+		arg.UserClaimSignatureID,
 		arg.RevokedAt,
 		arg.ID,
 	)
@@ -553,6 +650,7 @@ func (q *Queries) UpdateEventCertificate(ctx context.Context, arg UpdateEventCer
 		&i.CreatedAt,
 		&i.RevokedAt,
 		&i.InboxMessageID,
+		&i.UserClaimSignatureID,
 	)
 	return i, err
 }
@@ -561,7 +659,7 @@ const UpdateEventCertificateInboxMessageID = `-- name: UpdateEventCertificateInb
 UPDATE event_certificates
 SET inbox_message_id = $1
 WHERE id = $2
-RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id
+RETURNING id, event_id, receiver_credential_id, receiver_email, name, academic_institution, certificate_title, certificate_subtitle, event_contract_address, event_certificate_address, certificate_token_id, certificate_digest, created_at, revoked_at, inbox_message_id, user_claim_signature_id
 `
 
 type UpdateEventCertificateInboxMessageIDParams struct {
@@ -588,6 +686,7 @@ func (q *Queries) UpdateEventCertificateInboxMessageID(ctx context.Context, arg 
 		&i.CreatedAt,
 		&i.RevokedAt,
 		&i.InboxMessageID,
+		&i.UserClaimSignatureID,
 	)
 	return i, err
 }

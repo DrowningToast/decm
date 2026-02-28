@@ -1,9 +1,8 @@
 package event
 
 import (
-	"testing"
-
 	"apps/backend/core-api/internal/usecase/cyptoutils"
+	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"

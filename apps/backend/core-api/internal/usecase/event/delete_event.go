@@ -1,18 +1,21 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
 	"errors"
+	"fmt"
 	"math/big"
 
-	"apps/backend/common/customerror"
 	eventContract "apps/backend/contracts/event"
-	"apps/backend/core-api/internal/entity"
+
 	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
-	"apps/backend/services/auth"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/google/uuid"
 )
 
@@ -41,13 +44,7 @@ func (uc *EventUsecase) DeleteEvent(ctx context.Context, id uuid.UUID, currentUs
 		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("event contract not found"))
 	}
 
-	client, err := cyptoutils.GetEthereumClient()
-	if err != nil {
-		return nil, err
-	}
-	defer client.Close()
-
-	auth, err := cyptoutils.GetKeyedTransactor(ctx, client)
+	transactor, err := uc.BlockchainClientDg.GetTransactOpts(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -60,12 +57,12 @@ func (uc *EventUsecase) DeleteEvent(ctx context.Context, id uuid.UUID, currentUs
 		return nil, err
 	}
 
-	instance, err := eventContract.NewEvent(eventContractAddress, client)
+	instance, err := eventContract.NewEvent(eventContractAddress, uc.ethClient)
 	if err != nil {
 		return nil, err
 	}
 
-	calculatedDeadlineBlock, err := cyptoutils.GetCalculatedDeadlineBlock(client)
+	calculatedDeadlineBlock, err := uc.BlockchainClientDg.GetCalculatedDeadlineBlock(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +79,7 @@ func (uc *EventUsecase) DeleteEvent(ctx context.Context, id uuid.UUID, currentUs
 	}
 
 	tx, err := instance.UpdateEvent(
-		auth,
+		transactor,
 		dbEvent.Title,
 		dbEvent.LongDescription,
 		big.NewInt(int64(dbEvent.MaxAttendees)),
@@ -94,9 +91,12 @@ func (uc *EventUsecase) DeleteEvent(ctx context.Context, id uuid.UUID, currentUs
 		return nil, err
 	}
 
-	_, err = bind.WaitMined(ctx, client, tx)
+	receipt, err := bind.WaitMined(ctx, uc.ethClient, tx)
 	if err != nil {
 		return nil, err
+	}
+	if receipt.Status != types.ReceiptStatusSuccessful {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, fmt.Errorf("transaction reverted (tx=%s)", tx.Hash().Hex()))
 	}
 
 	_, err = uc.EventDataGateway.DeleteEvent(ctx, id)

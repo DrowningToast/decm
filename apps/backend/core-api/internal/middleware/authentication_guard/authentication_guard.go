@@ -1,10 +1,9 @@
 package authenticationguard
 
 import (
-	"errors"
-
 	"apps/backend/common/customerror"
 	"apps/backend/services/auth"
+	"errors"
 
 	"github.com/gofiber/fiber/v2"
 )

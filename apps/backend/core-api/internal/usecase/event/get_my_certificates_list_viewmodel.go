@@ -1,20 +1,34 @@
 package event
 
 import (
-	"context"
-
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
+	"context"
+	"time"
 
 	"github.com/cockroachdb/errors"
 )
 
+type ClaimCertificateStatus string
+
+var (
+	ClaimCertificateStatusPending ClaimCertificateStatus = "PENDING"
+	ClaimCertificateStatusClaimed ClaimCertificateStatus = "CLAIMED"
+	ClaimCertificateStatusExpired ClaimCertificateStatus = "EXPIRED"
+	ClaimCertificateStatusAborted ClaimCertificateStatus = "ABORTED"
+)
+
+type ClaimedCertificateViewModel struct {
+	entity.EventCertificate
+	Status ClaimCertificateStatus `json:"status"`
+}
+
 // MyCertificatesListViewModel represents current user's certificates separated by claimed status
 type MyCertificatesListViewModel struct {
-	ClaimedCertificates   []*entity.EventCertificate `json:"claimed_certificates"`
-	UnclaimedCertificates []*entity.EventCertificate `json:"unclaimed_certificates"`
-	TotalClaimed          int                        `json:"total_claimed"`
-	TotalUnclaimed        int                        `json:"total_unclaimed"`
+	ClaimedCertificates   []*ClaimedCertificateViewModel `json:"claimed_certificates"`
+	UnclaimedCertificates []*entity.EventCertificate     `json:"unclaimed_certificates"`
+	TotalClaimed          int                            `json:"total_claimed"`
+	TotalUnclaimed        int                            `json:"total_unclaimed"`
 }
 
 // GetMyCertificatesListViewModel retrieves current user's certificates separated by claimed/unclaimed status
@@ -28,6 +42,21 @@ func (uc *EventUsecase) GetMyCertificatesListViewModel(ctx context.Context, curr
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get claimed certificates")
 	}
+	claimedCertificateViewModels := make([]*ClaimedCertificateViewModel, len(claimedCertificates))
+	for i, certificate := range claimedCertificates {
+		status := ClaimCertificateStatusPending
+		if certificate.CertificateTokenId != nil || certificate.BroadcastedAt != nil {
+			status = ClaimCertificateStatusClaimed
+		} else if certificate.AbortedAt != nil {
+			status = ClaimCertificateStatusAborted
+		} else if certificate.EstimatedDeadline != nil && certificate.EstimatedDeadline.Before(time.Now()) {
+			status = ClaimCertificateStatusExpired
+		}
+		claimedCertificateViewModels[i] = &ClaimedCertificateViewModel{
+			EventCertificate: *certificate,
+			Status:           status,
+		}
+	}
 
 	// Get unclaimed ready certificates for current user (token_id IS NULL and config is published)
 	// Query by both credential_id and email to catch certificates assigned before user registration
@@ -37,9 +66,9 @@ func (uc *EventUsecase) GetMyCertificatesListViewModel(ctx context.Context, curr
 	}
 
 	return &MyCertificatesListViewModel{
-		ClaimedCertificates:   claimedCertificates,
+		ClaimedCertificates:   claimedCertificateViewModels,
 		UnclaimedCertificates: unclaimedCertificates,
-		TotalClaimed:          len(claimedCertificates),
+		TotalClaimed:          len(claimedCertificateViewModels),
 		TotalUnclaimed:        len(unclaimedCertificates),
 	}, nil
 }

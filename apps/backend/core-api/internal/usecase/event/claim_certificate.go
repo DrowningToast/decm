@@ -1,6 +1,11 @@
 package event
 
 import (
+	"apps/backend/common/customerror"
+	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/core-api/internal/usecase/cyptoutils"
+	"apps/backend/services/auth"
 	"context"
 	"crypto/ecdsa"
 	"encoding/json"
@@ -9,12 +14,6 @@ import (
 	"math/big"
 	"strings"
 
-	"apps/backend/common/customerror"
-	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
-	"apps/backend/core-api/internal/entity"
-	"apps/backend/core-api/internal/usecase/cyptoutils"
-	"apps/backend/services/auth"
-
 	"github.com/cockroachdb/errors"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -22,7 +21,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/google/uuid"
 
 	certificateContract "apps/backend/contracts/certificate"
@@ -44,10 +42,10 @@ type ClaimCertificatePayload struct {
 // returns raw string, then message hash
 // CRITICAL: walletAddress parameter should be the address derived from the user's private key,
 // NOT from the JWT claims, to ensure cryptographic consistency
-func (uc *EventUsecase) GetClaimCertificateSignMessage(ctx context.Context, client *ethclient.Client, walletAddress common.Address, currentUser auth.JwtClaims, certificateContractAddress common.Address, deadlineBlock *uint64) (*string, *common.Hash, error) {
+func (uc *EventUsecase) GetClaimCertificateSignMessage(ctx context.Context, walletAddress common.Address, currentUser auth.JwtClaims, certificateContractAddress common.Address, deadlineBlock *uint64) (*string, *common.Hash, error) {
 	// Validation
 	if deadlineBlock == nil {
-		calculatedDeadlineBlock, err := cyptoutils.GetCalculatedDeadlineBlock(client)
+		calculatedDeadlineBlock, err := uc.BlockchainClientDg.GetCalculatedDeadlineBlock(ctx)
 		if err != nil {
 			return nil, nil, errors.Wrap(err, "failed to get calculated deadline block")
 		}
@@ -111,90 +109,91 @@ func (uc *EventUsecase) CheckClaimEligibility(ctx context.Context, certificate *
 	return nil
 }
 
-func (uc *EventUsecase) ClaimCertificateWithPin(ctx context.Context, client *ethclient.Client, currentUser *auth.JwtClaims, certificateId uuid.UUID, password string) (*entity.EventCertificate, error) {
+func (uc *EventUsecase) ClaimCertificateWithPin(ctx context.Context, currentUser *auth.JwtClaims, certificateId uuid.UUID, password string) (*entity.EventCertificate, *entity.UserSignature, error) {
 	if currentUser == nil {
-		return nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
+		return nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
 	}
 
 	// Get certificate
 	certificate, err := uc.EventCertificateDataGateway.GetEventCertificateByID(ctx, certificateId)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 	if certificate == nil {
-		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New(string(ClaimCertificateUserErrorCertificateNotFound)))
+		return nil, nil, customerror.Parse(&customerror.ErrNotFound, errors.New(string(ClaimCertificateUserErrorCertificateNotFound)))
 	}
 
 	// Check eligibility (includes published check, not claimed check, revocation check, and user match)
 	if err := uc.CheckClaimEligibility(ctx, certificate, currentUser); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// CRITICAL FIX: Get the actual wallet address derived from the private key
 	// instead of using currentUser.WalletAddress from JWT claims
 	credential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx, currentUser.UserId)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 	if credential == nil || credential.EncryptedPrivateKey == nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("encrypted private key not found"))
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("encrypted private key not found"))
 	}
 
 	// Decrypt to get the address that cryptographically matches the private key
 	privateKey, participantAddress, err := cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, password)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("invalid password or failed to decrypt private key"))
+		return nil, nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("invalid password or failed to decrypt private key"))
 	}
 
-	deadlineBlock, err := cyptoutils.GetCalculatedDeadlineBlock(client)
+	deadlineBlock, err := uc.BlockchainClientDg.GetCalculatedDeadlineBlock(ctx)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	// Use the derived address from the private key, NOT the JWT address
 	signMessage, err := cyptoutils.GetSignMessage(*participantAddress, common.HexToAddress(*certificate.EventCertificateAddress), deadlineBlock)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	// Sign the message directly with the decrypted private key
 	messageHash := cyptoutils.HashEthereumMessage(signMessage)
 	signature, err := cyptoutils.Sign(messageHash.Bytes(), privateKey)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 
 	// Derive public key from private key for ECIES encryption
 	participantPublicKey, err := cyptoutils.GetPublicKeyFromPrivateKey(privateKey)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to derive public key"))
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to derive public key"))
 	}
 
-	return uc.claimCertificate(ctx, client, currentUser, certificate, signature, signMessage, participantAddress, participantPublicKey)
+	// Queue certificate claim instead of claiming directly
+	return uc.queueCertificateClaim(ctx, currentUser, certificate, signature, signMessage, participantAddress, participantPublicKey)
 }
 
-func (uc *EventUsecase) ClaimCertificateWithSignature(ctx context.Context, client *ethclient.Client, currentUser *auth.JwtClaims, certificateId uuid.UUID, signature []byte, signMessage string) (*entity.EventCertificate, error) {
+func (uc *EventUsecase) ClaimCertificateWithSignature(ctx context.Context, currentUser *auth.JwtClaims, certificateId uuid.UUID, signature []byte, signMessage string) (*entity.EventCertificate, *entity.UserSignature, error) {
 	if currentUser == nil {
-		return nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
+		return nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
 	}
 
 	// Get certificate
 	certificate, err := uc.EventCertificateDataGateway.GetEventCertificateByID(ctx, certificateId)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 	if certificate == nil {
-		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New(string(ClaimCertificateUserErrorCertificateNotFound)))
+		return nil, nil, customerror.Parse(&customerror.ErrNotFound, errors.New(string(ClaimCertificateUserErrorCertificateNotFound)))
 	}
 
 	// CRITICAL FIX: Get the actual wallet address derived from the private key
 	// The signature verification must use the address that actually signed the message
 	credential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx, currentUser.UserId)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 	}
 	if credential == nil || credential.WalletAddress == "" {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("wallet address not found"))
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, errors.New("wallet address not found"))
 	}
 
 	// Use the wallet address from the credential (which is derived from the private key)
@@ -203,14 +202,14 @@ func (uc *EventUsecase) ClaimCertificateWithSignature(ctx context.Context, clien
 	// validate original sign message
 	deadlineBlock, err := cyptoutils.ExtractDeadlineBlockFromSignMessage(signMessage)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to extract deadline block from sign message")
+		return nil, nil, errors.Wrap(err, "failed to extract deadline block from sign message")
 	}
 	isValid, err := cyptoutils.ValidateSignMessage(signMessage, participantAddress, common.HexToAddress(*certificate.EventCertificateAddress), deadlineBlock)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to validate sign message")
+		return nil, nil, errors.Wrap(err, "failed to validate sign message")
 	}
 	if !isValid {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("sign message is not valid"))
+		return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("sign message is not valid"))
 	}
 	messageHash := cyptoutils.HashEthereumMessage(signMessage)
 
@@ -222,15 +221,15 @@ func (uc *EventUsecase) ClaimCertificateWithSignature(ctx context.Context, clien
 	// check if the signature matches the sign message or not (using copy)
 	isValidHash, err := cyptoutils.VerifySignatureByDigest(participantAddress, messageHash, signatureCopy)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to verify signature by digest")
+		return nil, nil, errors.Wrap(err, "failed to verify signature by digest")
 	}
 	if !isValidHash {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("signature does not match the sign message"))
+		return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("signature does not match the sign message"))
 	}
 
 	// Check eligibility (includes published check, not claimed check, revocation check, and user match)
 	if err := uc.CheckClaimEligibility(ctx, certificate, currentUser); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// WALLET EXTENSION FLOW:
@@ -245,20 +244,21 @@ func (uc *EventUsecase) ClaimCertificateWithSignature(ctx context.Context, clien
 	messageHashForRecovery := cyptoutils.HashEthereumMessage(signMessage)
 	participantPublicKey, err := cyptoutils.RecoverPublicKeyFromSignature(messageHashForRecovery, signature)
 	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to recover public key from signature"))
+		return nil, nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to recover public key from signature"))
 	}
 
 	// Verify recovered address matches the participant address
 	recoveredAddress := cyptoutils.PublicKeyToAddress(participantPublicKey)
 	if recoveredAddress.Hex() != participantAddress.Hex() {
-		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.Errorf("recovered address (%s) does not match participant address (%s)", recoveredAddress.Hex(), participantAddress.Hex()))
+		return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.Errorf("recovered address (%s) does not match participant address (%s)", recoveredAddress.Hex(), participantAddress.Hex()))
 	}
 
-	// Proceed with claiming using recovered public key
-	return uc.claimCertificate(ctx, client, currentUser, certificate, signature, signMessage, &participantAddress, participantPublicKey)
+	// Queue certificate claim instead of claiming directly
+	return uc.queueCertificateClaim(ctx, currentUser, certificate, signature, signMessage, &participantAddress, participantPublicKey)
 }
 
-func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.Client, currentUser *auth.JwtClaims, certificate *entity.EventCertificate, signature []byte, signMessage string, participantAddress *common.Address, participantPublicKey *ecdsa.PublicKey) (*entity.EventCertificate, error) {
+// TODO: To be migrated to a seperated service
+func (uc *EventUsecase) claimCertificate(ctx context.Context, currentUser *auth.JwtClaims, certificate *entity.EventCertificate, signature []byte, signMessage string, participantAddress *common.Address, participantPublicKey *ecdsa.PublicKey) (*entity.EventCertificate, error) {
 	if currentUser == nil {
 		return nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
 	}
@@ -544,7 +544,7 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 	// - This is much more efficient than iterating through all tokens or scanning all blocks
 	//
 	// Check current state: Is NFT minted on-chain? Is DB updated?
-	certificateContractInstance, err := certificateContract.NewEventCertificate(common.HexToAddress(*certificate.EventCertificateAddress), client)
+	certificateContractInstance, err := certificateContract.NewEventCertificate(common.HexToAddress(*certificate.EventCertificateAddress), uc.ethClient)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to create contract instance"))
 	}
@@ -579,7 +579,7 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		// DB doesn't have token ID - query blockchain for CertificateMinted events
 		// This handles the recovery case where minting succeeded but DB update failed
 		// EFFICIENT: Uses indexed receiverAddress parameter for O(1) event filtering
-		currentBlock, err := client.BlockNumber(ctx)
+		currentBlock, err := uc.ethClient.BlockNumber(ctx)
 		if err != nil {
 			slog.Warn("Failed to get current block number for recovery - skipping event query",
 				"certificate_id", certificate.Id,
@@ -757,7 +757,7 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("participant sign message does not match certificate contract address or participant address"))
 	}
 
-	transactor, err := cyptoutils.GetKeyedTransactor(ctx, client)
+	transactor, err := uc.BlockchainClientDg.GetTransactOpts(ctx)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get system transactor"))
 	}
@@ -830,7 +830,7 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, client *ethclient.
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to mint certificate NFT"))
 	}
 
-	receipt, err := bind.WaitMined(ctx, client, tx)
+	receipt, err := bind.WaitMined(ctx, uc.ethClient, tx)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrapf(err, "transaction mining failed: tx=%s", tx.Hash().Hex()))
 	}

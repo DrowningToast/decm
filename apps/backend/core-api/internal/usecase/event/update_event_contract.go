@@ -1,10 +1,9 @@
 package event
 
 import (
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
-
-	"apps/backend/core-api/internal/entity"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
