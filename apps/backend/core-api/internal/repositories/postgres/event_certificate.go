@@ -41,7 +41,7 @@ func (r *Repository) CreateEventCertificate(ctx context.Context, params event_da
 
 	result, err := r.queries.CreateEventCertificate(ctx, generated.CreateEventCertificateParams{
 		EventID:                 params.EventID,
-		ReceiverCredentialID:    pgmapper.UUIDToPgUUID(params.ReceiverCredentialID),
+		ReceiverCredentialID:    pgmapper.UUIDPtrToPgUUID(params.ReceiverCredentialID),
 		ReceiverEmail:           receiverEmailEnc,
 		Name:                    nameEnc,
 		AcademicInstitution:     academicInstitutionEnc,
@@ -51,7 +51,7 @@ func (r *Repository) CreateEventCertificate(ctx context.Context, params event_da
 		EventCertificateAddress: pgmapper.StringPtrToPgText(params.EventCertificateAddress),
 		CertificateTokenID:      pgmapper.StringPtrToPgText(params.CertificateTokenID),
 		CertificateDigest:       pgmapper.StringPtrToPgText(params.Digest),
-		UserClaimSignatureID:    pgmapper.UUIDToPgUUID(params.UserClaimSignatureId),
+		UserClaimSignatureID:    pgmapper.UUIDPtrToPgUUID(params.UserClaimSignatureId),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
@@ -138,7 +138,7 @@ func (r *Repository) GetEventCertificateByID(ctx context.Context, id uuid.UUID) 
 func (r *Repository) GetEventCertificateWithSignature(ctx context.Context, eventID uuid.UUID, credentialID uuid.UUID) (*event_datagateway.EventCertificateWithSignature, error) {
 	row, err := r.queries.GetEventCertificateWithSignature(ctx, generated.GetEventCertificateWithSignatureParams{
 		EventID:              eventID,
-		ReceiverCredentialID: pgmapper.UUIDToPgUUID(&credentialID),
+		ReceiverCredentialID: pgmapper.UUIDToPgUUID(credentialID),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
@@ -160,7 +160,7 @@ func (r *Repository) GetEventCertificateWithSignature(ctx context.Context, event
 }
 
 func (r *Repository) GetEventCertificateByInboxMessageID(ctx context.Context, inboxMessageID uuid.UUID) (*entity.EventCertificate, error) {
-	result, err := r.queries.GetEventCertificateByInboxMessageID(ctx, pgmapper.UUIDToPgUUID(&inboxMessageID))
+	result, err := r.queries.GetEventCertificateByInboxMessageID(ctx, pgmapper.UUIDToPgUUID(inboxMessageID))
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
 	}
@@ -276,7 +276,7 @@ func (r *Repository) UpdateEventCertificate(ctx context.Context, id uuid.UUID, p
 
 	result, err := r.queries.UpdateEventCertificate(ctx, generated.UpdateEventCertificateParams{
 		ID:                      id,
-		ReceiverCredentialID:    pgmapper.UUIDToPgUUID(params.ReceiverCredentialID),
+		ReceiverCredentialID:    pgmapper.UUIDPtrToPgUUID(params.ReceiverCredentialID),
 		ReceiverEmail:           receiverEmailEnc,
 		Name:                    nameEnc,
 		AcademicInstitution:     academicInstitutionEnc,
@@ -285,7 +285,7 @@ func (r *Repository) UpdateEventCertificate(ctx context.Context, id uuid.UUID, p
 		EventContractAddress:    pgmapper.StringPtrToPgText(params.EventContractAddress),
 		EventCertificateAddress: pgmapper.StringPtrToPgText(params.EventCertificateAddress),
 		CertificateTokenID:      pgmapper.StringPtrToPgText(params.CertificateTokenID),
-		UserClaimSignatureID:    pgmapper.UUIDToPgUUID(params.UserClaimSignatureId),
+		UserClaimSignatureID:    pgmapper.UUIDPtrToPgUUID(params.UserClaimSignatureId),
 		RevokedAt:               pgmapper.TimePtrToPgTimestampz(params.RevokedAt),
 	})
 	if err != nil {
@@ -331,7 +331,7 @@ func (r *Repository) UpdateEventCertificate(ctx context.Context, id uuid.UUID, p
 func (r *Repository) UpdateEventCertificateInboxMessageID(ctx context.Context, id uuid.UUID, inboxMessageID uuid.UUID) (*entity.EventCertificate, error) {
 	result, err := r.queries.UpdateEventCertificateInboxMessageID(ctx, generated.UpdateEventCertificateInboxMessageIDParams{
 		ID:             id,
-		InboxMessageID: pgmapper.UUIDToPgUUID(&inboxMessageID),
+		InboxMessageID: pgmapper.UUIDToPgUUID(inboxMessageID),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
@@ -488,7 +488,7 @@ func (r *Repository) GetClaimedCertificatesByCredentialID(ctx context.Context, c
 	}
 
 	results, err := r.queries.GetClaimedCertificatesByCredentialID(ctx, generated.GetClaimedCertificatesByCredentialIDParams{
-		ReceiverCredentialID: pgmapper.UUIDToPgUUID(&credentialID),
+		ReceiverCredentialID: pgmapper.UUIDToPgUUID(credentialID),
 		ReceiverEmail:        encryptedEmail,
 	})
 	if err != nil {
@@ -556,7 +556,7 @@ func (r *Repository) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Con
 	}
 
 	results, err := r.queries.GetUnclaimedReadyCertificatesByCredentialID(ctx, generated.GetUnclaimedReadyCertificatesByCredentialIDParams{
-		ReceiverCredentialID: pgmapper.UUIDToPgUUID(&credentialID),
+		ReceiverCredentialID: pgmapper.UUIDToPgUUID(credentialID),
 		ReceiverEmail:        encryptedEmail,
 	})
 	if err != nil {

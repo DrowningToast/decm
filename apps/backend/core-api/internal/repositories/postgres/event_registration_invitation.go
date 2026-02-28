@@ -242,7 +242,7 @@ func (r *Repository) GetEventRegistrationInvitationByEventIDAndCredential(ctx co
 	}
 	params := generated.GetEventRegistrationInvitationByEventIdAndCredentialIdParams{
 		EventID:       eventId,
-		CredentialID:  pgmapper.UUIDToPgUUID(&credentialId),
+		CredentialID:  pgmapper.UUIDToPgUUID(credentialId),
 		Email:         encryptedEmail,
 		WalletAddress: pgmapper.StringPtrToPgText(walletAddress),
 	}
