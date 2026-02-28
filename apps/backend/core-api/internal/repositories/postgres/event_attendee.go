@@ -209,7 +209,7 @@ func (r *Repository) GetEventAttendeeWithSignature(ctx context.Context, eventId 
 			BroadcastedAt:              pgmapper.PgTimestamptzToTimePtr(row.BroadcastedAt),
 			MarkAsExpiredAt:            pgmapper.PgTimestamptzToTimePtr(row.MarkAsExpiredAt),
 			CreatedAt:                  row.SignatureCreatedAt.Time,
-			UpdatedAt:                  row.SignatureCreatedAt.Time,
+			UpdatedAt:                  row.SignatureUpdatedAt.Time,
 		}
 	}
 
