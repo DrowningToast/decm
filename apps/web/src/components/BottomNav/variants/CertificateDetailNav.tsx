@@ -13,7 +13,7 @@ interface CertificateDetailNavProps {
 }
 
 export const CertificateDetailNav = ({ className: propClassName }: CertificateDetailNavProps) => {
-    const { certificateId } = useCertificateDetailNavStore();
+    const { certificateId, isClaimed } = useCertificateDetailNavStore();
     const { onBack, className: contextClassName } = useBottomContainerContext();
     const { t } = useTranslation();
     const [isDownloading, setIsDownloading] = useState(false);
@@ -85,33 +85,38 @@ export const CertificateDetailNav = ({ className: propClassName }: CertificateDe
                 <ChevronLeft className="w-5 h-5 text-white" />
             </button>
 
-            {/* Download Button - Always available */}
-            <button
-                onClick={handleDownload}
-                disabled={isDownloading}
-                className="cursor-pointer flex items-center justify-center gap-2 px-4 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label={t(
-                    "participant.certificates.detail.downloadAsImage",
-                    "Download as an image",
-                )}
-            >
-                <Download
-                    className={cn("w-5 h-5 text-background-alt", isDownloading && "animate-pulse")}
-                />
-                <Typography
-                    variant="text"
-                    tag="span"
-                    color="background-alt"
-                    className="text-xs font-normal leading-normal tracking-[0.06px] whitespace-nowrap"
+            {/* Download Button - only shown when certificate is claimed */}
+            {isClaimed && (
+                <button
+                    onClick={handleDownload}
+                    disabled={isDownloading}
+                    className="cursor-pointer flex items-center justify-center gap-2 px-4 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label={t(
+                        "participant.certificates.detail.downloadAsImage",
+                        "Download as an image",
+                    )}
                 >
-                    {isDownloading
-                        ? t("participant.certificates.detail.downloading", "Downloading...")
-                        : t(
-                              "participant.certificates.detail.downloadAsImage",
-                              "Download as an image",
-                          )}
-                </Typography>
-            </button>
+                    <Download
+                        className={cn(
+                            "w-5 h-5 text-background-alt",
+                            isDownloading && "animate-pulse",
+                        )}
+                    />
+                    <Typography
+                        variant="text"
+                        tag="span"
+                        color="background-alt"
+                        className="text-xs font-normal leading-normal tracking-[0.06px] whitespace-nowrap"
+                    >
+                        {isDownloading
+                            ? t("participant.certificates.detail.downloading", "Downloading...")
+                            : t(
+                                  "participant.certificates.detail.downloadAsImage",
+                                  "Download as an image",
+                              )}
+                    </Typography>
+                </button>
+            )}
         </div>
     );
 };

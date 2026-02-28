@@ -25,7 +25,6 @@ Complete frontend environment setup including Node.js, pnpm, environment files, 
 - Setup pnpm
 - Setup Node.js with cache
 - Copy `.env.test` → `.env`
-- Copy `.env.client.test` → `.env.client`
 - Run `pnpm install --frozen-lockfile`
 
 **Used in**: `frontend-eslint`, `frontend-build`, `frontend-tests`
@@ -194,7 +193,7 @@ runs:
 
 ### v1.0 (Current)
 
-- `setup-frontend`: Frontend environment with dual .env files
+- `setup-frontend`: Frontend environment setup
 - `setup-node-pnpm`: Basic Node.js setup for backend
 - `setup-go-backend`: Go workspace and dependencies
 - `install-db-tools`: Database tooling (migrate + sqlc)

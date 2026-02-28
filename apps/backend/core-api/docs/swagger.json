@@ -2136,6 +2136,57 @@
                 }
             }
         },
+        "/api/v1/events/{event_id}/config/certificate/template": {
+            "get": {
+                "description": "Proxy the base certificate SVG template from storage so the frontend can access it without CORS restrictions from presigned URLs. Accessible by the event owner or issuers assigned to the event.",
+                "produces": [
+                    "image/svg+xml"
+                ],
+                "summary": "Get event certificate template SVG",
+                "operationId": "get-event-certificate-template",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SVG content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}/config/password-check": {
             "post": {
                 "description": "Check if the password is correct for an event",
@@ -4715,6 +4766,9 @@
                 "id"
             ],
             "properties": {
+                "aborted_at": {
+                    "type": "string"
+                },
                 "academic_institution": {
                     "type": "string"
                 },
@@ -5446,6 +5500,9 @@
                     "$ref": "#/definitions/event.RegistrationConfigResponse"
                 },
                 "short_description": {
+                    "type": "string"
+                },
+                "signature_expired_at": {
                     "type": "string"
                 },
                 "start_date": {

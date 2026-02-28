@@ -214,8 +214,7 @@ SELECT EXISTS (
     LEFT JOIN user_signature us ON ea.user_signature_id = us.id
     WHERE ea.event_id = $1
       AND ea.attendee_credential_id = $2
-      -- Include both queued and broadcasted (but not yet confirmed) join txs.
-      -- broadcasted_at IS NOT NULL means the tx was sent but may not be mined yet.
+      AND us.broadcasted_at IS NULL
       AND us.mark_as_expired_at IS NULL
       AND us.aborted_at IS NULL
 ) AS has_pending

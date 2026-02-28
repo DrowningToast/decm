@@ -434,8 +434,8 @@ export interface EntityEventAttendee {
 }
 
 export interface EntityEventCertificate {
-    academic_institution?: string;
     aborted_at?: string;
+    academic_institution?: string;
     broadcasted_at?: string;
     certificate_digest?: string;
     certificate_subtitle?: string;
@@ -660,6 +660,7 @@ export interface EventEventViewModel {
     owner_credential_id: string;
     registration_config: EventRegistrationConfigResponse;
     short_description: string;
+    signature_expired_at?: string;
     start_date: string;
     title: string;
     updated_at: string;
@@ -927,6 +928,15 @@ export type GetEventCertificateFontFamiliesData =
     EventconfigGetEventCertificateFontFamiliesResponse;
 
 export type GetEventCertificateFontFamiliesError = CustomerrorErrResponse;
+
+export type GetEventCertificateTemplateData = string;
+
+export type GetEventCertificateTemplateError = CustomerrorErrResponse;
+
+export interface GetEventCertificateTemplateParams {
+    /** Event ID */
+    eventId: string;
+}
 
 export type GetEventCertificatesData = EventGetEventCertificatesResponse;
 
@@ -2719,6 +2729,24 @@ export class Api<SecurityDataType extends unknown> {
                 body: request,
                 type: ContentType.Json,
                 format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Proxy the base certificate SVG template from storage so the frontend can access it without CORS restrictions from presigned URLs. Accessible by the event owner or issuers assigned to the event.
+         *
+         * @name GetEventCertificateTemplate
+         * @summary Get event certificate template SVG
+         * @request GET:/api/v1/events/{event_id}/config/certificate/template
+         */
+        getEventCertificateTemplate: (
+            { eventId, ...query }: GetEventCertificateTemplateParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetEventCertificateTemplateData, GetEventCertificateTemplateError>({
+                path: `/api/v1/events/${eventId}/config/certificate/template`,
+                method: "GET",
+                format: "blob",
                 ...params,
             }),
 
