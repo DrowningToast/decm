@@ -151,7 +151,8 @@ SELECT
     us.estimated_deadline,
     us.broadcasted_at,
     us.mark_as_expired_at,
-    us.created_at as signature_created_at
+    us.created_at as signature_created_at,
+    us.updated_at as signature_updated_at
 FROM event_attendees ea
 INNER JOIN authentication_credentials ac ON ea.attendee_credential_id = ac.id
 LEFT JOIN user_signature us ON ea.user_signature_id = us.id
@@ -181,6 +182,7 @@ type GetEventAttendeeWithSignatureRow struct {
 	BroadcastedAt        pgtype.Timestamptz `json:"broadcasted_at"`
 	MarkAsExpiredAt      pgtype.Timestamptz `json:"mark_as_expired_at"`
 	SignatureCreatedAt   pgtype.Timestamptz `json:"signature_created_at"`
+	SignatureUpdatedAt   pgtype.Timestamptz `json:"signature_updated_at"`
 }
 
 func (q *Queries) GetEventAttendeeWithSignature(ctx context.Context, arg GetEventAttendeeWithSignatureParams) (GetEventAttendeeWithSignatureRow, error) {
@@ -203,6 +205,7 @@ func (q *Queries) GetEventAttendeeWithSignature(ctx context.Context, arg GetEven
 		&i.BroadcastedAt,
 		&i.MarkAsExpiredAt,
 		&i.SignatureCreatedAt,
+		&i.SignatureUpdatedAt,
 	)
 	return i, err
 }
