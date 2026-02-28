@@ -60,7 +60,7 @@ func (h *Handler) CreateEventContract(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusCreated).JSON(EventContractResponse{
 		ID:                           contract.ID,
-		EventID:                      contract.EventID,
+		EventID:                      contract.EventId,
 		AccessManagerContractAddress: contract.AccessManagerContractAddress,
 		EventContractAddress:         contract.EventContractAddress,
 		TicketContractAddress:        contract.TicketContractAddress,

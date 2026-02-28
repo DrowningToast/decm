@@ -393,6 +393,31 @@ func TestUUIDToPgUUID(t *testing.T) {
 	testUUID := uuid.New()
 	tests := []struct {
 		name     string
+		input    uuid.UUID
+		expected pgtype.UUID
+	}{
+		{
+			name:  "valid UUID",
+			input: testUUID,
+			expected: pgtype.UUID{
+				Bytes: testUUID,
+				Valid: true,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := UUIDToPgUUID(tt.input)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestUUIDPtrToPgUUID(t *testing.T) {
+	testUUID := uuid.New()
+	tests := []struct {
+		name     string
 		input    *uuid.UUID
 		expected pgtype.UUID
 	}{
@@ -415,7 +440,7 @@ func TestUUIDToPgUUID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := UUIDToPgUUID(tt.input)
+			result := UUIDPtrToPgUUID(tt.input)
 			assert.Equal(t, tt.expected, result)
 		})
 	}

@@ -17,6 +17,14 @@ type ErrSignature struct {
 type ErrCode string
 
 var (
+	// 409
+	ErrAlreadyPerformed ErrSignature = ErrSignature{
+		Code:           "ALREADY_PERFORMED",
+		DefaultMessage: "Already performed. Please check your request and try again.",
+		HttpStatus:     http.StatusConflict,
+		LoggerLevel:    slog.LevelWarn,
+	}
+	// 404
 	ErrNotFound ErrSignature = ErrSignature{
 		Code:           "NOT_FOUND",
 		DefaultMessage: "Resource not found.",

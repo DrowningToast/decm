@@ -20,6 +20,7 @@ export interface InboxDetail {
     isUserInEvent?: boolean;
     // Action status fields
     acceptedAt?: Date;
+    broadcastedAt?: Date;
     tokenId?: string;
 }
 
@@ -110,7 +111,12 @@ const mapInboxMessageDetailToInboxDetail = (
         message.entityInboxMessageType ===
         EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation
     ) {
-        return { ...base, eventId: message.eventId, acceptedAt: message.acceptedAt };
+        return {
+            ...base,
+            eventId: message.eventId,
+            acceptedAt: message.acceptedAt,
+            broadcastedAt: message.broadcastedAt,
+        };
     }
     if (
         message.entityInboxMessageType ===

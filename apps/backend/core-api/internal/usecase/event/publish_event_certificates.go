@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	datagateway "apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 
 	"github.com/google/uuid"
 )
@@ -140,7 +140,7 @@ func (uc *EventUsecase) PublishEventCertificates(ctx context.Context, eventID uu
 		// Create inbox message (supports both authenticated and non-authenticated receivers)
 		// ReceiverCredentialID is optional (nil for non-authenticated users)
 		// ReceiverEmail is required (used for both authenticated and non-authenticated users)
-		inboxMessage, err := uc.InboxMessageDg.CreateInboxMessage(ctx, datagateway.CreateInboxMessageParameters{
+		inboxMessage, err := uc.InboxMessageDg.CreateInboxMessage(ctx, offchain_datagateway.CreateInboxMessageParameters{
 			SenderCredentialID:     &currentUser.UserId,
 			ReceiverCredentialID:   certificate.ReceiverCredentialId, // Optional - can be nil
 			ReceiverEmail:          *certificate.ReceiverEmail,       // Required

@@ -73,13 +73,8 @@ func (u *AuthUsecase) SecuredSignActionForManagedUser(ctx context.Context, auth 
 		return nil, nil, nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("invalid user id"))
 	}
 
-	client, err := cyptoutils.GetEthereumClient()
-	if err != nil {
-		return nil, nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
-	}
-
 	if deadlineBlock == nil {
-		calculatedDeadlineBlock, err := cyptoutils.GetCalculatedDeadlineBlock(client)
+		calculatedDeadlineBlock, err := u.BlockchainClientDg.GetCalculatedDeadlineBlock(ctx)
 		if err != nil {
 			return nil, nil, nil, customerror.Parse(&customerror.ErrInternalServer, err)
 		}

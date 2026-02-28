@@ -4,7 +4,7 @@ import (
 	"apps/backend/common"
 	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
-	"apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/log"
 	"context"
@@ -14,7 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-var _ datagateway.AuthenticationCredentialDataGateway = (*Repository)(nil)
+var _ offchain_datagateway.AuthenticationCredentialDataGateway = (*Repository)(nil)
 
 func (r *Repository) GetAuthenticationCredentialById(ctx context.Context, id uuid.UUID) (*entity.AuthenticationCredential, error) {
 	query, err := r.queries.GetAuthenticationCredentialById(ctx, id)
@@ -227,7 +227,7 @@ func (r *Repository) CreateAuthenticationCredential(ctx context.Context, credent
 	}, nil
 }
 
-func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params datagateway.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, error) {
+func (r *Repository) UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params offchain_datagateway.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, error) {
 	// Convert EncryptedPrivateKey from *string to []byte if present
 	var encryptedPrivateKey []byte
 	if params.EncryptedPrivateKey != nil {
@@ -296,7 +296,7 @@ func (r *Repository) DeleteAuthenticationCredential(ctx context.Context, id uuid
 	return nil
 }
 
-func (r *Repository) GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx context.Context, params datagateway.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters) (*entity.AuthenticationCredential, error) {
+func (r *Repository) GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx context.Context, params offchain_datagateway.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters) (*entity.AuthenticationCredential, error) {
 	// Build query parameters
 	queryParams := generated.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParams{}
 

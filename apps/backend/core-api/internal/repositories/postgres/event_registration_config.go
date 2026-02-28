@@ -8,12 +8,12 @@ import (
 	"decm-database/go/generated"
 	"time"
 
-	datagateway "apps/backend/core-api/internal/datagateway/event"
+	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
 	"github.com/google/uuid"
 )
 
-var _ datagateway.EventRegistrationConfigDataGateway = (*Repository)(nil)
+var _ event_datagateway.EventRegistrationConfigDataGateway = (*Repository)(nil)
 
 func (r *Repository) CreateEventRegistrationConfig(ctx context.Context, params generated.CreateEventRegistrationConfigParams) (*entity.EventRegistrationConfig, error) {
 	result, err := r.queries.CreateEventRegistrationConfig(ctx, params)

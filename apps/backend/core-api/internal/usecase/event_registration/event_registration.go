@@ -1,8 +1,10 @@
 package event_registration
 
 import (
-	datagateway "apps/backend/core-api/internal/datagateway"
-	eventdatagateway "apps/backend/core-api/internal/datagateway/event"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
+	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
+	blockchainclient_datagateway "apps/backend/core-api/internal/datagateway/onchain/blockchain_client"
+	eventcontract_datagateway "apps/backend/core-api/internal/datagateway/onchain/event_contract"
 	authUc "apps/backend/core-api/internal/usecase/auth"
 	eventUc "apps/backend/core-api/internal/usecase/event"
 
@@ -24,28 +26,35 @@ type ImportEventParticipantsParameters struct {
 }
 
 type EventRegistrationUsecase struct {
-	InboxMessageDg                   datagateway.InboxMessageDataGateway
-	EventRegistrationInvitationDg    datagateway.EventRegistrationInvitationDataGateway
+	InboxMessageDg                   offchain_datagateway.InboxMessageDataGateway
+	EventRegistrationInvitationDg    eventdatagateway.EventRegistrationInvitationDataGateway
 	EventDg                          eventdatagateway.EventDataGateway
 	EventContractDg                  eventdatagateway.EventContractDataGateway
-	EventAttendeeDg                  datagateway.EventAttendeeDataGateway
+	EventAttendeeDg                  eventdatagateway.EventAttendeeDataGateway
 	EventRegistrationConfigurationDg eventdatagateway.EventRegistrationConfigDataGateway
-	AuthenticationCredentialDg       datagateway.AuthenticationCredentialDataGateway
+	UserSignatureDg                  offchain_datagateway.UserSignatureDataGateway
+	AuthenticationCredentialDg       offchain_datagateway.AuthenticationCredentialDataGateway
+
+	EventContractFactoryDg eventcontract_datagateway.EventContractFactoryDataGateway
+	BlockchainClientDg     blockchainclient_datagateway.BlockchainClientDataGateway
 
 	AuthUsecase  authUc.AuthUsecase
 	EventUsecase eventUc.EventUsecase
 }
 
 func NewEventRegistrationUsecase(
-	inboxMessageDg datagateway.InboxMessageDataGateway,
-	eventRegistrationInvitationDg datagateway.EventRegistrationInvitationDataGateway,
+	inboxMessageDg offchain_datagateway.InboxMessageDataGateway,
+	eventRegistrationInvitationDg eventdatagateway.EventRegistrationInvitationDataGateway,
 	eventDg eventdatagateway.EventDataGateway,
 	eventContractDg eventdatagateway.EventContractDataGateway,
-	eventAttendeeDg datagateway.EventAttendeeDataGateway,
+	eventAttendeeDg eventdatagateway.EventAttendeeDataGateway,
 	eventRegistrationConfigurationDg eventdatagateway.EventRegistrationConfigDataGateway,
-	authenticationCredentialDg datagateway.AuthenticationCredentialDataGateway,
+	authenticationCredentialDg offchain_datagateway.AuthenticationCredentialDataGateway,
 	authUsecase authUc.AuthUsecase,
 	eventUsecase eventUc.EventUsecase,
+	userSignatureDg offchain_datagateway.UserSignatureDataGateway,
+	eventContractFactoryDg eventcontract_datagateway.EventContractFactoryDataGateway,
+	blockchainClientDg blockchainclient_datagateway.BlockchainClientDataGateway,
 ) *EventRegistrationUsecase {
 	return &EventRegistrationUsecase{
 		InboxMessageDg:                   inboxMessageDg,
@@ -57,5 +66,8 @@ func NewEventRegistrationUsecase(
 		AuthenticationCredentialDg:       authenticationCredentialDg,
 		AuthUsecase:                      authUsecase,
 		EventUsecase:                     eventUsecase,
+		UserSignatureDg:                  userSignatureDg,
+		EventContractFactoryDg:           eventContractFactoryDg,
+		BlockchainClientDg:               blockchainClientDg,
 	}
 }

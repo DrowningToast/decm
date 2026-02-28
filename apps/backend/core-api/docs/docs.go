@@ -244,7 +244,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Claim a certificate using account password or wallet signature (requires authentication)",
+                "description": "Queue a certificate claim using account password or wallet signature (requires authentication). The certificate will be minted asynchronously.",
                 "consumes": [
                     "application/json"
                 ],
@@ -270,15 +270,15 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/event.ClaimCertificateBody"
+                            "$ref": "#/definitions/certificate.ClaimCertificateBody"
                         }
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "202": {
+                        "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/entity.EventCertificate"
+                            "$ref": "#/definitions/certificate.ClaimCertificateResponse"
                         }
                     },
                     "400": {
@@ -346,7 +346,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event.GetClaimCertificateSignMessageResponse"
+                            "$ref": "#/definitions/certificate.GetClaimCertificateSignMessageResponse"
                         }
                     },
                     "400": {
@@ -400,7 +400,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event.GetMyCertificatesListViewModelResponse"
+                            "$ref": "#/definitions/certificate.GetMyCertificatesListViewModelResponse"
                         }
                     },
                     "401": {
@@ -2130,6 +2130,57 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{event_id}/config/certificate/template": {
+            "get": {
+                "description": "Proxy the base certificate SVG template from storage so the frontend can access it without CORS restrictions from presigned URLs. Accessible by the event owner or issuers assigned to the event.",
+                "produces": [
+                    "image/svg+xml"
+                ],
+                "summary": "Get event certificate template SVG",
+                "operationId": "get-event-certificate-template",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SVG content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
@@ -4001,6 +4052,72 @@ const docTemplate = `{
                 }
             }
         },
+        "certificate.ClaimCertificateBody": {
+            "type": "object",
+            "properties": {
+                "account_password": {
+                    "type": "string"
+                },
+                "certificate_password": {
+                    "type": "string"
+                },
+                "sign_message": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                }
+            }
+        },
+        "certificate.ClaimCertificateResponse": {
+            "type": "object",
+            "required": [
+                "certificate",
+                "message",
+                "status",
+                "user_signature"
+            ],
+            "properties": {
+                "certificate": {},
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "user_signature": {}
+            }
+        },
+        "certificate.GetClaimCertificateSignMessageResponse": {
+            "type": "object",
+            "required": [
+                "sign_message"
+            ],
+            "properties": {
+                "sign_message": {
+                    "type": "string"
+                }
+            }
+        },
+        "certificate.GetMyCertificatesListViewModelResponse": {
+            "type": "object",
+            "required": [
+                "claimed_certificates",
+                "total_claimed",
+                "total_unclaimed",
+                "unclaimed_certificates"
+            ],
+            "properties": {
+                "claimed_certificates": {},
+                "total_claimed": {
+                    "type": "integer"
+                },
+                "total_unclaimed": {
+                    "type": "integer"
+                },
+                "unclaimed_certificates": {}
+            }
+        },
         "common.SolutionStatus": {
             "type": "integer",
             "format": "int32",
@@ -4639,6 +4756,9 @@ const docTemplate = `{
                 "updated_at": {
                     "type": "string"
                 },
+                "user_signature_id": {
+                    "type": "string"
+                },
                 "wallet_address": {
                     "type": "string"
                 }
@@ -4653,7 +4773,13 @@ const docTemplate = `{
                 "id"
             ],
             "properties": {
+                "aborted_at": {
+                    "type": "string"
+                },
                 "academic_institution": {
+                    "type": "string"
+                },
+                "broadcasted_at": {
                     "type": "string"
                 },
                 "certificate_digest": {
@@ -4669,6 +4795,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "created_at": {
+                    "type": "string"
+                },
+                "estimated_deadline": {
                     "type": "string"
                 },
                 "event_certificate_address": {
@@ -4699,6 +4828,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "revoked_at": {
+                    "type": "string"
+                },
+                "signature_created_at": {
+                    "type": "string"
+                },
+                "user_claim_signature_id": {
                     "type": "string"
                 }
             }
@@ -4997,23 +5132,6 @@ const docTemplate = `{
                 }
             }
         },
-        "event.ClaimCertificateBody": {
-            "type": "object",
-            "properties": {
-                "account_password": {
-                    "type": "string"
-                },
-                "certificate_password": {
-                    "type": "string"
-                },
-                "sign_message": {
-                    "type": "string"
-                },
-                "signature": {
-                    "type": "string"
-                }
-            }
-        },
         "event.CreateEventContractRequest": {
             "type": "object",
             "required": [
@@ -5297,6 +5415,15 @@ const docTemplate = `{
                 "banner_presigned_url": {
                     "type": "string"
                 },
+                "broadcasted_at": {
+                    "type": "string"
+                },
+                "broadcasted_at_deadline_block": {
+                    "type": "integer"
+                },
+                "broadcasted_at_estimated_deadline": {
+                    "type": "string"
+                },
                 "chain_id": {
                     "type": "integer"
                 },
@@ -5351,6 +5478,19 @@ const docTemplate = `{
                 "is_verified": {
                     "type": "boolean"
                 },
+                "joined_at": {
+                    "type": "string"
+                },
+                "joined_is_accepted": {
+                    "type": "boolean"
+                },
+                "joined_sign_message": {
+                    "type": "string"
+                },
+                "joined_signature": {
+                    "description": "JoinedTxBroadcasted            *bool      ` + "`" + `json:\"joined_tx_broadcasted,omitempty\"` + "`" + `\nJoinedBroadcastedAt            *time.Time ` + "`" + `json:\"joined_broadcasted_at,omitempty\"` + "`" + `",
+                    "type": "string"
+                },
                 "location": {
                     "type": "string"
                 },
@@ -5367,6 +5507,9 @@ const docTemplate = `{
                     "$ref": "#/definitions/event.RegistrationConfigResponse"
                 },
                 "short_description": {
+                    "type": "string"
+                },
+                "signature_expired_at": {
                     "type": "string"
                 },
                 "start_date": {
@@ -5399,17 +5542,6 @@ const docTemplate = `{
                 "unclaimed_certificates": {}
             }
         },
-        "event.GetClaimCertificateSignMessageResponse": {
-            "type": "object",
-            "required": [
-                "sign_message"
-            ],
-            "properties": {
-                "sign_message": {
-                    "type": "string"
-                }
-            }
-        },
         "event.GetEventCertificatesResponse": {
             "type": "object",
             "required": [
@@ -5436,25 +5568,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/entity.Event"
                     }
                 }
-            }
-        },
-        "event.GetMyCertificatesListViewModelResponse": {
-            "type": "object",
-            "required": [
-                "claimed_certificates",
-                "total_claimed",
-                "total_unclaimed",
-                "unclaimed_certificates"
-            ],
-            "properties": {
-                "claimed_certificates": {},
-                "total_claimed": {
-                    "type": "integer"
-                },
-                "total_unclaimed": {
-                    "type": "integer"
-                },
-                "unclaimed_certificates": {}
             }
         },
         "event.ImportCertificateReceiverRequest": {
@@ -6211,6 +6324,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "accepted_at": {
+                    "type": "string"
+                },
+                "broadcasted_at": {
                     "type": "string"
                 },
                 "cancelled_at": {

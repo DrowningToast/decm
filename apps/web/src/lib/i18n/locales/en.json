@@ -754,8 +754,17 @@
             },
             "status": {
                 "completed": "Completed",
-                "pending": "Pending"
+                "pending": "Pending",
+                "queued": "Minting",
+                "expired": "Expired",
+                "aborted": "Aborted"
             },
+            "claimExpired": "Certificate claim expired",
+            "claimAborted": "Certificate claim could not be processed",
+            "claimAbortedDescription": "This claim was cancelled because you have not joined the event on the blockchain. Please ensure you have joined the event and try claiming again.",
+            "queued": "Certificate minting in progress...",
+            "mintingBy": "Expected on blockchain by {{deadline}}",
+            "minted": "Certificate Minted on Blockchain",
             "empty": {
                 "title": "No certificates yet",
                 "description": "You don't have any certificates. Once you complete events or courses, they'll appear here."
@@ -767,9 +776,11 @@
             "claimTitle": "Claim Certificate",
             "claimDescription": "Enter your account password to claim your certificate on the blockchain",
             "claimButton": "Claim Certificate",
+            "retryClaimButton": "Retry Claim",
             "claiming": "Claiming...",
             "claimingCertificate": "Claiming certificate: {{name}}",
             "claimSuccess": "Certificate claimed successfully!",
+            "claimQueued": "Certificate claim submitted — minting in progress!",
             "claimError": "Failed to claim certificate. Please try again.",
             "claimNote": "Sign this certificate to add it to your blockchain credentials",
             "claimed": "Certificate Claimed",
@@ -865,6 +876,11 @@
                     "invitationRequired": "This event requires an invitation",
                     "passwordRequired": "This event requires a password to participate",
                     "signatureRequest": "Please sign the registration request with your wallet"
+                },
+                "broadcast": {
+                    "confirmed": "Confirmed on blockchain at {{date}}",
+                    "pending": "Will be confirmed on blockchain by {{deadline}}",
+                    "expired": "Blockchain registration expired — the deadline passed before the transaction was confirmed"
                 }
             },
             "invitationRequired": "Invitation is required."
@@ -906,15 +922,21 @@
             "failedToLoadDetails": "Failed to load inbox details",
             "notFoundHint": "This message could not be found. It may have been removed, or you might not have joined the required event yet.",
             "actionLabel": "Action",
+            "userAcceptedLabel": "User Accepted",
+            "blockchainConfirmedLabel": "Blockchain Confirmed",
             "actionStatus": {
                 "accepted": "Accepted",
                 "notAccepted": "Not Accepted",
+                "confirmed": "Confirmed",
+                "notConfirmed": "Not Confirmed",
                 "claimed": "Claimed",
                 "notClaimed": "Not Claimed"
             },
             "messageType": {
                 "eventRegistrationInvitation": "Event Registration Invitation",
+                "eventRegistrationInvitationWithEvent": "Event Registration Invitation: {{eventName}}",
                 "certificateInvitation": "Certificate Invitation",
+                "certificateInvitationWithDetails": "Certificate Invitation: {{certificateTitle}} from {{eventName}}",
                 "general": "Message"
             }
         }
@@ -1032,6 +1054,8 @@
         "missingColumnsTitle": "Your Excel file is missing required columns:",
         "emptyFile": "The Excel file appears to be empty or has no data.",
         "parseError": "Failed to parse the Excel file. Please check the file format.",
+        "invalidRowsFound": "Invalid data found in some rows",
+        "invalidRowsDescription": "Rows highlighted in red have missing required fields (first_name, last_name, or email). Please fix these in your Excel file and re-upload.",
         "requiredFormat": "Required Excel Format",
         "requiredFormatDescription": "Your Excel file must contain these exact column headers:",
         "columnHeader": "Required Column",
@@ -1191,7 +1215,14 @@
                 "hint": "Only SVG files are supported. Maximum file size: 5MB"
             },
             "preview": {
-                "title": "Template Preview"
+                "title": "Template Preview",
+                "showPositions": "Show Text Positions",
+                "showActualContent": "Show Actual Content",
+                "sampleEventName": "Sample Event Name",
+                "sampleParticipantName": "Sample Participant Name",
+                "sampleInstitution": "Sample Academic Institution",
+                "sampleTitle": "Sample Certificate Title",
+                "sampleSubtitle": "Sample Certificate Subtitle"
             },
             "detectedKeywords": {
                 "title": "Detected Keywords in Template",

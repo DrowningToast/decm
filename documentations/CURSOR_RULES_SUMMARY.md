@@ -10,7 +10,7 @@ This document summarizes the Cursor Rules and comprehensive PII encryption docum
 
 ### 1. `.cursorules` (Main Cursor Rules File)
 
-**Location**: `/Users/supratouchsuwatno/Desktop/decm/.cursorules`  
+**Location**: `.cursorules`  
 **Size**: ~13 KB  
 **Purpose**: Comprehensive Cursor IDE rules for the DECM project
 
@@ -37,7 +37,7 @@ This document summarizes the Cursor Rules and comprehensive PII encryption docum
 
 ### 2. `documentations/pii-encryption.md` (Comprehensive PII Guide)
 
-**Location**: `/Users/supratouchsuwatno/Desktop/decm/documentations/pii-encryption.md`  
+**Location**: `documentations/pii-encryption.md`  
 **Size**: ~20 KB  
 **Purpose**: Deep-dive guide on PII encryption implementation
 
@@ -67,7 +67,7 @@ This document summarizes the Cursor Rules and comprehensive PII encryption docum
 
 ### 3. `documentations/pii-encryption-quick-reference.md` (Quick Reference)
 
-**Location**: `/Users/supratouchsuwatno/Desktop/decm/documentations/pii-encryption-quick-reference.md`  
+**Location**: `documentations/pii-encryption-quick-reference.md`  
 **Size**: ~4.6 KB  
 **Purpose**: Quick reference for developers who need to implement encryption fast
 
@@ -88,7 +88,7 @@ This document summarizes the Cursor Rules and comprehensive PII encryption docum
 
 ### 4. Updated `CLAUDE.md` (AI Assistant Guide)
 
-**Location**: `/Users/supratouchsuwatno/Desktop/decm/CLAUDE.md`  
+**Location**: `CLAUDE.md`  
 **Purpose**: Updated to reference new Cursor Rules and documentation
 
 **Changes**:

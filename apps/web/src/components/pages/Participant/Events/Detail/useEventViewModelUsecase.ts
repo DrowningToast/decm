@@ -36,7 +36,7 @@ export const useEventViewModelUsecase = ({ eventId }: UseEventDetailUsecaseOptio
         if (event.eventStatus === "closed") {
             return undefined;
         }
-        if (event.isJoined) {
+        if (event.isJoined && !event.signatureExpiredAt) {
             return "participating";
         }
         switch (event.eventType) {

@@ -5,10 +5,10 @@ import (
 	"context"
 	"decm-database/go/generated"
 
-	datagateway "apps/backend/core-api/internal/datagateway/event"
+	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 )
 
-var _ datagateway.EventCertificateFontFamilyDataGateway = (*Repository)(nil)
+var _ event_datagateway.EventCertificateFontFamilyDataGateway = (*Repository)(nil)
 
 func (r *Repository) GetAllEventCertificateFontFamilies(ctx context.Context) ([]generated.EventCertificateFontFamily, error) {
 	result, err := r.queries.GetAllEventCertificateFontFamilies(ctx)

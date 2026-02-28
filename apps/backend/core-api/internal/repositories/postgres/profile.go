@@ -4,7 +4,7 @@ import (
 	"apps/backend/common"
 	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
-	"apps/backend/core-api/internal/datagateway"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
@@ -15,7 +15,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-var _ datagateway.ProfileDataGateway = (*Repository)(nil)
+var _ offchain_datagateway.ProfileDataGateway = (*Repository)(nil)
 
 func (r *Repository) GetProfileById(ctx context.Context, id uuid.UUID) (*entity.Profile, error) {
 	query, err := r.queries.GetProfileByID(ctx, id)
@@ -459,7 +459,7 @@ func (r *Repository) CreateProfile(ctx context.Context, profile entity.Profile) 
 	}, nil
 }
 
-func (r *Repository) UpdateProfile(ctx context.Context, id uuid.UUID, profile datagateway.UpdateProfileParameters) (*entity.Profile, error) {
+func (r *Repository) UpdateProfile(ctx context.Context, id uuid.UUID, profile offchain_datagateway.UpdateProfileParameters) (*entity.Profile, error) {
 	// Encrypt PII fields
 	profilePictureUrlEnc, err := pgmapper.EncryptStringPtrToPgText(profile.ProfilePictureUrl, r.piiEncryptionKey)
 	if err != nil {
@@ -587,7 +587,7 @@ func (r *Repository) UpdateProfile(ctx context.Context, id uuid.UUID, profile da
 	}, nil
 }
 
-func (r *Repository) UpdateProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID, profile datagateway.UpdateProfileParameters) (*entity.Profile, error) {
+func (r *Repository) UpdateProfileByAuthenticationCredentialId(ctx context.Context, authenticationCredentialId uuid.UUID, profile offchain_datagateway.UpdateProfileParameters) (*entity.Profile, error) {
 	// Encrypt PII fields
 	profilePictureUrlEnc, err := pgmapper.EncryptStringPtrToPgText(profile.ProfilePictureUrl, r.piiEncryptionKey)
 	if err != nil {

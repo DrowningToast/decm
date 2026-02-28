@@ -10,7 +10,8 @@ interface CertificateViewModel {
     event: string;
     eventId: string;
     issuedAt: string;
-    status: "completed" | "pending";
+    status: "completed" | "queued" | "expired" | "aborted" | "pending";
+    estimatedDeadline?: Date;
     certificateTitle?: string;
     certificateSubtitle?: string;
     academicInstitution?: string;
@@ -21,13 +22,33 @@ interface CertificateViewModel {
 }
 
 const mapCertificateToViewModel = (cert: CertificateData): CertificateViewModel => {
+    const isAborted = cert.abortedAt != null;
+    const isExpired =
+        !isAborted &&
+        cert.estimatedDeadline != null &&
+        new Date(cert.estimatedDeadline) < new Date();
+    const status = cert.certificateTokenId
+        ? "completed"
+        : isAborted
+          ? "aborted"
+          : isExpired
+            ? "expired"
+            : cert.estimatedDeadline
+              ? "queued"
+              : "pending";
+
     return {
         id: cert.id,
         name: cert.name || "Untitled Certificate",
         event: cert.eventName || "Unknown Event",
         eventId: cert.eventId,
         issuedAt: cert.createdAt,
-        status: cert.certificateTokenId ? "completed" : "pending",
+        status,
+        estimatedDeadline:
+            status === "queued" && cert.estimatedDeadline
+                ? new Date(cert.estimatedDeadline)
+                : undefined,
+        // Note: for "expired" status, estimatedDeadline is intentionally omitted
         certificateTitle: cert.certificateTitle,
         certificateSubtitle: cert.certificateSubtitle,
         academicInstitution: cert.academicInstitution,

@@ -173,8 +173,95 @@ export const InboxDetailPage: React.FC<InboxDetailPageProps> = ({ inboxId }) => 
                         <div className="h-px bg-border" />
 
                         {/* Action Status - Only show for event invitation or certificate types */}
-                        {(inboxDetail.contentType === "event-invitation" ||
-                            inboxDetail.contentType === "certificate") && (
+                        {inboxDetail.contentType === "event-invitation" && (
+                            <>
+                                {/* User Acceptance Status */}
+                                <div className="flex items-center justify-between px-0">
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        color="muted"
+                                        className="text-xs"
+                                    >
+                                        {t("participant.inbox.userAcceptedLabel", "User Accepted")}
+                                    </Typography>
+                                    {inboxDetail.acceptedAt ? (
+                                        <Typography
+                                            variant="text"
+                                            tag="p"
+                                            color="primary"
+                                            className="text-xs font-medium"
+                                        >
+                                            {t(
+                                                "participant.inbox.actionStatus.accepted",
+                                                "Accepted",
+                                            )}
+                                        </Typography>
+                                    ) : (
+                                        <Typography
+                                            variant="text"
+                                            tag="p"
+                                            color="muted"
+                                            className="text-xs"
+                                        >
+                                            {t(
+                                                "participant.inbox.actionStatus.notAccepted",
+                                                "Not Accepted",
+                                            )}
+                                        </Typography>
+                                    )}
+                                </div>
+
+                                {/* Divider */}
+                                <div className="h-px bg-border" />
+
+                                {/* Blockchain Confirmation Status */}
+                                <div className="flex items-center justify-between px-0">
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        color="muted"
+                                        className="text-xs"
+                                    >
+                                        {t(
+                                            "participant.inbox.blockchainConfirmedLabel",
+                                            "Blockchain Confirmed",
+                                        )}
+                                    </Typography>
+                                    {inboxDetail.broadcastedAt ? (
+                                        <Typography
+                                            variant="text"
+                                            tag="p"
+                                            color="primary"
+                                            className="text-xs font-medium"
+                                        >
+                                            {t(
+                                                "participant.inbox.actionStatus.confirmed",
+                                                "Confirmed",
+                                            )}
+                                        </Typography>
+                                    ) : (
+                                        <Typography
+                                            variant="text"
+                                            tag="p"
+                                            color="muted"
+                                            className="text-xs"
+                                        >
+                                            {t(
+                                                "participant.inbox.actionStatus.notConfirmed",
+                                                "Not Confirmed",
+                                            )}
+                                        </Typography>
+                                    )}
+                                </div>
+
+                                {/* Divider */}
+                                <div className="h-px bg-border" />
+                            </>
+                        )}
+
+                        {/* Certificate Status */}
+                        {inboxDetail.contentType === "certificate" && (
                             <>
                                 <div className="flex items-center justify-between px-0">
                                     <Typography
@@ -185,33 +272,7 @@ export const InboxDetailPage: React.FC<InboxDetailPageProps> = ({ inboxId }) => 
                                     >
                                         {t("participant.inbox.actionLabel", "Action")}
                                     </Typography>
-                                    {inboxDetail.contentType === "event-invitation" ? (
-                                        inboxDetail.acceptedAt ? (
-                                            <Typography
-                                                variant="text"
-                                                tag="p"
-                                                color="primary"
-                                                className="text-xs font-medium"
-                                            >
-                                                {t(
-                                                    "participant.inbox.actionStatus.accepted",
-                                                    "Accepted",
-                                                )}
-                                            </Typography>
-                                        ) : (
-                                            <Typography
-                                                variant="text"
-                                                tag="p"
-                                                color="muted"
-                                                className="text-xs"
-                                            >
-                                                {t(
-                                                    "participant.inbox.actionStatus.notAccepted",
-                                                    "Not Accepted",
-                                                )}
-                                            </Typography>
-                                        )
-                                    ) : inboxDetail.tokenId ? (
+                                    {inboxDetail.tokenId ? (
                                         <Typography
                                             variant="text"
                                             tag="p"
