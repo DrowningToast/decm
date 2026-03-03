@@ -53,7 +53,7 @@ func (uc *CertificateShareUsecase) GetCertificateShareByHandle(ctx context.Conte
 // If the share has no password the password argument is ignored.
 //
 // Return matrix:
-//   - (nil, nil, nil)                  — handle not found
+//   - ErrNotFound error                — handle not found (404)
 //   - (nil, &PasswordLocked, nil)      — share requires a password and the supplied password is wrong
 //   - (nil, &ValidButPending, nil)     — share valid, certificate not yet claimed
 //   - (cert, &Ready, nil)             — share valid and certificate claimed

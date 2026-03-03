@@ -26,6 +26,7 @@ import (
 	"time"
 
 	contract_repo "apps/backend/core-api/internal/repositories/contract/event"
+	certificate_contract_repo "apps/backend/core-api/internal/repositories/contract/certificate"
 	blockchain_repo "apps/backend/core-api/internal/repositories/contract/blockchain"
 	s3_repo "apps/backend/core-api/internal/repositories/storage/s3"
 
@@ -142,6 +143,7 @@ func main() {
 
 	blockchainClientRepo := blockchain_repo.NewBlockchainClientRepository(ethClient, &cfg.Blockchain)
 	eventContractFactoryRepo := contract_repo.NewEventContractFactoryRepository(ethClient, blockchainClientRepo)
+	certificateContractFactoryRepo := certificate_contract_repo.NewCertificateContractFactoryRepository(ethClient, blockchainClientRepo)
 
 	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo, authService, googleOAuthService)
 	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
@@ -149,7 +151,7 @@ func main() {
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo, authService, pgRepo)
 	systemStatusUc := system_status_usecase.NewSystemStatusUsecase(pgRepo)
 	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, eventContractFactoryRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, blockchainClientRepo, ethClient, s3Repo, log.Logger, authService, &cfg)
-	certificateShareUc := certificate_share_usecase.NewCertificateShareUsecase(pgRepo, pgRepo)
+	certificateShareUc := certificate_share_usecase.NewCertificateShareUsecase(pgRepo, pgRepo, certificateContractFactoryRepo)
 	_ = certificateShareUc // TODO: wire to certificate share handler
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, log.Logger)
 	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)
