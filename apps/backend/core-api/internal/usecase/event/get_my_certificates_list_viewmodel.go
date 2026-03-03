@@ -4,18 +4,8 @@ import (
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"
-	"time"
 
 	"github.com/cockroachdb/errors"
-)
-
-type ClaimCertificateStatus string
-
-var (
-	ClaimCertificateStatusPending ClaimCertificateStatus = "PENDING"
-	ClaimCertificateStatusClaimed ClaimCertificateStatus = "CLAIMED"
-	ClaimCertificateStatusExpired ClaimCertificateStatus = "EXPIRED"
-	ClaimCertificateStatusAborted ClaimCertificateStatus = "ABORTED"
 )
 
 type ClaimedCertificateViewModel struct {
@@ -44,17 +34,9 @@ func (uc *EventUsecase) GetMyCertificatesListViewModel(ctx context.Context, curr
 	}
 	claimedCertificateViewModels := make([]*ClaimedCertificateViewModel, len(claimedCertificates))
 	for i, certificate := range claimedCertificates {
-		status := ClaimCertificateStatusPending
-		if certificate.CertificateTokenId != nil || certificate.BroadcastedAt != nil {
-			status = ClaimCertificateStatusClaimed
-		} else if certificate.AbortedAt != nil {
-			status = ClaimCertificateStatusAborted
-		} else if certificate.EstimatedDeadline != nil && certificate.EstimatedDeadline.Before(time.Now()) {
-			status = ClaimCertificateStatusExpired
-		}
 		claimedCertificateViewModels[i] = &ClaimedCertificateViewModel{
 			EventCertificate: *certificate,
-			Status:           status,
+			Status:           GetClaimCertificateStatus(certificate),
 		}
 	}
 

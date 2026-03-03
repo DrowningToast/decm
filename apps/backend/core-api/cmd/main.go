@@ -48,6 +48,7 @@ import (
 	auth_usecase "apps/backend/core-api/internal/usecase/auth"
 	blockchain_usecase "apps/backend/core-api/internal/usecase/blockchain"
 
+	certificate_share_usecase "apps/backend/core-api/internal/usecase/certificate_share"
 	event_usecase "apps/backend/core-api/internal/usecase/event"
 	event_registration_invitation_usecase "apps/backend/core-api/internal/usecase/event_registration"
 	eventconfig_usecase "apps/backend/core-api/internal/usecase/eventconfig"
@@ -148,6 +149,8 @@ func main() {
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo, authService, pgRepo)
 	systemStatusUc := system_status_usecase.NewSystemStatusUsecase(pgRepo)
 	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, eventContractFactoryRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, blockchainClientRepo, ethClient, s3Repo, log.Logger, authService, &cfg)
+	certificateShareUc := certificate_share_usecase.NewCertificateShareUsecase(pgRepo, pgRepo)
+	_ = certificateShareUc // TODO: wire to certificate share handler
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, log.Logger)
 	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)
 	inboxUc := inbox_usecase.NewInboxUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo)

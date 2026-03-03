@@ -25,6 +25,7 @@ type Querier interface {
 	// Authentication Credentials CRUD queries
 	// Note: Encryption is handled at the repository layer using AES-GCM
 	CreateAuthenticationCredential(ctx context.Context, arg CreateAuthenticationCredentialParams) (AuthenticationCredential, error)
+	CreateCertificateShare(ctx context.Context, arg CreateCertificateShareParams) (CertificateShare, error)
 	CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error)
 	CreateEventCertificate(ctx context.Context, arg CreateEventCertificateParams) (EventCertificate, error)
 	CreateEventCertificateConfig(ctx context.Context, arg CreateEventCertificateConfigParams) (EventCertificateConfig, error)
@@ -66,6 +67,7 @@ type Querier interface {
 	GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (AuthenticationCredential, error)
 	GetBroadcastedUserSignatures(ctx context.Context) ([]GetBroadcastedUserSignaturesRow, error)
 	GetCertificateClaimSignatures(ctx context.Context) ([]GetCertificateClaimSignaturesRow, error)
+	GetCertificateShareByHandle(ctx context.Context, handle pgtype.Text) (CertificateShare, error)
 	GetClaimedCertificatesByCredentialID(ctx context.Context, arg GetClaimedCertificatesByCredentialIDParams) ([]GetClaimedCertificatesByCredentialIDRow, error)
 	GetClaimedCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error)
 	GetCredentialsBySolutionStatus(ctx context.Context, arg GetCredentialsBySolutionStatusParams) ([]AuthenticationCredential, error)
