@@ -2,6 +2,7 @@ package certificate_share
 
 import (
 	"apps/backend/common/customerror"
+	"apps/backend/common/hashutils"
 	"apps/backend/core-api/internal/entity"
 	"context"
 	"errors"
@@ -341,12 +342,14 @@ func TestGetCertificateShareDataWithPassword(t *testing.T) {
 	})
 
 	t.Run("should return payload when correct password is supplied", func(t *testing.T) {
-		pw := "correct-password"
+		rawPw := "correct-password"
+		hashedPw, err := hashutils.HashPassword(rawPw)
+		require.NoError(t, err)
 		share := &entity.CertificateShare{
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
-			Password:           &pw,
+			Password:           &hashedPw,
 		}
 		cert := &entity.EventCertificate{
 			Id:                      certID,
@@ -371,7 +374,7 @@ func TestGetCertificateShareDataWithPassword(t *testing.T) {
 			CertificateContractFactoryDg: mockFactory,
 		}
 
-		result, err := uc.GetCertificateShareDataWithPassword(ctx, handle, pw)
+		result, err := uc.GetCertificateShareDataWithPassword(ctx, handle, rawPw)
 
 		assert.NoError(t, err)
 		assert.Equal(t, payload, result)
@@ -382,12 +385,14 @@ func TestGetCertificateShareDataWithPassword(t *testing.T) {
 	})
 
 	t.Run("should return ErrForbidden when wrong password is supplied", func(t *testing.T) {
-		pw := "correct-password"
+		rawPw := "correct-password"
+		hashedPw, err := hashutils.HashPassword(rawPw)
+		require.NoError(t, err)
 		share := &entity.CertificateShare{
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
-			Password:           &pw,
+			Password:           &hashedPw,
 		}
 		mockShareDg := new(MockCertificateShareDataGateway)
 		mockShareDg.On("GetCertificateShareByHandle", ctx, handle).Return(share, nil)

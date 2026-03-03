@@ -2,6 +2,7 @@ package certificate_share
 
 import (
 	"apps/backend/common/customerror"
+	"apps/backend/common/hashutils"
 	"apps/backend/core-api/internal/entity"
 	"context"
 	"errors"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetCertificateShareByHandle(t *testing.T) {
@@ -212,13 +214,15 @@ func TestGetCertificateShareByHandleWithPassword(t *testing.T) {
 	})
 
 	t.Run("should return Ready status when correct password is supplied", func(t *testing.T) {
-		pw := "mypassword"
+		rawPw := "mypassword"
+		hashedPw, err := hashutils.HashPassword(rawPw)
+		require.NoError(t, err)
 		broadcastedAt := time.Now()
 		share := &entity.CertificateShare{
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
-			Password:           &pw,
+			Password:           &hashedPw,
 		}
 		cert := &entity.EventCertificate{
 			Id:                      certID,
@@ -238,7 +242,7 @@ func TestGetCertificateShareByHandleWithPassword(t *testing.T) {
 			EventCertificateDataGateway: mockCertDg,
 		}
 
-		resultCert, status, err := uc.GetCertificateShareByHandleWithPassword(ctx, handle, pw)
+		resultCert, status, err := uc.GetCertificateShareByHandleWithPassword(ctx, handle, rawPw)
 
 		assert.NoError(t, err)
 		assert.Equal(t, CertificateShareViewStatusReady, *status)
@@ -248,7 +252,10 @@ func TestGetCertificateShareByHandleWithPassword(t *testing.T) {
 	})
 
 	t.Run("should return PasswordLocked status when wrong password is supplied", func(t *testing.T) {
-		pw := "correct"
+		rawPw := "correct"
+		hashedPw, err := hashutils.HashPassword(rawPw)
+		require.NoError(t, err)
+		pw := hashedPw
 		share := &entity.CertificateShare{
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
@@ -285,12 +292,14 @@ func TestGetCertificateShareByHandleWithPassword(t *testing.T) {
 	})
 
 	t.Run("should return ValidButPending when certificate exists but is not yet claimed", func(t *testing.T) {
-		pw := "pw"
+		rawPw := "pw"
+		hashedPw, err := hashutils.HashPassword(rawPw)
+		require.NoError(t, err)
 		share := &entity.CertificateShare{
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
-			Password:           &pw,
+			Password:           &hashedPw,
 		}
 		cert := &entity.EventCertificate{
 			Id:                      certID,
@@ -309,7 +318,7 @@ func TestGetCertificateShareByHandleWithPassword(t *testing.T) {
 			EventCertificateDataGateway: mockCertDg,
 		}
 
-		resultCert, status, err := uc.GetCertificateShareByHandleWithPassword(ctx, handle, pw)
+		resultCert, status, err := uc.GetCertificateShareByHandleWithPassword(ctx, handle, rawPw)
 
 		assert.NoError(t, err)
 		assert.Nil(t, resultCert)

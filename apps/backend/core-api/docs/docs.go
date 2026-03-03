@@ -237,6 +237,228 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/certificate-shares/{handle}": {
+            "get": {
+                "description": "Retrieve a shared certificate by its handle. Returns PASSWORD_LOCKED if password-protected, VALID_BUT_PENDING if the certificate has not been claimed yet, or READY with certificate data.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CertificateShares"
+                ],
+                "summary": "Get certificate share",
+                "operationId": "get-certificate-share",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Share handle",
+                        "name": "handle",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share.CertificateShareStatusResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/certificate-shares/{handle}/data": {
+            "get": {
+                "description": "Retrieve the full on-chain Verifiable Credential data for a public share link. The certificate must be claimed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CertificateShares"
+                ],
+                "summary": "Get on-chain certificate share data",
+                "operationId": "get-certificate-share-data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Share handle",
+                        "name": "handle",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share.CertificateShareDataResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/certificate-shares/{handle}/data/unlock": {
+            "post": {
+                "description": "Retrieve the full on-chain Verifiable Credential data for a password-protected share link.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CertificateShares"
+                ],
+                "summary": "Get on-chain certificate share data (password-protected)",
+                "operationId": "get-certificate-share-data-with-password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Share handle",
+                        "name": "handle",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Password",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share.UnlockCertificateShareBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share.CertificateShareDataResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/certificate-shares/{handle}/unlock": {
+            "post": {
+                "description": "Unlock a password-protected share link and retrieve certificate data. Returns PASSWORD_LOCKED if the password is incorrect.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CertificateShares"
+                ],
+                "summary": "Get password-protected certificate share",
+                "operationId": "get-certificate-share-with-password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Share handle",
+                        "name": "handle",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Password",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share.UnlockCertificateShareBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share.CertificateShareStatusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/certificates/claim/{certificate_id}": {
             "post": {
                 "security": [
@@ -471,6 +693,82 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/certificates/{certificate_id}/shares": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a shareable link for a certificate. Only the certificate owner may call this endpoint. An optional password can be set to restrict access.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CertificateShares"
+                ],
+                "summary": "Create certificate share link",
+                "operationId": "create-certificate-share",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Certificate ID",
+                        "name": "certificate_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Optional password configuration",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share.CreateCertificateShareBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share.CreateCertificateShareResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
@@ -4118,6 +4416,74 @@ const docTemplate = `{
                 "unclaimed_certificates": {}
             }
         },
+        "certificate_share.CertificateShareDataResponse": {
+            "type": "object",
+            "required": [
+                "data"
+            ],
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/entity.CertificatePayload"
+                }
+            }
+        },
+        "certificate_share.CertificateShareStatusResponse": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "certificate": {
+                    "$ref": "#/definitions/entity.EventCertificate"
+                },
+                "status": {
+                    "$ref": "#/definitions/certificate_share.CertificateShareViewStatus"
+                }
+            }
+        },
+        "certificate_share.CertificateShareViewStatus": {
+            "type": "string",
+            "enum": [
+                "READY",
+                "VALID_BUT_PENDING",
+                "PASSWORD_LOCKED"
+            ],
+            "x-enum-varnames": [
+                "CertificateShareViewStatusReady",
+                "CertificateShareViewStatusValidButPending",
+                "CertificateShareViewStatusPasswordLocked"
+            ]
+        },
+        "certificate_share.CreateCertificateShareBody": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "certificate_share.CreateCertificateShareResponse": {
+            "type": "object",
+            "required": [
+                "share"
+            ],
+            "properties": {
+                "share": {
+                    "$ref": "#/definitions/entity.CertificateShare"
+                }
+            }
+        },
+        "certificate_share.UnlockCertificateShareBody": {
+            "type": "object",
+            "required": [
+                "password"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
         "common.SolutionStatus": {
             "type": "integer",
             "format": "int32",
@@ -4591,6 +4957,220 @@ const docTemplate = `{
             ],
             "properties": {
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.CertificatePayload": {
+            "type": "object",
+            "required": [
+                "data",
+                "header",
+                "proof"
+            ],
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/entity.CertificatePayloadData"
+                },
+                "header": {
+                    "$ref": "#/definitions/entity.CertificatePayloadHeader"
+                },
+                "proof": {
+                    "$ref": "#/definitions/entity.CertificatePayloadProof"
+                }
+            }
+        },
+        "entity.CertificatePayloadData": {
+            "type": "object",
+            "required": [
+                "backendEncryptedUserData",
+                "certificateId",
+                "certificateSubtitle",
+                "certificateTitle",
+                "certificateTokenId",
+                "encryptedUserData",
+                "eventDescription",
+                "eventName",
+                "issuedAt",
+                "issuerAddresses",
+                "issuerId",
+                "receiverAddress",
+                "status",
+                "userId"
+            ],
+            "properties": {
+                "backendEncryptedUserData": {
+                    "type": "string"
+                },
+                "certificateId": {
+                    "type": "string"
+                },
+                "certificateSubtitle": {
+                    "type": "string"
+                },
+                "certificateTitle": {
+                    "type": "string"
+                },
+                "certificateTokenId": {
+                    "type": "string"
+                },
+                "encryptedUserData": {
+                    "type": "string"
+                },
+                "eventDescription": {
+                    "type": "string"
+                },
+                "eventName": {
+                    "type": "string"
+                },
+                "issuedAt": {
+                    "type": "string"
+                },
+                "issuerAddresses": {
+                    "type": "string"
+                },
+                "issuerId": {
+                    "type": "string"
+                },
+                "receiverAddress": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "\"VALID\" | \"REVOKED\"",
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.CertificatePayloadHeader": {
+            "type": "object",
+            "required": [
+                "@context",
+                "id",
+                "issuanceDate",
+                "issuer",
+                "type"
+            ],
+            "properties": {
+                "@context": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "issuanceDate": {
+                    "type": "string"
+                },
+                "issuer": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "entity.CertificatePayloadHostProof": {
+            "type": "object",
+            "required": [
+                "publicKey",
+                "signature"
+            ],
+            "properties": {
+                "publicKey": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.CertificatePayloadIssuerProof": {
+            "type": "object",
+            "required": [
+                "issuerPublicKey",
+                "issuerSignature"
+            ],
+            "properties": {
+                "issuerPublicKey": {
+                    "type": "string"
+                },
+                "issuerSignature": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.CertificatePayloadProof": {
+            "type": "object",
+            "required": [
+                "encryptedByBackendRawData",
+                "encryptedByUserRawData",
+                "hash",
+                "host",
+                "issuers",
+                "signMessage"
+            ],
+            "properties": {
+                "encryptedByBackendRawData": {
+                    "type": "string"
+                },
+                "encryptedByUserRawData": {
+                    "type": "string"
+                },
+                "hash": {
+                    "type": "string"
+                },
+                "host": {
+                    "$ref": "#/definitions/entity.CertificatePayloadHostProof"
+                },
+                "issuers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.CertificatePayloadIssuerProof"
+                    }
+                },
+                "signMessage": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.CertificateShare": {
+            "type": "object",
+            "required": [
+                "active",
+                "created_at",
+                "event_certificate_id",
+                "handle",
+                "id",
+                "updated_at"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_certificate_id": {
+                    "type": "string"
+                },
+                "handle": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }

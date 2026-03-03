@@ -15,7 +15,8 @@ import (
 
 // CreateCertificateShare creates an inactive certificate_share row with a randomly generated handle.
 // Only certificates with PENDING or CLAIMED status can be shared.
-func (uc *CertificateShareUsecase) CreateCertificateShare(ctx context.Context, currentUser *auth.JwtClaims, certificateID uuid.UUID) (*entity.CertificateShare, error) {
+// hashedPassword should be the Argon2id-hashed password (or nil for no password protection).
+func (uc *CertificateShareUsecase) CreateCertificateShare(ctx context.Context, currentUser *auth.JwtClaims, certificateID uuid.UUID, hashedPassword *string) (*entity.CertificateShare, error) {
 	if currentUser == nil {
 		return nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))
 	}
@@ -50,7 +51,7 @@ func (uc *CertificateShareUsecase) CreateCertificateShare(ctx context.Context, c
 		EventCertificateId: certificateID,
 		Active:             false,
 		Handle:             handle,
-		Password:           nil,
+		Password:           hashedPassword,
 	})
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to create certificate share"))

@@ -36,6 +36,7 @@ import (
 
 	auth_handler "apps/backend/core-api/internal/handler/auth"
 	blockchain_handler "apps/backend/core-api/internal/handler/blockchain"
+	certificate_share_handler "apps/backend/core-api/internal/handler/certificate_share"
 
 	eventconfig_handler "apps/backend/core-api/internal/handler/eventconfig"
 	inboxmessages_handler "apps/backend/core-api/internal/handler/inbox_messages"
@@ -152,7 +153,6 @@ func main() {
 	systemStatusUc := system_status_usecase.NewSystemStatusUsecase(pgRepo)
 	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, eventContractFactoryRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, blockchainClientRepo, ethClient, s3Repo, log.Logger, authService, &cfg)
 	certificateShareUc := certificate_share_usecase.NewCertificateShareUsecase(pgRepo, pgRepo, certificateContractFactoryRepo)
-	_ = certificateShareUc // TODO: wire to certificate share handler
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, log.Logger)
 	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)
 	inboxUc := inbox_usecase.NewInboxUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo)
@@ -260,6 +260,9 @@ func main() {
 
 	certificateHandler := certificate.NewHandler(eventUc, authService, authenticationGuardMiddleware, log.Logger)
 	certificateHandler.Mount(apiV1)
+
+	certificateShareHandler := certificate_share_handler.NewHandler(certificateShareUc, authService, authenticationGuardMiddleware, log.Logger)
+	certificateShareHandler.Mount(apiV1)
 
 	eventHandler := event.NewHandler(eventUc, eventConfigUc, profileUc, eventRegistrationUc, authService, authenticationGuardMiddleware, log.Logger)
 	eventHandler.Mount(apiV1)

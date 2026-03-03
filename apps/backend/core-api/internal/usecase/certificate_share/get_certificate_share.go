@@ -2,6 +2,7 @@ package certificate_share
 
 import (
 	"apps/backend/common/customerror"
+	"apps/backend/common/hashutils"
 	"apps/backend/core-api/internal/entity"
 	"context"
 
@@ -66,9 +67,12 @@ func (uc *CertificateShareUsecase) GetCertificateShareByHandleWithPassword(ctx c
 		return nil, nil, customerror.Parse(&customerror.ErrNotFound, errors.New("certificate share not found"))
 	}
 
-	if share.Password != nil && *share.Password != password {
-		status := CertificateShareViewStatusPasswordLocked
-		return nil, &status, nil
+	if share.Password != nil {
+		match, err := hashutils.CompareHash(password, *share.Password)
+		if err != nil || !match {
+			status := CertificateShareViewStatusPasswordLocked
+			return nil, &status, nil
+		}
 	}
 
 	return uc.resolveCertificateForShare(ctx, share.EventCertificateId)

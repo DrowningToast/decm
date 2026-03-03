@@ -61,6 +61,33 @@ export interface CertificateGetMyCertificatesListViewModelResponse {
     unclaimed_certificates: any;
 }
 
+export interface CertificateShareCertificateShareDataResponse {
+    data: EntityCertificatePayload;
+}
+
+export interface CertificateShareCertificateShareStatusResponse {
+    certificate?: EntityEventCertificate;
+    status: CertificateShareCertificateShareViewStatus;
+}
+
+export enum CertificateShareCertificateShareViewStatus {
+    CertificateShareViewStatusReady = "READY",
+    CertificateShareViewStatusValidButPending = "VALID_BUT_PENDING",
+    CertificateShareViewStatusPasswordLocked = "PASSWORD_LOCKED",
+}
+
+export interface CertificateShareCreateCertificateShareBody {
+    password?: string;
+}
+
+export interface CertificateShareCreateCertificateShareResponse {
+    share: EntityCertificateShare;
+}
+
+export interface CertificateShareUnlockCertificateShareBody {
+    password: string;
+}
+
 export type CheckCertificateMintReadinessData =
     CoreApiInternalHandlerEventconfigCertificateMintReadinessResponse;
 
@@ -256,6 +283,15 @@ export interface CoreApiInternalUsecaseEventEventContractResponse {
     ticket_contract_address?: string;
 }
 
+export type CreateCertificateShareData = CertificateShareCreateCertificateShareResponse;
+
+export type CreateCertificateShareError = CustomerrorErrResponse;
+
+export interface CreateCertificateShareParams {
+    /** Certificate ID */
+    certificateId: string;
+}
+
 export type CreateEventContractData = CoreApiInternalHandlerEventEventContractResponse;
 
 export type CreateEventContractError = CustomerrorErrResponse;
@@ -384,6 +420,67 @@ export type DeleteEventRegistrationConfigError = CustomerrorErrResponse;
 export interface DeleteEventRegistrationConfigParams {
     /** Event ID */
     eventId: string;
+}
+
+export interface EntityCertificatePayload {
+    data: EntityCertificatePayloadData;
+    header: EntityCertificatePayloadHeader;
+    proof: EntityCertificatePayloadProof;
+}
+
+export interface EntityCertificatePayloadData {
+    backendEncryptedUserData: string;
+    certificateId: string;
+    certificateSubtitle: string;
+    certificateTitle: string;
+    certificateTokenId: string;
+    encryptedUserData: string;
+    eventDescription: string;
+    eventName: string;
+    issuedAt: string;
+    issuerAddresses: string;
+    issuerId: string;
+    receiverAddress: string;
+    /** "VALID" | "REVOKED" */
+    status: string;
+    userId: string;
+}
+
+export interface EntityCertificatePayloadHeader {
+    "@context": string[];
+    id: string;
+    issuanceDate: string;
+    issuer: string;
+    type: string[];
+}
+
+export interface EntityCertificatePayloadHostProof {
+    publicKey: string;
+    signature: string;
+}
+
+export interface EntityCertificatePayloadIssuerProof {
+    issuerPublicKey: string;
+    issuerSignature: string;
+}
+
+export interface EntityCertificatePayloadProof {
+    encryptedByBackendRawData: string;
+    encryptedByUserRawData: string;
+    hash: string;
+    host: EntityCertificatePayloadHostProof;
+    issuers: EntityCertificatePayloadIssuerProof[];
+    signMessage: string;
+}
+
+export interface EntityCertificateShare {
+    active: boolean;
+    created_at: string;
+    event_certificate_id: string;
+    handle: string;
+    id: string;
+    password?: string;
+    updated_at: string;
 }
 
 export interface EntityEvent {
@@ -881,6 +978,42 @@ export interface GenerateCertificateImageParams {
      * @format uuid
      */
     certificateId: string;
+}
+
+export type GetCertificateShareData = CertificateShareCertificateShareStatusResponse;
+
+export type GetCertificateShareDataData = CertificateShareCertificateShareDataResponse;
+
+export type GetCertificateShareDataError = CustomerrorErrResponse;
+
+export interface GetCertificateShareDataParams {
+    /** Share handle */
+    handle: string;
+}
+
+export type GetCertificateShareDataWithPasswordData = CertificateShareCertificateShareDataResponse;
+
+export type GetCertificateShareDataWithPasswordError = CustomerrorErrResponse;
+
+export interface GetCertificateShareDataWithPasswordParams {
+    /** Share handle */
+    handle: string;
+}
+
+export type GetCertificateShareError = CustomerrorErrResponse;
+
+export interface GetCertificateShareParams {
+    /** Share handle */
+    handle: string;
+}
+
+export type GetCertificateShareWithPasswordData = CertificateShareCertificateShareStatusResponse;
+
+export type GetCertificateShareWithPasswordError = CustomerrorErrResponse;
+
+export interface GetCertificateShareWithPasswordParams {
+    /** Share handle */
+    handle: string;
 }
 
 export type GetCertificatesListViewmodelData = EventGetCertificatesListViewModelResponse;
@@ -2097,6 +2230,94 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Retrieve a shared certificate by its handle. Returns PASSWORD_LOCKED if password-protected, VALID_BUT_PENDING if the certificate has not been claimed yet, or READY with certificate data.
+         *
+         * @tags CertificateShares
+         * @name GetCertificateShare
+         * @summary Get certificate share
+         * @request GET:/api/v1/certificate-shares/{handle}
+         */
+        getCertificateShare: (
+            { handle, ...query }: GetCertificateShareParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetCertificateShareData, GetCertificateShareError>({
+                path: `/api/v1/certificate-shares/${handle}`,
+                method: "GET",
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Retrieve the full on-chain Verifiable Credential data for a public share link. The certificate must be claimed.
+         *
+         * @tags CertificateShares
+         * @name GetCertificateShareData
+         * @summary Get on-chain certificate share data
+         * @request GET:/api/v1/certificate-shares/{handle}/data
+         */
+        getCertificateShareData: (
+            { handle, ...query }: GetCertificateShareDataParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetCertificateShareDataData, GetCertificateShareDataError>({
+                path: `/api/v1/certificate-shares/${handle}/data`,
+                method: "GET",
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Retrieve the full on-chain Verifiable Credential data for a password-protected share link.
+         *
+         * @tags CertificateShares
+         * @name GetCertificateShareDataWithPassword
+         * @summary Get on-chain certificate share data (password-protected)
+         * @request POST:/api/v1/certificate-shares/{handle}/data/unlock
+         */
+        getCertificateShareDataWithPassword: (
+            { handle, ...query }: GetCertificateShareDataWithPasswordParams,
+            body: CertificateShareUnlockCertificateShareBody,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                GetCertificateShareDataWithPasswordData,
+                GetCertificateShareDataWithPasswordError
+            >({
+                path: `/api/v1/certificate-shares/${handle}/data/unlock`,
+                method: "POST",
+                body: body,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Unlock a password-protected share link and retrieve certificate data. Returns PASSWORD_LOCKED if the password is incorrect.
+         *
+         * @tags CertificateShares
+         * @name GetCertificateShareWithPassword
+         * @summary Get password-protected certificate share
+         * @request POST:/api/v1/certificate-shares/{handle}/unlock
+         */
+        getCertificateShareWithPassword: (
+            { handle, ...query }: GetCertificateShareWithPasswordParams,
+            body: CertificateShareUnlockCertificateShareBody,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                GetCertificateShareWithPasswordData,
+                GetCertificateShareWithPasswordError
+            >({
+                path: `/api/v1/certificate-shares/${handle}/unlock`,
+                method: "POST",
+                body: body,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Queue a certificate claim using account password or wallet signature (requires authentication). The certificate will be minted asynchronously.
          *
          * @tags Certificates
@@ -2183,6 +2404,30 @@ export class Api<SecurityDataType extends unknown> {
                 method: "GET",
                 secure: true,
                 format: "blob",
+                ...params,
+            }),
+
+        /**
+         * @description Create a shareable link for a certificate. Only the certificate owner may call this endpoint. An optional password can be set to restrict access.
+         *
+         * @tags CertificateShares
+         * @name CreateCertificateShare
+         * @summary Create certificate share link
+         * @request POST:/api/v1/certificates/{certificate_id}/shares
+         * @secure
+         */
+        createCertificateShare: (
+            { certificateId, ...query }: CreateCertificateShareParams,
+            body: CertificateShareCreateCertificateShareBody,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<CreateCertificateShareData, CreateCertificateShareError>({
+                path: `/api/v1/certificates/${certificateId}/shares`,
+                method: "POST",
+                body: body,
+                secure: true,
+                type: ContentType.Json,
+                format: "json",
                 ...params,
             }),
 

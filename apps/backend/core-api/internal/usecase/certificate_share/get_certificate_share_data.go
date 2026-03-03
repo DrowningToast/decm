@@ -2,6 +2,7 @@ package certificate_share
 
 import (
 	"apps/backend/common/customerror"
+	"apps/backend/common/hashutils"
 	"apps/backend/core-api/internal/entity"
 	"context"
 	"math/big"
@@ -56,8 +57,11 @@ func (uc *CertificateShareUsecase) GetCertificateShareDataWithPassword(ctx conte
 		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("certificate share not found"))
 	}
 
-	if share.Password != nil && *share.Password != password {
-		return nil, customerror.Parse(&customerror.ErrForbidden, errors.New("incorrect password for certificate share"))
+	if share.Password != nil {
+		match, err := hashutils.CompareHash(password, *share.Password)
+		if err != nil || !match {
+			return nil, customerror.Parse(&customerror.ErrForbidden, errors.New("incorrect password for certificate share"))
+		}
 	}
 
 	return uc.fetchOnChainData(ctx, share.EventCertificateId)
