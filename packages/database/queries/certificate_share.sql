@@ -10,3 +10,13 @@ RETURNING *;
 
 -- name: GetCertificateShareByHandle :one
 SELECT * FROM certificate_share WHERE handle = sqlc.arg('handle') LIMIT 1;
+
+-- name: GetCertificateShareByID :one
+SELECT * FROM certificate_share WHERE id = sqlc.arg('id') LIMIT 1;
+
+-- name: UpdateCertificateShare :one
+UPDATE certificate_share
+SET password = sqlc.arg('password'),
+    updated_at = NOW()
+WHERE id = sqlc.arg('id')
+RETURNING *;

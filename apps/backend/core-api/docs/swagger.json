@@ -392,6 +392,82 @@
                 }
             }
         },
+        "/api/v1/certificate-shares/{share_id}": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the password of an existing share link. Only the certificate owner may call this endpoint. Set password to null or omit to remove password protection.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CertificateShares"
+                ],
+                "summary": "Update certificate share link",
+                "operationId": "update-certificate-share",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Share ID",
+                        "name": "share_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Optional password configuration",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share.UpdateCertificateShareBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share.UpdateCertificateShareResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/certificates/claim/{certificate_id}": {
             "post": {
                 "security": [
@@ -4414,6 +4490,28 @@
             "properties": {
                 "password": {
                     "type": "string"
+                }
+            }
+        },
+        "certificate_share.UpdateCertificateShareBody": {
+            "type": "object",
+            "required": [
+                "password"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "certificate_share.UpdateCertificateShareResponse": {
+            "type": "object",
+            "required": [
+                "share"
+            ],
+            "properties": {
+                "share": {
+                    "$ref": "#/definitions/entity.CertificateShare"
                 }
             }
         },

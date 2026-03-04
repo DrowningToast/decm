@@ -8,6 +8,7 @@ import (
 	"errors"
 
 	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -41,6 +42,46 @@ func (r *Repository) GetCertificateShareByHandle(ctx context.Context, handle str
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
+		return nil, err
+	}
+
+	return &entity.CertificateShare{
+		Id:                 result.ID,
+		EventCertificateId: result.EventCertificateID,
+		Active:             result.Active,
+		Handle:             result.Handle.String,
+		Password:           pgmapper.PgTextToStringPtr(result.Password),
+		CreatedAt:          result.CreatedAt.Time,
+		UpdatedAt:          result.UpdatedAt.Time,
+	}, nil
+}
+
+func (r *Repository) GetCertificateShareByID(ctx context.Context, id uuid.UUID) (*entity.CertificateShare, error) {
+	result, err := r.queries.GetCertificateShareByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &entity.CertificateShare{
+		Id:                 result.ID,
+		EventCertificateId: result.EventCertificateID,
+		Active:             result.Active,
+		Handle:             result.Handle.String,
+		Password:           pgmapper.PgTextToStringPtr(result.Password),
+		CreatedAt:          result.CreatedAt.Time,
+		UpdatedAt:          result.UpdatedAt.Time,
+	}, nil
+}
+
+func (r *Repository) UpdateCertificateShare(ctx context.Context, id uuid.UUID, params event_datagateway.UpdateCertificateShareParameters) (*entity.CertificateShare, error) {
+	result, err := r.queries.UpdateCertificateShare(ctx, generated.UpdateCertificateShareParams{
+		ID:       id,
+		Password: pgmapper.StringPtrToPgText(params.Password),
+	})
+	if err != nil {
 		return nil, err
 	}
 

@@ -138,6 +138,20 @@ definitions:
     required:
     - password
     type: object
+  certificate_share.UpdateCertificateShareBody:
+    properties:
+      password:
+        type: string
+    required:
+    - password
+    type: object
+  certificate_share.UpdateCertificateShareResponse:
+    properties:
+      share:
+        $ref: '#/definitions/entity.CertificateShare'
+    required:
+    - share
+    type: object
   common.SolutionStatus:
     enum:
     - 0
@@ -2815,6 +2829,57 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get on-chain certificate share data (password-protected)
+      tags:
+      - CertificateShares
+  /api/v1/certificate-shares/{share_id}:
+    patch:
+      consumes:
+      - application/json
+      description: Update the password of an existing share link. Only the certificate
+        owner may call this endpoint. Set password to null or omit to remove password
+        protection.
+      operationId: update-certificate-share
+      parameters:
+      - description: Share ID
+        in: path
+        name: share_id
+        required: true
+        type: string
+      - description: Optional password configuration
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/certificate_share.UpdateCertificateShareBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/certificate_share.UpdateCertificateShareResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      security:
+      - BearerAuth: []
+      summary: Update certificate share link
       tags:
       - CertificateShares
   /api/v1/certificates/{certificate_id}/image:

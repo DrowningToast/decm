@@ -68,3 +68,50 @@ func (q *Queries) GetCertificateShareByHandle(ctx context.Context, handle pgtype
 	)
 	return i, err
 }
+
+const GetCertificateShareByID = `-- name: GetCertificateShareByID :one
+SELECT id, event_certificate_id, active, handle, password, created_at, updated_at FROM certificate_share WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetCertificateShareByID(ctx context.Context, id uuid.UUID) (CertificateShare, error) {
+	row := q.db.QueryRow(ctx, GetCertificateShareByID, id)
+	var i CertificateShare
+	err := row.Scan(
+		&i.ID,
+		&i.EventCertificateID,
+		&i.Active,
+		&i.Handle,
+		&i.Password,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const UpdateCertificateShare = `-- name: UpdateCertificateShare :one
+UPDATE certificate_share
+SET password = $1,
+    updated_at = NOW()
+WHERE id = $2
+RETURNING id, event_certificate_id, active, handle, password, created_at, updated_at
+`
+
+type UpdateCertificateShareParams struct {
+	Password pgtype.Text `json:"password"`
+	ID       uuid.UUID   `json:"id"`
+}
+
+func (q *Queries) UpdateCertificateShare(ctx context.Context, arg UpdateCertificateShareParams) (CertificateShare, error) {
+	row := q.db.QueryRow(ctx, UpdateCertificateShare, arg.Password, arg.ID)
+	var i CertificateShare
+	err := row.Scan(
+		&i.ID,
+		&i.EventCertificateID,
+		&i.Active,
+		&i.Handle,
+		&i.Password,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}

@@ -88,6 +88,14 @@ export interface CertificateShareUnlockCertificateShareBody {
     password: string;
 }
 
+export interface CertificateShareUpdateCertificateShareBody {
+    password: string;
+}
+
+export interface CertificateShareUpdateCertificateShareResponse {
+    share: EntityCertificateShare;
+}
+
 export type CheckCertificateMintReadinessData =
     CoreApiInternalHandlerEventconfigCertificateMintReadinessResponse;
 
@@ -1764,6 +1772,15 @@ export interface ToggleCertificatePublishedParams {
     eventId: string;
 }
 
+export type UpdateCertificateShareData = CertificateShareUpdateCertificateShareResponse;
+
+export type UpdateCertificateShareError = CustomerrorErrResponse;
+
+export interface UpdateCertificateShareParams {
+    /** Share ID */
+    shareId: string;
+}
+
 export type UpdateEventCertificateConfigData =
     CoreApiInternalHandlerEventconfigEventCertificateConfigResponse;
 
@@ -2278,6 +2295,30 @@ export class Api<SecurityDataType extends unknown> {
                 path: `/api/v1/certificate-shares/${handle}/data/unlock`,
                 method: "POST",
                 body: body,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Update the password of an existing share link. Only the certificate owner may call this endpoint. Set password to null or omit to remove password protection.
+         *
+         * @tags CertificateShares
+         * @name UpdateCertificateShare
+         * @summary Update certificate share link
+         * @request PATCH:/api/v1/certificate-shares/{share_id}
+         * @secure
+         */
+        updateCertificateShare: (
+            { shareId, ...query }: UpdateCertificateShareParams,
+            body: CertificateShareUpdateCertificateShareBody,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<UpdateCertificateShareData, UpdateCertificateShareError>({
+                path: `/api/v1/certificate-shares/${shareId}`,
+                method: "PATCH",
+                body: body,
+                secure: true,
                 type: ContentType.Json,
                 format: "json",
                 ...params,
