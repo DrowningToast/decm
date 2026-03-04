@@ -980,8 +980,6 @@ export interface GenerateCertificateImageParams {
     certificateId: string;
 }
 
-export type GetCertificateShareData = CertificateShareCertificateShareStatusResponse;
-
 export type GetCertificateShareDataData = CertificateShareCertificateShareDataResponse;
 
 export type GetCertificateShareDataError = CustomerrorErrResponse;
@@ -1000,18 +998,11 @@ export interface GetCertificateShareDataWithPasswordParams {
     handle: string;
 }
 
-export type GetCertificateShareError = CustomerrorErrResponse;
+export type GetCertificateShareStatusData = CertificateShareCertificateShareStatusResponse;
 
-export interface GetCertificateShareParams {
-    /** Share handle */
-    handle: string;
-}
+export type GetCertificateShareStatusError = CustomerrorErrResponse;
 
-export type GetCertificateShareWithPasswordData = CertificateShareCertificateShareStatusResponse;
-
-export type GetCertificateShareWithPasswordError = CustomerrorErrResponse;
-
-export interface GetCertificateShareWithPasswordParams {
+export interface GetCertificateShareStatusParams {
     /** Share handle */
     handle: string;
 }
@@ -2233,15 +2224,15 @@ export class Api<SecurityDataType extends unknown> {
          * @description Retrieve a shared certificate by its handle. Returns PASSWORD_LOCKED if password-protected, VALID_BUT_PENDING if the certificate has not been claimed yet, or READY with certificate data.
          *
          * @tags CertificateShares
-         * @name GetCertificateShare
-         * @summary Get certificate share
+         * @name GetCertificateShareStatus
+         * @summary Get certificate share status
          * @request GET:/api/v1/certificate-shares/{handle}
          */
-        getCertificateShare: (
-            { handle, ...query }: GetCertificateShareParams,
+        getCertificateShareStatus: (
+            { handle, ...query }: GetCertificateShareStatusParams,
             params: RequestParams = {},
         ) =>
-            this.http.request<GetCertificateShareData, GetCertificateShareError>({
+            this.http.request<GetCertificateShareStatusData, GetCertificateShareStatusError>({
                 path: `/api/v1/certificate-shares/${handle}`,
                 method: "GET",
                 format: "json",
@@ -2285,31 +2276,6 @@ export class Api<SecurityDataType extends unknown> {
                 GetCertificateShareDataWithPasswordError
             >({
                 path: `/api/v1/certificate-shares/${handle}/data/unlock`,
-                method: "POST",
-                body: body,
-                type: ContentType.Json,
-                format: "json",
-                ...params,
-            }),
-
-        /**
-         * @description Unlock a password-protected share link and retrieve certificate data. Returns PASSWORD_LOCKED if the password is incorrect.
-         *
-         * @tags CertificateShares
-         * @name GetCertificateShareWithPassword
-         * @summary Get password-protected certificate share
-         * @request POST:/api/v1/certificate-shares/{handle}/unlock
-         */
-        getCertificateShareWithPassword: (
-            { handle, ...query }: GetCertificateShareWithPasswordParams,
-            body: CertificateShareUnlockCertificateShareBody,
-            params: RequestParams = {},
-        ) =>
-            this.http.request<
-                GetCertificateShareWithPasswordData,
-                GetCertificateShareWithPasswordError
-            >({
-                path: `/api/v1/certificate-shares/${handle}/unlock`,
                 method: "POST",
                 body: body,
                 type: ContentType.Json,

@@ -246,8 +246,8 @@ const docTemplate = `{
                 "tags": [
                     "CertificateShares"
                 ],
-                "summary": "Get certificate share",
-                "operationId": "get-certificate-share",
+                "summary": "Get certificate share status",
+                "operationId": "get-certificate-share-status",
                 "parameters": [
                     {
                         "type": "string",
@@ -380,66 +380,6 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/certificate-shares/{handle}/unlock": {
-            "post": {
-                "description": "Unlock a password-protected share link and retrieve certificate data. Returns PASSWORD_LOCKED if the password is incorrect.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "CertificateShares"
-                ],
-                "summary": "Get password-protected certificate share",
-                "operationId": "get-certificate-share-with-password",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Share handle",
-                        "name": "handle",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Password",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/certificate_share.UnlockCertificateShareBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/certificate_share.CertificateShareStatusResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }

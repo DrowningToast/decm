@@ -12,6 +12,14 @@ type CertificateShareDataResponse struct {
 	Data *entity.CertificatePayload `json:"data"`
 }
 
+type UnlockCertificateShareBody struct {
+	Password string `json:"password"`
+}
+
+func (b *UnlockCertificateShareBody) Parse(ctx *fiber.Ctx) error {
+	return ctx.BodyParser(b)
+}
+
 // @Summary Get on-chain certificate share data
 // @Description Retrieve the full on-chain Verifiable Credential data for a public share link. The certificate must be claimed.
 // @ID get-certificate-share-data

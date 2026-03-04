@@ -15,8 +15,7 @@ func (h *Handler) Mount(r fiber.Router) {
 
 	// Public routes — viewing shared certificates requires no authentication
 	shareGroup := r.Group("/certificate-shares")
-	shareGroup.Get("/:handle", h.GetCertificateShare)
-	shareGroup.Post("/:handle/unlock", h.GetCertificateShareWithPassword)
+	shareGroup.Get("/:handle", h.GetCertificateShareStatus)
 	shareGroup.Get("/:handle/data", h.GetCertificateShareData)
 	shareGroup.Post("/:handle/data/unlock", h.GetCertificateShareDataWithPassword)
 }

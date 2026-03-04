@@ -2710,7 +2710,7 @@ paths:
       description: Retrieve a shared certificate by its handle. Returns PASSWORD_LOCKED
         if password-protected, VALID_BUT_PENDING if the certificate has not been claimed
         yet, or READY with certificate data.
-      operationId: get-certificate-share
+      operationId: get-certificate-share-status
       parameters:
       - description: Share handle
         in: path
@@ -2732,7 +2732,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
-      summary: Get certificate share
+      summary: Get certificate share status
       tags:
       - CertificateShares
   /api/v1/certificate-shares/{handle}/data:
@@ -2815,47 +2815,6 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get on-chain certificate share data (password-protected)
-      tags:
-      - CertificateShares
-  /api/v1/certificate-shares/{handle}/unlock:
-    post:
-      consumes:
-      - application/json
-      description: Unlock a password-protected share link and retrieve certificate
-        data. Returns PASSWORD_LOCKED if the password is incorrect.
-      operationId: get-certificate-share-with-password
-      parameters:
-      - description: Share handle
-        in: path
-        name: handle
-        required: true
-        type: string
-      - description: Password
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/certificate_share.UnlockCertificateShareBody'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/certificate_share.CertificateShareStatusResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-      summary: Get password-protected certificate share
       tags:
       - CertificateShares
   /api/v1/certificates/{certificate_id}/image:
