@@ -46,11 +46,7 @@ func (h *Handler) CreateCertificateShare(ctx *fiber.Ctx) error {
 	}
 
 	// 2. Parse and validate path param
-	certificateIdStr := ctx.Params("certificate_id")
-	if certificateIdStr == "" {
-		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("certificate_id is required"))
-	}
-	certificateId, err := uuid.Parse(certificateIdStr)
+	certificateId, err := uuid.Parse(ctx.Params("certificate_id"))
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInvalidArgument, errors.Wrap(err, "invalid certificate_id format"))
 	}

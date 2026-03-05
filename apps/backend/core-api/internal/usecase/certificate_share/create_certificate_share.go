@@ -30,7 +30,7 @@ func (uc *CertificateShareUsecase) CreateCertificateShare(ctx context.Context, c
 	}
 
 	// Only the receiver may create a share link
-	if certificate.ReceiverCredentialId != nil && *certificate.ReceiverCredentialId != currentUser.UserId {
+	if certificate.ReceiverCredentialId == nil || *certificate.ReceiverCredentialId != currentUser.UserId {
 		return nil, customerror.Parse(&customerror.ErrForbidden, errors.New("not authorized to share this certificate"))
 	}
 
