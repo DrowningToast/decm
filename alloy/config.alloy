@@ -44,36 +44,42 @@ discovery.docker "containers" {
 }
 
 // ============================================
-// Docker Logs Collection
+// Relabel Docker Targets with Container Metadata
 // ============================================
-// Collect stdout/stderr from Docker containers
-loki.source.docker "containers" {
-  host             = "unix:///var/run/docker.sock"
-  targets          = discovery.docker.containers.targets
-  forward_to       = [loki.process.backend_json.receiver]
-  refresh_interval = "5s"
+discovery.relabel "docker_metadata" {
+  targets = discovery.docker.containers.targets
 
-  // Relabel rules to extract container metadata
-  relabel_rules {
+  rule {
     source_labels = ["__meta_docker_container_name"]
     regex         = "/(.*)"
     target_label  = "container"
   }
 
-  relabel_rules {
+  rule {
     source_labels = ["__meta_docker_container_id"]
     target_label  = "container_id"
   }
 
-  relabel_rules {
+  rule {
     source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
     target_label  = "compose_service"
   }
 
-  relabel_rules {
+  rule {
     source_labels = ["__meta_docker_container_log_stream"]
     target_label  = "stream"
   }
+}
+
+// ============================================
+// Docker Logs Collection
+// ============================================
+// Collect stdout/stderr from Docker containers
+loki.source.docker "containers" {
+  host             = "unix:///var/run/docker.sock"
+  targets          = discovery.relabel.docker_metadata.output
+  forward_to       = [loki.process.backend_json.receiver]
+  refresh_interval = "5s"
 }
 
 // ============================================
