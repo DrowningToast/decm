@@ -103,6 +103,12 @@ jobs:
                   DB_PASSWORD: decm_test_password
                   DB_NAME: decm_test
 
+            - name: Install Chromium
+              run: |
+                  sudo apt-get update -qq
+                  sudo apt-get install -y chromium-browser
+                  echo "CHROME_PATH=$(which chromium-browser)" >> $GITHUB_ENV
+
             - name: Run Core Tests
               run: pnpm test:core
               env:
