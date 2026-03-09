@@ -44,6 +44,34 @@ discovery.docker "containers" {
 }
 
 // ============================================
+// Relabel Rules for Container Metadata
+// ============================================
+discovery.relabel "docker_metadata" {
+  targets = []
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_id"]
+    target_label  = "container_id"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "compose_service"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_log_stream"]
+    target_label  = "stream"
+  }
+}
+
+// ============================================
 // Docker Logs Collection
 // ============================================
 // Collect stdout/stderr from Docker containers
@@ -52,28 +80,7 @@ loki.source.docker "containers" {
   targets          = discovery.docker.containers.targets
   forward_to       = [loki.process.backend_json.receiver]
   refresh_interval = "5s"
-
-  // Relabel rules to extract container metadata
-  relabel_rules {
-    source_labels = ["__meta_docker_container_name"]
-    regex         = "/(.*)"
-    target_label  = "container"
-  }
-
-  relabel_rules {
-    source_labels = ["__meta_docker_container_id"]
-    target_label  = "container_id"
-  }
-
-  relabel_rules {
-    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
-    target_label  = "compose_service"
-  }
-
-  relabel_rules {
-    source_labels = ["__meta_docker_container_log_stream"]
-    target_label  = "stream"
-  }
+  relabel_rules    = discovery.relabel.docker_metadata.rules
 }
 
 // ============================================
