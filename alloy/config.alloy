@@ -44,10 +44,10 @@ discovery.docker "containers" {
 }
 
 // ============================================
-// Relabel Rules for Container Metadata
+// Relabel Docker Targets with Container Metadata
 // ============================================
 discovery.relabel "docker_metadata" {
-  targets = []
+  targets = discovery.docker.containers.targets
 
   rule {
     source_labels = ["__meta_docker_container_name"]
@@ -77,10 +77,9 @@ discovery.relabel "docker_metadata" {
 // Collect stdout/stderr from Docker containers
 loki.source.docker "containers" {
   host             = "unix:///var/run/docker.sock"
-  targets          = discovery.docker.containers.targets
+  targets          = discovery.relabel.docker_metadata.output
   forward_to       = [loki.process.backend_json.receiver]
   refresh_interval = "5s"
-  relabel_rules    = discovery.relabel.docker_metadata.rules
 }
 
 // ============================================
