@@ -19,4 +19,4 @@ scrape_configs:
           credentials: "your-metrics-api-key-change-this"
       static_configs:
           - targets:
-                - "host.docker.internal:8080"
+                - "decm-backend-prod:8080"
