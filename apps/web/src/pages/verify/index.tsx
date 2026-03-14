@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { coreApiClient } from "@/lib/api/api";
+import { certificateService } from "@/services/services";
 import { PublicNavbar } from "@/components/layouts/navigations/PublicNavbar";
 import { Input } from "@/components/ui/input";
+import type { GetCertificateShareDataResult } from "@/services/CertificateService/mapper";
 
 export default function VerifyPage() {
     const [searchParams] = useSearchParams();
@@ -11,11 +12,7 @@ export default function VerifyPage() {
 
     const [password, setPassword] = useState("");
     const [passwordError, setPasswordError] = useState("");
-    const [unlockedData, setUnlockedData] = useState<{
-        header: object;
-        data: object;
-        proof: object;
-    } | null>(null);
+    const [unlockedData, setUnlockedData] = useState<GetCertificateShareDataResult | null>(null);
     const [isUnlocking, setIsUnlocking] = useState(false);
 
     const {
@@ -24,8 +21,7 @@ export default function VerifyPage() {
         isError,
     } = useQuery({
         queryKey: ["certificateShareStatus", handle],
-        queryFn: () =>
-            coreApiClient.v1.getCertificateShareStatus({ handle: handle! }).then((res) => res.data),
+        queryFn: () => certificateService.getCertificateShareStatus(handle!),
         enabled: !!handle,
     });
 
@@ -82,11 +78,11 @@ export default function VerifyPage() {
             setIsUnlocking(true);
             setPasswordError("");
             try {
-                const res = await coreApiClient.v1.getCertificateShareDataWithPassword(
-                    { handle },
-                    { password },
+                const result = await certificateService.getCertificateShareDataWithPassword(
+                    handle,
+                    password,
                 );
-                setUnlockedData(res.data);
+                setUnlockedData(result);
             } catch {
                 setPasswordError("Incorrect password. Please try again.");
             } finally {
@@ -133,7 +129,7 @@ export default function VerifyPage() {
             <div>
                 <PublicNavbar />
                 <main className="pt-16 flex items-center justify-center min-h-screen">
-                    <h1>{statusData.certificate.certificate_title}</h1>
+                    <h1>{statusData.certificate.certificateTitle}</h1>
                 </main>
             </div>
         );

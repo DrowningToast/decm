@@ -19,6 +19,11 @@ vi.mock("@/lib/api/api", () => ({
             checkCertificateMintReadiness: vi.fn(),
             getClaimCertificateSignMessage: vi.fn(),
             claimCertificate: vi.fn(),
+            createCertificateShare: vi.fn(),
+            updateCertificateShare: vi.fn(),
+            getCertificateShareStatus: vi.fn(),
+            getCertificateShareData: vi.fn(),
+            getCertificateShareDataWithPassword: vi.fn(),
         },
     },
 }));
@@ -606,6 +611,218 @@ describe("CertificateService", () => {
                 },
             );
             expect(result.certificateId).toBe("cert-123");
+        });
+    });
+
+    describe("createCertificateShareableLink", () => {
+        it("should create a share link without password", async () => {
+            const mockResponse = {
+                share: {
+                    id: "share-1",
+                    event_certificate_id: "cert-1",
+                    active: false,
+                    handle: "abc123",
+                    created_at: "2024-01-01T00:00:00Z",
+                    updated_at: "2024-01-01T00:00:00Z",
+                },
+            };
+
+            vi.mocked(mockCoreApi.v1.createCertificateShare).mockResolvedValue(mockResponse);
+
+            const result = await certificateService.createCertificateShareableLink("cert-1");
+
+            expect(mockCoreApi.v1.createCertificateShare).toHaveBeenCalledWith(
+                { certificateId: "cert-1" },
+                { password: undefined },
+            );
+            expect(result.certificateId).toBe("cert-1");
+            expect(result.handle).toBe("abc123");
+            expect(result.isPublished).toBe(false);
+        });
+
+        it("should create a share link with password", async () => {
+            const mockResponse = {
+                share: {
+                    id: "share-2",
+                    event_certificate_id: "cert-2",
+                    active: false,
+                    handle: "def456",
+                    created_at: "2024-01-01T00:00:00Z",
+                    updated_at: "2024-01-01T00:00:00Z",
+                },
+            };
+
+            vi.mocked(mockCoreApi.v1.createCertificateShare).mockResolvedValue(mockResponse);
+
+            const result = await certificateService.createCertificateShareableLink(
+                "cert-2",
+                "secret",
+            );
+
+            expect(mockCoreApi.v1.createCertificateShare).toHaveBeenCalledWith(
+                { certificateId: "cert-2" },
+                { password: "secret" },
+            );
+            expect(result.handle).toBe("def456");
+        });
+    });
+
+    describe("updateCertificateShare", () => {
+        it("should update share password", async () => {
+            const mockResponse = {
+                share: {
+                    id: "share-1",
+                    event_certificate_id: "cert-1",
+                    active: false,
+                    handle: "abc123",
+                    created_at: "2024-01-01T00:00:00Z",
+                    updated_at: "2024-01-02T00:00:00Z",
+                },
+            };
+
+            vi.mocked(mockCoreApi.v1.updateCertificateShare).mockResolvedValue(mockResponse);
+
+            const result = await certificateService.updateCertificateShare("share-1", "newpass");
+
+            expect(mockCoreApi.v1.updateCertificateShare).toHaveBeenCalledWith(
+                { shareId: "share-1" },
+                { password: "newpass" },
+            );
+            expect(result.certificateId).toBe("cert-1");
+            expect(result.handle).toBe("abc123");
+        });
+    });
+
+    describe("getCertificateShareStatus", () => {
+        it("should return READY status with certificate", async () => {
+            const mockResponse = {
+                status: "READY" as const,
+                certificate: {
+                    id: "cert-1",
+                    event_id: "event-1",
+                    event_contract_address: "0x123",
+                    created_at: "2024-01-01T00:00:00Z",
+                    certificate_title: "Test Certificate",
+                },
+            };
+
+            vi.mocked(mockCoreApi.v1.getCertificateShareStatus).mockResolvedValue(mockResponse);
+
+            const result = await certificateService.getCertificateShareStatus("handle-abc");
+
+            expect(mockCoreApi.v1.getCertificateShareStatus).toHaveBeenCalledWith({
+                handle: "handle-abc",
+            });
+            expect(result.status).toBe("READY");
+            expect(result.certificate?.id).toBe("cert-1");
+            expect(result.certificate?.certificateTitle).toBe("Test Certificate");
+        });
+
+        it("should return PASSWORD_LOCKED status without certificate", async () => {
+            const mockResponse = {
+                status: "PASSWORD_LOCKED" as const,
+                certificate: undefined,
+            };
+
+            vi.mocked(mockCoreApi.v1.getCertificateShareStatus).mockResolvedValue(mockResponse);
+
+            const result = await certificateService.getCertificateShareStatus("handle-abc");
+
+            expect(result.status).toBe("PASSWORD_LOCKED");
+            expect(result.certificate).toBeUndefined();
+        });
+
+        it("should return VALID_BUT_PENDING status", async () => {
+            const mockResponse = {
+                status: "VALID_BUT_PENDING" as const,
+                certificate: undefined,
+            };
+
+            vi.mocked(mockCoreApi.v1.getCertificateShareStatus).mockResolvedValue(mockResponse);
+
+            const result = await certificateService.getCertificateShareStatus("handle-abc");
+
+            expect(result.status).toBe("VALID_BUT_PENDING");
+        });
+    });
+
+    describe("getCertificateShareData", () => {
+        it("should fetch and return on-chain VC data", async () => {
+            const mockPayload = {
+                header: {
+                    "@context": ["https://w3.org/ns/credentials/v2"],
+                    id: "vc-1",
+                    issuanceDate: "2024-01-01T00:00:00Z",
+                    issuer: "did:example:issuer",
+                    type: ["VerifiableCredential"],
+                },
+                data: {
+                    certificateId: "cert-1",
+                    certificateTitle: "Test",
+                    status: "VALID",
+                } as never,
+                proof: {
+                    hash: "0xhash",
+                    encryptedByBackendRawData: "",
+                    encryptedByUserRawData: "",
+                    signMessage: "",
+                    host: { publicKey: "0xpk", signature: "0xsig" },
+                    issuers: [],
+                },
+            };
+            const mockResponse = { data: mockPayload };
+
+            vi.mocked(mockCoreApi.v1.getCertificateShareData).mockResolvedValue(mockResponse);
+
+            const result = await certificateService.getCertificateShareData("handle-abc");
+
+            expect(mockCoreApi.v1.getCertificateShareData).toHaveBeenCalledWith({
+                handle: "handle-abc",
+            });
+            expect(result.payload).toBe(mockPayload);
+        });
+    });
+
+    describe("getCertificateShareDataWithPassword", () => {
+        it("should fetch on-chain VC data with password", async () => {
+            const mockPayload = {
+                header: {
+                    "@context": ["https://w3.org/ns/credentials/v2"],
+                    id: "vc-2",
+                    issuanceDate: "2024-01-01T00:00:00Z",
+                    issuer: "did:example:issuer",
+                    type: ["VerifiableCredential"],
+                },
+                data: {
+                    certificateId: "cert-2",
+                    certificateTitle: "Protected",
+                    status: "VALID",
+                } as never,
+                proof: {
+                    hash: "0xhash2",
+                    encryptedByBackendRawData: "",
+                    encryptedByUserRawData: "",
+                    signMessage: "",
+                    host: { publicKey: "0xpk", signature: "0xsig" },
+                    issuers: [],
+                },
+            };
+            const mockResponse = { data: mockPayload };
+
+            vi.mocked(mockCoreApi.v1.getCertificateShareDataWithPassword).mockResolvedValue(
+                mockResponse,
+            );
+
+            const result = await certificateService.getCertificateShareDataWithPassword(
+                "handle-abc",
+                "secret",
+            );
+
+            expect(mockCoreApi.v1.getCertificateShareDataWithPassword).toHaveBeenCalledWith(
+                { handle: "handle-abc" },
+                { password: "secret" },
+            );
+            expect(result.payload).toBe(mockPayload);
         });
     });
 });

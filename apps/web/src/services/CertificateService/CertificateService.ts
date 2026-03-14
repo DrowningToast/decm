@@ -26,6 +26,12 @@ import {
     type ClaimCertificateWithSignatureParams,
     type CreateCertificateShareableLinkResult,
     mapCreateCertificateShareableLinkResponse,
+    type UpdateCertificateShareResult,
+    mapUpdateCertificateShareResponse,
+    type GetCertificateShareStatusResult,
+    mapGetCertificateShareStatusResponse,
+    type GetCertificateShareDataResult,
+    mapGetCertificateShareDataResponse,
 } from "./mapper";
 
 export interface FontFamily {
@@ -278,6 +284,37 @@ export class CertificateService {
             { password },
         );
         return mapCreateCertificateShareableLinkResponse(response);
+    }
+
+    public async updateCertificateShare(
+        shareId: string,
+        password: string,
+    ): Promise<UpdateCertificateShareResult> {
+        const response = await this._coreApi.v1.updateCertificateShare({ shareId }, { password });
+        return mapUpdateCertificateShareResponse(response);
+    }
+
+    public async getCertificateShareStatus(
+        handle: string,
+    ): Promise<GetCertificateShareStatusResult> {
+        const response = await this._coreApi.v1.getCertificateShareStatus({ handle });
+        return mapGetCertificateShareStatusResponse(response);
+    }
+
+    public async getCertificateShareData(handle: string): Promise<GetCertificateShareDataResult> {
+        const response = await this._coreApi.v1.getCertificateShareData({ handle });
+        return mapGetCertificateShareDataResponse(response);
+    }
+
+    public async getCertificateShareDataWithPassword(
+        handle: string,
+        password: string,
+    ): Promise<GetCertificateShareDataResult> {
+        const response = await this._coreApi.v1.getCertificateShareDataWithPassword(
+            { handle },
+            { password },
+        );
+        return mapGetCertificateShareDataResponse(response);
     }
 }
 

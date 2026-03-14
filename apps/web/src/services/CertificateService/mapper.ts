@@ -8,7 +8,11 @@ import type {
     CoreApiInternalHandlerEventPublishEventCertificatesResponse,
     EventImportCertificateReceiverRequest,
     EntityEventCertificate,
+    EntityCertificatePayload,
     CertificateShareCreateCertificateShareResponse,
+    CertificateShareUpdateCertificateShareResponse,
+    CertificateShareCertificateShareStatusResponse,
+    CertificateShareCertificateShareDataResponse,
     CertificateShareCertificateShareViewModel,
     EventClaimedCertificateViewModel,
     EventUnclaimedCertificateViewModel,
@@ -143,6 +147,22 @@ export interface CreateCertificateShareableLinkResult {
     certificateId: string;
     isPublished: boolean;
     handle: string;
+}
+
+export interface UpdateCertificateShareResult {
+    certificateId: string;
+    handle: string;
+}
+
+export type CertificateShareViewStatus = "READY" | "VALID_BUT_PENDING" | "PASSWORD_LOCKED";
+
+export interface GetCertificateShareStatusResult {
+    status: CertificateShareViewStatus;
+    certificate?: Certificate;
+}
+
+export interface GetCertificateShareDataResult {
+    payload: EntityCertificatePayload;
 }
 
 /**
@@ -379,3 +399,32 @@ export const mapCreateCertificateShareableLinkResponse = (
         handle: response.share.handle,
     };
 };
+
+/**
+ * Maps update certificate share response
+ */
+export const mapUpdateCertificateShareResponse = (
+    response: CertificateShareUpdateCertificateShareResponse,
+): UpdateCertificateShareResult => ({
+    certificateId: response.share.event_certificate_id,
+    handle: response.share.handle,
+});
+
+/**
+ * Maps get certificate share status response
+ */
+export const mapGetCertificateShareStatusResponse = (
+    response: CertificateShareCertificateShareStatusResponse,
+): GetCertificateShareStatusResult => ({
+    status: response.status as CertificateShareViewStatus,
+    certificate: response.certificate ? mapCertificate(response.certificate) : undefined,
+});
+
+/**
+ * Maps get certificate share data response
+ */
+export const mapGetCertificateShareDataResponse = (
+    response: CertificateShareCertificateShareDataResponse,
+): GetCertificateShareDataResult => ({
+    payload: response.data,
+});
