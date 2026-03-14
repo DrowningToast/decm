@@ -17,7 +17,7 @@ scrape_configs:
       metrics_path: /metrics
       scheme: http
       authorization:
-          credentials: "${METRICS_API_KEY}"
+          credentials: "METRICS_API_KEY_VALUE"
       static_configs:
           - targets:
                 - "decm-backend-prod:8080"

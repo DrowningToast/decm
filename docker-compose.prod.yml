@@ -168,7 +168,7 @@ services:
             - sh
             - -c
             - |
-                envsubst < /etc/prometheus/prometheus.yml.template > /etc/prometheus/prometheus.yml &&
+                sed "s/METRICS_API_KEY_VALUE/$$METRICS_API_KEY/g" /etc/prometheus/prometheus.yml.template > /etc/prometheus/prometheus.yml &&
                 /bin/prometheus \
                   --config.file=/etc/prometheus/prometheus.yml \
                   --storage.tsdb.path=/prometheus \
