@@ -151,7 +151,7 @@ func main() {
 	authUc := auth_usecase.NewAuthUsecase(pgRepo, blockchainClientRepo)
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo, authService, pgRepo)
 	systemStatusUc := system_status_usecase.NewSystemStatusUsecase(pgRepo)
-	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, eventContractFactoryRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, blockchainClientRepo, ethClient, s3Repo, log.Logger, authService, &cfg)
+	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, eventContractFactoryRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, blockchainClientRepo, ethClient, s3Repo, log.Logger, authService, &cfg)
 	certificateShareUc := certificate_share_usecase.NewCertificateShareUsecase(pgRepo, pgRepo, certificateContractFactoryRepo)
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, log.Logger)
 	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)

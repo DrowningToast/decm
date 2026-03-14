@@ -34,7 +34,9 @@ export type Path =
     | `/signin/sign-message`
     | `/signin/verify-oauth`
     | `/signout`
-    | `/signup`;
+    | `/signup`
+    | `/verify`
+    | `/verify//test`;
 
 export type Params = {
     "/app/certificates/:id": { id: string };

@@ -183,6 +183,15 @@ vi.mock("lucide-react", () => {
         "CircleCheck",
         "Download",
         "Send",
+        "Share2",
+        "Award",
+        "UserPlus",
+        "CircleCheckBig",
+        "CircleX",
+        "Lock",
+        "ShieldAlert",
+        "Globe",
+        "KeyRound",
     ];
 
     const iconMocks: Record<string, unknown> = {};

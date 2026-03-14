@@ -24,27 +24,33 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 
 	t.Run("Returns claimed and unclaimed certificates", func(t *testing.T) {
 		mockCertDg := new(mockEventCertificateDg)
+		mockShareDg := new(mockCertificateShareDg)
 		uc := &event_usecase.EventUsecase{
 			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDataGateway: mockShareDg,
 		}
 
 		broadcastedAt := time.Now().Add(-time.Hour)
+		certID1 := uuid.New()
+		certID2 := uuid.New()
 		claimed := []*entity.EventCertificate{
 			{
-				Id:            uuid.New(),
+				Id:            certID1,
 				EventId:       uuid.New(),
 				BroadcastedAt: &broadcastedAt,
 			},
 		}
 		unclaimed := []*entity.EventCertificate{
 			{
-				Id:      uuid.New(),
+				Id:      certID2,
 				EventId: uuid.New(),
 			},
 		}
 
 		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
 		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return(unclaimed, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID1).Return(nil, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID2).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
 
@@ -55,18 +61,22 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 		assert.Equal(t, 1, result.TotalClaimed)
 		assert.Equal(t, 1, result.TotalUnclaimed)
 		mockCertDg.AssertExpectations(t)
+		mockShareDg.AssertExpectations(t)
 	})
 
 	t.Run("Certificate with token_id has CLAIMED status", func(t *testing.T) {
 		mockCertDg := new(mockEventCertificateDg)
+		mockShareDg := new(mockCertificateShareDg)
 		uc := &event_usecase.EventUsecase{
 			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDataGateway: mockShareDg,
 		}
 
 		tokenId := "42"
+		certID := uuid.New()
 		claimed := []*entity.EventCertificate{
 			{
-				Id:                 uuid.New(),
+				Id:                 certID,
 				EventId:            uuid.New(),
 				CertificateTokenId: &tokenId,
 			},
@@ -74,24 +84,29 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 
 		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
 		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
 
 		assert.NoError(t, err)
 		assert.Equal(t, event_usecase.ClaimCertificateStatusClaimed, result.ClaimedCertificates[0].Status)
 		mockCertDg.AssertExpectations(t)
+		mockShareDg.AssertExpectations(t)
 	})
 
 	t.Run("Certificate with token_id but no BroadcastedAt still has CLAIMED status", func(t *testing.T) {
 		mockCertDg := new(mockEventCertificateDg)
+		mockShareDg := new(mockCertificateShareDg)
 		uc := &event_usecase.EventUsecase{
 			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDataGateway: mockShareDg,
 		}
 
 		tokenId := "1"
+		certID := uuid.New()
 		claimed := []*entity.EventCertificate{
 			{
-				Id:                 uuid.New(),
+				Id:                 certID,
 				EventId:            uuid.New(),
 				CertificateTokenId: &tokenId,
 				BroadcastedAt:      nil,
@@ -100,24 +115,29 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 
 		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
 		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
 
 		assert.NoError(t, err)
 		assert.Equal(t, event_usecase.ClaimCertificateStatusClaimed, result.ClaimedCertificates[0].Status)
 		mockCertDg.AssertExpectations(t)
+		mockShareDg.AssertExpectations(t)
 	})
 
 	t.Run("Claimed certificate with BroadcastedAt has CLAIMED status", func(t *testing.T) {
 		mockCertDg := new(mockEventCertificateDg)
+		mockShareDg := new(mockCertificateShareDg)
 		uc := &event_usecase.EventUsecase{
 			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDataGateway: mockShareDg,
 		}
 
 		broadcastedAt := time.Now().Add(-time.Hour)
+		certID := uuid.New()
 		claimed := []*entity.EventCertificate{
 			{
-				Id:            uuid.New(),
+				Id:            certID,
 				EventId:       uuid.New(),
 				BroadcastedAt: &broadcastedAt,
 			},
@@ -125,24 +145,29 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 
 		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
 		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
 
 		assert.NoError(t, err)
 		assert.Equal(t, event_usecase.ClaimCertificateStatusClaimed, result.ClaimedCertificates[0].Status)
 		mockCertDg.AssertExpectations(t)
+		mockShareDg.AssertExpectations(t)
 	})
 
 	t.Run("Claimed certificate without BroadcastedAt and future deadline has PENDING status", func(t *testing.T) {
 		mockCertDg := new(mockEventCertificateDg)
+		mockShareDg := new(mockCertificateShareDg)
 		uc := &event_usecase.EventUsecase{
 			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDataGateway: mockShareDg,
 		}
 
 		futureDeadline := time.Now().Add(24 * time.Hour)
+		certID := uuid.New()
 		claimed := []*entity.EventCertificate{
 			{
-				Id:                uuid.New(),
+				Id:                certID,
 				EventId:           uuid.New(),
 				BroadcastedAt:     nil,
 				EstimatedDeadline: &futureDeadline,
@@ -151,24 +176,29 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 
 		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
 		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
 
 		assert.NoError(t, err)
 		assert.Equal(t, event_usecase.ClaimCertificateStatusPending, result.ClaimedCertificates[0].Status)
 		mockCertDg.AssertExpectations(t)
+		mockShareDg.AssertExpectations(t)
 	})
 
 	t.Run("Claimed certificate without BroadcastedAt and past deadline has EXPIRED status", func(t *testing.T) {
 		mockCertDg := new(mockEventCertificateDg)
+		mockShareDg := new(mockCertificateShareDg)
 		uc := &event_usecase.EventUsecase{
 			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDataGateway: mockShareDg,
 		}
 
 		pastDeadline := time.Now().Add(-time.Hour)
+		certID := uuid.New()
 		claimed := []*entity.EventCertificate{
 			{
-				Id:                uuid.New(),
+				Id:                certID,
 				EventId:           uuid.New(),
 				BroadcastedAt:     nil,
 				EstimatedDeadline: &pastDeadline,
@@ -177,23 +207,28 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 
 		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
 		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
 
 		assert.NoError(t, err)
 		assert.Equal(t, event_usecase.ClaimCertificateStatusExpired, result.ClaimedCertificates[0].Status)
 		mockCertDg.AssertExpectations(t)
+		mockShareDg.AssertExpectations(t)
 	})
 
 	t.Run("Claimed certificate without BroadcastedAt and nil deadline has PENDING status", func(t *testing.T) {
 		mockCertDg := new(mockEventCertificateDg)
+		mockShareDg := new(mockCertificateShareDg)
 		uc := &event_usecase.EventUsecase{
 			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDataGateway: mockShareDg,
 		}
 
+		certID := uuid.New()
 		claimed := []*entity.EventCertificate{
 			{
-				Id:                uuid.New(),
+				Id:                certID,
 				EventId:           uuid.New(),
 				BroadcastedAt:     nil,
 				EstimatedDeadline: nil,
@@ -202,18 +237,22 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 
 		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
 		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
 
 		assert.NoError(t, err)
 		assert.Equal(t, event_usecase.ClaimCertificateStatusPending, result.ClaimedCertificates[0].Status)
 		mockCertDg.AssertExpectations(t)
+		mockShareDg.AssertExpectations(t)
 	})
 
 	t.Run("Empty certificates lists", func(t *testing.T) {
 		mockCertDg := new(mockEventCertificateDg)
+		mockShareDg := new(mockCertificateShareDg)
 		uc := &event_usecase.EventUsecase{
 			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDataGateway: mockShareDg,
 		}
 
 		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
@@ -228,12 +267,15 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 		assert.Equal(t, 0, result.TotalClaimed)
 		assert.Equal(t, 0, result.TotalUnclaimed)
 		mockCertDg.AssertExpectations(t)
+		mockShareDg.AssertExpectations(t)
 	})
 
 	t.Run("GetClaimedCertificatesByCredentialID returns error", func(t *testing.T) {
 		mockCertDg := new(mockEventCertificateDg)
+		mockShareDg := new(mockCertificateShareDg)
 		uc := &event_usecase.EventUsecase{
 			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDataGateway: mockShareDg,
 		}
 
 		expectedErr := errors.New("database error")
@@ -249,8 +291,10 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 
 	t.Run("GetUnclaimedReadyCertificatesByCredentialID returns error", func(t *testing.T) {
 		mockCertDg := new(mockEventCertificateDg)
+		mockShareDg := new(mockCertificateShareDg)
 		uc := &event_usecase.EventUsecase{
 			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDataGateway: mockShareDg,
 		}
 
 		expectedErr := errors.New("database error")
@@ -267,34 +311,40 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 
 	t.Run("Multiple claimed certificates with mixed statuses", func(t *testing.T) {
 		mockCertDg := new(mockEventCertificateDg)
+		mockShareDg := new(mockCertificateShareDg)
 		uc := &event_usecase.EventUsecase{
 			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDataGateway: mockShareDg,
 		}
 
 		broadcastedAt := time.Now().Add(-time.Hour)
 		pastDeadline := time.Now().Add(-time.Hour)
 		futureDeadline := time.Now().Add(24 * time.Hour)
 		tokenId := "99"
+		certID1 := uuid.New()
+		certID2 := uuid.New()
+		certID3 := uuid.New()
+		certID4 := uuid.New()
 
 		claimed := []*entity.EventCertificate{
 			{
-				Id:            uuid.New(),
+				Id:            certID1,
 				EventId:       uuid.New(),
 				BroadcastedAt: &broadcastedAt,
 			},
 			{
-				Id:                 uuid.New(),
+				Id:                 certID2,
 				EventId:            uuid.New(),
 				CertificateTokenId: &tokenId,
 			},
 			{
-				Id:                uuid.New(),
+				Id:                certID3,
 				EventId:           uuid.New(),
 				BroadcastedAt:     nil,
 				EstimatedDeadline: &pastDeadline,
 			},
 			{
-				Id:                uuid.New(),
+				Id:                certID4,
 				EventId:           uuid.New(),
 				BroadcastedAt:     nil,
 				EstimatedDeadline: &futureDeadline,
@@ -303,6 +353,10 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 
 		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
 		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID1).Return(nil, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID2).Return(nil, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID3).Return(nil, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID4).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
 
@@ -313,12 +367,15 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 		assert.Equal(t, event_usecase.ClaimCertificateStatusExpired, result.ClaimedCertificates[2].Status)  // past deadline
 		assert.Equal(t, event_usecase.ClaimCertificateStatusPending, result.ClaimedCertificates[3].Status)  // future deadline
 		mockCertDg.AssertExpectations(t)
+		mockShareDg.AssertExpectations(t)
 	})
 
 	t.Run("Claimed certificate embeds EventCertificate fields", func(t *testing.T) {
 		mockCertDg := new(mockEventCertificateDg)
+		mockShareDg := new(mockCertificateShareDg)
 		uc := &event_usecase.EventUsecase{
 			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDataGateway: mockShareDg,
 		}
 
 		certID := uuid.New()
@@ -338,6 +395,7 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 
 		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
 		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
 
@@ -348,6 +406,50 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 		assert.Equal(t, &eventName, vm.EventName)
 		assert.Equal(t, &broadcastedAt, vm.BroadcastedAt)
 		assert.Equal(t, &signatureCreatedAt, vm.SignatureCreatedAt)
+		assert.Nil(t, vm.CertificateShare)
 		mockCertDg.AssertExpectations(t)
+		mockShareDg.AssertExpectations(t)
+	})
+
+	t.Run("Claimed certificate with share returns share viewmodel", func(t *testing.T) {
+		mockCertDg := new(mockEventCertificateDg)
+		mockShareDg := new(mockCertificateShareDg)
+		uc := &event_usecase.EventUsecase{
+			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDataGateway: mockShareDg,
+		}
+
+		certID := uuid.New()
+		broadcastedAt := time.Now().Add(-time.Hour)
+		shareHandle := "abc123"
+		share := &entity.CertificateShare{
+			Id:                 uuid.New(),
+			EventCertificateId: certID,
+			Active:             true,
+			Handle:             shareHandle,
+			Password:           nil,
+		}
+		claimed := []*entity.EventCertificate{
+			{
+				Id:            certID,
+				EventId:       uuid.New(),
+				BroadcastedAt: &broadcastedAt,
+			},
+		}
+
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
+		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(share, nil)
+
+		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
+
+		assert.NoError(t, err)
+		vm := result.ClaimedCertificates[0]
+		assert.NotNil(t, vm.CertificateShare)
+		assert.Equal(t, shareHandle, vm.CertificateShare.Handle)
+		assert.Equal(t, true, vm.CertificateShare.Active)
+		assert.Equal(t, false, vm.CertificateShare.HasPassword)
+		mockCertDg.AssertExpectations(t)
+		mockShareDg.AssertExpectations(t)
 	})
 }

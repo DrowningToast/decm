@@ -55,10 +55,10 @@ export interface CertificateGetClaimCertificateSignMessageResponse {
 }
 
 export interface CertificateGetMyCertificatesListViewModelResponse {
-    claimed_certificates: any;
+    claimed_certificates: EventClaimedCertificateViewModel[];
     total_claimed: number;
     total_unclaimed: number;
-    unclaimed_certificates: any;
+    unclaimed_certificates: EventUnclaimedCertificateViewModel[];
 }
 
 export interface CertificateShareCertificateShareDataResponse {
@@ -68,6 +68,16 @@ export interface CertificateShareCertificateShareDataResponse {
 export interface CertificateShareCertificateShareStatusResponse {
     certificate?: EntityEventCertificate;
     status: CertificateShareCertificateShareViewStatus;
+}
+
+export interface CertificateShareCertificateShareViewModel {
+    active: boolean;
+    created_at: string;
+    event_certificate_id: string;
+    handle: string;
+    has_password: boolean;
+    id: string;
+    updated_at: string;
 }
 
 export enum CertificateShareCertificateShareViewStatus {
@@ -658,6 +668,32 @@ export interface EntitySystemStatusSchedule {
     updated_at: string;
 }
 
+export interface EventClaimedCertificateViewModel {
+    aborted_at?: string;
+    academic_institution?: string;
+    broadcasted_at?: string;
+    certificate_digest?: string;
+    certificate_share?: CertificateShareCertificateShareViewModel;
+    certificate_subtitle?: string;
+    certificate_title?: string;
+    certificate_token_id?: string;
+    created_at: string;
+    estimated_deadline?: string;
+    event_certificate_address?: string;
+    event_contract_address: string;
+    event_id: string;
+    event_name?: string;
+    id: string;
+    inbox_message_id?: string;
+    name?: string;
+    receiver_credential_id?: string;
+    receiver_email?: string;
+    revoked_at?: string;
+    signature_created_at?: string;
+    status: string;
+    user_claim_signature_id?: string;
+}
+
 export interface EventCreateEventContractRequest {
     access_manager_contract_address: string;
     certificate_contract_address: string;
@@ -840,6 +876,31 @@ export interface EventRegistrationParticipantRequestItem {
     first_name: string;
     last_name: string;
     phone_number?: string;
+}
+
+export interface EventUnclaimedCertificateViewModel {
+    aborted_at?: string;
+    academic_institution?: string;
+    broadcasted_at?: string;
+    certificate_digest?: string;
+    certificate_share?: CertificateShareCertificateShareViewModel;
+    certificate_subtitle?: string;
+    certificate_title?: string;
+    certificate_token_id?: string;
+    created_at: string;
+    estimated_deadline?: string;
+    event_certificate_address?: string;
+    event_contract_address: string;
+    event_id: string;
+    event_name?: string;
+    id: string;
+    inbox_message_id?: string;
+    name?: string;
+    receiver_credential_id?: string;
+    receiver_email?: string;
+    revoked_at?: string;
+    signature_created_at?: string;
+    user_claim_signature_id?: string;
 }
 
 export interface EventUpdateEventCertificateTextConfigRequest {

@@ -67,6 +67,7 @@ type Querier interface {
 	GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (AuthenticationCredential, error)
 	GetBroadcastedUserSignatures(ctx context.Context) ([]GetBroadcastedUserSignaturesRow, error)
 	GetCertificateClaimSignatures(ctx context.Context) ([]GetCertificateClaimSignaturesRow, error)
+	GetCertificateShareByEventCertificateID(ctx context.Context, eventCertificateID uuid.UUID) (CertificateShare, error)
 	GetCertificateShareByHandle(ctx context.Context, handle pgtype.Text) (CertificateShare, error)
 	GetCertificateShareByID(ctx context.Context, id uuid.UUID) (CertificateShare, error)
 	GetClaimedCertificatesByCredentialID(ctx context.Context, arg GetClaimedCertificatesByCredentialIDParams) ([]GetClaimedCertificatesByCredentialIDRow, error)

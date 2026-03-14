@@ -207,6 +207,34 @@ func (m *mockEventCertificateDg) GetEventCertificateWithSignature(ctx context.Co
 	return args.Get(0).(*eventdatagateway.EventCertificateWithSignature), args.Error(1)
 }
 
+type mockCertificateShareDg struct {
+	mock.Mock
+}
+
+func (m *mockCertificateShareDg) CreateCertificateShare(ctx context.Context, params eventdatagateway.CreateCertificateShareParameters) (*entity.CertificateShare, error) {
+	return nil, nil
+}
+
+func (m *mockCertificateShareDg) GetCertificateShareByHandle(ctx context.Context, handle string) (*entity.CertificateShare, error) {
+	return nil, nil
+}
+
+func (m *mockCertificateShareDg) GetCertificateShareByID(ctx context.Context, id uuid.UUID) (*entity.CertificateShare, error) {
+	return nil, nil
+}
+
+func (m *mockCertificateShareDg) GetCertificateShareByEventCertificateID(ctx context.Context, eventCertificateID uuid.UUID) (*entity.CertificateShare, error) {
+	args := m.Called(ctx, eventCertificateID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.CertificateShare), args.Error(1)
+}
+
+func (m *mockCertificateShareDg) UpdateCertificateShare(ctx context.Context, id uuid.UUID, params eventdatagateway.UpdateCertificateShareParameters) (*entity.CertificateShare, error) {
+	return nil, nil
+}
+
 func TestIsUserJoined(t *testing.T) {
 	ctx := context.Background()
 	eventID := uuid.New()

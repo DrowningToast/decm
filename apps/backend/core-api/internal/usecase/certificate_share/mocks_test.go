@@ -44,6 +44,14 @@ func (m *MockCertificateShareDataGateway) GetCertificateShareByID(ctx context.Co
 	return args.Get(0).(*entity.CertificateShare), args.Error(1)
 }
 
+func (m *MockCertificateShareDataGateway) GetCertificateShareByEventCertificateID(ctx context.Context, eventCertificateID uuid.UUID) (*entity.CertificateShare, error) {
+	args := m.Called(ctx, eventCertificateID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.CertificateShare), args.Error(1)
+}
+
 func (m *MockCertificateShareDataGateway) UpdateCertificateShare(ctx context.Context, id uuid.UUID, params event_datagateway.UpdateCertificateShareParameters) (*entity.CertificateShare, error) {
 	args := m.Called(ctx, id, params)
 	if args.Get(0) == nil {

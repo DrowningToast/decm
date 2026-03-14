@@ -155,6 +155,7 @@ func buildTestApp(
 		nil,          // EventContractFactoryDg
 		mockIssuerDg, // EventIssuerDataGateway
 		nil,          // EventCertificateDataGateway
+		nil,          // CertificateShareDataGateway
 		nil,          // EventCertificateSignatureDataGateway
 		nil,          // EventCertificateConfigDg
 		nil,          // EventCertificateFontFamilyDg
@@ -230,7 +231,7 @@ func buildTestAppWithUser(
 		mockEventDg,
 		nil, nil,
 		mockIssuerDg,
-		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 		discardLogger,
 		nil, nil,
 	)

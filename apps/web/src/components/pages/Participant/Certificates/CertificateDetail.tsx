@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { useCertificateDetailUsecase } from "./useCertificateDetailUsecase";
-import { BottomNav } from "@/components/BottomNav/BottomNav";
+import { BottomNav, type BottomNavVariant } from "@/components/BottomNav/BottomNav";
 import { CircleCheckBig, Award, Loader2, UserPlus, CircleX } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { useCertificateImage } from "@/hooks/useCertificateImage";
 import { useCertificateDetailNavStore } from "@/components/BottomNav/stores/certificates";
 import { EthExplorerLink } from "@/components/common/EthscanLink";
 import { useEvent } from "@/hooks/events/useEvent";
+import { useCertificateCreateShareLinkUsecase } from "./useCertificateCreateShareLinkUsecase";
 
 interface CertificateDetailProps {
     certificateId: string;
@@ -24,7 +25,15 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
     const { mutateAsync: openPasswordPrompt } = usePasswordPrompt();
     const { claimCertificate, isClaiming } = useClaimCertificate();
     const [isProcessing, setIsProcessing] = useState(false);
-    const { setImageUrl } = useCertificateDetailNavStore();
+    const { setOnClickShareable, setImageUrl } = useCertificateDetailNavStore();
+    const { createCertificateShareLink } = useCertificateCreateShareLinkUsecase();
+    useEffect(() => {
+        setOnClickShareable(() => {
+            // TODO: Actual implementations
+            alert("helloo");
+            // createCertificateShareLink(certificateId);
+        });
+    }, [certificateId, createCertificateShareLink, setOnClickShareable]);
 
     // Fetch event details to check if user has joined
     const { event, isLoadingEvent } = useEvent(certificate?.eventId || "");
@@ -100,6 +109,13 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
         !isCertificateExpired &&
         !isClaiming &&
         !isProcessing;
+
+    const bottomNavVariant: BottomNavVariant = useMemo(() => {
+        if (certificate?.shareable) {
+            return "certificate-details-shared";
+        }
+        return "certificate-detail";
+    }, [certificate?.shareable]);
 
     const formattedDeadline = certificate?.estimatedDeadline
         ? new Date(certificate.estimatedDeadline).toLocaleDateString(
@@ -517,7 +533,10 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                                     ) : isCertificateAborted ? (
                                         <>
                                             <Award className="w-5 h-5" />
-                                            {t("participant.certificates.retryClaimButton", "Retry Claim")}
+                                            {t(
+                                                "participant.certificates.retryClaimButton",
+                                                "Retry Claim",
+                                            )}
                                         </>
                                     ) : (
                                         <>
@@ -564,7 +583,7 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
             </div>
 
             {/* Bottom Navigation */}
-            <BottomNav variant="certificate-detail" onBack={() => window.history.back()} />
+            <BottomNav variant={bottomNavVariant} onBack={() => window.history.back()} />
         </div>
     );
 };

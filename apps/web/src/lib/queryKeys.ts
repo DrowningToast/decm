@@ -99,6 +99,7 @@ export const QUERY_KEY = {
         byEventId: (eventId: string) => ["certificate", "event", eventId] as const,
         claimSignMessage: (certificateId: string) =>
             ["certificate", certificateId, "claim-sign-message"] as const,
+        myCertificatesListViewModel: ["my-certificates-list-viewmodel"] as const,
     },
 
     // Inbox

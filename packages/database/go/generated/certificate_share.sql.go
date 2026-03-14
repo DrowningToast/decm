@@ -50,6 +50,25 @@ func (q *Queries) CreateCertificateShare(ctx context.Context, arg CreateCertific
 	return i, err
 }
 
+const GetCertificateShareByEventCertificateID = `-- name: GetCertificateShareByEventCertificateID :one
+SELECT id, event_certificate_id, active, handle, password, created_at, updated_at FROM certificate_share WHERE event_certificate_id = $1 LIMIT 1
+`
+
+func (q *Queries) GetCertificateShareByEventCertificateID(ctx context.Context, eventCertificateID uuid.UUID) (CertificateShare, error) {
+	row := q.db.QueryRow(ctx, GetCertificateShareByEventCertificateID, eventCertificateID)
+	var i CertificateShare
+	err := row.Scan(
+		&i.ID,
+		&i.EventCertificateID,
+		&i.Active,
+		&i.Handle,
+		&i.Password,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const GetCertificateShareByHandle = `-- name: GetCertificateShareByHandle :one
 SELECT id, event_certificate_id, active, handle, password, created_at, updated_at FROM certificate_share WHERE handle = $1 LIMIT 1
 `

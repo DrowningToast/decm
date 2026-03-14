@@ -4422,14 +4422,24 @@ const docTemplate = `{
                 "unclaimed_certificates"
             ],
             "properties": {
-                "claimed_certificates": {},
+                "claimed_certificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/event.ClaimedCertificateViewModel"
+                    }
+                },
                 "total_claimed": {
                     "type": "integer"
                 },
                 "total_unclaimed": {
                     "type": "integer"
                 },
-                "unclaimed_certificates": {}
+                "unclaimed_certificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/event.UnclaimedCertificateViewModel"
+                    }
+                }
             }
         },
         "certificate_share.CertificateShareDataResponse": {
@@ -4454,6 +4464,41 @@ const docTemplate = `{
                 },
                 "status": {
                     "$ref": "#/definitions/certificate_share.CertificateShareViewStatus"
+                }
+            }
+        },
+        "certificate_share.CertificateShareViewModel": {
+            "type": "object",
+            "required": [
+                "active",
+                "created_at",
+                "event_certificate_id",
+                "handle",
+                "has_password",
+                "id",
+                "updated_at"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_certificate_id": {
+                    "type": "string"
+                },
+                "handle": {
+                    "type": "string"
+                },
+                "has_password": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
@@ -5750,6 +5795,87 @@ const docTemplate = `{
                 }
             }
         },
+        "event.ClaimedCertificateViewModel": {
+            "type": "object",
+            "required": [
+                "created_at",
+                "event_contract_address",
+                "event_id",
+                "id",
+                "status"
+            ],
+            "properties": {
+                "aborted_at": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "broadcasted_at": {
+                    "type": "string"
+                },
+                "certificate_digest": {
+                    "type": "string"
+                },
+                "certificate_share": {
+                    "$ref": "#/definitions/certificate_share.CertificateShareViewModel"
+                },
+                "certificate_subtitle": {
+                    "type": "string"
+                },
+                "certificate_title": {
+                    "type": "string"
+                },
+                "certificate_token_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "estimated_deadline": {
+                    "type": "string"
+                },
+                "event_certificate_address": {
+                    "type": "string"
+                },
+                "event_contract_address": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "event_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inbox_message_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "receiver_credential_id": {
+                    "type": "string"
+                },
+                "receiver_email": {
+                    "type": "string"
+                },
+                "revoked_at": {
+                    "type": "string"
+                },
+                "signature_created_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "user_claim_signature_id": {
+                    "type": "string"
+                }
+            }
+        },
         "event.CreateEventContractRequest": {
             "type": "object",
             "required": [
@@ -6274,6 +6400,83 @@ const docTemplate = `{
                 },
                 "phone_number_requirement_status": {
                     "type": "integer"
+                }
+            }
+        },
+        "event.UnclaimedCertificateViewModel": {
+            "type": "object",
+            "required": [
+                "created_at",
+                "event_contract_address",
+                "event_id",
+                "id"
+            ],
+            "properties": {
+                "aborted_at": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "broadcasted_at": {
+                    "type": "string"
+                },
+                "certificate_digest": {
+                    "type": "string"
+                },
+                "certificate_share": {
+                    "$ref": "#/definitions/certificate_share.CertificateShareViewModel"
+                },
+                "certificate_subtitle": {
+                    "type": "string"
+                },
+                "certificate_title": {
+                    "type": "string"
+                },
+                "certificate_token_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "estimated_deadline": {
+                    "type": "string"
+                },
+                "event_certificate_address": {
+                    "type": "string"
+                },
+                "event_contract_address": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "event_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inbox_message_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "receiver_credential_id": {
+                    "type": "string"
+                },
+                "receiver_email": {
+                    "type": "string"
+                },
+                "revoked_at": {
+                    "type": "string"
+                },
+                "signature_created_at": {
+                    "type": "string"
+                },
+                "user_claim_signature_id": {
+                    "type": "string"
                 }
             }
         },

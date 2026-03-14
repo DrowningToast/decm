@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { useSearchCertificateNavStore, useCertificateDetailNavStore } from "./certificates";
+import {
+    useSearchCertificateNavStore,
+    useCertificateDetailNavStore,
+    useCertificateDetailsSharedNavStore,
+} from "./certificates";
 
 describe("useSearchCertificateNavStore", () => {
     beforeEach(() => {
@@ -65,5 +69,75 @@ describe("useCertificateDetailNavStore", () => {
         useCertificateDetailNavStore.getState().setImageUrl("https://example.com/img.png");
         useCertificateDetailNavStore.getState().setImageUrl(null);
         expect(useCertificateDetailNavStore.getState().imageUrl).toBeNull();
+    });
+
+    it("onClickShareable is a no-op function by default", () => {
+        expect(() => useCertificateDetailNavStore.getState().onClickShareable()).not.toThrow();
+    });
+
+    it("isShareableLoading defaults to false", () => {
+        expect(useCertificateDetailNavStore.getState().isShareableLoading).toBe(false);
+    });
+
+    it("after setOnClickShareable, calling onClickShareable invokes the callback", () => {
+        let called = false;
+        useCertificateDetailNavStore.getState().setOnClickShareable(() => {
+            called = true;
+        });
+        useCertificateDetailNavStore.getState().onClickShareable();
+        expect(called).toBe(true);
+    });
+
+    it("isShareableLoading returns to false after callback runs synchronously", () => {
+        let called = false;
+        useCertificateDetailNavStore.getState().setOnClickShareable(() => {
+            called = true;
+        });
+        useCertificateDetailNavStore.getState().onClickShareable();
+        expect(called).toBe(true);
+        expect(useCertificateDetailNavStore.getState().isShareableLoading).toBe(false);
+    });
+});
+
+describe("useCertificateDetailsSharedNavStore", () => {
+    beforeEach(() => {
+        useCertificateDetailsSharedNavStore.setState({
+            shareableUrl: null,
+            shareableHandle: null,
+            isPasswordProtected: false,
+            isPublished: false,
+            isPasswordLoading: false,
+            isPublishLoading: false,
+        });
+    });
+
+    it("initializes with default values", () => {
+        const state = useCertificateDetailsSharedNavStore.getState();
+        expect(state.shareableUrl).toBeNull();
+        expect(state.shareableHandle).toBeNull();
+        expect(state.isPasswordProtected).toBe(false);
+        expect(state.isPublished).toBe(false);
+        expect(state.isPasswordLoading).toBe(false);
+        expect(state.isPublishLoading).toBe(false);
+    });
+
+    it("setOnClickPassword — after calling, onClickPassword() invokes the callback", () => {
+        let called = false;
+        useCertificateDetailsSharedNavStore.getState().setOnClickPassword(() => {
+            called = true;
+        });
+        useCertificateDetailsSharedNavStore.getState().onClickPassword(false);
+        expect(called).toBe(true);
+    });
+
+    it("setOnChangePublish — after calling, onChangePublish(true) invokes callback with true", () => {
+        let receivedValue: boolean | undefined;
+        useCertificateDetailsSharedNavStore
+            .getState()
+            .setOnChangePublish((isPublished: boolean) => {
+                receivedValue = isPublished;
+            });
+        useCertificateDetailsSharedNavStore.getState().onChangePublish(true);
+        expect(receivedValue).toBe(true);
     });
 });

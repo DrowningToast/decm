@@ -42,6 +42,15 @@ func (uc *CertificateShareUsecase) CreateCertificateShare(ctx context.Context, c
 		)
 	}
 
+	// Return the existing share if one already exists for this certificate.
+	existing, err := uc.CertificateShareDg.GetCertificateShareByEventCertificateID(ctx, certificateID)
+	if err != nil {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to check existing certificate share"))
+	}
+	if existing != nil {
+		return existing, nil
+	}
+
 	handle, err := generateShareHandle()
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to generate share handle"))

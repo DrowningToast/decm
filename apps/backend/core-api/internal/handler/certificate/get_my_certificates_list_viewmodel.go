@@ -9,10 +9,10 @@ import (
 
 // GetMyCertificatesListViewModelResponse represents the response structure for current user's certificates list
 type GetMyCertificatesListViewModelResponse struct {
-	ClaimedCertificates   interface{} `json:"claimed_certificates"`
-	UnclaimedCertificates interface{} `json:"unclaimed_certificates"`
-	TotalClaimed          int         `json:"total_claimed"`
-	TotalUnclaimed        int         `json:"total_unclaimed"`
+	ClaimedCertificates   []*event.ClaimedCertificateViewModel   `json:"claimed_certificates"`
+	UnclaimedCertificates []*event.UnclaimedCertificateViewModel `json:"unclaimed_certificates"`
+	TotalClaimed          int                                    `json:"total_claimed"`
+	TotalUnclaimed        int                                    `json:"total_unclaimed"`
 }
 
 // @Summary Get my certificates list viewmodel
@@ -35,10 +35,5 @@ func (h Handler) GetMyCertificatesListViewModel(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(&event.MyCertificatesListViewModel{
-		ClaimedCertificates:   viewmodel.ClaimedCertificates,
-		UnclaimedCertificates: viewmodel.UnclaimedCertificates,
-		TotalClaimed:          viewmodel.TotalClaimed,
-		TotalUnclaimed:        viewmodel.TotalUnclaimed,
-	})
+	return ctx.Status(fiber.StatusOK).JSON(viewmodel)
 }

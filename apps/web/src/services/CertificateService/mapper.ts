@@ -8,12 +8,26 @@ import type {
     CoreApiInternalHandlerEventPublishEventCertificatesResponse,
     EventImportCertificateReceiverRequest,
     EntityEventCertificate,
+    CertificateShareCreateCertificateShareResponse,
+    CertificateShareCertificateShareViewModel,
+    EventClaimedCertificateViewModel,
+    EventUnclaimedCertificateViewModel,
 } from "@decm/api";
 
 export interface CertificateImage {
     url: string;
     blob: Blob;
     contentType: string;
+}
+
+export interface CertificateShare {
+    id: string;
+    eventCertificateId: string;
+    active: boolean;
+    handle: string;
+    hasPassword: boolean;
+    createdAt: string;
+    updatedAt: string;
 }
 
 // Frontend camelCase certificate interface
@@ -39,11 +53,18 @@ export interface Certificate {
     estimatedDeadline?: string;
     abortedAt?: string;
     userClaimSignatureId?: string;
+    certificateShare?: CertificateShare;
 }
 
+export interface ClaimedCertificate extends Certificate {
+    status: string;
+}
+
+export type UnclaimedCertificate = Certificate;
+
 export interface MyCertificatesViewModel {
-    claimedCertificates: Certificate[];
-    unclaimedCertificates: Certificate[];
+    claimedCertificates: ClaimedCertificate[];
+    unclaimedCertificates: UnclaimedCertificate[];
     totalClaimed: number;
     totalUnclaimed: number;
 }
@@ -118,6 +139,12 @@ export interface ClaimCertificateWithSignatureParams {
     signMessage: string;
 }
 
+export interface CreateCertificateShareableLinkResult {
+    certificateId: string;
+    isPublished: boolean;
+    handle: string;
+}
+
 /**
  * Converts a Blob to a CertificateImage object with object URL
  * @param blob - The image blob from the API
@@ -131,6 +158,21 @@ export const mapBlobToCertificateImage = (blob: Blob): CertificateImage => {
         contentType: blob.type || "image/png",
     };
 };
+
+/**
+ * Maps API certificate share viewmodel to frontend camelCase
+ */
+export const mapCertificateShare = (
+    share: CertificateShareCertificateShareViewModel,
+): CertificateShare => ({
+    id: share.id,
+    eventCertificateId: share.event_certificate_id,
+    active: share.active,
+    handle: share.handle,
+    hasPassword: share.has_password,
+    createdAt: share.created_at,
+    updatedAt: share.updated_at,
+});
 
 /**
  * Maps API snake_case certificate to frontend camelCase
@@ -159,6 +201,59 @@ export const mapCertificate = (cert: EntityEventCertificate): Certificate => {
     };
 };
 
+const mapClaimedCertificate = (cert: EventClaimedCertificateViewModel): ClaimedCertificate => ({
+    id: cert.id,
+    eventId: cert.event_id,
+    eventName: cert.event_name,
+    receiverCredentialId: cert.receiver_credential_id,
+    receiverEmail: cert.receiver_email,
+    name: cert.name,
+    academicInstitution: cert.academic_institution,
+    certificateTitle: cert.certificate_title,
+    certificateSubtitle: cert.certificate_subtitle,
+    eventContractAddress: cert.event_contract_address,
+    eventCertificateAddress: cert.event_certificate_address,
+    certificateTokenId: cert.certificate_token_id,
+    createdAt: cert.created_at,
+    revokedAt: cert.revoked_at,
+    inboxMessageId: cert.inbox_message_id,
+    broadcastedAt: cert.broadcasted_at,
+    estimatedDeadline: cert.estimated_deadline,
+    abortedAt: cert.aborted_at,
+    userClaimSignatureId: cert.user_claim_signature_id,
+    status: cert.status,
+    certificateShare: cert.certificate_share
+        ? mapCertificateShare(cert.certificate_share)
+        : undefined,
+});
+
+const mapUnclaimedCertificate = (
+    cert: EventUnclaimedCertificateViewModel,
+): UnclaimedCertificate => ({
+    id: cert.id,
+    eventId: cert.event_id,
+    eventName: cert.event_name,
+    receiverCredentialId: cert.receiver_credential_id,
+    receiverEmail: cert.receiver_email,
+    name: cert.name,
+    academicInstitution: cert.academic_institution,
+    certificateTitle: cert.certificate_title,
+    certificateSubtitle: cert.certificate_subtitle,
+    eventContractAddress: cert.event_contract_address,
+    eventCertificateAddress: cert.event_certificate_address,
+    certificateTokenId: cert.certificate_token_id,
+    createdAt: cert.created_at,
+    revokedAt: cert.revoked_at,
+    inboxMessageId: cert.inbox_message_id,
+    broadcastedAt: cert.broadcasted_at,
+    estimatedDeadline: cert.estimated_deadline,
+    abortedAt: cert.aborted_at,
+    userClaimSignatureId: cert.user_claim_signature_id,
+    certificateShare: cert.certificate_share
+        ? mapCertificateShare(cert.certificate_share)
+        : undefined,
+});
+
 /**
  * Maps API response to MyCertificatesViewModel
  */
@@ -166,8 +261,8 @@ export const mapToMyCertificatesViewModel = (
     response: CertificateGetMyCertificatesListViewModelResponse,
 ): MyCertificatesViewModel => {
     return {
-        claimedCertificates: (response.claimed_certificates || []).map(mapCertificate),
-        unclaimedCertificates: (response.unclaimed_certificates || []).map(mapCertificate),
+        claimedCertificates: (response.claimed_certificates || []).map(mapClaimedCertificate),
+        unclaimedCertificates: (response.unclaimed_certificates || []).map(mapUnclaimedCertificate),
         totalClaimed: response.total_claimed || 0,
         totalUnclaimed: response.total_unclaimed || 0,
     };
@@ -269,5 +364,18 @@ export const mapClaimCertificateResponse = (
         message: response.message || "Certificate claimed successfully",
         status: response.status || "success",
         estimatedDeadline: sig?.estimated_deadline,
+    };
+};
+
+/**
+ * Map create certificate shareable link response
+ */
+export const mapCreateCertificateShareableLinkResponse = (
+    response: CertificateShareCreateCertificateShareResponse,
+): CreateCertificateShareableLinkResult => {
+    return {
+        certificateId: response.share.event_certificate_id,
+        isPublished: response.share.active,
+        handle: response.share.handle,
     };
 };

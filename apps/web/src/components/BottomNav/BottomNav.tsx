@@ -15,11 +15,13 @@ import { InboxMissingEventNav } from "./variants/InboxMissingEventNav";
 import { BottomContainerProvider } from "./context";
 import type { ClassValue } from "clsx";
 import { cn } from "@/lib/utils";
+import { CertificateDetailSharedNav } from "./variants/CertificateDetailSharedNav";
 
 export type BottomNavVariant =
     | "search-certificate"
     | "search-notification"
     | "certificate-detail"
+    | "certificate-details-shared"
     | "search-event"
     | "search-identities"
     | "event-password"
@@ -50,6 +52,8 @@ export const BottomNav = ({
                 return <SearchEventNav />;
             case "certificate-detail":
                 return <CertificateDetailNav />;
+            case "certificate-details-shared":
+                return <CertificateDetailSharedNav />;
             case "search-notification":
                 return <SearchNotificationNav />;
             case "search-identities":

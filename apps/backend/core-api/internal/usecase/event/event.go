@@ -25,6 +25,7 @@ type EventUsecase struct {
 	EventContractFactoryDg               eventcontract_datagateway.EventContractFactoryDataGateway
 	EventIssuerDataGateway               eventdatagateway.EventIssuerDataGateway
 	EventCertificateDataGateway          eventdatagateway.EventCertificateDataGateway
+	CertificateShareDataGateway          eventdatagateway.CertificateShareDataGateway
 	EventCertificateSignatureDataGateway eventdatagateway.EventCertificateSignatureDataGateway
 	EventCertificateConfigDg             eventdatagateway.EventCertificateConfigDataGateway
 	EventCertificateFontFamilyDg         eventdatagateway.EventCertificateFontFamilyDataGateway
@@ -44,7 +45,7 @@ type EventUsecase struct {
 	deployCertificateContract            func(ctx context.Context, transactor *bind.TransactOpts, accessManagerAddr, eventAddr common.Address) (common.Address, error)
 }
 
-func NewEventUsecase(eventDataGateway eventdatagateway.EventDataGateway, eventContractDataGateway eventdatagateway.EventContractDataGateway, eventContractFactoryDg eventcontract_datagateway.EventContractFactoryDataGateway, eventIssuerDataGateway eventdatagateway.EventIssuerDataGateway, eventCertificateDataGateway eventdatagateway.EventCertificateDataGateway, eventCertificateSignatureDataGateway eventdatagateway.EventCertificateSignatureDataGateway, eventCertificateConfigDg eventdatagateway.EventCertificateConfigDataGateway, eventCertificateFontFamilyDg eventdatagateway.EventCertificateFontFamilyDataGateway, authenticationCredentialDg offchain_datagateway.AuthenticationCredentialDataGateway, eventRegistrationInvitationDg eventdatagateway.EventRegistrationInvitationDataGateway, eventAttendeeDg eventdatagateway.EventAttendeeDataGateway, userSignatureDg offchain_datagateway.UserSignatureDataGateway, inboxMessageDg offchain_datagateway.InboxMessageDataGateway, blockchainClientDg blockchainclient_datagateway.BlockchainClientDataGateway, ethClient *ethclient.Client, s3DataGateway storage_datagateway.S3DataGateway, logger *slog.Logger, authService *auth.AuthService, cfg *config.Config) *EventUsecase {
+func NewEventUsecase(eventDataGateway eventdatagateway.EventDataGateway, eventContractDataGateway eventdatagateway.EventContractDataGateway, eventContractFactoryDg eventcontract_datagateway.EventContractFactoryDataGateway, eventIssuerDataGateway eventdatagateway.EventIssuerDataGateway, eventCertificateDataGateway eventdatagateway.EventCertificateDataGateway, certificateShareDataGateway eventdatagateway.CertificateShareDataGateway, eventCertificateSignatureDataGateway eventdatagateway.EventCertificateSignatureDataGateway, eventCertificateConfigDg eventdatagateway.EventCertificateConfigDataGateway, eventCertificateFontFamilyDg eventdatagateway.EventCertificateFontFamilyDataGateway, authenticationCredentialDg offchain_datagateway.AuthenticationCredentialDataGateway, eventRegistrationInvitationDg eventdatagateway.EventRegistrationInvitationDataGateway, eventAttendeeDg eventdatagateway.EventAttendeeDataGateway, userSignatureDg offchain_datagateway.UserSignatureDataGateway, inboxMessageDg offchain_datagateway.InboxMessageDataGateway, blockchainClientDg blockchainclient_datagateway.BlockchainClientDataGateway, ethClient *ethclient.Client, s3DataGateway storage_datagateway.S3DataGateway, logger *slog.Logger, authService *auth.AuthService, cfg *config.Config) *EventUsecase {
 	uc := &EventUsecase{
 		EventDataGateway:                     eventDataGateway,
 		EventContractDataGateway:             eventContractDataGateway,
@@ -53,6 +54,7 @@ func NewEventUsecase(eventDataGateway eventdatagateway.EventDataGateway, eventCo
 		EventAttendeeDg:                      eventAttendeeDg,
 		UserSignatureDg:                      userSignatureDg,
 		EventCertificateDataGateway:          eventCertificateDataGateway,
+		CertificateShareDataGateway:          certificateShareDataGateway,
 		EventCertificateSignatureDataGateway: eventCertificateSignatureDataGateway,
 		EventCertificateConfigDg:             eventCertificateConfigDg,
 		EventCertificateFontFamilyDg:         eventCertificateFontFamilyDg,

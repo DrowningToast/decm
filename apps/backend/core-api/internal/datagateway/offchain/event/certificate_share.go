@@ -24,5 +24,7 @@ type CertificateShareDataGateway interface {
 	GetCertificateShareByHandle(ctx context.Context, handle string) (*entity.CertificateShare, error)
 	// GetCertificateShareByID returns nil, nil when the share does not exist.
 	GetCertificateShareByID(ctx context.Context, id uuid.UUID) (*entity.CertificateShare, error)
+	// GetCertificateShareByEventCertificateID returns nil, nil when no share exists for the certificate.
+	GetCertificateShareByEventCertificateID(ctx context.Context, eventCertificateID uuid.UUID) (*entity.CertificateShare, error)
 	UpdateCertificateShare(ctx context.Context, id uuid.UUID, params UpdateCertificateShareParameters) (*entity.CertificateShare, error)
 }

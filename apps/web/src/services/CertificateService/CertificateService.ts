@@ -24,6 +24,8 @@ import {
     type ClaimCertificateResult,
     type ClaimCertificateWithPinParams,
     type ClaimCertificateWithSignatureParams,
+    type CreateCertificateShareableLinkResult,
+    mapCreateCertificateShareableLinkResponse,
 } from "./mapper";
 
 export interface FontFamily {
@@ -224,7 +226,7 @@ export class CertificateService {
      * @param params - Certificate ID and account password
      * @returns Claim result with transaction hash
      */
-    public async claimCertificateWithPin(
+    private async claimCertificateWithPin(
         params: ClaimCertificateWithPinParams,
     ): Promise<ClaimCertificateResult> {
         const response = await this._coreApi.v1.claimCertificate(
@@ -239,7 +241,7 @@ export class CertificateService {
      * @param params - Certificate ID, signature, and sign message
      * @returns Claim result with transaction hash
      */
-    public async claimCertificateWithSignature(
+    private async claimCertificateWithSignature(
         params: ClaimCertificateWithSignatureParams,
     ): Promise<ClaimCertificateResult> {
         const response = await this._coreApi.v1.claimCertificate(
@@ -265,6 +267,17 @@ export class CertificateService {
         } else {
             return this.claimCertificateWithSignature(params);
         }
+    }
+
+    public async createCertificateShareableLink(
+        certificateId: string,
+        password?: string,
+    ): Promise<CreateCertificateShareableLinkResult> {
+        const response = await this._coreApi.v1.createCertificateShare(
+            { certificateId },
+            { password },
+        );
+        return mapCreateCertificateShareableLinkResponse(response);
     }
 }
 

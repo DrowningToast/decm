@@ -61,6 +61,14 @@ func (m *mockCertificateShareDataGateway) GetCertificateShareByID(ctx context.Co
 	return args.Get(0).(*entity.CertificateShare), args.Error(1)
 }
 
+func (m *mockCertificateShareDataGateway) GetCertificateShareByEventCertificateID(ctx context.Context, eventCertificateID uuid.UUID) (*entity.CertificateShare, error) {
+	args := m.Called(ctx, eventCertificateID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.CertificateShare), args.Error(1)
+}
+
 func (m *mockCertificateShareDataGateway) UpdateCertificateShare(ctx context.Context, id uuid.UUID, params event_datagateway.UpdateCertificateShareParameters) (*entity.CertificateShare, error) {
 	args := m.Called(ctx, id, params)
 	if args.Get(0) == nil {
@@ -309,6 +317,7 @@ func TestCreateCertificateShare_Success_NoPassword(t *testing.T) {
 	}, nil)
 
 	mockShareDg := new(mockCertificateShareDataGateway)
+	mockShareDg.On("GetCertificateShareByEventCertificateID", mock.Anything, certID).Return(nil, nil)
 	mockShareDg.On("CreateCertificateShare", mock.Anything, mock.MatchedBy(func(p event_datagateway.CreateCertificateShareParameters) bool {
 		return p.EventCertificateId == certID && !p.Active && p.Password == nil
 	})).Return(&entity.CertificateShare{
@@ -350,6 +359,7 @@ func TestCreateCertificateShare_Success_WithPassword(t *testing.T) {
 	}, nil)
 
 	mockShareDg := new(mockCertificateShareDataGateway)
+	mockShareDg.On("GetCertificateShareByEventCertificateID", mock.Anything, certID).Return(nil, nil)
 	mockShareDg.On("CreateCertificateShare", mock.Anything, mock.MatchedBy(func(p event_datagateway.CreateCertificateShareParameters) bool {
 		// Password should be a non-nil hashed value (Argon2id format)
 		return p.EventCertificateId == certID && !p.Active && p.Password != nil
