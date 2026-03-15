@@ -29,9 +29,7 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
     const { createCertificateShareLink } = useCertificateCreateShareLinkUsecase();
     useEffect(() => {
         setOnClickShareable(() => {
-            // TODO: Actual implementations
-            alert("helloo");
-            // createCertificateShareLink(certificateId);
+            void createCertificateShareLink(certificateId);
         });
     }, [certificateId, createCertificateShareLink, setOnClickShareable]);
 

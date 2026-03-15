@@ -3,7 +3,7 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import type { ReactNode } from "react";
-import VerifyPage from "./index";
+import VerifyPage from "@/pages/verify/index";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -104,7 +104,7 @@ describe("VerifyPage", () => {
 
     it("shows password form when status is PASSWORD_LOCKED", async () => {
         vi.mocked(coreApiClient.v1.getCertificateShareStatus).mockResolvedValue({
-            data: { status: "PASSWORD_LOCKED" },
+            status: "PASSWORD_LOCKED",
         } as never);
 
         const Wrapper = makeWrapper();
@@ -119,7 +119,7 @@ describe("VerifyPage", () => {
 
     it('shows "Incorrect password" on failed unlock', async () => {
         vi.mocked(coreApiClient.v1.getCertificateShareStatus).mockResolvedValue({
-            data: { status: "PASSWORD_LOCKED" },
+            status: "PASSWORD_LOCKED",
         } as never);
 
         vi.mocked(coreApiClient.v1.getCertificateShareDataWithPassword).mockRejectedValue(
@@ -145,7 +145,7 @@ describe("VerifyPage", () => {
 
     it('shows "Certificate Verified" on successful unlock', async () => {
         vi.mocked(coreApiClient.v1.getCertificateShareStatus).mockResolvedValue({
-            data: { status: "PASSWORD_LOCKED" },
+            status: "PASSWORD_LOCKED",
         } as never);
 
         vi.mocked(coreApiClient.v1.getCertificateShareDataWithPassword).mockResolvedValue({
@@ -173,7 +173,7 @@ describe("VerifyPage", () => {
 
     it('shows "Certificate Pending" when status is VALID_BUT_PENDING', async () => {
         vi.mocked(coreApiClient.v1.getCertificateShareStatus).mockResolvedValue({
-            data: { status: "VALID_BUT_PENDING" },
+            status: "VALID_BUT_PENDING",
         } as never);
 
         const Wrapper = makeWrapper();
@@ -186,14 +186,12 @@ describe("VerifyPage", () => {
 
     it("shows certificate title when status is READY", async () => {
         vi.mocked(coreApiClient.v1.getCertificateShareStatus).mockResolvedValue({
-            data: {
-                status: "READY",
-                certificate: {
-                    id: "c1",
-                    certificate_title: "My Cert",
-                    event_contract_address: "0xEC",
-                    created_at: "2024-01-01T00:00:00Z",
-                },
+            status: "READY",
+            certificate: {
+                id: "c1",
+                certificate_title: "My Cert",
+                event_contract_address: "0xEC",
+                created_at: "2024-01-01T00:00:00Z",
             },
         } as never);
 
@@ -207,7 +205,7 @@ describe("VerifyPage", () => {
 
     it("Unlock button is disabled when password field is empty", async () => {
         vi.mocked(coreApiClient.v1.getCertificateShareStatus).mockResolvedValue({
-            data: { status: "PASSWORD_LOCKED" },
+            status: "PASSWORD_LOCKED",
         } as never);
 
         const Wrapper = makeWrapper();
