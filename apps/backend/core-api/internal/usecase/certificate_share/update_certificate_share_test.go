@@ -24,7 +24,7 @@ func TestUpdateCertificateShare(t *testing.T) {
 
 	t.Run("should return ErrUnauthenticated when user is nil", func(t *testing.T) {
 		uc := &CertificateShareUsecase{}
-		result, err := uc.UpdateCertificateShare(ctx, nil, shareID, nil)
+		result, err := uc.UpdateCertificateShare(ctx, nil, shareID, nil, nil)
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrUnauthenticated)
 	})
@@ -34,7 +34,7 @@ func TestUpdateCertificateShare(t *testing.T) {
 		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(nil, nil)
 
 		uc := &CertificateShareUsecase{CertificateShareDg: mockShareDg}
-		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, nil)
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, nil, nil)
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrNotFound)
 		mockShareDg.AssertExpectations(t)
@@ -54,7 +54,7 @@ func TestUpdateCertificateShare(t *testing.T) {
 			CertificateShareDg:          mockShareDg,
 			EventCertificateDataGateway: mockCertDg,
 		}
-		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, nil)
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, nil, nil)
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrNotFound)
 		mockShareDg.AssertExpectations(t)
@@ -80,7 +80,7 @@ func TestUpdateCertificateShare(t *testing.T) {
 			CertificateShareDg:          mockShareDg,
 			EventCertificateDataGateway: mockCertDg,
 		}
-		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, nil)
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, nil, nil)
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrForbidden)
 		mockShareDg.AssertExpectations(t)
@@ -106,13 +106,13 @@ func TestUpdateCertificateShare(t *testing.T) {
 		mockCertDg := new(MockEventCertificateDataGateway)
 		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(share, nil)
 		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
-		mockShareDg.On("UpdateCertificateShare", ctx, shareID, event_datagateway.UpdateCertificateShareParameters{Password: &hashedPw}).Return(updatedShare, nil)
+		mockShareDg.On("UpdateCertificateShare", ctx, shareID, event_datagateway.UpdateCertificateShareParameters{Password: &hashedPw, Active: nil}).Return(updatedShare, nil)
 
 		uc := &CertificateShareUsecase{
 			CertificateShareDg:          mockShareDg,
 			EventCertificateDataGateway: mockCertDg,
 		}
-		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, &hashedPw)
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, &hashedPw, nil)
 		assert.NoError(t, err)
 		assert.Equal(t, updatedShare, result)
 		mockShareDg.AssertExpectations(t)
@@ -137,13 +137,13 @@ func TestUpdateCertificateShare(t *testing.T) {
 		mockCertDg := new(MockEventCertificateDataGateway)
 		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(share, nil)
 		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
-		mockShareDg.On("UpdateCertificateShare", ctx, shareID, event_datagateway.UpdateCertificateShareParameters{Password: nil}).Return(updatedShare, nil)
+		mockShareDg.On("UpdateCertificateShare", ctx, shareID, event_datagateway.UpdateCertificateShareParameters{Password: nil, Active: nil}).Return(updatedShare, nil)
 
 		uc := &CertificateShareUsecase{
 			CertificateShareDg:          mockShareDg,
 			EventCertificateDataGateway: mockCertDg,
 		}
-		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, nil)
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, nil, nil)
 		assert.NoError(t, err)
 		assert.Equal(t, updatedShare, result)
 		mockShareDg.AssertExpectations(t)
@@ -155,7 +155,7 @@ func TestUpdateCertificateShare(t *testing.T) {
 		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(nil, errors.New("db error"))
 
 		uc := &CertificateShareUsecase{CertificateShareDg: mockShareDg}
-		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, nil)
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, nil, nil)
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrInternalServer)
 		mockShareDg.AssertExpectations(t)
@@ -175,7 +175,7 @@ func TestUpdateCertificateShare(t *testing.T) {
 			CertificateShareDg:          mockShareDg,
 			EventCertificateDataGateway: mockCertDg,
 		}
-		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, nil)
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, nil, nil)
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrInternalServer)
 		mockShareDg.AssertExpectations(t)
@@ -201,7 +201,7 @@ func TestUpdateCertificateShare(t *testing.T) {
 			CertificateShareDg:          mockShareDg,
 			EventCertificateDataGateway: mockCertDg,
 		}
-		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, nil)
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, nil, nil)
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrInternalServer)
 		mockShareDg.AssertExpectations(t)

@@ -16,6 +16,7 @@ type CreateCertificateShareParameters struct {
 
 type UpdateCertificateShareParameters struct {
 	Password *string
+	Active   *bool
 }
 
 type CertificateShareDataGateway interface {

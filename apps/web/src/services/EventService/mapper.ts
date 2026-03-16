@@ -2,10 +2,36 @@ import {
     type EventEventViewModel,
     EntityEventStatus,
     type EntityEvent,
-    type EventEventResponse,
     EntityEventType,
     type EventEventIssuerResponse,
 } from "@decm/api";
+
+interface EventResponseBase {
+    attendees_count: number;
+    banner_presigned_url?: string;
+    chain_id: number;
+    contact_address: string;
+    contact_number: string;
+    created_at: string;
+    end_date: string;
+    event_status: EntityEventStatus;
+    event_type: EntityEventType;
+    google_map_query: string;
+    icon_presigned_url?: string;
+    id: string;
+    is_booking_request_required: boolean;
+    is_public: boolean;
+    is_ticket_transferable: boolean;
+    is_verified: boolean;
+    location: string;
+    long_description: string;
+    max_attendees: number;
+    owner_credential_id: string;
+    short_description: string;
+    start_date: string;
+    title: string;
+    updated_at: string;
+}
 import type {
     EventViewModelExtended,
     EventStatus,
@@ -79,7 +105,7 @@ export const mapEntityEventToEventItem = (entityEvent: EntityEvent): EventItem =
     };
 };
 
-export const mapEventResponseToViewModel = (eventResponse: EventEventResponse): EventViewModel => {
+export const mapEventResponseToViewModel = (eventResponse: EventResponseBase): EventViewModel => {
     return {
         bannerPresignedUrl: eventResponse.banner_presigned_url,
         chainId: eventResponse.chain_id,

@@ -12,6 +12,7 @@ import (
 
 type UpdateCertificateShareBody struct {
 	Password *string `json:"password"`
+	Active   *bool   `json:"active"`
 }
 
 func (b *UpdateCertificateShareBody) Parse(ctx *fiber.Ctx) error {
@@ -66,7 +67,7 @@ func (h *Handler) UpdateCertificateShare(ctx *fiber.Ctx) error {
 		hashedPassword = &hp
 	}
 
-	share, err := h.CertificateShareUc.UpdateCertificateShare(ctx.UserContext(), currentUser, shareId, hashedPassword)
+	share, err := h.CertificateShareUc.UpdateCertificateShare(ctx.UserContext(), currentUser, shareId, hashedPassword, body.Active)
 	if err != nil {
 		return err
 	}

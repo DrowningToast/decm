@@ -54,7 +54,7 @@ export interface EventViewModel {
     eventStatus: EventStatus;
     eventType: EventType;
     googleMapQuery?: string;
-    iconPresignedUrl: string;
+    iconPresignedUrl?: string;
     id: string;
     isBookingRequestRequired?: boolean;
     isPublic: boolean;

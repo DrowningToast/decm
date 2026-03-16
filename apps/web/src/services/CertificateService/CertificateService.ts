@@ -288,9 +288,9 @@ export class CertificateService {
 
     public async updateCertificateShare(
         shareId: string,
-        password: string,
+        params: { password?: string; active?: boolean },
     ): Promise<UpdateCertificateShareResult> {
-        const response = await this._coreApi.v1.updateCertificateShare({ shareId }, { password });
+        const response = await this._coreApi.v1.updateCertificateShare({ shareId }, params);
         return mapUpdateCertificateShareResponse(response);
     }
 

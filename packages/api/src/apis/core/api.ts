@@ -100,7 +100,8 @@ export interface CertificateShareUnlockCertificateShareBody {
 }
 
 export interface CertificateShareUpdateCertificateShareBody {
-    password: string;
+    password?: string;
+    active?: boolean;
 }
 
 export interface CertificateShareUpdateCertificateShareResponse {

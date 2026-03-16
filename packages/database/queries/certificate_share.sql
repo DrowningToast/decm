@@ -20,6 +20,7 @@ SELECT * FROM certificate_share WHERE event_certificate_id = sqlc.arg('event_cer
 -- name: UpdateCertificateShare :one
 UPDATE certificate_share
 SET password = sqlc.arg('password'),
+    active = sqlc.arg('active'),
     updated_at = NOW()
 WHERE id = sqlc.arg('id')
 RETURNING *;

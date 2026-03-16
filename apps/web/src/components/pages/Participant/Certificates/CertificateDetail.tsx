@@ -9,10 +9,14 @@ import { Button } from "@/components/ui/button";
 import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
 import { useClaimCertificate } from "@/hooks/useClaimCertificate";
 import { useCertificateImage } from "@/hooks/useCertificateImage";
-import { useCertificateDetailNavStore } from "@/components/BottomNav/stores/certificates";
+import {
+    useCertificateDetailNavStore,
+    useCertificateDetailsSharedNavStore,
+} from "@/components/BottomNav/stores/certificates";
 import { EthExplorerLink } from "@/components/common/EthscanLink";
 import { useEvent } from "@/hooks/events/useEvent";
 import { useCertificateCreateShareLinkUsecase } from "./useCertificateCreateShareLinkUsecase";
+import { useCertificateUpdateShareVisibilityUsecase } from "./useCertificateUpdateShareVisibilityUsecase";
 
 interface CertificateDetailProps {
     certificateId: string;
@@ -26,12 +30,38 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
     const { claimCertificate, isClaiming } = useClaimCertificate();
     const [isProcessing, setIsProcessing] = useState(false);
     const { setOnClickShareable, setImageUrl } = useCertificateDetailNavStore();
+    const { setOnChangePublish, setIsPublished, setShareableHandle } =
+        useCertificateDetailsSharedNavStore();
     const { createCertificateShareLink } = useCertificateCreateShareLinkUsecase();
+    const { updateShareVisibility } = useCertificateUpdateShareVisibilityUsecase();
+
     useEffect(() => {
         setOnClickShareable(() => {
             void createCertificateShareLink(certificateId);
         });
     }, [certificateId, createCertificateShareLink, setOnClickShareable]);
+
+    const shareId = certificate?.shareable?.id ?? null;
+
+    useEffect(() => {
+        if (!shareId) return;
+        setOnChangePublish((isPublished: boolean) => {
+            updateShareVisibility(shareId, isPublished);
+            setIsPublished(isPublished);
+        });
+    }, [shareId, updateShareVisibility, setOnChangePublish, setIsPublished]);
+
+    // Sync shareable state into the shared nav store when certificate data loads
+    useEffect(() => {
+        if (certificate?.shareable) {
+            setIsPublished(certificate.shareable.active);
+            setShareableHandle(certificate.shareable.handle);
+        }
+        return () => {
+            setIsPublished(false);
+            setShareableHandle(null);
+        };
+    }, [certificate?.shareable, setIsPublished, setShareableHandle]);
 
     // Fetch event details to check if user has joined
     const { event, isLoadingEvent } = useEvent(certificate?.eventId || "");

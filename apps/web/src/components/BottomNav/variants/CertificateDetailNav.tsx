@@ -3,7 +3,6 @@ import { useBottomContainerContext } from "../context";
 import { useCertificateDetailNavStore } from "../stores/certificates";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { Typography } from "@/components/typography/typography";
 import { certificateService } from "@/services/services";
 import { toast } from "sonner";
 import React, { useState } from "react";
@@ -81,7 +80,7 @@ export const CertificateDetailNav = ({
             className={cn(
                 contextClassName,
                 propClassName,
-                "flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5",
+                "flex flex-wrap items-center justify-center gap-1.5 bg-primary rounded-xl p-1.5",
             )}
         >
             {/* Back Button */}
@@ -98,24 +97,13 @@ export const CertificateDetailNav = ({
                 <Button
                     loading={isShareableLoading}
                     onClick={onClickShareable}
-                    className="cursor-pointer flex items-center justify-center gap-2 px-4 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0"
+                    className="cursor-pointer flex items-center justify-center w-10 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0"
                     aria-label={t(
                         "participant.certificates.detail.createShareableLink",
                         "Create shareable link",
                     )}
                 >
                     <Share2 className="w-5 h-5 text-background-alt" />
-                    <Typography
-                        variant="text"
-                        tag="span"
-                        color="background-alt"
-                        className="text-xs font-normal leading-normal tracking-[0.06px] whitespace-nowrap"
-                    >
-                        {t(
-                            "participant.certificates.detail.createShareableLink",
-                            "Create shareable link",
-                        )}
-                    </Typography>
                 </Button>
             )}
 
@@ -124,7 +112,7 @@ export const CertificateDetailNav = ({
                 <button
                     onClick={handleDownload}
                     disabled={isDownloading}
-                    className="cursor-pointer flex items-center justify-center gap-2 px-4 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="cursor-pointer flex items-center justify-center w-10 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label={t(
                         "participant.certificates.detail.downloadAsImage",
                         "Download as an image",
@@ -136,19 +124,6 @@ export const CertificateDetailNav = ({
                             isDownloading && "animate-pulse",
                         )}
                     />
-                    <Typography
-                        variant="text"
-                        tag="span"
-                        color="background-alt"
-                        className="text-xs font-normal leading-normal tracking-[0.06px] whitespace-nowrap"
-                    >
-                        {isDownloading
-                            ? t("participant.certificates.detail.downloading", "Downloading...")
-                            : t(
-                                  "participant.certificates.detail.downloadAsImage",
-                                  "Download as an image",
-                              )}
-                    </Typography>
                 </button>
             )}
 

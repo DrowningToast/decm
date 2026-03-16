@@ -110,18 +110,20 @@ func (q *Queries) GetCertificateShareByID(ctx context.Context, id uuid.UUID) (Ce
 const UpdateCertificateShare = `-- name: UpdateCertificateShare :one
 UPDATE certificate_share
 SET password = $1,
+    active = $2,
     updated_at = NOW()
-WHERE id = $2
+WHERE id = $3
 RETURNING id, event_certificate_id, active, handle, password, created_at, updated_at
 `
 
 type UpdateCertificateShareParams struct {
 	Password pgtype.Text `json:"password"`
+	Active   bool        `json:"active"`
 	ID       uuid.UUID   `json:"id"`
 }
 
 func (q *Queries) UpdateCertificateShare(ctx context.Context, arg UpdateCertificateShareParams) (CertificateShare, error) {
-	row := q.db.QueryRow(ctx, UpdateCertificateShare, arg.Password, arg.ID)
+	row := q.db.QueryRow(ctx, UpdateCertificateShare, arg.Password, arg.Active, arg.ID)
 	var i CertificateShare
 	err := row.Scan(
 		&i.ID,

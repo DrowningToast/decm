@@ -97,9 +97,18 @@ func (r *Repository) GetCertificateShareByEventCertificateID(ctx context.Context
 }
 
 func (r *Repository) UpdateCertificateShare(ctx context.Context, id uuid.UUID, params event_datagateway.UpdateCertificateShareParameters) (*entity.CertificateShare, error) {
+	existing, err := r.queries.GetCertificateShareByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	active := existing.Active
+	if params.Active != nil {
+		active = *params.Active
+	}
 	result, err := r.queries.UpdateCertificateShare(ctx, generated.UpdateCertificateShareParams{
 		ID:       id,
 		Password: pgmapper.StringPtrToPgText(params.Password),
+		Active:   active,
 	})
 	if err != nil {
 		return nil, err
