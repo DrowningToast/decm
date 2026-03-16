@@ -32,7 +32,7 @@ type ParticipantRequestItem struct {
 // @Accept json
 // @Produce json
 // @Param request body ImportEventParticipantsRequest true "Import participants request"
-// @Success 201 {array} entity.EventRegistrationInvitation
+// @Success 201 {array} EventRegistrationInvitationResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse

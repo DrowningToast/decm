@@ -237,6 +237,82 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/certificate-shares/{certificate_id}": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a shareable link for a certificate. Only the certificate owner may call this endpoint. An optional password can be set to restrict access.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CertificateShares"
+                ],
+                "summary": "Create certificate share link",
+                "operationId": "create-certificate-share",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Certificate ID",
+                        "name": "certificate_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Optional password configuration",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share.CreateCertificateShareBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share.CreateCertificateShareResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/certificate-shares/{handle}": {
             "get": {
                 "description": "Retrieve a shared certificate by its handle. Returns PASSWORD_LOCKED if password-protected, VALID_BUT_PENDING if the certificate has not been claimed yet, or READY with certificate data.",
@@ -716,82 +792,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/certificates/{certificate_id}/shares": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Create a shareable link for a certificate. Only the certificate owner may call this endpoint. An optional password can be set to restrict access.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "CertificateShares"
-                ],
-                "summary": "Create certificate share link",
-                "operationId": "create-certificate-share",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Certificate ID",
-                        "name": "certificate_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Optional password configuration",
-                        "name": "body",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/certificate_share.CreateCertificateShareBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/certificate_share.CreateCertificateShareResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/event-registration/invitation": {
             "delete": {
                 "description": "Cancel an event registration invitation by ID",
@@ -819,7 +819,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                            "$ref": "#/definitions/event_registration.EventRegistrationInvitationResponse"
                         }
                     },
                     "400": {
@@ -880,7 +880,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                                "$ref": "#/definitions/event_registration.EventRegistrationInvitationResponse"
                             }
                         }
                     },
@@ -925,7 +925,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                                "$ref": "#/definitions/event_registration.EventRegistrationInvitationResponse"
                             }
                         }
                     },
@@ -992,7 +992,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entity.EventAttendee"
+                            "$ref": "#/definitions/event_registration.EventAttendeeResponse"
                         }
                     },
                     "400": {
@@ -1332,7 +1332,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/entity.Event"
+                            "$ref": "#/definitions/core-api_internal_handler_event.EventResponse"
                         }
                     },
                     "400": {
@@ -1384,7 +1384,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/event.EventResponse"
+                                "$ref": "#/definitions/core-api_internal_handler_event.EventResponse"
                             }
                         }
                     },
@@ -1430,7 +1430,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event.EventResponse"
+                            "$ref": "#/definitions/core-api_internal_handler_event.EventResponse"
                         }
                     },
                     "400": {
@@ -1554,7 +1554,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entity.Event"
+                            "$ref": "#/definitions/core-api_internal_handler_event.EventResponse"
                         }
                     },
                     "400": {
@@ -1618,7 +1618,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event.EventResponse"
+                            "$ref": "#/definitions/core-api_internal_handler_event.EventResponse"
                         }
                     },
                     "400": {
@@ -3578,7 +3578,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.Profile"
+                                "$ref": "#/definitions/issuer.ProfileResponse"
                             }
                         }
                     },
@@ -4630,6 +4630,109 @@ const docTemplate = `{
                 }
             }
         },
+        "core-api_internal_handler_event.EventResponse": {
+            "type": "object",
+            "required": [
+                "attendees_count",
+                "banner_storage_key",
+                "chain_id",
+                "contact_address",
+                "contact_number",
+                "created_at",
+                "end_date",
+                "event_status",
+                "event_type",
+                "google_map_query",
+                "icon_storage_key",
+                "id",
+                "is_booking_request_required",
+                "is_public",
+                "is_ticket_transferable",
+                "is_verified",
+                "location",
+                "long_description",
+                "max_attendees",
+                "owner_credential_id",
+                "short_description",
+                "start_date",
+                "title",
+                "updated_at"
+            ],
+            "properties": {
+                "attendees_count": {
+                    "type": "integer"
+                },
+                "banner_storage_key": {
+                    "type": "string"
+                },
+                "chain_id": {
+                    "type": "integer"
+                },
+                "contact_address": {
+                    "type": "string"
+                },
+                "contact_number": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "event_status": {
+                    "$ref": "#/definitions/entity.EventStatus"
+                },
+                "event_type": {
+                    "$ref": "#/definitions/entity.EventType"
+                },
+                "google_map_query": {
+                    "type": "string"
+                },
+                "icon_storage_key": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_booking_request_required": {
+                    "type": "boolean"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "is_ticket_transferable": {
+                    "type": "boolean"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "long_description": {
+                    "type": "string"
+                },
+                "max_attendees": {
+                    "type": "integer"
+                },
+                "owner_credential_id": {
+                    "type": "string"
+                },
+                "short_description": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "core-api_internal_handler_event.ImportCertificateReceiversRequest": {
             "type": "object",
             "required": [
@@ -5361,72 +5464,6 @@ const docTemplate = `{
                 }
             }
         },
-        "entity.EventAttendee": {
-            "type": "object",
-            "required": [
-                "attendee_credential_id",
-                "contract_address",
-                "created_at",
-                "event_id",
-                "id",
-                "is_attendee_accepted",
-                "updated_at",
-                "wallet_address"
-            ],
-            "properties": {
-                "academic_email": {
-                    "type": "string"
-                },
-                "academic_institution": {
-                    "type": "string"
-                },
-                "address": {
-                    "type": "string"
-                },
-                "attendee_credential_id": {
-                    "type": "string"
-                },
-                "bio": {
-                    "type": "string"
-                },
-                "contract_address": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "event_id": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "is_attendee_accepted": {
-                    "type": "boolean"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "phone_number": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user_signature_id": {
-                    "type": "string"
-                },
-                "wallet_address": {
-                    "type": "string"
-                }
-            }
-        },
         "entity.EventCertificate": {
             "type": "object",
             "required": [
@@ -6017,109 +6054,6 @@ const docTemplate = `{
                 }
             }
         },
-        "event.EventResponse": {
-            "type": "object",
-            "required": [
-                "attendees_count",
-                "banner_presigned_url",
-                "chain_id",
-                "contact_address",
-                "contact_number",
-                "created_at",
-                "end_date",
-                "event_status",
-                "event_type",
-                "google_map_query",
-                "icon_presigned_url",
-                "id",
-                "is_booking_request_required",
-                "is_public",
-                "is_ticket_transferable",
-                "is_verified",
-                "location",
-                "long_description",
-                "max_attendees",
-                "owner_credential_id",
-                "short_description",
-                "start_date",
-                "title",
-                "updated_at"
-            ],
-            "properties": {
-                "attendees_count": {
-                    "type": "integer"
-                },
-                "banner_presigned_url": {
-                    "type": "string"
-                },
-                "chain_id": {
-                    "type": "integer"
-                },
-                "contact_address": {
-                    "type": "string"
-                },
-                "contact_number": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "end_date": {
-                    "type": "string"
-                },
-                "event_status": {
-                    "$ref": "#/definitions/entity.EventStatus"
-                },
-                "event_type": {
-                    "$ref": "#/definitions/entity.EventType"
-                },
-                "google_map_query": {
-                    "type": "string"
-                },
-                "icon_presigned_url": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "is_booking_request_required": {
-                    "type": "boolean"
-                },
-                "is_public": {
-                    "type": "boolean"
-                },
-                "is_ticket_transferable": {
-                    "type": "boolean"
-                },
-                "is_verified": {
-                    "type": "boolean"
-                },
-                "location": {
-                    "type": "string"
-                },
-                "long_description": {
-                    "type": "string"
-                },
-                "max_attendees": {
-                    "type": "integer"
-                },
-                "owner_credential_id": {
-                    "type": "string"
-                },
-                "short_description": {
-                    "type": "string"
-                },
-                "start_date": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
         "event.EventViewModel": {
             "type": "object",
             "required": [
@@ -6660,6 +6594,127 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "issuer_credential_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "event_registration.EventAttendeeResponse": {
+            "type": "object",
+            "required": [
+                "attendee_credential_id",
+                "contract_address",
+                "created_at",
+                "event_id",
+                "id",
+                "is_attendee_accepted",
+                "updated_at",
+                "wallet_address"
+            ],
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "attendee_credential_id": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "contract_address": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_attendee_accepted": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_signature_id": {
+                    "type": "string"
+                },
+                "wallet_address": {
+                    "type": "string"
+                }
+            }
+        },
+        "event_registration.EventRegistrationInvitationResponse": {
+            "type": "object",
+            "required": [
+                "accepted_at",
+                "created_at",
+                "event_id",
+                "id",
+                "inbox_message_id",
+                "updated_at"
+            ],
+            "properties": {
+                "academic_institution": {
+                    "type": "string"
+                },
+                "accepted_at": {
+                    "type": "string"
+                },
+                "cancelled_at": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inbox_message_id": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "valid_until": {
                     "type": "string"
                 }
             }
@@ -7498,6 +7553,102 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "issuer.ProfileResponse": {
+            "type": "object",
+            "required": [
+                "authentication_credential_id",
+                "created_at",
+                "id",
+                "is_academic_email_public",
+                "is_academic_institution_public",
+                "is_address_public",
+                "is_bio_public",
+                "is_email_public",
+                "is_first_name_public",
+                "is_last_name_public",
+                "is_phone_number_public",
+                "is_profile_picture_public",
+                "updated_at"
+            ],
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "authentication_credential_id": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "github_connector_ref": {
+                    "type": "string"
+                },
+                "google_connector_ref": {
+                    "description": "Connector references (from authentication_credentials table)",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_academic_email_public": {
+                    "type": "boolean"
+                },
+                "is_academic_institution_public": {
+                    "type": "boolean"
+                },
+                "is_address_public": {
+                    "type": "boolean"
+                },
+                "is_bio_public": {
+                    "type": "boolean"
+                },
+                "is_email_public": {
+                    "type": "boolean"
+                },
+                "is_first_name_public": {
+                    "type": "boolean"
+                },
+                "is_last_name_public": {
+                    "type": "boolean"
+                },
+                "is_phone_number_public": {
+                    "type": "boolean"
+                },
+                "is_profile_picture_public": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "wallet_address": {
                     "type": "string"
                 }
             }

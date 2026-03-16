@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 
 	customerror "apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
 
 	event_registration_uc "apps/backend/core-api/internal/usecase/event_registration"
 
@@ -13,6 +14,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
+
+// EventAttendeeResponse is the swagger response type for event attendee endpoints.
+type EventAttendeeResponse = entity.EventAttendee
 
 type GetJoinEventSignMessageResponse struct {
 	SignMessage string `json:"sign_message"`
@@ -99,7 +103,7 @@ func (r *JoinEventBody) Parse(ctx *fiber.Ctx) error {
 // @Produce json
 // @Param event_id path string true "Event ID"
 // @Param joinEventBody body JoinEventBody true "Join event body"
-// @Success 200 {object} entity.EventAttendee
+// @Success 200 {object} EventAttendeeResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse

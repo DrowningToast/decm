@@ -27,7 +27,8 @@ export interface BlockchainGetSystemStatusResponse {
     gas_price: BlockchainGasPriceResponse;
 }
 
-export type CancelEventRegistrationInvitationData = EntityEventRegistrationInvitation;
+export type CancelEventRegistrationInvitationData =
+    EventRegistrationEventRegistrationInvitationResponse;
 
 export type CancelEventRegistrationInvitationError = CustomerrorErrResponse;
 
@@ -180,6 +181,33 @@ export interface CoreApiInternalHandlerEventEventContractResponse {
     updated_at: string;
 }
 
+export interface CoreApiInternalHandlerEventEventResponse {
+    attendees_count: number;
+    banner_storage_key: string;
+    chain_id: number;
+    contact_address: string;
+    contact_number: string;
+    created_at: string;
+    end_date: string;
+    event_status: EntityEventStatus;
+    event_type: EntityEventType;
+    google_map_query: string;
+    icon_storage_key: string;
+    id: string;
+    is_booking_request_required: boolean;
+    is_public: boolean;
+    is_ticket_transferable: boolean;
+    is_verified: boolean;
+    location: string;
+    long_description: string;
+    max_attendees: number;
+    owner_credential_id: string;
+    short_description: string;
+    start_date: string;
+    title: string;
+    updated_at: string;
+}
+
 export interface CoreApiInternalHandlerEventImportCertificateReceiversRequest {
     event_id: string;
     host_pin: string;
@@ -319,7 +347,7 @@ export interface CreateEventContractParams {
     eventId: string;
 }
 
-export type CreateEventData = EntityEvent;
+export type CreateEventData = CoreApiInternalHandlerEventEventResponse;
 
 export type CreateEventError = CustomerrorErrResponse;
 
@@ -393,7 +421,7 @@ export interface CustomerrorErrResponse {
     message: string;
 }
 
-export type DeleteEventByIdData = EventEventResponse;
+export type DeleteEventByIdData = CoreApiInternalHandlerEventEventResponse;
 
 export type DeleteEventByIdError = CustomerrorErrResponse;
 
@@ -526,26 +554,6 @@ export interface EntityEvent {
     start_date: string;
     title: string;
     updated_at: string;
-}
-
-export interface EntityEventAttendee {
-    academic_email?: string;
-    academic_institution?: string;
-    address?: string;
-    attendee_credential_id: string;
-    bio?: string;
-    contract_address: string;
-    created_at: string;
-    email?: string;
-    event_id: string;
-    first_name?: string;
-    id: string;
-    is_attendee_accepted: boolean;
-    last_name?: string;
-    phone_number?: string;
-    updated_at: string;
-    user_signature_id?: string;
-    wallet_address: string;
 }
 
 export interface EntityEventCertificate {
@@ -736,33 +744,6 @@ export interface EventEventParticipantResponse {
     wallet_address: string;
 }
 
-export interface EventEventResponse {
-    attendees_count: number;
-    banner_presigned_url: string;
-    chain_id: number;
-    contact_address: string;
-    contact_number: string;
-    created_at: string;
-    end_date: string;
-    event_status: EntityEventStatus;
-    event_type: EntityEventType;
-    google_map_query: string;
-    icon_presigned_url: string;
-    id: string;
-    is_booking_request_required: boolean;
-    is_public: boolean;
-    is_ticket_transferable: boolean;
-    is_verified: boolean;
-    location: string;
-    long_description: string;
-    max_attendees: number;
-    owner_credential_id: string;
-    short_description: string;
-    start_date: string;
-    title: string;
-    updated_at: string;
-}
-
 export interface EventEventViewModel {
     attendees_count: number;
     banner_presigned_url: string;
@@ -845,6 +826,43 @@ export interface EventRegistrationConfigResponse {
     is_registration_password_required: boolean;
     last_name_requirement_status: number;
     phone_number_requirement_status: number;
+}
+
+export interface EventRegistrationEventAttendeeResponse {
+    academic_email?: string;
+    academic_institution?: string;
+    address?: string;
+    attendee_credential_id: string;
+    bio?: string;
+    contract_address: string;
+    created_at: string;
+    email?: string;
+    event_id: string;
+    first_name?: string;
+    id: string;
+    is_attendee_accepted: boolean;
+    last_name?: string;
+    phone_number?: string;
+    updated_at: string;
+    user_signature_id?: string;
+    wallet_address: string;
+}
+
+export interface EventRegistrationEventRegistrationInvitationResponse {
+    academic_institution?: string;
+    accepted_at: string;
+    cancelled_at?: string;
+    code?: string;
+    created_at: string;
+    email?: string;
+    event_id: string;
+    first_name?: string;
+    id: string;
+    inbox_message_id: string;
+    last_name?: string;
+    phone_number?: string;
+    updated_at: string;
+    valid_until?: string;
 }
 
 export interface EventRegistrationGetEventRegistrationInvitationByUserAndEventResponse {
@@ -1098,7 +1116,7 @@ export type GetClosestIncomingScheduleData = SystemStatusGetClosestIncomingSched
 
 export type GetClosestIncomingScheduleError = CustomerrorErrResponse;
 
-export type GetEventByIdData = EventEventResponse;
+export type GetEventByIdData = CoreApiInternalHandlerEventEventResponse;
 
 export type GetEventByIdError = CustomerrorErrResponse;
 
@@ -1196,7 +1214,8 @@ export interface GetEventRegistrationInvitationByUserAndEventParams {
     eventId: string;
 }
 
-export type GetEventRegistrationInvitationsByEventIdData = EntityEventRegistrationInvitation[];
+export type GetEventRegistrationInvitationsByEventIdData =
+    EventRegistrationEventRegistrationInvitationResponse[];
 
 export type GetEventRegistrationInvitationsByEventIdError = CustomerrorErrResponse;
 
@@ -1213,7 +1232,7 @@ export interface GetEventViewmodelByIdParams {
     eventId: string;
 }
 
-export type GetEventsByOwnerCredentialsIdData = EventEventResponse[];
+export type GetEventsByOwnerCredentialsIdData = CoreApiInternalHandlerEventEventResponse[];
 
 export type GetEventsByOwnerCredentialsIdError = CustomerrorErrResponse;
 
@@ -1352,7 +1371,7 @@ export type GetSystemStatusViewmodelData = SystemStatusSystemStatusViewModel;
 
 export type GetSystemStatusViewmodelError = CustomerrorErrResponse;
 
-export type GetVerifiedIssuersData = EntityProfile[];
+export type GetVerifiedIssuersData = IssuerProfileResponse[];
 
 export type GetVerifiedIssuersError = CustomerrorErr;
 
@@ -1374,7 +1393,7 @@ export interface ImportCertificateReceiversParams {
     eventId: string;
 }
 
-export type ImportEventParticipantsData = EntityEventRegistrationInvitation[];
+export type ImportEventParticipantsData = EventRegistrationEventRegistrationInvitationResponse[];
 
 export type ImportEventParticipantsError = CustomerrorErrResponse;
 
@@ -1518,7 +1537,36 @@ export interface IssuerIssuerEventViewModel {
     updated_at: string;
 }
 
-export type JoinEventData = EntityEventAttendee;
+export interface IssuerProfileResponse {
+    academic_email?: string;
+    academic_institution?: string;
+    address?: string;
+    authentication_credential_id: string;
+    bio?: string;
+    created_at: string;
+    email?: string;
+    first_name?: string;
+    github_connector_ref?: string;
+    /** Connector references (from authentication_credentials table) */
+    google_connector_ref?: string;
+    id: string;
+    is_academic_email_public: boolean;
+    is_academic_institution_public: boolean;
+    is_address_public: boolean;
+    is_bio_public: boolean;
+    is_email_public: boolean;
+    is_first_name_public: boolean;
+    is_last_name_public: boolean;
+    is_phone_number_public: boolean;
+    is_profile_picture_public: boolean;
+    last_name?: string;
+    phone_number?: string;
+    profile_picture_url?: string;
+    updated_at: string;
+    wallet_address?: string;
+}
+
+export type JoinEventData = EventRegistrationEventAttendeeResponse;
 
 export type JoinEventError = CustomerrorErrResponse;
 
@@ -1925,7 +1973,7 @@ export interface UpdateEventContractParams {
     eventId: string;
 }
 
-export type UpdateEventData = EntityEvent;
+export type UpdateEventData = CoreApiInternalHandlerEventEventResponse;
 
 export type UpdateEventError = CustomerrorErrResponse;
 
@@ -2299,6 +2347,30 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Create a shareable link for a certificate. Only the certificate owner may call this endpoint. An optional password can be set to restrict access.
+         *
+         * @tags CertificateShares
+         * @name CreateCertificateShare
+         * @summary Create certificate share link
+         * @request POST:/api/v1/certificate-shares/{certificate_id}
+         * @secure
+         */
+        createCertificateShare: (
+            { certificateId, ...query }: CreateCertificateShareParams,
+            body: CertificateShareCreateCertificateShareBody,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<CreateCertificateShareData, CreateCertificateShareError>({
+                path: `/api/v1/certificate-shares/${certificateId}`,
+                method: "POST",
+                body: body,
+                secure: true,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @description Retrieve a shared certificate by its handle. Returns PASSWORD_LOCKED if password-protected, VALID_BUT_PENDING if the certificate has not been claimed yet, or READY with certificate data.
          *
          * @tags CertificateShares
@@ -2472,30 +2544,6 @@ export class Api<SecurityDataType extends unknown> {
                 method: "GET",
                 secure: true,
                 format: "blob",
-                ...params,
-            }),
-
-        /**
-         * @description Create a shareable link for a certificate. Only the certificate owner may call this endpoint. An optional password can be set to restrict access.
-         *
-         * @tags CertificateShares
-         * @name CreateCertificateShare
-         * @summary Create certificate share link
-         * @request POST:/api/v1/certificates/{certificate_id}/shares
-         * @secure
-         */
-        createCertificateShare: (
-            { certificateId, ...query }: CreateCertificateShareParams,
-            body: CertificateShareCreateCertificateShareBody,
-            params: RequestParams = {},
-        ) =>
-            this.http.request<CreateCertificateShareData, CreateCertificateShareError>({
-                path: `/api/v1/certificates/${certificateId}/shares`,
-                method: "POST",
-                body: body,
-                secure: true,
-                type: ContentType.Json,
-                format: "json",
                 ...params,
             }),
 

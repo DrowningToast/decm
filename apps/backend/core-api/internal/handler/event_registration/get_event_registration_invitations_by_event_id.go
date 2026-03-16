@@ -16,7 +16,7 @@ import (
 // @Tags Event Registration Invitation
 // @Accept json
 // @Produce json
-// @Success 200 {array} entity.EventRegistrationInvitation
+// @Success 200 {array} EventRegistrationInvitationResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse

@@ -6,12 +6,16 @@ import (
 	"fmt"
 
 	customerror "apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
 
 	eventRegistrationUc "apps/backend/core-api/internal/usecase/event_registration"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
+
+// EventRegistrationInvitationResponse is the swagger response type for event registration invitation endpoints.
+type EventRegistrationInvitationResponse = entity.EventRegistrationInvitation
 
 type CancelEventRegistrationInvitationQuery struct {
 	EventRegistrationInvitationID string `json:"event_registration_invitation_id" validate:"required,uuid"`
@@ -24,7 +28,7 @@ type CancelEventRegistrationInvitationQuery struct {
 // @Accept json
 // @Produce json
 // @Param event_registration_invitation_id query string true "Event Registration Invitation ID"
-// @Success 200 {object} entity.EventRegistrationInvitation
+// @Success 200 {object} EventRegistrationInvitationResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse

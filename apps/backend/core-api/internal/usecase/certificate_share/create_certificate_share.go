@@ -29,8 +29,16 @@ func (uc *CertificateShareUsecase) CreateCertificateShare(ctx context.Context, c
 		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("certificate not found"))
 	}
 
-	// Only the receiver may create a share link
-	if certificate.ReceiverCredentialId == nil || *certificate.ReceiverCredentialId != currentUser.UserId {
+	// Only the receiver may create a share link.
+	// Ownership is proven by credential ID match (primary) or email match (fallback, for
+	// certificates imported before the user registered).
+	isOwner := false
+	if certificate.ReceiverCredentialId != nil {
+		isOwner = *certificate.ReceiverCredentialId == currentUser.UserId
+	} else if certificate.ReceiverEmail != nil {
+		isOwner = currentUser.Email != nil && *currentUser.Email == *certificate.ReceiverEmail
+	}
+	if !isOwner {
 		return nil, customerror.Parse(&customerror.ErrForbidden, errors.New("not authorized to share this certificate"))
 	}
 

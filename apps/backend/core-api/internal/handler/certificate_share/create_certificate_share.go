@@ -37,7 +37,7 @@ type CreateCertificateShareResponse struct {
 // @Failure 403 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
-// @Router /api/v1/certificates/{certificate_id}/shares [post]
+// @Router /api/v1/certificate-shares/{certificate_id} [post]
 func (h *Handler) CreateCertificateShare(ctx *fiber.Ctx) error {
 	// 1. Auth check first
 	currentUser, err := h.AuthenticationService.GetUserContext(ctx)

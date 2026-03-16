@@ -113,10 +113,11 @@ func TestCreateCertificateShare(t *testing.T) {
 		mockCertDg.AssertExpectations(t)
 	})
 
-	t.Run("should return ErrForbidden when certificate has no receiver credential", func(t *testing.T) {
+	t.Run("should return ErrForbidden when certificate has no receiver credential and no email", func(t *testing.T) {
 		cert := &entity.EventCertificate{
 			Id:                   certID,
 			ReceiverCredentialId: nil,
+			ReceiverEmail:        nil,
 		}
 		mockCertDg := new(MockEventCertificateDataGateway)
 		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
@@ -128,6 +129,55 @@ func TestCreateCertificateShare(t *testing.T) {
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrForbidden)
 		mockCertDg.AssertExpectations(t)
+	})
+
+	t.Run("should return ErrForbidden when certificate email does not match user email", func(t *testing.T) {
+		otherEmail := "other@example.com"
+		cert := &entity.EventCertificate{
+			Id:                   certID,
+			ReceiverCredentialId: nil,
+			ReceiverEmail:        &otherEmail,
+		}
+		userEmail := "user@example.com"
+		userWithEmail := &auth.JwtClaims{UserId: userID, Email: &userEmail}
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
+
+		uc := &CertificateShareUsecase{
+			EventCertificateDataGateway: mockCertDg,
+		}
+		result, err := uc.CreateCertificateShare(ctx, userWithEmail, certID, nil)
+		assert.Nil(t, result)
+		assertErrCode(t, err, customerror.ErrForbidden)
+		mockCertDg.AssertExpectations(t)
+	})
+
+	t.Run("should allow share when certificate has no credential ID but email matches user", func(t *testing.T) {
+		userEmail := "user@example.com"
+		cert := &entity.EventCertificate{
+			Id:                   certID,
+			ReceiverCredentialId: nil,
+			ReceiverEmail:        &userEmail,
+		}
+		userWithEmail := &auth.JwtClaims{UserId: userID, Email: &userEmail}
+		newShare := returnedShare()
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
+		mockShareDg.On("CreateCertificateShare", ctx, mock.MatchedBy(func(p event_datagateway.CreateCertificateShareParameters) bool {
+			return p.EventCertificateId == certID && !p.Active && p.Password == nil && len(p.Handle) == 32
+		})).Return(newShare, nil)
+
+		uc := &CertificateShareUsecase{
+			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDg:          mockShareDg,
+		}
+		result, err := uc.CreateCertificateShare(ctx, userWithEmail, certID, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, newShare, result)
+		mockCertDg.AssertExpectations(t)
+		mockShareDg.AssertExpectations(t)
 	})
 
 	t.Run("should return ErrInvalidArgument when certificate status is not PENDING or CLAIMED (e.g. aborted)", func(t *testing.T) {

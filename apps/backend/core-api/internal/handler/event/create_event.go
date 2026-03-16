@@ -9,12 +9,16 @@ import (
 	"time"
 
 	customerror "apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
 
 	eventUc "apps/backend/core-api/internal/usecase/event"
 	eventconfig "apps/backend/core-api/internal/usecase/eventconfig"
 
 	"github.com/gofiber/fiber/v2"
 )
+
+// EventResponse is the swagger response type for event endpoints.
+type EventResponse = entity.Event
 
 type CreateEventRequest struct {
 	Name             string `form:"name"`
@@ -49,7 +53,7 @@ type CreateEventRequest struct {
 // @Param banner formData file true "Event banner image (JPEG, PNG, WebP, max 10MB)"
 // @Param icon formData file true "Event icon image (JPEG, PNG, WebP, max 10MB)"
 // @Param host_password formData string true "Host password"
-// @Success 201 {object} entity.Event
+// @Success 201 {object} EventResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Router /api/v1/events [post]
 func (h *Handler) CreateEvent(ctx *fiber.Ctx) error {

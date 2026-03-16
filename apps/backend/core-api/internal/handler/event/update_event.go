@@ -47,7 +47,7 @@ type UpdateEventRequest struct {
 // @Param banner formData file false "Event banner image (JPEG, PNG, WebP, max 10MB) - optional"
 // @Param icon formData file false "Event icon image (JPEG, PNG, WebP, max 10MB) - optional"
 // @Param host_password formData string true "Host password (required for contract update)"
-// @Success 200 {object} entity.Event
+// @Success 200 {object} EventResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 401 {object} customerror.ErrResponse
 // @Failure 403 {object} customerror.ErrResponse

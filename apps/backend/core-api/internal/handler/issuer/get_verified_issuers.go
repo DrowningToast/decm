@@ -3,10 +3,14 @@ package issuer
 import (
 	"strconv"
 
+	"apps/backend/core-api/internal/entity"
 	issuer_usecase "apps/backend/core-api/internal/usecase/issuer"
 
 	"github.com/gofiber/fiber/v2"
 )
+
+// ProfileResponse is the swagger response type for profile endpoints.
+type ProfileResponse = entity.Profile
 
 // @Summary Get verified issuers
 // @Description Get verified issuers with optional search query
@@ -17,7 +21,7 @@ import (
 // @Param limit query int false "Limit"
 // @Param offset query int false "Offset"
 // @Param search query string false "Search query (searches first name, last name, email, academic email, wallet address)"
-// @Success 200 {object} []entity.Profile
+// @Success 200 {array} ProfileResponse
 // @Failure 400 {object} customerror.Err
 // @Failure 500 {object} customerror.Err
 // @Router /api/v1/issuers [get]
