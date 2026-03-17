@@ -41,11 +41,18 @@ export const CertificateDetailSharedNav = (props: CertificateDetailSharedNavProp
         );
 
         debounceTimerRef.current = setTimeout(() => {
-            onChangePublish(value);
-            if (toastIdRef.current) {
-                toast.dismiss(toastIdRef.current);
-                toastIdRef.current = null;
-            }
+            const promise = onChangePublish(value);
+            toast.promise(promise, {
+                success: t("participant.certificates.detail.saveSuccess", "Changes saved"),
+                error: (err) =>
+                    t(
+                        "participant.certificates.detail.saveError",
+                        "Failed to save changes: {{error}}",
+                        { error: err instanceof Error ? err.message : String(err) },
+                    ),
+                id: toastIdRef.current ?? undefined,
+            });
+            toastIdRef.current = null;
         }, 3000);
     };
 

@@ -14,7 +14,6 @@ type CertificateShareStatusResponse struct {
 	Certificate *entity.EventCertificate                     `json:"certificate,omitempty"`
 }
 
-
 // @Summary Get certificate share status
 // @Description Retrieve a shared certificate by its handle. Returns PASSWORD_LOCKED if password-protected, VALID_BUT_PENDING if the certificate has not been claimed yet, or READY with certificate data.
 // @ID get-certificate-share-status
@@ -41,4 +40,3 @@ func (h *Handler) GetCertificateShareStatus(ctx *fiber.Ctx) error {
 		Certificate: cert,
 	})
 }
-

@@ -375,7 +375,7 @@ func TestSignEventCertificates(t *testing.T) {
 				Id:                       signatureID,
 				EventCertificateConfigId: configID,
 				IssuerCredentialId:       userId, // Current issuer
-				SignMessage:              nil,     // Missing sign message
+				SignMessage:              nil,    // Missing sign message
 				IssuerSignature:          nil,
 			},
 		}

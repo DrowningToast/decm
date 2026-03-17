@@ -9,17 +9,17 @@ import (
 )
 
 type Handler struct {
-	EventUc                      *event.EventUsecase
-	AuthenticationService        *auth.AuthService
+	EventUc                       *event.EventUsecase
+	AuthenticationService         *auth.AuthService
 	AuthenticationGuardMiddleware *authenticationguard.AuthenticationGuardMiddleware
-	Logger                       *slog.Logger
+	Logger                        *slog.Logger
 }
 
 func NewHandler(eventUc *event.EventUsecase, authenticationService *auth.AuthService, authenticationGuardMiddleware *authenticationguard.AuthenticationGuardMiddleware, logger *slog.Logger) *Handler {
 	return &Handler{
-		EventUc:                      eventUc,
-		AuthenticationService:        authenticationService,
+		EventUc:                       eventUc,
+		AuthenticationService:         authenticationService,
 		AuthenticationGuardMiddleware: authenticationGuardMiddleware,
-		Logger:                       logger,
+		Logger:                        logger,
 	}
 }

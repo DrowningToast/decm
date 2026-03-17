@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { CoreApiType } from "@/lib/api/api";
+import { CertificateShareCertificateShareViewStatus } from "@decm/api";
 import { CertificateService } from "./CertificateService";
 
 // Mock the coreApiClient
@@ -81,6 +82,7 @@ describe("CertificateService", () => {
                         event_id: "event-1",
                         event_contract_address: "0x123",
                         created_at: "2024-01-01T00:00:00Z",
+                        status: "completed",
                     },
                 ],
                 unclaimed_certificates: [
@@ -476,7 +478,8 @@ describe("CertificateService", () => {
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
 
-            const result = await certificateService.claimCertificateWithPin({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const result = await (certificateService as any).claimCertificateWithPin({
                 certificateId: "cert-123",
                 accountPassword: "password123",
             });
@@ -507,7 +510,8 @@ describe("CertificateService", () => {
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
 
-            const result = await certificateService.claimCertificateWithPin({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const result = await (certificateService as any).claimCertificateWithPin({
                 certificateId: "cert-123",
                 accountPassword: "password123",
             });
@@ -535,7 +539,8 @@ describe("CertificateService", () => {
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
 
-            const result = await certificateService.claimCertificateWithSignature({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const result = await (certificateService as any).claimCertificateWithSignature({
                 certificateId: "cert-123",
                 signature: "sig-123",
                 signMessage: "Sign this",
@@ -682,7 +687,9 @@ describe("CertificateService", () => {
 
             vi.mocked(mockCoreApi.v1.updateCertificateShare).mockResolvedValue(mockResponse);
 
-            const result = await certificateService.updateCertificateShare("share-1", "newpass");
+            const result = await certificateService.updateCertificateShare("share-1", {
+                password: "newpass",
+            });
 
             expect(mockCoreApi.v1.updateCertificateShare).toHaveBeenCalledWith(
                 { shareId: "share-1" },
@@ -696,7 +703,7 @@ describe("CertificateService", () => {
     describe("getCertificateShareStatus", () => {
         it("should return READY status with certificate", async () => {
             const mockResponse = {
-                status: "READY" as const,
+                status: CertificateShareCertificateShareViewStatus.CertificateShareViewStatusReady,
                 certificate: {
                     id: "cert-1",
                     event_id: "event-1",
@@ -720,7 +727,7 @@ describe("CertificateService", () => {
 
         it("should return PASSWORD_LOCKED status without certificate", async () => {
             const mockResponse = {
-                status: "PASSWORD_LOCKED" as const,
+                status: CertificateShareCertificateShareViewStatus.CertificateShareViewStatusPasswordLocked,
                 certificate: undefined,
             };
 
@@ -734,7 +741,7 @@ describe("CertificateService", () => {
 
         it("should return VALID_BUT_PENDING status", async () => {
             const mockResponse = {
-                status: "VALID_BUT_PENDING" as const,
+                status: CertificateShareCertificateShareViewStatus.CertificateShareViewStatusValidButPending,
                 certificate: undefined,
             };
 

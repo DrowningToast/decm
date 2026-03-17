@@ -51,9 +51,9 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
 
     useEffect(() => {
         if (!shareId) return;
-        setOnChangePublish((isPublished: boolean) => {
-            updateShareVisibility(shareId, isPublished);
+        setOnChangePublish(async (isPublished: boolean) => {
             setIsPublished(isPublished);
+            await updateShareVisibility(shareId, isPublished);
         });
     }, [shareId, updateShareVisibility, setOnChangePublish, setIsPublished]);
 

@@ -238,4 +238,3 @@ func (uc *EventRegistrationUsecase) JoinEventWithSignature(ctx context.Context, 
 
 	return uc.queueEventJoin(ctx, currentUser, *entityEventContract, joinPayload, signature, signMessage, &participantAddress)
 }
-

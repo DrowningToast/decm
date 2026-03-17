@@ -64,7 +64,8 @@
             "page": "Page {{current}}",
             "pageOf": "Page {{current}} of {{total}}",
             "noResults": "No results found."
-        }
+        },
+        "validationErrors": "Please fix the following errors:"
     },
     "nav": {
         "home": "Home",
@@ -349,7 +350,17 @@
             "privateOnly": "Password required",
             "privateOnlyDescription": "This event is private and requires a password to register.",
             "success": "Registration successful!",
-            "successDescription": "You have successfully registered for this event."
+            "successDescription": "You have successfully registered for this event.",
+            "unavilablePassword": "Password is not available for this event"
+        },
+        "participants": {
+            "cancelSuccess": "Invitation cancelled successfully"
+        },
+        "certificates": {
+            "revokeAllSuccess": "All certificates revoked successfully",
+            "revokeAllError": "Failed to revoke all certificates. Please try again.",
+            "revokeSuccess": "Certificate revoked successfully",
+            "revokeError": "Failed to revoke certificate. Please try again."
         }
     },
     "events": {
@@ -791,6 +802,11 @@
             "errorLoadingCertificate": "Failed to load certificate details",
             "notFound": "Certificate not found",
             "notFoundDescription": "The certificate you're looking for doesn't exist or you don't have access to it.",
+            "defaultTitle": "Certificate of Achievement",
+            "passwordDialog": {
+                "title": "Enter Certificate Password",
+                "description": "This certificate is password protected. Please enter the password to view it."
+            },
             "detail": {
                 "issuedBy": "Issued by",
                 "issued": "Issued",
@@ -810,7 +826,6 @@
                 "eventContractAddress": "Event Contact Address",
                 "verifiableCredentialAttributes": "Verifiable Credential Attributes",
                 "downloadAttributes": "download",
-                "copyShareableUrl": "Copy shareable URL",
                 "certificateFromEvent": "Certificate from {{eventName}}",
                 "certificatePreview": "Certificate Preview",
                 "imageLoadError": "Failed to load certificate image",
@@ -954,7 +969,8 @@
                 "certificateInvitation": "Certificate Invitation",
                 "certificateInvitationWithDetails": "Certificate Invitation: {{certificateTitle}} from {{eventName}}",
                 "general": "Message"
-            }
+            },
+            "noDescription": "No description"
         }
     },
     "createEvent": {
@@ -1275,6 +1291,21 @@
             "title": "Step 3: Font Settings",
             "description": "Customize the font family and weight for each text field in your certificate template."
         },
+        "fontSettings": {
+            "title": "Font Settings",
+            "description": "Configure font family and weight for each text field in the certificate template.",
+            "noFieldsConfigured": "No text fields have been positioned in the certificate template yet. Configure text positions first to manage font settings.",
+            "field": "Field",
+            "fontFamily": "Font Family",
+            "fontWeight": "Weight",
+            "selectFont": "Select font",
+            "selectWeight": "Select weight",
+            "eventName": "Event Name",
+            "participantName": "Participant Name",
+            "academicInstitution": "Academic Institution",
+            "certificateTitle": "Certificate Title",
+            "certificateSubtitle": "Certificate Subtitle"
+        },
         "confirmButton": "Confirm Settings",
         "saveSuccess": "Certificate settings saved successfully",
         "saveError": "Failed to save certificate settings. Please try again.",
@@ -1323,6 +1354,7 @@
         "lastNameMax64": "Last name must be at most 64 characters",
         "emailMax64": "Email must be at most 64 characters",
         "phoneNumberMax10": "Phone number must be at most 10 characters",
+        "phoneNumberMax15": "Phone number must be at most 15 characters",
         "phoneNumberMax20": "Phone number must be at most 20 characters",
         "bioMin10": "Bio must be at least 10 characters",
         "bioMax255": "Bio must be at most 255 characters",
@@ -1368,6 +1400,8 @@
             "signatureRequestDescription": "Enter your PIN to sign certificates",
             "issuersStatus": "Issuers Status",
             "noIssuersFound": "No issuers found for this event",
+            "signingProgress": "Signing Progress",
+            "ofSigned": "of {{count}} signed",
             "issuer": "Issuer",
             "you": "You",
             "completed": "Completed",
@@ -1428,7 +1462,8 @@
         "inbox": {
             "title": "Something went wrong",
             "description": "We couldn't load this message. Please try again later."
-        }
+        },
+        "failedToLoadEvent": "Failed to load event"
     },
     "notFound": {
         "title": "404 - Page Not Found",
@@ -1606,6 +1641,17 @@
             "unauthenticated_response": "You must be logged in to access this page. Please sign in.",
             "unauthorized_response": "You don't have permission to access this page. Please contact an administrator.",
             "sign_out_success": "You have been signed out successfully."
+        },
+        "oauth_google": {
+            "create_account_error_password": "Password is required to create an account.",
+            "missing_access_token": "Missing Access Token",
+            "missing_access_token_description": "The OAuth access token is missing. Please try signing in again through Google.",
+            "missing_expires_in": "Missing Token Expiration",
+            "missing_expires_in_description": "The token expiration information is missing. Please try signing in again through Google."
+        },
+        "wallet": {
+            "create_profile_error": "Failed to create profile. Please try again.",
+            "create_profile_success": "Profile created successfully"
         }
     }
 }

@@ -134,7 +134,7 @@ describe("useCertificateDetailsSharedNavStore", () => {
         let receivedValue: boolean | undefined;
         useCertificateDetailsSharedNavStore
             .getState()
-            .setOnChangePublish((isPublished: boolean) => {
+            .setOnChangePublish(async (isPublished: boolean) => {
                 receivedValue = isPublished;
             });
         useCertificateDetailsSharedNavStore.getState().onChangePublish(true);

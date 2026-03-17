@@ -193,11 +193,11 @@ func TestIsSuspiciousPathNoFalsePositives(t *testing.T) {
 // Benchmark the pattern matching function
 func BenchmarkIsSuspiciousPath(b *testing.B) {
 	testPaths := []string{
-		"/api/v1/events",       // Legitimate (should be fast)
-		"/.env.production",     // Suspicious prefix match
-		"/index.php",           // Suspicious suffix match
-		"/jmx-console/",        // Suspicious contains match
-		"/admin",               // Suspicious exact match
+		"/api/v1/events",   // Legitimate (should be fast)
+		"/.env.production", // Suspicious prefix match
+		"/index.php",       // Suspicious suffix match
+		"/jmx-console/",    // Suspicious contains match
+		"/admin",           // Suspicious exact match
 		"/very/long/path/that/is/legitimate/and/should/not/match",
 	}
 

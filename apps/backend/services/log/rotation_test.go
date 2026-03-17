@@ -216,7 +216,6 @@ func TestHookWriter_WithHook(t *testing.T) {
 
 	testData := []byte("test data")
 	n, err := writer.Write(testData)
-
 	if err != nil {
 		t.Errorf("Write failed: %v", err)
 	}

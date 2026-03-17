@@ -12,7 +12,6 @@ interface BottomContainerProviderProps {
     onBack?: () => void;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const BottomContainerContext = createContext<BottomContainerContextType | undefined>(
     undefined,
 );
@@ -31,7 +30,6 @@ export const BottomContainerProvider = ({
     );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useBottomContainerContext = () => {
     const context = useContext(BottomContainerContext);
     if (!context) {

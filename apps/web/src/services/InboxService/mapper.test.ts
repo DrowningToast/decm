@@ -157,6 +157,7 @@ describe("mapInboxMessagesDetailViewModelToInboxMessageDetail", () => {
                 message_type: EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation,
                 is_read: 0,
                 created_at: "2024-01-01T00:00:00Z",
+                updated_at: "2024-01-01T00:00:00Z",
             },
         };
         const result = mapInboxMessagesDetailViewModelToInboxMessageDetail(response);
@@ -189,6 +190,7 @@ describe("mapInboxMessagesDetailViewModelToInboxMessageDetail", () => {
                 message_type: EntityInboxMessageType.InboxMessageTypeEventCertificateInvitation,
                 is_read: 0,
                 created_at: "2024-01-01T00:00:00Z",
+                updated_at: "2024-01-01T00:00:00Z",
             },
         };
         const result = mapInboxMessagesDetailViewModelToInboxMessageDetail(response);
@@ -230,6 +232,7 @@ describe("mapInboxMessagesDetailViewModelToInboxMessageDetail", () => {
                 message_type: EntityInboxMessageType.InboxMessageTypeEventRegistrationInvitation,
                 is_read: 0,
                 created_at: "2024-01-01T00:00:00Z",
+                updated_at: "2024-01-01T00:00:00Z",
                 valid_until: "2024-12-31T00:00:00Z",
                 cancelled_at: "2024-06-01T00:00:00Z",
                 accepted_at: "2024-02-01T00:00:00Z",

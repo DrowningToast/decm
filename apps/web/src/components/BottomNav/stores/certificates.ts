@@ -55,8 +55,8 @@ interface CertificateDetailsSharedNavStore {
     onClickPassword: (isPasswordProtected: boolean) => void;
     setOnClickPassword: (onPasswordProtected: () => void) => void;
     isPasswordLoading: boolean;
-    onChangePublish: (isPublished: boolean) => void;
-    setOnChangePublish: (onPublishStatus: (isPublished: boolean) => void) => void;
+    onChangePublish: (isPublished: boolean) => Promise<void>;
+    setOnChangePublish: (onPublishStatus: (isPublished: boolean) => Promise<void>) => void;
     isPublishLoading: boolean;
 }
 
@@ -72,7 +72,7 @@ export const useCertificateDetailsSharedNavStore = create<CertificateDetailsShar
         setIsPasswordDialogOpen: (open: boolean) => set({ isPasswordDialogOpen: open }),
         onClickPassword: () => {},
         isPasswordLoading: false,
-        onChangePublish: () => {},
+        onChangePublish: async () => {},
         isPublishLoading: false,
         setOnClickPassword: (cn: () => void) =>
             set({
@@ -82,12 +82,15 @@ export const useCertificateDetailsSharedNavStore = create<CertificateDetailsShar
                     set({ isPasswordLoading: false });
                 },
             }),
-        setOnChangePublish: (cn: (isPublished: boolean) => void) =>
+        setOnChangePublish: (cn: (isPublished: boolean) => Promise<void>) =>
             set({
-                onChangePublish: (isPublished: boolean) => {
+                onChangePublish: async (isPublished: boolean): Promise<void> => {
                     set({ isPublishLoading: true });
-                    cn(isPublished);
-                    set({ isPublishLoading: false });
+                    try {
+                        await cn(isPublished);
+                    } finally {
+                        set({ isPublishLoading: false });
+                    }
                 },
             }),
     }),

@@ -1,9 +1,9 @@
 package issuer
 
 import (
+	"apps/backend/core-api/internal/entity"
 	"strconv"
 
-	"apps/backend/core-api/internal/entity"
 	issuer_usecase "apps/backend/core-api/internal/usecase/issuer"
 
 	"github.com/gofiber/fiber/v2"

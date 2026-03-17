@@ -2,10 +2,10 @@ package event_registration
 
 import (
 	"apps/backend/common/validatorutils"
+	"apps/backend/core-api/internal/entity"
 	"encoding/hex"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/core-api/internal/entity"
 
 	event_registration_uc "apps/backend/core-api/internal/usecase/event_registration"
 

@@ -102,7 +102,7 @@ describe("mapCertificate", () => {
 describe("mapToMyCertificatesViewModel", () => {
     it("maps claimed and unclaimed certificates", () => {
         const response: CertificateGetMyCertificatesListViewModelResponse = {
-            claimed_certificates: [baseCert],
+            claimed_certificates: [{ ...baseCert, status: "completed" }],
             unclaimed_certificates: [{ ...baseCert, id: "cert-2" }],
             total_claimed: 1,
             total_unclaimed: 1,

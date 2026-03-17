@@ -2,6 +2,7 @@ package cyptoutils
 
 import (
 	"apps/backend/core-api/config"
+	"context"
 	"math/big"
 	"testing"
 
@@ -34,7 +35,7 @@ func TestGetKeyedTransactor(t *testing.T) {
 		return
 	}
 
-	auth, err := GetKeyedTransactor(nil, nil)
+	auth, err := GetKeyedTransactor(context.TODO(), nil)
 	if err != nil {
 		t.Skipf("Skipping test: cannot create transactor: %v", err)
 		return

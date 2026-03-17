@@ -290,7 +290,10 @@ export class CertificateService {
         shareId: string,
         params: { password?: string; active?: boolean },
     ): Promise<UpdateCertificateShareResult> {
-        const response = await this._coreApi.v1.updateCertificateShare({ shareId }, params);
+        const response = await this._coreApi.v1.updateCertificateShare(
+            { shareId },
+            params as { active: boolean; password: string },
+        );
         return mapUpdateCertificateShareResponse(response);
     }
 

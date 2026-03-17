@@ -362,10 +362,10 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Len(t, result.ClaimedCertificates, 4)
-		assert.Equal(t, event_usecase.ClaimCertificateStatusClaimed, result.ClaimedCertificates[0].Status)  // broadcasted
-		assert.Equal(t, event_usecase.ClaimCertificateStatusClaimed, result.ClaimedCertificates[1].Status)  // has token_id
-		assert.Equal(t, event_usecase.ClaimCertificateStatusExpired, result.ClaimedCertificates[2].Status)  // past deadline
-		assert.Equal(t, event_usecase.ClaimCertificateStatusPending, result.ClaimedCertificates[3].Status)  // future deadline
+		assert.Equal(t, event_usecase.ClaimCertificateStatusClaimed, result.ClaimedCertificates[0].Status) // broadcasted
+		assert.Equal(t, event_usecase.ClaimCertificateStatusClaimed, result.ClaimedCertificates[1].Status) // has token_id
+		assert.Equal(t, event_usecase.ClaimCertificateStatusExpired, result.ClaimedCertificates[2].Status) // past deadline
+		assert.Equal(t, event_usecase.ClaimCertificateStatusPending, result.ClaimedCertificates[3].Status) // future deadline
 		mockCertDg.AssertExpectations(t)
 		mockShareDg.AssertExpectations(t)
 	})

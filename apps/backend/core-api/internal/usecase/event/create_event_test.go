@@ -3,8 +3,8 @@ package event
 import (
 	"apps/backend/common/customerror"
 	"apps/backend/common/encryptutils"
-	eventcontract_datagateway "apps/backend/core-api/internal/datagateway/onchain/event_contract"
 	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
+	eventcontract_datagateway "apps/backend/core-api/internal/datagateway/onchain/event_contract"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"

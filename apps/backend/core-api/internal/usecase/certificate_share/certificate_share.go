@@ -6,6 +6,7 @@ import (
 
 	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 	certificatecontract_datagateway "apps/backend/core-api/internal/datagateway/onchain/certificate_contract"
+
 	"github.com/google/uuid"
 )
 
@@ -39,8 +40,8 @@ func NewCertificateShareViewModel(share *entity.CertificateShare) *CertificateSh
 }
 
 type CertificateShareUsecase struct {
-	EventCertificateDataGateway eventdatagateway.EventCertificateDataGateway
-	CertificateShareDg          eventdatagateway.CertificateShareDataGateway
+	EventCertificateDataGateway  eventdatagateway.EventCertificateDataGateway
+	CertificateShareDg           eventdatagateway.CertificateShareDataGateway
 	CertificateContractFactoryDg certificatecontract_datagateway.CertificateContractFactoryDataGateway
 }
 

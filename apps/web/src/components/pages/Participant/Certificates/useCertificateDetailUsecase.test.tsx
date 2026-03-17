@@ -3,7 +3,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useCertificateDetailUsecase } from "./useCertificateDetailUsecase";
-import type { Certificate } from "@/services/CertificateService/mapper";
+import type { ClaimedCertificate } from "@/services/CertificateService/mapper";
 
 // Mock dependencies
 const mockSetCertificateId = vi.fn();
@@ -44,11 +44,12 @@ describe("useCertificateDetailUsecase", () => {
         <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
 
-    const makeCertificate = (overrides: Partial<Certificate> = {}): Certificate => ({
+    const makeCertificate = (overrides: Partial<ClaimedCertificate> = {}): ClaimedCertificate => ({
         id: "cert-1",
         eventId: "evt-1",
         eventName: "Test Event",
         name: "John Doe",
+        status: "completed",
         certificateTitle: "Completion",
         certificateSubtitle: "With honors",
         academicInstitution: "MIT",

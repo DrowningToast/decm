@@ -1,17 +1,16 @@
 package event
 
 import (
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"errors"
 	"testing"
 	"time"
 
-	"apps/backend/core-api/internal/entity"
-
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAbortCertificateClaim_CallsUpdateAbortedAt(t *testing.T) {

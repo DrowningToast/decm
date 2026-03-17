@@ -7,10 +7,10 @@ import (
 	"log/slog"
 	"mime/multipart"
 
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
+	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 	blockchainclient_datagateway "apps/backend/core-api/internal/datagateway/onchain/blockchain_client"
 	eventcontract_datagateway "apps/backend/core-api/internal/datagateway/onchain/event_contract"
-	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
-	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	storage_datagateway "apps/backend/core-api/internal/datagateway/storage"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"

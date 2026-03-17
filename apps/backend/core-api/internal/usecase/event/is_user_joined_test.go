@@ -1,8 +1,8 @@
 package event_test
 
 import (
-	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
+	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 	"apps/backend/core-api/internal/entity"
 	event_usecase "apps/backend/core-api/internal/usecase/event"
 	"context"

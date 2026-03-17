@@ -2,6 +2,7 @@ package profile
 
 import (
 	"apps/backend/common/customerror"
+
 	"github.com/gofiber/fiber/v2"
 )
 

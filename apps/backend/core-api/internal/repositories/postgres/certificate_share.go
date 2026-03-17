@@ -8,6 +8,7 @@ import (
 	"errors"
 
 	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )

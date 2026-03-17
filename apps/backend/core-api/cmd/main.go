@@ -12,6 +12,7 @@ import (
 	"apps/backend/core-api/internal/handler/profile"
 	"apps/backend/core-api/internal/handler/system_status"
 	"apps/backend/core-api/internal/repositories/postgres"
+	"apps/backend/core-api/internal/worker"
 	"apps/backend/services/auth"
 	"apps/backend/services/log"
 	"apps/backend/services/oauth"
@@ -25,9 +26,9 @@ import (
 	"syscall"
 	"time"
 
-	contract_repo "apps/backend/core-api/internal/repositories/contract/event"
-	certificate_contract_repo "apps/backend/core-api/internal/repositories/contract/certificate"
 	blockchain_repo "apps/backend/core-api/internal/repositories/contract/blockchain"
+	certificate_contract_repo "apps/backend/core-api/internal/repositories/contract/certificate"
+	contract_repo "apps/backend/core-api/internal/repositories/contract/event"
 	s3_repo "apps/backend/core-api/internal/repositories/storage/s3"
 
 	customerror "apps/backend/common/customerror"
@@ -60,7 +61,6 @@ import (
 	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
 	profile_usecase "apps/backend/core-api/internal/usecase/profile"
 	system_status_usecase "apps/backend/core-api/internal/usecase/system_status"
-	"apps/backend/core-api/internal/worker"
 
 	json "github.com/goccy/go-json"
 
@@ -158,15 +158,15 @@ func main() {
 	inboxUc := inbox_usecase.NewInboxUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo)
 	blockchainUc := blockchain_usecase.NewBlockchainUsecase(log.Logger, &cfg, blockchainClientRepo)
 	eventRegistrationUc := event_registration_invitation_usecase.NewEventRegistrationUsecase(
-		pgRepo,                    // InboxMessageDataGateway
-		pgRepo,                    // EventRegistrationInvitationDataGateway
-		pgRepo,                    // EventDataGateway
-		pgRepo,                    // EventContractDataGateway
-		pgRepo,                    // EventAttendeeDataGateway
-		pgRepo,                    // EventRegistrationConfigDataGateway
-		pgRepo,                    // AuthenticationCredentialDataGateway
-		*authUc,                   // AuthUsecase (dereference pointer to value)
-		*eventUc,                  // EventUsecase (dereference pointer to value)
+		pgRepo,                   // InboxMessageDataGateway
+		pgRepo,                   // EventRegistrationInvitationDataGateway
+		pgRepo,                   // EventDataGateway
+		pgRepo,                   // EventContractDataGateway
+		pgRepo,                   // EventAttendeeDataGateway
+		pgRepo,                   // EventRegistrationConfigDataGateway
+		pgRepo,                   // AuthenticationCredentialDataGateway
+		*authUc,                  // AuthUsecase (dereference pointer to value)
+		*eventUc,                 // EventUsecase (dereference pointer to value)
 		pgRepo,                   // UserSignatureDataGateway
 		eventContractFactoryRepo, // EventContractFactoryDataGateway
 		blockchainClientRepo,     // BlockchainClientDataGateway

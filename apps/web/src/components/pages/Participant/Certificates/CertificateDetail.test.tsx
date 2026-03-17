@@ -1,7 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { userEvent } from "@testing-library/user-event";
 import { CertificateDetail } from "./CertificateDetail";
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
@@ -70,13 +69,14 @@ vi.mock("@/hooks/useClaimCertificate", () => ({
 vi.mock("@/hooks/useCertificateImage", () => ({
     useCertificateImage: vi.fn(() => ({
         imageUrl: null,
+        imageData: null,
         isLoading: false,
         error: null,
     })),
 }));
 
 vi.mock("@/hooks/events/useEvent", () => ({
-    useEvent: vi.fn(() => ({ event: null, isLoadingEvent: false })),
+    useEvent: vi.fn(() => ({ event: null, isLoadingEvent: false, isLoadingEventError: false })),
 }));
 
 vi.mock("@/components/BottomNav/BottomNav", () => ({
@@ -108,16 +108,26 @@ const baseCertificate = {
     eventId: "evt-1",
     event: "My Event",
     name: "Jane Doe",
-    status: "completed" as const,
+    status: "completed" as "completed" | "queued" | "expired" | "aborted" | "pending",
     issuedAt: "2024-06-15T00:00:00Z",
     certificateTitle: "Certificate of Completion",
-    certificateSubtitle: undefined,
-    academicInstitution: undefined,
-    certificateContractAddress: undefined,
-    eventContractAddress: undefined,
-    verifiableCredentialUrl: undefined,
-    estimatedDeadline: undefined,
-    shareable: undefined,
+    certificateSubtitle: undefined as string | undefined,
+    academicInstitution: undefined as string | undefined,
+    certificateContractAddress: undefined as string | undefined,
+    eventContractAddress: undefined as string | undefined,
+    verifiableCredentialUrl: undefined as string | undefined,
+    estimatedDeadline: undefined as Date | undefined,
+    shareable: undefined as
+        | {
+              id: string;
+              handle: string;
+              active: boolean;
+              hasPassword: boolean;
+              eventCertificateId: string;
+              createdAt: string;
+              updatedAt: string;
+          }
+        | undefined,
 };
 
 function mockUsecase(
@@ -150,12 +160,15 @@ describe("CertificateDetail", () => {
         } as ReturnType<typeof useCertificateDetailsSharedNavStore>);
         vi.mocked(useCertificateImage).mockReturnValue({
             imageUrl: null,
+            imageData: null,
             isLoading: false,
             error: null,
         });
-        vi.mocked(useEvent).mockReturnValue({ event: null, isLoadingEvent: false } as ReturnType<
-            typeof useEvent
-        >);
+        vi.mocked(useEvent).mockReturnValue({
+            event: undefined,
+            isLoadingEvent: false,
+            isLoadingEventError: false,
+        } as ReturnType<typeof useEvent>);
     });
 
     // ── Page states ──────────────────────────────────────────────────────────
@@ -287,6 +300,7 @@ describe("CertificateDetail", () => {
         vi.mocked(useEvent).mockReturnValue({
             event: { isJoined: true },
             isLoadingEvent: false,
+            isLoadingEventError: false,
         } as ReturnType<typeof useEvent>);
 
         render(<CertificateDetail certificateId="cert-1" />);
@@ -310,6 +324,7 @@ describe("CertificateDetail", () => {
         vi.mocked(useEvent).mockReturnValue({
             event: { isJoined: true },
             isLoadingEvent: false,
+            isLoadingEventError: false,
         } as ReturnType<typeof useEvent>);
         render(<CertificateDetail certificateId="cert-1" />);
         expect(screen.getByRole("button", { name: /retry claim/i })).toBeInTheDocument();
@@ -320,6 +335,7 @@ describe("CertificateDetail", () => {
         vi.mocked(useEvent).mockReturnValue({
             event: { isJoined: false },
             isLoadingEvent: false,
+            isLoadingEventError: false,
         } as ReturnType<typeof useEvent>);
 
         render(<CertificateDetail certificateId="cert-1" />);
@@ -332,6 +348,7 @@ describe("CertificateDetail", () => {
         mockUsecase({});
         vi.mocked(useCertificateImage).mockReturnValue({
             imageUrl: "blob:http://localhost/img",
+            imageData: null,
             isLoading: false,
             error: null,
         });
@@ -343,6 +360,7 @@ describe("CertificateDetail", () => {
         mockUsecase({});
         vi.mocked(useCertificateImage).mockReturnValue({
             imageUrl: null,
+            imageData: null,
             isLoading: true,
             error: null,
         });
@@ -354,6 +372,7 @@ describe("CertificateDetail", () => {
         mockUsecase({});
         vi.mocked(useCertificateImage).mockReturnValue({
             imageUrl: null,
+            imageData: null,
             isLoading: false,
             error: new Error("failed"),
         });
@@ -365,7 +384,15 @@ describe("CertificateDetail", () => {
 
     it("uses certificate-details-shared variant when shareable exists", () => {
         mockUsecase({
-            shareable: { id: "s1", handle: "abc", active: true, hasPassword: false },
+            shareable: {
+                id: "s1",
+                handle: "abc",
+                active: true,
+                hasPassword: false,
+                eventCertificateId: "cert-1",
+                createdAt: "2024-01-01T00:00:00Z",
+                updatedAt: "2024-01-01T00:00:00Z",
+            },
         });
         render(<CertificateDetail certificateId="cert-1" />);
         expect(screen.getByTestId("bottom-nav")).toHaveAttribute(

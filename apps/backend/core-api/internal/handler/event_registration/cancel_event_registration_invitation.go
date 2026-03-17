@@ -2,11 +2,11 @@ package event_registration
 
 import (
 	"apps/backend/common/validatorutils"
+	"apps/backend/core-api/internal/entity"
 	"errors"
 	"fmt"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/core-api/internal/entity"
 
 	eventRegistrationUc "apps/backend/core-api/internal/usecase/event_registration"
 

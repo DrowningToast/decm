@@ -293,12 +293,12 @@ func TestGetEventViewModelByEventId(t *testing.T) {
 		estimatedDeadline := time.Now().Add(1 * time.Hour)
 
 		attendeeWithSignature := &event_datagateway.EventAttendeeWithSignature{
-			Id:           uuid.New(),
-			EventId:      eventId,
-			CredentialId: userId,
+			Id:            uuid.New(),
+			EventId:       eventId,
+			CredentialId:  userId,
 			WalletAddress: walletAddress,
-			JoinedAt:     joinedAt,
-			IsAccepted:   true,
+			JoinedAt:      joinedAt,
+			IsAccepted:    true,
 			UserSignature: &entity.UserSignature{
 				Id:                         uuid.New(),
 				Signature:                  "test-signature",
@@ -320,10 +320,10 @@ func TestGetEventViewModelByEventId(t *testing.T) {
 		mockS3Dg.On("GetPresignedURL", ctx, "icon-key").Return("https://icon-url", nil)
 
 		uc := &EventUsecase{
-			EventDataGateway:                 mockEventDg,
-			EventRegistrationInvitationDg:    mockInvitationDg,
-			EventAttendeeDg:                  mockAttendeeDg,
-			S3DataGateway:                    mockS3Dg,
+			EventDataGateway:              mockEventDg,
+			EventRegistrationInvitationDg: mockInvitationDg,
+			EventAttendeeDg:               mockAttendeeDg,
+			S3DataGateway:                 mockS3Dg,
 		}
 
 		// Act
@@ -798,12 +798,12 @@ func TestGetEventViewModelByEventId(t *testing.T) {
 		deadlineBlock := int32(99999999)
 
 		attendeeWithSignature := &event_datagateway.EventAttendeeWithSignature{
-			Id:           uuid.New(),
-			EventId:      eventId,
-			CredentialId: userId,
+			Id:            uuid.New(),
+			EventId:       eventId,
+			CredentialId:  userId,
 			WalletAddress: walletAddress,
-			JoinedAt:     joinedAt,
-			IsAccepted:   true,
+			JoinedAt:      joinedAt,
+			IsAccepted:    true,
 			UserSignature: &entity.UserSignature{
 				Id:                         uuid.New(),
 				Signature:                  "0xexpired-sig",

@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"errors"
 	"log/slog"
@@ -8,9 +9,8 @@ import (
 	"testing"
 	"time"
 
-	blockchainclient_datagateway "apps/backend/core-api/internal/datagateway/onchain/blockchain_client"
 	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
-	"apps/backend/core-api/internal/entity"
+	blockchainclient_datagateway "apps/backend/core-api/internal/datagateway/onchain/blockchain_client"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/google/uuid"
@@ -80,42 +80,55 @@ func (m *mockUserSigDg) UpdateUserSignatureMarkAsExpiredAt(ctx context.Context, 
 func (m *mockUserSigDg) CreateUserSignature(ctx context.Context, p offchain_datagateway.CreateUserSignatureParameters) (*entity.UserSignature, error) {
 	return nil, nil
 }
+
 func (m *mockUserSigDg) GetUserSignatureByID(ctx context.Context, id uuid.UUID) (*entity.UserSignature, error) {
 	return nil, nil
 }
+
 func (m *mockUserSigDg) GetUserSignaturesByCredentialID(ctx context.Context, id uuid.UUID) ([]entity.UserSignature, error) {
 	return nil, nil
 }
+
 func (m *mockUserSigDg) UpdateUserSignatureBroadcastedAt(ctx context.Context, id uuid.UUID, at *time.Time) (*entity.UserSignature, error) {
 	return nil, nil
 }
+
 func (m *mockUserSigDg) GetPendingUserSignatures(ctx context.Context) ([]entity.UserSignature, error) {
 	return nil, nil
 }
+
 func (m *mockUserSigDg) GetStaleUserSignatures(ctx context.Context, before time.Time) ([]entity.UserSignature, error) {
 	return nil, nil
 }
+
 func (m *mockUserSigDg) GetBroadcastedUserSignatures(ctx context.Context) ([]entity.UserSignature, error) {
 	return nil, nil
 }
+
 func (m *mockUserSigDg) GetUserSignaturesByDeadlineBlockRange(ctx context.Context, min, max int32) ([]entity.UserSignature, error) {
 	return nil, nil
 }
+
 func (m *mockUserSigDg) GetUserSignaturesExpiringBefore(ctx context.Context, d time.Time) ([]entity.UserSignature, error) {
 	return nil, nil
 }
+
 func (m *mockUserSigDg) GetEventJoinSignatures(ctx context.Context) ([]entity.UserSignature, error) {
 	return nil, nil
 }
+
 func (m *mockUserSigDg) GetCertificateClaimSignatures(ctx context.Context) ([]entity.UserSignature, error) {
 	return nil, nil
 }
+
 func (m *mockUserSigDg) GetOrphanedUserSignatures(ctx context.Context, before time.Time) ([]entity.UserSignature, error) {
 	return nil, nil
 }
+
 func (m *mockUserSigDg) GetUserSignatureWithUsageDetails(ctx context.Context, id uuid.UUID) (*entity.UserSignature, error) {
 	return nil, nil
 }
+
 func (m *mockUserSigDg) GetRecentUserSignatureActivity(ctx context.Context, since time.Time) ([]entity.UserSignature, error) {
 	return nil, nil
 }
@@ -123,12 +136,15 @@ func (m *mockUserSigDg) DeleteUserSignature(ctx context.Context, id uuid.UUID) e
 func (m *mockUserSigDg) CountUserSignaturesByCredentialID(ctx context.Context, id uuid.UUID) (int64, error) {
 	return 0, nil
 }
+
 func (m *mockUserSigDg) CountPendingUserSignatures(ctx context.Context) (int64, error) {
 	return 0, nil
 }
+
 func (m *mockUserSigDg) CountBroadcastedUserSignatures(ctx context.Context) (int64, error) {
 	return 0, nil
 }
+
 func (m *mockUserSigDg) UpdateUserSignatureAbortedAt(ctx context.Context, id uuid.UUID, abortedAt time.Time, reason entity.UserSignatureAbortReason) (*entity.UserSignature, error) {
 	return nil, nil
 }
@@ -149,12 +165,15 @@ func (m *mockBlockchainClientDg) GetCurrentBlockNumber(ctx context.Context) (uin
 	args := m.Called(ctx)
 	return args.Get(0).(uint64), args.Error(1)
 }
+
 func (m *mockBlockchainClientDg) GetCalculatedDeadlineBlock(ctx context.Context) (uint64, error) {
 	return 0, nil
 }
+
 func (m *mockBlockchainClientDg) EstimateDeadlineTime(ctx context.Context, block uint64) (*time.Time, error) {
 	return nil, nil
 }
+
 func (m *mockBlockchainClientDg) GetTransactOpts(ctx context.Context) (*bind.TransactOpts, error) {
 	return nil, nil
 }

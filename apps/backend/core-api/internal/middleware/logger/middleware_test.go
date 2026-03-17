@@ -16,17 +16,17 @@ import (
 
 // logEntry represents a parsed JSON log entry
 type logEntry struct {
-	Level      string  `json:"level"`
-	Msg        string  `json:"msg"`
-	Category   string  `json:"category"`
-	IP         string  `json:"ip"`
-	UserAgent  string  `json:"user_agent"`
-	Method     string  `json:"method"`
-	Path       string  `json:"path"`
-	Status     int     `json:"status"`
-	Duration   float64 `json:"duration"`
-	Error      string  `json:"error"`
-	RequestID  string  `json:"request_id"`
+	Level     string  `json:"level"`
+	Msg       string  `json:"msg"`
+	Category  string  `json:"category"`
+	IP        string  `json:"ip"`
+	UserAgent string  `json:"user_agent"`
+	Method    string  `json:"method"`
+	Path      string  `json:"path"`
+	Status    int     `json:"status"`
+	Duration  float64 `json:"duration"`
+	Error     string  `json:"error"`
+	RequestID string  `json:"request_id"`
 }
 
 // setupTestApp creates a Fiber app with the logger middleware and a custom logger
@@ -187,8 +187,8 @@ func TestMiddleware_SuspiciousPath_LogsFullIPAndAnonymizedUA(t *testing.T) {
 
 			// Verify User-Agent does NOT contain version numbers
 			if strings.Contains(securityEntry.UserAgent, "91.0") ||
-			   strings.Contains(securityEntry.UserAgent, "10.0") ||
-			   strings.Contains(securityEntry.UserAgent, "Mozilla") {
+				strings.Contains(securityEntry.UserAgent, "10.0") ||
+				strings.Contains(securityEntry.UserAgent, "Mozilla") {
 				t.Errorf("User-Agent should be anonymized (no versions), got: %s", securityEntry.UserAgent)
 			}
 

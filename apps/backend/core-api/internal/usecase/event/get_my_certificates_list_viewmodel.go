@@ -11,7 +11,7 @@ import (
 
 type ClaimedCertificateViewModel struct {
 	entity.EventCertificate
-	Status           ClaimCertificateStatus                              `json:"status"`
+	Status           ClaimCertificateStatus                       `json:"status"`
 	CertificateShare *certificate_share.CertificateShareViewModel `json:"certificate_share,omitempty"`
 }
 

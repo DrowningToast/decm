@@ -1,6 +1,9 @@
 package certificate_share
 
 import (
+	"apps/backend/common/hashutils"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -13,12 +16,11 @@ import (
 	"time"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/common/hashutils"
+
 	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 	certificatecontract_datagateway "apps/backend/core-api/internal/datagateway/onchain/certificate_contract"
-	"apps/backend/core-api/internal/entity"
+
 	certificate_share_usecase "apps/backend/core-api/internal/usecase/certificate_share"
-	"apps/backend/services/auth"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -92,36 +94,47 @@ func (m *mockEventCertificateDataGateway) GetEventCertificateByID(ctx context.Co
 func (m *mockEventCertificateDataGateway) CreateEventCertificate(_ context.Context, _ event_datagateway.CreateEventCertificateParameters) (*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *mockEventCertificateDataGateway) GetEventCertificateWithSignature(_ context.Context, _ uuid.UUID, _ uuid.UUID) (*event_datagateway.EventCertificateWithSignature, error) {
 	return nil, nil
 }
+
 func (m *mockEventCertificateDataGateway) GetEventCertificateByInboxMessageID(_ context.Context, _ uuid.UUID) (*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *mockEventCertificateDataGateway) GetEventCertificatesByEventID(_ context.Context, _ uuid.UUID) ([]*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *mockEventCertificateDataGateway) GetAllEventCertificateIDsByEventID(_ context.Context, _ uuid.UUID) ([]uuid.UUID, error) {
 	return nil, nil
 }
+
 func (m *mockEventCertificateDataGateway) GetClaimedCertificatesByEventID(_ context.Context, _ uuid.UUID) ([]*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *mockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByEventID(_ context.Context, _ uuid.UUID) ([]*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *mockEventCertificateDataGateway) GetClaimedCertificatesByCredentialID(_ context.Context, _ uuid.UUID, _ *string) ([]*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *mockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByCredentialID(_ context.Context, _ uuid.UUID, _ *string) ([]*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *mockEventCertificateDataGateway) UpdateEventCertificate(_ context.Context, _ uuid.UUID, _ event_datagateway.UpdateEventCertificateParameters) (*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *mockEventCertificateDataGateway) UpdateEventCertificateInboxMessageID(_ context.Context, _ uuid.UUID, _ uuid.UUID) (*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *mockEventCertificateDataGateway) DeleteEventCertificate(_ context.Context, _ uuid.UUID) error {
 	return nil
 }
@@ -149,16 +162,23 @@ func (m *mockCertContractDg) GetTokenData(ctx context.Context, tokenId *big.Int)
 	}
 	return args.Get(0).(*entity.CertificatePayload), args.Error(1)
 }
-func (m *mockCertContractDg) UsedSignatures(_ context.Context, _ []byte) (bool, error) { return false, nil }
+
+func (m *mockCertContractDg) UsedSignatures(_ context.Context, _ []byte) (bool, error) {
+	return false, nil
+}
+
 func (m *mockCertContractDg) MintNft(_ context.Context, _ certificatecontract_datagateway.MintNftParams) (*big.Int, error) {
 	return nil, nil
 }
+
 func (m *mockCertContractDg) RevokeCertificate(_ context.Context, _ *big.Int, _ string, _ []byte) error {
 	return nil
 }
+
 func (m *mockCertContractDg) FilterCertificateMinted(_ context.Context, _ uint64, _ uint64, _ []common.Address) ([]*certificatecontract_datagateway.CertificateMintedEvent, error) {
 	return nil, nil
 }
+
 func (m *mockCertContractDg) ParseCertificateMinted(_ types.Log) (*certificatecontract_datagateway.CertificateMintedEvent, error) {
 	return nil, nil
 }

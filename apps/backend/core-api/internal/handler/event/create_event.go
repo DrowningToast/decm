@@ -3,13 +3,13 @@ package event
 import (
 	"apps/backend/common/pgmapper"
 	"apps/backend/common/validatorutils"
+	"apps/backend/core-api/internal/entity"
 	"errors"
 	"fmt"
 	"strconv"
 	"time"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/core-api/internal/entity"
 
 	eventUc "apps/backend/core-api/internal/usecase/event"
 	eventconfig "apps/backend/core-api/internal/usecase/eventconfig"

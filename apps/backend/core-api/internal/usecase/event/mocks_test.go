@@ -1,13 +1,13 @@
 package event
 
 import (
+	"apps/backend/core-api/config"
+	"apps/backend/core-api/config/blockchain"
 	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 	blockchainclient_datagateway "apps/backend/core-api/internal/datagateway/onchain/blockchain_client"
 	eventcontract_datagateway "apps/backend/core-api/internal/datagateway/onchain/event_contract"
 	storage_datagateway "apps/backend/core-api/internal/datagateway/storage"
-	"apps/backend/core-api/config"
-	"apps/backend/core-api/config/blockchain"
 	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
