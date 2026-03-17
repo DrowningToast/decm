@@ -80,7 +80,7 @@ export const CertificateDetailNav = ({
             className={cn(
                 contextClassName,
                 propClassName,
-                "flex flex-wrap items-center justify-center gap-1.5 bg-primary rounded-xl p-1.5",
+                "flex items-center justify-center gap-1.5 bg-primary rounded-xl p-1.5",
             )}
         >
             {/* Back Button */}
@@ -91,43 +91,44 @@ export const CertificateDetailNav = ({
             >
                 <ChevronLeft className="w-5 h-5 text-white" />
             </button>
-
-            {/* Shareable Link Button - only shown when certificate is claimed */}
-            {isClaimed && overrideShowCreateShareButton !== false && (
-                <Button
-                    loading={isShareableLoading}
-                    onClick={onClickShareable}
-                    className="cursor-pointer flex items-center justify-center w-10 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0"
-                    aria-label={t(
-                        "participant.certificates.detail.createShareableLink",
-                        "Create shareable link",
-                    )}
-                >
-                    <Share2 className="w-5 h-5 text-background-alt" />
-                </Button>
-            )}
-
-            {/* Download Button - only shown when certificate is claimed */}
-            {isClaimed && (
-                <button
-                    onClick={handleDownload}
-                    disabled={isDownloading}
-                    className="cursor-pointer flex items-center justify-center w-10 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label={t(
-                        "participant.certificates.detail.downloadAsImage",
-                        "Download as an image",
-                    )}
-                >
-                    <Download
-                        className={cn(
-                            "w-5 h-5 text-background-alt",
-                            isDownloading && "animate-pulse",
+            <div className="flex gap-1.5 flex-wrap justify-center items-stretch">
+                {/* Shareable Link Button - only shown when certificate is claimed */}
+                {isClaimed && overrideShowCreateShareButton !== false && (
+                    <Button
+                        loading={isShareableLoading}
+                        onClick={onClickShareable}
+                        className="cursor-pointer flex items-center justify-center w-10 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0"
+                        aria-label={t(
+                            "participant.certificates.detail.createShareableLink",
+                            "Create shareable link",
                         )}
-                    />
-                </button>
-            )}
+                    >
+                        <Share2 className="w-5 h-5 text-background-alt" />
+                    </Button>
+                )}
 
-            {children}
+                {/* Download Button - only shown when certificate is claimed */}
+                {isClaimed && (
+                    <button
+                        onClick={handleDownload}
+                        disabled={isDownloading}
+                        className="cursor-pointer flex items-center justify-center w-10 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label={t(
+                            "participant.certificates.detail.downloadAsImage",
+                            "Download as an image",
+                        )}
+                    >
+                        <Download
+                            className={cn(
+                                "w-5 h-5 text-background-alt",
+                                isDownloading && "animate-pulse",
+                            )}
+                        />
+                    </button>
+                )}
+
+                {children}
+            </div>
         </div>
     );
 };

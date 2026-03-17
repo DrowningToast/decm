@@ -13,6 +13,7 @@ import {
     useCertificateDetailNavStore,
     useCertificateDetailsSharedNavStore,
 } from "@/components/BottomNav/stores/certificates";
+import { CertificatePasswordDialog } from "./CertificatePasswordDialog";
 import { EthExplorerLink } from "@/components/common/EthscanLink";
 import { useEvent } from "@/hooks/events/useEvent";
 import { useCertificateCreateShareLinkUsecase } from "./useCertificateCreateShareLinkUsecase";
@@ -30,8 +31,13 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
     const { claimCertificate, isClaiming } = useClaimCertificate();
     const [isProcessing, setIsProcessing] = useState(false);
     const { setOnClickShareable, setImageUrl } = useCertificateDetailNavStore();
-    const { setOnChangePublish, setIsPublished, setShareableHandle } =
-        useCertificateDetailsSharedNavStore();
+    const {
+        setOnChangePublish,
+        setIsPublished,
+        setShareableHandle,
+        isPasswordDialogOpen,
+        setIsPasswordDialogOpen,
+    } = useCertificateDetailsSharedNavStore();
     const { createCertificateShareLink } = useCertificateCreateShareLinkUsecase();
     const { updateShareVisibility } = useCertificateUpdateShareVisibilityUsecase();
 
@@ -612,6 +618,12 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
 
             {/* Bottom Navigation */}
             <BottomNav variant={bottomNavVariant} onBack={() => window.history.back()} />
+
+            {/* Password dialog */}
+            <CertificatePasswordDialog
+                open={isPasswordDialogOpen}
+                onOpenChange={setIsPasswordDialogOpen}
+            />
         </div>
     );
 };

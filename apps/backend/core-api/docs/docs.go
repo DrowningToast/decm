@@ -4548,9 +4548,13 @@ const docTemplate = `{
         "certificate_share.UpdateCertificateShareBody": {
             "type": "object",
             "required": [
+                "active",
                 "password"
             ],
             "properties": {
+                "active": {
+                    "type": "boolean"
+                },
                 "password": {
                     "type": "string"
                 }

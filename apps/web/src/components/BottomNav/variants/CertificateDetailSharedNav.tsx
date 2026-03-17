@@ -13,8 +13,13 @@ interface CertificateDetailSharedNavProps {
 
 export const CertificateDetailSharedNav = (props: CertificateDetailSharedNavProps) => {
     const { t } = useTranslation();
-    const { shareableHandle, isPublished, onChangePublish, isPasswordProtected } =
-        useCertificateDetailsSharedNavStore();
+    const {
+        shareableHandle,
+        isPublished,
+        onChangePublish,
+        isPasswordProtected,
+        setIsPasswordDialogOpen,
+    } = useCertificateDetailsSharedNavStore();
     const [localPublish, setLocalPublish] = useState(isPublished);
     const toastIdRef = useRef<string | number | null>(null);
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -106,7 +111,7 @@ export const CertificateDetailSharedNav = (props: CertificateDetailSharedNavProp
 
             {/* Password — lock icon reflects protection state */}
             <button
-                onClick={() => {}}
+                onClick={() => setIsPasswordDialogOpen(true)}
                 className="cursor-pointer flex items-center justify-center w-10 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0"
                 aria-label={t("participant.certificates.detail.editPassword", "Edit password")}
             >

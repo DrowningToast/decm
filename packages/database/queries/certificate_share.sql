@@ -1,5 +1,5 @@
 -- name: CreateCertificateShare :one
-INSERT INTO certificate_share (event_certificate_id, active, handle, password)
+INSERT INTO event_certificate_shares (event_certificate_id, active, handle, password)
 VALUES (
     sqlc.arg('event_certificate_id'),
     sqlc.arg('active'),
@@ -9,16 +9,16 @@ VALUES (
 RETURNING *;
 
 -- name: GetCertificateShareByHandle :one
-SELECT * FROM certificate_share WHERE handle = sqlc.arg('handle') LIMIT 1;
+SELECT * FROM event_certificate_shares WHERE handle = sqlc.arg('handle') LIMIT 1;
 
 -- name: GetCertificateShareByID :one
-SELECT * FROM certificate_share WHERE id = sqlc.arg('id') LIMIT 1;
+SELECT * FROM event_certificate_shares WHERE id = sqlc.arg('id') LIMIT 1;
 
 -- name: GetCertificateShareByEventCertificateID :one
-SELECT * FROM certificate_share WHERE event_certificate_id = sqlc.arg('event_certificate_id') LIMIT 1;
+SELECT * FROM event_certificate_shares WHERE event_certificate_id = sqlc.arg('event_certificate_id') LIMIT 1;
 
 -- name: UpdateCertificateShare :one
-UPDATE certificate_share
+UPDATE event_certificate_shares
 SET password = sqlc.arg('password'),
     active = sqlc.arg('active'),
     updated_at = NOW()

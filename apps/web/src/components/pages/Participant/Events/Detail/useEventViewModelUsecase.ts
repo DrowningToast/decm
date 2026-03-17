@@ -26,6 +26,7 @@ export const useEventViewModelUsecase = ({ eventId }: UseEventDetailUsecaseOptio
                 throw error;
             }
         },
+        enabled: !!eventId,
     });
 
     // Determine bottom nav variant

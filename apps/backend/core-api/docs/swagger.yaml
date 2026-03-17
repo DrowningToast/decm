@@ -171,9 +171,12 @@ definitions:
     type: object
   certificate_share.UpdateCertificateShareBody:
     properties:
+      active:
+        type: boolean
       password:
         type: string
     required:
+    - active
     - password
     type: object
   certificate_share.UpdateCertificateShareResponse:
