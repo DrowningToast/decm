@@ -166,7 +166,7 @@ func TestCreateCertificateShare(t *testing.T) {
 		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 		mockShareDg.On("CreateCertificateShare", ctx, mock.MatchedBy(func(p event_datagateway.CreateCertificateShareParameters) bool {
-			return p.EventCertificateId == certID && !p.Active && p.Password == nil && len(p.Handle) == 32
+			return p.EventCertificateId == certID && p.Active && p.Password == nil && len(p.Handle) == 32
 		})).Return(newShare, nil)
 
 		uc := &CertificateShareUsecase{
@@ -235,7 +235,7 @@ func TestCreateCertificateShare(t *testing.T) {
 		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(pendingCert(), nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 		mockShareDg.On("CreateCertificateShare", ctx, mock.MatchedBy(func(p event_datagateway.CreateCertificateShareParameters) bool {
-			return p.EventCertificateId == certID && !p.Active && p.Password == nil && len(p.Handle) == 32
+			return p.EventCertificateId == certID && p.Active && p.Password == nil && len(p.Handle) == 32
 		})).Return(newShare, nil)
 
 		uc := &CertificateShareUsecase{
@@ -256,7 +256,7 @@ func TestCreateCertificateShare(t *testing.T) {
 		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(claimedCert(), nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 		mockShareDg.On("CreateCertificateShare", ctx, mock.MatchedBy(func(p event_datagateway.CreateCertificateShareParameters) bool {
-			return p.EventCertificateId == certID && !p.Active && p.Password == nil && len(p.Handle) == 32
+			return p.EventCertificateId == certID && p.Active && p.Password == nil && len(p.Handle) == 32
 		})).Return(newShare, nil)
 
 		uc := &CertificateShareUsecase{

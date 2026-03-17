@@ -123,6 +123,16 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 //   value: { ...window.location, href: 'http://localhost:3000', assign: vi.fn(), replace: vi.fn(), reload: vi.fn() }
 // })
 
+// Mock navigator.clipboard
+Object.defineProperty(navigator, "clipboard", {
+    value: {
+        writeText: vi.fn().mockResolvedValue(undefined),
+        readText: vi.fn().mockResolvedValue(""),
+    },
+    writable: true,
+    configurable: true,
+});
+
 // Global mock for lucide-react icons
 vi.mock("lucide-react", () => {
     const icons = [
@@ -189,6 +199,8 @@ vi.mock("lucide-react", () => {
         "CircleCheckBig",
         "CircleX",
         "Lock",
+        "LockKeyhole",
+        "LockKeyholeOpen",
         "ShieldAlert",
         "Globe",
         "KeyRound",

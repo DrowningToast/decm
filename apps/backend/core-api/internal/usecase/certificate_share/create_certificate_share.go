@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// CreateCertificateShare creates an inactive certificate_share row with a randomly generated handle.
+// CreateCertificateShare creates an active certificate_share row with a randomly generated handle.
 // Only certificates with PENDING or CLAIMED status can be shared.
 // hashedPassword should be the Argon2id-hashed password (or nil for no password protection).
 func (uc *CertificateShareUsecase) CreateCertificateShare(ctx context.Context, currentUser *auth.JwtClaims, certificateID uuid.UUID, hashedPassword *string) (*entity.CertificateShare, error) {
@@ -66,7 +66,7 @@ func (uc *CertificateShareUsecase) CreateCertificateShare(ctx context.Context, c
 
 	share, err := uc.CertificateShareDg.CreateCertificateShare(ctx, eventdatagateway.CreateCertificateShareParameters{
 		EventCertificateId: certificateID,
-		Active:             false,
+		Active:             true,
 		Handle:             handle,
 		Password:           hashedPassword,
 	})
