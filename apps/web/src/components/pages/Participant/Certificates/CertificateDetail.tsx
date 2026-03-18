@@ -34,6 +34,7 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
     const {
         setOnChangePublish,
         setIsPublished,
+        setIsPasswordProtected,
         setShareableHandle,
         isPasswordDialogOpen,
         setIsPasswordDialogOpen,
@@ -61,13 +62,15 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
     useEffect(() => {
         if (certificate?.shareable) {
             setIsPublished(certificate.shareable.active);
+            setIsPasswordProtected(certificate.shareable.hasPassword);
             setShareableHandle(certificate.shareable.handle);
         }
         return () => {
             setIsPublished(false);
+            setIsPasswordProtected(false);
             setShareableHandle(null);
         };
-    }, [certificate?.shareable, setIsPublished, setShareableHandle]);
+    }, [certificate?.shareable, setIsPublished, setIsPasswordProtected, setShareableHandle]);
 
     // Fetch event details to check if user has joined
     const { event, isLoadingEvent } = useEvent(certificate?.eventId || "");
@@ -623,6 +626,8 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
             <CertificatePasswordDialog
                 open={isPasswordDialogOpen}
                 onOpenChange={setIsPasswordDialogOpen}
+                shareId={shareId}
+                hasPassword={certificate.shareable?.hasPassword ?? false}
             />
         </div>
     );

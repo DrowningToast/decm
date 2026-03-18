@@ -3,7 +3,7 @@ package certificate_share
 import (
 	customerror "apps/backend/common/customerror"
 	"apps/backend/common/hashutils"
-	"apps/backend/core-api/internal/entity"
+	certificate_share_usecase "apps/backend/core-api/internal/usecase/certificate_share"
 
 	"github.com/cockroachdb/errors"
 	"github.com/gofiber/fiber/v2"
@@ -20,7 +20,7 @@ func (b *UpdateCertificateShareBody) Parse(ctx *fiber.Ctx) error {
 }
 
 type UpdateCertificateShareResponse struct {
-	Share *entity.CertificateShare `json:"share"`
+	Share *certificate_share_usecase.CertificateShareViewModel `json:"share"`
 }
 
 // @Summary Update certificate share link
@@ -72,5 +72,5 @@ func (h *Handler) UpdateCertificateShare(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(UpdateCertificateShareResponse{Share: share})
+	return ctx.Status(fiber.StatusOK).JSON(UpdateCertificateShareResponse{Share: certificate_share_usecase.NewCertificateShareViewModel(share)})
 }

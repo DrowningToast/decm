@@ -41,8 +41,13 @@ export const CertificateDetailSharedNav = (props: CertificateDetailSharedNavProp
         );
 
         debounceTimerRef.current = setTimeout(() => {
+            const toastId = toastIdRef.current ?? undefined;
+            toastIdRef.current = null;
             const promise = onChangePublish(value);
             toast.promise(promise, {
+                loading: value
+                    ? t("participant.certificates.detail.makingVisible", "Making it visible...")
+                    : t("participant.certificates.detail.makingHidden", "Making it hidden..."),
                 success: t("participant.certificates.detail.saveSuccess", "Changes saved"),
                 error: (err) =>
                     t(
@@ -50,9 +55,8 @@ export const CertificateDetailSharedNav = (props: CertificateDetailSharedNavProp
                         "Failed to save changes: {{error}}",
                         { error: err instanceof Error ? err.message : String(err) },
                     ),
-                id: toastIdRef.current ?? undefined,
+                id: toastId,
             });
-            toastIdRef.current = null;
         }, 3000);
     };
 

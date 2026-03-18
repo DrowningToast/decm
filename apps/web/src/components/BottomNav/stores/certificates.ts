@@ -49,6 +49,7 @@ interface CertificateDetailsSharedNavStore {
     isPublished: boolean;
     isPasswordDialogOpen: boolean;
     setIsPublished: (isPublished: boolean) => void;
+    setIsPasswordProtected: (isPasswordProtected: boolean) => void;
     setShareableHandle: (handle: string | null) => void;
     setIsPasswordDialogOpen: (open: boolean) => void;
     // callback
@@ -68,6 +69,7 @@ export const useCertificateDetailsSharedNavStore = create<CertificateDetailsShar
         shareableUrl: null,
         shareableHandle: null,
         setIsPublished: (isPublished: boolean) => set({ isPublished }),
+        setIsPasswordProtected: (isPasswordProtected: boolean) => set({ isPasswordProtected }),
         setShareableHandle: (handle: string | null) => set({ shareableHandle: handle }),
         setIsPasswordDialogOpen: (open: boolean) => set({ isPasswordDialogOpen: open }),
         onClickPassword: () => {},

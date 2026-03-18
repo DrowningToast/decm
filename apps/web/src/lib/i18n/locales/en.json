@@ -28,7 +28,6 @@
         "close": "Close",
         "back": "Back",
         "next": "Next",
-        "submit": "Submit",
         "search": "Search",
         "filter": "Filter",
         "sort": "Sort",
@@ -804,8 +803,14 @@
             "notFoundDescription": "The certificate you're looking for doesn't exist or you don't have access to it.",
             "defaultTitle": "Certificate of Achievement",
             "passwordDialog": {
-                "title": "Enter Certificate Password",
-                "description": "This certificate is password protected. Please enter the password to view it."
+                "title": "Certificate Password Settings",
+                "description": "Enable password protection to restrict access to this certificate share.",
+                "enablePasswordProtection": "Enable password protection",
+                "passwordPlaceholder": "Enter password",
+                "newPasswordPlaceholder": "Enter new password",
+                "passwordCurrentlySet": "A password is currently set. Enter a new password to replace it, or uncheck the box to remove protection.",
+                "updateSuccess": "Password protection updated successfully",
+                "updateError": "Failed to update password protection: {{error}}"
             },
             "detail": {
                 "issuedBy": "Issued by",
