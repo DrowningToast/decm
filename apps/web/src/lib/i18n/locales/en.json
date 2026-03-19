@@ -158,6 +158,37 @@
         "walletButton": "Sign in with Web3 Wallet Provider",
         "googleButton": "Sign in with Google Account"
     },
+    "certificateVerify": {
+        "pageTitle": "Verify Certificate",
+        "pageDescription": "Certificate holders can share their credentials using a unique share code. Enter that code here to view the certificate — each certificate is backed by cryptographic signatures from the event organizer and issuers, and recorded on the blockchain as a non-transferable token when claimed.",
+        "emptyFrame": "Certificate will appear here",
+        "notFound": "Certificate not found",
+        "pending": "Certificate is pending",
+        "passwordProtected": "This certificate is password protected.",
+        "passwordPlaceholder": "Enter password",
+        "passwordRequired": "Password is required.",
+        "incorrectPassword": "Incorrect password. Please try again.",
+        "unlockButton": "Unlock",
+        "enterCodeHint": "Enter a certificate share code to verify",
+        "codePlaceholder": "Certificate share code",
+        "verifyButton": "Verify",
+        "back": "Back",
+        "how": {
+            "heading": "How it works",
+            "step1": {
+                "title": "Issued & signed on-chain",
+                "description": "The organizer publishes the certificate and authorized issuers sign it with their private keys. The signed certificate is minted as a non-transferable token on the blockchain."
+            },
+            "step2": {
+                "title": "Holder generates a share code",
+                "description": "The certificate holder creates a unique share code from their account — optionally protected with a password — and sends it to whoever needs to verify."
+            },
+            "step3": {
+                "title": "Anyone can verify",
+                "description": "Enter the share code here. The certificate's authenticity is confirmed by checking the organizer and issuer signatures stored on-chain."
+            }
+        }
+    },
     "verify": {
         "title": "Verify",
         "subtitle": "Please sign the following string to prove your ownership of the wallet",
@@ -240,6 +271,7 @@
             "subtitle": "Use blockchain technology for certificate solution",
             "ctaButton": "Start building your portfolio",
             "hasAccount": "I already have an account",
+            "verifyCertificate": "Verify a certificate",
             "scrollIndicator": "Scroll to explore"
         },
         "about": {

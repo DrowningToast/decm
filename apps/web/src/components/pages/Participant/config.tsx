@@ -35,10 +35,9 @@ export const participantServices: ServiceConfig[] = [
  * Public services available to all users
  */
 export const generalServices: ServiceConfig[] = [
-    // TODO: Add verify certificates service
-    // {
-    //     key: "verify-certificates",
-    //     href: "/verify",
-    //     translationKey: "participant.home.services.verifyCertificates",
-    // },
+    {
+        key: "verify-certificates",
+        href: "/verify",
+        translationKey: "participant.home.services.verifyCertificates",
+    },
 ] as const;
