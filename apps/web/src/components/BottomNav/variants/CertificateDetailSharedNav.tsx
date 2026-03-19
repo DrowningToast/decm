@@ -42,7 +42,6 @@ export const CertificateDetailSharedNav = (props: CertificateDetailSharedNavProp
 
         debounceTimerRef.current = setTimeout(() => {
             const toastId = toastIdRef.current ?? undefined;
-            toastIdRef.current = null;
             const promise = onChangePublish(value);
             toast.promise(promise, {
                 loading: value

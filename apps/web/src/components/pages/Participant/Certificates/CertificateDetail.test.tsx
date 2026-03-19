@@ -36,6 +36,7 @@ vi.mock("@/components/BottomNav/stores/certificates", () => ({
     useCertificateDetailsSharedNavStore: vi.fn(() => ({
         setOnChangePublish: mockSetOnChangePublish,
         setIsPublished: mockSetIsPublished,
+        setIsPasswordProtected: vi.fn(),
         setShareableHandle: mockSetShareableHandle,
         isPasswordDialogOpen: mockIsPasswordDialogOpen,
         setIsPasswordDialogOpen: mockSetIsPasswordDialogOpen,
@@ -154,6 +155,7 @@ describe("CertificateDetail", () => {
         vi.mocked(useCertificateDetailsSharedNavStore).mockReturnValue({
             setOnChangePublish: mockSetOnChangePublish,
             setIsPublished: mockSetIsPublished,
+            setIsPasswordProtected: vi.fn(),
             setShareableHandle: mockSetShareableHandle,
             isPasswordDialogOpen: false,
             setIsPasswordDialogOpen: mockSetIsPasswordDialogOpen,
@@ -423,6 +425,7 @@ describe("CertificateDetail", () => {
         vi.mocked(useCertificateDetailsSharedNavStore).mockReturnValue({
             setOnChangePublish: mockSetOnChangePublish,
             setIsPublished: mockSetIsPublished,
+            setIsPasswordProtected: vi.fn(),
             setShareableHandle: mockSetShareableHandle,
             isPasswordDialogOpen: true,
             setIsPasswordDialogOpen: mockSetIsPasswordDialogOpen,

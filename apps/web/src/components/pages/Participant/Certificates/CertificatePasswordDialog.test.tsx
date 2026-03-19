@@ -8,6 +8,13 @@ vi.mock("react-i18next", () => ({
     }),
 }));
 
+vi.mock("./useCertificateUpdateSharePasswordUsecase", () => ({
+    useCertificateUpdateSharePasswordUsecase: () => ({
+        updateSharePassword: vi.fn(),
+        isPending: false,
+    }),
+}));
+
 vi.mock("@/components/ui/alert-dialog", () => ({
     AlertDialog: ({
         children,
@@ -40,50 +47,61 @@ vi.mock("@/components/ui/alert-dialog", () => ({
             {children}
         </button>
     ),
-    AlertDialogAction: ({
+}));
+
+vi.mock("@/components/ui/button", () => ({
+    Button: ({
         children,
         onClick,
-    }: React.PropsWithChildren<{ onClick?: () => void }>) => (
-        <button data-testid="submit-button" onClick={onClick}>
+    }: React.PropsWithChildren<{ onClick?: () => void; [key: string]: unknown }>) => (
+        <button data-testid="save-button" onClick={onClick}>
             {children}
         </button>
     ),
+    buttonVariants: () => "",
 }));
+
+const defaultProps = {
+    open: true,
+    onOpenChange: vi.fn(),
+    shareId: "share-123",
+    hasPassword: false,
+};
 
 describe("CertificatePasswordDialog", () => {
     it("renders with open=true", () => {
-        render(<CertificatePasswordDialog open={true} onOpenChange={vi.fn()} />);
+        render(<CertificatePasswordDialog {...defaultProps} open={true} />);
         expect(screen.getByTestId("alert-dialog")).toHaveAttribute("data-open", "true");
     });
 
     it("renders with open=false", () => {
-        render(<CertificatePasswordDialog open={false} onOpenChange={vi.fn()} />);
+        render(<CertificatePasswordDialog {...defaultProps} open={false} />);
         expect(screen.getByTestId("alert-dialog")).toHaveAttribute("data-open", "false");
     });
 
     it("renders title and description", () => {
-        render(<CertificatePasswordDialog open={true} onOpenChange={vi.fn()} />);
+        render(<CertificatePasswordDialog {...defaultProps} />);
         expect(screen.getByTestId("alert-dialog-title")).toBeInTheDocument();
         expect(screen.getByTestId("alert-dialog-description")).toBeInTheDocument();
     });
 
-    it("renders Cancel and Submit buttons", () => {
-        render(<CertificatePasswordDialog open={true} onOpenChange={vi.fn()} />);
+    it("renders Cancel and Save buttons", () => {
+        render(<CertificatePasswordDialog {...defaultProps} />);
         expect(screen.getByTestId("cancel-button")).toHaveTextContent("Cancel");
-        expect(screen.getByTestId("submit-button")).toHaveTextContent("Submit");
+        expect(screen.getByTestId("save-button")).toHaveTextContent("Save");
     });
 
     it("calls onOpenChange(false) when Cancel is clicked", () => {
         const onOpenChange = vi.fn();
-        render(<CertificatePasswordDialog open={true} onOpenChange={onOpenChange} />);
+        render(<CertificatePasswordDialog {...defaultProps} onOpenChange={onOpenChange} />);
         fireEvent.click(screen.getByTestId("cancel-button"));
         expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("does not call onOpenChange when Submit is clicked", () => {
+    it("does not call onOpenChange when Save is clicked", () => {
         const onOpenChange = vi.fn();
-        render(<CertificatePasswordDialog open={true} onOpenChange={onOpenChange} />);
-        fireEvent.click(screen.getByTestId("submit-button"));
+        render(<CertificatePasswordDialog {...defaultProps} onOpenChange={onOpenChange} />);
+        fireEvent.click(screen.getByTestId("save-button"));
         expect(onOpenChange).not.toHaveBeenCalled();
     });
 });

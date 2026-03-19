@@ -126,10 +126,11 @@ describe("CertificateDetailSharedNav", () => {
             const clipboardSpy = vi
                 .spyOn(navigator.clipboard, "writeText")
                 .mockResolvedValue(undefined);
-            const user = userEvent.setup();
             render(<CertificateDetailSharedNav />);
 
-            await user.click(screen.getByRole("button", { name: /copy code/i }));
+            await act(async () => {
+                fireEvent.click(screen.getByRole("button", { name: /copy code/i }));
+            });
 
             expect(clipboardSpy).toHaveBeenCalledWith("handle-123");
         });
@@ -138,10 +139,11 @@ describe("CertificateDetailSharedNav", () => {
             const clipboardSpy = vi
                 .spyOn(navigator.clipboard, "writeText")
                 .mockResolvedValue(undefined);
-            const user = userEvent.setup();
             render(<CertificateDetailSharedNav />);
 
-            await user.click(screen.getByRole("button", { name: /copy shareable url/i }));
+            await act(async () => {
+                fireEvent.click(screen.getByRole("button", { name: /copy shareable url/i }));
+            });
 
             expect(clipboardSpy).toHaveBeenCalledWith(expect.stringContaining("handle-123"));
         });
