@@ -108,7 +108,7 @@ describe("CertificateArea", () => {
         expect(screen.getByText("certificateVerify.rateLimited")).toBeInTheDocument();
     });
 
-    it("shows empty frame when password locked", () => {
+    it("shows locked frame when password locked", () => {
         render(
             <CertificateArea
                 handle="abc"
@@ -121,7 +121,8 @@ describe("CertificateArea", () => {
                 isImageLoading={false}
             />,
         );
-        expect(screen.getByText("certificateVerify.emptyFrame")).toBeInTheDocument();
+        expect(screen.getByText("certificateVerify.lockedFrameTitle")).toBeInTheDocument();
+        expect(screen.getByText("certificateVerify.lockedFrameHint")).toBeInTheDocument();
     });
 
     it("shows certificate title when ready and no image", () => {

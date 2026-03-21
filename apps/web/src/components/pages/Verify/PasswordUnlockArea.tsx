@@ -8,6 +8,7 @@ export interface PasswordUnlockAreaProps {
     onPasswordChange: (value: string) => void;
     passwordError: string;
     onUnlock: () => void;
+    onCancel: () => void;
     isUnlocking: boolean;
 }
 
@@ -16,6 +17,7 @@ export function PasswordUnlockArea({
     onPasswordChange,
     passwordError,
     onUnlock,
+    onCancel,
     isUnlocking,
 }: PasswordUnlockAreaProps) {
     const { t } = useTranslation();
@@ -25,7 +27,7 @@ export function PasswordUnlockArea({
             <Typography variant="text" tag="p" color="muted" className="text-sm text-center">
                 {t("certificateVerify.passwordProtected")}
             </Typography>
-            <div className="flex gap-2">
+            <div className="flex items-stretch gap-2">
                 <Input
                     type="password"
                     placeholder={t("certificateVerify.passwordPlaceholder")}
@@ -33,7 +35,7 @@ export function PasswordUnlockArea({
                     onChange={(e) => onPasswordChange(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && onUnlock()}
                     aria-label={t("certificateVerify.passwordPlaceholder")}
-                    className="flex-1"
+                    className="flex-1 h-auto outline-primary"
                 />
                 <Button
                     variant="primary"
@@ -55,6 +57,13 @@ export function PasswordUnlockArea({
                     {passwordError}
                 </Typography>
             )}
+            <button
+                type="button"
+                onClick={onCancel}
+                className="cursor-pointer text-xs text-muted-foreground hover:text-foreground transition-colors text-center underline"
+            >
+                {t("certificateVerify.cancelButton")}
+            </button>
         </div>
     );
 }

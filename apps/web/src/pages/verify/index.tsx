@@ -1,45 +1,46 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AxiosError } from "axios";
-import { ToastFromAxiosError } from "@/common/Err";
-import { certificateService } from "@/services/services";
 import { useCertificateShareImage } from "@/hooks/useCertificateShareImage";
 import { PublicNavbar } from "@/components/layouts/navigations/PublicNavbar";
 import { ChevronLeft } from "lucide-react";
 import { Typography } from "@/components/typography/typography";
-import type {
-    GetCertificateShareDataResult,
-    CertificateShareViewStatus,
-} from "@/services/CertificateService/mapper";
 import { CertificateDataTable } from "@/components/pages/Verify/CertificateDataTable";
 import { HowItWorks } from "@/components/pages/Verify/HowItWorks";
 import { CertificateArea } from "@/components/pages/Verify/CertificateArea";
 import { PasswordUnlockArea } from "@/components/pages/Verify/PasswordUnlockArea";
 import { VerifySearchForm } from "@/components/pages/Verify/VerifySearchForm";
+import { useCertificateShareDataUsecase } from "@/components/pages/Verify/useCertificateShareDataUsecase";
 
 export default function VerifyPage() {
     const { t } = useTranslation();
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const handle = searchParams.get("handle");
 
     const [inputCode, setInputCode] = useState(handle ?? "");
     const [password, setPassword] = useState("");
-    const [passwordError, setPasswordError] = useState("");
-    const [shareStatus, setShareStatus] = useState<CertificateShareViewStatus | null>(null);
-    const [shareData, setShareData] = useState<GetCertificateShareDataResult | null>(null);
-    const [isUnlocking, setIsUnlocking] = useState(false);
 
-    // Sync input and reset state whenever the handle in the URL changes
+    // Sync input and reset password whenever the handle in the URL changes
     useEffect(() => {
         setInputCode(handle ?? "");
         setPassword("");
-        setPasswordError("");
-        setShareStatus(null);
-        setShareData(null);
     }, [handle]);
+
+    const {
+        shareStatus,
+        shareData,
+        isLoading,
+        isFetching,
+        isError,
+        error,
+        refetch,
+        isUnlocking,
+        passwordError,
+        handleUnlock,
+    } = useCertificateShareDataUsecase(handle);
 
     const unlockedPassword = shareStatus === "READY" ? password || undefined : undefined;
 
@@ -49,35 +50,6 @@ export default function VerifyPage() {
         enabled: shareStatus === "READY",
     });
 
-    const { isLoading, isFetching, isError, error, refetch } = useQuery({
-        queryKey: ["certificateShareData", handle],
-        queryFn: async () => {
-            try {
-                const result = await certificateService.getCertificateShareData(handle!);
-                setShareData(result);
-                setShareStatus("READY");
-                return result;
-            } catch (err: unknown) {
-                const status = (err as { status?: number })?.status;
-                if (status === 403) {
-                    setShareStatus("PASSWORD_LOCKED");
-                    return null;
-                }
-                throw err;
-            }
-        },
-        enabled: !!handle,
-        retry: false,
-        gcTime: 0,
-        staleTime: 30_000,
-    });
-
-    useEffect(() => {
-        if (isError && error instanceof AxiosError) {
-            ToastFromAxiosError(t, error);
-        }
-    }, [isError, error, t]);
-
     const errorStatus = error instanceof AxiosError ? error.response?.status : undefined;
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -85,31 +57,14 @@ export default function VerifyPage() {
         const trimmed = inputCode.trim();
         if (!trimmed) return;
         if (trimmed === handle) {
-            // Same handle — reset state and force a refetch
-            setShareStatus(null);
-            setShareData(null);
             void refetch();
         } else {
             setSearchParams({ handle: trimmed });
         }
     };
 
-    const handleUnlock = async () => {
-        if (!password) {
-            setPasswordError(t("certificateVerify.passwordRequired"));
-            return;
-        }
-        setIsUnlocking(true);
-        setPasswordError("");
-        try {
-            const result = await certificateService.getCertificateShareData(handle!, password);
-            setShareData(result);
-            setShareStatus("READY");
-        } catch {
-            setPasswordError(t("certificateVerify.incorrectPassword"));
-        } finally {
-            setIsUnlocking(false);
-        }
+    const handleCancel = () => {
+        setSearchParams({});
     };
 
     return (
@@ -119,7 +74,7 @@ export default function VerifyPage() {
                 <div className="w-full max-w-2xl mx-auto flex flex-col gap-6">
                     {/* Back */}
                     <button
-                        onClick={() => navigate(-1)}
+                        onClick={() => (location.key !== "default" ? navigate(-1) : navigate("/"))}
                         className="cursor-pointer flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors w-fit"
                     >
                         <ChevronLeft className="w-4 h-4" />
@@ -166,7 +121,8 @@ export default function VerifyPage() {
                             password={password}
                             onPasswordChange={setPassword}
                             passwordError={passwordError}
-                            onUnlock={() => void handleUnlock()}
+                            onUnlock={() => void handleUnlock(password)}
+                            onCancel={handleCancel}
                             isUnlocking={isUnlocking}
                         />
                     ) : (

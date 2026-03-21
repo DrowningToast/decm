@@ -18,6 +18,10 @@ func (uc *CertificateShareUsecase) GetCertificateShareImage(ctx context.Context,
 		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("certificate share not found"))
 	}
 
+	if !share.Active {
+		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("certificate share not found"))
+	}
+
 	if err := uc.CheckSharePassword(share, password); err != nil {
 		return nil, err
 	}

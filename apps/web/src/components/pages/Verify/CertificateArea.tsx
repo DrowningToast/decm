@@ -1,4 +1,4 @@
-import { Award, Loader2 } from "lucide-react";
+import { Award, LockKeyhole, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import type {
@@ -23,6 +23,37 @@ function EmptyCertificateFrame() {
                 <Typography variant="text" tag="p" color="muted" className="text-sm">
                     {t("certificateVerify.emptyFrame")}
                 </Typography>
+            </div>
+        </AspectFrame>
+    );
+}
+
+function LockedCertificateFrame() {
+    const { t } = useTranslation();
+    return (
+        <AspectFrame>
+            <div className="absolute inset-0 rounded-xl border-2 border-dashed border-amber-400/40 bg-amber-50/10 dark:bg-amber-900/10 flex flex-col items-center justify-center gap-3">
+                <div className="rounded-full bg-amber-100/60 dark:bg-amber-900/30 p-4">
+                    <LockKeyhole className="w-8 h-8 text-amber-500" />
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                    <Typography
+                        variant="text"
+                        tag="p"
+                        color="foreground"
+                        className="text-sm font-medium"
+                    >
+                        {t("certificateVerify.lockedFrameTitle")}
+                    </Typography>
+                    <Typography
+                        variant="text"
+                        tag="p"
+                        color="muted"
+                        className="text-xs text-center px-6"
+                    >
+                        {t("certificateVerify.lockedFrameHint")}
+                    </Typography>
+                </div>
             </div>
         </AspectFrame>
     );
@@ -81,7 +112,7 @@ export function CertificateArea({
     }
 
     if (shareStatus === "PASSWORD_LOCKED" && !shareData) {
-        return <EmptyCertificateFrame />;
+        return <LockedCertificateFrame />;
     }
 
     if (shareStatus === "VALID_BUT_PENDING") {

@@ -8,6 +8,7 @@ import { Typography } from "@/components/typography/typography";
 import type { GetCertificateShareDataResult } from "@/services/CertificateService/mapper";
 import { Row, truncate, SIGNATURE_TOOLTIP } from "./Row";
 import { CopyButton } from "./CopyButton";
+import { EthExplorerLink, EthNftExplorerLink } from "@/components/common/EthscanLink";
 
 export function CertificateDataTable({ data }: { data: GetCertificateShareDataResult }) {
     const { t } = useTranslation();
@@ -234,7 +235,14 @@ export function CertificateDataTable({ data }: { data: GetCertificateShareDataRe
                                 />
                                 <Row
                                     label={t("certificateVerify.table.issuerAddress")}
-                                    value={truncate(cert.issuerAddresses, 26)}
+                                    value={
+                                        <EthExplorerLink
+                                            address={cert.issuerAddresses}
+                                            className="text-xs font-mono"
+                                        >
+                                            {truncate(cert.issuerAddresses, 26)}
+                                        </EthExplorerLink>
+                                    }
                                     mono
                                     copyValue={cert.issuerAddresses}
                                 />
@@ -246,7 +254,14 @@ export function CertificateDataTable({ data }: { data: GetCertificateShareDataRe
                                 />
                                 <Row
                                     label={t("certificateVerify.table.receiverAddress")}
-                                    value={truncate(cert.receiverAddress, 26)}
+                                    value={
+                                        <EthExplorerLink
+                                            address={cert.receiverAddress}
+                                            className="text-xs font-mono"
+                                        >
+                                            {truncate(cert.receiverAddress, 26)}
+                                        </EthExplorerLink>
+                                    }
                                     mono
                                     copyValue={cert.receiverAddress}
                                 />
@@ -339,16 +354,35 @@ export function CertificateDataTable({ data }: { data: GetCertificateShareDataRe
                                         <tbody>
                                             <Row
                                                 label={t("certificateVerify.onChain.contract")}
-                                                value={truncate(
-                                                    contract.eventCertificateContractAddress,
-                                                    26,
-                                                )}
+                                                value={
+                                                    <EthExplorerLink
+                                                        address={
+                                                            contract.eventCertificateContractAddress
+                                                        }
+                                                        className="text-xs font-mono"
+                                                    >
+                                                        {truncate(
+                                                            contract.eventCertificateContractAddress,
+                                                            26,
+                                                        )}
+                                                    </EthExplorerLink>
+                                                }
                                                 mono
                                                 copyValue={contract.eventCertificateContractAddress}
                                             />
                                             <Row
                                                 label={t("certificateVerify.table.tokenId")}
-                                                value={`#${contract.certificateTokenId}`}
+                                                value={
+                                                    <EthNftExplorerLink
+                                                        contractAddress={
+                                                            contract.eventCertificateContractAddress
+                                                        }
+                                                        tokenId={contract.certificateTokenId}
+                                                        className="text-xs font-mono"
+                                                    >
+                                                        {`#${contract.certificateTokenId}`}
+                                                    </EthNftExplorerLink>
+                                                }
                                                 mono
                                             />
                                             <Row

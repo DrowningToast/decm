@@ -448,6 +448,7 @@ func TestGetCertificateShareData_PasswordProtected_NoPasswordGiven(t *testing.T)
 		Id:                 uuid.New(),
 		EventCertificateId: certID,
 		Handle:             "locked-handle",
+		Active:             true,
 		Password:           &pw,
 	}
 
@@ -471,6 +472,7 @@ func TestGetCertificateShareData_PasswordProtected_WrongPassword(t *testing.T) {
 		Id:                 uuid.New(),
 		EventCertificateId: certID,
 		Handle:             "locked-handle",
+		Active:             true,
 		Password:           &hashedPw,
 	}
 
@@ -492,6 +494,7 @@ func TestGetCertificateShareData_NotClaimed(t *testing.T) {
 		Id:                 uuid.New(),
 		EventCertificateId: certID,
 		Handle:             "unclaimed-handle",
+		Active:             true,
 		Password:           nil,
 	}
 	cert := &entity.EventCertificate{
@@ -523,6 +526,7 @@ func TestGetCertificateShareData_Success_Public(t *testing.T) {
 		Id:                 uuid.New(),
 		EventCertificateId: certID,
 		Handle:             "claimed-handle",
+		Active:             true,
 		Password:           nil,
 	}
 	cert := &entity.EventCertificate{
@@ -568,6 +572,7 @@ func TestGetCertificateShareData_Success_WithPassword(t *testing.T) {
 		Id:                 uuid.New(),
 		EventCertificateId: certID,
 		Handle:             "pw-handle",
+		Active:             true,
 		Password:           &hashedPw,
 	}
 	cert := &entity.EventCertificate{
@@ -619,6 +624,7 @@ func TestGetCertificateShareData_AtContextField_NoSegfault(t *testing.T) {
 		Id:                 uuid.New(),
 		EventCertificateId: certID,
 		Handle:             "vc-handle",
+		Active:             true,
 		Password:           nil,
 	}
 	cert := &entity.EventCertificate{
@@ -868,6 +874,7 @@ func TestGetCertificateShareImage_PasswordProtected_NoPasswordGiven(t *testing.T
 		Id:                 uuid.New(),
 		EventCertificateId: certID,
 		Handle:             "locked",
+		Active:             true,
 		Password:           &pw,
 	}
 
@@ -891,6 +898,7 @@ func TestGetCertificateShareImage_PasswordProtected_WrongPassword(t *testing.T) 
 		Id:                 uuid.New(),
 		EventCertificateId: certID,
 		Handle:             "locked",
+		Active:             true,
 		Password:           &hashedPw,
 	}
 
@@ -913,6 +921,7 @@ func TestGetCertificateShareImage_Success_Public(t *testing.T) {
 		Id:                 uuid.New(),
 		EventCertificateId: certID,
 		Handle:             "public-handle",
+		Active:             true,
 		Password:           nil,
 	}
 
@@ -944,6 +953,7 @@ func TestGetCertificateShareImage_Success_WithPassword(t *testing.T) {
 		Id:                 uuid.New(),
 		EventCertificateId: certID,
 		Handle:             "pw-handle",
+		Active:             true,
 		Password:           &hashedPw,
 	}
 

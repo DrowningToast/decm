@@ -95,6 +95,10 @@ vi.mock("./CertificatePasswordDialog", () => ({
         open ? <div data-testid="password-dialog" /> : null,
 }));
 
+vi.mock("./CertificateShareModal", () => ({
+    CertificateShareModal: () => <div data-testid="share-modal" />,
+}));
+
 // ─── Import mocked hooks so we can control return values per test ─────────────
 
 import { useCertificateDetailUsecase } from "./useCertificateDetailUsecase";
@@ -410,6 +414,14 @@ describe("CertificateDetail", () => {
             "data-variant",
             "certificate-detail",
         );
+    });
+
+    // ── Share modal ───────────────────────────────────────────────────────────
+
+    it("renders share modal in the page", () => {
+        mockUsecase({});
+        render(<CertificateDetail certificateId="cert-1" />);
+        expect(screen.getByTestId("share-modal")).toBeInTheDocument();
     });
 
     // ── Password dialog ───────────────────────────────────────────────────────

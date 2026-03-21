@@ -72,5 +72,8 @@ func (h *Handler) UpdateCertificateShare(ctx *fiber.Ctx) error {
 		return err
 	}
 
+	// Invalidate cached share data so password changes take effect immediately.
+	h.cache.Delete(share.Handle)
+
 	return ctx.Status(fiber.StatusOK).JSON(UpdateCertificateShareResponse{Share: newCertificateShareViewModel(certificate_share_usecase.NewCertificateShareViewModel(share))})
 }

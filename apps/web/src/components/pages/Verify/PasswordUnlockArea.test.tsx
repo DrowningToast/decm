@@ -15,6 +15,7 @@ describe("PasswordUnlockArea", () => {
         onPasswordChange: vi.fn(),
         passwordError: "",
         onUnlock: vi.fn(),
+        onCancel: vi.fn(),
         isUnlocking: false,
     };
 
@@ -64,5 +65,19 @@ describe("PasswordUnlockArea", () => {
         expect(
             screen.getByRole("button", { name: "certificateVerify.unlockButton" }),
         ).toBeDisabled();
+    });
+
+    it("renders cancel button", () => {
+        render(<PasswordUnlockArea {...defaultProps} />);
+        expect(
+            screen.getByRole("button", { name: "certificateVerify.cancelButton" }),
+        ).toBeInTheDocument();
+    });
+
+    it("calls onCancel when cancel button is clicked", () => {
+        const onCancel = vi.fn();
+        render(<PasswordUnlockArea {...defaultProps} onCancel={onCancel} />);
+        fireEvent.click(screen.getByRole("button", { name: "certificateVerify.cancelButton" }));
+        expect(onCancel).toHaveBeenCalledTimes(1);
     });
 });

@@ -302,7 +302,7 @@ describe("VerifyPage", () => {
         fireEvent.click(screen.getByText("certificateVerify.table.attendeeDataHeading"));
 
         await waitFor(() => {
-            expect(screen.getByText("Alice Smith")).toBeInTheDocument();
+            expect(screen.getAllByText("Alice Smith").length).toBeGreaterThan(0);
         });
         expect(screen.getAllByText("Verified").length).toBeGreaterThan(0);
     });
@@ -343,7 +343,7 @@ describe("VerifyPage", () => {
         fireEvent.click(screen.getByText("certificateVerify.table.attendeeDataHeading"));
 
         await waitFor(() => {
-            expect(screen.getByText("Alice Smith")).toBeInTheDocument();
+            expect(screen.getAllByText("Alice Smith").length).toBeGreaterThan(0);
         });
         expect(screen.getAllByText("Invalid").length).toBeGreaterThan(0);
     });

@@ -20,6 +20,8 @@ interface CertificateDetailNavStore {
     onClickShareable: () => void;
     setOnClickShareable: (onClickShareable: () => void) => void;
     isShareableLoading: boolean;
+    isShareModalOpen: boolean;
+    setIsShareModalOpen: (open: boolean) => void;
 }
 
 export const useCertificateDetailNavStore = create<CertificateDetailNavStore>((set) => ({
@@ -30,6 +32,8 @@ export const useCertificateDetailNavStore = create<CertificateDetailNavStore>((s
     setIsClaimed: (isClaimed: boolean) => set({ isClaimed }),
     setImageUrl: (imageUrl: string | null) => set({ imageUrl }),
     isShareableLoading: false,
+    isShareModalOpen: false,
+    setIsShareModalOpen: (open: boolean) => set({ isShareModalOpen: open }),
     // callback
     onClickShareable: () => {},
     setOnClickShareable: (onClickShareable: () => void) =>

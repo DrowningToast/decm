@@ -14,6 +14,7 @@ import {
     useCertificateDetailsSharedNavStore,
 } from "@/components/BottomNav/stores/certificates";
 import { CertificatePasswordDialog } from "./CertificatePasswordDialog";
+import { CertificateShareModal } from "./CertificateShareModal";
 import { EthExplorerLink } from "@/components/common/EthscanLink";
 import { useEvent } from "@/hooks/events/useEvent";
 import { useCertificateCreateShareLinkUsecase } from "./useCertificateCreateShareLinkUsecase";
@@ -621,6 +622,9 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
 
             {/* Bottom Navigation */}
             <BottomNav variant={bottomNavVariant} onBack={() => window.history.back()} />
+
+            {/* Share modal */}
+            <CertificateShareModal />
 
             {/* Password dialog */}
             <CertificatePasswordDialog
