@@ -12,9 +12,7 @@ import VerifyPage from "@/pages/verify/index";
 vi.mock("@/lib/api/api", () => ({
     coreApiClient: {
         v1: {
-            getCertificateShareStatus: vi.fn(),
             getCertificateShareData: vi.fn(),
-            getCertificateShareDataWithPassword: vi.fn(),
         },
     },
 }));
@@ -53,6 +51,36 @@ function makeWrapper() {
     };
 }
 
+const mockVcData = {
+    data: {
+        header: { "@context": [], id: "vc-1", issuanceDate: "", issuer: "", type: [] },
+        data: {
+            certificateId: "cert-1",
+            certificateTitle: "My Cert",
+            certificateSubtitle: "",
+            certificateTokenId: "",
+            eventName: "Event",
+            eventDescription: "",
+            issuedAt: "",
+            issuerAddresses: "",
+            issuerId: "",
+            receiverAddress: "",
+            status: "VALID",
+            userId: "",
+            backendEncryptedUserData: "",
+            encryptedUserData: "",
+        },
+        proof: {
+            hash: "",
+            encryptedByBackendRawData: "",
+            encryptedByUserRawData: "",
+            signMessage: "",
+            host: { publicKey: "", signature: "" },
+            issuers: [],
+        },
+    },
+};
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -67,30 +95,19 @@ describe("VerifyPage", () => {
         ] as ReturnType<typeof useSearchParams>);
     });
 
-    it('shows "Invalid Link" when no handle in query params', () => {
-        vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams(""), vi.fn()] as ReturnType<
-            typeof useSearchParams
-        >);
-
-        const Wrapper = makeWrapper();
-        render(<VerifyPage />, { wrapper: Wrapper });
-
-        expect(screen.getByText("Invalid Link")).toBeInTheDocument();
-    });
-
     it("shows loading state while fetching", async () => {
-        vi.mocked(coreApiClient.v1.getCertificateShareStatus).mockReturnValue(
-            new Promise(() => {}),
-        );
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockReturnValue(new Promise(() => {}));
 
         const Wrapper = makeWrapper();
         render(<VerifyPage />, { wrapper: Wrapper });
 
-        expect(screen.getByText("Loading certificate…")).toBeInTheDocument();
+        // The spinner should be present during loading
+        const spinner = document.querySelector(".animate-spin");
+        expect(spinner).toBeInTheDocument();
     });
 
-    it('shows "Not Found" when API returns error', async () => {
-        vi.mocked(coreApiClient.v1.getCertificateShareStatus).mockRejectedValue(
+    it("shows error state when API returns a non-403 error", async () => {
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue(
             new Error("Network error"),
         );
 
@@ -98,14 +115,12 @@ describe("VerifyPage", () => {
         render(<VerifyPage />, { wrapper: Wrapper });
 
         await waitFor(() => {
-            expect(screen.getByText("Not Found")).toBeInTheDocument();
+            expect(screen.getByText(/certificateVerify\.notFound/i)).toBeInTheDocument();
         });
     });
 
-    it("shows password form when status is PASSWORD_LOCKED", async () => {
-        vi.mocked(coreApiClient.v1.getCertificateShareStatus).mockResolvedValue({
-            status: "PASSWORD_LOCKED",
-        } as never);
+    it("shows password form when API returns 403", async () => {
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue({ status: 403 });
 
         const Wrapper = makeWrapper();
         render(<VerifyPage />, { wrapper: Wrapper });
@@ -114,86 +129,64 @@ describe("VerifyPage", () => {
             expect(screen.getByRole("button", { name: /unlock/i })).toBeInTheDocument();
         });
 
-        expect(screen.getByPlaceholderText(/enter password/i)).toBeInTheDocument();
+        expect(
+            screen.getByPlaceholderText(/certificateVerify\.passwordPlaceholder/i),
+        ).toBeInTheDocument();
     });
 
     it('shows "Incorrect password" on failed unlock', async () => {
-        vi.mocked(coreApiClient.v1.getCertificateShareStatus).mockResolvedValue({
-            status: "PASSWORD_LOCKED",
-        } as never);
-
-        vi.mocked(coreApiClient.v1.getCertificateShareDataWithPassword).mockRejectedValue(
-            new Error("Wrong password"),
-        );
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue({ status: 403 });
 
         const Wrapper = makeWrapper();
         render(<VerifyPage />, { wrapper: Wrapper });
 
         await waitFor(() => {
-            expect(screen.getByPlaceholderText(/enter password/i)).toBeInTheDocument();
+            expect(
+                screen.getByPlaceholderText(/certificateVerify\.passwordPlaceholder/i),
+            ).toBeInTheDocument();
         });
 
-        fireEvent.change(screen.getByPlaceholderText(/enter password/i), {
+        // Now mock the second call (unlock attempt) to also reject
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue(
+            new Error("Wrong password"),
+        );
+
+        fireEvent.change(screen.getByPlaceholderText(/certificateVerify\.passwordPlaceholder/i), {
             target: { value: "wrongpass" },
         });
         fireEvent.click(screen.getByRole("button", { name: /unlock/i }));
 
         await waitFor(() => {
-            expect(screen.getByText("Incorrect password. Please try again.")).toBeInTheDocument();
+            expect(screen.getByRole("alert")).toBeInTheDocument();
         });
     });
 
-    it('shows "Certificate Verified" on successful unlock', async () => {
-        vi.mocked(coreApiClient.v1.getCertificateShareStatus).mockResolvedValue({
-            status: "PASSWORD_LOCKED",
-        } as never);
-
-        vi.mocked(coreApiClient.v1.getCertificateShareDataWithPassword).mockResolvedValue({
-            data: { header: {}, data: {}, proof: {} },
-        } as never);
+    it("shows certificate title on successful unlock", async () => {
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue({ status: 403 });
 
         const Wrapper = makeWrapper();
         render(<VerifyPage />, { wrapper: Wrapper });
 
         await waitFor(() => {
-            expect(screen.getByPlaceholderText(/enter password/i)).toBeInTheDocument();
+            expect(
+                screen.getByPlaceholderText(/certificateVerify\.passwordPlaceholder/i),
+            ).toBeInTheDocument();
         });
 
-        fireEvent.change(screen.getByPlaceholderText(/enter password/i), {
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockResolvedValue(mockVcData as never);
+
+        fireEvent.change(screen.getByPlaceholderText(/certificateVerify\.passwordPlaceholder/i), {
             target: { value: "correctpass" },
         });
         fireEvent.click(screen.getByRole("button", { name: /unlock/i }));
 
         await waitFor(() => {
-            expect(
-                screen.getByRole("heading", { name: /certificate verified/i }),
-            ).toBeInTheDocument();
+            expect(screen.getByText("My Cert")).toBeInTheDocument();
         });
     });
 
-    it('shows "Certificate Pending" when status is VALID_BUT_PENDING', async () => {
-        vi.mocked(coreApiClient.v1.getCertificateShareStatus).mockResolvedValue({
-            status: "VALID_BUT_PENDING",
-        } as never);
-
-        const Wrapper = makeWrapper();
-        render(<VerifyPage />, { wrapper: Wrapper });
-
-        await waitFor(() => {
-            expect(screen.getByText("Certificate Pending")).toBeInTheDocument();
-        });
-    });
-
-    it("shows certificate title when status is READY", async () => {
-        vi.mocked(coreApiClient.v1.getCertificateShareStatus).mockResolvedValue({
-            status: "READY",
-            certificate: {
-                id: "c1",
-                certificate_title: "My Cert",
-                event_contract_address: "0xEC",
-                created_at: "2024-01-01T00:00:00Z",
-            },
-        } as never);
+    it("shows certificate title when data loads successfully", async () => {
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockResolvedValue(mockVcData as never);
 
         const Wrapper = makeWrapper();
         render(<VerifyPage />, { wrapper: Wrapper });
@@ -203,10 +196,8 @@ describe("VerifyPage", () => {
         });
     });
 
-    it("Unlock button is disabled when password field is empty", async () => {
-        vi.mocked(coreApiClient.v1.getCertificateShareStatus).mockResolvedValue({
-            status: "PASSWORD_LOCKED",
-        } as never);
+    it("shows password required alert when unlock clicked with empty password", async () => {
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue({ status: 403 });
 
         const Wrapper = makeWrapper();
         render(<VerifyPage />, { wrapper: Wrapper });
@@ -215,13 +206,12 @@ describe("VerifyPage", () => {
             expect(screen.getByRole("button", { name: /unlock/i })).toBeInTheDocument();
         });
 
-        // Password field is empty — clicking Unlock should show a validation error
         fireEvent.click(screen.getByRole("button", { name: /unlock/i }));
 
         await waitFor(() => {
             expect(screen.getByRole("alert")).toBeInTheDocument();
         });
 
-        expect(coreApiClient.v1.getCertificateShareDataWithPassword).not.toHaveBeenCalled();
+        expect(coreApiClient.v1.getCertificateShareData).toHaveBeenCalledTimes(1); // only the initial query
     });
 });

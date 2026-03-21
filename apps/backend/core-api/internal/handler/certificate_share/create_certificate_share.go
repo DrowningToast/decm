@@ -1,4 +1,4 @@
-package certificate_share
+package certificate_share_handler
 
 import (
 	customerror "apps/backend/common/customerror"
@@ -19,7 +19,7 @@ func (b *CreateCertificateShareBody) Parse(ctx *fiber.Ctx) error {
 }
 
 type CreateCertificateShareResponse struct {
-	Share *certificate_share_usecase.CertificateShareViewModel `json:"share"`
+	Share *CertificateShareViewModel `json:"share"`
 }
 
 // @Summary Create certificate share link
@@ -37,7 +37,7 @@ type CreateCertificateShareResponse struct {
 // @Failure 403 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
-// @Router /api/v1/certificate-shares/{certificate_id} [post]
+// @Router /api/v1/certificate-shares/config/{certificate_id} [post]
 func (h *Handler) CreateCertificateShare(ctx *fiber.Ctx) error {
 	// 1. Auth check first
 	currentUser, err := h.AuthenticationService.GetUserContext(ctx)
@@ -73,5 +73,5 @@ func (h *Handler) CreateCertificateShare(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.Status(fiber.StatusCreated).JSON(CreateCertificateShareResponse{Share: certificate_share_usecase.NewCertificateShareViewModel(share)})
+	return ctx.Status(fiber.StatusCreated).JSON(CreateCertificateShareResponse{Share: newCertificateShareViewModel(certificate_share_usecase.NewCertificateShareViewModel(share))})
 }

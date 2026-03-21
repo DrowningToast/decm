@@ -1,4 +1,4 @@
-package certificate_share
+package certificate_share_handler
 
 import (
 	"apps/backend/services/log"
@@ -12,11 +12,10 @@ func (h *Handler) Mount(r fiber.Router) {
 	shareGroup := r.Group("/certificate-shares")
 
 	// Authenticated routes — auth guard applied per route
-	shareGroup.Post("/:certificate_id", h.AuthenticationGuardMiddleware.Middleware, h.CreateCertificateShare)
-	shareGroup.Patch("/:share_id", h.AuthenticationGuardMiddleware.Middleware, h.UpdateCertificateShare)
+	configGroup := shareGroup.Group("/config")
+	configGroup.Post("/:certificate_id", h.AuthenticationGuardMiddleware.Middleware, h.CreateCertificateShare)
+	configGroup.Patch("/:share_id", h.AuthenticationGuardMiddleware.Middleware, h.UpdateCertificateShare)
 
 	// Public routes
-	shareGroup.Get("/:handle", h.GetCertificateShareStatus)
-	shareGroup.Get("/:handle/data", h.GetCertificateShareData)
-	shareGroup.Post("/:handle/data/unlock", h.GetCertificateShareDataWithPassword)
+	shareGroup.Post("/:handle", h.GetCertificateShareData)
 }

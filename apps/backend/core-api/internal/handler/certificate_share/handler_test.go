@@ -1,4 +1,4 @@
-package certificate_share
+package certificate_share_handler
 
 import (
 	"apps/backend/common/hashutils"
@@ -225,11 +225,9 @@ func buildTestApp(
 
 	// Register routes directly (mirrors routes.go without the auth middleware guard,
 	// since we're injecting the user via middleware in tests)
-	app.Post("/certificate-shares/:certificate_id", h.CreateCertificateShare)
-	app.Patch("/certificate-shares/:share_id", h.UpdateCertificateShare)
-	app.Get("/certificate-shares/:handle", h.GetCertificateShareStatus)
-	app.Get("/certificate-shares/:handle/data", h.GetCertificateShareData)
-	app.Post("/certificate-shares/:handle/data/unlock", h.GetCertificateShareDataWithPassword)
+	app.Post("/certificate-shares/config/:certificate_id", h.CreateCertificateShare)
+	app.Patch("/certificate-shares/config/:share_id", h.UpdateCertificateShare)
+	app.Post("/certificate-shares/:handle", h.GetCertificateShareData)
 
 	return app
 }
@@ -256,7 +254,7 @@ func TestCreateCertificateShare_Unauthenticated(t *testing.T) {
 	certID := uuid.New()
 	app := buildTestApp(nil, new(mockEventCertificateDataGateway), new(mockCertificateShareDataGateway), new(mockCertContractFactoryDg))
 
-	resp := doRequest(app, http.MethodPost, "/certificate-shares/"+certID.String(), nil)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/config/"+certID.String(), nil)
 
 	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 }
@@ -270,7 +268,7 @@ func TestCreateCertificateShare_InvalidUUID(t *testing.T) {
 		new(mockCertContractFactoryDg),
 	)
 
-	resp := doRequest(app, http.MethodPost, "/certificate-shares/not-a-uuid", nil)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/config/not-a-uuid", nil)
 
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 }
@@ -289,7 +287,7 @@ func TestCreateCertificateShare_CertificateNotFound(t *testing.T) {
 		new(mockCertContractFactoryDg),
 	)
 
-	resp := doRequest(app, http.MethodPost, "/certificate-shares/"+certID.String(), nil)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/config/"+certID.String(), nil)
 
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	mockCertDg.AssertExpectations(t)
@@ -314,7 +312,7 @@ func TestCreateCertificateShare_Forbidden_NotOwner(t *testing.T) {
 		new(mockCertContractFactoryDg),
 	)
 
-	resp := doRequest(app, http.MethodPost, "/certificate-shares/"+certID.String(), nil)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/config/"+certID.String(), nil)
 
 	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
 	mockCertDg.AssertExpectations(t)
@@ -339,12 +337,12 @@ func TestCreateCertificateShare_Success_NoPassword(t *testing.T) {
 	mockShareDg := new(mockCertificateShareDataGateway)
 	mockShareDg.On("GetCertificateShareByEventCertificateID", mock.Anything, certID).Return(nil, nil)
 	mockShareDg.On("CreateCertificateShare", mock.Anything, mock.MatchedBy(func(p event_datagateway.CreateCertificateShareParameters) bool {
-		return p.EventCertificateId == certID && !p.Active && p.Password == nil
+		return p.EventCertificateId == certID && p.Active && p.Password == nil
 	})).Return(&entity.CertificateShare{
 		Id:                 shareID,
 		EventCertificateId: certID,
 		Handle:             handle,
-		Active:             false,
+		Active:             true,
 		Password:           nil,
 	}, nil)
 
@@ -355,7 +353,7 @@ func TestCreateCertificateShare_Success_NoPassword(t *testing.T) {
 		new(mockCertContractFactoryDg),
 	)
 
-	resp := doRequest(app, http.MethodPost, "/certificate-shares/"+certID.String(), nil)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/config/"+certID.String(), nil)
 
 	assert.Equal(t, http.StatusCreated, resp.StatusCode)
 	mockCertDg.AssertExpectations(t)
@@ -382,12 +380,12 @@ func TestCreateCertificateShare_Success_WithPassword(t *testing.T) {
 	mockShareDg.On("GetCertificateShareByEventCertificateID", mock.Anything, certID).Return(nil, nil)
 	mockShareDg.On("CreateCertificateShare", mock.Anything, mock.MatchedBy(func(p event_datagateway.CreateCertificateShareParameters) bool {
 		// Password should be a non-nil hashed value (Argon2id format)
-		return p.EventCertificateId == certID && !p.Active && p.Password != nil
+		return p.EventCertificateId == certID && p.Active && p.Password != nil
 	})).Return(&entity.CertificateShare{
 		Id:                 shareID,
 		EventCertificateId: certID,
 		Handle:             handle,
-		Active:             false,
+		Active:             true,
 		Password:           strPtr("$argon2id$..."),
 	}, nil)
 
@@ -398,7 +396,7 @@ func TestCreateCertificateShare_Success_WithPassword(t *testing.T) {
 		new(mockCertContractFactoryDg),
 	)
 
-	resp := doRequest(app, http.MethodPost, "/certificate-shares/"+certID.String(),
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/config/"+certID.String(),
 		map[string]string{"password": "mysecret"})
 
 	assert.Equal(t, http.StatusCreated, resp.StatusCode)
@@ -407,22 +405,22 @@ func TestCreateCertificateShare_Success_WithPassword(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// Tests: GetCertificateShare
+// Tests: GetCertificateShareData
 // ---------------------------------------------------------------------------
 
-func TestGetCertificateShare_NotFound(t *testing.T) {
+func TestGetCertificateShareData_NotFound(t *testing.T) {
 	mockShareDg := new(mockCertificateShareDataGateway)
-	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "missing-handle").Return(nil, nil)
+	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "gone").Return(nil, nil)
 
 	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg))
 
-	resp := doRequest(app, http.MethodGet, "/certificate-shares/missing-handle", nil)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/gone", nil)
 
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	mockShareDg.AssertExpectations(t)
 }
 
-func TestGetCertificateShare_PasswordLocked(t *testing.T) {
+func TestGetCertificateShareData_PasswordProtected_NoPasswordGiven(t *testing.T) {
 	pw := "secret"
 	certID := uuid.New()
 	share := &entity.CertificateShare{
@@ -437,118 +435,31 @@ func TestGetCertificateShare_PasswordLocked(t *testing.T) {
 
 	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg))
 
-	resp := doRequest(app, http.MethodGet, "/certificate-shares/locked-handle", nil)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/locked-handle", nil)
 
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-	var body map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&body)
-	assert.Equal(t, string(certificate_share_usecase.CertificateShareViewStatusPasswordLocked), body["status"])
-	assert.Nil(t, body["certificate"])
+	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
 	mockShareDg.AssertExpectations(t)
 }
 
-func TestGetCertificateShare_ValidButPending(t *testing.T) {
+func TestGetCertificateShareData_PasswordProtected_WrongPassword(t *testing.T) {
+	rawPw := "right"
+	hashedPw, err := hashutils.HashPassword(rawPw)
+	require.NoError(t, err)
 	certID := uuid.New()
 	share := &entity.CertificateShare{
 		Id:                 uuid.New(),
 		EventCertificateId: certID,
-		Handle:             "pending-handle",
-		Password:           nil,
-	}
-	cert := &entity.EventCertificate{
-		Id:                      certID,
-		CertificateTokenId:      nil,
-		EventCertificateAddress: nil,
+		Handle:             "locked-handle",
+		Password:           &hashedPw,
 	}
 
 	mockShareDg := new(mockCertificateShareDataGateway)
-	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "pending-handle").Return(share, nil)
-
-	mockCertDg := new(mockEventCertificateDataGateway)
-	mockCertDg.On("GetEventCertificateByID", mock.Anything, certID).Return(cert, nil)
-
-	app := buildTestApp(nil, mockCertDg, mockShareDg, new(mockCertContractFactoryDg))
-
-	resp := doRequest(app, http.MethodGet, "/certificate-shares/pending-handle", nil)
-
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-	var body map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&body)
-	assert.Equal(t, string(certificate_share_usecase.CertificateShareViewStatusValidButPending), body["status"])
-	mockShareDg.AssertExpectations(t)
-	mockCertDg.AssertExpectations(t)
-}
-
-func TestGetCertificateShare_Ready(t *testing.T) {
-	certID := uuid.New()
-	broadcastedAt := time.Now()
-	share := &entity.CertificateShare{
-		Id:                 uuid.New(),
-		EventCertificateId: certID,
-		Handle:             "ready-handle",
-		Password:           nil,
-	}
-	cert := &entity.EventCertificate{
-		Id:                      certID,
-		CertificateTokenId:      strPtr("42"),
-		EventCertificateAddress: strPtr("0xaddr"),
-		BroadcastedAt:           &broadcastedAt,
-	}
-
-	mockShareDg := new(mockCertificateShareDataGateway)
-	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "ready-handle").Return(share, nil)
-
-	mockCertDg := new(mockEventCertificateDataGateway)
-	mockCertDg.On("GetEventCertificateByID", mock.Anything, certID).Return(cert, nil)
-
-	app := buildTestApp(nil, mockCertDg, mockShareDg, new(mockCertContractFactoryDg))
-
-	resp := doRequest(app, http.MethodGet, "/certificate-shares/ready-handle", nil)
-
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-	var body map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&body)
-	assert.Equal(t, string(certificate_share_usecase.CertificateShareViewStatusReady), body["status"])
-	assert.NotNil(t, body["certificate"])
-	mockShareDg.AssertExpectations(t)
-	mockCertDg.AssertExpectations(t)
-}
-
-// ---------------------------------------------------------------------------
-// Tests: GetCertificateShareData
-// ---------------------------------------------------------------------------
-
-func TestGetCertificateShareData_NotFound(t *testing.T) {
-	mockShareDg := new(mockCertificateShareDataGateway)
-	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "gone").Return(nil, nil)
+	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "locked-handle").Return(share, nil)
 
 	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg))
 
-	resp := doRequest(app, http.MethodGet, "/certificate-shares/gone/data", nil)
-
-	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-	mockShareDg.AssertExpectations(t)
-}
-
-func TestGetCertificateShareData_PasswordProtected(t *testing.T) {
-	pw := "secret"
-	certID := uuid.New()
-	share := &entity.CertificateShare{
-		Id:                 uuid.New(),
-		EventCertificateId: certID,
-		Handle:             "locked-data-handle",
-		Password:           &pw,
-	}
-
-	mockShareDg := new(mockCertificateShareDataGateway)
-	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "locked-data-handle").Return(share, nil)
-
-	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg))
-
-	resp := doRequest(app, http.MethodGet, "/certificate-shares/locked-data-handle/data", nil)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/locked-handle",
+		map[string]string{"password": "wrong"})
 
 	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
 	mockShareDg.AssertExpectations(t)
@@ -576,14 +487,14 @@ func TestGetCertificateShareData_NotClaimed(t *testing.T) {
 
 	app := buildTestApp(nil, mockCertDg, mockShareDg, new(mockCertContractFactoryDg))
 
-	resp := doRequest(app, http.MethodGet, "/certificate-shares/unclaimed-handle/data", nil)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/unclaimed-handle", nil)
 
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 	mockShareDg.AssertExpectations(t)
 	mockCertDg.AssertExpectations(t)
 }
 
-func TestGetCertificateShareData_Success(t *testing.T) {
+func TestGetCertificateShareData_Success_Public(t *testing.T) {
 	certID := uuid.New()
 	tokenID := "99"
 	contractAddr := "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
@@ -616,7 +527,7 @@ func TestGetCertificateShareData_Success(t *testing.T) {
 
 	app := buildTestApp(nil, mockCertDg, mockShareDg, mockFactory)
 
-	resp := doRequest(app, http.MethodGet, "/certificate-shares/claimed-handle/data", nil)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/claimed-handle", nil)
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	mockShareDg.AssertExpectations(t)
@@ -625,44 +536,7 @@ func TestGetCertificateShareData_Success(t *testing.T) {
 	mockContract.AssertExpectations(t)
 }
 
-// ---------------------------------------------------------------------------
-// Tests: GetCertificateShareDataWithPassword
-// ---------------------------------------------------------------------------
-
-func TestGetCertificateShareDataWithPassword_MissingPassword(t *testing.T) {
-	app := buildTestApp(nil, new(mockEventCertificateDataGateway), new(mockCertificateShareDataGateway), new(mockCertContractFactoryDg))
-
-	resp := doRequest(app, http.MethodPost, "/certificate-shares/handle/data/unlock",
-		map[string]string{"password": ""})
-
-	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-}
-
-func TestGetCertificateShareDataWithPassword_WrongPassword(t *testing.T) {
-	rawPw := "right"
-	hashedPw, err := hashutils.HashPassword(rawPw)
-	require.NoError(t, err)
-	certID := uuid.New()
-	share := &entity.CertificateShare{
-		Id:                 uuid.New(),
-		EventCertificateId: certID,
-		Handle:             "pw-data-handle",
-		Password:           &hashedPw,
-	}
-
-	mockShareDg := new(mockCertificateShareDataGateway)
-	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "pw-data-handle").Return(share, nil)
-
-	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg))
-
-	resp := doRequest(app, http.MethodPost, "/certificate-shares/pw-data-handle/data/unlock",
-		map[string]string{"password": "wrong"})
-
-	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
-	mockShareDg.AssertExpectations(t)
-}
-
-func TestGetCertificateShareDataWithPassword_Success(t *testing.T) {
+func TestGetCertificateShareData_Success_WithPassword(t *testing.T) {
 	rawPw := "right"
 	hashedPw, err := hashutils.HashPassword(rawPw)
 	require.NoError(t, err)
@@ -672,7 +546,7 @@ func TestGetCertificateShareDataWithPassword_Success(t *testing.T) {
 	share := &entity.CertificateShare{
 		Id:                 uuid.New(),
 		EventCertificateId: certID,
-		Handle:             "pw-data-handle",
+		Handle:             "pw-handle",
 		Password:           &hashedPw,
 	}
 	cert := &entity.EventCertificate{
@@ -686,7 +560,7 @@ func TestGetCertificateShareDataWithPassword_Success(t *testing.T) {
 	}
 
 	mockShareDg := new(mockCertificateShareDataGateway)
-	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "pw-data-handle").Return(share, nil)
+	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "pw-handle").Return(share, nil)
 
 	mockCertDg := new(mockEventCertificateDataGateway)
 	mockCertDg.On("GetEventCertificateByID", mock.Anything, certID).Return(cert, nil)
@@ -698,7 +572,7 @@ func TestGetCertificateShareDataWithPassword_Success(t *testing.T) {
 
 	app := buildTestApp(nil, mockCertDg, mockShareDg, mockFactory)
 
-	resp := doRequest(app, http.MethodPost, "/certificate-shares/pw-data-handle/data/unlock",
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/pw-handle",
 		map[string]string{"password": rawPw})
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -716,7 +590,7 @@ func TestUpdateCertificateShare_Unauthenticated(t *testing.T) {
 	shareID := uuid.New()
 	app := buildTestApp(nil, new(mockEventCertificateDataGateway), new(mockCertificateShareDataGateway), new(mockCertContractFactoryDg))
 
-	resp := doRequest(app, http.MethodPatch, "/certificate-shares/"+shareID.String(), nil)
+	resp := doRequest(app, http.MethodPatch, "/certificate-shares/config/"+shareID.String(), nil)
 
 	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 }
@@ -730,7 +604,7 @@ func TestUpdateCertificateShare_InvalidShareUUID(t *testing.T) {
 		new(mockCertContractFactoryDg),
 	)
 
-	resp := doRequest(app, http.MethodPatch, "/certificate-shares/not-a-uuid", nil)
+	resp := doRequest(app, http.MethodPatch, "/certificate-shares/config/not-a-uuid", nil)
 
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 }
@@ -749,7 +623,7 @@ func TestUpdateCertificateShare_ShareNotFound(t *testing.T) {
 		new(mockCertContractFactoryDg),
 	)
 
-	resp := doRequest(app, http.MethodPatch, "/certificate-shares/"+shareID.String(), nil)
+	resp := doRequest(app, http.MethodPatch, "/certificate-shares/config/"+shareID.String(), nil)
 
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	mockShareDg.AssertExpectations(t)
@@ -780,7 +654,7 @@ func TestUpdateCertificateShare_Forbidden_NotOwner(t *testing.T) {
 		new(mockCertContractFactoryDg),
 	)
 
-	resp := doRequest(app, http.MethodPatch, "/certificate-shares/"+shareID.String(), nil)
+	resp := doRequest(app, http.MethodPatch, "/certificate-shares/config/"+shareID.String(), nil)
 
 	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
 	mockShareDg.AssertExpectations(t)
@@ -819,7 +693,7 @@ func TestUpdateCertificateShare_Success_WithPassword(t *testing.T) {
 		new(mockCertContractFactoryDg),
 	)
 
-	resp := doRequest(app, http.MethodPatch, "/certificate-shares/"+shareID.String(),
+	resp := doRequest(app, http.MethodPatch, "/certificate-shares/config/"+shareID.String(),
 		map[string]string{"password": "newpassword"})
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -858,7 +732,7 @@ func TestUpdateCertificateShare_Success_RemovePassword(t *testing.T) {
 	)
 
 	// Send null password body
-	resp := doRequest(app, http.MethodPatch, "/certificate-shares/"+shareID.String(), nil)
+	resp := doRequest(app, http.MethodPatch, "/certificate-shares/config/"+shareID.String(), nil)
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	mockShareDg.AssertExpectations(t)

@@ -79,7 +79,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			CertificateContractFactoryDg: mockFactory,
 		}
 
-		result, err := uc.GetCertificateShareData(ctx, handle)
+		result, err := uc.GetCertificateShareData(ctx, handle, nil)
 
 		assert.NoError(t, err)
 		assert.Equal(t, payload, result)
@@ -95,14 +95,14 @@ func TestGetCertificateShareData(t *testing.T) {
 
 		uc := &CertificateShareUsecase{CertificateShareDg: mockShareDg}
 
-		result, err := uc.GetCertificateShareData(ctx, handle)
+		result, err := uc.GetCertificateShareData(ctx, handle, nil)
 
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrNotFound)
 		mockShareDg.AssertExpectations(t)
 	})
 
-	t.Run("should return ErrForbidden when share is password-protected", func(t *testing.T) {
+	t.Run("should return ErrForbidden when share is password-protected and no password given", func(t *testing.T) {
 		pw := "secret"
 		share := &entity.CertificateShare{
 			Id:                 uuid.New(),
@@ -115,7 +115,7 @@ func TestGetCertificateShareData(t *testing.T) {
 
 		uc := &CertificateShareUsecase{CertificateShareDg: mockShareDg}
 
-		result, err := uc.GetCertificateShareData(ctx, handle)
+		result, err := uc.GetCertificateShareData(ctx, handle, nil)
 
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrForbidden)
@@ -128,7 +128,7 @@ func TestGetCertificateShareData(t *testing.T) {
 
 		uc := &CertificateShareUsecase{CertificateShareDg: mockShareDg}
 
-		result, err := uc.GetCertificateShareData(ctx, handle)
+		result, err := uc.GetCertificateShareData(ctx, handle, nil)
 
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrInternalServer)
@@ -152,7 +152,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			EventCertificateDataGateway: mockCertDg,
 		}
 
-		result, err := uc.GetCertificateShareData(ctx, handle)
+		result, err := uc.GetCertificateShareData(ctx, handle, nil)
 
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrInternalServer)
@@ -182,7 +182,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			EventCertificateDataGateway: mockCertDg,
 		}
 
-		result, err := uc.GetCertificateShareData(ctx, handle)
+		result, err := uc.GetCertificateShareData(ctx, handle, nil)
 
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrInvalidArgument)
@@ -212,7 +212,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			EventCertificateDataGateway: mockCertDg,
 		}
 
-		result, err := uc.GetCertificateShareData(ctx, handle)
+		result, err := uc.GetCertificateShareData(ctx, handle, nil)
 
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrInvalidArgument)
@@ -246,7 +246,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			CertificateContractFactoryDg: mockFactory,
 		}
 
-		result, err := uc.GetCertificateShareData(ctx, handle)
+		result, err := uc.GetCertificateShareData(ctx, handle, nil)
 
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrInternalServer)
@@ -283,7 +283,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			CertificateContractFactoryDg: mockFactory,
 		}
 
-		result, err := uc.GetCertificateShareData(ctx, handle)
+		result, err := uc.GetCertificateShareData(ctx, handle, nil)
 
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrInternalServer)
@@ -292,16 +292,8 @@ func TestGetCertificateShareData(t *testing.T) {
 		mockFactory.AssertExpectations(t)
 		mockContract.AssertExpectations(t)
 	})
-}
 
-func TestGetCertificateShareDataWithPassword(t *testing.T) {
-	ctx := context.Background()
-	handle := "pw-handle"
-	certID := uuid.New()
-	tokenID := "7"
-	contractAddr := "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
-
-	t.Run("should return payload when share has no password (password arg is ignored)", func(t *testing.T) {
+	t.Run("should return payload when share has no password and password arg is ignored", func(t *testing.T) {
 		share := &entity.CertificateShare{
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
@@ -323,7 +315,7 @@ func TestGetCertificateShareDataWithPassword(t *testing.T) {
 		mockShareDg.On("GetCertificateShareByHandle", ctx, handle).Return(share, nil)
 		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
 		mockFactory.On("GetContract", common.HexToAddress(contractAddr)).Return(mockContract, nil)
-		mockContract.On("GetTokenData", ctx, big.NewInt(7)).Return(payload, nil)
+		mockContract.On("GetTokenData", ctx, big.NewInt(42)).Return(payload, nil)
 
 		uc := &CertificateShareUsecase{
 			CertificateShareDg:           mockShareDg,
@@ -331,7 +323,7 @@ func TestGetCertificateShareDataWithPassword(t *testing.T) {
 			CertificateContractFactoryDg: mockFactory,
 		}
 
-		result, err := uc.GetCertificateShareDataWithPassword(ctx, handle, "any-password-is-ignored")
+		result, err := uc.GetCertificateShareData(ctx, handle, strPtr("any-password-is-ignored"))
 
 		assert.NoError(t, err)
 		assert.Equal(t, payload, result)
@@ -341,20 +333,26 @@ func TestGetCertificateShareDataWithPassword(t *testing.T) {
 		mockContract.AssertExpectations(t)
 	})
 
-	t.Run("should return payload when correct password is supplied", func(t *testing.T) {
+	t.Run("should return payload when correct password is supplied for a password-protected share", func(t *testing.T) {
 		rawPw := "correct-password"
 		hashedPw, err := hashutils.HashPassword(rawPw)
 		require.NoError(t, err)
+
+		pwHandle := "pw-handle"
+		pwCertID := uuid.New()
+		pwTokenID := "7"
+		pwContractAddr := "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+
 		share := &entity.CertificateShare{
 			Id:                 uuid.New(),
-			EventCertificateId: certID,
-			Handle:             handle,
+			EventCertificateId: pwCertID,
+			Handle:             pwHandle,
 			Password:           &hashedPw,
 		}
 		cert := &entity.EventCertificate{
-			Id:                      certID,
-			CertificateTokenId:      &tokenID,
-			EventCertificateAddress: &contractAddr,
+			Id:                      pwCertID,
+			CertificateTokenId:      &pwTokenID,
+			EventCertificateAddress: &pwContractAddr,
 		}
 		payload := samplePayload()
 
@@ -363,9 +361,9 @@ func TestGetCertificateShareDataWithPassword(t *testing.T) {
 		mockFactory := new(MockCertificateContractFactoryDg)
 		mockContract := new(MockCertificateContractDg)
 
-		mockShareDg.On("GetCertificateShareByHandle", ctx, handle).Return(share, nil)
-		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
-		mockFactory.On("GetContract", common.HexToAddress(contractAddr)).Return(mockContract, nil)
+		mockShareDg.On("GetCertificateShareByHandle", ctx, pwHandle).Return(share, nil)
+		mockCertDg.On("GetEventCertificateByID", ctx, pwCertID).Return(cert, nil)
+		mockFactory.On("GetContract", common.HexToAddress(pwContractAddr)).Return(mockContract, nil)
 		mockContract.On("GetTokenData", ctx, big.NewInt(7)).Return(payload, nil)
 
 		uc := &CertificateShareUsecase{
@@ -374,7 +372,7 @@ func TestGetCertificateShareDataWithPassword(t *testing.T) {
 			CertificateContractFactoryDg: mockFactory,
 		}
 
-		result, err := uc.GetCertificateShareDataWithPassword(ctx, handle, rawPw)
+		result, err := uc.GetCertificateShareData(ctx, pwHandle, &rawPw)
 
 		assert.NoError(t, err)
 		assert.Equal(t, payload, result)
@@ -388,43 +386,37 @@ func TestGetCertificateShareDataWithPassword(t *testing.T) {
 		rawPw := "correct-password"
 		hashedPw, err := hashutils.HashPassword(rawPw)
 		require.NoError(t, err)
+
+		pwHandle := "pw-handle"
 		share := &entity.CertificateShare{
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
-			Handle:             handle,
+			Handle:             pwHandle,
 			Password:           &hashedPw,
 		}
 		mockShareDg := new(MockCertificateShareDataGateway)
-		mockShareDg.On("GetCertificateShareByHandle", ctx, handle).Return(share, nil)
+		mockShareDg.On("GetCertificateShareByHandle", ctx, pwHandle).Return(share, nil)
 
 		uc := &CertificateShareUsecase{CertificateShareDg: mockShareDg}
 
-		result, err := uc.GetCertificateShareDataWithPassword(ctx, handle, "wrong-password")
+		result, err := uc.GetCertificateShareData(ctx, pwHandle, strPtr("wrong-password"))
 
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrForbidden)
 		mockShareDg.AssertExpectations(t)
 	})
 
-	t.Run("should return ErrNotFound when handle does not exist", func(t *testing.T) {
-		mockShareDg := new(MockCertificateShareDataGateway)
-		mockShareDg.On("GetCertificateShareByHandle", ctx, handle).Return(nil, nil)
+	t.Run("should return ErrInvalidArgument when password-protected certificate has not been claimed", func(t *testing.T) {
+		rawPw := "correct-password"
+		hashedPw, err := hashutils.HashPassword(rawPw)
+		require.NoError(t, err)
 
-		uc := &CertificateShareUsecase{CertificateShareDg: mockShareDg}
-
-		result, err := uc.GetCertificateShareDataWithPassword(ctx, handle, "any")
-
-		assert.Nil(t, result)
-		assertErrCode(t, err, customerror.ErrNotFound)
-		mockShareDg.AssertExpectations(t)
-	})
-
-	t.Run("should return ErrInvalidArgument when certificate has not been claimed", func(t *testing.T) {
+		pwHandle := "pw-handle"
 		share := &entity.CertificateShare{
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
-			Handle:             handle,
-			Password:           nil,
+			Handle:             pwHandle,
+			Password:           &hashedPw,
 		}
 		cert := &entity.EventCertificate{
 			Id:                      certID,
@@ -434,7 +426,7 @@ func TestGetCertificateShareDataWithPassword(t *testing.T) {
 		mockShareDg := new(MockCertificateShareDataGateway)
 		mockCertDg := new(MockEventCertificateDataGateway)
 
-		mockShareDg.On("GetCertificateShareByHandle", ctx, handle).Return(share, nil)
+		mockShareDg.On("GetCertificateShareByHandle", ctx, pwHandle).Return(share, nil)
 		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
 
 		uc := &CertificateShareUsecase{
@@ -442,7 +434,7 @@ func TestGetCertificateShareDataWithPassword(t *testing.T) {
 			EventCertificateDataGateway: mockCertDg,
 		}
 
-		result, err := uc.GetCertificateShareDataWithPassword(ctx, handle, "")
+		result, err := uc.GetCertificateShareData(ctx, pwHandle, &rawPw)
 
 		assert.Nil(t, result)
 		assertErrCode(t, err, customerror.ErrInvalidArgument)

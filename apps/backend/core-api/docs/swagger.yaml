@@ -99,22 +99,6 @@ definitions:
     - total_unclaimed
     - unclaimed_certificates
     type: object
-  certificate_share.CertificateShareDataResponse:
-    properties:
-      data:
-        $ref: '#/definitions/entity.CertificatePayload'
-    required:
-    - data
-    type: object
-  certificate_share.CertificateShareStatusResponse:
-    properties:
-      certificate:
-        $ref: '#/definitions/entity.EventCertificate'
-      status:
-        $ref: '#/definitions/certificate_share.CertificateShareViewStatus'
-    required:
-    - status
-    type: object
   certificate_share.CertificateShareViewModel:
     properties:
       active:
@@ -140,36 +124,56 @@ definitions:
     - id
     - updated_at
     type: object
-  certificate_share.CertificateShareViewStatus:
-    enum:
-    - READY
-    - VALID_BUT_PENDING
-    - PASSWORD_LOCKED
-    type: string
-    x-enum-varnames:
-    - CertificateShareViewStatusReady
-    - CertificateShareViewStatusValidButPending
-    - CertificateShareViewStatusPasswordLocked
-  certificate_share.CreateCertificateShareBody:
+  certificate_share_handler.CertificateShareDataResponse:
+    properties:
+      data:
+        $ref: '#/definitions/entity.CertificatePayload'
+    required:
+    - data
+    type: object
+  certificate_share_handler.CertificateShareViewModel:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      event_certificate_id:
+        type: string
+      handle:
+        type: string
+      has_password:
+        type: boolean
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - active
+    - created_at
+    - event_certificate_id
+    - handle
+    - has_password
+    - id
+    - updated_at
+    type: object
+  certificate_share_handler.CreateCertificateShareBody:
     properties:
       password:
         type: string
     type: object
-  certificate_share.CreateCertificateShareResponse:
+  certificate_share_handler.CreateCertificateShareResponse:
     properties:
       share:
-        $ref: '#/definitions/entity.CertificateShare'
+        $ref: '#/definitions/certificate_share_handler.CertificateShareViewModel'
     required:
     - share
     type: object
-  certificate_share.UnlockCertificateShareBody:
+  certificate_share_handler.GetCertificateShareBody:
     properties:
       password:
         type: string
-    required:
-    - password
     type: object
-  certificate_share.UpdateCertificateShareBody:
+  certificate_share_handler.UpdateCertificateShareBody:
     properties:
       active:
         type: boolean
@@ -179,10 +183,10 @@ definitions:
     - active
     - password
     type: object
-  certificate_share.UpdateCertificateShareResponse:
+  certificate_share_handler.UpdateCertificateShareResponse:
     properties:
       share:
-        $ref: '#/definitions/entity.CertificateShare'
+        $ref: '#/definitions/certificate_share_handler.CertificateShareViewModel'
     required:
     - share
     type: object
@@ -716,30 +720,6 @@ definitions:
     - host
     - issuers
     - signMessage
-    type: object
-  entity.CertificateShare:
-    properties:
-      active:
-        type: boolean
-      created_at:
-        type: string
-      event_certificate_id:
-        type: string
-      handle:
-        type: string
-      id:
-        type: string
-      password:
-        type: string
-      updated_at:
-        type: string
-    required:
-    - active
-    - created_at
-    - event_certificate_id
-    - handle
-    - id
-    - updated_at
     type: object
   entity.Event:
     properties:
@@ -2966,7 +2946,51 @@ paths:
       summary: Get system status including gas price
       tags:
       - Blockchain
-  /api/v1/certificate-shares/{certificate_id}:
+  /api/v1/certificate-shares/{handle}:
+    post:
+      consumes:
+      - application/json
+      description: Retrieve the full on-chain Verifiable Credential data for a share
+        link. For password-protected shares, include the password in the request body.
+      operationId: get-certificate-share-data
+      parameters:
+      - description: Share handle
+        in: path
+        name: handle
+        required: true
+        type: string
+      - description: Optional password for password-protected shares
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/certificate_share_handler.GetCertificateShareBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/certificate_share_handler.CertificateShareDataResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get on-chain certificate share data
+      tags:
+      - CertificateShares
+  /api/v1/certificate-shares/config/{certificate_id}:
     post:
       consumes:
       - application/json
@@ -2984,14 +3008,14 @@ paths:
         in: body
         name: body
         schema:
-          $ref: '#/definitions/certificate_share.CreateCertificateShareBody'
+          $ref: '#/definitions/certificate_share_handler.CreateCertificateShareBody'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/certificate_share.CreateCertificateShareResponse'
+            $ref: '#/definitions/certificate_share_handler.CreateCertificateShareResponse'
         "400":
           description: Bad Request
           schema:
@@ -3017,119 +3041,7 @@ paths:
       summary: Create certificate share link
       tags:
       - CertificateShares
-  /api/v1/certificate-shares/{handle}:
-    get:
-      description: Retrieve a shared certificate by its handle. Returns PASSWORD_LOCKED
-        if password-protected, VALID_BUT_PENDING if the certificate has not been claimed
-        yet, or READY with certificate data.
-      operationId: get-certificate-share-status
-      parameters:
-      - description: Share handle
-        in: path
-        name: handle
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/certificate_share.CertificateShareStatusResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-      summary: Get certificate share status
-      tags:
-      - CertificateShares
-  /api/v1/certificate-shares/{handle}/data:
-    get:
-      description: Retrieve the full on-chain Verifiable Credential data for a public
-        share link. The certificate must be claimed.
-      operationId: get-certificate-share-data
-      parameters:
-      - description: Share handle
-        in: path
-        name: handle
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/certificate_share.CertificateShareDataResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-      summary: Get on-chain certificate share data
-      tags:
-      - CertificateShares
-  /api/v1/certificate-shares/{handle}/data/unlock:
-    post:
-      consumes:
-      - application/json
-      description: Retrieve the full on-chain Verifiable Credential data for a password-protected
-        share link.
-      operationId: get-certificate-share-data-with-password
-      parameters:
-      - description: Share handle
-        in: path
-        name: handle
-        required: true
-        type: string
-      - description: Password
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/certificate_share.UnlockCertificateShareBody'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/certificate_share.CertificateShareDataResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/customerror.ErrResponse'
-      summary: Get on-chain certificate share data (password-protected)
-      tags:
-      - CertificateShares
-  /api/v1/certificate-shares/{share_id}:
+  /api/v1/certificate-shares/config/{share_id}:
     patch:
       consumes:
       - application/json
@@ -3147,14 +3059,14 @@ paths:
         in: body
         name: body
         schema:
-          $ref: '#/definitions/certificate_share.UpdateCertificateShareBody'
+          $ref: '#/definitions/certificate_share_handler.UpdateCertificateShareBody'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/certificate_share.UpdateCertificateShareResponse'
+            $ref: '#/definitions/certificate_share_handler.UpdateCertificateShareResponse'
         "400":
           description: Bad Request
           schema:

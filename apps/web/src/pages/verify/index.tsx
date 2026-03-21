@@ -17,7 +17,10 @@ import {
     ShieldCheck,
 } from "lucide-react";
 import { Typography } from "@/components/typography/typography";
-import type { GetCertificateShareDataResult } from "@/services/CertificateService/mapper";
+import type {
+    GetCertificateShareDataResult,
+    CertificateShareViewStatus,
+} from "@/services/CertificateService/mapper";
 
 function HowItWorks() {
     const { t } = useTranslation();
@@ -157,25 +160,38 @@ export default function VerifyPage() {
     const [inputCode, setInputCode] = useState(handle ?? "");
     const [password, setPassword] = useState("");
     const [passwordError, setPasswordError] = useState("");
-    const [unlockedData, setUnlockedData] = useState<GetCertificateShareDataResult | null>(null);
+    const [shareStatus, setShareStatus] = useState<CertificateShareViewStatus | null>(null);
+    const [shareData, setShareData] = useState<GetCertificateShareDataResult | null>(null);
     const [isUnlocking, setIsUnlocking] = useState(false);
 
-    // Sync input and reset unlock state whenever the handle in the URL changes
+    // Sync input and reset state whenever the handle in the URL changes
     useEffect(() => {
         setInputCode(handle ?? "");
         setPassword("");
         setPasswordError("");
-        setUnlockedData(null);
+        setShareStatus(null);
+        setShareData(null);
     }, [handle]);
 
-    const {
-        data: statusData,
-        isLoading,
-        isError,
-    } = useQuery({
-        queryKey: ["certificateShareStatus", handle],
-        queryFn: () => certificateService.getCertificateShareStatus(handle!),
+    const { isLoading, isError } = useQuery({
+        queryKey: ["certificateShareData", handle],
+        queryFn: async () => {
+            try {
+                const result = await certificateService.getCertificateShareData(handle!);
+                setShareData(result);
+                setShareStatus("READY");
+                return result;
+            } catch (err: unknown) {
+                const status = (err as { status?: number })?.status;
+                if (status === 403) {
+                    setShareStatus("PASSWORD_LOCKED");
+                    return null;
+                }
+                throw err;
+            }
+        },
         enabled: !!handle,
+        retry: false,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -193,11 +209,9 @@ export default function VerifyPage() {
         setIsUnlocking(true);
         setPasswordError("");
         try {
-            const result = await certificateService.getCertificateShareDataWithPassword(
-                handle!,
-                password,
-            );
-            setUnlockedData(result);
+            const result = await certificateService.getCertificateShareData(handle!, password);
+            setShareData(result);
+            setShareStatus("READY");
         } catch {
             setPasswordError(t("certificateVerify.incorrectPassword"));
         } finally {
@@ -232,11 +246,11 @@ export default function VerifyPage() {
             );
         }
 
-        if (statusData?.status === "PASSWORD_LOCKED" && !unlockedData) {
+        if (shareStatus === "PASSWORD_LOCKED" && !shareData) {
             return <EmptyCertificateFrame />;
         }
 
-        if (statusData?.status === "VALID_BUT_PENDING") {
+        if (shareStatus === "VALID_BUT_PENDING") {
             return (
                 <AspectFrame>
                     <div className="absolute inset-0 rounded-xl border border-muted/30 bg-muted/10 flex flex-col items-center justify-center gap-2">
@@ -249,7 +263,7 @@ export default function VerifyPage() {
             );
         }
 
-        if (statusData?.status === "READY" && statusData?.certificate) {
+        if (shareStatus === "READY" && shareData) {
             return (
                 <AspectFrame>
                     <div className="absolute inset-0 rounded-xl border border-primary/30 bg-primary/5 flex items-center justify-center">
@@ -259,7 +273,7 @@ export default function VerifyPage() {
                             color="foreground"
                             className="text-xl font-header"
                         >
-                            {statusData.certificate.certificateTitle}
+                            {shareData.payload.data.certificateTitle}
                         </Typography>
                     </div>
                 </AspectFrame>
@@ -270,7 +284,7 @@ export default function VerifyPage() {
     };
 
     const renderInputArea = () => {
-        if (handle && statusData?.status === "PASSWORD_LOCKED" && !unlockedData) {
+        if (handle && shareStatus === "PASSWORD_LOCKED" && !shareData) {
             return (
                 <div className="flex flex-col gap-3">
                     <Typography

@@ -1,4 +1,4 @@
-package certificate_share
+package certificate_share_handler
 
 import (
 	customerror "apps/backend/common/customerror"
@@ -20,7 +20,7 @@ func (b *UpdateCertificateShareBody) Parse(ctx *fiber.Ctx) error {
 }
 
 type UpdateCertificateShareResponse struct {
-	Share *certificate_share_usecase.CertificateShareViewModel `json:"share"`
+	Share *CertificateShareViewModel `json:"share"`
 }
 
 // @Summary Update certificate share link
@@ -38,7 +38,7 @@ type UpdateCertificateShareResponse struct {
 // @Failure 403 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
-// @Router /api/v1/certificate-shares/{share_id} [patch]
+// @Router /api/v1/certificate-shares/config/{share_id} [patch]
 func (h *Handler) UpdateCertificateShare(ctx *fiber.Ctx) error {
 	currentUser, err := h.AuthenticationService.GetUserContext(ctx)
 	if err != nil {
@@ -72,5 +72,5 @@ func (h *Handler) UpdateCertificateShare(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(UpdateCertificateShareResponse{Share: certificate_share_usecase.NewCertificateShareViewModel(share)})
+	return ctx.Status(fiber.StatusOK).JSON(UpdateCertificateShareResponse{Share: newCertificateShareViewModel(certificate_share_usecase.NewCertificateShareViewModel(share))})
 }

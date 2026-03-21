@@ -230,7 +230,7 @@
                 }
             }
         },
-        "/api/v1/certificate-shares/{certificate_id}": {
+        "/api/v1/certificate-shares/config/{certificate_id}": {
             "post": {
                 "security": [
                     {
@@ -262,7 +262,7 @@
                         "name": "body",
                         "in": "body",
                         "schema": {
-                            "$ref": "#/definitions/certificate_share.CreateCertificateShareBody"
+                            "$ref": "#/definitions/certificate_share_handler.CreateCertificateShareBody"
                         }
                     }
                 ],
@@ -270,7 +270,83 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/certificate_share.CreateCertificateShareResponse"
+                            "$ref": "#/definitions/certificate_share_handler.CreateCertificateShareResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/certificate-shares/config/{share_id}": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the password of an existing share link. Only the certificate owner may call this endpoint. Set password to null or omit to remove password protection.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CertificateShares"
+                ],
+                "summary": "Update certificate share link",
+                "operationId": "update-certificate-share",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Share ID",
+                        "name": "share_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Optional password configuration",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share_handler.UpdateCertificateShareBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share_handler.UpdateCertificateShareResponse"
                         }
                     },
                     "400": {
@@ -307,50 +383,11 @@
             }
         },
         "/api/v1/certificate-shares/{handle}": {
-            "get": {
-                "description": "Retrieve a shared certificate by its handle. Returns PASSWORD_LOCKED if password-protected, VALID_BUT_PENDING if the certificate has not been claimed yet, or READY with certificate data.",
-                "produces": [
+            "post": {
+                "description": "Retrieve the full on-chain Verifiable Credential data for a share link. For password-protected shares, include the password in the request body.",
+                "consumes": [
                     "application/json"
                 ],
-                "tags": [
-                    "CertificateShares"
-                ],
-                "summary": "Get certificate share status",
-                "operationId": "get-certificate-share-status",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Share handle",
-                        "name": "handle",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/certificate_share.CertificateShareStatusResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/certificate-shares/{handle}/data": {
-            "get": {
-                "description": "Retrieve the full on-chain Verifiable Credential data for a public share link. The certificate must be claimed.",
                 "produces": [
                     "application/json"
                 ],
@@ -366,141 +403,13 @@
                         "name": "handle",
                         "in": "path",
                         "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/certificate_share.CertificateShareDataResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/certificate-shares/{handle}/data/unlock": {
-            "post": {
-                "description": "Retrieve the full on-chain Verifiable Credential data for a password-protected share link.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "CertificateShares"
-                ],
-                "summary": "Get on-chain certificate share data (password-protected)",
-                "operationId": "get-certificate-share-data-with-password",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Share handle",
-                        "name": "handle",
-                        "in": "path",
-                        "required": true
                     },
                     {
-                        "description": "Password",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/certificate_share.UnlockCertificateShareBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/certificate_share.CertificateShareDataResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/certificate-shares/{share_id}": {
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Update the password of an existing share link. Only the certificate owner may call this endpoint. Set password to null or omit to remove password protection.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "CertificateShares"
-                ],
-                "summary": "Update certificate share link",
-                "operationId": "update-certificate-share",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Share ID",
-                        "name": "share_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Optional password configuration",
+                        "description": "Optional password for password-protected shares",
                         "name": "body",
                         "in": "body",
                         "schema": {
-                            "$ref": "#/definitions/certificate_share.UpdateCertificateShareBody"
+                            "$ref": "#/definitions/certificate_share_handler.GetCertificateShareBody"
                         }
                     }
                 ],
@@ -508,17 +417,11 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/certificate_share.UpdateCertificateShareResponse"
+                            "$ref": "#/definitions/certificate_share_handler.CertificateShareDataResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerror.ErrResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
@@ -4435,31 +4338,6 @@
                 }
             }
         },
-        "certificate_share.CertificateShareDataResponse": {
-            "type": "object",
-            "required": [
-                "data"
-            ],
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/entity.CertificatePayload"
-                }
-            }
-        },
-        "certificate_share.CertificateShareStatusResponse": {
-            "type": "object",
-            "required": [
-                "status"
-            ],
-            "properties": {
-                "certificate": {
-                    "$ref": "#/definitions/entity.EventCertificate"
-                },
-                "status": {
-                    "$ref": "#/definitions/certificate_share.CertificateShareViewStatus"
-                }
-            }
-        },
         "certificate_share.CertificateShareViewModel": {
             "type": "object",
             "required": [
@@ -4495,20 +4373,53 @@
                 }
             }
         },
-        "certificate_share.CertificateShareViewStatus": {
-            "type": "string",
-            "enum": [
-                "READY",
-                "VALID_BUT_PENDING",
-                "PASSWORD_LOCKED"
+        "certificate_share_handler.CertificateShareDataResponse": {
+            "type": "object",
+            "required": [
+                "data"
             ],
-            "x-enum-varnames": [
-                "CertificateShareViewStatusReady",
-                "CertificateShareViewStatusValidButPending",
-                "CertificateShareViewStatusPasswordLocked"
-            ]
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/entity.CertificatePayload"
+                }
+            }
         },
-        "certificate_share.CreateCertificateShareBody": {
+        "certificate_share_handler.CertificateShareViewModel": {
+            "type": "object",
+            "required": [
+                "active",
+                "created_at",
+                "event_certificate_id",
+                "handle",
+                "has_password",
+                "id",
+                "updated_at"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_certificate_id": {
+                    "type": "string"
+                },
+                "handle": {
+                    "type": "string"
+                },
+                "has_password": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "certificate_share_handler.CreateCertificateShareBody": {
             "type": "object",
             "properties": {
                 "password": {
@@ -4516,29 +4427,26 @@
                 }
             }
         },
-        "certificate_share.CreateCertificateShareResponse": {
+        "certificate_share_handler.CreateCertificateShareResponse": {
             "type": "object",
             "required": [
                 "share"
             ],
             "properties": {
                 "share": {
-                    "$ref": "#/definitions/entity.CertificateShare"
+                    "$ref": "#/definitions/certificate_share_handler.CertificateShareViewModel"
                 }
             }
         },
-        "certificate_share.UnlockCertificateShareBody": {
+        "certificate_share_handler.GetCertificateShareBody": {
             "type": "object",
-            "required": [
-                "password"
-            ],
             "properties": {
                 "password": {
                     "type": "string"
                 }
             }
         },
-        "certificate_share.UpdateCertificateShareBody": {
+        "certificate_share_handler.UpdateCertificateShareBody": {
             "type": "object",
             "required": [
                 "active",
@@ -4553,14 +4461,14 @@
                 }
             }
         },
-        "certificate_share.UpdateCertificateShareResponse": {
+        "certificate_share_handler.UpdateCertificateShareResponse": {
             "type": "object",
             "required": [
                 "share"
             ],
             "properties": {
                 "share": {
-                    "$ref": "#/definitions/entity.CertificateShare"
+                    "$ref": "#/definitions/certificate_share_handler.CertificateShareViewModel"
                 }
             }
         },
@@ -5320,40 +5228,6 @@
                     }
                 },
                 "signMessage": {
-                    "type": "string"
-                }
-            }
-        },
-        "entity.CertificateShare": {
-            "type": "object",
-            "required": [
-                "active",
-                "created_at",
-                "event_certificate_id",
-                "handle",
-                "id",
-                "updated_at"
-            ],
-            "properties": {
-                "active": {
-                    "type": "boolean"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "event_certificate_id": {
-                    "type": "string"
-                },
-                "handle": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "updated_at": {
                     "type": "string"
                 }
             }

@@ -9,10 +9,9 @@ import type {
     EventImportCertificateReceiverRequest,
     EntityEventCertificate,
     EntityCertificatePayload,
-    CertificateShareCreateCertificateShareResponse,
-    CertificateShareUpdateCertificateShareResponse,
-    CertificateShareCertificateShareStatusResponse,
-    CertificateShareCertificateShareDataResponse,
+    CertificateShareHandlerCreateCertificateShareResponse,
+    CertificateShareHandlerUpdateCertificateShareResponse,
+    CertificateShareHandlerCertificateShareDataResponse,
     CertificateShareCertificateShareViewModel,
     EventClaimedCertificateViewModel,
     EventUnclaimedCertificateViewModel,
@@ -155,11 +154,6 @@ export interface UpdateCertificateShareResult {
 }
 
 export type CertificateShareViewStatus = "READY" | "VALID_BUT_PENDING" | "PASSWORD_LOCKED";
-
-export interface GetCertificateShareStatusResult {
-    status: CertificateShareViewStatus;
-    certificate?: Certificate;
-}
 
 export interface GetCertificateShareDataResult {
     payload: EntityCertificatePayload;
@@ -391,7 +385,7 @@ export const mapClaimCertificateResponse = (
  * Map create certificate shareable link response
  */
 export const mapCreateCertificateShareableLinkResponse = (
-    response: CertificateShareCreateCertificateShareResponse,
+    response: CertificateShareHandlerCreateCertificateShareResponse,
 ): CreateCertificateShareableLinkResult => {
     return {
         certificateId: response.share.event_certificate_id,
@@ -404,27 +398,17 @@ export const mapCreateCertificateShareableLinkResponse = (
  * Maps update certificate share response
  */
 export const mapUpdateCertificateShareResponse = (
-    response: CertificateShareUpdateCertificateShareResponse,
+    response: CertificateShareHandlerUpdateCertificateShareResponse,
 ): UpdateCertificateShareResult => ({
     certificateId: response.share.event_certificate_id,
     handle: response.share.handle,
 });
 
 /**
- * Maps get certificate share status response
- */
-export const mapGetCertificateShareStatusResponse = (
-    response: CertificateShareCertificateShareStatusResponse,
-): GetCertificateShareStatusResult => ({
-    status: response.status as CertificateShareViewStatus,
-    certificate: response.certificate ? mapCertificate(response.certificate) : undefined,
-});
-
-/**
  * Maps get certificate share data response
  */
 export const mapGetCertificateShareDataResponse = (
-    response: CertificateShareCertificateShareDataResponse,
+    response: CertificateShareHandlerCertificateShareDataResponse,
 ): GetCertificateShareDataResult => ({
     payload: response.data,
 });

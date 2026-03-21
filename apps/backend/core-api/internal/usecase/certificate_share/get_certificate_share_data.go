@@ -14,41 +14,20 @@ import (
 
 // CertificateShareData is the fully typed representation of the on-chain VC JSON
 // returned by the EventCertificate contract's getTokenData(tokenId) view function.
-// It is a type alias for entity.CertificatePayload so callers never need to deal
-// with raw strings or contract-internal structs.
 type CertificateShareData = entity.CertificatePayload
 
 // GetCertificateShareData fetches the on-chain VC data for a certificate identified
-// by its share handle.
+// by its share handle. Pass a non-nil password for password-protected shares.
 //
 // Flow:
 //  1. Look up the certificate_share row by handle.
-//  2. If password-protected, return ErrForbidden (use GetCertificateShareDataWithPassword instead).
-//  3. Resolve the linked EventCertificate from the off-chain DB.
-//  4. Require the certificate to be claimed (CertificateTokenId and EventCertificateAddress must be set).
-//  5. Obtain the EventCertificate contract via CertificateContractFactoryDg.
-//  6. Call GetTokenData(tokenId) — a free view call, no gas required.
-func (uc *CertificateShareUsecase) GetCertificateShareData(ctx context.Context, handle string) (*CertificateShareData, error) {
-	share, err := uc.CertificateShareDg.GetCertificateShareByHandle(ctx, handle)
-	if err != nil {
-		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
-	}
-	if share == nil {
-		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("certificate share not found"))
-	}
-
-	// Password-protected shares require a password — use GetCertificateShareDataWithPassword
-	if share.Password != nil {
-		return nil, customerror.Parse(&customerror.ErrForbidden, errors.New("certificate share is password protected"))
-	}
-
-	return uc.fetchOnChainData(ctx, share.EventCertificateId)
-}
-
-// GetCertificateShareDataWithPassword is identical to GetCertificateShareData but
-// accepts a password for password-protected share links.
-// If the share has no password the password argument is ignored.
-func (uc *CertificateShareUsecase) GetCertificateShareDataWithPassword(ctx context.Context, handle string, password string) (*CertificateShareData, error) {
+//  2. If password-protected and no password supplied, return ErrForbidden.
+//  3. If password-protected and password is wrong, return ErrForbidden.
+//  4. Resolve the linked EventCertificate from the off-chain DB.
+//  5. Require the certificate to be claimed (CertificateTokenId and EventCertificateAddress must be set).
+//  6. Obtain the EventCertificate contract via CertificateContractFactoryDg.
+//  7. Call GetTokenData(tokenId) — a free view call, no gas required.
+func (uc *CertificateShareUsecase) GetCertificateShareData(ctx context.Context, handle string, password *string) (*CertificateShareData, error) {
 	share, err := uc.CertificateShareDg.GetCertificateShareByHandle(ctx, handle)
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, err)
@@ -58,7 +37,10 @@ func (uc *CertificateShareUsecase) GetCertificateShareDataWithPassword(ctx conte
 	}
 
 	if share.Password != nil {
-		match, err := hashutils.CompareHash(password, *share.Password)
+		if password == nil {
+			return nil, customerror.Parse(&customerror.ErrForbidden, errors.New("certificate share is password protected"))
+		}
+		match, err := hashutils.CompareHash(*password, *share.Password)
 		if err != nil || !match {
 			return nil, customerror.Parse(&customerror.ErrForbidden, errors.New("incorrect password for certificate share"))
 		}
