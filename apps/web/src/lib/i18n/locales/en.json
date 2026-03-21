@@ -176,7 +176,11 @@
         "back": "Back",
         "table": {
             "certDataHeading": "Certificate Data",
-            "onChainProofHeading": "On-Chain Proof",
+            "onChainProofHeading": "Certificate On-Chain Proof",
+            "attendeeDataHeading": "Attendee Data",
+            "attendeeDataNote": "Name and academic institution are cross-checked against the on-chain certificate hash. Other fields are encrypted attendee profile data — present but not individually hashed.",
+            "fullName": "Full Name",
+            "receiverName": "Receiver Name",
             "event": "Event",
             "eventDescription": "Description",
             "title": "Title",

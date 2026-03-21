@@ -16,6 +16,7 @@ export function CertificateDataTable({ data }: { data: GetCertificateShareDataRe
     const [techOpen, setTechOpen] = useState(false);
     const [proofOpen, setProofOpen] = useState(false);
     const [chainOpen, setChainOpen] = useState(false);
+    const [attendeeOpen, setAttendeeOpen] = useState(false);
     const [verification, setVerification] = useState<ProofVerificationResult | null>(null);
 
     const {
@@ -109,6 +110,25 @@ export function CertificateDataTable({ data }: { data: GetCertificateShareDataRe
 
     const isValid = cert.status === "VALID";
 
+    // Cross-verify attendee name and academic_institution against decryptedCertificateData
+    const attendeeFullName = decryptedUserData
+        ? `${decryptedUserData.first_name ?? ""} ${decryptedUserData.last_name ?? ""}`.trim()
+        : null;
+
+    // Cross-verify attendee name and academic_institution against decryptedCertificateData.
+    // proof.hash covers certificate record fields (imported by the host), not the attendee profile,
+    // so we can only cross-check these two decrypted sources against each other — not directly against the hash.
+    const nameVerified: boolean | undefined =
+        attendeeFullName !== null && decryptedCertificateData?.name !== undefined
+            ? attendeeFullName.toLowerCase() === (decryptedCertificateData.name ?? "").toLowerCase()
+            : undefined;
+
+    const academicInstitutionVerified: boolean | undefined =
+        decryptedUserData && decryptedCertificateData?.academic_institution !== undefined
+            ? (decryptedUserData.academic_institution ?? "").toLowerCase() ===
+              (decryptedCertificateData.academic_institution ?? "").toLowerCase()
+            : undefined;
+
     return (
         <div className="flex flex-col gap-4">
             {/* Certificate Info */}
@@ -134,6 +154,12 @@ export function CertificateDataTable({ data }: { data: GetCertificateShareDataRe
                                 <Row
                                     label={t("certificateVerify.table.eventDescription")}
                                     value={cert.eventDescription}
+                                />
+                            )}
+                            {decryptedCertificateData?.name && (
+                                <Row
+                                    label={t("certificateVerify.table.receiverName")}
+                                    value={decryptedCertificateData.name}
                                 />
                             )}
                             <Row
@@ -348,6 +374,83 @@ export function CertificateDataTable({ data }: { data: GetCertificateShareDataRe
                         );
                     })()}
             </div>
+
+            {/* Attendee Data — shown only when decryptedUserData is present */}
+            {decryptedUserData && (
+                <div className="rounded-xl border border-muted/20 bg-muted/5 overflow-hidden">
+                    <button
+                        onClick={() => setAttendeeOpen((o) => !o)}
+                        className="w-full px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-muted/10 transition-colors"
+                    >
+                        <Typography
+                            variant="text"
+                            tag="span"
+                            color="muted"
+                            className="text-xs uppercase tracking-widest"
+                        >
+                            {t("certificateVerify.table.attendeeDataHeading")}
+                        </Typography>
+                        <ChevronRight
+                            className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${attendeeOpen ? "rotate-90" : ""}`}
+                        />
+                    </button>
+                    {attendeeOpen && (
+                        <div className="border-t border-muted/15 px-4 py-2">
+                            <p className="text-xs text-muted-foreground py-2 leading-relaxed">
+                                {t("certificateVerify.table.attendeeDataNote")}
+                            </p>
+                            <table className="w-full">
+                                <tbody>
+                                    {attendeeFullName && (
+                                        <Row
+                                            label={t("certificateVerify.table.fullName")}
+                                            value={attendeeFullName}
+                                            verified={nameVerified}
+                                        />
+                                    )}
+                                    {decryptedUserData.academic_institution && (
+                                        <Row
+                                            label={t("certificateVerify.table.academicInstitution")}
+                                            value={decryptedUserData.academic_institution}
+                                            verified={academicInstitutionVerified}
+                                        />
+                                    )}
+                                    {decryptedUserData.email && (
+                                        <Row
+                                            label={t("certificateVerify.table.email")}
+                                            value={decryptedUserData.email}
+                                        />
+                                    )}
+                                    {decryptedUserData.academic_email && (
+                                        <Row
+                                            label={t("certificateVerify.table.academicEmail")}
+                                            value={decryptedUserData.academic_email}
+                                        />
+                                    )}
+                                    {decryptedUserData.phone_number && (
+                                        <Row
+                                            label={t("certificateVerify.table.phoneNumber")}
+                                            value={decryptedUserData.phone_number}
+                                        />
+                                    )}
+                                    {decryptedUserData.address && (
+                                        <Row
+                                            label={t("certificateVerify.table.address")}
+                                            value={decryptedUserData.address}
+                                        />
+                                    )}
+                                    {decryptedUserData.bio && (
+                                        <Row
+                                            label={t("certificateVerify.table.bio")}
+                                            value={decryptedUserData.bio}
+                                        />
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* On-chain Proof — collapsible */}
             <div className="rounded-xl border border-muted/20 bg-muted/5 overflow-hidden">

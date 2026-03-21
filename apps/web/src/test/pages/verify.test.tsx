@@ -223,6 +223,131 @@ describe("VerifyPage", () => {
         });
     });
 
+    it("shows attendee data section when decryptedUserData is present", async () => {
+        const dataWithAttendee = {
+            ...mockVcData,
+            decryptedUserData: {
+                first_name: "Alice",
+                last_name: "Smith",
+                email: "alice@example.com",
+                phone_number: "0812345678",
+                academic_institution: "MIT",
+                academic_email: null,
+                address: null,
+                bio: null,
+            },
+        };
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockResolvedValue(
+            dataWithAttendee as never,
+        );
+
+        const Wrapper = makeWrapper();
+        render(<VerifyPage />, { wrapper: Wrapper });
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("certificateVerify.table.attendeeDataHeading"),
+            ).toBeInTheDocument();
+        });
+    });
+
+    it("does not show attendee data section when decryptedUserData is absent", async () => {
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockResolvedValue(mockVcData as never);
+
+        const Wrapper = makeWrapper();
+        render(<VerifyPage />, { wrapper: Wrapper });
+
+        await waitFor(() => {
+            expect(screen.getAllByText("My Cert").length).toBeGreaterThan(0);
+        });
+
+        expect(
+            screen.queryByText("certificateVerify.table.attendeeDataHeading"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("shows verified badge on name when it matches decryptedCertificateData", async () => {
+        const dataWithMatch = {
+            ...mockVcData,
+            decryptedUserData: {
+                first_name: "Alice",
+                last_name: "Smith",
+                email: "alice@example.com",
+                phone_number: null,
+                academic_institution: null,
+                academic_email: null,
+                address: null,
+                bio: null,
+            },
+            decryptedCertificateData: {
+                name: "Alice Smith",
+                academic_institution: "",
+                certificate_title: "My Cert",
+                certificate_subtitle: "",
+            },
+        };
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockResolvedValue(
+            dataWithMatch as never,
+        );
+
+        const Wrapper = makeWrapper();
+        render(<VerifyPage />, { wrapper: Wrapper });
+
+        // Wait for attendee section heading, then open it
+        await waitFor(() => {
+            expect(
+                screen.getByText("certificateVerify.table.attendeeDataHeading"),
+            ).toBeInTheDocument();
+        });
+        fireEvent.click(screen.getByText("certificateVerify.table.attendeeDataHeading"));
+
+        await waitFor(() => {
+            expect(screen.getByText("Alice Smith")).toBeInTheDocument();
+        });
+        expect(screen.getAllByText("Verified").length).toBeGreaterThan(0);
+    });
+
+    it("shows invalid badge on name when it does not match decryptedCertificateData", async () => {
+        const dataWithMismatch = {
+            ...mockVcData,
+            decryptedUserData: {
+                first_name: "Alice",
+                last_name: "Smith",
+                email: "alice@example.com",
+                phone_number: null,
+                academic_institution: null,
+                academic_email: null,
+                address: null,
+                bio: null,
+            },
+            decryptedCertificateData: {
+                name: "Bob Jones",
+                academic_institution: "",
+                certificate_title: "My Cert",
+                certificate_subtitle: "",
+            },
+        };
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockResolvedValue(
+            dataWithMismatch as never,
+        );
+
+        const Wrapper = makeWrapper();
+        render(<VerifyPage />, { wrapper: Wrapper });
+
+        // Wait for attendee section heading, then open it
+        await waitFor(() => {
+            expect(
+                screen.getByText("certificateVerify.table.attendeeDataHeading"),
+            ).toBeInTheDocument();
+        });
+        fireEvent.click(screen.getByText("certificateVerify.table.attendeeDataHeading"));
+
+        await waitFor(() => {
+            expect(screen.getByText("Alice Smith")).toBeInTheDocument();
+        });
+        expect(screen.getAllByText("Invalid").length).toBeGreaterThan(0);
+    });
+
     it("shows password required alert when unlock clicked with empty password", async () => {
         vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue({ status: 403 });
 
