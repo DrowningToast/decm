@@ -18,4 +18,5 @@ func (h *Handler) Mount(r fiber.Router) {
 
 	// Public routes
 	shareGroup.Post("/:handle", h.GetCertificateShareData)
+	shareGroup.Get("/:handle/image", h.GetCertificateShareImage)
 }

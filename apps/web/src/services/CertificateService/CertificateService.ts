@@ -302,6 +302,19 @@ export class CertificateService {
         const response = await this._coreApi.v1.getCertificateShareData({ handle }, { password });
         return mapGetCertificateShareDataResponse(response);
     }
+
+    public async getCertificateShareImage(
+        handle: string,
+        password?: string,
+    ): Promise<CertificateImage> {
+        const response = await this._coreApi.v1.getCertificateShareImage({ handle, password });
+
+        if (!(response instanceof Blob)) {
+            throw new Error("Invalid response: expected Blob");
+        }
+
+        return mapBlobToCertificateImage(response);
+    }
 }
 
 export const defaultCertificateService = new CertificateService(coreApiClient);

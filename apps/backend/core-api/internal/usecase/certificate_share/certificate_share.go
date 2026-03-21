@@ -2,6 +2,7 @@ package certificate_share
 
 import (
 	"apps/backend/core-api/internal/entity"
+	"context"
 	"time"
 
 	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
@@ -9,6 +10,12 @@ import (
 
 	"github.com/google/uuid"
 )
+
+// CertificateImageGenerator generates PNG images for certificates.
+// Implemented by EventUsecase.
+type CertificateImageGenerator interface {
+	GenerateCertificateImage(ctx context.Context, certificateID uuid.UUID) ([]byte, error)
+}
 
 // CertificateShareViewModel is a safe representation of a CertificateShare for use in viewmodels.
 // It omits the raw hashed password and instead exposes a HasPassword boolean.
@@ -43,16 +50,19 @@ type CertificateShareUsecase struct {
 	EventCertificateDataGateway  eventdatagateway.EventCertificateDataGateway
 	CertificateShareDg           eventdatagateway.CertificateShareDataGateway
 	CertificateContractFactoryDg certificatecontract_datagateway.CertificateContractFactoryDataGateway
+	CertificateImageGenerator    CertificateImageGenerator
 }
 
 func NewCertificateShareUsecase(
 	eventCertificateDataGateway eventdatagateway.EventCertificateDataGateway,
 	certificateShareDg eventdatagateway.CertificateShareDataGateway,
 	certificateContractFactoryDg certificatecontract_datagateway.CertificateContractFactoryDataGateway,
+	certificateImageGenerator CertificateImageGenerator,
 ) *CertificateShareUsecase {
 	return &CertificateShareUsecase{
 		EventCertificateDataGateway:  eventCertificateDataGateway,
 		CertificateShareDg:           certificateShareDg,
 		CertificateContractFactoryDg: certificateContractFactoryDg,
+		CertificateImageGenerator:    certificateImageGenerator,
 	}
 }

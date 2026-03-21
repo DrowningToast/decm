@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	goccyjson "github.com/goccy/go-json"
 	"io"
 	"log/slog"
 	"math/big"
@@ -151,6 +152,18 @@ func (m *mockCertContractFactoryDg) GetContract(addr common.Address) (certificat
 	return args.Get(0).(certificatecontract_datagateway.CertificateContractDataGateway), args.Error(1)
 }
 
+type mockCertificateImageGenerator struct{ mock.Mock }
+
+var _ certificate_share_usecase.CertificateImageGenerator = (*mockCertificateImageGenerator)(nil)
+
+func (m *mockCertificateImageGenerator) GenerateCertificateImage(ctx context.Context, certificateID uuid.UUID) ([]byte, error) {
+	args := m.Called(ctx, certificateID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]byte), args.Error(1)
+}
+
 type mockCertContractDg struct{ mock.Mock }
 
 var _ certificatecontract_datagateway.CertificateContractDataGateway = (*mockCertContractDg)(nil)
@@ -201,13 +214,20 @@ func buildTestApp(
 	mockCertDg *mockEventCertificateDataGateway,
 	mockShareDg *mockCertificateShareDataGateway,
 	mockFactoryDg *mockCertContractFactoryDg,
+	imageGen ...certificate_share_usecase.CertificateImageGenerator,
 ) *fiber.App {
 	discardLogger := slog.New(slog.NewTextHandler(io.Discard, nil))
+
+	var gen certificate_share_usecase.CertificateImageGenerator
+	if len(imageGen) > 0 {
+		gen = imageGen[0]
+	}
 
 	uc := &certificate_share_usecase.CertificateShareUsecase{
 		EventCertificateDataGateway:  mockCertDg,
 		CertificateShareDg:           mockShareDg,
 		CertificateContractFactoryDg: mockFactoryDg,
+		CertificateImageGenerator:    gen,
 	}
 
 	h := &Handler{
@@ -228,6 +248,7 @@ func buildTestApp(
 	app.Post("/certificate-shares/config/:certificate_id", h.CreateCertificateShare)
 	app.Patch("/certificate-shares/config/:share_id", h.UpdateCertificateShare)
 	app.Post("/certificate-shares/:handle", h.GetCertificateShareData)
+	app.Get("/certificate-shares/:handle/image", h.GetCertificateShareImage)
 
 	return app
 }
@@ -582,6 +603,88 @@ func TestGetCertificateShareData_Success_WithPassword(t *testing.T) {
 	mockContract.AssertExpectations(t)
 }
 
+// TestGetCertificateShareData_AtContextField_NoSegfault is a regression test for
+// the SIGSEGV that occurred when goccy/go-json (Fiber's global JSON encoder)
+// tried to encode a CertificatePayload whose Header.Context []string field has
+// json:"@context". The '@' prefix caused goccy/go-json to compute the wrong
+// field offset, reading raw string bytes as a pointer and segfaulting.
+// The fix marshals the response with encoding/json directly, bypassing goccy.
+// This test configures Fiber with goccy/go-json as encoder (exactly like
+// production) to guarantee the workaround remains in place.
+func TestGetCertificateShareData_AtContextField_NoSegfault(t *testing.T) {
+	certID := uuid.New()
+	tokenID := "0"
+	contractAddr := "0x46494f89533057ad6865b86d9619acd9a3cf7687"
+	share := &entity.CertificateShare{
+		Id:                 uuid.New(),
+		EventCertificateId: certID,
+		Handle:             "vc-handle",
+		Password:           nil,
+	}
+	cert := &entity.EventCertificate{
+		Id:                      certID,
+		CertificateTokenId:      &tokenID,
+		EventCertificateAddress: &contractAddr,
+	}
+	// Full W3C VC payload — the @context []string is what triggered the segfault.
+	payload := &entity.CertificatePayload{
+		Header: entity.CertificatePayloadHeader{
+			Context:      []string{"https://www.w3.org/2018/credentials/v1"},
+			Type:         []string{"VerifiableCredential", "EventCertificate"},
+			Id:           "cert-1",
+			Issuer:       "issuer-1",
+			IssuanceDate: "1772294796",
+		},
+		Data: entity.CertificatePayloadData{
+			EventName:   "Test Event",
+			CertificateTitle: "Certificate of Completion",
+			Status:      "VALID",
+		},
+	}
+
+	mockShareDg := new(mockCertificateShareDataGateway)
+	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "vc-handle").Return(share, nil)
+
+	mockCertDg := new(mockEventCertificateDataGateway)
+	mockCertDg.On("GetEventCertificateByID", mock.Anything, certID).Return(cert, nil)
+
+	mockFactory := new(mockCertContractFactoryDg)
+	mockContract := new(mockCertContractDg)
+	mockFactory.On("GetContract", common.HexToAddress(contractAddr)).Return(mockContract, nil)
+	mockContract.On("GetTokenData", mock.Anything, big.NewInt(0)).Return(payload, nil)
+
+	// Mirror the production Fiber config: use goccy/go-json as the encoder.
+	// Without the stdjson.Marshal workaround in the handler this would segfault.
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	uc := &certificate_share_usecase.CertificateShareUsecase{
+		EventCertificateDataGateway:  mockCertDg,
+		CertificateShareDg:           mockShareDg,
+		CertificateContractFactoryDg: mockFactory,
+	}
+	h := &Handler{
+		CertificateShareUc:    uc,
+		AuthenticationService: &auth.AuthService{},
+		Logger:                logger,
+	}
+	app := fiber.New(fiber.Config{
+		JSONEncoder:  goccyjson.Marshal,
+		JSONDecoder:  goccyjson.Unmarshal,
+		ErrorHandler: customerror.GetErrFiberHandler(logger),
+	})
+	app.Post("/certificate-shares/:handle", h.GetCertificateShareData)
+
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/vc-handle", nil)
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var got CertificateShareDataResponse
+	body, _ := io.ReadAll(resp.Body)
+	require.NoError(t, json.Unmarshal(body, &got))
+	require.NotNil(t, got.Data)
+	assert.Equal(t, []string{"https://www.w3.org/2018/credentials/v1"}, got.Data.Header.Context)
+	assert.Equal(t, "Test Event", got.Data.Data.EventName)
+}
+
 // ---------------------------------------------------------------------------
 // Tests: UpdateCertificateShare
 // ---------------------------------------------------------------------------
@@ -737,6 +840,127 @@ func TestUpdateCertificateShare_Success_RemovePassword(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	mockShareDg.AssertExpectations(t)
 	mockCertDg.AssertExpectations(t)
+}
+
+// ---------------------------------------------------------------------------
+// Tests: GetCertificateShareImage
+// ---------------------------------------------------------------------------
+
+func TestGetCertificateShareImage_NotFound(t *testing.T) {
+	mockShareDg := new(mockCertificateShareDataGateway)
+	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "gone").Return(nil, nil)
+
+	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg))
+
+	resp := doRequest(app, http.MethodGet, "/certificate-shares/gone/image", nil)
+
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	mockShareDg.AssertExpectations(t)
+}
+
+func TestGetCertificateShareImage_PasswordProtected_NoPasswordGiven(t *testing.T) {
+	pw := "secret"
+	certID := uuid.New()
+	share := &entity.CertificateShare{
+		Id:                 uuid.New(),
+		EventCertificateId: certID,
+		Handle:             "locked",
+		Password:           &pw,
+	}
+
+	mockShareDg := new(mockCertificateShareDataGateway)
+	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "locked").Return(share, nil)
+
+	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg))
+
+	resp := doRequest(app, http.MethodGet, "/certificate-shares/locked/image", nil)
+
+	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+	mockShareDg.AssertExpectations(t)
+}
+
+func TestGetCertificateShareImage_PasswordProtected_WrongPassword(t *testing.T) {
+	rawPw := "right"
+	hashedPw, err := hashutils.HashPassword(rawPw)
+	require.NoError(t, err)
+	certID := uuid.New()
+	share := &entity.CertificateShare{
+		Id:                 uuid.New(),
+		EventCertificateId: certID,
+		Handle:             "locked",
+		Password:           &hashedPw,
+	}
+
+	mockShareDg := new(mockCertificateShareDataGateway)
+	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "locked").Return(share, nil)
+
+	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg))
+
+	req := httptest.NewRequest(http.MethodGet, "/certificate-shares/locked/image?password=wrong", nil)
+	resp, _ := app.Test(req, 5000)
+
+	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+	mockShareDg.AssertExpectations(t)
+}
+
+func TestGetCertificateShareImage_Success_Public(t *testing.T) {
+	certID := uuid.New()
+	pngBytes := []byte{0x89, 0x50, 0x4E, 0x47}
+	share := &entity.CertificateShare{
+		Id:                 uuid.New(),
+		EventCertificateId: certID,
+		Handle:             "public-handle",
+		Password:           nil,
+	}
+
+	mockShareDg := new(mockCertificateShareDataGateway)
+	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "public-handle").Return(share, nil)
+
+	mockImageGen := new(mockCertificateImageGenerator)
+	mockImageGen.On("GenerateCertificateImage", mock.Anything, certID).Return(pngBytes, nil)
+
+	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg), mockImageGen)
+
+	resp := doRequest(app, http.MethodGet, "/certificate-shares/public-handle/image", nil)
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "image/png", resp.Header.Get("Content-Type"))
+	body, _ := io.ReadAll(resp.Body)
+	assert.Equal(t, pngBytes, body)
+	mockShareDg.AssertExpectations(t)
+	mockImageGen.AssertExpectations(t)
+}
+
+func TestGetCertificateShareImage_Success_WithPassword(t *testing.T) {
+	rawPw := "right"
+	hashedPw, err := hashutils.HashPassword(rawPw)
+	require.NoError(t, err)
+	certID := uuid.New()
+	pngBytes := []byte{0x89, 0x50, 0x4E, 0x47}
+	share := &entity.CertificateShare{
+		Id:                 uuid.New(),
+		EventCertificateId: certID,
+		Handle:             "pw-handle",
+		Password:           &hashedPw,
+	}
+
+	mockShareDg := new(mockCertificateShareDataGateway)
+	mockShareDg.On("GetCertificateShareByHandle", mock.Anything, "pw-handle").Return(share, nil)
+
+	mockImageGen := new(mockCertificateImageGenerator)
+	mockImageGen.On("GenerateCertificateImage", mock.Anything, certID).Return(pngBytes, nil)
+
+	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg), mockImageGen)
+
+	req := httptest.NewRequest(http.MethodGet, "/certificate-shares/pw-handle/image?password="+rawPw, nil)
+	resp, _ := app.Test(req, 5000)
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "image/png", resp.Header.Get("Content-Type"))
+	body, _ := io.ReadAll(resp.Body)
+	assert.Equal(t, pngBytes, body)
+	mockShareDg.AssertExpectations(t)
+	mockImageGen.AssertExpectations(t)
 }
 
 // ---------------------------------------------------------------------------

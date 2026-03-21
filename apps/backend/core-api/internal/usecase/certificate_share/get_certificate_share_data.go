@@ -36,17 +36,28 @@ func (uc *CertificateShareUsecase) GetCertificateShareData(ctx context.Context, 
 		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("certificate share not found"))
 	}
 
-	if share.Password != nil {
-		if password == nil {
-			return nil, customerror.Parse(&customerror.ErrForbidden, errors.New("certificate share is password protected"))
-		}
-		match, err := hashutils.CompareHash(*password, *share.Password)
-		if err != nil || !match {
-			return nil, customerror.Parse(&customerror.ErrForbidden, errors.New("incorrect password for certificate share"))
-		}
+	if err := uc.CheckSharePassword(share, password); err != nil {
+		return nil, err
 	}
 
 	return uc.fetchOnChainData(ctx, share.EventCertificateId)
+}
+
+// CheckSharePassword verifies that the supplied password satisfies the share's
+// password requirement. Returns nil if the share is not password-protected or
+// if the password matches. Returns ErrForbidden otherwise.
+func (uc *CertificateShareUsecase) CheckSharePassword(share *entity.CertificateShare, password *string) error {
+	if share.Password == nil {
+		return nil
+	}
+	if password == nil {
+		return customerror.Parse(&customerror.ErrForbidden, errors.New("certificate share is password protected"))
+	}
+	match, err := hashutils.CompareHash(*password, *share.Password)
+	if err != nil || !match {
+		return customerror.Parse(&customerror.ErrForbidden, errors.New("incorrect password for certificate share"))
+	}
+	return nil
 }
 
 // fetchOnChainData resolves the EventCertificate from the DB and reads its VC

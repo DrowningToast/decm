@@ -232,6 +232,21 @@ func (m *MockCertificateContractDg) ParseCertificateMinted(log types.Log) (*cert
 	return args.Get(0).(*certificatecontract_datagateway.CertificateMintedEvent), args.Error(1)
 }
 
+// MockCertificateImageGenerator implements CertificateImageGenerator
+type MockCertificateImageGenerator struct {
+	mock.Mock
+}
+
+var _ CertificateImageGenerator = (*MockCertificateImageGenerator)(nil)
+
+func (m *MockCertificateImageGenerator) GenerateCertificateImage(ctx context.Context, certificateID uuid.UUID) ([]byte, error) {
+	args := m.Called(ctx, certificateID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]byte), args.Error(1)
+}
+
 // --- helpers ---
 
 func strPtr(s string) *string { return &s }

@@ -3,6 +3,7 @@ package certificate_share_handler
 import (
 	customerror "apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
+	stdjson "encoding/json"
 
 	"github.com/cockroachdb/errors"
 	"github.com/gofiber/fiber/v2"
@@ -52,5 +53,13 @@ func (h *Handler) GetCertificateShareData(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(CertificateShareDataResponse{Data: data})
+	// goccy/go-json (Fiber's global encoder) panics on structs that contain
+	// []string fields whose JSON tag starts with '@' (e.g. "@context" in the W3C
+	// VC header). Use encoding/json directly to avoid the segfault.
+	b, err := stdjson.Marshal(CertificateShareDataResponse{Data: data})
+	if err != nil {
+		return customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to marshal response"))
+	}
+	ctx.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSONCharsetUTF8)
+	return ctx.Status(fiber.StatusOK).Send(b)
 }
