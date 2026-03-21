@@ -62,6 +62,33 @@ type CertificatePayloadProof struct {
 	Issuers                   []CertificatePayloadIssuerProof `json:"issuers"`
 }
 
+// AttendeeProfileData is the attendee PII that is ECIES-encrypted into
+// BackendEncryptedUserData (backend public key) and EncryptedUserData (user public key)
+// at certificate claim time.
+type AttendeeProfileData struct {
+	FirstName           *string `json:"first_name"`
+	LastName            *string `json:"last_name"`
+	Email               *string `json:"email"`
+	Bio                 *string `json:"bio"`
+	PhoneNumber         *string `json:"phone_number"`
+	Address             *string `json:"address"`
+	AcademicInstitution *string `json:"academic_institution"`
+	AcademicEmail       *string `json:"academic_email"`
+}
+
+// CertificateRawData is the typed representation of the PII CSV stored in
+// proof.EncryptedByBackendRawData. The CSV format is:
+//
+//	"{name},{academic_institution},{certificate_title},{certificate_subtitle}"
+//
+// where name = "{firstName} {lastName}" (space-joined, as written at claim time).
+type CertificateRawData struct {
+	Name                *string `json:"name"`
+	AcademicInstitution *string `json:"academic_institution"`
+	CertificateTitle    *string `json:"certificate_title"`
+	CertificateSubtitle *string `json:"certificate_subtitle"`
+}
+
 // CertificatePayload is the fully typed domain representation of the on-chain VC.
 // Returned by CertificateContractDataGateway.GetTokenData after stripping the
 // "data:application/json;utf8," prefix and unmarshalling the JSON.

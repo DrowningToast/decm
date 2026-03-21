@@ -26,6 +26,29 @@ vi.mock("@/components/layouts/navigations/PublicNavbar", () => ({
     PublicNavbar: () => <div data-testid="public-navbar" />,
 }));
 
+vi.mock("react-i18next", () => ({
+    useTranslation: () => ({
+        t: (key: string) => key,
+        i18n: { language: "en" },
+    }),
+}));
+
+vi.mock("@/hooks/useOnChainCertificate", () => ({
+    useOnChainCertificate: () => ({ data: null, isLoading: false, isError: false }),
+}));
+
+vi.mock("@/hooks/useCertificateShareImage", () => ({
+    useCertificateShareImage: () => ({ imageUrl: undefined, isLoading: false }),
+}));
+
+vi.mock("@/lib/certificate/verifySignature", () => ({
+    verifyProof: vi.fn().mockResolvedValue({ host: true, issuers: [] }),
+}));
+
+vi.mock("@/lib/certificate/verifyHash", () => ({
+    verifyCertificateHash: vi.fn().mockReturnValue(true),
+}));
+
 // ---------------------------------------------------------------------------
 // Import mocked modules so we can configure them per-test
 // ---------------------------------------------------------------------------
@@ -52,13 +75,17 @@ function makeWrapper() {
 }
 
 const mockVcData = {
+    contract: {
+        eventCertificateContractAddress: "0xcontract",
+        certificateTokenId: "1",
+    },
     data: {
         header: { "@context": [], id: "vc-1", issuanceDate: "", issuer: "", type: [] },
         data: {
             certificateId: "cert-1",
             certificateTitle: "My Cert",
             certificateSubtitle: "",
-            certificateTokenId: "",
+            certificateTokenId: "1",
             eventName: "Event",
             eventDescription: "",
             issuedAt: "",
@@ -74,7 +101,7 @@ const mockVcData = {
             hash: "",
             encryptedByBackendRawData: "",
             encryptedByUserRawData: "",
-            signMessage: "",
+            signMessage: "{}",
             host: { publicKey: "", signature: "" },
             issuers: [],
         },
@@ -181,7 +208,7 @@ describe("VerifyPage", () => {
         fireEvent.click(screen.getByRole("button", { name: /unlock/i }));
 
         await waitFor(() => {
-            expect(screen.getByText("My Cert")).toBeInTheDocument();
+            expect(screen.getAllByText("My Cert").length).toBeGreaterThan(0);
         });
     });
 
@@ -192,7 +219,7 @@ describe("VerifyPage", () => {
         render(<VerifyPage />, { wrapper: Wrapper });
 
         await waitFor(() => {
-            expect(screen.getByText("My Cert")).toBeInTheDocument();
+            expect(screen.getAllByText("My Cert").length).toBeGreaterThan(0);
         });
     });
 

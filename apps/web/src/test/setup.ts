@@ -202,8 +202,10 @@ vi.mock("lucide-react", () => {
         "LockKeyhole",
         "LockKeyholeOpen",
         "ShieldAlert",
+        "ShieldCheck",
         "Globe",
         "KeyRound",
+        "FileCheck2",
     ];
 
     const iconMocks: Record<string, unknown> = {};

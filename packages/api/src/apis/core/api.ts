@@ -72,8 +72,23 @@ export interface CertificateShareCertificateShareViewModel {
     updated_at: string;
 }
 
+export interface CertificateShareHandlerCertificateShareContractInfo {
+    certificateTokenId: string;
+    eventCertificateContractAddress: string;
+}
+
+export interface EntityCertificateRawData {
+    name?: string;
+    academic_institution?: string;
+    certificate_title?: string;
+    certificate_subtitle?: string;
+}
+
 export interface CertificateShareHandlerCertificateShareDataResponse {
+    contract: CertificateShareHandlerCertificateShareContractInfo;
     data: EntityCertificatePayload;
+    decryptedUserData?: EntityAttendeeProfileData;
+    decryptedCertificateData?: EntityCertificateRawData;
 }
 
 export interface CertificateShareHandlerCertificateShareViewModel {
@@ -466,6 +481,17 @@ export type DeleteEventRegistrationConfigError = CustomerrorErrResponse;
 export interface DeleteEventRegistrationConfigParams {
     /** Event ID */
     eventId: string;
+}
+
+export interface EntityAttendeeProfileData {
+    academic_email: string;
+    academic_institution: string;
+    address: string;
+    bio: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    phone_number: string;
 }
 
 export interface EntityCertificatePayload {

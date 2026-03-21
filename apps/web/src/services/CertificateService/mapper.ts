@@ -9,12 +9,16 @@ import type {
     EventImportCertificateReceiverRequest,
     EntityEventCertificate,
     EntityCertificatePayload,
+    EntityAttendeeProfileData,
+    EntityCertificateRawData,
     CertificateShareHandlerCreateCertificateShareResponse,
     CertificateShareHandlerUpdateCertificateShareResponse,
     CertificateShareHandlerCertificateShareDataResponse,
+    CertificateShareHandlerCertificateShareContractInfo,
     CertificateShareCertificateShareViewModel,
     EventClaimedCertificateViewModel,
     EventUnclaimedCertificateViewModel,
+    CertificateShareCertificateShareStatusResponse,
 } from "@decm/api";
 
 export interface CertificateImage {
@@ -157,6 +161,14 @@ export type CertificateShareViewStatus = "READY" | "VALID_BUT_PENDING" | "PASSWO
 
 export interface GetCertificateShareDataResult {
     payload: EntityCertificatePayload;
+    contract: CertificateShareHandlerCertificateShareContractInfo;
+    decryptedUserData?: EntityAttendeeProfileData;
+    decryptedCertificateData?: EntityCertificateRawData;
+}
+
+export interface GetCertificateShareStatusResult {
+    status: CertificateShareViewStatus;
+    certificate?: Certificate;
 }
 
 /**
@@ -405,10 +417,25 @@ export const mapUpdateCertificateShareResponse = (
 });
 
 /**
+ * Maps get certificate share status response
+ */
+export const mapGetCertificateShareStatusResponse = (
+    response: CertificateShareCertificateShareStatusResponse,
+): GetCertificateShareStatusResult => ({
+    status: response.status as CertificateShareViewStatus,
+    certificate: response.certificate
+        ? mapCertificate(response.certificate as EntityEventCertificate)
+        : undefined,
+});
+
+/**
  * Maps get certificate share data response
  */
 export const mapGetCertificateShareDataResponse = (
     response: CertificateShareHandlerCertificateShareDataResponse,
 ): GetCertificateShareDataResult => ({
     payload: response.data,
+    contract: response.contract,
+    decryptedUserData: response.decryptedUserData,
+    decryptedCertificateData: response.decryptedCertificateData,
 });

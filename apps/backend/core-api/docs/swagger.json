@@ -447,6 +447,66 @@
                 }
             }
         },
+        "/api/v1/certificate-shares/{handle}/image": {
+            "get": {
+                "description": "Returns a PNG certificate image for a share link. For password-protected shares, pass the password as a query parameter.",
+                "produces": [
+                    "image/png"
+                ],
+                "tags": [
+                    "CertificateShares"
+                ],
+                "summary": "Get certificate share image",
+                "operationId": "get-certificate-share-image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Share handle",
+                        "name": "handle",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Password for password-protected shares",
+                        "name": "password",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PNG certificate image",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/certificates/claim/{certificate_id}": {
             "post": {
                 "security": [
@@ -4373,14 +4433,36 @@
                 }
             }
         },
+        "certificate_share_handler.CertificateShareContractInfo": {
+            "type": "object",
+            "required": [
+                "certificateTokenId",
+                "eventCertificateContractAddress"
+            ],
+            "properties": {
+                "certificateTokenId": {
+                    "type": "string"
+                },
+                "eventCertificateContractAddress": {
+                    "type": "string"
+                }
+            }
+        },
         "certificate_share_handler.CertificateShareDataResponse": {
             "type": "object",
             "required": [
+                "contract",
                 "data"
             ],
             "properties": {
+                "contract": {
+                    "$ref": "#/definitions/certificate_share_handler.CertificateShareContractInfo"
+                },
                 "data": {
                     "$ref": "#/definitions/entity.CertificatePayload"
+                },
+                "decryptedUserData": {
+                    "$ref": "#/definitions/entity.AttendeeProfileData"
                 }
             }
         },
@@ -5048,6 +5130,45 @@
             ],
             "properties": {
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.AttendeeProfileData": {
+            "type": "object",
+            "required": [
+                "academic_email",
+                "academic_institution",
+                "address",
+                "bio",
+                "email",
+                "first_name",
+                "last_name",
+                "phone_number"
+            ],
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
                     "type": "string"
                 }
             }

@@ -124,11 +124,26 @@ definitions:
     - id
     - updated_at
     type: object
+  certificate_share_handler.CertificateShareContractInfo:
+    properties:
+      certificateTokenId:
+        type: string
+      eventCertificateContractAddress:
+        type: string
+    required:
+    - certificateTokenId
+    - eventCertificateContractAddress
+    type: object
   certificate_share_handler.CertificateShareDataResponse:
     properties:
+      contract:
+        $ref: '#/definitions/certificate_share_handler.CertificateShareContractInfo'
       data:
         $ref: '#/definitions/entity.CertificatePayload'
+      decryptedUserData:
+        $ref: '#/definitions/entity.AttendeeProfileData'
     required:
+    - contract
     - data
     type: object
   certificate_share_handler.CertificateShareViewModel:
@@ -593,6 +608,34 @@ definitions:
         type: string
     required:
     - message
+    type: object
+  entity.AttendeeProfileData:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        type: string
+      address:
+        type: string
+      bio:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      phone_number:
+        type: string
+    required:
+    - academic_email
+    - academic_institution
+    - address
+    - bio
+    - email
+    - first_name
+    - last_name
+    - phone_number
     type: object
   entity.CertificatePayload:
     properties:
@@ -2988,6 +3031,47 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Get on-chain certificate share data
+      tags:
+      - CertificateShares
+  /api/v1/certificate-shares/{handle}/image:
+    get:
+      description: Returns a PNG certificate image for a share link. For password-protected
+        shares, pass the password as a query parameter.
+      operationId: get-certificate-share-image
+      parameters:
+      - description: Share handle
+        in: path
+        name: handle
+        required: true
+        type: string
+      - description: Password for password-protected shares
+        in: query
+        name: password
+        type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: PNG certificate image
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get certificate share image
       tags:
       - CertificateShares
   /api/v1/certificate-shares/config/{certificate_id}:

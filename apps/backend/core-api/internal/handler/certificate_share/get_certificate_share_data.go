@@ -9,8 +9,17 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// CertificateShareContractInfo is the handler-layer response shape for the DB-stored contract metadata.
+type CertificateShareContractInfo struct {
+	EventCertificateContractAddress string `json:"eventCertificateContractAddress"`
+	CertificateTokenId              string `json:"certificateTokenId"`
+}
+
 type CertificateShareDataResponse struct {
-	Data *entity.CertificatePayload `json:"data"`
+	Data                     *entity.CertificatePayload    `json:"data"`
+	Contract                 *CertificateShareContractInfo `json:"contract"`
+	DecryptedUserData        *entity.AttendeeProfileData   `json:"decryptedUserData,omitempty"`
+	DecryptedCertificateData *entity.CertificateRawData    `json:"decryptedCertificateData,omitempty"`
 }
 
 type GetCertificateShareBody struct {
@@ -48,6 +57,16 @@ func (h *Handler) GetCertificateShareData(ctx *fiber.Ctx) error {
 		}
 	}
 
+	isPublic := body.Password == nil
+
+	// Serve from cache for public (non-password-protected) shares
+	if isPublic {
+		if cached, ok := h.cache.Get(handle); ok {
+			ctx.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSONCharsetUTF8)
+			return ctx.Status(fiber.StatusOK).Send(cached)
+		}
+	}
+
 	data, err := h.CertificateShareUc.GetCertificateShareData(ctx.UserContext(), handle, body.Password)
 	if err != nil {
 		return err
@@ -56,10 +75,23 @@ func (h *Handler) GetCertificateShareData(ctx *fiber.Ctx) error {
 	// goccy/go-json (Fiber's global encoder) panics on structs that contain
 	// []string fields whose JSON tag starts with '@' (e.g. "@context" in the W3C
 	// VC header). Use encoding/json directly to avoid the segfault.
-	b, err := stdjson.Marshal(CertificateShareDataResponse{Data: data})
+	b, err := stdjson.Marshal(CertificateShareDataResponse{
+		Data: data.Payload,
+		Contract: &CertificateShareContractInfo{
+			EventCertificateContractAddress: data.Contract.EventCertificateContractAddress,
+			CertificateTokenId:              data.Contract.CertificateTokenId,
+		},
+		DecryptedUserData:        data.DecryptedUserData,
+		DecryptedCertificateData: data.DecryptedCertificateData,
+	})
 	if err != nil {
 		return customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to marshal response"))
 	}
+
+	if isPublic {
+		h.cache.Set(handle, b, shareDataCacheTTL)
+	}
+
 	ctx.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSONCharsetUTF8)
 	return ctx.Status(fiber.StatusOK).Send(b)
 }

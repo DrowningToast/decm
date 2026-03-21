@@ -257,7 +257,6 @@ func (uc *EventUsecase) ClaimCertificateWithSignature(ctx context.Context, curre
 	return uc.queueCertificateClaim(ctx, currentUser, certificate, signature, signMessage, &participantAddress, participantPublicKey)
 }
 
-// TODO: To be migrated to a seperated service
 func (uc *EventUsecase) claimCertificate(ctx context.Context, currentUser *auth.JwtClaims, certificate *entity.EventCertificate, signature []byte, signMessage string, participantAddress *common.Address, participantPublicKey *ecdsa.PublicKey) (*entity.EventCertificate, error) {
 	if currentUser == nil {
 		return nil, customerror.Parse(&customerror.ErrUnauthenticated, errors.New("user is not authenticated"))

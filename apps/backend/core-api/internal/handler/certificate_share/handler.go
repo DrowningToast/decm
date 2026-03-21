@@ -39,11 +39,14 @@ func newCertificateShareViewModel(vm *certificate_share_usecase.CertificateShare
 	}
 }
 
+const shareDataCacheTTL = 5 * time.Minute
+
 type Handler struct {
 	CertificateShareUc            *certificate_share_usecase.CertificateShareUsecase
 	AuthenticationService         *auth.AuthService
 	AuthenticationGuardMiddleware *authenticationguard.AuthenticationGuardMiddleware
 	Logger                        *slog.Logger
+	cache                         responseCache
 }
 
 func NewHandler(

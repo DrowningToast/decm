@@ -4,17 +4,31 @@ import (
 	"apps/backend/common/customerror"
 	"apps/backend/common/hashutils"
 	"apps/backend/core-api/internal/entity"
+	"apps/backend/core-api/internal/usecase/cyptoutils"
 	"context"
+	"encoding/json"
 	"math/big"
+	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
 )
 
-// CertificateShareData is the fully typed representation of the on-chain VC JSON
-// returned by the EventCertificate contract's getTokenData(tokenId) view function.
-type CertificateShareData = entity.CertificatePayload
+// CertificateContractInfo holds the DB-stored contract metadata for a claimed certificate.
+type CertificateContractInfo struct {
+	EventCertificateContractAddress string
+	CertificateTokenId              string
+}
+
+// CertificateShareData combines the on-chain VC payload with the DB-stored contract info,
+// plus the backend-decrypted attendee profile when a BackendPrivateKey is configured.
+type CertificateShareData struct {
+	Payload                  *entity.CertificatePayload
+	Contract                 CertificateContractInfo
+	DecryptedUserData        *entity.AttendeeProfileData
+	DecryptedCertificateData *entity.CertificateRawData
+}
 
 // GetCertificateShareData fetches the on-chain VC data for a certificate identified
 // by its share handle. Pass a non-nil password for password-protected shares.
@@ -90,5 +104,64 @@ func (uc *CertificateShareUsecase) fetchOnChainData(ctx context.Context, certID 
 		return nil, err
 	}
 
-	return payload, nil
+	decrypted, _ := uc.decryptBackendUserData(payload.Data.BackendEncryptedUserData)
+	decryptedCert, _ := uc.decryptCertificateRawData(payload.Proof.EncryptedByBackendRawData)
+
+	return &CertificateShareData{
+		Payload: payload,
+		Contract: CertificateContractInfo{
+			EventCertificateContractAddress: *cert.EventCertificateAddress,
+			CertificateTokenId:              *cert.CertificateTokenId,
+		},
+		DecryptedUserData:        decrypted,
+		DecryptedCertificateData: decryptedCert,
+	}, nil
+}
+
+// decryptBackendUserData decrypts the ECIES-encrypted attendee profile using the backend
+// private key. Returns (nil, nil) when the key is not configured or the ciphertext is empty.
+// Returns (nil, err) when decryption or JSON unmarshalling fails.
+func (uc *CertificateShareUsecase) decryptBackendUserData(ciphertext string) (*entity.AttendeeProfileData, error) {
+	if uc.BackendPrivateKey == nil || ciphertext == "" {
+		return nil, nil
+	}
+	plaintext, err := cyptoutils.DecryptWithPrivateKey(ciphertext, uc.BackendPrivateKey)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to decrypt backend user data")
+	}
+	var profile entity.AttendeeProfileData
+	if err := json.Unmarshal([]byte(plaintext), &profile); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal decrypted user data")
+	}
+	return &profile, nil
+}
+
+// decryptCertificateRawData decrypts the ECIES-encrypted PII CSV from
+// proof.EncryptedByBackendRawData using the backend private key and parses
+// it into a CertificateRawData struct.
+// The CSV format is: "{name},{academic_institution},{certificate_title},{certificate_subtitle}"
+// Returns (nil, nil) when the key is not configured or the ciphertext is empty.
+// Returns (nil, err) when decryption fails or the CSV does not have exactly 4 fields.
+func (uc *CertificateShareUsecase) decryptCertificateRawData(ciphertext string) (*entity.CertificateRawData, error) {
+	if uc.BackendPrivateKey == nil || ciphertext == "" {
+		return nil, nil
+	}
+	plaintext, err := cyptoutils.DecryptWithPrivateKey(ciphertext, uc.BackendPrivateKey)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to decrypt certificate raw data")
+	}
+	parts := strings.Split(plaintext, ",")
+	if len(parts) != 4 {
+		return nil, errors.Newf("expected 4 CSV fields in certificate raw data, got %d", len(parts))
+	}
+	name := parts[0]
+	academicInstitution := parts[1]
+	certificateTitle := parts[2]
+	certificateSubtitle := parts[3]
+	return &entity.CertificateRawData{
+		Name:                &name,
+		AcademicInstitution: &academicInstitution,
+		CertificateTitle:    &certificateTitle,
+		CertificateSubtitle: &certificateSubtitle,
+	}, nil
 }

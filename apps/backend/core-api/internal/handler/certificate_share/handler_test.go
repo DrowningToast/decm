@@ -683,6 +683,9 @@ func TestGetCertificateShareData_AtContextField_NoSegfault(t *testing.T) {
 	require.NotNil(t, got.Data)
 	assert.Equal(t, []string{"https://www.w3.org/2018/credentials/v1"}, got.Data.Header.Context)
 	assert.Equal(t, "Test Event", got.Data.Data.EventName)
+	require.NotNil(t, got.Contract)
+	assert.Equal(t, contractAddr, got.Contract.EventCertificateContractAddress)
+	assert.Equal(t, tokenID, got.Contract.CertificateTokenId)
 }
 
 // ---------------------------------------------------------------------------
