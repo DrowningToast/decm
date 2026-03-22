@@ -73,7 +73,7 @@ describe("CertificateArea", () => {
                 isImageLoading={false}
             />,
         );
-        expect(document.querySelector(".animate-spin")).toBeInTheDocument();
+        expect(screen.getByRole("status")).toBeInTheDocument();
     });
 
     it("shows not found error on non-rate-limited error", () => {

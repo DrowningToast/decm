@@ -96,14 +96,6 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
         };
     }, [certificateImageUrl, setImageUrl]);
 
-    // Store image URL in nav store for download functionality
-    useEffect(() => {
-        setImageUrl(certificateImageUrl);
-        return () => {
-            setImageUrl(null);
-        };
-    }, [certificateImageUrl, setImageUrl]);
-
     const handleClaimCertificate = async () => {
         if (!certificate) return;
 

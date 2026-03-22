@@ -90,7 +90,9 @@ export function CertificateArea({
         return (
             <AspectFrame>
                 <div className="absolute inset-0 rounded-xl border border-muted/30 bg-muted/10 flex items-center justify-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                    <div role="status">
+                        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                    </div>
                 </div>
             </AspectFrame>
         );

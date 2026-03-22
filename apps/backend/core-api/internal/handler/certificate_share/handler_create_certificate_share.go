@@ -18,6 +18,11 @@ func (b *CreateCertificateShareBody) Parse(ctx *fiber.Ctx) error {
 	return ctx.BodyParser(b)
 }
 
+// IsValid validates the body. Password is optional, so any parsed body is valid.
+func (b *CreateCertificateShareBody) IsValid() *customerror.Err {
+	return nil
+}
+
 type CreateCertificateShareResponse struct {
 	Share *CertificateShareViewModel `json:"share"`
 }
