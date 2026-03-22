@@ -30,6 +30,10 @@ func (b *GetCertificateShareBody) Parse(ctx *fiber.Ctx) error {
 	return ctx.BodyParser(b)
 }
 
+func (b *GetCertificateShareBody) IsValid() *customerror.Err {
+	return nil
+}
+
 // @Summary Get on-chain certificate share data
 // @Description Retrieve the full on-chain Verifiable Credential data for a share link. For password-protected shares, include the password in the request body.
 // @ID get-certificate-share-data

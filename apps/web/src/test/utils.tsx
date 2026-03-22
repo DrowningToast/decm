@@ -10,11 +10,11 @@ import { vi } from "vitest";
 i18n.init({
     lng: "en",
     fallbackLng: "en",
-    ns: ["common"],
-    defaultNS: "common",
+    ns: ["translation"],
+    defaultNS: "translation",
     resources: {
         en: {
-            common: {
+            translation: {
                 welcome: "Welcome",
                 signin: "Sign In",
                 signup: "Sign Up",
@@ -29,16 +29,20 @@ i18n.init({
                 academicEmail: "Academic Email",
                 academicInstitution: "Academic Institution",
                 profilePicture: "Profile Picture",
-            },
-            onboard: {
-                api: {
-                    error: {
-                        authentication_credential_id_already_exists: "Account already exists",
+                onboard: {
+                    api: {
+                        error: {
+                            authentication_credential_id_already_exists: "Account already exists",
+                        },
                     },
                 },
-            },
-            errors: {
-                generic: "An error occurred",
+                errors: {
+                    generic: "An error occurred",
+                },
+                certificateVerify: {
+                    verified: "Verified",
+                    invalid: "Invalid",
+                },
             },
         },
     },

@@ -155,8 +155,8 @@ func main() {
 	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, eventContractFactoryRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, blockchainClientRepo, ethClient, s3Repo, log.Logger, authService, &cfg)
 	backendPrivateKey, err := crypto.HexToECDSA(cfg.Blockchain.PrivateKey)
 	if err != nil {
-		log.Logger.ErrorContext(ctx, "failed to parse backend private key", slog.String("error", err.Error()))
-		os.Exit(1)
+		log.Logger.WarnContext(ctx, "backend private key not configured or invalid — share decryption disabled", slog.String("error", err.Error()))
+		backendPrivateKey = nil
 	}
 	certificateShareUc := certificate_share_usecase.NewCertificateShareUsecase(pgRepo, pgRepo, certificateContractFactoryRepo, eventUc, backendPrivateKey, log.Logger)
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, log.Logger)

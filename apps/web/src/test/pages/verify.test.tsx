@@ -53,8 +53,15 @@ vi.mock("@/lib/certificate/verifyHash", () => ({
 // Import mocked modules so we can configure them per-test
 // ---------------------------------------------------------------------------
 
+import { AxiosError } from "axios";
 import { coreApiClient } from "@/lib/api/api";
 import { useSearchParams } from "react-router-dom";
+
+function make403Error() {
+    const err = new AxiosError("Forbidden");
+    err.response = { status: 403 } as AxiosError["response"];
+    return err;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -147,7 +154,7 @@ describe("VerifyPage", () => {
     });
 
     it("shows password form when API returns 403", async () => {
-        vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue({ status: 403 });
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue(make403Error());
 
         const Wrapper = makeWrapper();
         render(<VerifyPage />, { wrapper: Wrapper });
@@ -162,7 +169,7 @@ describe("VerifyPage", () => {
     });
 
     it('shows "Incorrect password" on failed unlock', async () => {
-        vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue({ status: 403 });
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue(make403Error());
 
         const Wrapper = makeWrapper();
         render(<VerifyPage />, { wrapper: Wrapper });
@@ -189,7 +196,7 @@ describe("VerifyPage", () => {
     });
 
     it("shows certificate title on successful unlock", async () => {
-        vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue({ status: 403 });
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue(make403Error());
 
         const Wrapper = makeWrapper();
         render(<VerifyPage />, { wrapper: Wrapper });
@@ -304,7 +311,7 @@ describe("VerifyPage", () => {
         await waitFor(() => {
             expect(screen.getAllByText("Alice Smith").length).toBeGreaterThan(0);
         });
-        expect(screen.getAllByText("Verified").length).toBeGreaterThan(0);
+        expect(screen.getAllByText("certificateVerify.verified").length).toBeGreaterThan(0);
     });
 
     it("shows invalid badge on name when it does not match decryptedCertificateData", async () => {
@@ -345,11 +352,11 @@ describe("VerifyPage", () => {
         await waitFor(() => {
             expect(screen.getAllByText("Alice Smith").length).toBeGreaterThan(0);
         });
-        expect(screen.getAllByText("Invalid").length).toBeGreaterThan(0);
+        expect(screen.getAllByText("certificateVerify.invalid").length).toBeGreaterThan(0);
     });
 
     it("shows password required alert when unlock clicked with empty password", async () => {
-        vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue({ status: 403 });
+        vi.mocked(coreApiClient.v1.getCertificateShareData).mockRejectedValue(make403Error());
 
         const Wrapper = makeWrapper();
         render(<VerifyPage />, { wrapper: Wrapper });

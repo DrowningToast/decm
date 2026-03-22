@@ -111,8 +111,8 @@ export interface CertificateShareHandlerGetCertificateShareImageBody {
 }
 
 export interface CertificateShareHandlerUpdateCertificateShareBody {
-    active: boolean;
-    password: string;
+    active?: boolean;
+    password?: string;
 }
 
 export interface CertificateShareHandlerUpdateCertificateShareResponse {

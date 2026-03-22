@@ -240,7 +240,9 @@
                 "title": "Anyone can verify",
                 "description": "Enter the share code here. The certificate's authenticity is confirmed by checking the organizer and issuer signatures stored on-chain."
             }
-        }
+        },
+        "verified": "Verified",
+        "invalid": "Invalid"
     },
     "verify": {
         "title": "Verify",

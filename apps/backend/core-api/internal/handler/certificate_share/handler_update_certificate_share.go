@@ -52,6 +52,11 @@ func (b *UpdateCertificateShareBody) Parse(ctx *fiber.Ctx) error {
 	return ctx.BodyParser(b)
 }
 
+// IsValid validates the body. Both fields are optional, so any parsed body is valid.
+func (b *UpdateCertificateShareBody) IsValid() *customerror.Err {
+	return nil
+}
+
 type UpdateCertificateShareResponse struct {
 	Share *CertificateShareViewModel `json:"share"`
 }
@@ -88,6 +93,9 @@ func (h *Handler) UpdateCertificateShare(ctx *fiber.Ctx) error {
 	if len(ctx.Body()) > 0 {
 		if err := body.Parse(ctx); err != nil {
 			return customerror.Parse(&customerror.ErrInvalidArgument, errors.Wrap(err, "failed to parse request body"))
+		}
+		if cerr := body.IsValid(); cerr != nil {
+			return cerr
 		}
 	}
 

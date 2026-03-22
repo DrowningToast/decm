@@ -145,7 +145,10 @@ export const CertificateDetailNav = ({
                     >
                         <Share2 className="w-5 h-5 text-background-alt flex-shrink-0" />
                         <span className="text-xs text-background-alt whitespace-nowrap">
-                            {t("participant.certificates.detail.share", "Share")}
+                            {t(
+                                "participant.certificates.detail.openShareModal",
+                                "Share certificate",
+                            )}
                         </span>
                     </button>
                 )}

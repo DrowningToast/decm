@@ -35,6 +35,8 @@ export function PasswordUnlockArea({
                     onChange={(e) => onPasswordChange(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && onUnlock()}
                     aria-label={t("certificateVerify.passwordPlaceholder")}
+                    aria-invalid={!!passwordError}
+                    aria-describedby={passwordError ? "password-error" : undefined}
                     className="flex-1 h-auto outline-primary"
                 />
                 <Button
@@ -48,6 +50,7 @@ export function PasswordUnlockArea({
             </div>
             {passwordError && (
                 <Typography
+                    id="password-error"
                     variant="text"
                     tag="p"
                     color="destructive"

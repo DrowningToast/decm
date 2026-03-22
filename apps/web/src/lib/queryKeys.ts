@@ -109,6 +109,11 @@ export const QUERY_KEY = {
         byId: (messageId: string) => ["inbox", messageId] as const,
     },
 
+    // Certificate Shares (public verify)
+    certificateShare: {
+        data: (handle: string) => ["certificateShare", "data", handle] as const,
+    },
+
     // Blockchain
     blockchain: {
         systemStatus: ["blockchain", "system-status"] as const,

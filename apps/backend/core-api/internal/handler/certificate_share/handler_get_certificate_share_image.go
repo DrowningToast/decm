@@ -44,7 +44,11 @@ func (h *Handler) GetCertificateShareImage(ctx *fiber.Ctx) error {
 	}
 
 	ctx.Set("Content-Type", "image/png")
-	ctx.Set("Cache-Control", "public, max-age=86400")
+	if body.Password == nil {
+		ctx.Set("Cache-Control", "public, max-age=86400")
+	} else {
+		ctx.Set("Cache-Control", "private, no-store")
+	}
 	ctx.Set("Content-Disposition", "inline; filename=certificate.png")
 	return ctx.Send(pngBytes)
 }

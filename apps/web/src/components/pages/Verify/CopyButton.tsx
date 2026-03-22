@@ -1,13 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Check, Copy } from "lucide-react";
 
 export function CopyButton({ value }: { value: string }) {
     const [copied, setCopied] = useState(false);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+    useEffect(
+        () => () => {
+            clearTimeout(timeoutRef.current);
+        },
+        [],
+    );
 
     const handleCopy = () => {
         void navigator.clipboard.writeText(value).then(() => {
             setCopied(true);
-            setTimeout(() => setCopied(false), 1500);
+            timeoutRef.current = setTimeout(() => setCopied(false), 1500);
         });
     };
 

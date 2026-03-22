@@ -83,7 +83,7 @@ func TestFixFreeTextField(t *testing.T) {
 }
 
 func TestFixFreeTextFields(t *testing.T) {
-	t.Run("fixes all four free-text fields with embedded quotes", func(t *testing.T) {
+	t.Run("fixes all five free-text fields with embedded quotes", func(t *testing.T) {
 		input := `"eventName": "Hello "everyone","eventDescription": "a "great" event","certificateTokenId": "1","certificateId": "c1","userId": "u1","issuerId": "i1","issuedAt": "2024-01-01","issuerAddresses": "0xaaa","receiverAddress": "0xbbb","encryptedUserData": "enc","backendEncryptedUserData": "benc","certificateTitle": "Title "with" quotes","certificateSubtitle": "Sub "title"","status": "VALID"`
 		result := fixFreeTextFields(`{"data": {` + input + `}}`)
 

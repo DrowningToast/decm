@@ -21,16 +21,25 @@ export function useOnChainCertificate({
         abi: EventCertificateABI,
     } as const;
 
-    const tokenIdBigInt = BigInt(tokenId);
+    let tokenIdBigInt: bigint | undefined;
+    try {
+        tokenIdBigInt = BigInt(tokenId);
+    } catch {
+        tokenIdBigInt = undefined;
+    }
 
     const { data, isLoading, isError } = useReadContracts({
         config: wagmiConfig,
         contracts: [
-            { ...contract, functionName: "ownerOf", args: [tokenIdBigInt] },
-            { ...contract, functionName: "getTokenData", args: [tokenIdBigInt] },
+            { ...contract, functionName: "ownerOf", args: [tokenIdBigInt ?? BigInt(0)] },
+            { ...contract, functionName: "getTokenData", args: [tokenIdBigInt ?? BigInt(0)] },
         ],
-        query: { enabled: enabled && !!contractAddress && !!tokenId },
+        query: {
+            enabled: enabled && !!contractAddress && !!tokenId && tokenIdBigInt !== undefined,
+        },
     });
+
+    if (tokenIdBigInt === undefined) return { data: null, isLoading: false, isError: true };
 
     if (!data) return { data: null, isLoading, isError };
 

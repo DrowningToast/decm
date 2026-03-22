@@ -21,7 +21,7 @@ func MeasureHandlerDuration(operation string) func(httpStatus *int, err error) t
 	return func(httpStatus *int, err error) time.Duration {
 		elapsed := time.Since(startTime)
 
-		var _httpStatus string = ""
+		_httpStatus := ""
 		if err != nil {
 			customErr := customerror.TryParseAsCustomErr(err)
 			if customErr != nil {
@@ -34,7 +34,7 @@ func MeasureHandlerDuration(operation string) func(httpStatus *int, err error) t
 			_httpStatus = strconv.Itoa(*httpStatus)
 		}
 
-		var _status string = "success"
+		_status := "success"
 		if err != nil {
 			_status = "failure"
 		}

@@ -1,6 +1,7 @@
 package certificate_share_handler
 
 import (
+	customerror "apps/backend/common/customerror"
 	"apps/backend/core-api/internal/handler/metrics"
 	"apps/backend/services/log"
 	"time"
@@ -27,8 +28,8 @@ func (h *Handler) Mount(r fiber.Router) {
 			return c.IP()
 		},
 		LimitReached: func(c *fiber.Ctx) error {
-			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
-				"error": "Too many requests. Please wait before trying again.",
+			return c.Status(fiber.StatusTooManyRequests).JSON(customerror.ErrResponse{
+				Message: "Too many requests. Please wait before trying again.",
 			})
 		},
 	})

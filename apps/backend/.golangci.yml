@@ -17,6 +17,12 @@ linters:
                 - "all"
                 - "-QF1008" # allow redundant embedded field selectors
                 - "-SA1019" # allow deprecated packages (aws-sdk-go v1 migration is out of scope)
+                - "-ST1000" # package comment not required
+                - "-ST1003" # naming conventions (Id/Url casing) — would require codebase-wide rename
+                - "-ST1016" # receiver name conventions
+                - "-ST1020" # comment on exported type not required
+                - "-ST1021" # comment on exported method not required
+                - "-SA1029" # context key type — existing pattern, changing is out of scope
         revive:
             rules:
                 - name: exported

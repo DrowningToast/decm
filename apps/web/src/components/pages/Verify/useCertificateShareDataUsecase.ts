@@ -5,6 +5,7 @@ import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { ToastFromAxiosError } from "@/common/Err";
 import { certificateService } from "@/services/services";
+import { QUERY_KEY } from "@/lib/queryKeys";
 import type {
     GetCertificateShareDataResult,
     CertificateShareViewStatus,
@@ -25,7 +26,7 @@ export const useCertificateShareDataUsecase = (handle: string | null) => {
     }, [handle]);
 
     const { isLoading, isFetching, isError, error, refetch } = useQuery({
-        queryKey: ["certificateShareData", handle],
+        queryKey: QUERY_KEY.certificateShare.data(handle ?? ""),
         queryFn: async () => {
             try {
                 const result = await certificateService.getCertificateShareData(handle!);
@@ -33,8 +34,7 @@ export const useCertificateShareDataUsecase = (handle: string | null) => {
                 setShareStatus("READY");
                 return result;
             } catch (err: unknown) {
-                const status = (err as { status?: number })?.status;
-                if (status === 403) {
+                if (err instanceof AxiosError && err.response?.status === 403) {
                     setShareStatus("PASSWORD_LOCKED");
                     toast.info(t("certificateVerify.passwordProtected"));
                     return null;

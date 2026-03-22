@@ -88,7 +88,9 @@ describe("useCertificateShareDataUsecase", () => {
     });
 
     it("on 403: sets shareStatus to PASSWORD_LOCKED, calls toast.info, does not set isError", async () => {
-        vi.mocked(certificateService.getCertificateShareData).mockRejectedValue({ status: 403 });
+        const err403 = new AxiosError("Forbidden");
+        err403.response = { status: 403 } as AxiosError["response"];
+        vi.mocked(certificateService.getCertificateShareData).mockRejectedValue(err403);
 
         const wrapper = makeWrapper();
         const { result } = renderHook(() => useCertificateShareDataUsecase("abc123"), { wrapper });
@@ -154,8 +156,10 @@ describe("useCertificateShareDataUsecase", () => {
         });
 
         it("with wrong password: sets passwordError to incorrectPassword and shows error toast", async () => {
+            const err403 = new AxiosError("Forbidden");
+            err403.response = { status: 403 } as AxiosError["response"];
             vi.mocked(certificateService.getCertificateShareData)
-                .mockRejectedValueOnce({ status: 403 }) // initial query
+                .mockRejectedValueOnce(err403) // initial query
                 .mockRejectedValueOnce(new Error("Wrong password")); // unlock attempt
 
             const wrapper = makeWrapper();
@@ -176,8 +180,10 @@ describe("useCertificateShareDataUsecase", () => {
 
         it("with correct password: sets shareStatus to READY and shareData, shows success toast", async () => {
             const mockData = { data: { data: { certificateTitle: "My Cert" } } };
+            const err403 = new AxiosError("Forbidden");
+            err403.response = { status: 403 } as AxiosError["response"];
             vi.mocked(certificateService.getCertificateShareData)
-                .mockRejectedValueOnce({ status: 403 }) // initial query
+                .mockRejectedValueOnce(err403) // initial query
                 .mockResolvedValueOnce(mockData as never); // unlock attempt
 
             const wrapper = makeWrapper();
