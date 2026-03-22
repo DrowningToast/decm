@@ -2,6 +2,7 @@ package worker
 
 import (
 	"apps/backend/core-api/internal/entity"
+	"apps/backend/core-api/internal/worker/process"
 	"context"
 	"errors"
 	"log/slog"
@@ -192,8 +193,8 @@ func gasOk(gwei float64) *blockchainclient_datagateway.GasPriceInfo {
 }
 
 func newWorker(
-	joinProc EventJoinProcessor,
-	certProc CertificateClaimProcessor,
+	joinProc process.EventJoinProcessor,
+	certProc process.CertificateClaimProcessor,
 	sigDg offchain_datagateway.UserSignatureDataGateway,
 	chainDg blockchainclient_datagateway.BlockchainClientDataGateway,
 	maxGas float64,
@@ -289,7 +290,7 @@ func TestProcessJoinQueue_ReturnsTrue_WhenQueueEmpty(t *testing.T) {
 	sigDg.On("GetPendingEventJoinSignatures", mock.Anything).Return([]entity.PendingEventJoin{}, nil)
 
 	w := newWorker(nil, nil, sigDg, nil, 30)
-	ok := w.processJoinQueue(context.Background())
+	ok := w.joinQueue.Run(context.Background())
 	assert.True(t, ok)
 	sigDg.AssertExpectations(t)
 }
@@ -300,7 +301,7 @@ func TestProcessJoinQueue_ReturnsTrue_OnDBError(t *testing.T) {
 	sigDg.On("GetPendingEventJoinSignatures", mock.Anything).Return(nil, errors.New("db error"))
 
 	w := newWorker(nil, nil, sigDg, nil, 30)
-	ok := w.processJoinQueue(context.Background())
+	ok := w.joinQueue.Run(context.Background())
 	assert.True(t, ok)
 	sigDg.AssertExpectations(t)
 }
@@ -319,7 +320,7 @@ func TestProcessJoinQueue_MarksExpiredAndSkips(t *testing.T) {
 	chainDg.On("GetCurrentBlockNumber", mock.Anything).Return(uint64(1000), nil)
 
 	w := newWorker(joinProc, nil, sigDg, chainDg, 30)
-	ok := w.processJoinQueue(context.Background())
+	ok := w.joinQueue.Run(context.Background())
 
 	assert.True(t, ok)
 	joinProc.AssertNotCalled(t, "ProcessQueuedEventJoin") // must not broadcast expired item
@@ -340,7 +341,7 @@ func TestProcessJoinQueue_ContinuesIfMarkExpiredFails(t *testing.T) {
 	chainDg.On("GetCurrentBlockNumber", mock.Anything).Return(uint64(1000), nil)
 
 	w := newWorker(nil, nil, sigDg, chainDg, 30)
-	ok := w.processJoinQueue(context.Background())
+	ok := w.joinQueue.Run(context.Background())
 
 	assert.True(t, ok)
 	sigDg.AssertExpectations(t)
@@ -359,7 +360,7 @@ func TestProcessJoinQueue_ReturnsFalse_WhenGasTooHighBeforeBroadcast(t *testing.
 	joinProc := new(mockEventJoinProcessor)
 
 	w := newWorker(joinProc, nil, sigDg, chainDg, 30)
-	ok := w.processJoinQueue(context.Background())
+	ok := w.joinQueue.Run(context.Background())
 
 	assert.False(t, ok)
 	joinProc.AssertNotCalled(t, "ProcessQueuedEventJoin")
@@ -383,7 +384,7 @@ func TestProcessJoinQueue_ContinuesOnProcessError(t *testing.T) {
 	joinProc.On("ProcessQueuedEventJoin", mock.Anything, item2).Return(nil)
 
 	w := newWorker(joinProc, nil, sigDg, chainDg, 30)
-	ok := w.processJoinQueue(context.Background())
+	ok := w.joinQueue.Run(context.Background())
 
 	assert.True(t, ok)
 	joinProc.AssertExpectations(t) // item2 must still be attempted
@@ -405,7 +406,7 @@ func TestProcessJoinQueue_ProcessesAllItems(t *testing.T) {
 	joinProc.On("ProcessQueuedEventJoin", mock.Anything, item2).Return(nil)
 
 	w := newWorker(joinProc, nil, sigDg, chainDg, 30)
-	ok := w.processJoinQueue(context.Background())
+	ok := w.joinQueue.Run(context.Background())
 
 	assert.True(t, ok)
 	joinProc.AssertExpectations(t)
@@ -420,7 +421,7 @@ func TestProcessCertClaimQueue_NoOp_WhenQueueEmpty(t *testing.T) {
 	sigDg.On("GetPendingCertificateClaimSignatures", mock.Anything).Return([]entity.PendingCertificateClaim{}, nil)
 
 	w := newWorker(nil, nil, sigDg, nil, 30)
-	w.processCertClaimQueue(context.Background()) // must not panic
+	w.certClaimQueue.Run(context.Background()) // must not panic
 	sigDg.AssertExpectations(t)
 }
 
@@ -429,7 +430,7 @@ func TestProcessCertClaimQueue_NoOp_OnDBError(t *testing.T) {
 	sigDg.On("GetPendingCertificateClaimSignatures", mock.Anything).Return(nil, errors.New("db error"))
 
 	w := newWorker(nil, nil, sigDg, nil, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 	sigDg.AssertExpectations(t)
 }
 
@@ -447,7 +448,7 @@ func TestProcessCertClaimQueue_MarksExpiredAndSkips(t *testing.T) {
 	chainDg.On("GetCurrentBlockNumber", mock.Anything).Return(uint64(1000), nil)
 
 	w := newWorker(nil, certProc, sigDg, chainDg, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 
 	certProc.AssertNotCalled(t, "ProcessQueuedCertificateClaim")
 	sigDg.AssertExpectations(t)
@@ -469,7 +470,7 @@ func TestProcessCertClaimQueue_Aborts_WhenGasTooHighBeforeBroadcast(t *testing.T
 	certProc := new(mockCertClaimProcessor)
 
 	w := newWorker(joinProc, certProc, sigDg, chainDg, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 
 	certProc.AssertNotCalled(t, "ProcessQueuedCertificateClaim")
 	chainDg.AssertExpectations(t)
@@ -495,7 +496,7 @@ func TestProcessCertClaimQueue_ContinuesOnProcessError(t *testing.T) {
 	certProc.On("ProcessQueuedCertificateClaim", mock.Anything, item2).Return(nil)
 
 	w := newWorker(joinProc, certProc, sigDg, chainDg, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 
 	certProc.AssertExpectations(t)
 }
@@ -520,7 +521,7 @@ func TestProcessCertClaimQueue_ProcessesAllItems(t *testing.T) {
 	certProc.On("ProcessQueuedCertificateClaim", mock.Anything, item2).Return(nil)
 
 	w := newWorker(joinProc, certProc, sigDg, chainDg, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 
 	certProc.AssertExpectations(t)
 }
@@ -669,7 +670,7 @@ func TestProcessJoinQueue_MarksExpired_WhenBlockDeadlineExceeded(t *testing.T) {
 	joinProc := new(mockEventJoinProcessor)
 
 	w := newWorker(joinProc, nil, sigDg, chainDg, 30)
-	ok := w.processJoinQueue(context.Background())
+	ok := w.joinQueue.Run(context.Background())
 
 	assert.True(t, ok)
 	joinProc.AssertNotCalled(t, "ProcessQueuedEventJoin")
@@ -692,7 +693,7 @@ func TestProcessJoinQueue_DoesNotMarkExpired_WhenBlockDeadlineNotYetReached(t *t
 	joinProc.On("ProcessQueuedEventJoin", mock.Anything, item).Return(nil)
 
 	w := newWorker(joinProc, nil, sigDg, chainDg, 30)
-	ok := w.processJoinQueue(context.Background())
+	ok := w.joinQueue.Run(context.Background())
 
 	assert.True(t, ok)
 	joinProc.AssertExpectations(t)
@@ -715,7 +716,7 @@ func TestProcessJoinQueue_SkipsBlockCheck_WhenGetCurrentBlockFails(t *testing.T)
 	joinProc.On("ProcessQueuedEventJoin", mock.Anything, item).Return(nil)
 
 	w := newWorker(joinProc, nil, sigDg, chainDg, 30)
-	ok := w.processJoinQueue(context.Background())
+	ok := w.joinQueue.Run(context.Background())
 
 	assert.True(t, ok)
 	joinProc.AssertExpectations(t)
@@ -740,7 +741,7 @@ func TestProcessCertClaimQueue_MarksExpired_WhenBlockDeadlineExceeded(t *testing
 	certProc := new(mockCertClaimProcessor)
 
 	w := newWorker(nil, certProc, sigDg, chainDg, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 
 	certProc.AssertNotCalled(t, "ProcessQueuedCertificateClaim")
 	sigDg.AssertExpectations(t)
@@ -764,7 +765,7 @@ func TestProcessCertClaimQueue_DoesNotMarkExpired_WhenBlockDeadlineNotYetReached
 	certProc.On("ProcessQueuedCertificateClaim", mock.Anything, item).Return(nil)
 
 	w := newWorker(joinProc, certProc, sigDg, chainDg, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 
 	certProc.AssertExpectations(t)
 	sigDg.AssertNotCalled(t, "UpdateUserSignatureMarkAsExpiredAt")
@@ -787,7 +788,7 @@ func TestProcessCertClaimQueue_SkipsBlockCheck_WhenGetCurrentBlockFails(t *testi
 	certProc.On("ProcessQueuedCertificateClaim", mock.Anything, item).Return(nil)
 
 	w := newWorker(joinProc, certProc, sigDg, chainDg, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 
 	certProc.AssertExpectations(t)
 	sigDg.AssertNotCalled(t, "UpdateUserSignatureMarkAsExpiredAt")
@@ -811,7 +812,7 @@ func TestProcessJoinQueue_MarksExpiredByBlockDeadline(t *testing.T) {
 	chainDg.On("GetCurrentBlockNumber", mock.Anything).Return(uint64(1000), nil)
 
 	w := newWorker(joinProc, nil, sigDg, chainDg, 30)
-	ok := w.processJoinQueue(context.Background())
+	ok := w.joinQueue.Run(context.Background())
 
 	assert.True(t, ok)
 	joinProc.AssertNotCalled(t, "ProcessQueuedEventJoin")
@@ -834,7 +835,7 @@ func TestProcessJoinQueue_NotExpired_WhenBlockBelowDeadline(t *testing.T) {
 	joinProc.On("ProcessQueuedEventJoin", mock.Anything, item).Return(nil)
 
 	w := newWorker(joinProc, nil, sigDg, chainDg, 30)
-	ok := w.processJoinQueue(context.Background())
+	ok := w.joinQueue.Run(context.Background())
 
 	assert.True(t, ok)
 	joinProc.AssertExpectations(t)
@@ -856,7 +857,7 @@ func TestProcessJoinQueue_SkipsBlockCheck_WhenGetCurrentBlockNumberFails(t *test
 	joinProc.On("ProcessQueuedEventJoin", mock.Anything, item).Return(nil)
 
 	w := newWorker(joinProc, nil, sigDg, chainDg, 30)
-	ok := w.processJoinQueue(context.Background())
+	ok := w.joinQueue.Run(context.Background())
 
 	assert.True(t, ok)
 	joinProc.AssertExpectations(t)
@@ -881,7 +882,7 @@ func TestProcessCertClaimQueue_MarksExpiredByBlockDeadline(t *testing.T) {
 	chainDg.On("GetCurrentBlockNumber", mock.Anything).Return(uint64(1000), nil)
 
 	w := newWorker(nil, certProc, sigDg, chainDg, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 
 	certProc.AssertNotCalled(t, "ProcessQueuedCertificateClaim")
 	sigDg.AssertExpectations(t)
@@ -906,7 +907,7 @@ func TestProcessCertClaimQueue_NotExpired_WhenBlockBelowDeadline(t *testing.T) {
 	certProc.On("ProcessQueuedCertificateClaim", mock.Anything, item).Return(nil)
 
 	w := newWorker(joinProc, certProc, sigDg, chainDg, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 
 	certProc.AssertExpectations(t)
 	sigDg.AssertNotCalled(t, "UpdateUserSignatureMarkAsExpiredAt")
@@ -930,7 +931,7 @@ func TestProcessCertClaimQueue_SkipsBlockCheck_WhenGetCurrentBlockNumberFails(t 
 	certProc.On("ProcessQueuedCertificateClaim", mock.Anything, item).Return(nil)
 
 	w := newWorker(joinProc, certProc, sigDg, chainDg, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 
 	certProc.AssertExpectations(t)
 	sigDg.AssertNotCalled(t, "UpdateUserSignatureMarkAsExpiredAt")
@@ -959,7 +960,7 @@ func TestProcessCertClaimQueue_Skips_WhenNotJoined_AndPendingJoinExists(t *testi
 	certProc := new(mockCertClaimProcessor)
 
 	w := newWorker(joinProc, certProc, sigDg, chainDg, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 
 	certProc.AssertNotCalled(t, "ProcessQueuedCertificateClaim")
 	certProc.AssertNotCalled(t, "AbortCertificateClaim")
@@ -986,7 +987,7 @@ func TestProcessCertClaimQueue_Aborts_WhenNotJoined_AndNoPendingJoin(t *testing.
 	certProc.On("AbortCertificateClaim", mock.Anything, item.SignatureId, entity.AbortReasonParticipantNotJoined).Return(nil)
 
 	w := newWorker(joinProc, certProc, sigDg, chainDg, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 
 	certProc.AssertNotCalled(t, "ProcessQueuedCertificateClaim")
 	certProc.AssertExpectations(t)
@@ -1012,7 +1013,7 @@ func TestProcessCertClaimQueue_Skips_WhenNotJoined_AndPendingJoinCheckFails(t *t
 	certProc := new(mockCertClaimProcessor)
 
 	w := newWorker(joinProc, certProc, sigDg, chainDg, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 
 	certProc.AssertNotCalled(t, "ProcessQueuedCertificateClaim")
 	certProc.AssertNotCalled(t, "AbortCertificateClaim")
@@ -1062,7 +1063,7 @@ func TestProcessCertClaimQueue_ContinuesProcessingNext_AfterAbort(t *testing.T) 
 	certProc.On("ProcessQueuedCertificateClaim", mock.Anything, item2).Return(nil)
 
 	w := newWorker(joinProc, certProc, sigDg, chainDg, 30)
-	w.processCertClaimQueue(context.Background())
+	w.certClaimQueue.Run(context.Background())
 
 	certProc.AssertExpectations(t)
 	joinProc.AssertExpectations(t)
