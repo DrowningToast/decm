@@ -242,7 +242,7 @@ func (r *CertificateContractRepository) FilterCertificateMinted(ctx context.Cont
 	if err != nil {
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to filter CertificateMinted events"))
 	}
-	defer iter.Close()
+	defer iter.Close() //nolint:errcheck
 
 	var events []*certificatecontract_datagateway.CertificateMintedEvent
 	for iter.Next() {

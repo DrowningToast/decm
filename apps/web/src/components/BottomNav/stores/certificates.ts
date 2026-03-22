@@ -17,8 +17,8 @@ interface CertificateDetailNavStore {
     setCertificateId: (certificateId: string | null) => void;
     setIsClaimed: (isClaimed: boolean) => void;
     setImageUrl: (imageUrl: string | null) => void;
-    onClickShareable: () => void;
-    setOnClickShareable: (onClickShareable: () => void) => void;
+    onClickShareable: () => Promise<void>;
+    setOnClickShareable: (onClickShareable: () => Promise<void>) => void;
     isShareableLoading: boolean;
     isShareModalOpen: boolean;
     setIsShareModalOpen: (open: boolean) => void;
@@ -35,13 +35,16 @@ export const useCertificateDetailNavStore = create<CertificateDetailNavStore>((s
     isShareModalOpen: false,
     setIsShareModalOpen: (open: boolean) => set({ isShareModalOpen: open }),
     // callback
-    onClickShareable: () => {},
-    setOnClickShareable: (onClickShareable: () => void) =>
+    onClickShareable: async () => {},
+    setOnClickShareable: (onClickShareable: () => Promise<void>) =>
         set({
-            onClickShareable: () => {
+            onClickShareable: async () => {
                 set({ isShareableLoading: true });
-                onClickShareable();
-                set({ isShareableLoading: false });
+                try {
+                    await onClickShareable();
+                } finally {
+                    set({ isShareableLoading: false });
+                }
             },
         }),
 }));
@@ -57,8 +60,8 @@ interface CertificateDetailsSharedNavStore {
     setShareableHandle: (handle: string | null) => void;
     setIsPasswordDialogOpen: (open: boolean) => void;
     // callback
-    onClickPassword: (isPasswordProtected: boolean) => void;
-    setOnClickPassword: (onPasswordProtected: () => void) => void;
+    onClickPassword: (isPasswordProtected: boolean) => Promise<void>;
+    setOnClickPassword: (onPasswordProtected: () => Promise<void>) => void;
     isPasswordLoading: boolean;
     onChangePublish: (isPublished: boolean) => Promise<void>;
     setOnChangePublish: (onPublishStatus: (isPublished: boolean) => Promise<void>) => void;
@@ -76,16 +79,19 @@ export const useCertificateDetailsSharedNavStore = create<CertificateDetailsShar
         setIsPasswordProtected: (isPasswordProtected: boolean) => set({ isPasswordProtected }),
         setShareableHandle: (handle: string | null) => set({ shareableHandle: handle }),
         setIsPasswordDialogOpen: (open: boolean) => set({ isPasswordDialogOpen: open }),
-        onClickPassword: () => {},
+        onClickPassword: async () => {},
         isPasswordLoading: false,
         onChangePublish: async () => {},
         isPublishLoading: false,
-        setOnClickPassword: (cn: () => void) =>
+        setOnClickPassword: (cn: () => Promise<void>) =>
             set({
-                onClickPassword: () => {
+                onClickPassword: async () => {
                     set({ isPasswordLoading: true });
-                    cn();
-                    set({ isPasswordLoading: false });
+                    try {
+                        await cn();
+                    } finally {
+                        set({ isPasswordLoading: false });
+                    }
                 },
             }),
         setOnChangePublish: (cn: (isPublished: boolean) => Promise<void>) =>

@@ -85,8 +85,8 @@ func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParam
 
 	event, err := uc.EventDataGateway.CreateEvent(ctx, createEventParams)
 	if err != nil {
-		uc.S3DataGateway.DeleteFile(ctx, bannerStorageKey)
-		uc.S3DataGateway.DeleteFile(ctx, iconStorageKey)
+		_ = uc.S3DataGateway.DeleteFile(ctx, bannerStorageKey)
+		_ = uc.S3DataGateway.DeleteFile(ctx, iconStorageKey)
 		return nil, common.Address{}, common.Address{}, nil, err
 	}
 

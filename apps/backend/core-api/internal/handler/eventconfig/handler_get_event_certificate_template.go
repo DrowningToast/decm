@@ -60,7 +60,7 @@ func (h *Handler) GetEventCertificateTemplate(ctx *fiber.Ctx) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get event certificate template")
 	}
-	defer svgReader.Close()
+	defer svgReader.Close() //nolint:errcheck
 
 	svgBytes, err := io.ReadAll(svgReader)
 	if err != nil {

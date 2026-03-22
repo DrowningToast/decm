@@ -73,7 +73,7 @@ func (u *OnboardUsecase) RegisterWithWalletAddress(ctx context.Context, signedMs
 	address := ethcommon.HexToAddress(walletAddress.Hex())
 	result, err := cyptoutils.VerifySignedMessageByAddress(address, u.registerSignMessage, signedMsg)
 	if err != nil {
-		return nil, nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "an error has occured while verifying signed message")
+		return nil, nil, customerror.ParseWithMessage(&customerror.ErrInternalServer, err, "an error has occurred while verifying signed message")
 	}
 	if !result {
 		return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("verification failed"))

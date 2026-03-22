@@ -124,12 +124,6 @@ export function CertificateDataTable({ data }: { data: GetCertificateShareDataRe
             ? attendeeFullName.toLowerCase() === (decryptedCertificateData.name ?? "").toLowerCase()
             : undefined;
 
-    const academicInstitutionVerified: boolean | undefined =
-        decryptedUserData && decryptedCertificateData?.academic_institution !== undefined
-            ? (decryptedUserData.academic_institution ?? "").toLowerCase() ===
-              (decryptedCertificateData.academic_institution ?? "").toLowerCase()
-            : undefined;
-
     return (
         <div className="flex flex-col gap-4">
             {/* Certificate Info */}
@@ -439,6 +433,7 @@ export function CertificateDataTable({ data }: { data: GetCertificateShareDataRe
                                         <Row
                                             label={t("certificateVerify.table.fullName")}
                                             value={attendeeFullName}
+                                            verified={nameVerified}
                                         />
                                     )}
                                     {decryptedUserData.academic_institution && (

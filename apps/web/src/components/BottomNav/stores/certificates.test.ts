@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
     useSearchCertificateNavStore,
     useCertificateDetailNavStore,
@@ -79,22 +79,54 @@ describe("useCertificateDetailNavStore", () => {
         expect(useCertificateDetailNavStore.getState().isShareableLoading).toBe(false);
     });
 
-    it("after setOnClickShareable, calling onClickShareable invokes the callback", () => {
+    it("after setOnClickShareable, calling onClickShareable invokes the callback", async () => {
         let called = false;
-        useCertificateDetailNavStore.getState().setOnClickShareable(() => {
+        useCertificateDetailNavStore.getState().setOnClickShareable(async () => {
             called = true;
         });
-        useCertificateDetailNavStore.getState().onClickShareable();
+        await useCertificateDetailNavStore.getState().onClickShareable();
         expect(called).toBe(true);
     });
 
-    it("isShareableLoading returns to false after callback runs synchronously", () => {
+    it("isShareableLoading returns to false after callback completes", async () => {
         let called = false;
-        useCertificateDetailNavStore.getState().setOnClickShareable(() => {
+        useCertificateDetailNavStore.getState().setOnClickShareable(async () => {
             called = true;
         });
-        useCertificateDetailNavStore.getState().onClickShareable();
+        await useCertificateDetailNavStore.getState().onClickShareable();
         expect(called).toBe(true);
+        expect(useCertificateDetailNavStore.getState().isShareableLoading).toBe(false);
+    });
+
+    it("isShareableLoading stays true while async callback is running", async () => {
+        let resolveCallback!: () => void;
+        const asyncCallback = vi.fn(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolveCallback = resolve;
+                }),
+        );
+
+        useCertificateDetailNavStore.getState().setOnClickShareable(asyncCallback);
+        const clickPromise = useCertificateDetailNavStore.getState().onClickShareable();
+
+        expect(useCertificateDetailNavStore.getState().isShareableLoading).toBe(true);
+
+        resolveCallback();
+        await clickPromise;
+
+        expect(useCertificateDetailNavStore.getState().isShareableLoading).toBe(false);
+    });
+
+    it("isShareableLoading resets to false even when async callback rejects", async () => {
+        const asyncCallback = vi.fn(() => Promise.reject(new Error("fail")));
+
+        useCertificateDetailNavStore.getState().setOnClickShareable(asyncCallback);
+
+        await expect(useCertificateDetailNavStore.getState().onClickShareable()).rejects.toThrow(
+            "fail",
+        );
+
         expect(useCertificateDetailNavStore.getState().isShareableLoading).toBe(false);
     });
 });
@@ -121,13 +153,45 @@ describe("useCertificateDetailsSharedNavStore", () => {
         expect(state.isPublishLoading).toBe(false);
     });
 
-    it("setOnClickPassword — after calling, onClickPassword() invokes the callback", () => {
+    it("setOnClickPassword — after calling, onClickPassword() invokes the callback", async () => {
         let called = false;
-        useCertificateDetailsSharedNavStore.getState().setOnClickPassword(() => {
+        useCertificateDetailsSharedNavStore.getState().setOnClickPassword(async () => {
             called = true;
         });
-        useCertificateDetailsSharedNavStore.getState().onClickPassword(false);
+        await useCertificateDetailsSharedNavStore.getState().onClickPassword(false);
         expect(called).toBe(true);
+    });
+
+    it("isPasswordLoading stays true while async password callback is running", async () => {
+        let resolveCallback!: () => void;
+        const asyncCallback = vi.fn(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolveCallback = resolve;
+                }),
+        );
+
+        useCertificateDetailsSharedNavStore.getState().setOnClickPassword(asyncCallback);
+        const clickPromise = useCertificateDetailsSharedNavStore.getState().onClickPassword(true);
+
+        expect(useCertificateDetailsSharedNavStore.getState().isPasswordLoading).toBe(true);
+
+        resolveCallback();
+        await clickPromise;
+
+        expect(useCertificateDetailsSharedNavStore.getState().isPasswordLoading).toBe(false);
+    });
+
+    it("isPasswordLoading resets to false even when async password callback rejects", async () => {
+        const asyncCallback = vi.fn(() => Promise.reject(new Error("fail")));
+
+        useCertificateDetailsSharedNavStore.getState().setOnClickPassword(asyncCallback);
+
+        await expect(
+            useCertificateDetailsSharedNavStore.getState().onClickPassword(false),
+        ).rejects.toThrow("fail");
+
+        expect(useCertificateDetailsSharedNavStore.getState().isPasswordLoading).toBe(false);
     });
 
     it("setOnChangePublish — after calling, onChangePublish(true) invokes callback with true", () => {

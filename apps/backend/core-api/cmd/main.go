@@ -111,7 +111,7 @@ func main() {
 		pgConn.Close()
 		log.Logger.InfoContext(ctx, "Gracefully closed pgxpool connection")
 	}()
-	log.Logger.Info("Sucessfully connected to pg pool")
+	log.Logger.Info("Successfully connected to pg pool")
 
 	// services
 	expiration, err := time.ParseDuration(cfg.Jwt.Expiration)

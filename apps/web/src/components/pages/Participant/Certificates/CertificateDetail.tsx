@@ -44,8 +44,8 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
     const { updateShareVisibility } = useCertificateUpdateShareVisibilityUsecase();
 
     useEffect(() => {
-        setOnClickShareable(() => {
-            void createCertificateShareLink(certificateId);
+        setOnClickShareable(async () => {
+            await createCertificateShareLink({ certificateId });
         });
     }, [certificateId, createCertificateShareLink, setOnClickShareable]);
 

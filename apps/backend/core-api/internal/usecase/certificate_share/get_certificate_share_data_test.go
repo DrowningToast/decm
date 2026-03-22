@@ -313,6 +313,47 @@ func TestGetCertificateShareData(t *testing.T) {
 		mockContract.AssertExpectations(t)
 	})
 
+	t.Run("should return ErrInternalServer when GetTokenData returns a raw non-customerror", func(t *testing.T) {
+		share := &entity.CertificateShare{
+			Id:                 uuid.New(),
+			EventCertificateId: certID,
+			Handle:             handle,
+			Active:             true,
+		}
+		cert := &entity.EventCertificate{
+			Id:                      certID,
+			CertificateTokenId:      &tokenID,
+			EventCertificateAddress: &contractAddr,
+		}
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockFactory := new(MockCertificateContractFactoryDg)
+		mockContract := new(MockCertificateContractDg)
+
+		mockShareDg.On("GetCertificateShareByHandle", ctx, handle).Return(share, nil)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
+		mockFactory.On("GetContract", common.HexToAddress(contractAddr)).Return(mockContract, nil)
+		// Return a raw stdlib error — NOT wrapped in customerror
+		mockContract.On("GetTokenData", ctx, big.NewInt(42)).
+			Return(nil, errors.New("connection reset by peer"))
+
+		uc := &CertificateShareUsecase{
+			CertificateShareDg:           mockShareDg,
+			EventCertificateDataGateway:  mockCertDg,
+			CertificateContractFactoryDg: mockFactory,
+		}
+
+		result, err := uc.GetCertificateShareData(ctx, handle, nil)
+
+		assert.Nil(t, result)
+		// Must be wrapped as ErrInternalServer, not a bare error leaking RPC details
+		assertErrCode(t, err, customerror.ErrInternalServer)
+		mockShareDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+		mockFactory.AssertExpectations(t)
+		mockContract.AssertExpectations(t)
+	})
+
 	t.Run("should return ErrInternalServer when certificate token ID is not a valid number", func(t *testing.T) {
 		invalidTokenID := "not-a-number"
 		share := &entity.CertificateShare{

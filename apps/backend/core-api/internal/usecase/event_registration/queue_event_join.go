@@ -202,7 +202,7 @@ func (uc *EventRegistrationUsecase) queueEventJoin(ctx context.Context, currentU
 		// Fall through — the code below will create a fresh attendee + signature.
 	}
 
-	// Check the existance of invitation first
+	// Check the existence of invitation first
 	invitation, _, err := uc.EventRegistrationInvitationDg.GetEventRegistrationInvitationByEventIDAndCredential(ctx, entityEventContract.EventId, currentUser.UserId, currentUser.Email, &currentUser.WalletAddress)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get event registration invitation by event id and credential")

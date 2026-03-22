@@ -1,0 +1,44 @@
+version: "2"
+
+linters:
+    default: none
+    enable:
+        - errcheck
+        - govet
+        - ineffassign
+        - staticcheck
+        - unused
+        - misspell
+        - revive
+
+    settings:
+        staticcheck:
+            checks:
+                - "all"
+                - "-QF1008" # allow redundant embedded field selectors
+                - "-SA1019" # allow deprecated packages (aws-sdk-go v1 migration is out of scope)
+        revive:
+            rules:
+                - name: exported
+                  disabled: true
+                - name: package-comments
+                  disabled: true
+
+    exclusions:
+        rules:
+            - path: "_test\\.go"
+              linters:
+                  - errcheck
+                  - unused
+
+formatters:
+    enable:
+        - gofmt
+        - goimports
+
+    settings:
+        gofmt:
+            simplify: true
+        goimports:
+            local-prefixes:
+                - github.com/decm

@@ -65,12 +65,34 @@ describe("useCertificateCreateShareLinkUsecase", () => {
         const { result } = renderHook(() => useCertificateCreateShareLinkUsecase(), { wrapper });
 
         await act(async () => {
-            await result.current.createCertificateShareLink("cert-1");
+            await result.current.createCertificateShareLink({ certificateId: "cert-1" });
         });
 
         expect(certificateService.createCertificateShareableLink).toHaveBeenCalledWith(
             "cert-1",
             undefined,
+        );
+    });
+
+    it("calls createCertificateShareableLink with password when provided", async () => {
+        vi.mocked(certificateService.createCertificateShareableLink).mockResolvedValue({
+            certificateId: "cert-1",
+            isPublished: true,
+            handle: "abc123",
+        });
+
+        const { result } = renderHook(() => useCertificateCreateShareLinkUsecase(), { wrapper });
+
+        await act(async () => {
+            await result.current.createCertificateShareLink({
+                certificateId: "cert-1",
+                password: "secret",
+            });
+        });
+
+        expect(certificateService.createCertificateShareableLink).toHaveBeenCalledWith(
+            "cert-1",
+            "secret",
         );
     });
 
@@ -85,7 +107,7 @@ describe("useCertificateCreateShareLinkUsecase", () => {
         const { result } = renderHook(() => useCertificateCreateShareLinkUsecase(), { wrapper });
 
         await act(async () => {
-            await result.current.createCertificateShareLink("cert-1");
+            await result.current.createCertificateShareLink({ certificateId: "cert-1" });
         });
 
         await waitFor(() => {
@@ -103,7 +125,7 @@ describe("useCertificateCreateShareLinkUsecase", () => {
 
         await act(async () => {
             try {
-                await result.current.createCertificateShareLink("cert-1");
+                await result.current.createCertificateShareLink({ certificateId: "cert-1" });
             } catch {
                 // expected rejection
             }

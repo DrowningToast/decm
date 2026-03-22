@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 export const useCertificateCreateShareLinkUsecase = () => {
     const { t } = useTranslation();
     const mutation = useMutation({
-        mutationFn: (certificateId: string, password?: string) =>
+        mutationFn: ({ certificateId, password }: { certificateId: string; password?: string }) =>
             certificateService.createCertificateShareableLink(certificateId, password),
         onSuccess: async () => {
             await queryClient.invalidateQueries({

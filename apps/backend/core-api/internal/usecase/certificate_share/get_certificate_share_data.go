@@ -108,7 +108,7 @@ func (uc *CertificateShareUsecase) fetchOnChainData(ctx context.Context, certID 
 
 	payload, err := contractDg.GetTokenData(ctx, tokenId)
 	if err != nil {
-		return nil, err
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to get on-chain certificate data"))
 	}
 
 	decrypted, decryptErr := uc.decryptBackendUserData(payload.Data.BackendEncryptedUserData)
