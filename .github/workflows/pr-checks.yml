@@ -337,7 +337,28 @@ jobs:
                   pnpm-version: ${{ env.PNPM_VERSION }}
 
             - name: Run ESLint
-              run: pnpm lint
+              run: turbo run lint
+
+    # Job 6b: Backend Lint (golangci-lint)
+    backend-lint:
+        name: Backend Lint
+        runs-on: ubuntu-latest
+        needs: [check-label]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Go Backend
+              uses: ./.github/actions/setup-go-backend
+              with:
+                  go-version: ${{ env.GO_VERSION }}
+
+            - name: Run golangci-lint
+              uses: golangci/golangci-lint-action@v6
+              with:
+                  version: latest
+                  working-directory: apps/backend
 
     # Job 7: Frontend Build (runs after eslint)
     frontend-build:
@@ -497,6 +518,7 @@ jobs:
                 backend-build,
                 backend-tests,
                 backend-openapi,
+                backend-lint,
                 frontend-build,
                 frontend-eslint,
                 frontend-tests,
@@ -554,6 +576,12 @@ jobs:
                     echo "❌ Backend OpenAPI & Swagger: FAILED"
                   fi
 
+                  if [ "${{ needs.backend-lint.result }}" = "success" ]; then
+                    echo "✅ Backend Lint: PASSED"
+                  else
+                    echo "❌ Backend Lint: FAILED"
+                  fi
+
                   if [ "${{ needs.frontend-build.result }}" = "success" ]; then
                     echo "✅ Frontend Build: PASSED"
                   else
@@ -597,6 +625,7 @@ jobs:
                      [ "${{ needs.backend-build.result }}" = "success" ] && \
                      [ "${{ needs.backend-tests.result }}" = "success" ] && \
                      [ "${{ needs.backend-openapi.result }}" = "success" ] && \
+                     [ "${{ needs.backend-lint.result }}" = "success" ] && \
                      [ "${{ needs.frontend-build.result }}" = "success" ] && \
                      [ "${{ needs.frontend-eslint.result }}" = "success" ] && \
                      [ "${{ needs.frontend-tests.result }}" = "success" ] && \
@@ -636,6 +665,7 @@ jobs:
                   | Backend Build | ${{ needs.backend-build.result == 'success' && '✅' || '❌' }} |
                   | Backend Unit Tests | ${{ needs.backend-tests.result == 'success' && '✅' || '❌' }} |
                   | Backend OpenAPI & Swagger | ${{ needs.backend-openapi.result == 'success' && '✅' || '❌' }} |
+                  | Backend Lint | ${{ needs.backend-lint.result == 'success' && '✅' || '❌' }} |
                   | Frontend Build | ${{ needs.frontend-build.result == 'success' && '✅' || '❌' }} |
                   | Frontend ESLint | ${{ needs.frontend-eslint.result == 'success' && '✅' || '❌' }} |
                   | Frontend Unit Tests | ${{ needs.frontend-tests.result == 'success' && '✅' || '❌' }} |
