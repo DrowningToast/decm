@@ -123,11 +123,17 @@ jobs:
                   DB_PASSWORD: decm_test_password
                   DB_NAME: decm_test
 
-            - name: Install Chromium
+            - name: Set Chrome path
               run: |
-                  sudo apt-get update -qq
-                  sudo apt-get install -y chromium-browser
-                  echo "CHROME_PATH=$(which chromium-browser)" >> $GITHUB_ENV
+                  if command -v google-chrome-stable &>/dev/null; then
+                      echo "CHROME_PATH=$(which google-chrome-stable)" >> $GITHUB_ENV
+                  elif command -v google-chrome &>/dev/null; then
+                      echo "CHROME_PATH=$(which google-chrome)" >> $GITHUB_ENV
+                  else
+                      sudo apt-get update -qq
+                      sudo apt-get install -y chromium
+                      echo "CHROME_PATH=$(which chromium)" >> $GITHUB_ENV
+                  fi
 
             - name: Run Core Tests
               run: pnpm test:core
