@@ -5,6 +5,7 @@
         "build": "turbo run build",
         "dev": "turbo run dev",
         "lint": "turbo run lint && pnpm run lint:go",
+        "lint:frontend": "turbo run lint",
         "lint:go": "cd apps/backend && golangci-lint run ./...",
         "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md,yaml,yml}\"",
         "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,scss,md,yaml,yml}\"",

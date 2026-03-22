@@ -337,7 +337,7 @@ jobs:
                   pnpm-version: ${{ env.PNPM_VERSION }}
 
             - name: Run ESLint
-              run: turbo run lint
+              run: pnpm run lint:frontend
 
     # Job 6b: Backend Lint (golangci-lint)
     backend-lint:
