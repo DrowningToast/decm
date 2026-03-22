@@ -3,16 +3,49 @@ package certificate_share_handler
 import (
 	customerror "apps/backend/common/customerror"
 	"apps/backend/common/hashutils"
+	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 	certificate_share_usecase "apps/backend/core-api/internal/usecase/certificate_share"
+	"encoding/json"
 
 	"github.com/cockroachdb/errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
+// UpdateCertificateShareBody holds the optional fields for a share update.
+// The password field is parsed manually to distinguish three cases:
+//   - key absent: do not change the existing password
+//   - key present, value "" or null: remove password protection
+//   - key present, value non-empty: set a new password
 type UpdateCertificateShareBody struct {
-	Password *string `json:"password"`
-	Active   *bool   `json:"active"`
+	passwordPresent bool
+	Password        *string `json:"password"`
+	Active          *bool   `json:"active"`
+}
+
+func (b *UpdateCertificateShareBody) UnmarshalJSON(data []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if rawActive, ok := raw["active"]; ok {
+		var active bool
+		if err := json.Unmarshal(rawActive, &active); err != nil {
+			return err
+		}
+		b.Active = &active
+	}
+	if rawPw, ok := raw["password"]; ok {
+		b.passwordPresent = true
+		if string(rawPw) != "null" {
+			var pw string
+			if err := json.Unmarshal(rawPw, &pw); err != nil {
+				return err
+			}
+			b.Password = &pw
+		}
+	}
+	return nil
 }
 
 func (b *UpdateCertificateShareBody) Parse(ctx *fiber.Ctx) error {
@@ -24,7 +57,7 @@ type UpdateCertificateShareResponse struct {
 }
 
 // @Summary Update certificate share link
-// @Description Update the password of an existing share link. Only the certificate owner may call this endpoint. Set password to null or omit to remove password protection.
+// @Description Update the password of an existing share link. Only the certificate owner may call this endpoint. Omit the password field to leave existing protection unchanged; set to empty string or null to remove protection; set to a non-empty string to set a new password.
 // @ID update-certificate-share
 // @Tags CertificateShares
 // @Accept json
@@ -58,16 +91,19 @@ func (h *Handler) UpdateCertificateShare(ctx *fiber.Ctx) error {
 		}
 	}
 
-	var hashedPassword *string
-	if body.Password != nil && *body.Password != "" {
-		hp, err := hashutils.HashPassword(*body.Password)
-		if err != nil {
-			return customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to hash password"))
+	passwordUpdate := event_datagateway.PasswordUpdate{}
+	if body.passwordPresent {
+		passwordUpdate.Changed = true
+		if body.Password != nil && *body.Password != "" {
+			hp, err := hashutils.HashPassword(*body.Password)
+			if err != nil {
+				return customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to hash password"))
+			}
+			passwordUpdate.Value = &hp
 		}
-		hashedPassword = &hp
 	}
 
-	share, err := h.CertificateShareUc.UpdateCertificateShare(ctx.UserContext(), currentUser, shareId, hashedPassword, body.Active)
+	share, err := h.CertificateShareUc.UpdateCertificateShare(ctx.UserContext(), currentUser, shareId, passwordUpdate, body.Active)
 	if err != nil {
 		return err
 	}

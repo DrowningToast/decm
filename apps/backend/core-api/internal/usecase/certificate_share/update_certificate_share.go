@@ -12,13 +12,13 @@ import (
 )
 
 // UpdateCertificateShare updates the password and/or active status on an existing certificate share.
-// hashedPassword should be the Argon2id-hashed password, or nil to remove password protection.
+// passwordUpdate encodes whether to keep, remove, or replace the password (see PasswordUpdate).
 // active, when non-nil, sets whether the share link is publicly accessible.
 func (uc *CertificateShareUsecase) UpdateCertificateShare(
 	ctx context.Context,
 	currentUser *auth.JwtClaims,
 	shareID uuid.UUID,
-	hashedPassword *string,
+	passwordUpdate event_datagateway.PasswordUpdate,
 	active *bool,
 ) (*entity.CertificateShare, error) {
 	if currentUser == nil {
@@ -48,7 +48,7 @@ func (uc *CertificateShareUsecase) UpdateCertificateShare(
 	}
 
 	updated, err := uc.CertificateShareDg.UpdateCertificateShare(ctx, shareID, event_datagateway.UpdateCertificateShareParameters{
-		Password: hashedPassword,
+		Password: passwordUpdate,
 		Active:   active,
 	})
 	if err != nil {

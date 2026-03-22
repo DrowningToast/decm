@@ -18,8 +18,12 @@ import type {
     CertificateShareCertificateShareViewModel,
     EventClaimedCertificateViewModel,
     EventUnclaimedCertificateViewModel,
-    CertificateShareCertificateShareStatusResponse,
 } from "@decm/api";
+
+interface CertificateShareCertificateShareStatusResponse {
+    status: string;
+    certificate?: EntityEventCertificate;
+}
 
 export interface CertificateImage {
     url: string;

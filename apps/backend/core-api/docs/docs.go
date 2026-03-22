@@ -320,7 +320,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update the password of an existing share link. Only the certificate owner may call this endpoint. Set password to null or omit to remove password protection.",
+                "description": "Update the password of an existing share link. Only the certificate owner may call this endpoint. Omit the password field to leave existing protection unchanged; set to empty string or null to remove protection; set to a non-empty string to set a new password.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4468,6 +4468,9 @@ const docTemplate = `{
                 "data": {
                     "$ref": "#/definitions/entity.CertificatePayload"
                 },
+                "decryptedCertificateData": {
+                    "$ref": "#/definitions/entity.CertificateRawData"
+                },
                 "decryptedUserData": {
                     "$ref": "#/definitions/entity.AttendeeProfileData"
                 }
@@ -5356,6 +5359,29 @@ const docTemplate = `{
                     }
                 },
                 "signMessage": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.CertificateRawData": {
+            "type": "object",
+            "required": [
+                "academic_institution",
+                "certificate_subtitle",
+                "certificate_title",
+                "name"
+            ],
+            "properties": {
+                "academic_institution": {
+                    "type": "string"
+                },
+                "certificate_subtitle": {
+                    "type": "string"
+                },
+                "certificate_title": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }

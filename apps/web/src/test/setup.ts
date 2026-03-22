@@ -206,6 +206,8 @@ vi.mock("lucide-react", () => {
         "Globe",
         "KeyRound",
         "FileCheck2",
+        "LockOpen",
+        "ExternalLink",
     ];
 
     const iconMocks: Record<string, unknown> = {};

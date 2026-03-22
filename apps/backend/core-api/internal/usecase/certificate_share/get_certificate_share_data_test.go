@@ -60,6 +60,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			EventCertificateId: certID,
 			Handle:             handle,
 			Password:           nil,
+			Active:             true,
 		}
 		cert := &entity.EventCertificate{
 			Id:                      certID,
@@ -116,6 +117,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			EventCertificateId: certID,
 			Handle:             handle,
 			Password:           &pw,
+			Active:             true,
 		}
 		mockShareDg := new(MockCertificateShareDataGateway)
 		mockShareDg.On("GetCertificateShareByHandle", ctx, handle).Return(share, nil)
@@ -147,6 +149,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
+			Active:             true,
 		}
 		mockShareDg := new(MockCertificateShareDataGateway)
 		mockCertDg := new(MockEventCertificateDataGateway)
@@ -172,6 +175,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
+			Active:             true,
 		}
 		cert := &entity.EventCertificate{
 			Id:                      certID,
@@ -202,6 +206,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
+			Active:             true,
 		}
 		cert := &entity.EventCertificate{
 			Id:                      certID,
@@ -232,6 +237,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
+			Active:             true,
 		}
 		cert := &entity.EventCertificate{
 			Id:                      certID,
@@ -267,6 +273,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
+			Active:             true,
 		}
 		cert := &entity.EventCertificate{
 			Id:                      certID,
@@ -306,6 +313,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			EventCertificateId: certID,
 			Handle:             handle,
 			Password:           nil,
+			Active:             true,
 		}
 		cert := &entity.EventCertificate{
 			Id:                      certID,
@@ -357,6 +365,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			EventCertificateId: pwCertID,
 			Handle:             pwHandle,
 			Password:           &hashedPw,
+			Active:             true,
 		}
 		cert := &entity.EventCertificate{
 			Id:                      pwCertID,
@@ -404,6 +413,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			EventCertificateId: certID,
 			Handle:             pwHandle,
 			Password:           &hashedPw,
+			Active:             true,
 		}
 		mockShareDg := new(MockCertificateShareDataGateway)
 		mockShareDg.On("GetCertificateShareByHandle", ctx, pwHandle).Return(share, nil)
@@ -428,6 +438,7 @@ func TestGetCertificateShareData(t *testing.T) {
 			EventCertificateId: certID,
 			Handle:             pwHandle,
 			Password:           &hashedPw,
+			Active:             true,
 		}
 		cert := &entity.EventCertificate{
 			Id:                      certID,
@@ -597,6 +608,7 @@ func TestGetCertificateShareDataDecryption(t *testing.T) {
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
+			Active:             true,
 		}
 		cert := &entity.EventCertificate{
 			Id:                      certID,

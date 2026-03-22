@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	goccyjson "github.com/goccy/go-json"
 	"io"
 	"log/slog"
 	"math/big"
@@ -15,6 +14,8 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	goccyjson "github.com/goccy/go-json"
 
 	customerror "apps/backend/common/customerror"
 
@@ -642,9 +643,9 @@ func TestGetCertificateShareData_AtContextField_NoSegfault(t *testing.T) {
 			IssuanceDate: "1772294796",
 		},
 		Data: entity.CertificatePayloadData{
-			EventName:   "Test Event",
+			EventName:        "Test Event",
 			CertificateTitle: "Certificate of Completion",
-			Status:      "VALID",
+			Status:           "VALID",
 		},
 	}
 
@@ -791,7 +792,7 @@ func TestUpdateCertificateShare_Success_WithPassword(t *testing.T) {
 	}, nil)
 
 	mockShareDg.On("UpdateCertificateShare", mock.Anything, shareID, mock.MatchedBy(func(p event_datagateway.UpdateCertificateShareParameters) bool {
-		return p.Password != nil
+		return p.Password.Changed && p.Password.Value != nil
 	})).Return(&entity.CertificateShare{
 		Id:                 shareID,
 		EventCertificateId: certID,
@@ -830,7 +831,9 @@ func TestUpdateCertificateShare_Success_RemovePassword(t *testing.T) {
 		ReceiverCredentialId: &userID,
 	}, nil)
 
-	mockShareDg.On("UpdateCertificateShare", mock.Anything, shareID, event_datagateway.UpdateCertificateShareParameters{Password: nil}).Return(&entity.CertificateShare{
+	mockShareDg.On("UpdateCertificateShare", mock.Anything, shareID, mock.MatchedBy(func(p event_datagateway.UpdateCertificateShareParameters) bool {
+		return p.Password.Changed && p.Password.Value == nil
+	})).Return(&entity.CertificateShare{
 		Id:                 shareID,
 		EventCertificateId: certID,
 		Password:           nil,
@@ -843,8 +846,50 @@ func TestUpdateCertificateShare_Success_RemovePassword(t *testing.T) {
 		new(mockCertContractFactoryDg),
 	)
 
-	// Send null password body
-	resp := doRequest(app, http.MethodPatch, "/certificate-shares/config/"+shareID.String(), nil)
+	// Send empty string password to explicitly remove protection
+	resp := doRequest(app, http.MethodPatch, "/certificate-shares/config/"+shareID.String(), map[string]string{"password": ""})
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	mockShareDg.AssertExpectations(t)
+	mockCertDg.AssertExpectations(t)
+}
+
+func TestUpdateCertificateShare_Success_OmitPasswordField_KeepsExisting(t *testing.T) {
+	userID := uuid.New()
+	certID := uuid.New()
+	shareID := uuid.New()
+	existingPw := strPtr("$argon2id$existing")
+
+	mockShareDg := new(mockCertificateShareDataGateway)
+	mockShareDg.On("GetCertificateShareByID", mock.Anything, shareID).Return(&entity.CertificateShare{
+		Id:                 shareID,
+		EventCertificateId: certID,
+		Password:           existingPw,
+	}, nil)
+
+	mockCertDg := new(mockEventCertificateDataGateway)
+	mockCertDg.On("GetEventCertificateByID", mock.Anything, certID).Return(&entity.EventCertificate{
+		Id:                   certID,
+		ReceiverCredentialId: &userID,
+	}, nil)
+
+	mockShareDg.On("UpdateCertificateShare", mock.Anything, shareID, mock.MatchedBy(func(p event_datagateway.UpdateCertificateShareParameters) bool {
+		return !p.Password.Changed
+	})).Return(&entity.CertificateShare{
+		Id:                 shareID,
+		EventCertificateId: certID,
+		Password:           existingPw,
+	}, nil)
+
+	app := buildTestApp(
+		&auth.JwtClaims{UserId: userID},
+		mockCertDg,
+		mockShareDg,
+		new(mockCertContractFactoryDg),
+	)
+
+	// Omit the password field entirely — existing protection must be preserved
+	resp := doRequest(app, http.MethodPatch, "/certificate-shares/config/"+shareID.String(), map[string]bool{"active": true})
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	mockShareDg.AssertExpectations(t)

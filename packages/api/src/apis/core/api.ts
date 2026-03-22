@@ -77,18 +77,11 @@ export interface CertificateShareHandlerCertificateShareContractInfo {
     eventCertificateContractAddress: string;
 }
 
-export interface EntityCertificateRawData {
-    name?: string;
-    academic_institution?: string;
-    certificate_title?: string;
-    certificate_subtitle?: string;
-}
-
 export interface CertificateShareHandlerCertificateShareDataResponse {
     contract: CertificateShareHandlerCertificateShareContractInfo;
     data: EntityCertificatePayload;
-    decryptedUserData?: EntityAttendeeProfileData;
     decryptedCertificateData?: EntityCertificateRawData;
+    decryptedUserData?: EntityAttendeeProfileData;
 }
 
 export interface CertificateShareHandlerCertificateShareViewModel {
@@ -543,6 +536,13 @@ export interface EntityCertificatePayloadProof {
     host: EntityCertificatePayloadHostProof;
     issuers: EntityCertificatePayloadIssuerProof[];
     signMessage: string;
+}
+
+export interface EntityCertificateRawData {
+    academic_institution: string;
+    certificate_subtitle: string;
+    certificate_title: string;
+    name: string;
 }
 
 export interface EntityEvent {
@@ -2381,7 +2381,7 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Update the password of an existing share link. Only the certificate owner may call this endpoint. Set password to null or omit to remove password protection.
+         * @description Update the password of an existing share link. Only the certificate owner may call this endpoint. Omit the password field to leave existing protection unchanged; set to empty string or null to remove protection; set to a non-empty string to set a new password.
          *
          * @tags CertificateShares
          * @name UpdateCertificateShare

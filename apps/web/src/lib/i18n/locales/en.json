@@ -89,6 +89,7 @@
         "other": "Other",
         "preference": "Preference",
         "readDocs": "Coming soon",
+        "verify": "Verify",
         "socials": "Socials",
         "noItems": "No items",
         "menu": "Menu",
@@ -938,7 +939,25 @@
                 "saveError": "Failed to save changes: {{error}}",
                 "downloading": "Downloading...",
                 "downloadSuccess": "Certificate downloaded successfully!",
-                "downloadError": "Failed to download certificate. Please try again."
+                "downloadError": "Failed to download certificate. Please try again.",
+                "openShareModal": "Share certificate",
+                "share": "Share",
+                "shareModal": {
+                    "title": "Share Certificate",
+                    "description": "Share this certificate with anyone using the link or QR code below.",
+                    "statusVisible": "Published",
+                    "statusHidden": "Hidden — recipients cannot view this yet",
+                    "passwordProtected": "Password protected",
+                    "noPassword": "No password",
+                    "shareUrl": "Share URL",
+                    "shareCode": "Share Code",
+                    "copyUrl": "Copy URL",
+                    "copyCode": "Copy code",
+                    "copyQr": "Copy QR",
+                    "downloadQr": "Download QR",
+                    "openVerifyPage": "Open verify page",
+                    "noHandle": "No share link available."
+                }
             }
         },
         "events": {

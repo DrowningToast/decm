@@ -51,6 +51,7 @@ func TestGetCertificateShareImage(t *testing.T) {
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
+			Active:             true,
 			Password:           &pw,
 		}
 		mockShareDg := new(MockCertificateShareDataGateway)
@@ -74,6 +75,7 @@ func TestGetCertificateShareImage(t *testing.T) {
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
+			Active:             true,
 			Password:           &hashedPw,
 		}
 		mockShareDg := new(MockCertificateShareDataGateway)
@@ -93,6 +95,7 @@ func TestGetCertificateShareImage(t *testing.T) {
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
+			Active:             true,
 			Password:           nil,
 		}
 		mockShareDg := new(MockCertificateShareDataGateway)
@@ -120,6 +123,7 @@ func TestGetCertificateShareImage(t *testing.T) {
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
+			Active:             true,
 			Password:           nil,
 		}
 		mockShareDg := new(MockCertificateShareDataGateway)
@@ -150,6 +154,7 @@ func TestGetCertificateShareImage(t *testing.T) {
 			Id:                 uuid.New(),
 			EventCertificateId: certID,
 			Handle:             handle,
+			Active:             true,
 			Password:           &hashedPw,
 		}
 		mockShareDg := new(MockCertificateShareDataGateway)

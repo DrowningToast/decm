@@ -85,6 +85,7 @@
         "other": "อื่นๆ",
         "preference": "การตั้งค่าส่วนตัว",
         "readDocs": "เร็วๆ นี้",
+        "verify": "ตรวจสอบ",
         "socials": "โซเชียล",
         "noItems": "ไม่มีรายการ",
         "menu": "เมนู",
@@ -987,7 +988,25 @@
                 "saveError": "ไม่สามารถบันทึกการเปลี่ยนแปลงได้: {{error}}",
                 "downloading": "กำลังดาวน์โหลด...",
                 "downloadSuccess": "ดาวน์โหลดใบรับรองสำเร็จ!",
-                "downloadError": "ไม่สามารถดาวน์โหลดใบรับรองได้ กรุณาลองอีกครั้ง"
+                "downloadError": "ไม่สามารถดาวน์โหลดใบรับรองได้ กรุณาลองอีกครั้ง",
+                "openShareModal": "แชร์ใบรับรอง",
+                "share": "แชร์",
+                "shareModal": {
+                    "title": "แชร์ใบรับรอง",
+                    "description": "แชร์ใบรับรองนี้กับใครก็ได้ผ่านลิงก์หรือ QR Code ด้านล่าง",
+                    "statusVisible": "เผยแพร่แล้ว",
+                    "statusHidden": "ซ่อนอยู่ — ผู้รับยังไม่สามารถดูได้",
+                    "passwordProtected": "มีรหัสผ่าน",
+                    "noPassword": "ไม่มีรหัสผ่าน",
+                    "shareUrl": "ลิงก์แชร์",
+                    "shareCode": "โค้ดแชร์",
+                    "copyUrl": "คัดลอก URL",
+                    "copyCode": "คัดลอกโค้ด",
+                    "copyQr": "คัดลอก QR",
+                    "downloadQr": "ดาวน์โหลด QR",
+                    "openVerifyPage": "เปิดหน้าตรวจสอบ",
+                    "noHandle": "ไม่มีลิงก์แชร์"
+                }
             }
         },
         "identities": {

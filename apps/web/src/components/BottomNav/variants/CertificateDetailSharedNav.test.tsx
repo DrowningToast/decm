@@ -4,21 +4,17 @@ import { render, screen, act, fireEvent } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { CertificateDetailSharedNav } from "./CertificateDetailSharedNav";
 
-const { mockToastLoading, mockToastDismiss, mockToastPromise, mockToastSuccess } = vi.hoisted(
-    () => ({
-        mockToastLoading: vi.fn().mockReturnValue("toast-id-1"),
-        mockToastDismiss: vi.fn(),
-        mockToastPromise: vi.fn(),
-        mockToastSuccess: vi.fn(),
-    }),
-);
+const { mockToastLoading, mockToastDismiss, mockToastPromise } = vi.hoisted(() => ({
+    mockToastLoading: vi.fn().mockReturnValue("toast-id-1"),
+    mockToastDismiss: vi.fn(),
+    mockToastPromise: vi.fn(),
+}));
 
 vi.mock("sonner", () => ({
     toast: {
         loading: mockToastLoading,
         dismiss: mockToastDismiss,
         promise: mockToastPromise,
-        success: mockToastSuccess,
     },
 }));
 
@@ -37,7 +33,6 @@ vi.mock("../stores/certificates", () => ({
         isShareableLoading: false,
     })),
     useCertificateDetailsSharedNavStore: vi.fn(() => ({
-        shareableHandle: "handle-123",
         isPublished: false,
         onChangePublish: vi.fn().mockResolvedValue(undefined),
         isPasswordProtected: false,
@@ -121,39 +116,10 @@ describe("CertificateDetailSharedNav", () => {
         });
     });
 
-    describe("clipboard actions", () => {
-        it("copies the share code to clipboard when the copy code button is clicked", async () => {
-            const clipboardSpy = vi
-                .spyOn(navigator.clipboard, "writeText")
-                .mockResolvedValue(undefined);
-            render(<CertificateDetailSharedNav />);
-
-            await act(async () => {
-                fireEvent.click(screen.getByRole("button", { name: /copy code/i }));
-            });
-
-            expect(clipboardSpy).toHaveBeenCalledWith("handle-123");
-        });
-
-        it("copies a URL containing the handle when the copy URL button is clicked", async () => {
-            const clipboardSpy = vi
-                .spyOn(navigator.clipboard, "writeText")
-                .mockResolvedValue(undefined);
-            render(<CertificateDetailSharedNav />);
-
-            await act(async () => {
-                fireEvent.click(screen.getByRole("button", { name: /copy shareable url/i }));
-            });
-
-            expect(clipboardSpy).toHaveBeenCalledWith(expect.stringContaining("handle-123"));
-        });
-    });
-
     describe("password dialog", () => {
         it("opens the password dialog when the lock button is clicked", async () => {
             const mockSetIsPasswordDialogOpen = vi.fn();
             vi.mocked(useCertificateDetailsSharedNavStore).mockReturnValue({
-                shareableHandle: "handle-123",
                 isPublished: false,
                 onChangePublish: vi.fn().mockResolvedValue(undefined),
                 isPasswordProtected: false,

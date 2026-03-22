@@ -106,9 +106,13 @@ func (r *Repository) UpdateCertificateShare(ctx context.Context, id uuid.UUID, p
 	if params.Active != nil {
 		active = *params.Active
 	}
+	password := existing.Password // keep existing by default
+	if params.Password.Changed {
+		password = pgmapper.StringPtrToPgText(params.Password.Value)
+	}
 	result, err := r.queries.UpdateCertificateShare(ctx, generated.UpdateCertificateShareParams{
 		ID:       id,
-		Password: pgmapper.StringPtrToPgText(params.Password),
+		Password: password,
 		Active:   active,
 	})
 	if err != nil {

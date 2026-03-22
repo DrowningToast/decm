@@ -14,8 +14,17 @@ type CreateCertificateShareParameters struct {
 	Password           *string
 }
 
+// PasswordUpdate encodes a three-state password field for update operations.
+// Changed=false means "leave the existing password unchanged".
+// Changed=true with Value=nil means "remove password protection".
+// Changed=true with a non-nil Value means "set this (pre-hashed) password".
+type PasswordUpdate struct {
+	Changed bool
+	Value   *string
+}
+
 type UpdateCertificateShareParameters struct {
-	Password *string
+	Password PasswordUpdate
 	Active   *bool
 }
 

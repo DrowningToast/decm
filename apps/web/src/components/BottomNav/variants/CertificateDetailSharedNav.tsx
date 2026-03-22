@@ -1,4 +1,4 @@
-import { LockKeyhole, LockKeyholeOpen, Eye, EyeOff, Copy } from "lucide-react";
+import { LockKeyhole, LockKeyholeOpen, Eye, EyeOff } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Switch } from "@/components/ui/switch";
@@ -13,13 +13,8 @@ interface CertificateDetailSharedNavProps {
 
 export const CertificateDetailSharedNav = (props: CertificateDetailSharedNavProps) => {
     const { t } = useTranslation();
-    const {
-        shareableHandle,
-        isPublished,
-        onChangePublish,
-        isPasswordProtected,
-        setIsPasswordDialogOpen,
-    } = useCertificateDetailsSharedNavStore();
+    const { isPublished, onChangePublish, isPasswordProtected, setIsPasswordDialogOpen } =
+        useCertificateDetailsSharedNavStore();
     const [localPublish, setLocalPublish] = useState(isPublished);
     const toastIdRef = useRef<string | number | null>(null);
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -59,52 +54,8 @@ export const CertificateDetailSharedNav = (props: CertificateDetailSharedNavProp
         }, 3000);
     };
 
-    const handleCopyCode = async () => {
-        if (!shareableHandle) return;
-        await navigator.clipboard.writeText(shareableHandle);
-        toast.success(t("participant.certificates.detail.codeCopied", "Code copied"));
-    };
-
-    const handleCopyUrl = async () => {
-        if (!shareableHandle) return;
-        const url = `${window.location.origin}/verify?handle=${shareableHandle}`;
-        await navigator.clipboard.writeText(url);
-        toast.success(t("participant.certificates.detail.urlCopied", "Link copied"));
-    };
-
     return (
         <CertificateDetailNav overrideShowCreateShareButton={false} {...props}>
-            {/* Copy code button */}
-            {shareableHandle && (
-                <button
-                    onClick={handleCopyCode}
-                    className="cursor-pointer flex items-center justify-center gap-2 px-3 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0"
-                    aria-label={t("participant.certificates.detail.copyCode", "Copy code")}
-                >
-                    <Copy className="w-4 h-4 text-background-alt flex-shrink-0" />
-                    <span className="text-xs text-background-alt whitespace-nowrap">
-                        {t("participant.certificates.detail.shareCode", "Share code")}
-                    </span>
-                </button>
-            )}
-
-            {/* Copy shareable URL */}
-            {shareableHandle && (
-                <button
-                    onClick={handleCopyUrl}
-                    className="cursor-pointer flex items-center justify-center gap-2 px-3 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0"
-                    aria-label={t(
-                        "participant.certificates.detail.copyShareableUrl",
-                        "Copy shareable URL",
-                    )}
-                >
-                    <Copy className="w-4 h-4 text-background-alt flex-shrink-0" />
-                    <span className="text-xs text-background-alt whitespace-nowrap">
-                        {t("participant.certificates.detail.copyShareableUrl", "Copy URL")}
-                    </span>
-                </button>
-            )}
-
             {/* Publish toggle */}
             <div className="flex items-center gap-2 px-3 h-10 bg-white rounded-[10px] flex-shrink-0">
                 {localPublish ? (
