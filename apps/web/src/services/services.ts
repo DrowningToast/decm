@@ -5,6 +5,7 @@ import { defaultOnboardService } from "./OnboardService/OnboardService";
 import { defaultIssuerService } from "./IssuerService/IssuerService";
 import { defaultCertificateService } from "./CertificateService/CertificateService";
 import { defaultSystemStatusService } from "./SystemStatusService/SystemStatusService";
+import { defaultWalletSigningService } from "./WalletSigningService/WalletSigningService";
 
 // TODO: Switch to use the mock service if the environment variable is set to true
 // WHEN: Implementing acceptance tests
@@ -30,3 +31,6 @@ export const systemStatusService = import.meta.env.VITE_USE_MOCK_API
     ? defaultSystemStatusService
     : defaultSystemStatusService;
 // export const inboxService = import.meta.env.VITE_USE_MOCK_API ? defaultInboxService : defaultInboxService;
+export const walletSigningService = import.meta.env.VITE_USE_MOCK_API
+    ? defaultWalletSigningService
+    : defaultWalletSigningService;
