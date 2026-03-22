@@ -19,8 +19,8 @@ import (
 //   - key present, value non-empty: set a new password
 type UpdateCertificateShareBody struct {
 	passwordPresent bool
-	Password        *string `json:"password" validate:"omitempty"`
-	Active          *bool   `json:"active" validate:"omitempty"`
+	Password        *string `json:"password,omitempty" validate:"omitempty"`
+	Active          *bool   `json:"active,omitempty" validate:"omitempty"`
 }
 
 func (b *UpdateCertificateShareBody) UnmarshalJSON(data []byte) error {
