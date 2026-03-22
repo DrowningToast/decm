@@ -15,7 +15,7 @@ var measurement = promauto.NewHistogramVec(prometheus.HistogramOpts{
 	Buckets: []float64{5, 10, 50, 100, 200, 400, 800, 2000, 5000, 10000},
 }, []string{"handler", "status", "http_status"})
 
-func MeasureHandlerDuration(handler string) func(httpStatus *int, err error) time.Duration {
+func MeasureHandlerDuration(operation string) func(httpStatus *int, err error) time.Duration {
 	startTime := time.Now()
 
 	return func(httpStatus *int, err error) time.Duration {
@@ -39,8 +39,20 @@ func MeasureHandlerDuration(handler string) func(httpStatus *int, err error) tim
 			_status = "failure"
 		}
 
-		measurement.WithLabelValues(handler, _status, _httpStatus).Observe(float64(elapsed.Milliseconds()))
+		measurement.WithLabelValues(operation, _status, _httpStatus).Observe(float64(elapsed.Milliseconds()))
 
 		return elapsed
+	}
+}
+
+func MeasureHandlerDurationWrapper(operation string, handler func(ctx *fiber.Ctx) error) func(ctx *fiber.Ctx) error {
+	return func(ctx *fiber.Ctx) error {
+		cb := MeasureHandlerDuration(operation)
+
+		err := handler(ctx)
+		statusCode := ctx.Response().StatusCode()
+		cb(&statusCode, err)
+
+		return err
 	}
 }

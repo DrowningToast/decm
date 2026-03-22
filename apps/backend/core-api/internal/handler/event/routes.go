@@ -1,6 +1,7 @@
 package event
 
 import (
+	"apps/backend/core-api/internal/handler/metrics"
 	"apps/backend/services/log"
 
 	"github.com/gofiber/fiber/v2"
@@ -15,34 +16,34 @@ func (h *Handler) Mount(r fiber.Router) {
 	)
 
 	// PARTICIPANT
-	eventGroup.Get("/", h.GetEventsList)
-	eventGroup.Get("/:event_id", h.GetEventById)
-	eventGroup.Get("/:event_id/viewmodel", h.GetEventViewModel)
+	eventGroup.Get("/", metrics.MeasureHandlerDurationWrapper("event.GetEventsList", h.GetEventsList))
+	eventGroup.Get("/:event_id", metrics.MeasureHandlerDurationWrapper("event.GetEventById", h.GetEventById))
+	eventGroup.Get("/:event_id/viewmodel", metrics.MeasureHandlerDurationWrapper("event.GetEventViewModel", h.GetEventViewModel))
 
 	// HOST
-	eventGroup.Post("/", h.CreateEvent)
+	eventGroup.Post("/", metrics.MeasureHandlerDurationWrapper("event.CreateEvent", h.CreateEvent))
 
-	eventGroup.Post("/:event_id/issuers", h.CreateEventIssuer)
-	eventGroup.Get("/:event_id/participants", h.GetEventParticipants)
-	eventGroup.Post("/:event_id/certificates/import", h.ImportCertificateReceivers)
-	eventGroup.Post("/:event_id/certificates/publish", h.PublishEventCertificates)
-	eventGroup.Post("/:event_id/certificates/revoke", h.RevokeEventCertificates)
-	eventGroup.Post("/:event_id/certificates/revoke-all", h.RevokeAllEventCertificates)
-	eventGroup.Post("/:event_id/certificates/sign", h.SignEventCertificates)
-	eventGroup.Get("/:event_id/certificates", h.GetEventCertificates)
-	eventGroup.Get("/:event_id/certificates/list-viewmodel", h.GetCertificatesListViewModel)
-	eventGroup.Put("/:event_id/certificates/text-config", h.UpdateEventCertificateTextConfig)
+	eventGroup.Post("/:event_id/issuers", metrics.MeasureHandlerDurationWrapper("event.CreateEventIssuer", h.CreateEventIssuer))
+	eventGroup.Get("/:event_id/participants", metrics.MeasureHandlerDurationWrapper("event.GetEventParticipants", h.GetEventParticipants))
+	eventGroup.Post("/:event_id/certificates/import", metrics.MeasureHandlerDurationWrapper("event.ImportCertificateReceivers", h.ImportCertificateReceivers))
+	eventGroup.Post("/:event_id/certificates/publish", metrics.MeasureHandlerDurationWrapper("event.PublishEventCertificates", h.PublishEventCertificates))
+	eventGroup.Post("/:event_id/certificates/revoke", metrics.MeasureHandlerDurationWrapper("event.RevokeEventCertificates", h.RevokeEventCertificates))
+	eventGroup.Post("/:event_id/certificates/revoke-all", metrics.MeasureHandlerDurationWrapper("event.RevokeAllEventCertificates", h.RevokeAllEventCertificates))
+	eventGroup.Post("/:event_id/certificates/sign", metrics.MeasureHandlerDurationWrapper("event.SignEventCertificates", h.SignEventCertificates))
+	eventGroup.Get("/:event_id/certificates", metrics.MeasureHandlerDurationWrapper("event.GetEventCertificates", h.GetEventCertificates))
+	eventGroup.Get("/:event_id/certificates/list-viewmodel", metrics.MeasureHandlerDurationWrapper("event.GetCertificatesListViewModel", h.GetCertificatesListViewModel))
+	eventGroup.Put("/:event_id/certificates/text-config", metrics.MeasureHandlerDurationWrapper("event.UpdateEventCertificateTextConfig", h.UpdateEventCertificateTextConfig))
 
-	eventGroup.Get("/:event_id/contracts", h.GetEventContractByEventID)
-	eventGroup.Get("/:event_id/issuers", h.GetEventIssuersByEventID)
+	eventGroup.Get("/:event_id/contracts", metrics.MeasureHandlerDurationWrapper("event.GetEventContractByEventID", h.GetEventContractByEventID))
+	eventGroup.Get("/:event_id/issuers", metrics.MeasureHandlerDurationWrapper("event.GetEventIssuersByEventID", h.GetEventIssuersByEventID))
 
-	eventGroup.Get("/owner-credentials/:owner_credential_id", h.GetEventsByOwnerCredentialsId)
+	eventGroup.Get("/owner-credentials/:owner_credential_id", metrics.MeasureHandlerDurationWrapper("event.GetEventsByOwnerCredentialsId", h.GetEventsByOwnerCredentialsId))
 
-	eventGroup.Put("/:event_id", h.UpdateEvent)
-	eventGroup.Put("/:event_id/contracts", h.UpdateEventContract)
-	eventGroup.Put("/:event_id/issuers", h.UpdateEventIssuer)
+	eventGroup.Put("/:event_id", metrics.MeasureHandlerDurationWrapper("event.UpdateEvent", h.UpdateEvent))
+	eventGroup.Put("/:event_id/contracts", metrics.MeasureHandlerDurationWrapper("event.UpdateEventContract", h.UpdateEventContract))
+	eventGroup.Put("/:event_id/issuers", metrics.MeasureHandlerDurationWrapper("event.UpdateEventIssuer", h.UpdateEventIssuer))
 
-	eventGroup.Delete("/:event_id/contracts", h.DeleteEventContract)
-	eventGroup.Delete("/:event_id", h.DeleteEvent)
-	eventGroup.Delete("/:event_id/issuers/:issuer_id", h.DeleteEventIssuer)
+	eventGroup.Delete("/:event_id/contracts", metrics.MeasureHandlerDurationWrapper("event.DeleteEventContract", h.DeleteEventContract))
+	eventGroup.Delete("/:event_id", metrics.MeasureHandlerDurationWrapper("event.DeleteEvent", h.DeleteEvent))
+	eventGroup.Delete("/:event_id/issuers/:issuer_id", metrics.MeasureHandlerDurationWrapper("event.DeleteEventIssuer", h.DeleteEventIssuer))
 }

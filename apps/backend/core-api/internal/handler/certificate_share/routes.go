@@ -1,6 +1,7 @@
 package certificate_share_handler
 
 import (
+	"apps/backend/core-api/internal/handler/metrics"
 	"apps/backend/services/log"
 	"time"
 
@@ -15,8 +16,8 @@ func (h *Handler) Mount(r fiber.Router) {
 
 	// Authenticated routes — auth guard applied per route
 	configGroup := shareGroup.Group("/config")
-	configGroup.Post("/:certificate_id", h.AuthenticationGuardMiddleware.Middleware, h.CreateCertificateShare)
-	configGroup.Patch("/:share_id", h.AuthenticationGuardMiddleware.Middleware, h.UpdateCertificateShare)
+	configGroup.Post("/:certificate_id", h.AuthenticationGuardMiddleware.Middleware, metrics.MeasureHandlerDurationWrapper("certificateShare.CreateCertificateShare", h.CreateCertificateShare))
+	configGroup.Patch("/:share_id", h.AuthenticationGuardMiddleware.Middleware, metrics.MeasureHandlerDurationWrapper("certificateShare.UpdateCertificateShare", h.UpdateCertificateShare))
 
 	// Rate limiter for public verification routes: 20 requests per IP per minute
 	verifyLimiter := limiter.New(limiter.Config{
@@ -33,6 +34,6 @@ func (h *Handler) Mount(r fiber.Router) {
 	})
 
 	// Public routes
-	shareGroup.Post("/:handle", verifyLimiter, h.GetCertificateShareData)
-	shareGroup.Get("/:handle/image", verifyLimiter, h.GetCertificateShareImage)
+	shareGroup.Post("/:handle", verifyLimiter, metrics.MeasureHandlerDurationWrapper("certificateShare.GetCertificateShareData", h.GetCertificateShareData))
+	shareGroup.Get("/:handle/image", verifyLimiter, metrics.MeasureHandlerDurationWrapper("certificateShare.GetCertificateShareImage", h.GetCertificateShareImage))
 }
