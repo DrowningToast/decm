@@ -12,6 +12,7 @@ import (
 	"apps/backend/core-api/internal/handler/profile"
 	"apps/backend/core-api/internal/handler/system_status"
 	"apps/backend/core-api/internal/repositories/postgres"
+	"apps/backend/core-api/internal/worker"
 	"apps/backend/services/auth"
 	"apps/backend/services/log"
 	"apps/backend/services/oauth"
@@ -25,16 +26,19 @@ import (
 	"syscall"
 	"time"
 
-	contract_repo "apps/backend/core-api/internal/repositories/contract/event"
 	blockchain_repo "apps/backend/core-api/internal/repositories/contract/blockchain"
+	certificate_contract_repo "apps/backend/core-api/internal/repositories/contract/certificate"
+	contract_repo "apps/backend/core-api/internal/repositories/contract/event"
 	s3_repo "apps/backend/core-api/internal/repositories/storage/s3"
 
 	customerror "apps/backend/common/customerror"
 
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 
 	auth_handler "apps/backend/core-api/internal/handler/auth"
 	blockchain_handler "apps/backend/core-api/internal/handler/blockchain"
+	certificate_share_handler "apps/backend/core-api/internal/handler/certificate_share"
 
 	eventconfig_handler "apps/backend/core-api/internal/handler/eventconfig"
 	inboxmessages_handler "apps/backend/core-api/internal/handler/inbox_messages"
@@ -48,6 +52,7 @@ import (
 	auth_usecase "apps/backend/core-api/internal/usecase/auth"
 	blockchain_usecase "apps/backend/core-api/internal/usecase/blockchain"
 
+	certificate_share_usecase "apps/backend/core-api/internal/usecase/certificate_share"
 	event_usecase "apps/backend/core-api/internal/usecase/event"
 	event_registration_invitation_usecase "apps/backend/core-api/internal/usecase/event_registration"
 	eventconfig_usecase "apps/backend/core-api/internal/usecase/eventconfig"
@@ -57,7 +62,6 @@ import (
 	onboard_usecase "apps/backend/core-api/internal/usecase/onboard"
 	profile_usecase "apps/backend/core-api/internal/usecase/profile"
 	system_status_usecase "apps/backend/core-api/internal/usecase/system_status"
-	"apps/backend/core-api/internal/worker"
 
 	json "github.com/goccy/go-json"
 
@@ -107,7 +111,7 @@ func main() {
 		pgConn.Close()
 		log.Logger.InfoContext(ctx, "Gracefully closed pgxpool connection")
 	}()
-	log.Logger.Info("Sucessfully connected to pg pool")
+	log.Logger.Info("Successfully connected to pg pool")
 
 	// services
 	expiration, err := time.ParseDuration(cfg.Jwt.Expiration)
@@ -141,27 +145,34 @@ func main() {
 
 	blockchainClientRepo := blockchain_repo.NewBlockchainClientRepository(ethClient, &cfg.Blockchain)
 	eventContractFactoryRepo := contract_repo.NewEventContractFactoryRepository(ethClient, blockchainClientRepo)
+	certificateContractFactoryRepo := certificate_contract_repo.NewCertificateContractFactoryRepository(ethClient, blockchainClientRepo)
 
 	onboardUc := onboard_usecase.NewOnboardUsecase(pgRepo, pgRepo, authService, googleOAuthService)
 	oauthUc := oauth_usecase.NewOAuthUsecase(googleOAuthService, pgRepo)
 	authUc := auth_usecase.NewAuthUsecase(pgRepo, blockchainClientRepo)
 	profileUc := profile_usecase.NewProfileUsecase(pgRepo, pgRepo, authService, pgRepo)
 	systemStatusUc := system_status_usecase.NewSystemStatusUsecase(pgRepo)
-	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, eventContractFactoryRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, blockchainClientRepo, ethClient, s3Repo, log.Logger, authService, &cfg)
+	eventUc := event_usecase.NewEventUsecase(pgRepo, pgRepo, eventContractFactoryRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, blockchainClientRepo, ethClient, s3Repo, log.Logger, authService, &cfg)
+	backendPrivateKey, err := crypto.HexToECDSA(cfg.Blockchain.PrivateKey)
+	if err != nil {
+		log.Logger.WarnContext(ctx, "backend private key not configured or invalid — share decryption disabled", slog.String("error", err.Error()))
+		backendPrivateKey = nil
+	}
+	certificateShareUc := certificate_share_usecase.NewCertificateShareUsecase(pgRepo, pgRepo, certificateContractFactoryRepo, eventUc, backendPrivateKey, log.Logger)
 	eventConfigUc := eventconfig_usecase.NewEventConfigUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, *s3Service, log.Logger)
 	issuerUc := issuer_usecase.NewIssuerUsecase(pgRepo)
 	inboxUc := inbox_usecase.NewInboxUsecase(pgRepo, pgRepo, pgRepo, pgRepo, pgRepo, pgRepo)
 	blockchainUc := blockchain_usecase.NewBlockchainUsecase(log.Logger, &cfg, blockchainClientRepo)
 	eventRegistrationUc := event_registration_invitation_usecase.NewEventRegistrationUsecase(
-		pgRepo,                    // InboxMessageDataGateway
-		pgRepo,                    // EventRegistrationInvitationDataGateway
-		pgRepo,                    // EventDataGateway
-		pgRepo,                    // EventContractDataGateway
-		pgRepo,                    // EventAttendeeDataGateway
-		pgRepo,                    // EventRegistrationConfigDataGateway
-		pgRepo,                    // AuthenticationCredentialDataGateway
-		*authUc,                   // AuthUsecase (dereference pointer to value)
-		*eventUc,                  // EventUsecase (dereference pointer to value)
+		pgRepo,                   // InboxMessageDataGateway
+		pgRepo,                   // EventRegistrationInvitationDataGateway
+		pgRepo,                   // EventDataGateway
+		pgRepo,                   // EventContractDataGateway
+		pgRepo,                   // EventAttendeeDataGateway
+		pgRepo,                   // EventRegistrationConfigDataGateway
+		pgRepo,                   // AuthenticationCredentialDataGateway
+		*authUc,                  // AuthUsecase (dereference pointer to value)
+		*eventUc,                 // EventUsecase (dereference pointer to value)
 		pgRepo,                   // UserSignatureDataGateway
 		eventContractFactoryRepo, // EventContractFactoryDataGateway
 		blockchainClientRepo,     // BlockchainClientDataGateway
@@ -255,6 +266,9 @@ func main() {
 
 	certificateHandler := certificate.NewHandler(eventUc, authService, authenticationGuardMiddleware, log.Logger)
 	certificateHandler.Mount(apiV1)
+
+	certificateShareHandler := certificate_share_handler.NewHandler(ctx, certificateShareUc, authService, authenticationGuardMiddleware, log.Logger)
+	certificateShareHandler.Mount(apiV1)
 
 	eventHandler := event.NewHandler(eventUc, eventConfigUc, profileUc, eventRegistrationUc, authService, authenticationGuardMiddleware, log.Logger)
 	eventHandler.Mount(apiV1)

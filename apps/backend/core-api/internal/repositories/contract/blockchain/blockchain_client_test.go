@@ -97,7 +97,7 @@ func TestGetTransactOpts_MarketFeeExceedsCap(t *testing.T) {
 	}
 	r := newTestRepo(cfg, func(ctx context.Context) (*blockchainclient_datagateway.GasPriceInfo, error) {
 		return &blockchainclient_datagateway.GasPriceInfo{
-			MaxFeePerGasGwei:         1.0,  // above cap
+			MaxFeePerGasGwei:         1.0, // above cap
 			MaxPriorityFeePerGasGwei: 0.02,
 			BaseFeeGwei:              0.49,
 		}, nil
@@ -121,7 +121,7 @@ func TestGetTransactOpts_MarketFeeAtExactCap(t *testing.T) {
 	}
 	r := newTestRepo(cfg, func(ctx context.Context) (*blockchainclient_datagateway.GasPriceInfo, error) {
 		return &blockchainclient_datagateway.GasPriceInfo{
-			MaxFeePerGasGwei:         0.1,  // exactly at cap
+			MaxFeePerGasGwei:         0.1, // exactly at cap
 			MaxPriorityFeePerGasGwei: 0.02,
 			BaseFeeGwei:              0.04,
 		}, nil
@@ -171,12 +171,12 @@ func TestGetTransactOpts_SetsActualMarketRate_NotCap(t *testing.T) {
 
 func TestGetTransactOpts_FeeCapConversionAccuracy(t *testing.T) {
 	tests := []struct {
-		name             string
-		marketFeeGwei    float64
-		marketTipGwei    float64
-		capGwei          float64
-		expectedFeeWei   *big.Int
-		expectedTipWei   *big.Int
+		name           string
+		marketFeeGwei  float64
+		marketTipGwei  float64
+		capGwei        float64
+		expectedFeeWei *big.Int
+		expectedTipWei *big.Int
 	}{
 		{
 			name:           "Sepolia low gas (0.1 Gwei fee, 0.05 Gwei tip)",

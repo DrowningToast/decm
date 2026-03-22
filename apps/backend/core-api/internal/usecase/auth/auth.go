@@ -1,8 +1,8 @@
 package auth
 
 import (
-	blockchainclient_datagateway "apps/backend/core-api/internal/datagateway/onchain/blockchain_client"
 	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
+	blockchainclient_datagateway "apps/backend/core-api/internal/datagateway/onchain/blockchain_client"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"

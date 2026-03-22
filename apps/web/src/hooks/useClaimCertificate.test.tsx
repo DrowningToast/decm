@@ -47,6 +47,7 @@ const makeSuccessResponse = (overrides = {}) => ({
     transactionHash: "0xabc",
     claimedAt: "2024-01-01T00:00:00Z",
     message: "Certificate claimed successfully",
+    status: "success",
     ...overrides,
 });
 

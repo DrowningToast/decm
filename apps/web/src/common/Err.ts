@@ -25,6 +25,7 @@ export type ErrType =
     | "FORBIDDEN"
     | "NOT_FOUND"
     | "DUPLICATE_ENTRY"
+    | "RATE_LIMITED"
     | "INTERNAL_CLIENT_ERROR"
     | "INTERNAL_SERVER_ERROR";
 
@@ -65,6 +66,12 @@ const ERROR_PRESETS: ErrPresets = {
         title: "errors.conflict",
         description: "errors.duplicateEntryDescription",
         toastType: "error",
+        useCaseId: USECASE_IDS.GENERIC,
+    },
+    RATE_LIMITED: {
+        title: "errors.rateLimited",
+        description: "errors.rateLimitedDescription",
+        toastType: "warning",
         useCaseId: USECASE_IDS.GENERIC,
     },
     INTERNAL_CLIENT_ERROR: {
@@ -153,6 +160,9 @@ export const ToastFromAxiosError = (
             break;
         case 409:
             errorPresetType = "DUPLICATE_ENTRY";
+            break;
+        case 429:
+            errorPresetType = "RATE_LIMITED";
             break;
         case 500:
             errorPresetType = "INTERNAL_SERVER_ERROR";

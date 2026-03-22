@@ -141,7 +141,6 @@ function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
 }
 
 export {
-    // eslint-disable-next-line
     useFormField,
     Form,
     FormItem,

@@ -16,7 +16,6 @@ type OAuthOnboardContextType = {
     handleSubmit: () => Promise<void>;
 };
 
-//eslint-disable-next-line react-refresh/only-export-components
 export const OAuthOnboardContext = createContext<OAuthOnboardContextType>(
     undefined as unknown as OAuthOnboardContextType,
 );

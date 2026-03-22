@@ -15,11 +15,13 @@ import { InboxMissingEventNav } from "./variants/InboxMissingEventNav";
 import { BottomContainerProvider } from "./context";
 import type { ClassValue } from "clsx";
 import { cn } from "@/lib/utils";
+import { CertificateDetailSharedNav } from "./variants/CertificateDetailSharedNav";
 
 export type BottomNavVariant =
     | "search-certificate"
     | "search-notification"
     | "certificate-detail"
+    | "certificate-details-shared"
     | "search-event"
     | "search-identities"
     | "event-password"
@@ -50,6 +52,8 @@ export const BottomNav = ({
                 return <SearchEventNav />;
             case "certificate-detail":
                 return <CertificateDetailNav />;
+            case "certificate-details-shared":
+                return <CertificateDetailSharedNav />;
             case "search-notification":
                 return <SearchNotificationNav />;
             case "search-identities":
@@ -75,34 +79,43 @@ export const BottomNav = ({
         }
     }, [variant]);
 
+    const isCompact = variant === "certificate-detail" || variant === "certificate-details-shared";
+
     return (
         <>
-            {/* Mobile - Full Width (or compact for certificate-detail) */}
+            {/* Mobile - Full Width (or compact for certificate variants) */}
             <div
                 className={cn(
-                    "md:hidden fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background to-transparent",
-                    variant === "certificate-detail" && "flex justify-center",
+                    "md:hidden fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-background to-transparent",
+                    isCompact && "flex justify-center",
                     className,
                 )}
             >
                 <BottomContainerProvider
                     onBack={onBack}
-                    className={cn(variant === "certificate-detail" ? "w-auto" : "w-full")}
+                    className={isCompact ? "w-auto" : "w-full"}
                 >
-                    <div className="flex flex-col gap-1 w-full">{content}</div>
+                    <div className={cn("flex flex-col gap-1", isCompact ? "w-auto" : "w-full")}>
+                        {content}
+                    </div>
                 </BottomContainerProvider>
             </div>
 
-            {/* Desktop - Fixed Width (or compact for certificate-detail) */}
+            {/* Desktop - Fixed Width (or compact for certificate variants) */}
             <div
                 className={cn(
                     "hidden md:flex fixed bottom-12 left-1/2 transform -translate-x-1/2 justify-center z-50 pointer-events-auto",
-                    variant === "certificate-detail" ? "w-auto" : "w-[700px]",
+                    isCompact ? "w-auto" : "w-[700px]",
                     className,
                 )}
             >
-                <BottomContainerProvider onBack={onBack} className="w-full">
-                    <div className="flex flex-col gap-1 w-full">{content}</div>
+                <BottomContainerProvider
+                    onBack={onBack}
+                    className={isCompact ? "w-auto" : "w-full"}
+                >
+                    <div className={cn("flex flex-col gap-1", isCompact ? "w-auto" : "w-full")}>
+                        {content}
+                    </div>
                 </BottomContainerProvider>
             </div>
         </>

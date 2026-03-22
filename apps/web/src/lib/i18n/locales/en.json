@@ -28,7 +28,6 @@
         "close": "Close",
         "back": "Back",
         "next": "Next",
-        "submit": "Submit",
         "search": "Search",
         "filter": "Filter",
         "sort": "Sort",
@@ -64,7 +63,8 @@
             "page": "Page {{current}}",
             "pageOf": "Page {{current}} of {{total}}",
             "noResults": "No results found."
-        }
+        },
+        "validationErrors": "Please fix the following errors:"
     },
     "nav": {
         "home": "Home",
@@ -89,6 +89,7 @@
         "other": "Other",
         "preference": "Preference",
         "readDocs": "Coming soon",
+        "verify": "Verify",
         "socials": "Socials",
         "noItems": "No items",
         "menu": "Menu",
@@ -157,6 +158,91 @@
         "subtitle": "Bring your own wallet or sign in with  trusted OAuth provider",
         "walletButton": "Sign in with Web3 Wallet Provider",
         "googleButton": "Sign in with Google Account"
+    },
+    "certificateVerify": {
+        "pageTitle": "Verify Certificate",
+        "pageDescription": "Certificate holders can share their credentials using a unique share code. Enter that code here to view the certificate — each certificate is backed by cryptographic signatures from the event organizer and issuers, and recorded on the blockchain as a non-transferable token when claimed.",
+        "emptyFrame": "Certificate will appear here",
+        "notFound": "Certificate not found",
+        "rateLimited": "Too many requests. Please wait a moment before trying again.",
+        "pending": "Certificate is pending",
+        "passwordProtected": "This certificate is password protected.",
+        "passwordPlaceholder": "Enter password",
+        "passwordRequired": "Password is required.",
+        "incorrectPassword": "Incorrect password. Please try again.",
+        "unlockButton": "Unlock",
+        "unlockSuccess": "Certificate unlocked successfully.",
+        "cancelButton": "Cancel — enter a different share code",
+        "lockedFrameTitle": "Certificate is locked",
+        "lockedFrameHint": "Enter the password below to view this certificate.",
+        "enterCodeHint": "Enter a certificate share code to verify",
+        "codePlaceholder": "Certificate share code",
+        "verifyButton": "Verify",
+        "back": "Back",
+        "table": {
+            "certDataHeading": "Certificate Data",
+            "onChainProofHeading": "Certificate On-Chain Proof",
+            "attendeeDataHeading": "Attendee Data",
+            "attendeeDataNote": "Name and academic institution are cross-checked against the on-chain certificate hash. Other fields are encrypted attendee profile data — present but not individually hashed.",
+            "fullName": "Full Name",
+            "receiverName": "Receiver Name",
+            "event": "Event",
+            "eventDescription": "Description",
+            "title": "Title",
+            "subtitle": "Subtitle",
+            "tokenId": "Token ID",
+            "certificateId": "Certificate ID",
+            "issuedAt": "Issued At",
+            "issuerAddress": "Issuer Address",
+            "issuerId": "Issuer ID",
+            "receiverAddress": "Receiver Address",
+            "userId": "User ID",
+            "encryptedUserData": "Encrypted User Data",
+            "backendEncryptedUserData": "Backend Encrypted Data",
+            "firstName": "First Name",
+            "lastName": "Last Name",
+            "email": "Email",
+            "academicInstitution": "Academic Institution",
+            "academicEmail": "Academic Email",
+            "phoneNumber": "Phone Number",
+            "address": "Address",
+            "bio": "Bio",
+            "status": "Status",
+            "credentialType": "Credential Type",
+            "issuanceDate": "Issuance Date",
+            "hash": "Hash",
+            "contractAddress": "Contract Address",
+            "signMessage": "Sign Message",
+            "hostPublicKey": "Host Public Key",
+            "hostSignature": "Host Signature",
+            "issuerKey": "Issuer{{n}} Key",
+            "issuerSignature": "Issuer{{n}} Signature",
+            "technicalDetails": "Technical Details"
+        },
+        "onChain": {
+            "heading": "Direct On-Chain Query",
+            "loading": "Querying blockchain…",
+            "error": "Failed to query the contract. Check your network connection.",
+            "contract": "Contract",
+            "owner": "Owner"
+        },
+        "how": {
+            "heading": "How it works",
+            "step1": {
+                "title": "Issued & signed on-chain",
+                "description": "The organizer publishes the certificate and authorized issuers sign it with their private keys. The signed certificate is minted as a non-transferable token on the blockchain."
+            },
+            "step2": {
+                "title": "Holder generates a share code",
+                "description": "The certificate holder creates a unique share code from their account — optionally protected with a password — and sends it to whoever needs to verify."
+            },
+            "step3": {
+                "title": "Anyone can verify",
+                "description": "Enter the share code here. The certificate's authenticity is confirmed by checking the organizer and issuer signatures stored on-chain."
+            }
+        },
+        "verified": "Verified",
+        "invalid": "Invalid"
     },
     "verify": {
         "title": "Verify",
@@ -240,6 +326,7 @@
             "subtitle": "Use blockchain technology for certificate solution",
             "ctaButton": "Start building your portfolio",
             "hasAccount": "I already have an account",
+            "verifyCertificate": "Verify a certificate",
             "scrollIndicator": "Scroll to explore"
         },
         "about": {
@@ -349,7 +436,17 @@
             "privateOnly": "Password required",
             "privateOnlyDescription": "This event is private and requires a password to register.",
             "success": "Registration successful!",
-            "successDescription": "You have successfully registered for this event."
+            "successDescription": "You have successfully registered for this event.",
+            "unavilablePassword": "Password is not available for this event"
+        },
+        "participants": {
+            "cancelSuccess": "Invitation cancelled successfully"
+        },
+        "certificates": {
+            "revokeAllSuccess": "All certificates revoked successfully",
+            "revokeAllError": "Failed to revoke all certificates. Please try again.",
+            "revokeSuccess": "Certificate revoked successfully",
+            "revokeError": "Failed to revoke certificate. Please try again."
         }
     },
     "events": {
@@ -468,7 +565,9 @@
             "duplicateEntryDescription": "The input already exists.",
             "internalServerErrorDescription": "Something went wrong. Please try again later.",
             "internalClientErrorDescription": "Client error. Please try again later.",
-            "forbiddenDescription": "You are not authorized to perform this action."
+            "forbiddenDescription": "You are not authorized to perform this action.",
+            "rateLimited": "Too many requests",
+            "rateLimitedDescription": "You're sending requests too quickly. Please wait a moment and try again."
         },
         "registration": {
             "incorrectPassword": "Incorrect password. Please try again.",
@@ -782,6 +881,8 @@
             "claimSuccess": "Certificate claimed successfully!",
             "claimQueued": "Certificate claim submitted — minting in progress!",
             "claimError": "Failed to claim certificate. Please try again.",
+            "shareSuccess": "Certificate share link created successfully!",
+            "shareError": "Failed to create share link: {{error}}",
             "claimNote": "Sign this certificate to add it to your blockchain credentials",
             "claimed": "Certificate Claimed",
             "mustJoinEventFirst": "You need to join this event as a participant before claiming the certificate",
@@ -789,6 +890,17 @@
             "errorLoadingCertificate": "Failed to load certificate details",
             "notFound": "Certificate not found",
             "notFoundDescription": "The certificate you're looking for doesn't exist or you don't have access to it.",
+            "defaultTitle": "Certificate of Achievement",
+            "passwordDialog": {
+                "title": "Certificate Password Settings",
+                "description": "Enable password protection to restrict access to this certificate share.",
+                "enablePasswordProtection": "Enable password protection",
+                "passwordPlaceholder": "Enter password",
+                "newPasswordPlaceholder": "Enter new password",
+                "passwordCurrentlySet": "A password is currently set. Enter a new password to replace it, or uncheck the box to remove protection.",
+                "updateSuccess": "Password protection updated successfully",
+                "updateError": "Failed to update password protection: {{error}}"
+            },
             "detail": {
                 "issuedBy": "Issued by",
                 "issued": "Issued",
@@ -808,15 +920,46 @@
                 "eventContractAddress": "Event Contact Address",
                 "verifiableCredentialAttributes": "Verifiable Credential Attributes",
                 "downloadAttributes": "download",
-                "copyShareableUrl": "Copy shareable URL",
                 "certificateFromEvent": "Certificate from {{eventName}}",
                 "certificatePreview": "Certificate Preview",
                 "imageLoadError": "Failed to load certificate image",
                 "loadingImageHint": "Loading certificate preview... This may take a while on the first load.",
                 "downloadAsImage": "Download as an image",
+                "download": "Download",
+                "createShareableLink": "Create shareable link",
+                "publish": "Publish",
+                "editPassword": "Password",
+                "copyShareableUrl": "Copy URL",
+                "copyCode": "Copy code",
+                "shareCode": "Share code",
+                "codeCopied": "Code copied",
+                "urlCopied": "Link copied",
+                "saving": "Saving...",
+                "makingVisible": "Making it visible...",
+                "makingHidden": "Making it hidden...",
+                "saveSuccess": "Changes saved",
+                "saveError": "Failed to save changes: {{error}}",
                 "downloading": "Downloading...",
                 "downloadSuccess": "Certificate downloaded successfully!",
-                "downloadError": "Failed to download certificate. Please try again."
+                "downloadError": "Failed to download certificate. Please try again.",
+                "openShareModal": "Share certificate",
+                "share": "Share",
+                "shareModal": {
+                    "title": "Share Certificate",
+                    "description": "Share this certificate with anyone using the link or QR code below.",
+                    "statusVisible": "Published",
+                    "statusHidden": "Hidden — recipients cannot view this yet",
+                    "passwordProtected": "Password protected",
+                    "noPassword": "No password",
+                    "shareUrl": "Share URL",
+                    "shareCode": "Share Code",
+                    "copyUrl": "Copy URL",
+                    "copyCode": "Copy code",
+                    "copyQr": "Copy QR",
+                    "downloadQr": "Download QR",
+                    "openVerifyPage": "Open verify page",
+                    "noHandle": "No share link available."
+                }
             }
         },
         "events": {
@@ -938,7 +1081,8 @@
                 "certificateInvitation": "Certificate Invitation",
                 "certificateInvitationWithDetails": "Certificate Invitation: {{certificateTitle}} from {{eventName}}",
                 "general": "Message"
-            }
+            },
+            "noDescription": "No description"
         }
     },
     "createEvent": {
@@ -1259,6 +1403,21 @@
             "title": "Step 3: Font Settings",
             "description": "Customize the font family and weight for each text field in your certificate template."
         },
+        "fontSettings": {
+            "title": "Font Settings",
+            "description": "Configure font family and weight for each text field in the certificate template.",
+            "noFieldsConfigured": "No text fields have been positioned in the certificate template yet. Configure text positions first to manage font settings.",
+            "field": "Field",
+            "fontFamily": "Font Family",
+            "fontWeight": "Weight",
+            "selectFont": "Select font",
+            "selectWeight": "Select weight",
+            "eventName": "Event Name",
+            "participantName": "Participant Name",
+            "academicInstitution": "Academic Institution",
+            "certificateTitle": "Certificate Title",
+            "certificateSubtitle": "Certificate Subtitle"
+        },
         "confirmButton": "Confirm Settings",
         "saveSuccess": "Certificate settings saved successfully",
         "saveError": "Failed to save certificate settings. Please try again.",
@@ -1307,6 +1466,7 @@
         "lastNameMax64": "Last name must be at most 64 characters",
         "emailMax64": "Email must be at most 64 characters",
         "phoneNumberMax10": "Phone number must be at most 10 characters",
+        "phoneNumberMax15": "Phone number must be at most 15 characters",
         "phoneNumberMax20": "Phone number must be at most 20 characters",
         "bioMin10": "Bio must be at least 10 characters",
         "bioMax255": "Bio must be at most 255 characters",
@@ -1352,6 +1512,8 @@
             "signatureRequestDescription": "Enter your PIN to sign certificates",
             "issuersStatus": "Issuers Status",
             "noIssuersFound": "No issuers found for this event",
+            "signingProgress": "Signing Progress",
+            "ofSigned": "of {{count}} signed",
             "issuer": "Issuer",
             "you": "You",
             "completed": "Completed",
@@ -1412,7 +1574,8 @@
         "inbox": {
             "title": "Something went wrong",
             "description": "We couldn't load this message. Please try again later."
-        }
+        },
+        "failedToLoadEvent": "Failed to load event"
     },
     "notFound": {
         "title": "404 - Page Not Found",
@@ -1590,6 +1753,17 @@
             "unauthenticated_response": "You must be logged in to access this page. Please sign in.",
             "unauthorized_response": "You don't have permission to access this page. Please contact an administrator.",
             "sign_out_success": "You have been signed out successfully."
+        },
+        "oauth_google": {
+            "create_account_error_password": "Password is required to create an account.",
+            "missing_access_token": "Missing Access Token",
+            "missing_access_token_description": "The OAuth access token is missing. Please try signing in again through Google.",
+            "missing_expires_in": "Missing Token Expiration",
+            "missing_expires_in_description": "The token expiration information is missing. Please try signing in again through Google."
+        },
+        "wallet": {
+            "create_profile_error": "Failed to create profile. Please try again.",
+            "create_profile_success": "Profile created successfully"
         }
     }
 }

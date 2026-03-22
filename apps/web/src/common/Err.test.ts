@@ -265,6 +265,11 @@ describe("ToastFromAxiosError", () => {
                 description: "errors.duplicateEntryDescription",
                 toastType: "error" as const,
             },
+            RATE_LIMITED: {
+                title: "errors.rateLimited",
+                description: "errors.rateLimitedDescription",
+                toastType: "error" as const,
+            },
             INTERNAL_CLIENT_ERROR: {
                 title: "errors.internalClientError",
                 description: "errors.internalClientErrorDescription",

@@ -60,6 +60,15 @@ export const LandingPage = () => {
                                     {t("landing.hero.hasAccount")}
                                 </Typography>
                             </Link>
+                            <Link to="/verify">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    className="text-[#e9dede] text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-foreground transition-colors"
+                                >
+                                    {t("landing.hero.verifyCertificate")}
+                                </Typography>
+                            </Link>
                         </div>
                     </div>
 

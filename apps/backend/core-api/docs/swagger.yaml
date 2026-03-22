@@ -81,17 +81,133 @@ definitions:
     type: object
   certificate.GetMyCertificatesListViewModelResponse:
     properties:
-      claimed_certificates: {}
+      claimed_certificates:
+        items:
+          $ref: '#/definitions/event.ClaimedCertificateViewModel'
+        type: array
       total_claimed:
         type: integer
       total_unclaimed:
         type: integer
-      unclaimed_certificates: {}
+      unclaimed_certificates:
+        items:
+          $ref: '#/definitions/event.UnclaimedCertificateViewModel'
+        type: array
     required:
     - claimed_certificates
     - total_claimed
     - total_unclaimed
     - unclaimed_certificates
+    type: object
+  certificate_share.CertificateShareViewModel:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      event_certificate_id:
+        type: string
+      handle:
+        type: string
+      has_password:
+        type: boolean
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - active
+    - created_at
+    - event_certificate_id
+    - handle
+    - has_password
+    - id
+    - updated_at
+    type: object
+  certificate_share_handler.CertificateShareContractInfo:
+    properties:
+      certificateTokenId:
+        type: string
+      eventCertificateContractAddress:
+        type: string
+    required:
+    - certificateTokenId
+    - eventCertificateContractAddress
+    type: object
+  certificate_share_handler.CertificateShareDataResponse:
+    properties:
+      contract:
+        $ref: '#/definitions/certificate_share_handler.CertificateShareContractInfo'
+      data:
+        $ref: '#/definitions/entity.CertificatePayload'
+      decryptedCertificateData:
+        $ref: '#/definitions/entity.CertificateRawData'
+      decryptedUserData:
+        $ref: '#/definitions/entity.AttendeeProfileData'
+    required:
+    - contract
+    - data
+    type: object
+  certificate_share_handler.CertificateShareViewModel:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      event_certificate_id:
+        type: string
+      handle:
+        type: string
+      has_password:
+        type: boolean
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - active
+    - created_at
+    - event_certificate_id
+    - handle
+    - has_password
+    - id
+    - updated_at
+    type: object
+  certificate_share_handler.CreateCertificateShareBody:
+    properties:
+      password:
+        type: string
+    type: object
+  certificate_share_handler.CreateCertificateShareResponse:
+    properties:
+      share:
+        $ref: '#/definitions/certificate_share_handler.CertificateShareViewModel'
+    required:
+    - share
+    type: object
+  certificate_share_handler.GetCertificateShareBody:
+    properties:
+      password:
+        type: string
+    type: object
+  certificate_share_handler.GetCertificateShareImageBody:
+    properties:
+      password:
+        type: string
+    type: object
+  certificate_share_handler.UpdateCertificateShareBody:
+    properties:
+      active:
+        type: boolean
+      password:
+        type: string
+    type: object
+  certificate_share_handler.UpdateCertificateShareResponse:
+    properties:
+      share:
+        $ref: '#/definitions/certificate_share_handler.CertificateShareViewModel'
+    required:
+    - share
     type: object
   common.SolutionStatus:
     enum:
@@ -135,6 +251,82 @@ definitions:
     - event_contract_address
     - event_id
     - id
+    - updated_at
+    type: object
+  core-api_internal_handler_event.EventResponse:
+    properties:
+      attendees_count:
+        type: integer
+      banner_storage_key:
+        type: string
+      chain_id:
+        type: integer
+      contact_address:
+        type: string
+      contact_number:
+        type: string
+      created_at:
+        type: string
+      end_date:
+        type: string
+      event_status:
+        $ref: '#/definitions/entity.EventStatus'
+      event_type:
+        $ref: '#/definitions/entity.EventType'
+      google_map_query:
+        type: string
+      icon_storage_key:
+        type: string
+      id:
+        type: string
+      is_booking_request_required:
+        type: boolean
+      is_public:
+        type: boolean
+      is_ticket_transferable:
+        type: boolean
+      is_verified:
+        type: boolean
+      location:
+        type: string
+      long_description:
+        type: string
+      max_attendees:
+        type: integer
+      owner_credential_id:
+        type: string
+      short_description:
+        type: string
+      start_date:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - attendees_count
+    - banner_storage_key
+    - chain_id
+    - contact_address
+    - contact_number
+    - created_at
+    - end_date
+    - event_status
+    - event_type
+    - google_map_query
+    - icon_storage_key
+    - id
+    - is_booking_request_required
+    - is_public
+    - is_ticket_transferable
+    - is_verified
+    - location
+    - long_description
+    - max_attendees
+    - owner_credential_id
+    - short_description
+    - start_date
+    - title
     - updated_at
     type: object
   core-api_internal_handler_event.ImportCertificateReceiversRequest:
@@ -421,6 +613,177 @@ definitions:
     required:
     - message
     type: object
+  entity.AttendeeProfileData:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        type: string
+      address:
+        type: string
+      bio:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      phone_number:
+        type: string
+    required:
+    - academic_email
+    - academic_institution
+    - address
+    - bio
+    - email
+    - first_name
+    - last_name
+    - phone_number
+    type: object
+  entity.CertificatePayload:
+    properties:
+      data:
+        $ref: '#/definitions/entity.CertificatePayloadData'
+      header:
+        $ref: '#/definitions/entity.CertificatePayloadHeader'
+      proof:
+        $ref: '#/definitions/entity.CertificatePayloadProof'
+    required:
+    - data
+    - header
+    - proof
+    type: object
+  entity.CertificatePayloadData:
+    properties:
+      backendEncryptedUserData:
+        type: string
+      certificateId:
+        type: string
+      certificateSubtitle:
+        type: string
+      certificateTitle:
+        type: string
+      certificateTokenId:
+        type: string
+      encryptedUserData:
+        type: string
+      eventDescription:
+        type: string
+      eventName:
+        type: string
+      issuedAt:
+        type: string
+      issuerAddresses:
+        type: string
+      issuerId:
+        type: string
+      receiverAddress:
+        type: string
+      status:
+        description: '"VALID" | "REVOKED"'
+        type: string
+      userId:
+        type: string
+    required:
+    - backendEncryptedUserData
+    - certificateId
+    - certificateSubtitle
+    - certificateTitle
+    - certificateTokenId
+    - encryptedUserData
+    - eventDescription
+    - eventName
+    - issuedAt
+    - issuerAddresses
+    - issuerId
+    - receiverAddress
+    - status
+    - userId
+    type: object
+  entity.CertificatePayloadHeader:
+    properties:
+      '@context':
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      issuanceDate:
+        type: string
+      issuer:
+        type: string
+      type:
+        items:
+          type: string
+        type: array
+    required:
+    - '@context'
+    - id
+    - issuanceDate
+    - issuer
+    - type
+    type: object
+  entity.CertificatePayloadHostProof:
+    properties:
+      publicKey:
+        type: string
+      signature:
+        type: string
+    required:
+    - publicKey
+    - signature
+    type: object
+  entity.CertificatePayloadIssuerProof:
+    properties:
+      issuerPublicKey:
+        type: string
+      issuerSignature:
+        type: string
+    required:
+    - issuerPublicKey
+    - issuerSignature
+    type: object
+  entity.CertificatePayloadProof:
+    properties:
+      encryptedByBackendRawData:
+        type: string
+      encryptedByUserRawData:
+        type: string
+      hash:
+        type: string
+      host:
+        $ref: '#/definitions/entity.CertificatePayloadHostProof'
+      issuers:
+        items:
+          $ref: '#/definitions/entity.CertificatePayloadIssuerProof'
+        type: array
+      signMessage:
+        type: string
+    required:
+    - encryptedByBackendRawData
+    - encryptedByUserRawData
+    - hash
+    - host
+    - issuers
+    - signMessage
+    type: object
+  entity.CertificateRawData:
+    properties:
+      academic_institution:
+        type: string
+      certificate_subtitle:
+        type: string
+      certificate_title:
+        type: string
+      name:
+        type: string
+    required:
+    - academic_institution
+    - certificate_subtitle
+    - certificate_title
+    - name
+    type: object
   entity.Event:
     properties:
       attendees_count:
@@ -496,52 +859,6 @@ definitions:
     - start_date
     - title
     - updated_at
-    type: object
-  entity.EventAttendee:
-    properties:
-      academic_email:
-        type: string
-      academic_institution:
-        type: string
-      address:
-        type: string
-      attendee_credential_id:
-        type: string
-      bio:
-        type: string
-      contract_address:
-        type: string
-      created_at:
-        type: string
-      email:
-        type: string
-      event_id:
-        type: string
-      first_name:
-        type: string
-      id:
-        type: string
-      is_attendee_accepted:
-        type: boolean
-      last_name:
-        type: string
-      phone_number:
-        type: string
-      updated_at:
-        type: string
-      user_signature_id:
-        type: string
-      wallet_address:
-        type: string
-    required:
-    - attendee_credential_id
-    - contract_address
-    - created_at
-    - event_id
-    - id
-    - is_attendee_accepted
-    - updated_at
-    - wallet_address
     type: object
   entity.EventCertificate:
     properties:
@@ -802,6 +1119,61 @@ definitions:
     - status
     - updated_at
     type: object
+  event.ClaimedCertificateViewModel:
+    properties:
+      aborted_at:
+        type: string
+      academic_institution:
+        type: string
+      broadcasted_at:
+        type: string
+      certificate_digest:
+        type: string
+      certificate_share:
+        $ref: '#/definitions/certificate_share.CertificateShareViewModel'
+      certificate_subtitle:
+        type: string
+      certificate_title:
+        type: string
+      certificate_token_id:
+        type: string
+      created_at:
+        type: string
+      estimated_deadline:
+        type: string
+      event_certificate_address:
+        type: string
+      event_contract_address:
+        type: string
+      event_id:
+        type: string
+      event_name:
+        type: string
+      id:
+        type: string
+      inbox_message_id:
+        type: string
+      name:
+        type: string
+      receiver_credential_id:
+        type: string
+      receiver_email:
+        type: string
+      revoked_at:
+        type: string
+      signature_created_at:
+        type: string
+      status:
+        type: string
+      user_claim_signature_id:
+        type: string
+    required:
+    - created_at
+    - event_contract_address
+    - event_id
+    - id
+    - status
+    type: object
   event.CreateEventContractRequest:
     properties:
       access_manager_contract_address:
@@ -899,82 +1271,6 @@ definitions:
     - is_attendee_accepted
     - updated_at
     - wallet_address
-    type: object
-  event.EventResponse:
-    properties:
-      attendees_count:
-        type: integer
-      banner_presigned_url:
-        type: string
-      chain_id:
-        type: integer
-      contact_address:
-        type: string
-      contact_number:
-        type: string
-      created_at:
-        type: string
-      end_date:
-        type: string
-      event_status:
-        $ref: '#/definitions/entity.EventStatus'
-      event_type:
-        $ref: '#/definitions/entity.EventType'
-      google_map_query:
-        type: string
-      icon_presigned_url:
-        type: string
-      id:
-        type: string
-      is_booking_request_required:
-        type: boolean
-      is_public:
-        type: boolean
-      is_ticket_transferable:
-        type: boolean
-      is_verified:
-        type: boolean
-      location:
-        type: string
-      long_description:
-        type: string
-      max_attendees:
-        type: integer
-      owner_credential_id:
-        type: string
-      short_description:
-        type: string
-      start_date:
-        type: string
-      title:
-        type: string
-      updated_at:
-        type: string
-    required:
-    - attendees_count
-    - banner_presigned_url
-    - chain_id
-    - contact_address
-    - contact_number
-    - created_at
-    - end_date
-    - event_status
-    - event_type
-    - google_map_query
-    - icon_presigned_url
-    - id
-    - is_booking_request_required
-    - is_public
-    - is_ticket_transferable
-    - is_verified
-    - location
-    - long_description
-    - max_attendees
-    - owner_credential_id
-    - short_description
-    - start_date
-    - title
-    - updated_at
     type: object
   event.EventViewModel:
     properties:
@@ -1181,6 +1477,58 @@ definitions:
     - last_name_requirement_status
     - phone_number_requirement_status
     type: object
+  event.UnclaimedCertificateViewModel:
+    properties:
+      aborted_at:
+        type: string
+      academic_institution:
+        type: string
+      broadcasted_at:
+        type: string
+      certificate_digest:
+        type: string
+      certificate_share:
+        $ref: '#/definitions/certificate_share.CertificateShareViewModel'
+      certificate_subtitle:
+        type: string
+      certificate_title:
+        type: string
+      certificate_token_id:
+        type: string
+      created_at:
+        type: string
+      estimated_deadline:
+        type: string
+      event_certificate_address:
+        type: string
+      event_contract_address:
+        type: string
+      event_id:
+        type: string
+      event_name:
+        type: string
+      id:
+        type: string
+      inbox_message_id:
+        type: string
+      name:
+        type: string
+      receiver_credential_id:
+        type: string
+      receiver_email:
+        type: string
+      revoked_at:
+        type: string
+      signature_created_at:
+        type: string
+      user_claim_signature_id:
+        type: string
+    required:
+    - created_at
+    - event_contract_address
+    - event_id
+    - id
+    type: object
   event.UpdateEventCertificateTextConfigRequest:
     properties:
       academic_institution_font_family_id:
@@ -1309,6 +1657,90 @@ definitions:
     required:
     - event_id
     - issuer_credential_id
+    type: object
+  event_registration.EventAttendeeResponse:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        type: string
+      address:
+        type: string
+      attendee_credential_id:
+        type: string
+      bio:
+        type: string
+      contract_address:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      event_id:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      is_attendee_accepted:
+        type: boolean
+      last_name:
+        type: string
+      phone_number:
+        type: string
+      updated_at:
+        type: string
+      user_signature_id:
+        type: string
+      wallet_address:
+        type: string
+    required:
+    - attendee_credential_id
+    - contract_address
+    - created_at
+    - event_id
+    - id
+    - is_attendee_accepted
+    - updated_at
+    - wallet_address
+    type: object
+  event_registration.EventRegistrationInvitationResponse:
+    properties:
+      academic_institution:
+        type: string
+      accepted_at:
+        type: string
+      cancelled_at:
+        type: string
+      code:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      event_id:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      inbox_message_id:
+        type: string
+      last_name:
+        type: string
+      phone_number:
+        type: string
+      updated_at:
+        type: string
+      valid_until:
+        type: string
+    required:
+    - accepted_at
+    - created_at
+    - event_id
+    - id
+    - inbox_message_id
+    - updated_at
     type: object
   event_registration.GetEventRegistrationInvitationByUserAndEventResponse:
     properties:
@@ -1897,6 +2329,74 @@ definitions:
     - owner_google_email
     - owner_name
     - owner_wallet_address
+    - updated_at
+    type: object
+  issuer.ProfileResponse:
+    properties:
+      academic_email:
+        type: string
+      academic_institution:
+        type: string
+      address:
+        type: string
+      authentication_credential_id:
+        type: string
+      bio:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      github_connector_ref:
+        type: string
+      google_connector_ref:
+        description: Connector references (from authentication_credentials table)
+        type: string
+      id:
+        type: string
+      is_academic_email_public:
+        type: boolean
+      is_academic_institution_public:
+        type: boolean
+      is_address_public:
+        type: boolean
+      is_bio_public:
+        type: boolean
+      is_email_public:
+        type: boolean
+      is_first_name_public:
+        type: boolean
+      is_last_name_public:
+        type: boolean
+      is_phone_number_public:
+        type: boolean
+      is_profile_picture_public:
+        type: boolean
+      last_name:
+        type: string
+      phone_number:
+        type: string
+      profile_picture_url:
+        type: string
+      updated_at:
+        type: string
+      wallet_address:
+        type: string
+    required:
+    - authentication_credential_id
+    - created_at
+    - id
+    - is_academic_email_public
+    - is_academic_institution_public
+    - is_address_public
+    - is_bio_public
+    - is_email_public
+    - is_first_name_public
+    - is_last_name_public
+    - is_phone_number_public
+    - is_profile_picture_public
     - updated_at
     type: object
   onboard.CheckOnboardStatusRequest:
@@ -2509,6 +3009,197 @@ paths:
       summary: Get system status including gas price
       tags:
       - Blockchain
+  /api/v1/certificate-shares/{handle}:
+    post:
+      consumes:
+      - application/json
+      description: Retrieve the full on-chain Verifiable Credential data for a share
+        link. For password-protected shares, include the password in the request body.
+      operationId: get-certificate-share-data
+      parameters:
+      - description: Share handle
+        in: path
+        name: handle
+        required: true
+        type: string
+      - description: Optional password for password-protected shares
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/certificate_share_handler.GetCertificateShareBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/certificate_share_handler.CertificateShareDataResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get on-chain certificate share data
+      tags:
+      - CertificateShares
+  /api/v1/certificate-shares/{handle}/image:
+    post:
+      consumes:
+      - application/json
+      description: Returns a PNG certificate image for a share link. For password-protected
+        shares, include the password in the request body.
+      operationId: get-certificate-share-image
+      parameters:
+      - description: Share handle
+        in: path
+        name: handle
+        required: true
+        type: string
+      - description: Optional password for password-protected shares
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/certificate_share_handler.GetCertificateShareImageBody'
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: PNG certificate image
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get certificate share image
+      tags:
+      - CertificateShares
+  /api/v1/certificate-shares/config/{certificate_id}:
+    post:
+      consumes:
+      - application/json
+      description: Create a shareable link for a certificate. Only the certificate
+        owner may call this endpoint. An optional password can be set to restrict
+        access.
+      operationId: create-certificate-share
+      parameters:
+      - description: Certificate ID
+        in: path
+        name: certificate_id
+        required: true
+        type: string
+      - description: Optional password configuration
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/certificate_share_handler.CreateCertificateShareBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/certificate_share_handler.CreateCertificateShareResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      security:
+      - BearerAuth: []
+      summary: Create certificate share link
+      tags:
+      - CertificateShares
+  /api/v1/certificate-shares/config/{share_id}:
+    patch:
+      consumes:
+      - application/json
+      description: Update the password of an existing share link. Only the certificate
+        owner may call this endpoint. Omit the password field to leave existing protection
+        unchanged; set to empty string or null to remove protection; set to a non-empty
+        string to set a new password.
+      operationId: update-certificate-share
+      parameters:
+      - description: Share ID
+        in: path
+        name: share_id
+        required: true
+        type: string
+      - description: Optional password configuration
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/certificate_share_handler.UpdateCertificateShareBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/certificate_share_handler.UpdateCertificateShareResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      security:
+      - BearerAuth: []
+      summary: Update certificate share link
+      tags:
+      - CertificateShares
   /api/v1/certificates/{certificate_id}/image:
     get:
       description: Generates a PNG certificate image for the authenticated user's
@@ -2689,7 +3380,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entity.EventRegistrationInvitation'
+            $ref: '#/definitions/event_registration.EventRegistrationInvitationResponse'
         "400":
           description: Bad Request
           schema:
@@ -2730,7 +3421,7 @@ paths:
           description: Created
           schema:
             items:
-              $ref: '#/definitions/entity.EventRegistrationInvitation'
+              $ref: '#/definitions/event_registration.EventRegistrationInvitationResponse'
             type: array
         "400":
           description: Bad Request
@@ -2760,7 +3451,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/entity.EventRegistrationInvitation'
+              $ref: '#/definitions/event_registration.EventRegistrationInvitationResponse'
             type: array
         "400":
           description: Bad Request
@@ -2805,7 +3496,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entity.EventAttendee'
+            $ref: '#/definitions/event_registration.EventAttendeeResponse'
         "400":
           description: Bad Request
           schema:
@@ -3039,7 +3730,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/entity.Event'
+            $ref: '#/definitions/core-api_internal_handler_event.EventResponse'
         "400":
           description: Bad Request
           schema:
@@ -3071,7 +3762,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/event.EventResponse'
+            $ref: '#/definitions/core-api_internal_handler_event.EventResponse'
         "400":
           description: Bad Request
           schema:
@@ -3104,7 +3795,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/event.EventResponse'
+            $ref: '#/definitions/core-api_internal_handler_event.EventResponse'
         "400":
           description: Bad Request
           schema:
@@ -3188,7 +3879,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entity.Event'
+            $ref: '#/definitions/core-api_internal_handler_event.EventResponse'
         "400":
           description: Bad Request
           schema:
@@ -4437,7 +5128,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/event.EventResponse'
+              $ref: '#/definitions/core-api_internal_handler_event.EventResponse'
             type: array
         "400":
           description: Bad Request
@@ -4551,7 +5242,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/entity.Profile'
+              $ref: '#/definitions/issuer.ProfileResponse'
             type: array
         "400":
           description: Bad Request

@@ -10,6 +10,7 @@ export function useEvent(eventId: string) {
     } = useQuery({
         queryKey: QUERY_KEY.event.byId(eventId),
         queryFn: async () => defaultEventService.getEventViewModelExtended(eventId),
+        enabled: !!eventId,
     });
 
     return {

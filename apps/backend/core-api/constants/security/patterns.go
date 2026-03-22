@@ -19,7 +19,7 @@ const (
 // SuspiciousPattern defines a pattern and how it should be matched
 type SuspiciousPattern struct {
 	Pattern      string
-	LowerPattern string    // Pre-computed lowercase version for performance
+	LowerPattern string // Pre-computed lowercase version for performance
 	MatchType    MatchType
 	Comment      string // Optional description for documentation
 }

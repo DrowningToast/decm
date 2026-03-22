@@ -1,0 +1,8 @@
+ALTER TABLE event_certificate_shares
+    RENAME CONSTRAINT uq_event_certificate_shares_event_certificate_id TO uq_certificate_share_event_certificate_id;
+
+ALTER INDEX idx_event_certificate_shares_active RENAME TO idx_certificate_share_active;
+ALTER INDEX idx_event_certificate_shares_handle RENAME TO idx_certificate_share_handle;
+ALTER INDEX idx_event_certificate_shares_event_certificate_id RENAME TO idx_certificate_share_event_certificate_id;
+
+ALTER TABLE event_certificate_shares RENAME TO certificate_share;

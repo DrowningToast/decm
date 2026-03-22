@@ -24,6 +24,12 @@ import {
     type ClaimCertificateResult,
     type ClaimCertificateWithPinParams,
     type ClaimCertificateWithSignatureParams,
+    type CreateCertificateShareableLinkResult,
+    mapCreateCertificateShareableLinkResponse,
+    type UpdateCertificateShareResult,
+    mapUpdateCertificateShareResponse,
+    type GetCertificateShareDataResult,
+    mapGetCertificateShareDataResponse,
 } from "./mapper";
 
 export interface FontFamily {
@@ -224,7 +230,7 @@ export class CertificateService {
      * @param params - Certificate ID and account password
      * @returns Claim result with transaction hash
      */
-    public async claimCertificateWithPin(
+    private async claimCertificateWithPin(
         params: ClaimCertificateWithPinParams,
     ): Promise<ClaimCertificateResult> {
         const response = await this._coreApi.v1.claimCertificate(
@@ -239,7 +245,7 @@ export class CertificateService {
      * @param params - Certificate ID, signature, and sign message
      * @returns Claim result with transaction hash
      */
-    public async claimCertificateWithSignature(
+    private async claimCertificateWithSignature(
         params: ClaimCertificateWithSignatureParams,
     ): Promise<ClaimCertificateResult> {
         const response = await this._coreApi.v1.claimCertificate(
@@ -265,6 +271,46 @@ export class CertificateService {
         } else {
             return this.claimCertificateWithSignature(params);
         }
+    }
+
+    public async createCertificateShareableLink(
+        certificateId: string,
+        password?: string,
+    ): Promise<CreateCertificateShareableLinkResult> {
+        const response = await this._coreApi.v1.createCertificateShare(
+            { certificateId },
+            { password },
+        );
+        return mapCreateCertificateShareableLinkResponse(response);
+    }
+
+    public async updateCertificateShare(
+        shareId: string,
+        params: { password?: string; active?: boolean },
+    ): Promise<UpdateCertificateShareResult> {
+        const response = await this._coreApi.v1.updateCertificateShare({ shareId }, params);
+        return mapUpdateCertificateShareResponse(response);
+    }
+
+    public async getCertificateShareData(
+        handle: string,
+        password?: string,
+    ): Promise<GetCertificateShareDataResult> {
+        const response = await this._coreApi.v1.getCertificateShareData({ handle }, { password });
+        return mapGetCertificateShareDataResponse(response);
+    }
+
+    public async getCertificateShareImage(
+        handle: string,
+        password?: string,
+    ): Promise<CertificateImage> {
+        const response = await this._coreApi.v1.getCertificateShareImage({ handle }, { password });
+
+        if (!(response instanceof Blob)) {
+            throw new Error("Invalid response: expected Blob");
+        }
+
+        return mapBlobToCertificateImage(response);
     }
 }
 

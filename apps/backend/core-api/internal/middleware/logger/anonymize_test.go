@@ -251,52 +251,52 @@ func TestAnonymizeUserAgent_BrowserDetectionOrder(t *testing.T) {
 	// Chrome contains "Chrome" + "Safari"
 	// Safari contains "Safari" only
 	tests := []struct {
-		name           string
-		ua             string
+		name            string
+		ua              string
 		expectedBrowser string
-		description    string
+		description     string
 	}{
 		{
-			name:           "Edge (modern) - should detect as Edge, not Chrome",
-			ua:             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59",
+			name:            "Edge (modern) - should detect as Edge, not Chrome",
+			ua:              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59",
 			expectedBrowser: "edge",
-			description:    "Edge user agent contains 'Edg/', 'Chrome', and 'Safari'",
+			description:     "Edge user agent contains 'Edg/', 'Chrome', and 'Safari'",
 		},
 		{
-			name:           "Edge (older) - should detect as Edge, not Chrome",
-			ua:             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.18362",
+			name:            "Edge (older) - should detect as Edge, not Chrome",
+			ua:              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.18362",
 			expectedBrowser: "edge",
-			description:    "Older Edge user agent contains 'Edge/'",
+			description:     "Older Edge user agent contains 'Edge/'",
 		},
 		{
-			name:           "Chrome - should detect as Chrome, not Safari",
-			ua:             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+			name:            "Chrome - should detect as Chrome, not Safari",
+			ua:              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
 			expectedBrowser: "chrome",
-			description:    "Chrome user agent contains 'Chrome' and 'Safari'",
+			description:     "Chrome user agent contains 'Chrome' and 'Safari'",
 		},
 		{
-			name:           "Safari (macOS) - should detect as Safari",
-			ua:             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15",
+			name:            "Safari (macOS) - should detect as Safari",
+			ua:              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15",
 			expectedBrowser: "safari",
-			description:    "Safari user agent contains 'Safari' but not 'Chrome'",
+			description:     "Safari user agent contains 'Safari' but not 'Chrome'",
 		},
 		{
-			name:           "Safari (iOS) - should detect as Safari",
-			ua:             "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+			name:            "Safari (iOS) - should detect as Safari",
+			ua:              "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
 			expectedBrowser: "safari",
-			description:    "iOS Safari contains 'Safari' but not 'Chrome'",
+			description:     "iOS Safari contains 'Safari' but not 'Chrome'",
 		},
 		{
-			name:           "Firefox - should detect as Firefox",
-			ua:             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+			name:            "Firefox - should detect as Firefox",
+			ua:              "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
 			expectedBrowser: "firefox",
-			description:    "Firefox user agent is independent",
+			description:     "Firefox user agent is independent",
 		},
 		{
-			name:           "Case insensitive - EDG uppercase",
-			ua:             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 EDG/91.0.864.59",
+			name:            "Case insensitive - EDG uppercase",
+			ua:              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 EDG/91.0.864.59",
 			expectedBrowser: "edge",
-			description:    "Should handle case-insensitive detection",
+			description:     "Should handle case-insensitive detection",
 		},
 	}
 

@@ -13,10 +13,13 @@ vi.mock("../context", () => ({
     }),
 }));
 
+const mockSetIsShareModalOpen = vi.fn();
+
 vi.mock("../stores/certificates", () => ({
     useCertificateDetailNavStore: vi.fn(() => ({
         certificateId: "cert-1",
         isClaimed: true,
+        setIsShareModalOpen: mockSetIsShareModalOpen,
     })),
 }));
 
@@ -41,6 +44,7 @@ describe("CertificateDetailNav", () => {
         vi.mocked(useCertificateDetailNavStore).mockReturnValue({
             certificateId: "cert-1",
             isClaimed: true,
+            setIsShareModalOpen: mockSetIsShareModalOpen,
         } as ReturnType<typeof useCertificateDetailNavStore>);
     });
 
@@ -65,10 +69,36 @@ describe("CertificateDetailNav", () => {
         vi.mocked(useCertificateDetailNavStore).mockReturnValue({
             certificateId: "cert-1",
             isClaimed: false,
+            setIsShareModalOpen: mockSetIsShareModalOpen,
         } as ReturnType<typeof useCertificateDetailNavStore>);
 
         render(<CertificateDetailNav />);
         expect(screen.queryByRole("button", { name: /download/i })).not.toBeInTheDocument();
+    });
+
+    it("shows share certificate button when claimed", () => {
+        render(<CertificateDetailNav />);
+        expect(screen.getByRole("button", { name: /share certificate/i })).toBeInTheDocument();
+    });
+
+    it("hides share certificate button when not claimed", () => {
+        vi.mocked(useCertificateDetailNavStore).mockReturnValue({
+            certificateId: "cert-1",
+            isClaimed: false,
+            setIsShareModalOpen: mockSetIsShareModalOpen,
+        } as ReturnType<typeof useCertificateDetailNavStore>);
+
+        render(<CertificateDetailNav />);
+        expect(
+            screen.queryByRole("button", { name: /share certificate/i }),
+        ).not.toBeInTheDocument();
+    });
+
+    it("calls setIsShareModalOpen(true) when share button is clicked", async () => {
+        const user = userEvent.setup();
+        render(<CertificateDetailNav />);
+        await user.click(screen.getByRole("button", { name: /share certificate/i }));
+        expect(mockSetIsShareModalOpen).toHaveBeenCalledWith(true);
     });
 
     it("calls getCertificateImage on download click", async () => {

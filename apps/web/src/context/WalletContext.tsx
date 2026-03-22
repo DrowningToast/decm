@@ -13,7 +13,6 @@ export interface WalletContextType {
     isReady: boolean;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 /**

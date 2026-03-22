@@ -25,6 +25,7 @@ type Querier interface {
 	// Authentication Credentials CRUD queries
 	// Note: Encryption is handled at the repository layer using AES-GCM
 	CreateAuthenticationCredential(ctx context.Context, arg CreateAuthenticationCredentialParams) (AuthenticationCredential, error)
+	CreateCertificateShare(ctx context.Context, arg CreateCertificateShareParams) (EventCertificateShare, error)
 	CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error)
 	CreateEventCertificate(ctx context.Context, arg CreateEventCertificateParams) (EventCertificate, error)
 	CreateEventCertificateConfig(ctx context.Context, arg CreateEventCertificateConfigParams) (EventCertificateConfig, error)
@@ -66,6 +67,9 @@ type Querier interface {
 	GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (AuthenticationCredential, error)
 	GetBroadcastedUserSignatures(ctx context.Context) ([]GetBroadcastedUserSignaturesRow, error)
 	GetCertificateClaimSignatures(ctx context.Context) ([]GetCertificateClaimSignaturesRow, error)
+	GetCertificateShareByEventCertificateID(ctx context.Context, eventCertificateID uuid.UUID) (EventCertificateShare, error)
+	GetCertificateShareByHandle(ctx context.Context, handle pgtype.Text) (EventCertificateShare, error)
+	GetCertificateShareByID(ctx context.Context, id uuid.UUID) (EventCertificateShare, error)
 	GetClaimedCertificatesByCredentialID(ctx context.Context, arg GetClaimedCertificatesByCredentialIDParams) ([]GetClaimedCertificatesByCredentialIDRow, error)
 	GetClaimedCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]EventCertificate, error)
 	GetCredentialsBySolutionStatus(ctx context.Context, arg GetCredentialsBySolutionStatusParams) ([]AuthenticationCredential, error)
@@ -156,6 +160,7 @@ type Querier interface {
 	UpdateAuthenticationCredential(ctx context.Context, arg UpdateAuthenticationCredentialParams) (AuthenticationCredential, error)
 	UpdateAuthenticationCredentialKeys(ctx context.Context, arg UpdateAuthenticationCredentialKeysParams) (AuthenticationCredential, error)
 	UpdateAuthenticationCredentialPassword(ctx context.Context, arg UpdateAuthenticationCredentialPasswordParams) (AuthenticationCredential, error)
+	UpdateCertificateShare(ctx context.Context, arg UpdateCertificateShareParams) (EventCertificateShare, error)
 	UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event, error)
 	UpdateEventCertificate(ctx context.Context, arg UpdateEventCertificateParams) (EventCertificate, error)
 	UpdateEventCertificateConfig(ctx context.Context, arg UpdateEventCertificateConfigParams) (EventCertificateConfig, error)

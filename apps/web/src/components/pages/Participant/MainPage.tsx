@@ -2,7 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Typography } from "@/components/typography/typography";
 import { useTranslation } from "react-i18next";
 import { ServiceList } from "./components/ServiceList";
-import { participantServices } from "./config";
+import { participantServices, generalServices } from "./config";
 
 export const MainPage = () => {
     const { user } = useAuth();
@@ -36,6 +36,11 @@ export const MainPage = () => {
 
     // Map services with translated labels
     const participantServicesWithLabels = participantServices.map((service) => ({
+        ...service,
+        label: t(service.translationKey),
+    }));
+
+    const generalServicesWithLabels = generalServices.map((service) => ({
         ...service,
         label: t(service.translationKey),
     }));
@@ -79,7 +84,7 @@ export const MainPage = () => {
                 </section>
 
                 {/* General Services Section */}
-                {/* <section className="flex flex-col gap-y-2">
+                <section className="flex flex-col gap-y-2">
                     <Typography
                         variant="text"
                         tag="h2"
@@ -90,7 +95,7 @@ export const MainPage = () => {
                     </Typography>
 
                     <ServiceList services={generalServicesWithLabels} layout="single" />
-                </section> */}
+                </section>
             </div>
         </div>
     );

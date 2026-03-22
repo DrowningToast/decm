@@ -1,15 +1,14 @@
 package blockchain
 
 import (
+	"apps/backend/core-api/config"
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"apps/backend/core-api/config"
-	"apps/backend/core-api/internal/entity"
 
 	blockchainConfig "apps/backend/core-api/config/blockchain"
 	blockchain_usecase "apps/backend/core-api/internal/usecase/blockchain"
@@ -25,7 +24,7 @@ type mockBlockchainUsecase struct {
 	errorToReturn    error
 }
 
-func (m *mockBlockchainUsecase) GetGasPrice(ctx interface{}) (*blockchain_usecase.GasPriceResponse, error) {
+func (m *mockBlockchainUsecase) GetGasPrice(ctx any) (*blockchain_usecase.GasPriceResponse, error) {
 	if m.shouldError {
 		return nil, m.errorToReturn
 	}
@@ -50,18 +49,7 @@ func TestHandler_GetGasPrice_Success(t *testing.T) {
 	// Setup
 	app := fiber.New()
 
-	mockUsecase := &mockBlockchainUsecase{
-		gasPriceResponse: &blockchain_usecase.GasPriceResponse{
-			CurrentGasPriceGwei: 230.0,
-			BaseFeeGwei:         100.0,
-			PriorityFeeGwei:     30.0,
-			SoftCapPriceGwei:    1000.0,
-			HardCapPriceGwei:    2500.0,
-			SoftSafetyMargin:    77.0,
-			HardSafetyMargin:    90.8,
-		},
-		shouldError: false,
-	}
+	mockUsecase := &mockBlockchainUsecase{}
 
 	// Create a mock config
 	cfg := &config.Config{

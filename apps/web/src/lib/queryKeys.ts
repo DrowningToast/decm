@@ -99,6 +99,7 @@ export const QUERY_KEY = {
         byEventId: (eventId: string) => ["certificate", "event", eventId] as const,
         claimSignMessage: (certificateId: string) =>
             ["certificate", certificateId, "claim-sign-message"] as const,
+        myCertificatesListViewModel: ["my-certificates-list-viewmodel"] as const,
     },
 
     // Inbox
@@ -106,6 +107,11 @@ export const QUERY_KEY = {
         all: ["inbox"] as const,
         list: () => ["inbox", "list"] as const,
         byId: (messageId: string) => ["inbox", messageId] as const,
+    },
+
+    // Certificate Shares (public verify)
+    certificateShare: {
+        data: (handle: string) => ["certificateShare", "data", handle] as const,
     },
 
     // Blockchain

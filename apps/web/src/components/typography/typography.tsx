@@ -2,7 +2,6 @@ import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import React, { forwardRef } from "react";
 
-// eslint-disable-next-line
 export const typographyVariants = cva("", {
     variants: {
         size: {

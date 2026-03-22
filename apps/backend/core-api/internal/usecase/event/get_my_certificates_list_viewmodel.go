@@ -2,33 +2,30 @@ package event
 
 import (
 	"apps/backend/core-api/internal/entity"
+	certificate_share "apps/backend/core-api/internal/usecase/certificate_share"
 	"apps/backend/services/auth"
 	"context"
-	"time"
 
 	"github.com/cockroachdb/errors"
 )
 
-type ClaimCertificateStatus string
-
-var (
-	ClaimCertificateStatusPending ClaimCertificateStatus = "PENDING"
-	ClaimCertificateStatusClaimed ClaimCertificateStatus = "CLAIMED"
-	ClaimCertificateStatusExpired ClaimCertificateStatus = "EXPIRED"
-	ClaimCertificateStatusAborted ClaimCertificateStatus = "ABORTED"
-)
-
 type ClaimedCertificateViewModel struct {
 	entity.EventCertificate
-	Status ClaimCertificateStatus `json:"status"`
+	Status           ClaimCertificateStatus                       `json:"status"`
+	CertificateShare *certificate_share.CertificateShareViewModel `json:"certificate_share,omitempty"`
+}
+
+type UnclaimedCertificateViewModel struct {
+	entity.EventCertificate
+	CertificateShare *certificate_share.CertificateShareViewModel `json:"certificate_share,omitempty"`
 }
 
 // MyCertificatesListViewModel represents current user's certificates separated by claimed status
 type MyCertificatesListViewModel struct {
-	ClaimedCertificates   []*ClaimedCertificateViewModel `json:"claimed_certificates"`
-	UnclaimedCertificates []*entity.EventCertificate     `json:"unclaimed_certificates"`
-	TotalClaimed          int                            `json:"total_claimed"`
-	TotalUnclaimed        int                            `json:"total_unclaimed"`
+	ClaimedCertificates   []*ClaimedCertificateViewModel   `json:"claimed_certificates"`
+	UnclaimedCertificates []*UnclaimedCertificateViewModel `json:"unclaimed_certificates"`
+	TotalClaimed          int                              `json:"total_claimed"`
+	TotalUnclaimed        int                              `json:"total_unclaimed"`
 }
 
 // GetMyCertificatesListViewModel retrieves current user's certificates separated by claimed/unclaimed status
@@ -44,17 +41,14 @@ func (uc *EventUsecase) GetMyCertificatesListViewModel(ctx context.Context, curr
 	}
 	claimedCertificateViewModels := make([]*ClaimedCertificateViewModel, len(claimedCertificates))
 	for i, certificate := range claimedCertificates {
-		status := ClaimCertificateStatusPending
-		if certificate.CertificateTokenId != nil || certificate.BroadcastedAt != nil {
-			status = ClaimCertificateStatusClaimed
-		} else if certificate.AbortedAt != nil {
-			status = ClaimCertificateStatusAborted
-		} else if certificate.EstimatedDeadline != nil && certificate.EstimatedDeadline.Before(time.Now()) {
-			status = ClaimCertificateStatusExpired
+		share, err := uc.CertificateShareDataGateway.GetCertificateShareByEventCertificateID(ctx, certificate.Id)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get certificate share")
 		}
 		claimedCertificateViewModels[i] = &ClaimedCertificateViewModel{
 			EventCertificate: *certificate,
-			Status:           status,
+			Status:           GetClaimCertificateStatus(certificate),
+			CertificateShare: certificate_share.NewCertificateShareViewModel(share),
 		}
 	}
 
@@ -64,11 +58,22 @@ func (uc *EventUsecase) GetMyCertificatesListViewModel(ctx context.Context, curr
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get unclaimed ready certificates")
 	}
+	unclaimedCertificateViewModels := make([]*UnclaimedCertificateViewModel, len(unclaimedCertificates))
+	for i, certificate := range unclaimedCertificates {
+		share, err := uc.CertificateShareDataGateway.GetCertificateShareByEventCertificateID(ctx, certificate.Id)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get certificate share")
+		}
+		unclaimedCertificateViewModels[i] = &UnclaimedCertificateViewModel{
+			EventCertificate: *certificate,
+			CertificateShare: certificate_share.NewCertificateShareViewModel(share),
+		}
+	}
 
 	return &MyCertificatesListViewModel{
 		ClaimedCertificates:   claimedCertificateViewModels,
-		UnclaimedCertificates: unclaimedCertificates,
+		UnclaimedCertificates: unclaimedCertificateViewModels,
 		TotalClaimed:          len(claimedCertificateViewModels),
-		TotalUnclaimed:        len(unclaimedCertificates),
+		TotalUnclaimed:        len(unclaimedCertificateViewModels),
 	}, nil
 }

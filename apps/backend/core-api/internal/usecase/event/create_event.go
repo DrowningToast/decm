@@ -2,8 +2,8 @@ package event
 
 import (
 	"apps/backend/common/customerror"
-	eventcontract_datagateway "apps/backend/core-api/internal/datagateway/onchain/event_contract"
 	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
+	eventcontract_datagateway "apps/backend/core-api/internal/datagateway/onchain/event_contract"
 	"apps/backend/core-api/internal/entity"
 	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 	"apps/backend/services/auth"
@@ -85,8 +85,8 @@ func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParam
 
 	event, err := uc.EventDataGateway.CreateEvent(ctx, createEventParams)
 	if err != nil {
-		uc.S3DataGateway.DeleteFile(ctx, bannerStorageKey)
-		uc.S3DataGateway.DeleteFile(ctx, iconStorageKey)
+		_ = uc.S3DataGateway.DeleteFile(ctx, bannerStorageKey)
+		_ = uc.S3DataGateway.DeleteFile(ctx, iconStorageKey)
 		return nil, common.Address{}, common.Address{}, nil, err
 	}
 

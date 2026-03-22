@@ -60,10 +60,9 @@ export const PrivateNavbar: React.FC<PrivateNavbarProps> = ({ currentRole, varia
                     link: "/app/preference",
                 },
                 {
-                    label: t("nav.readDocs"),
-                    ariaLabel: t("nav.readDocs"),
-                    link: "/docs",
-                    disabled: true,
+                    label: t("nav.verify"),
+                    ariaLabel: t("nav.verify"),
+                    link: "/verify",
                 },
             ],
         },

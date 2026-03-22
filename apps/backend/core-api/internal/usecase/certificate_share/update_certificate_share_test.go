@@ -1,0 +1,355 @@
+package certificate_share
+
+import (
+	"apps/backend/common/customerror"
+	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
+	"context"
+	"errors"
+	"testing"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+// noPasswordChange is a PasswordUpdate that signals "do not modify the existing password".
+var noPasswordChange = event_datagateway.PasswordUpdate{}
+
+// removePassword is a PasswordUpdate that removes password protection.
+var removePassword = event_datagateway.PasswordUpdate{Changed: true, Value: nil}
+
+func setPassword(hashed string) event_datagateway.PasswordUpdate {
+	return event_datagateway.PasswordUpdate{Changed: true, Value: &hashed}
+}
+
+func TestUpdateCertificateShare(t *testing.T) {
+	ctx := context.Background()
+	userID := uuid.New()
+	certID := uuid.New()
+	shareID := uuid.New()
+
+	validUser := &auth.JwtClaims{UserId: userID}
+
+	t.Run("should return ErrUnauthenticated when user is nil", func(t *testing.T) {
+		uc := &CertificateShareUsecase{}
+		result, err := uc.UpdateCertificateShare(ctx, nil, shareID, noPasswordChange, nil)
+		assert.Nil(t, result)
+		assertErrCode(t, err, customerror.ErrUnauthenticated)
+	})
+
+	t.Run("should return ErrNotFound when share does not exist", func(t *testing.T) {
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(nil, nil)
+
+		uc := &CertificateShareUsecase{CertificateShareDg: mockShareDg}
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, noPasswordChange, nil)
+		assert.Nil(t, result)
+		assertErrCode(t, err, customerror.ErrNotFound)
+		mockShareDg.AssertExpectations(t)
+	})
+
+	t.Run("should return ErrNotFound when certificate does not exist", func(t *testing.T) {
+		share := &entity.CertificateShare{
+			Id:                 shareID,
+			EventCertificateId: certID,
+		}
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(share, nil)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(nil, nil)
+
+		uc := &CertificateShareUsecase{
+			CertificateShareDg:          mockShareDg,
+			EventCertificateDataGateway: mockCertDg,
+		}
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, noPasswordChange, nil)
+		assert.Nil(t, result)
+		assertErrCode(t, err, customerror.ErrNotFound)
+		mockShareDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+	})
+
+	t.Run("should return ErrForbidden when user does not own the certificate", func(t *testing.T) {
+		ownerID := uuid.New()
+		share := &entity.CertificateShare{
+			Id:                 shareID,
+			EventCertificateId: certID,
+		}
+		cert := &entity.EventCertificate{
+			Id:                   certID,
+			ReceiverCredentialId: &ownerID,
+		}
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(share, nil)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
+
+		uc := &CertificateShareUsecase{
+			CertificateShareDg:          mockShareDg,
+			EventCertificateDataGateway: mockCertDg,
+		}
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, noPasswordChange, nil)
+		assert.Nil(t, result)
+		assertErrCode(t, err, customerror.ErrForbidden)
+		mockShareDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+	})
+
+	t.Run("should successfully update share with a new password", func(t *testing.T) {
+		hashedPw := "$argon2id$hashed"
+		share := &entity.CertificateShare{
+			Id:                 shareID,
+			EventCertificateId: certID,
+		}
+		cert := &entity.EventCertificate{
+			Id:                   certID,
+			ReceiverCredentialId: &userID,
+		}
+		updatedShare := &entity.CertificateShare{
+			Id:                 shareID,
+			EventCertificateId: certID,
+			Password:           &hashedPw,
+		}
+		pw := setPassword(hashedPw)
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(share, nil)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
+		mockShareDg.On("UpdateCertificateShare", ctx, shareID, event_datagateway.UpdateCertificateShareParameters{Password: pw, Active: nil}).Return(updatedShare, nil)
+
+		uc := &CertificateShareUsecase{
+			CertificateShareDg:          mockShareDg,
+			EventCertificateDataGateway: mockCertDg,
+		}
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, pw, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, updatedShare, result)
+		mockShareDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+	})
+
+	t.Run("should successfully remove password protection", func(t *testing.T) {
+		share := &entity.CertificateShare{
+			Id:                 shareID,
+			EventCertificateId: certID,
+		}
+		cert := &entity.EventCertificate{
+			Id:                   certID,
+			ReceiverCredentialId: &userID,
+		}
+		updatedShare := &entity.CertificateShare{
+			Id:                 shareID,
+			EventCertificateId: certID,
+			Password:           nil,
+		}
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(share, nil)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
+		mockShareDg.On("UpdateCertificateShare", ctx, shareID, event_datagateway.UpdateCertificateShareParameters{Password: removePassword, Active: nil}).Return(updatedShare, nil)
+
+		uc := &CertificateShareUsecase{
+			CertificateShareDg:          mockShareDg,
+			EventCertificateDataGateway: mockCertDg,
+		}
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, removePassword, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, updatedShare, result)
+		mockShareDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+	})
+
+	t.Run("should keep existing password when password field is not provided", func(t *testing.T) {
+		existingPw := "$argon2id$existing"
+		share := &entity.CertificateShare{
+			Id:                 shareID,
+			EventCertificateId: certID,
+			Password:           &existingPw,
+		}
+		cert := &entity.EventCertificate{
+			Id:                   certID,
+			ReceiverCredentialId: &userID,
+		}
+		updatedShare := &entity.CertificateShare{
+			Id:                 shareID,
+			EventCertificateId: certID,
+			Password:           &existingPw,
+		}
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(share, nil)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
+		mockShareDg.On("UpdateCertificateShare", ctx, shareID, event_datagateway.UpdateCertificateShareParameters{Password: noPasswordChange, Active: nil}).Return(updatedShare, nil)
+
+		uc := &CertificateShareUsecase{
+			CertificateShareDg:          mockShareDg,
+			EventCertificateDataGateway: mockCertDg,
+		}
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, noPasswordChange, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, updatedShare, result)
+		mockShareDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+	})
+
+	t.Run("should allow update when user owns certificate by email", func(t *testing.T) {
+		email := "user@example.com"
+		userWithEmail := &auth.JwtClaims{UserId: uuid.New(), Email: &email}
+		share := &entity.CertificateShare{
+			Id:                 shareID,
+			EventCertificateId: certID,
+		}
+		cert := &entity.EventCertificate{
+			Id:            certID,
+			ReceiverEmail: &email,
+		}
+		updatedShare := &entity.CertificateShare{Id: shareID, EventCertificateId: certID}
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(share, nil)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
+		mockShareDg.On("UpdateCertificateShare", ctx, shareID, event_datagateway.UpdateCertificateShareParameters{Password: noPasswordChange, Active: nil}).Return(updatedShare, nil)
+
+		uc := &CertificateShareUsecase{
+			CertificateShareDg:          mockShareDg,
+			EventCertificateDataGateway: mockCertDg,
+		}
+		result, err := uc.UpdateCertificateShare(ctx, userWithEmail, shareID, noPasswordChange, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, updatedShare, result)
+		mockShareDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+	})
+
+	t.Run("should return ErrForbidden when neither credential nor email match", func(t *testing.T) {
+		email := "user@example.com"
+		differentEmail := "other@example.com"
+		userWithEmail := &auth.JwtClaims{UserId: uuid.New(), Email: &email}
+		share := &entity.CertificateShare{
+			Id:                 shareID,
+			EventCertificateId: certID,
+		}
+		cert := &entity.EventCertificate{
+			Id:            certID,
+			ReceiverEmail: &differentEmail,
+		}
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(share, nil)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
+
+		uc := &CertificateShareUsecase{
+			CertificateShareDg:          mockShareDg,
+			EventCertificateDataGateway: mockCertDg,
+		}
+		result, err := uc.UpdateCertificateShare(ctx, userWithEmail, shareID, noPasswordChange, nil)
+		assert.Nil(t, result)
+		assertErrCode(t, err, customerror.ErrForbidden)
+		mockShareDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+	})
+
+	t.Run("should successfully update share active status to false", func(t *testing.T) {
+		active := false
+		share := &entity.CertificateShare{Id: shareID, EventCertificateId: certID}
+		cert := &entity.EventCertificate{Id: certID, ReceiverCredentialId: &userID}
+		updatedShare := &entity.CertificateShare{Id: shareID, EventCertificateId: certID, Active: active}
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(share, nil)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
+		mockShareDg.On("UpdateCertificateShare", ctx, shareID, event_datagateway.UpdateCertificateShareParameters{Password: noPasswordChange, Active: &active}).Return(updatedShare, nil)
+
+		uc := &CertificateShareUsecase{
+			CertificateShareDg:          mockShareDg,
+			EventCertificateDataGateway: mockCertDg,
+		}
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, noPasswordChange, &active)
+		assert.NoError(t, err)
+		assert.Equal(t, updatedShare, result)
+		mockShareDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+	})
+
+	t.Run("should successfully update share active status to true", func(t *testing.T) {
+		active := true
+		share := &entity.CertificateShare{Id: shareID, EventCertificateId: certID, Active: false}
+		cert := &entity.EventCertificate{Id: certID, ReceiverCredentialId: &userID}
+		updatedShare := &entity.CertificateShare{Id: shareID, EventCertificateId: certID, Active: active}
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(share, nil)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
+		mockShareDg.On("UpdateCertificateShare", ctx, shareID, event_datagateway.UpdateCertificateShareParameters{Password: noPasswordChange, Active: &active}).Return(updatedShare, nil)
+
+		uc := &CertificateShareUsecase{
+			CertificateShareDg:          mockShareDg,
+			EventCertificateDataGateway: mockCertDg,
+		}
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, noPasswordChange, &active)
+		assert.NoError(t, err)
+		assert.Equal(t, updatedShare, result)
+		mockShareDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+	})
+
+	t.Run("should return ErrInternalServer when GetCertificateShareByID returns error", func(t *testing.T) {
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(nil, errors.New("db error"))
+
+		uc := &CertificateShareUsecase{CertificateShareDg: mockShareDg}
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, noPasswordChange, nil)
+		assert.Nil(t, result)
+		assertErrCode(t, err, customerror.ErrInternalServer)
+		mockShareDg.AssertExpectations(t)
+	})
+
+	t.Run("should return ErrInternalServer when certificate datagateway returns error", func(t *testing.T) {
+		share := &entity.CertificateShare{
+			Id:                 shareID,
+			EventCertificateId: certID,
+		}
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(share, nil)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(nil, errors.New("db error"))
+
+		uc := &CertificateShareUsecase{
+			CertificateShareDg:          mockShareDg,
+			EventCertificateDataGateway: mockCertDg,
+		}
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, noPasswordChange, nil)
+		assert.Nil(t, result)
+		assertErrCode(t, err, customerror.ErrInternalServer)
+		mockShareDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+	})
+
+	t.Run("should return ErrInternalServer when update datagateway returns error", func(t *testing.T) {
+		share := &entity.CertificateShare{
+			Id:                 shareID,
+			EventCertificateId: certID,
+		}
+		cert := &entity.EventCertificate{
+			Id:                   certID,
+			ReceiverCredentialId: &userID,
+		}
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockShareDg.On("GetCertificateShareByID", ctx, shareID).Return(share, nil)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
+		mockShareDg.On("UpdateCertificateShare", ctx, shareID, mock.Anything).Return(nil, errors.New("db error"))
+
+		uc := &CertificateShareUsecase{
+			CertificateShareDg:          mockShareDg,
+			EventCertificateDataGateway: mockCertDg,
+		}
+		result, err := uc.UpdateCertificateShare(ctx, validUser, shareID, noPasswordChange, nil)
+		assert.Nil(t, result)
+		assertErrCode(t, err, customerror.ErrInternalServer)
+		mockShareDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+	})
+}

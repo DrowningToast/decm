@@ -1,19 +1,26 @@
-import { ChevronLeft, Download } from "lucide-react";
+import { ChevronLeft, Download, Share2 } from "lucide-react";
 import { useBottomContainerContext } from "../context";
 import { useCertificateDetailNavStore } from "../stores/certificates";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { Typography } from "@/components/typography/typography";
 import { certificateService } from "@/services/services";
 import { toast } from "sonner";
-import { useState } from "react";
+import React, { useState } from "react";
+import type { ClassValue } from "clsx";
+import { Button } from "@/components/ui/button";
 
-interface CertificateDetailNavProps {
-    className?: string;
+interface CertificateDetailNavProps extends React.PropsWithChildren {
+    className?: ClassValue;
+    overrideShowCreateShareButton?: boolean;
 }
 
-export const CertificateDetailNav = ({ className: propClassName }: CertificateDetailNavProps) => {
-    const { certificateId, isClaimed } = useCertificateDetailNavStore();
+export const CertificateDetailNav = ({
+    className: propClassName,
+    overrideShowCreateShareButton,
+    children,
+}: CertificateDetailNavProps) => {
+    const { certificateId, isClaimed, onClickShareable, isShareableLoading, setIsShareModalOpen } =
+        useCertificateDetailNavStore();
     const { onBack, className: contextClassName } = useBottomContainerContext();
     const { t } = useTranslation();
     const [isDownloading, setIsDownloading] = useState(false);
@@ -73,7 +80,7 @@ export const CertificateDetailNav = ({ className: propClassName }: CertificateDe
             className={cn(
                 contextClassName,
                 propClassName,
-                "flex items-center gap-1.5 h-13 bg-primary rounded-xl p-1.5",
+                "flex items-center justify-center gap-1.5 bg-primary rounded-xl p-1.5",
             )}
         >
             {/* Back Button */}
@@ -84,39 +91,70 @@ export const CertificateDetailNav = ({ className: propClassName }: CertificateDe
             >
                 <ChevronLeft className="w-5 h-5 text-white" />
             </button>
-
-            {/* Download Button - only shown when certificate is claimed */}
-            {isClaimed && (
-                <button
-                    onClick={handleDownload}
-                    disabled={isDownloading}
-                    className="cursor-pointer flex items-center justify-center gap-2 px-4 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label={t(
-                        "participant.certificates.detail.downloadAsImage",
-                        "Download as an image",
-                    )}
-                >
-                    <Download
-                        className={cn(
-                            "w-5 h-5 text-background-alt",
-                            isDownloading && "animate-pulse",
+            <div className="flex gap-1.5 flex-wrap justify-center items-stretch">
+                {/* Shareable Link Button - only shown when certificate is claimed */}
+                {isClaimed && overrideShowCreateShareButton !== false && (
+                    <Button
+                        loading={isShareableLoading}
+                        onClick={onClickShareable}
+                        className="cursor-pointer flex items-center justify-center gap-2 px-3 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0"
+                        aria-label={t(
+                            "participant.certificates.detail.createShareableLink",
+                            "Create shareable link",
                         )}
-                    />
-                    <Typography
-                        variant="text"
-                        tag="span"
-                        color="background-alt"
-                        className="text-xs font-normal leading-normal tracking-[0.06px] whitespace-nowrap"
                     >
-                        {isDownloading
-                            ? t("participant.certificates.detail.downloading", "Downloading...")
-                            : t(
-                                  "participant.certificates.detail.downloadAsImage",
-                                  "Download as an image",
-                              )}
-                    </Typography>
-                </button>
-            )}
+                        <Share2 className="w-5 h-5 text-background-alt flex-shrink-0" />
+                        <span className="text-xs text-background-alt whitespace-nowrap">
+                            {t("participant.certificates.detail.share", "Share")}
+                        </span>
+                    </Button>
+                )}
+
+                {/* Download Button - only shown when certificate is claimed */}
+                {isClaimed && (
+                    <button
+                        onClick={handleDownload}
+                        disabled={isDownloading}
+                        className="cursor-pointer flex items-center justify-center gap-2 px-3 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label={t(
+                            "participant.certificates.detail.downloadAsImage",
+                            "Download as an image",
+                        )}
+                    >
+                        <Download
+                            className={cn(
+                                "w-5 h-5 text-background-alt flex-shrink-0",
+                                isDownloading && "animate-pulse",
+                            )}
+                        />
+                        <span className="text-xs text-background-alt whitespace-nowrap">
+                            {t("participant.certificates.detail.download", "Download")}
+                        </span>
+                    </button>
+                )}
+
+                {/* Share Modal Button - only shown when certificate is claimed */}
+                {isClaimed && (
+                    <button
+                        onClick={() => setIsShareModalOpen(true)}
+                        className="cursor-pointer flex items-center justify-center gap-2 px-3 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0"
+                        aria-label={t(
+                            "participant.certificates.detail.openShareModal",
+                            "Share certificate",
+                        )}
+                    >
+                        <Share2 className="w-5 h-5 text-background-alt flex-shrink-0" />
+                        <span className="text-xs text-background-alt whitespace-nowrap">
+                            {t(
+                                "participant.certificates.detail.openShareModal",
+                                "Share certificate",
+                            )}
+                        </span>
+                    </button>
+                )}
+
+                {children}
+            </div>
         </div>
     );
 };

@@ -229,9 +229,9 @@ func TestRevokeEventCertificates(t *testing.T) {
 			Return(nil, customerror.Parse(&customerror.ErrNotFound, nil))
 
 		uc := &EventUsecase{
-			AuthenticationCredentialDg: mockAuthDg,
-			EventDataGateway:           mockEventDg,
-			EventCertificateConfigDg:   mockCertConfigDg,
+			AuthenticationCredentialDg:  mockAuthDg,
+			EventDataGateway:            mockEventDg,
+			EventCertificateConfigDg:    mockCertConfigDg,
 			EventCertificateDataGateway: mockCertDg,
 		}
 

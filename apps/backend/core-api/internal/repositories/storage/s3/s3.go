@@ -44,11 +44,11 @@ func (r *S3Repository) GetS3UploadRequestObject(entityType storage_datagateway.S
 	// Store the internal request object as opaque data
 	// We'll use it directly in PutFile
 	return &storage_datagateway.S3UploadRequestObject{
-		EntityType:    entityType,
-		EntityID:      entityID,
-		StorageKey:    storageKey,
-		FileHeader:    fileHeader,
-		InternalData:  internalRequestObj, // Store the internal object for PutFile
+		EntityType:   entityType,
+		EntityID:     entityID,
+		StorageKey:   storageKey,
+		FileHeader:   fileHeader,
+		InternalData: internalRequestObj, // Store the internal object for PutFile
 	}, nil
 }
 

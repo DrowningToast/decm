@@ -12,7 +12,6 @@ import {
     EntityEventStatus,
     EntityEventType,
     type EntityEvent,
-    type EventEventResponse,
     type EventEventViewModel,
     type EventEventIssuerResponse,
 } from "@decm/api";
@@ -128,7 +127,7 @@ describe("mapEntityEventToEventItem", () => {
 });
 
 describe("mapEventResponseToViewModel", () => {
-    const baseResponse: EventEventResponse = {
+    const baseResponse = {
         attendees_count: 5,
         banner_presigned_url: "https://example.com/banner.png",
         chain_id: 1,
@@ -334,6 +333,8 @@ describe("mapToEventIssuer", () => {
                 is_first_name_public: false,
                 is_last_name_public: false,
                 is_phone_number_public: false,
+                created_at: "2024-01-01T00:00:00Z",
+                updated_at: "2024-01-01T00:00:00Z",
             },
         });
         expect(result.issuerProfile).toBeDefined();

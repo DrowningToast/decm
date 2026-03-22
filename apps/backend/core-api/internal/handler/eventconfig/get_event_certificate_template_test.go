@@ -1,7 +1,11 @@
 package eventconfig
 
 import (
+	"apps/backend/common/customerror"
+	"apps/backend/core-api/internal/entity"
+	"apps/backend/services/auth"
 	"context"
+	"decm-database/go/generated"
 	"errors"
 	"io"
 	"log/slog"
@@ -9,13 +13,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"apps/backend/common/customerror"
 	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
-	"apps/backend/core-api/internal/entity"
+
 	event_usecase "apps/backend/core-api/internal/usecase/event"
 	eventconfig_usecase "apps/backend/core-api/internal/usecase/eventconfig"
-	"apps/backend/services/auth"
-	"decm-database/go/generated"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -43,21 +44,27 @@ func (m *mockEventDataGateway) GetEventById(ctx context.Context, id uuid.UUID) (
 func (m *mockEventDataGateway) CreateEvent(_ context.Context, _ eventdatagateway.CreateEventParameters) (*entity.Event, error) {
 	return nil, errors.New("not implemented")
 }
+
 func (m *mockEventDataGateway) GetViewModelById(_ context.Context, _ uuid.UUID) (*entity.Event, *entity.EventRegistrationConfig, *entity.EventContract, error) {
 	return nil, nil, nil, errors.New("not implemented")
 }
+
 func (m *mockEventDataGateway) ListEventsByOwnerCredentialID(_ context.Context, _ uuid.UUID, _ int32, _ int32) ([]*entity.Event, error) {
 	return nil, errors.New("not implemented")
 }
+
 func (m *mockEventDataGateway) UpdateEvent(_ context.Context, _ uuid.UUID, _ eventdatagateway.UpdateEventParameters) (*entity.Event, error) {
 	return nil, errors.New("not implemented")
 }
+
 func (m *mockEventDataGateway) DeleteEvent(_ context.Context, _ uuid.UUID) (*entity.Event, error) {
 	return nil, errors.New("not implemented")
 }
+
 func (m *mockEventDataGateway) ListEvents(_ context.Context, _ *int32, _ *int32) ([]*entity.Event, error) {
 	return nil, errors.New("not implemented")
 }
+
 func (m *mockEventDataGateway) ListEventsByEventAttendeeCredentialID(_ context.Context, _ uuid.UUID, _ *int32, _ *int32) ([]*entity.Event, error) {
 	return nil, errors.New("not implemented")
 }
@@ -70,36 +77,47 @@ func (m *mockEventIssuerDataGateway) GetEventIssuerByEventIDAndIssuerCredentialI
 	args := m.Called(ctx, eventID, issuerCredentialID)
 	return args.Get(0).(generated.EventIssuer), args.Error(1)
 }
+
 func (m *mockEventIssuerDataGateway) CreateEventIssuer(_ context.Context, _ generated.CreateEventIssuerParams) (*generated.EventIssuer, error) {
 	return nil, errors.New("not implemented")
 }
+
 func (m *mockEventIssuerDataGateway) GetEventIssuerByID(_ context.Context, _ uuid.UUID) (generated.EventIssuer, error) {
 	return generated.EventIssuer{}, errors.New("not implemented")
 }
+
 func (m *mockEventIssuerDataGateway) GetEventIssuersByEventID(_ context.Context, _ uuid.UUID) ([]generated.EventIssuer, error) {
 	return nil, errors.New("not implemented")
 }
+
 func (m *mockEventIssuerDataGateway) UpdateEventIssuer(_ context.Context, _ generated.UpdateEventIssuerParams) (*generated.EventIssuer, error) {
 	return nil, errors.New("not implemented")
 }
+
 func (m *mockEventIssuerDataGateway) DeleteEventIssuer(_ context.Context, _ uuid.UUID) error {
 	return errors.New("not implemented")
 }
+
 func (m *mockEventIssuerDataGateway) UpdateEventIssuerSigningStatus(_ context.Context, _ uuid.UUID, _ uuid.UUID, _ int32) error {
 	return errors.New("not implemented")
 }
+
 func (m *mockEventIssuerDataGateway) ResetAllEventIssuersSigningStatus(_ context.Context, _ uuid.UUID) error {
 	return errors.New("not implemented")
 }
+
 func (m *mockEventIssuerDataGateway) HasSignedIssuers(_ context.Context, _ uuid.UUID) (bool, error) {
 	return false, errors.New("not implemented")
 }
+
 func (m *mockEventIssuerDataGateway) GetSignedIssuersCount(_ context.Context, _ uuid.UUID) (int64, error) {
 	return 0, errors.New("not implemented")
 }
+
 func (m *mockEventIssuerDataGateway) GetTotalIssuersCount(_ context.Context, _ uuid.UUID) (int64, error) {
 	return 0, errors.New("not implemented")
 }
+
 func (m *mockEventIssuerDataGateway) AllIssuersHaveSigned(_ context.Context, _ uuid.UUID) (bool, error) {
 	return false, errors.New("not implemented")
 }
@@ -115,21 +133,27 @@ func (m *mockEventCertConfigDataGateway) GetEventCertificateConfigByEventID(ctx 
 	}
 	return args.Get(0).(*entity.EventCertificateConfig), args.Error(1)
 }
+
 func (m *mockEventCertConfigDataGateway) CreateEventCertificateConfig(_ context.Context, _ generated.CreateEventCertificateConfigParams) (*entity.EventCertificateConfig, error) {
 	return nil, errors.New("not implemented")
 }
+
 func (m *mockEventCertConfigDataGateway) GetEventCertificateConfigByID(_ context.Context, _ uuid.UUID) (*entity.EventCertificateConfig, error) {
 	return nil, errors.New("not implemented")
 }
+
 func (m *mockEventCertConfigDataGateway) UpdateEventCertificateConfig(_ context.Context, _ generated.UpdateEventCertificateConfigParams) (*entity.EventCertificateConfig, error) {
 	return nil, errors.New("not implemented")
 }
+
 func (m *mockEventCertConfigDataGateway) UpdateEventCertificateTextConfig(_ context.Context, _ generated.UpdateEventCertificateTextConfigParams) (*entity.EventCertificateConfig, error) {
 	return nil, errors.New("not implemented")
 }
+
 func (m *mockEventCertConfigDataGateway) ToggleEventCertificateConfigPublished(_ context.Context, _ generated.ToggleEventCertificateConfigPublishedParams) (*entity.EventCertificateConfig, error) {
 	return nil, errors.New("not implemented")
 }
+
 func (m *mockEventCertConfigDataGateway) DeleteEventCertificateConfig(_ context.Context, _ uuid.UUID) error {
 	return errors.New("not implemented")
 }
@@ -155,6 +179,7 @@ func buildTestApp(
 		nil,          // EventContractFactoryDg
 		mockIssuerDg, // EventIssuerDataGateway
 		nil,          // EventCertificateDataGateway
+		nil,          // CertificateShareDataGateway
 		nil,          // EventCertificateSignatureDataGateway
 		nil,          // EventCertificateConfigDg
 		nil,          // EventCertificateFontFamilyDg
@@ -179,8 +204,8 @@ func buildTestApp(
 	}
 
 	h := &Handler{
-		EventUc:              eventUc,
-		EventConfigUc:        eventConfigUc,
+		EventUc:               eventUc,
+		EventConfigUc:         eventConfigUc,
 		AuthenticationService: &auth.AuthService{},
 	}
 
@@ -230,7 +255,7 @@ func buildTestAppWithUser(
 		mockEventDg,
 		nil, nil,
 		mockIssuerDg,
-		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 		discardLogger,
 		nil, nil,
 	)

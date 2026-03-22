@@ -17,7 +17,7 @@ const metadata = {
 };
 
 const isDev = import.meta.env.DEV;
-// eslint-disable-next-line react-refresh/only-export-components
+
 export const currentNetwork = (isDev ? sepolia : polygon) satisfies AppKitNetwork;
 // 3. Set the networks
 const networks: [AppKitNetwork, ...AppKitNetwork[]] = [currentNetwork];
@@ -49,7 +49,6 @@ createAppKit({
     enableWalletGuide: true,
 });
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const wagmiConfig = wagmiAdapter.wagmiConfig;
 
 export function AppKitProvider({ children }: { children: React.ReactNode }) {

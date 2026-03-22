@@ -258,6 +258,16 @@ type EventCertificateFontFamily struct {
 	DeletedAt            pgtype.Timestamptz `json:"deleted_at"`
 }
 
+type EventCertificateShare struct {
+	ID                 uuid.UUID          `json:"id"`
+	EventCertificateID uuid.UUID          `json:"event_certificate_id"`
+	Active             bool               `json:"active"`
+	Handle             pgtype.Text        `json:"handle"`
+	Password           pgtype.Text        `json:"password"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+}
+
 type EventCertificateSignature struct {
 	ID                       uuid.UUID   `json:"id"`
 	IssuerCredentialID       uuid.UUID   `json:"issuer_credential_id"`

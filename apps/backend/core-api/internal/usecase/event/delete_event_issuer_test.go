@@ -187,10 +187,10 @@ func TestDeleteEventIssuer(t *testing.T) {
 		mockSigDg.On("DeleteEventCertificateSignature", ctx, signatureId).Return(nil)
 
 		uc := &EventUsecase{
-			AuthenticationCredentialDg:             mockAuthDg,
-			EventIssuerDataGateway:                 mockIssuerDg,
-			EventCertificateConfigDg:               mockCertConfigDg,
-			EventCertificateSignatureDataGateway:   mockSigDg,
+			AuthenticationCredentialDg:           mockAuthDg,
+			EventIssuerDataGateway:               mockIssuerDg,
+			EventCertificateConfigDg:             mockCertConfigDg,
+			EventCertificateSignatureDataGateway: mockSigDg,
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
     mapCertificate,
+    mapCertificateShare,
     mapToMyCertificatesViewModel,
     mapToSignedCertificatesResult,
     mapImportCertificatesResponse,
@@ -9,9 +10,14 @@ import {
     mapPublishCertificatesResponse,
     mapClaimCertificateSignMessage,
     mapClaimCertificateResponse,
+    mapCreateCertificateShareableLinkResponse,
+    mapUpdateCertificateShareResponse,
+    mapGetCertificateShareStatusResponse,
+    mapGetCertificateShareDataResponse,
 } from "./mapper";
 import type {
     EntityEventCertificate,
+    EntityCertificatePayload,
     CertificateGetMyCertificatesListViewModelResponse,
     CoreApiInternalHandlerEventSignEventCertificatesResponse,
     CoreApiInternalHandlerEventImportCertificateReceiversResponse,
@@ -19,7 +25,19 @@ import type {
     CoreApiInternalHandlerEventRevokeAllEventCertificatesResponse,
     CoreApiInternalHandlerEventPublishEventCertificatesResponse,
     CertificateClaimCertificateResponse,
+    CertificateShareCertificateShareViewModel,
+    CertificateShareHandlerCreateCertificateShareResponse,
+    CertificateShareHandlerUpdateCertificateShareResponse,
+    CertificateShareHandlerCertificateShareDataResponse,
+    CertificateShareHandlerCertificateShareViewModel,
+    EventClaimedCertificateViewModel,
+    EventUnclaimedCertificateViewModel,
 } from "@decm/api";
+
+interface CertificateShareCertificateShareStatusResponse {
+    status: string;
+    certificate?: EntityEventCertificate;
+}
 
 const baseCert: EntityEventCertificate = {
     id: "cert-1",
@@ -88,7 +106,7 @@ describe("mapCertificate", () => {
 describe("mapToMyCertificatesViewModel", () => {
     it("maps claimed and unclaimed certificates", () => {
         const response: CertificateGetMyCertificatesListViewModelResponse = {
-            claimed_certificates: [baseCert],
+            claimed_certificates: [{ ...baseCert, status: "completed" }],
             unclaimed_certificates: [{ ...baseCert, id: "cert-2" }],
             total_claimed: 1,
             total_unclaimed: 1,
@@ -331,5 +349,259 @@ describe("mapClaimCertificateResponse", () => {
         expect(result.status).toBe("queued");
         expect(result.estimatedDeadline).toBe("2024-05-02T00:00:00Z");
         expect(result.transactionHash).toBe("");
+    });
+});
+
+const baseShare: CertificateShareCertificateShareViewModel = {
+    id: "share-1",
+    event_certificate_id: "cert-1",
+    active: true,
+    handle: "my-handle",
+    has_password: false,
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-02-01T00:00:00Z",
+};
+
+describe("mapCertificateShare", () => {
+    it("maps all fields from snake_case to camelCase", () => {
+        const result = mapCertificateShare(baseShare);
+
+        expect(result.id).toBe("share-1");
+        expect(result.eventCertificateId).toBe("cert-1");
+        expect(result.active).toBe(true);
+        expect(result.handle).toBe("my-handle");
+        expect(result.hasPassword).toBe(false);
+        expect(result.createdAt).toBe("2024-01-01T00:00:00Z");
+        expect(result.updatedAt).toBe("2024-02-01T00:00:00Z");
+    });
+
+    it("maps has_password: false to hasPassword: false", () => {
+        const result = mapCertificateShare({ ...baseShare, has_password: false });
+        expect(result.hasPassword).toBe(false);
+    });
+
+    it("maps has_password: true to hasPassword: true", () => {
+        const result = mapCertificateShare({ ...baseShare, has_password: true });
+        expect(result.hasPassword).toBe(true);
+    });
+});
+
+describe("mapToMyCertificatesViewModel with typed view models", () => {
+    it("maps a claimed certificate including status and certificate_share", () => {
+        const claimed: EventClaimedCertificateViewModel = {
+            ...baseCert,
+            status: "claimed",
+            certificate_share: baseShare,
+        };
+        const response: CertificateGetMyCertificatesListViewModelResponse = {
+            claimed_certificates: [claimed],
+            unclaimed_certificates: [],
+            total_claimed: 1,
+            total_unclaimed: 0,
+        };
+        const result = mapToMyCertificatesViewModel(response);
+
+        expect(result.claimedCertificates).toHaveLength(1);
+        const cert = result.claimedCertificates[0];
+        expect(cert.id).toBe("cert-1");
+        expect(cert.status).toBe("claimed");
+        expect(cert.certificateShare).toBeDefined();
+        expect(cert.certificateShare?.id).toBe("share-1");
+        expect(cert.certificateShare?.eventCertificateId).toBe("cert-1");
+        expect(cert.certificateShare?.hasPassword).toBe(false);
+    });
+
+    it("maps an unclaimed certificate including certificate_share", () => {
+        const unclaimed: EventUnclaimedCertificateViewModel = {
+            ...baseCert,
+            id: "cert-2",
+            certificate_share: { ...baseShare, id: "share-2", event_certificate_id: "cert-2" },
+        };
+        const response: CertificateGetMyCertificatesListViewModelResponse = {
+            claimed_certificates: [],
+            unclaimed_certificates: [unclaimed],
+            total_claimed: 0,
+            total_unclaimed: 1,
+        };
+        const result = mapToMyCertificatesViewModel(response);
+
+        expect(result.unclaimedCertificates).toHaveLength(1);
+        const cert = result.unclaimedCertificates[0];
+        expect(cert.id).toBe("cert-2");
+        expect(cert.certificateShare).toBeDefined();
+        expect(cert.certificateShare?.id).toBe("share-2");
+        expect(cert.certificateShare?.eventCertificateId).toBe("cert-2");
+    });
+
+    it("maps certificate_share: undefined to certificateShare: undefined", () => {
+        const claimed: EventClaimedCertificateViewModel = {
+            ...baseCert,
+            status: "claimed",
+            certificate_share: undefined,
+        };
+        const unclaimed: EventUnclaimedCertificateViewModel = {
+            ...baseCert,
+            id: "cert-3",
+            certificate_share: undefined,
+        };
+        const response: CertificateGetMyCertificatesListViewModelResponse = {
+            claimed_certificates: [claimed],
+            unclaimed_certificates: [unclaimed],
+            total_claimed: 1,
+            total_unclaimed: 1,
+        };
+        const result = mapToMyCertificatesViewModel(response);
+
+        expect(result.claimedCertificates[0].certificateShare).toBeUndefined();
+        expect(result.unclaimedCertificates[0].certificateShare).toBeUndefined();
+    });
+});
+
+describe("mapCreateCertificateShareableLinkResponse", () => {
+    it("maps share fields to certificateId, isPublished, and handle", () => {
+        const entityShare: CertificateShareHandlerCertificateShareViewModel = {
+            id: "share-99",
+            event_certificate_id: "cert-42",
+            active: true,
+            handle: "public-link",
+            has_password: false,
+            created_at: "2024-03-01T00:00:00Z",
+            updated_at: "2024-03-02T00:00:00Z",
+        };
+        const response: CertificateShareHandlerCreateCertificateShareResponse = {
+            share: entityShare,
+        };
+        const result = mapCreateCertificateShareableLinkResponse(response);
+
+        expect(result.certificateId).toBe("cert-42");
+        expect(result.isPublished).toBe(true);
+        expect(result.handle).toBe("public-link");
+    });
+
+    it("maps share.active: false to isPublished: false", () => {
+        const entityShare: CertificateShareHandlerCertificateShareViewModel = {
+            id: "share-100",
+            event_certificate_id: "cert-43",
+            active: false,
+            handle: "draft-link",
+            has_password: false,
+            created_at: "2024-03-01T00:00:00Z",
+            updated_at: "2024-03-02T00:00:00Z",
+        };
+        const response: CertificateShareHandlerCreateCertificateShareResponse = {
+            share: entityShare,
+        };
+        const result = mapCreateCertificateShareableLinkResponse(response);
+
+        expect(result.isPublished).toBe(false);
+        expect(result.certificateId).toBe("cert-43");
+        expect(result.handle).toBe("draft-link");
+    });
+});
+
+describe("mapUpdateCertificateShareResponse", () => {
+    it("maps share to certificateId and handle", () => {
+        const response: CertificateShareHandlerUpdateCertificateShareResponse = {
+            share: {
+                id: "share-1",
+                event_certificate_id: "cert-10",
+                active: false,
+                handle: "updated-handle",
+                has_password: false,
+                created_at: "2024-01-01T00:00:00Z",
+                updated_at: "2024-02-01T00:00:00Z",
+            },
+        };
+        const result = mapUpdateCertificateShareResponse(response);
+
+        expect(result.certificateId).toBe("cert-10");
+        expect(result.handle).toBe("updated-handle");
+    });
+});
+
+describe("mapGetCertificateShareStatusResponse", () => {
+    it("maps READY status with certificate to camelCase", () => {
+        const response: CertificateShareCertificateShareStatusResponse = {
+            status: "READY" as never,
+            certificate: {
+                ...baseCert,
+                id: "cert-share-1",
+                certificate_title: "Shared Cert",
+            },
+        };
+        const result = mapGetCertificateShareStatusResponse(response);
+
+        expect(result.status).toBe("READY");
+        expect(result.certificate?.id).toBe("cert-share-1");
+        expect(result.certificate?.certificateTitle).toBe("Shared Cert");
+    });
+
+    it("maps PASSWORD_LOCKED status without certificate", () => {
+        const response: CertificateShareCertificateShareStatusResponse = {
+            status: "PASSWORD_LOCKED" as never,
+            certificate: undefined,
+        };
+        const result = mapGetCertificateShareStatusResponse(response);
+
+        expect(result.status).toBe("PASSWORD_LOCKED");
+        expect(result.certificate).toBeUndefined();
+    });
+
+    it("maps VALID_BUT_PENDING status", () => {
+        const response: CertificateShareCertificateShareStatusResponse = {
+            status: "VALID_BUT_PENDING" as never,
+            certificate: undefined,
+        };
+        const result = mapGetCertificateShareStatusResponse(response);
+
+        expect(result.status).toBe("VALID_BUT_PENDING");
+        expect(result.certificate).toBeUndefined();
+    });
+});
+
+describe("mapGetCertificateShareDataResponse", () => {
+    it("maps response data to payload", () => {
+        const mockPayload: EntityCertificatePayload = {
+            header: {
+                "@context": ["https://w3.org/ns/credentials/v2"],
+                id: "vc-1",
+                issuanceDate: "2024-01-01T00:00:00Z",
+                issuer: "did:example:issuer",
+                type: ["VerifiableCredential"],
+            },
+            data: {
+                certificateId: "cert-1",
+                certificateTitle: "Test Cert",
+                certificateSubtitle: "Sub",
+                certificateTokenId: "tok-1",
+                eventName: "Test Event",
+                eventDescription: "Desc",
+                issuedAt: "2024-01-01T00:00:00Z",
+                issuerAddresses: "0xissuer",
+                issuerId: "issuer-1",
+                receiverAddress: "0xreceiver",
+                status: "VALID",
+                userId: "user-1",
+                backendEncryptedUserData: "",
+                encryptedUserData: "",
+            },
+            proof: {
+                hash: "0xhash",
+                encryptedByBackendRawData: "",
+                encryptedByUserRawData: "",
+                signMessage: "sign",
+                host: { publicKey: "0xpk", signature: "0xsig" },
+                issuers: [],
+            },
+        };
+        const response: CertificateShareHandlerCertificateShareDataResponse = {
+            contract: { certificateTokenId: "tok-1", eventCertificateContractAddress: "0xissuer" },
+            data: mockPayload,
+        };
+        const result = mapGetCertificateShareDataResponse(response);
+
+        expect(result.payload).toBe(mockPayload);
+        expect(result.payload.data.certificateTitle).toBe("Test Cert");
+        expect(result.payload.header.id).toBe("vc-1");
     });
 });

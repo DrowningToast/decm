@@ -96,7 +96,7 @@ func GetTopStackLogFile() (*os.File, error) {
 		var month int
 		var year int
 
-		_, err = fmt.Scanf(file.Name(), format, &index, &year, &month, &day)
+		_, err = fmt.Sscanf(file.Name(), format, &index, &year, &month, &day)
 		if err != nil {
 			continue
 		}

@@ -230,6 +230,288 @@
                 }
             }
         },
+        "/api/v1/certificate-shares/config/{certificate_id}": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a shareable link for a certificate. Only the certificate owner may call this endpoint. An optional password can be set to restrict access.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CertificateShares"
+                ],
+                "summary": "Create certificate share link",
+                "operationId": "create-certificate-share",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Certificate ID",
+                        "name": "certificate_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Optional password configuration",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share_handler.CreateCertificateShareBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share_handler.CreateCertificateShareResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/certificate-shares/config/{share_id}": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the password of an existing share link. Only the certificate owner may call this endpoint. Omit the password field to leave existing protection unchanged; set to empty string or null to remove protection; set to a non-empty string to set a new password.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CertificateShares"
+                ],
+                "summary": "Update certificate share link",
+                "operationId": "update-certificate-share",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Share ID",
+                        "name": "share_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Optional password configuration",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share_handler.UpdateCertificateShareBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share_handler.UpdateCertificateShareResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/certificate-shares/{handle}": {
+            "post": {
+                "description": "Retrieve the full on-chain Verifiable Credential data for a share link. For password-protected shares, include the password in the request body.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CertificateShares"
+                ],
+                "summary": "Get on-chain certificate share data",
+                "operationId": "get-certificate-share-data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Share handle",
+                        "name": "handle",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Optional password for password-protected shares",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share_handler.GetCertificateShareBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share_handler.CertificateShareDataResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/certificate-shares/{handle}/image": {
+            "post": {
+                "description": "Returns a PNG certificate image for a share link. For password-protected shares, include the password in the request body.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "image/png"
+                ],
+                "tags": [
+                    "CertificateShares"
+                ],
+                "summary": "Get certificate share image",
+                "operationId": "get-certificate-share-image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Share handle",
+                        "name": "handle",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Optional password for password-protected shares",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share_handler.GetCertificateShareImageBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PNG certificate image",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/certificates/claim/{certificate_id}": {
             "post": {
                 "security": [
@@ -498,7 +780,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                            "$ref": "#/definitions/event_registration.EventRegistrationInvitationResponse"
                         }
                     },
                     "400": {
@@ -559,7 +841,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                                "$ref": "#/definitions/event_registration.EventRegistrationInvitationResponse"
                             }
                         }
                     },
@@ -604,7 +886,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.EventRegistrationInvitation"
+                                "$ref": "#/definitions/event_registration.EventRegistrationInvitationResponse"
                             }
                         }
                     },
@@ -671,7 +953,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entity.EventAttendee"
+                            "$ref": "#/definitions/event_registration.EventAttendeeResponse"
                         }
                     },
                     "400": {
@@ -1011,7 +1293,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/entity.Event"
+                            "$ref": "#/definitions/core-api_internal_handler_event.EventResponse"
                         }
                     },
                     "400": {
@@ -1063,7 +1345,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/event.EventResponse"
+                                "$ref": "#/definitions/core-api_internal_handler_event.EventResponse"
                             }
                         }
                     },
@@ -1109,7 +1391,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event.EventResponse"
+                            "$ref": "#/definitions/core-api_internal_handler_event.EventResponse"
                         }
                     },
                     "400": {
@@ -1233,7 +1515,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entity.Event"
+                            "$ref": "#/definitions/core-api_internal_handler_event.EventResponse"
                         }
                     },
                     "400": {
@@ -1297,7 +1579,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/event.EventResponse"
+                            "$ref": "#/definitions/core-api_internal_handler_event.EventResponse"
                         }
                     },
                     "400": {
@@ -3257,7 +3539,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.Profile"
+                                "$ref": "#/definitions/issuer.ProfileResponse"
                             }
                         }
                     },
@@ -4101,14 +4383,187 @@
                 "unclaimed_certificates"
             ],
             "properties": {
-                "claimed_certificates": {},
+                "claimed_certificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/event.ClaimedCertificateViewModel"
+                    }
+                },
                 "total_claimed": {
                     "type": "integer"
                 },
                 "total_unclaimed": {
                     "type": "integer"
                 },
-                "unclaimed_certificates": {}
+                "unclaimed_certificates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/event.UnclaimedCertificateViewModel"
+                    }
+                }
+            }
+        },
+        "certificate_share.CertificateShareViewModel": {
+            "type": "object",
+            "required": [
+                "active",
+                "created_at",
+                "event_certificate_id",
+                "handle",
+                "has_password",
+                "id",
+                "updated_at"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_certificate_id": {
+                    "type": "string"
+                },
+                "handle": {
+                    "type": "string"
+                },
+                "has_password": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "certificate_share_handler.CertificateShareContractInfo": {
+            "type": "object",
+            "required": [
+                "certificateTokenId",
+                "eventCertificateContractAddress"
+            ],
+            "properties": {
+                "certificateTokenId": {
+                    "type": "string"
+                },
+                "eventCertificateContractAddress": {
+                    "type": "string"
+                }
+            }
+        },
+        "certificate_share_handler.CertificateShareDataResponse": {
+            "type": "object",
+            "required": [
+                "contract",
+                "data"
+            ],
+            "properties": {
+                "contract": {
+                    "$ref": "#/definitions/certificate_share_handler.CertificateShareContractInfo"
+                },
+                "data": {
+                    "$ref": "#/definitions/entity.CertificatePayload"
+                },
+                "decryptedCertificateData": {
+                    "$ref": "#/definitions/entity.CertificateRawData"
+                },
+                "decryptedUserData": {
+                    "$ref": "#/definitions/entity.AttendeeProfileData"
+                }
+            }
+        },
+        "certificate_share_handler.CertificateShareViewModel": {
+            "type": "object",
+            "required": [
+                "active",
+                "created_at",
+                "event_certificate_id",
+                "handle",
+                "has_password",
+                "id",
+                "updated_at"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "event_certificate_id": {
+                    "type": "string"
+                },
+                "handle": {
+                    "type": "string"
+                },
+                "has_password": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "certificate_share_handler.CreateCertificateShareBody": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "certificate_share_handler.CreateCertificateShareResponse": {
+            "type": "object",
+            "required": [
+                "share"
+            ],
+            "properties": {
+                "share": {
+                    "$ref": "#/definitions/certificate_share_handler.CertificateShareViewModel"
+                }
+            }
+        },
+        "certificate_share_handler.GetCertificateShareBody": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "certificate_share_handler.GetCertificateShareImageBody": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "certificate_share_handler.UpdateCertificateShareBody": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "certificate_share_handler.UpdateCertificateShareResponse": {
+            "type": "object",
+            "required": [
+                "share"
+            ],
+            "properties": {
+                "share": {
+                    "$ref": "#/definitions/certificate_share_handler.CertificateShareViewModel"
+                }
             }
         },
         "common.SolutionStatus": {
@@ -4167,6 +4622,109 @@
                     "type": "string"
                 },
                 "ticket_contract_address": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "core-api_internal_handler_event.EventResponse": {
+            "type": "object",
+            "required": [
+                "attendees_count",
+                "banner_storage_key",
+                "chain_id",
+                "contact_address",
+                "contact_number",
+                "created_at",
+                "end_date",
+                "event_status",
+                "event_type",
+                "google_map_query",
+                "icon_storage_key",
+                "id",
+                "is_booking_request_required",
+                "is_public",
+                "is_ticket_transferable",
+                "is_verified",
+                "location",
+                "long_description",
+                "max_attendees",
+                "owner_credential_id",
+                "short_description",
+                "start_date",
+                "title",
+                "updated_at"
+            ],
+            "properties": {
+                "attendees_count": {
+                    "type": "integer"
+                },
+                "banner_storage_key": {
+                    "type": "string"
+                },
+                "chain_id": {
+                    "type": "integer"
+                },
+                "contact_address": {
+                    "type": "string"
+                },
+                "contact_number": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "event_status": {
+                    "$ref": "#/definitions/entity.EventStatus"
+                },
+                "event_type": {
+                    "$ref": "#/definitions/entity.EventType"
+                },
+                "google_map_query": {
+                    "type": "string"
+                },
+                "icon_storage_key": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_booking_request_required": {
+                    "type": "boolean"
+                },
+                "is_public": {
+                    "type": "boolean"
+                },
+                "is_ticket_transferable": {
+                    "type": "boolean"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "long_description": {
+                    "type": "string"
+                },
+                "max_attendees": {
+                    "type": "integer"
+                },
+                "owner_credential_id": {
+                    "type": "string"
+                },
+                "short_description": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -4588,6 +5146,248 @@
                 }
             }
         },
+        "entity.AttendeeProfileData": {
+            "type": "object",
+            "required": [
+                "academic_email",
+                "academic_institution",
+                "address",
+                "bio",
+                "email",
+                "first_name",
+                "last_name",
+                "phone_number"
+            ],
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.CertificatePayload": {
+            "type": "object",
+            "required": [
+                "data",
+                "header",
+                "proof"
+            ],
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/entity.CertificatePayloadData"
+                },
+                "header": {
+                    "$ref": "#/definitions/entity.CertificatePayloadHeader"
+                },
+                "proof": {
+                    "$ref": "#/definitions/entity.CertificatePayloadProof"
+                }
+            }
+        },
+        "entity.CertificatePayloadData": {
+            "type": "object",
+            "required": [
+                "backendEncryptedUserData",
+                "certificateId",
+                "certificateSubtitle",
+                "certificateTitle",
+                "certificateTokenId",
+                "encryptedUserData",
+                "eventDescription",
+                "eventName",
+                "issuedAt",
+                "issuerAddresses",
+                "issuerId",
+                "receiverAddress",
+                "status",
+                "userId"
+            ],
+            "properties": {
+                "backendEncryptedUserData": {
+                    "type": "string"
+                },
+                "certificateId": {
+                    "type": "string"
+                },
+                "certificateSubtitle": {
+                    "type": "string"
+                },
+                "certificateTitle": {
+                    "type": "string"
+                },
+                "certificateTokenId": {
+                    "type": "string"
+                },
+                "encryptedUserData": {
+                    "type": "string"
+                },
+                "eventDescription": {
+                    "type": "string"
+                },
+                "eventName": {
+                    "type": "string"
+                },
+                "issuedAt": {
+                    "type": "string"
+                },
+                "issuerAddresses": {
+                    "type": "string"
+                },
+                "issuerId": {
+                    "type": "string"
+                },
+                "receiverAddress": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "\"VALID\" | \"REVOKED\"",
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.CertificatePayloadHeader": {
+            "type": "object",
+            "required": [
+                "@context",
+                "id",
+                "issuanceDate",
+                "issuer",
+                "type"
+            ],
+            "properties": {
+                "@context": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "issuanceDate": {
+                    "type": "string"
+                },
+                "issuer": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "entity.CertificatePayloadHostProof": {
+            "type": "object",
+            "required": [
+                "publicKey",
+                "signature"
+            ],
+            "properties": {
+                "publicKey": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.CertificatePayloadIssuerProof": {
+            "type": "object",
+            "required": [
+                "issuerPublicKey",
+                "issuerSignature"
+            ],
+            "properties": {
+                "issuerPublicKey": {
+                    "type": "string"
+                },
+                "issuerSignature": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.CertificatePayloadProof": {
+            "type": "object",
+            "required": [
+                "encryptedByBackendRawData",
+                "encryptedByUserRawData",
+                "hash",
+                "host",
+                "issuers",
+                "signMessage"
+            ],
+            "properties": {
+                "encryptedByBackendRawData": {
+                    "type": "string"
+                },
+                "encryptedByUserRawData": {
+                    "type": "string"
+                },
+                "hash": {
+                    "type": "string"
+                },
+                "host": {
+                    "$ref": "#/definitions/entity.CertificatePayloadHostProof"
+                },
+                "issuers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.CertificatePayloadIssuerProof"
+                    }
+                },
+                "signMessage": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.CertificateRawData": {
+            "type": "object",
+            "required": [
+                "academic_institution",
+                "certificate_subtitle",
+                "certificate_title",
+                "name"
+            ],
+            "properties": {
+                "academic_institution": {
+                    "type": "string"
+                },
+                "certificate_subtitle": {
+                    "type": "string"
+                },
+                "certificate_title": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.Event": {
             "type": "object",
             "required": [
@@ -4687,72 +5487,6 @@
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "entity.EventAttendee": {
-            "type": "object",
-            "required": [
-                "attendee_credential_id",
-                "contract_address",
-                "created_at",
-                "event_id",
-                "id",
-                "is_attendee_accepted",
-                "updated_at",
-                "wallet_address"
-            ],
-            "properties": {
-                "academic_email": {
-                    "type": "string"
-                },
-                "academic_institution": {
-                    "type": "string"
-                },
-                "address": {
-                    "type": "string"
-                },
-                "attendee_credential_id": {
-                    "type": "string"
-                },
-                "bio": {
-                    "type": "string"
-                },
-                "contract_address": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "event_id": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "is_attendee_accepted": {
-                    "type": "boolean"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "phone_number": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user_signature_id": {
-                    "type": "string"
-                },
-                "wallet_address": {
                     "type": "string"
                 }
             }
@@ -5125,6 +5859,87 @@
                 }
             }
         },
+        "event.ClaimedCertificateViewModel": {
+            "type": "object",
+            "required": [
+                "created_at",
+                "event_contract_address",
+                "event_id",
+                "id",
+                "status"
+            ],
+            "properties": {
+                "aborted_at": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "broadcasted_at": {
+                    "type": "string"
+                },
+                "certificate_digest": {
+                    "type": "string"
+                },
+                "certificate_share": {
+                    "$ref": "#/definitions/certificate_share.CertificateShareViewModel"
+                },
+                "certificate_subtitle": {
+                    "type": "string"
+                },
+                "certificate_title": {
+                    "type": "string"
+                },
+                "certificate_token_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "estimated_deadline": {
+                    "type": "string"
+                },
+                "event_certificate_address": {
+                    "type": "string"
+                },
+                "event_contract_address": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "event_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inbox_message_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "receiver_credential_id": {
+                    "type": "string"
+                },
+                "receiver_email": {
+                    "type": "string"
+                },
+                "revoked_at": {
+                    "type": "string"
+                },
+                "signature_created_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "user_claim_signature_id": {
+                    "type": "string"
+                }
+            }
+        },
         "event.CreateEventContractRequest": {
             "type": "object",
             "required": [
@@ -5262,109 +6077,6 @@
                     "type": "string"
                 },
                 "wallet_address": {
-                    "type": "string"
-                }
-            }
-        },
-        "event.EventResponse": {
-            "type": "object",
-            "required": [
-                "attendees_count",
-                "banner_presigned_url",
-                "chain_id",
-                "contact_address",
-                "contact_number",
-                "created_at",
-                "end_date",
-                "event_status",
-                "event_type",
-                "google_map_query",
-                "icon_presigned_url",
-                "id",
-                "is_booking_request_required",
-                "is_public",
-                "is_ticket_transferable",
-                "is_verified",
-                "location",
-                "long_description",
-                "max_attendees",
-                "owner_credential_id",
-                "short_description",
-                "start_date",
-                "title",
-                "updated_at"
-            ],
-            "properties": {
-                "attendees_count": {
-                    "type": "integer"
-                },
-                "banner_presigned_url": {
-                    "type": "string"
-                },
-                "chain_id": {
-                    "type": "integer"
-                },
-                "contact_address": {
-                    "type": "string"
-                },
-                "contact_number": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "end_date": {
-                    "type": "string"
-                },
-                "event_status": {
-                    "$ref": "#/definitions/entity.EventStatus"
-                },
-                "event_type": {
-                    "$ref": "#/definitions/entity.EventType"
-                },
-                "google_map_query": {
-                    "type": "string"
-                },
-                "icon_presigned_url": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "is_booking_request_required": {
-                    "type": "boolean"
-                },
-                "is_public": {
-                    "type": "boolean"
-                },
-                "is_ticket_transferable": {
-                    "type": "boolean"
-                },
-                "is_verified": {
-                    "type": "boolean"
-                },
-                "location": {
-                    "type": "string"
-                },
-                "long_description": {
-                    "type": "string"
-                },
-                "max_attendees": {
-                    "type": "integer"
-                },
-                "owner_credential_id": {
-                    "type": "string"
-                },
-                "short_description": {
-                    "type": "string"
-                },
-                "start_date": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "updated_at": {
                     "type": "string"
                 }
             }
@@ -5652,6 +6364,83 @@
                 }
             }
         },
+        "event.UnclaimedCertificateViewModel": {
+            "type": "object",
+            "required": [
+                "created_at",
+                "event_contract_address",
+                "event_id",
+                "id"
+            ],
+            "properties": {
+                "aborted_at": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "broadcasted_at": {
+                    "type": "string"
+                },
+                "certificate_digest": {
+                    "type": "string"
+                },
+                "certificate_share": {
+                    "$ref": "#/definitions/certificate_share.CertificateShareViewModel"
+                },
+                "certificate_subtitle": {
+                    "type": "string"
+                },
+                "certificate_title": {
+                    "type": "string"
+                },
+                "certificate_token_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "estimated_deadline": {
+                    "type": "string"
+                },
+                "event_certificate_address": {
+                    "type": "string"
+                },
+                "event_contract_address": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "event_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inbox_message_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "receiver_credential_id": {
+                    "type": "string"
+                },
+                "receiver_email": {
+                    "type": "string"
+                },
+                "revoked_at": {
+                    "type": "string"
+                },
+                "signature_created_at": {
+                    "type": "string"
+                },
+                "user_claim_signature_id": {
+                    "type": "string"
+                }
+            }
+        },
         "event.UpdateEventCertificateTextConfigRequest": {
             "type": "object",
             "required": [
@@ -5832,6 +6621,127 @@
                     "type": "string"
                 },
                 "issuer_credential_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "event_registration.EventAttendeeResponse": {
+            "type": "object",
+            "required": [
+                "attendee_credential_id",
+                "contract_address",
+                "created_at",
+                "event_id",
+                "id",
+                "is_attendee_accepted",
+                "updated_at",
+                "wallet_address"
+            ],
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "attendee_credential_id": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "contract_address": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_attendee_accepted": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_signature_id": {
+                    "type": "string"
+                },
+                "wallet_address": {
+                    "type": "string"
+                }
+            }
+        },
+        "event_registration.EventRegistrationInvitationResponse": {
+            "type": "object",
+            "required": [
+                "accepted_at",
+                "created_at",
+                "event_id",
+                "id",
+                "inbox_message_id",
+                "updated_at"
+            ],
+            "properties": {
+                "academic_institution": {
+                    "type": "string"
+                },
+                "accepted_at": {
+                    "type": "string"
+                },
+                "cancelled_at": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inbox_message_id": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "valid_until": {
                     "type": "string"
                 }
             }
@@ -6670,6 +7580,102 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "issuer.ProfileResponse": {
+            "type": "object",
+            "required": [
+                "authentication_credential_id",
+                "created_at",
+                "id",
+                "is_academic_email_public",
+                "is_academic_institution_public",
+                "is_address_public",
+                "is_bio_public",
+                "is_email_public",
+                "is_first_name_public",
+                "is_last_name_public",
+                "is_phone_number_public",
+                "is_profile_picture_public",
+                "updated_at"
+            ],
+            "properties": {
+                "academic_email": {
+                    "type": "string"
+                },
+                "academic_institution": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "authentication_credential_id": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "github_connector_ref": {
+                    "type": "string"
+                },
+                "google_connector_ref": {
+                    "description": "Connector references (from authentication_credentials table)",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_academic_email_public": {
+                    "type": "boolean"
+                },
+                "is_academic_institution_public": {
+                    "type": "boolean"
+                },
+                "is_address_public": {
+                    "type": "boolean"
+                },
+                "is_bio_public": {
+                    "type": "boolean"
+                },
+                "is_email_public": {
+                    "type": "boolean"
+                },
+                "is_first_name_public": {
+                    "type": "boolean"
+                },
+                "is_last_name_public": {
+                    "type": "boolean"
+                },
+                "is_phone_number_public": {
+                    "type": "boolean"
+                },
+                "is_profile_picture_public": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "wallet_address": {
                     "type": "string"
                 }
             }

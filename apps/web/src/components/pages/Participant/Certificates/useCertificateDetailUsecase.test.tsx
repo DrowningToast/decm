@@ -3,7 +3,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useCertificateDetailUsecase } from "./useCertificateDetailUsecase";
-import type { Certificate } from "@/services/CertificateService/mapper";
+import type { ClaimedCertificate } from "@/services/CertificateService/mapper";
 
 // Mock dependencies
 const mockSetCertificateId = vi.fn();
@@ -44,11 +44,12 @@ describe("useCertificateDetailUsecase", () => {
         <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
 
-    const makeCertificate = (overrides: Partial<Certificate> = {}): Certificate => ({
+    const makeCertificate = (overrides: Partial<ClaimedCertificate> = {}): ClaimedCertificate => ({
         id: "cert-1",
         eventId: "evt-1",
         eventName: "Test Event",
         name: "John Doe",
+        status: "completed",
         certificateTitle: "Completion",
         certificateSubtitle: "With honors",
         academicInstitution: "MIT",
@@ -350,5 +351,30 @@ describe("useCertificateDetailUsecase", () => {
 
         expect(result.current.certificate!.name).toBe("Untitled Certificate");
         expect(result.current.certificate!.event).toBe("Unknown Event");
+    });
+
+    it("exposes shareable from certificateShare field", async () => {
+        const shareData = {
+            id: "share-1",
+            eventCertificateId: "cert-1",
+            active: true,
+            handle: "abc123",
+            hasPassword: false,
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
+        };
+        const cert = makeCertificate({ certificateShare: shareData });
+        vi.mocked(useMyCertificatesListViewModel).mockReturnValue({
+            claimedCertificates: [cert],
+            unclaimedCertificates: [],
+            totalClaimed: 1,
+            totalUnclaimed: 0,
+            isLoading: false,
+            isError: false,
+            error: null,
+        });
+        const { result } = renderHook(() => useCertificateDetailUsecase("cert-1"), { wrapper });
+        await waitFor(() => expect(result.current.isLoading).toBe(false));
+        expect(result.current.certificate!.shareable).toEqual(shareData);
     });
 });

@@ -1,17 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { useCertificateDetailUsecase } from "./useCertificateDetailUsecase";
-import { BottomNav } from "@/components/BottomNav/BottomNav";
+import { BottomNav, type BottomNavVariant } from "@/components/BottomNav/BottomNav";
 import { CircleCheckBig, Award, Loader2, UserPlus, CircleX } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
 import { useClaimCertificate } from "@/hooks/useClaimCertificate";
 import { useCertificateImage } from "@/hooks/useCertificateImage";
-import { useCertificateDetailNavStore } from "@/components/BottomNav/stores/certificates";
+import {
+    useCertificateDetailNavStore,
+    useCertificateDetailsSharedNavStore,
+} from "@/components/BottomNav/stores/certificates";
+import { CertificatePasswordDialog } from "./CertificatePasswordDialog";
+import { CertificateShareModal } from "./CertificateShareModal";
 import { EthExplorerLink } from "@/components/common/EthscanLink";
 import { useEvent } from "@/hooks/events/useEvent";
+import { useCertificateCreateShareLinkUsecase } from "./useCertificateCreateShareLinkUsecase";
+import { useCertificateUpdateShareVisibilityUsecase } from "./useCertificateUpdateShareVisibilityUsecase";
 
 interface CertificateDetailProps {
     certificateId: string;
@@ -24,7 +31,47 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
     const { mutateAsync: openPasswordPrompt } = usePasswordPrompt();
     const { claimCertificate, isClaiming } = useClaimCertificate();
     const [isProcessing, setIsProcessing] = useState(false);
-    const { setImageUrl } = useCertificateDetailNavStore();
+    const { setOnClickShareable, setImageUrl } = useCertificateDetailNavStore();
+    const {
+        setOnChangePublish,
+        setIsPublished,
+        setIsPasswordProtected,
+        setShareableHandle,
+        isPasswordDialogOpen,
+        setIsPasswordDialogOpen,
+    } = useCertificateDetailsSharedNavStore();
+    const { createCertificateShareLink } = useCertificateCreateShareLinkUsecase();
+    const { updateShareVisibility } = useCertificateUpdateShareVisibilityUsecase();
+
+    useEffect(() => {
+        setOnClickShareable(async () => {
+            await createCertificateShareLink({ certificateId });
+        });
+    }, [certificateId, createCertificateShareLink, setOnClickShareable]);
+
+    const shareId = certificate?.shareable?.id ?? null;
+
+    useEffect(() => {
+        if (!shareId) return;
+        setOnChangePublish(async (isPublished: boolean) => {
+            setIsPublished(isPublished);
+            await updateShareVisibility(shareId, isPublished);
+        });
+    }, [shareId, updateShareVisibility, setOnChangePublish, setIsPublished]);
+
+    // Sync shareable state into the shared nav store when certificate data loads
+    useEffect(() => {
+        if (certificate?.shareable) {
+            setIsPublished(certificate.shareable.active);
+            setIsPasswordProtected(certificate.shareable.hasPassword);
+            setShareableHandle(certificate.shareable.handle);
+        }
+        return () => {
+            setIsPublished(false);
+            setIsPasswordProtected(false);
+            setShareableHandle(null);
+        };
+    }, [certificate?.shareable, setIsPublished, setIsPasswordProtected, setShareableHandle]);
 
     // Fetch event details to check if user has joined
     const { event, isLoadingEvent } = useEvent(certificate?.eventId || "");
@@ -44,14 +91,6 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
         if (certificateImageUrl) {
             setImageUrl(certificateImageUrl);
         }
-        return () => {
-            setImageUrl(null);
-        };
-    }, [certificateImageUrl, setImageUrl]);
-
-    // Store image URL in nav store for download functionality
-    useEffect(() => {
-        setImageUrl(certificateImageUrl);
         return () => {
             setImageUrl(null);
         };
@@ -100,6 +139,13 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
         !isCertificateExpired &&
         !isClaiming &&
         !isProcessing;
+
+    const bottomNavVariant: BottomNavVariant = useMemo(() => {
+        if (certificate?.shareable) {
+            return "certificate-details-shared";
+        }
+        return "certificate-detail";
+    }, [certificate?.shareable]);
 
     const formattedDeadline = certificate?.estimatedDeadline
         ? new Date(certificate.estimatedDeadline).toLocaleDateString(
@@ -517,7 +563,10 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
                                     ) : isCertificateAborted ? (
                                         <>
                                             <Award className="w-5 h-5" />
-                                            {t("participant.certificates.retryClaimButton", "Retry Claim")}
+                                            {t(
+                                                "participant.certificates.retryClaimButton",
+                                                "Retry Claim",
+                                            )}
                                         </>
                                     ) : (
                                         <>
@@ -564,7 +613,18 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
             </div>
 
             {/* Bottom Navigation */}
-            <BottomNav variant="certificate-detail" onBack={() => window.history.back()} />
+            <BottomNav variant={bottomNavVariant} onBack={() => window.history.back()} />
+
+            {/* Share modal */}
+            <CertificateShareModal />
+
+            {/* Password dialog */}
+            <CertificatePasswordDialog
+                open={isPasswordDialogOpen}
+                onOpenChange={setIsPasswordDialogOpen}
+                shareId={shareId}
+                hasPassword={certificate.shareable?.hasPassword ?? false}
+            />
         </div>
     );
 };

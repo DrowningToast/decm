@@ -1,7 +1,10 @@
 import { useMemo, useEffect } from "react";
 import { useCertificateDetailNavStore } from "@/components/BottomNav/stores/certificates";
 import { useMyCertificatesListViewModel } from "@/hooks/useMyCertificatesListViewModel";
-import type { Certificate as CertificateData } from "@/services/CertificateService/mapper";
+import type {
+    Certificate as CertificateData,
+    CertificateShare,
+} from "@/services/CertificateService/mapper";
 import { useTranslation } from "react-i18next";
 
 interface CertificateViewModel {
@@ -19,6 +22,7 @@ interface CertificateViewModel {
     certificateContractAddress?: string;
     eventContractAddress?: string;
     verifiableCredentialUrl?: string;
+    shareable?: CertificateShare;
 }
 
 const mapCertificateToViewModel = (cert: CertificateData): CertificateViewModel => {
@@ -56,6 +60,7 @@ const mapCertificateToViewModel = (cert: CertificateData): CertificateViewModel 
         certificateContractAddress: cert.eventCertificateAddress,
         eventContractAddress: cert.eventContractAddress,
         verifiableCredentialUrl: undefined, // TODO: Add when VC URL is available
+        shareable: cert.certificateShare,
     };
 };
 
