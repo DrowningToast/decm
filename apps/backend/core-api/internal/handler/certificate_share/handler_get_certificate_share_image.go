@@ -7,31 +7,38 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+type GetCertificateShareImageBody struct {
+	Password *string `json:"password,omitempty"`
+}
+
 // @Summary Get certificate share image
-// @Description Returns a PNG certificate image for a share link. For password-protected shares, pass the password as a query parameter.
+// @Description Returns a PNG certificate image for a share link. For password-protected shares, include the password in the request body.
 // @ID get-certificate-share-image
 // @Tags CertificateShares
+// @Accept json
 // @Produce image/png
 // @Param handle path string true "Share handle"
-// @Param password query string false "Password for password-protected shares"
+// @Param body body GetCertificateShareImageBody false "Optional password for password-protected shares"
 // @Success 200 {file} binary "PNG certificate image"
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 403 {object} customerror.ErrResponse
 // @Failure 404 {object} customerror.ErrResponse
 // @Failure 500 {object} customerror.ErrResponse
-// @Router /api/v1/certificate-shares/{handle}/image [get]
+// @Router /api/v1/certificate-shares/{handle}/image [post]
 func (h *Handler) GetCertificateShareImage(ctx *fiber.Ctx) error {
 	handle := ctx.Params("handle")
 	if handle == "" {
 		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("handle is required"))
 	}
 
-	var password *string
-	if pw := ctx.Query("password"); pw != "" {
-		password = &pw
+	var body GetCertificateShareImageBody
+	if len(ctx.Body()) > 0 {
+		if err := ctx.BodyParser(&body); err != nil {
+			return customerror.Parse(&customerror.ErrInvalidArgument, errors.Wrap(err, "failed to parse request body"))
+		}
 	}
 
-	pngBytes, err := h.CertificateShareUc.GetCertificateShareImage(ctx.UserContext(), handle, password)
+	pngBytes, err := h.CertificateShareUc.GetCertificateShareImage(ctx.UserContext(), handle, body.Password)
 	if err != nil {
 		return err
 	}

@@ -7,6 +7,7 @@ import (
 	"apps/backend/core-api/internal/usecase/cyptoutils"
 	"context"
 	"encoding/json"
+	"log/slog"
 	"math/big"
 	"strings"
 
@@ -100,16 +101,24 @@ func (uc *CertificateShareUsecase) fetchOnChainData(ctx context.Context, certID 
 		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Wrap(err, "failed to instantiate certificate contract"))
 	}
 
-	tokenId := new(big.Int)
-	tokenId.SetString(*cert.CertificateTokenId, 10)
+	tokenId, ok := new(big.Int).SetString(*cert.CertificateTokenId, 10)
+	if !ok {
+		return nil, customerror.Parse(&customerror.ErrInternalServer, errors.Newf("invalid certificate token ID: %s", *cert.CertificateTokenId))
+	}
 
 	payload, err := contractDg.GetTokenData(ctx, tokenId)
 	if err != nil {
 		return nil, err
 	}
 
-	decrypted, _ := uc.decryptBackendUserData(payload.Data.BackendEncryptedUserData)
-	decryptedCert, _ := uc.decryptCertificateRawData(payload.Proof.EncryptedByBackendRawData)
+	decrypted, decryptErr := uc.decryptBackendUserData(payload.Data.BackendEncryptedUserData)
+	if decryptErr != nil {
+		uc.Logger.WarnContext(ctx, "failed to decrypt backend user data", slog.String("error", decryptErr.Error()))
+	}
+	decryptedCert, decryptCertErr := uc.decryptCertificateRawData(payload.Proof.EncryptedByBackendRawData)
+	if decryptCertErr != nil {
+		uc.Logger.WarnContext(ctx, "failed to decrypt certificate raw data", slog.String("error", decryptCertErr.Error()))
+	}
 
 	return &CertificateShareData{
 		Payload: payload,
@@ -144,6 +153,8 @@ func (uc *CertificateShareUsecase) decryptBackendUserData(ciphertext string) (*e
 // proof.EncryptedByBackendRawData using the backend private key and parses
 // it into a CertificateRawData struct.
 // The CSV format is: "{name},{academic_institution},{certificate_title},{certificate_subtitle}"
+// Note: fields that contain literal commas will break parsing, as the format has no escaping.
+// This is a known limitation tied to the on-chain contract's encoding convention.
 // Returns (nil, nil) when the key is not configured or the ciphertext is empty.
 // Returns (nil, err) when decryption fails or the CSV does not have exactly 4 fields.
 func (uc *CertificateShareUsecase) decryptCertificateRawData(ciphertext string) (*entity.CertificateRawData, error) {

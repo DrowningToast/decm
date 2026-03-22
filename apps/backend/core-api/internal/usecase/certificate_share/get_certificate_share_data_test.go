@@ -10,6 +10,8 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"errors"
+	"io"
+	"log/slog"
 	"math/big"
 	"testing"
 
@@ -19,6 +21,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func discardLogger() *slog.Logger {
+	return slog.New(slog.NewTextHandler(io.Discard, nil))
+}
 
 // samplePayload returns a minimal valid CertificatePayload for happy-path tests.
 func samplePayload() *entity.CertificatePayload {
@@ -305,6 +311,42 @@ func TestGetCertificateShareData(t *testing.T) {
 		mockCertDg.AssertExpectations(t)
 		mockFactory.AssertExpectations(t)
 		mockContract.AssertExpectations(t)
+	})
+
+	t.Run("should return ErrInternalServer when certificate token ID is not a valid number", func(t *testing.T) {
+		invalidTokenID := "not-a-number"
+		share := &entity.CertificateShare{
+			Id:                 uuid.New(),
+			EventCertificateId: certID,
+			Handle:             handle,
+			Active:             true,
+		}
+		cert := &entity.EventCertificate{
+			Id:                      certID,
+			CertificateTokenId:      &invalidTokenID,
+			EventCertificateAddress: &contractAddr,
+		}
+		mockShareDg := new(MockCertificateShareDataGateway)
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockFactory := new(MockCertificateContractFactoryDg)
+
+		mockShareDg.On("GetCertificateShareByHandle", ctx, handle).Return(share, nil)
+		mockCertDg.On("GetEventCertificateByID", ctx, certID).Return(cert, nil)
+		mockFactory.On("GetContract", common.HexToAddress(contractAddr)).Return(new(MockCertificateContractDg), nil)
+
+		uc := &CertificateShareUsecase{
+			CertificateShareDg:           mockShareDg,
+			EventCertificateDataGateway:  mockCertDg,
+			CertificateContractFactoryDg: mockFactory,
+		}
+
+		result, err := uc.GetCertificateShareData(ctx, handle, nil)
+
+		assert.Nil(t, result)
+		assertErrCode(t, err, customerror.ErrInternalServer)
+		mockShareDg.AssertExpectations(t)
+		mockCertDg.AssertExpectations(t)
+		mockFactory.AssertExpectations(t)
 	})
 
 	t.Run("should return payload when share has no password and password arg is ignored", func(t *testing.T) {
@@ -708,6 +750,7 @@ func TestGetCertificateShareDataDecryption(t *testing.T) {
 			EventCertificateDataGateway:  mockCertDg,
 			CertificateContractFactoryDg: mockFactory,
 			BackendPrivateKey:            pk,
+			Logger:                       discardLogger(),
 		}
 
 		result, err := uc.GetCertificateShareData(ctx, handle, nil)
@@ -798,6 +841,7 @@ func TestGetCertificateShareDataDecryption(t *testing.T) {
 			EventCertificateDataGateway:  mockCertDg,
 			CertificateContractFactoryDg: mockFactory,
 			BackendPrivateKey:            pk,
+			Logger:                       discardLogger(),
 		}
 
 		result, err := uc.GetCertificateShareData(ctx, handle, nil)

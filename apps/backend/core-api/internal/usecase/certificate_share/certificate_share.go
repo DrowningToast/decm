@@ -4,6 +4,7 @@ import (
 	"apps/backend/core-api/internal/entity"
 	"context"
 	"crypto/ecdsa"
+	"log/slog"
 	"time"
 
 	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
@@ -55,6 +56,7 @@ type CertificateShareUsecase struct {
 	// BackendPrivateKey is used to decrypt BackendEncryptedUserData on the certificate payload.
 	// When nil, decryption is skipped and DecryptedUserData in the result will be nil.
 	BackendPrivateKey *ecdsa.PrivateKey
+	Logger            *slog.Logger
 }
 
 func NewCertificateShareUsecase(
@@ -63,6 +65,7 @@ func NewCertificateShareUsecase(
 	certificateContractFactoryDg certificatecontract_datagateway.CertificateContractFactoryDataGateway,
 	certificateImageGenerator CertificateImageGenerator,
 	backendPrivateKey *ecdsa.PrivateKey,
+	logger *slog.Logger,
 ) *CertificateShareUsecase {
 	return &CertificateShareUsecase{
 		EventCertificateDataGateway:  eventCertificateDataGateway,
@@ -70,5 +73,6 @@ func NewCertificateShareUsecase(
 		CertificateContractFactoryDg: certificateContractFactoryDg,
 		CertificateImageGenerator:    certificateImageGenerator,
 		BackendPrivateKey:            backendPrivateKey,
+		Logger:                       logger,
 	}
 }

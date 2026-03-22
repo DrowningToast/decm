@@ -1,6 +1,7 @@
 package certificate_share_handler
 
 import (
+	"context"
 	"sync"
 	"time"
 )
@@ -33,4 +34,27 @@ func (c *responseCache) Set(key string, data []byte, ttl time.Duration) {
 
 func (c *responseCache) Delete(key string) {
 	c.store.Delete(key)
+}
+
+// StartCleanup starts a background goroutine that evicts expired entries every interval.
+// It stops when ctx is cancelled.
+func (c *responseCache) StartCleanup(ctx context.Context, interval time.Duration) {
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				now := time.Now()
+				c.store.Range(func(key, value any) bool {
+					if value.(cacheEntry).expiresAt.Before(now) {
+						c.store.Delete(key)
+					}
+					return true
+				})
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
 }

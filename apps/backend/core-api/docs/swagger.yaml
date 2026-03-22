@@ -190,6 +190,11 @@ definitions:
       password:
         type: string
     type: object
+  certificate_share_handler.GetCertificateShareImageBody:
+    properties:
+      password:
+        type: string
+    type: object
   certificate_share_handler.UpdateCertificateShareBody:
     properties:
       active:
@@ -3052,9 +3057,11 @@ paths:
       tags:
       - CertificateShares
   /api/v1/certificate-shares/{handle}/image:
-    get:
+    post:
+      consumes:
+      - application/json
       description: Returns a PNG certificate image for a share link. For password-protected
-        shares, pass the password as a query parameter.
+        shares, include the password in the request body.
       operationId: get-certificate-share-image
       parameters:
       - description: Share handle
@@ -3062,10 +3069,11 @@ paths:
         name: handle
         required: true
         type: string
-      - description: Password for password-protected shares
-        in: query
-        name: password
-        type: string
+      - description: Optional password for password-protected shares
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/certificate_share_handler.GetCertificateShareImageBody'
       produces:
       - image/png
       responses:

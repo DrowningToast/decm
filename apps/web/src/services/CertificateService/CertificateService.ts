@@ -307,7 +307,7 @@ export class CertificateService {
         handle: string,
         password?: string,
     ): Promise<CertificateImage> {
-        const response = await this._coreApi.v1.getCertificateShareImage({ handle, password });
+        const response = await this._coreApi.v1.getCertificateShareImage({ handle }, { password });
 
         if (!(response instanceof Blob)) {
             throw new Error("Invalid response: expected Blob");

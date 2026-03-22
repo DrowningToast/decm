@@ -455,8 +455,11 @@ const docTemplate = `{
             }
         },
         "/api/v1/certificate-shares/{handle}/image": {
-            "get": {
-                "description": "Returns a PNG certificate image for a share link. For password-protected shares, pass the password as a query parameter.",
+            "post": {
+                "description": "Returns a PNG certificate image for a share link. For password-protected shares, include the password in the request body.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "image/png"
                 ],
@@ -474,10 +477,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "Password for password-protected shares",
-                        "name": "password",
-                        "in": "query"
+                        "description": "Optional password for password-protected shares",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/certificate_share_handler.GetCertificateShareImageBody"
+                        }
                     }
                 ],
                 "responses": {
@@ -4531,6 +4536,14 @@ const docTemplate = `{
             }
         },
         "certificate_share_handler.GetCertificateShareBody": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "certificate_share_handler.GetCertificateShareImageBody": {
             "type": "object",
             "properties": {
                 "password": {

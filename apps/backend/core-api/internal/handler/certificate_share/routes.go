@@ -35,5 +35,5 @@ func (h *Handler) Mount(r fiber.Router) {
 
 	// Public routes
 	shareGroup.Post("/:handle", verifyLimiter, metrics.MeasureHandlerDurationWrapper("certificateShare.GetCertificateShareData", h.GetCertificateShareData))
-	shareGroup.Get("/:handle/image", verifyLimiter, metrics.MeasureHandlerDurationWrapper("certificateShare.GetCertificateShareImage", h.GetCertificateShareImage))
+	shareGroup.Post("/:handle/image", verifyLimiter, metrics.MeasureHandlerDurationWrapper("certificateShare.GetCertificateShareImage", h.GetCertificateShareImage))
 }

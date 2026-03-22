@@ -229,6 +229,7 @@ func buildTestApp(
 		CertificateShareDg:           mockShareDg,
 		CertificateContractFactoryDg: mockFactoryDg,
 		CertificateImageGenerator:    gen,
+		Logger:                       discardLogger,
 	}
 
 	h := &Handler{
@@ -249,7 +250,7 @@ func buildTestApp(
 	app.Post("/certificate-shares/config/:certificate_id", h.CreateCertificateShare)
 	app.Patch("/certificate-shares/config/:share_id", h.UpdateCertificateShare)
 	app.Post("/certificate-shares/:handle", h.GetCertificateShareData)
-	app.Get("/certificate-shares/:handle/image", h.GetCertificateShareImage)
+	app.Post("/certificate-shares/:handle/image", h.GetCertificateShareImage)
 
 	return app
 }
@@ -906,7 +907,7 @@ func TestGetCertificateShareImage_NotFound(t *testing.T) {
 
 	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg))
 
-	resp := doRequest(app, http.MethodGet, "/certificate-shares/gone/image", nil)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/gone/image", nil)
 
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 	mockShareDg.AssertExpectations(t)
@@ -928,7 +929,7 @@ func TestGetCertificateShareImage_PasswordProtected_NoPasswordGiven(t *testing.T
 
 	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg))
 
-	resp := doRequest(app, http.MethodGet, "/certificate-shares/locked/image", nil)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/locked/image", nil)
 
 	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
 	mockShareDg.AssertExpectations(t)
@@ -952,8 +953,8 @@ func TestGetCertificateShareImage_PasswordProtected_WrongPassword(t *testing.T) 
 
 	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg))
 
-	req := httptest.NewRequest(http.MethodGet, "/certificate-shares/locked/image?password=wrong", nil)
-	resp, _ := app.Test(req, 5000)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/locked/image",
+		map[string]string{"password": "wrong"})
 
 	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
 	mockShareDg.AssertExpectations(t)
@@ -978,7 +979,7 @@ func TestGetCertificateShareImage_Success_Public(t *testing.T) {
 
 	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg), mockImageGen)
 
-	resp := doRequest(app, http.MethodGet, "/certificate-shares/public-handle/image", nil)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/public-handle/image", nil)
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Equal(t, "image/png", resp.Header.Get("Content-Type"))
@@ -1010,8 +1011,8 @@ func TestGetCertificateShareImage_Success_WithPassword(t *testing.T) {
 
 	app := buildTestApp(nil, new(mockEventCertificateDataGateway), mockShareDg, new(mockCertContractFactoryDg), mockImageGen)
 
-	req := httptest.NewRequest(http.MethodGet, "/certificate-shares/pw-handle/image?password="+rawPw, nil)
-	resp, _ := app.Test(req, 5000)
+	resp := doRequest(app, http.MethodPost, "/certificate-shares/pw-handle/image",
+		map[string]string{"password": rawPw})
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Equal(t, "image/png", resp.Header.Get("Content-Type"))

@@ -106,6 +106,10 @@ export interface CertificateShareHandlerGetCertificateShareBody {
     password?: string;
 }
 
+export interface CertificateShareHandlerGetCertificateShareImageBody {
+    password?: string;
+}
+
 export interface CertificateShareHandlerUpdateCertificateShareBody {
     active: boolean;
     password: string;
@@ -1100,8 +1104,6 @@ export type GetCertificateShareImageError = CustomerrorErrResponse;
 export interface GetCertificateShareImageParams {
     /** Share handle */
     handle: string;
-    /** Password for password-protected shares */
-    password?: string;
 }
 
 export type GetCertificatesListViewmodelData = EventGetCertificatesListViewModelResponse;
@@ -2427,21 +2429,23 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Returns a PNG certificate image for a share link. For password-protected shares, pass the password as a query parameter.
+         * @description Returns a PNG certificate image for a share link. For password-protected shares, include the password in the request body.
          *
          * @tags CertificateShares
          * @name GetCertificateShareImage
          * @summary Get certificate share image
-         * @request GET:/api/v1/certificate-shares/{handle}/image
+         * @request POST:/api/v1/certificate-shares/{handle}/image
          */
         getCertificateShareImage: (
             { handle, ...query }: GetCertificateShareImageParams,
+            body: CertificateShareHandlerGetCertificateShareImageBody,
             params: RequestParams = {},
         ) =>
             this.http.request<GetCertificateShareImageData, GetCertificateShareImageError>({
                 path: `/api/v1/certificate-shares/${handle}/image`,
-                method: "GET",
-                query: query,
+                method: "POST",
+                body: body,
+                type: ContentType.Json,
                 format: "blob",
                 ...params,
             }),

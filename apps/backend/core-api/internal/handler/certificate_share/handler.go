@@ -3,6 +3,7 @@ package certificate_share_handler
 import (
 	certificate_share_usecase "apps/backend/core-api/internal/usecase/certificate_share"
 	"apps/backend/services/auth"
+	"context"
 	"log/slog"
 	"time"
 
@@ -50,15 +51,18 @@ type Handler struct {
 }
 
 func NewHandler(
+	ctx context.Context,
 	certificateShareUc *certificate_share_usecase.CertificateShareUsecase,
 	authenticationService *auth.AuthService,
 	authenticationGuardMiddleware *authenticationguard.AuthenticationGuardMiddleware,
 	logger *slog.Logger,
 ) *Handler {
-	return &Handler{
+	h := &Handler{
 		CertificateShareUc:            certificateShareUc,
 		AuthenticationService:         authenticationService,
 		AuthenticationGuardMiddleware: authenticationGuardMiddleware,
 		Logger:                        logger,
 	}
+	h.cache.StartCleanup(ctx, shareDataCacheTTL)
+	return h
 }
