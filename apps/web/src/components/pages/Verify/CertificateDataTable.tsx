@@ -439,14 +439,12 @@ export function CertificateDataTable({ data }: { data: GetCertificateShareDataRe
                                         <Row
                                             label={t("certificateVerify.table.fullName")}
                                             value={attendeeFullName}
-                                            verified={nameVerified}
                                         />
                                     )}
                                     {decryptedUserData.academic_institution && (
                                         <Row
                                             label={t("certificateVerify.table.academicInstitution")}
                                             value={decryptedUserData.academic_institution}
-                                            verified={academicInstitutionVerified}
                                         />
                                     )}
                                     {decryptedUserData.email && (
