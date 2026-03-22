@@ -357,7 +357,7 @@ jobs:
             - name: Run golangci-lint
               uses: golangci/golangci-lint-action@v6
               with:
-                  version: latest
+                  version: v2.0.2
                   working-directory: apps/backend
 
     # Job 7: Frontend Build (runs after eslint)
