@@ -624,6 +624,7 @@ describe("CertificateService", () => {
                     event_certificate_id: "cert-1",
                     active: false,
                     handle: "abc123",
+                    has_password: false,
                     created_at: "2024-01-01T00:00:00Z",
                     updated_at: "2024-01-01T00:00:00Z",
                 },
@@ -649,6 +650,7 @@ describe("CertificateService", () => {
                     event_certificate_id: "cert-2",
                     active: false,
                     handle: "def456",
+                    has_password: false,
                     created_at: "2024-01-01T00:00:00Z",
                     updated_at: "2024-01-01T00:00:00Z",
                 },
@@ -677,6 +679,7 @@ describe("CertificateService", () => {
                     event_certificate_id: "cert-1",
                     active: false,
                     handle: "abc123",
+                    has_password: false,
                     created_at: "2024-01-01T00:00:00Z",
                     updated_at: "2024-01-02T00:00:00Z",
                 },
@@ -723,6 +726,10 @@ describe("CertificateService", () => {
 
         it("should fetch and return on-chain VC data without password", async () => {
             vi.mocked(mockCoreApi.v1.getCertificateShareData).mockResolvedValue({
+                contract: {
+                    certificateTokenId: "tok-1",
+                    eventCertificateContractAddress: "0xcontract",
+                },
                 data: mockPayload,
             });
 
@@ -737,6 +744,10 @@ describe("CertificateService", () => {
 
         it("should fetch and return on-chain VC data with password", async () => {
             vi.mocked(mockCoreApi.v1.getCertificateShareData).mockResolvedValue({
+                contract: {
+                    certificateTokenId: "tok-1",
+                    eventCertificateContractAddress: "0xcontract",
+                },
                 data: mockPayload,
             });
 

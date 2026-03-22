@@ -17,7 +17,6 @@ import {
 } from "./mapper";
 import type {
     EntityEventCertificate,
-    EntityCertificateShare,
     EntityCertificatePayload,
     CertificateGetMyCertificatesListViewModelResponse,
     CoreApiInternalHandlerEventSignEventCertificatesResponse,
@@ -27,13 +26,18 @@ import type {
     CoreApiInternalHandlerEventPublishEventCertificatesResponse,
     CertificateClaimCertificateResponse,
     CertificateShareCertificateShareViewModel,
-    CertificateShareCreateCertificateShareResponse,
-    CertificateShareUpdateCertificateShareResponse,
-    CertificateShareCertificateShareStatusResponse,
-    CertificateShareCertificateShareDataResponse,
+    CertificateShareHandlerCreateCertificateShareResponse,
+    CertificateShareHandlerUpdateCertificateShareResponse,
+    CertificateShareHandlerCertificateShareDataResponse,
+    CertificateShareHandlerCertificateShareViewModel,
     EventClaimedCertificateViewModel,
     EventUnclaimedCertificateViewModel,
 } from "@decm/api";
+
+interface CertificateShareCertificateShareStatusResponse {
+    status: string;
+    certificate?: EntityEventCertificate;
+}
 
 const baseCert: EntityEventCertificate = {
     id: "cert-1",
@@ -455,15 +459,16 @@ describe("mapToMyCertificatesViewModel with typed view models", () => {
 
 describe("mapCreateCertificateShareableLinkResponse", () => {
     it("maps share fields to certificateId, isPublished, and handle", () => {
-        const entityShare: EntityCertificateShare = {
+        const entityShare: CertificateShareHandlerCertificateShareViewModel = {
             id: "share-99",
             event_certificate_id: "cert-42",
             active: true,
             handle: "public-link",
+            has_password: false,
             created_at: "2024-03-01T00:00:00Z",
             updated_at: "2024-03-02T00:00:00Z",
         };
-        const response: CertificateShareCreateCertificateShareResponse = {
+        const response: CertificateShareHandlerCreateCertificateShareResponse = {
             share: entityShare,
         };
         const result = mapCreateCertificateShareableLinkResponse(response);
@@ -474,15 +479,16 @@ describe("mapCreateCertificateShareableLinkResponse", () => {
     });
 
     it("maps share.active: false to isPublished: false", () => {
-        const entityShare: EntityCertificateShare = {
+        const entityShare: CertificateShareHandlerCertificateShareViewModel = {
             id: "share-100",
             event_certificate_id: "cert-43",
             active: false,
             handle: "draft-link",
+            has_password: false,
             created_at: "2024-03-01T00:00:00Z",
             updated_at: "2024-03-02T00:00:00Z",
         };
-        const response: CertificateShareCreateCertificateShareResponse = {
+        const response: CertificateShareHandlerCreateCertificateShareResponse = {
             share: entityShare,
         };
         const result = mapCreateCertificateShareableLinkResponse(response);
@@ -495,12 +501,13 @@ describe("mapCreateCertificateShareableLinkResponse", () => {
 
 describe("mapUpdateCertificateShareResponse", () => {
     it("maps share to certificateId and handle", () => {
-        const response: CertificateShareUpdateCertificateShareResponse = {
+        const response: CertificateShareHandlerUpdateCertificateShareResponse = {
             share: {
                 id: "share-1",
                 event_certificate_id: "cert-10",
                 active: false,
                 handle: "updated-handle",
+                has_password: false,
                 created_at: "2024-01-01T00:00:00Z",
                 updated_at: "2024-02-01T00:00:00Z",
             },
@@ -587,7 +594,8 @@ describe("mapGetCertificateShareDataResponse", () => {
                 issuers: [],
             },
         };
-        const response: CertificateShareCertificateShareDataResponse = {
+        const response: CertificateShareHandlerCertificateShareDataResponse = {
+            contract: { certificateTokenId: "tok-1", eventCertificateContractAddress: "0xissuer" },
             data: mockPayload,
         };
         const result = mapGetCertificateShareDataResponse(response);

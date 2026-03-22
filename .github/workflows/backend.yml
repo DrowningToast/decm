@@ -14,6 +14,26 @@ on:
                 type: string
 
 jobs:
+    # Backend Lint
+    lint:
+        name: Backend Lint
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Go Backend
+              uses: ./.github/actions/setup-go-backend
+              with:
+                  go-version: ${{ inputs.go-version }}
+
+            - name: Install golangci-lint
+              uses: golangci/golangci-lint-action@v6
+              with:
+                  version: latest
+                  working-directory: apps/backend
+
     # Backend Build
     build:
         name: Backend Build
@@ -50,7 +70,7 @@ jobs:
     tests:
         name: Backend Unit Tests
         runs-on: ubuntu-latest
-        needs: [build]
+        needs: [lint, build]
 
         services:
             postgres:
@@ -126,7 +146,7 @@ jobs:
     openapi:
         name: Backend OpenAPI & Swagger
         runs-on: ubuntu-latest
-        needs: [build]
+        needs: [lint, build]
 
         steps:
             - name: Checkout code

@@ -254,9 +254,6 @@ const docTemplate = `{
                 "tags": [
                     "CertificateShares"
                 ],
-                "x-required-roles": [
-                    "certificate-owner"
-                ],
                 "summary": "Create certificate share link",
                 "operationId": "create-certificate-share",
                 "parameters": [
@@ -332,9 +329,6 @@ const docTemplate = `{
                 ],
                 "tags": [
                     "CertificateShares"
-                ],
-                "x-required-roles": [
-                    "certificate-owner"
                 ],
                 "summary": "Update certificate share link",
                 "operationId": "update-certificate-share",
@@ -4559,12 +4553,15 @@ const docTemplate = `{
         },
         "certificate_share_handler.UpdateCertificateShareBody": {
             "type": "object",
+            "required": [
+                "active",
+                "password"
+            ],
             "properties": {
                 "active": {
                     "type": "boolean"
                 },
                 "password": {
-                    "description": "Omit to leave existing protection unchanged. Set to empty string or null to remove protection. Set to a non-empty string to set a new password.",
                     "type": "string"
                 }
             }

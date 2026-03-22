@@ -30,7 +30,7 @@ jobs:
                   pnpm-version: ${{ inputs.pnpm-version }}
 
             - name: Run ESLint
-              run: pnpm lint
+              run: turbo run lint
 
     # Build
     build:
