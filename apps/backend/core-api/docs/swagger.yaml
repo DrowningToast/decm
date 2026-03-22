@@ -201,6 +201,9 @@ definitions:
         type: boolean
       password:
         type: string
+    required:
+    - active
+    - password
     type: object
   certificate_share_handler.UpdateCertificateShareResponse:
     properties:
