@@ -73,6 +73,7 @@ const WalletOnboardProvider: React.FC<React.PropsWithChildren> = ({ children }) 
         init();
     }, [
         signMessageState.signMessage,
+        signSignature,
         onboardStatus,
         isStatusLoading,
         setStep,

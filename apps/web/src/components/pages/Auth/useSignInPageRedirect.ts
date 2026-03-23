@@ -150,7 +150,7 @@ export const useSignInPageRedirect = () => {
                     return;
                 },
             )
-            // Sign out when 401 Unauthorized error occurs
+            // Sign out when 401 Unauthorized error occurs (expired/invalid session)
             .with(
                 {
                     isUnauthorizedError: true,
@@ -159,16 +159,7 @@ export const useSignInPageRedirect = () => {
                     signout({ showSuccessToast: false });
                 },
             )
-            // Don't redirect based on onboardStatus when there's a non-401 API error
-            // User should stay on signin page when not authenticated
-            .with(
-                {
-                    hasNon401Error: true,
-                },
-                () => {
-                    return;
-                },
-            )
+            // No wallet connected, nothing to do
             .with(
                 {
                     hasAddress: false,
@@ -195,14 +186,24 @@ export const useSignInPageRedirect = () => {
                     navigate("/app");
                 },
             )
+            // Wallet connected with no account yet — proceed to sign-message
+            // (hasNon401Error here is expected: unauthenticated users get 400 from checkOnboardStatus)
             .with(
                 {
                     hasAddress: true,
                     hasAuthSignSignature: false,
                 },
                 () => {
-                    console.log("navigate to sign message");
                     navigate("/signin/sign-message");
+                },
+            )
+            // Don't redirect based on onboardStatus when there's a non-401 API error
+            .with(
+                {
+                    hasNon401Error: true,
+                },
+                () => {
+                    return;
                 },
             );
     }, [

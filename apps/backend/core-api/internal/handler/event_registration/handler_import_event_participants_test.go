@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/services/auth"
 	eventRegistrationUc "apps/backend/core-api/internal/usecase/event_registration"
+	"apps/backend/services/auth"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
