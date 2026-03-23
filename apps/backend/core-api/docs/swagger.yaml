@@ -1796,6 +1796,8 @@ definitions:
         type: string
       phone_number:
         type: string
+      wallet_address:
+        type: string
     required:
     - email
     - first_name

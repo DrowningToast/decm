@@ -1178,7 +1178,8 @@
         "emptyFile": "ไฟล์ Excel ดูเห็นว่างหรือไม่มีข้อมูล",
         "parseError": "ไม่สามารถอ่านไฟล์ Excel กรุณาตรวจสอบรูปแบบไฟล์",
         "invalidRowsFound": "พบข้อมูลที่ไม่ถูกต้องในบางแถว",
-        "invalidRowsDescription": "แถวที่ไฮไลท์ด้วยสีแดงมีข้อมูลที่จำเป็นไม่ครบถ้วน (ชื่อ, นามสกุล หรืออีเมล) กรุณาแก้ไขในไฟล์ Excel ของคุณและอัปโหลดใหม่อีกครั้ง",
+        "invalidRowsDescription": "แถวที่ไฮไลท์ด้วยสีแดงมีข้อมูลที่ไม่ถูกต้อง แต่ละแถวต้องมี first_name, last_name และกรอกเพียง email หรือ wallet_address อย่างใดอย่างหนึ่งเท่านั้น (ไม่ใช่ทั้งคู่ ไม่ใช่ไม่มีเลย) กรุณาแก้ไขในไฟล์ Excel และอัปโหลดใหม่",
+        "eitherOrColumn": "ต้องกรอกอย่างใดอย่างหนึ่งเท่านั้น",
         "requiredFormat": "รูปแบบ Excel ที่กำหนด",
         "requiredFormatDescription": "ไฟล์ Excel ของคุณต้องมีคอลัมน์หัวตองเหล่านี้:",
         "columnHeader": "คอลัมน์ที่จำเป็น",
@@ -1190,6 +1191,7 @@
         "templateColumns": {
             "name": "name",
             "email": "email",
+            "walletAddress": "wallet_address",
             "phoneNumber": "phone_number",
             "academicInstitution": "academic_institution",
             "firstName": "first_name",

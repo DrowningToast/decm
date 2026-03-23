@@ -2,6 +2,7 @@ package event_registration
 
 import (
 	"apps/backend/common/customerror"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"
@@ -258,15 +259,13 @@ func TestImportEventParticipants(t *testing.T) {
 		mockEventDg.AssertExpectations(t)
 	})
 
-	t.Run("should return error when participant email is missing", func(t *testing.T) {
-		// Arrange
+	t.Run("should return error when both email and wallet address are provided", func(t *testing.T) {
 		ctx := context.Background()
 		eventID := uuid.New()
 		userID := uuid.New()
+		walletAddress := "0xabc123"
 
-		currentUser := &auth.JwtClaims{
-			UserId: userID,
-		}
+		currentUser := &auth.JwtClaims{UserId: userID}
 
 		event := &entity.Event{
 			Id:                eventID,
@@ -277,33 +276,172 @@ func TestImportEventParticipants(t *testing.T) {
 
 		participants := []Participant{
 			{
-				FirstName: "John",
-				LastName:  "Doe",
-				Email:     "", // Missing email
+				FirstName:     "John",
+				LastName:      "Doe",
+				Email:         "john@example.com",
+				WalletAddress: &walletAddress,
 			},
 		}
 
 		mockEventDg := new(MockEventDg)
 		mockEventDg.On("GetEventById", ctx, eventID).Return(event, nil)
 
-		uc := &EventRegistrationUsecase{
-			EventDg: mockEventDg,
-		}
+		uc := &EventRegistrationUsecase{EventDg: mockEventDg}
 
-		// Act
 		result, err := uc.ImportEventParticipants(ctx, ImportEventParticipantsParameters{
 			EventID:      eventID,
 			Participants: participants,
 		}, currentUser)
 
-		// Assert
 		require.Error(t, err)
 		assert.Nil(t, result)
 		var customError *customerror.Err
 		require.True(t, errors.As(err, &customError))
 		assert.Equal(t, customerror.ErrInvalidArgument.Code, *customError.Code)
-		assert.Contains(t, err.Error(), "email is required")
+		assert.Contains(t, err.Error(), "provide either email or wallet address, not both")
 		mockEventDg.AssertExpectations(t)
+	})
+
+	t.Run("should return error when neither email nor wallet address is provided", func(t *testing.T) {
+		ctx := context.Background()
+		eventID := uuid.New()
+		userID := uuid.New()
+
+		currentUser := &auth.JwtClaims{UserId: userID}
+
+		event := &entity.Event{
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userID,
+			EventStatus:       entity.EventStatusActive,
+		}
+
+		participants := []Participant{
+			{
+				FirstName:     "John",
+				LastName:      "Doe",
+				Email:         "",
+				WalletAddress: nil,
+			},
+		}
+
+		mockEventDg := new(MockEventDg)
+		mockEventDg.On("GetEventById", ctx, eventID).Return(event, nil)
+
+		uc := &EventRegistrationUsecase{EventDg: mockEventDg}
+
+		result, err := uc.ImportEventParticipants(ctx, ImportEventParticipantsParameters{
+			EventID:      eventID,
+			Participants: participants,
+		}, currentUser)
+
+		require.Error(t, err)
+		assert.Nil(t, result)
+		var customError *customerror.Err
+		require.True(t, errors.As(err, &customError))
+		assert.Equal(t, customerror.ErrInvalidArgument.Code, *customError.Code)
+		assert.Contains(t, err.Error(), "email or wallet address is required")
+		mockEventDg.AssertExpectations(t)
+	})
+
+	t.Run("should import participant with wallet address only", func(t *testing.T) {
+		ctx := context.Background()
+		eventID := uuid.New()
+		userID := uuid.New()
+		walletAddress := "0xabc123"
+
+		currentUser := &auth.JwtClaims{UserId: userID}
+
+		event := &entity.Event{
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userID,
+			EventStatus:       entity.EventStatusActive,
+		}
+
+		participants := []Participant{
+			{
+				FirstName:     "John",
+				LastName:      "Doe",
+				WalletAddress: &walletAddress,
+			},
+		}
+
+		mockEventDg := new(MockEventDg)
+		mockEventDg.On("GetEventById", ctx, eventID).Return(event, nil)
+
+		mockInboxMessageDg := new(MockInboxMessageDg)
+		mockInboxMessageDg.On("CreateInboxMessage", ctx, mock.AnythingOfType("offchain_datagateway.CreateInboxMessageParameters")).Return(&entity.InboxMessage{Id: uuid.New()}, nil)
+
+		mockInvitationDg := new(MockEventRegistrationInvitationDataGateway)
+		mockInvitationDg.On("CreateEventRegistrationInvitation", ctx, mock.AnythingOfType("offchain_datagateway.CreateEventRegistrationInvitationParameters")).Return(&entity.EventRegistrationInvitation{Id: uuid.New()}, nil)
+
+		uc := &EventRegistrationUsecase{
+			EventDg:                       mockEventDg,
+			InboxMessageDg:                mockInboxMessageDg,
+			EventRegistrationInvitationDg: mockInvitationDg,
+		}
+
+		result, err := uc.ImportEventParticipants(ctx, ImportEventParticipantsParameters{
+			EventID:      eventID,
+			Participants: participants,
+		}, currentUser)
+
+		require.NoError(t, err)
+		assert.Len(t, result, 1)
+		mockEventDg.AssertExpectations(t)
+		mockInboxMessageDg.AssertExpectations(t)
+		mockInvitationDg.AssertExpectations(t)
+	})
+
+	t.Run("should set receiver_wallet_address in inbox message when wallet address provided", func(t *testing.T) {
+		ctx := context.Background()
+		eventID := uuid.New()
+		userID := uuid.New()
+		walletAddress := "0xabc123"
+
+		currentUser := &auth.JwtClaims{UserId: userID}
+
+		event := &entity.Event{
+			Id:                eventID,
+			Title:             "Test Event",
+			OwnerCredentialId: userID,
+			EventStatus:       entity.EventStatusActive,
+		}
+
+		participants := []Participant{
+			{
+				FirstName:     "John",
+				LastName:      "Doe",
+				WalletAddress: &walletAddress,
+			},
+		}
+
+		mockEventDg := new(MockEventDg)
+		mockEventDg.On("GetEventById", ctx, eventID).Return(event, nil)
+
+		mockInboxMessageDg := new(MockInboxMessageDg)
+		mockInboxMessageDg.On("CreateInboxMessage", ctx, mock.MatchedBy(func(p offchain_datagateway.CreateInboxMessageParameters) bool {
+			return p.ReceiverWalletAddress != nil && *p.ReceiverWalletAddress == walletAddress && p.ReceiverEmail == ""
+		})).Return(&entity.InboxMessage{Id: uuid.New()}, nil)
+
+		mockInvitationDg := new(MockEventRegistrationInvitationDataGateway)
+		mockInvitationDg.On("CreateEventRegistrationInvitation", ctx, mock.AnythingOfType("offchain_datagateway.CreateEventRegistrationInvitationParameters")).Return(&entity.EventRegistrationInvitation{Id: uuid.New()}, nil)
+
+		uc := &EventRegistrationUsecase{
+			EventDg:                       mockEventDg,
+			InboxMessageDg:                mockInboxMessageDg,
+			EventRegistrationInvitationDg: mockInvitationDg,
+		}
+
+		result, err := uc.ImportEventParticipants(ctx, ImportEventParticipantsParameters{
+			EventID:      eventID,
+			Participants: participants,
+		}, currentUser)
+
+		require.NoError(t, err)
+		assert.Len(t, result, 1)
+		mockInboxMessageDg.AssertExpectations(t)
 	})
 
 	t.Run("should return error when creating inbox message fails", func(t *testing.T) {

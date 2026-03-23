@@ -914,6 +914,7 @@ export interface EventRegistrationParticipantRequestItem {
     first_name: string;
     last_name: string;
     phone_number?: string;
+    wallet_address?: string;
 }
 
 export interface EventUnclaimedCertificateViewModel {

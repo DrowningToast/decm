@@ -41,9 +41,14 @@ func (uc *EventRegistrationUsecase) ImportEventParticipants(ctx context.Context,
 
 	// Process each participant
 	for _, participant := range params.Participants {
-		// Validate participant data
-		if participant.Email == "" {
-			return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("email is required"))
+		// Validate participant data — exactly one of email or wallet_address (XOR)
+		hasEmail := participant.Email != ""
+		hasWallet := participant.WalletAddress != nil && *participant.WalletAddress != ""
+		if !hasEmail && !hasWallet {
+			return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("email or wallet address is required"))
+		}
+		if hasEmail && hasWallet {
+			return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("provide either email or wallet address, not both"))
 		}
 
 		// Create message content with translations
@@ -59,8 +64,9 @@ func (uc *EventRegistrationUsecase) ImportEventParticipants(ctx context.Context,
 		// Create inbox message
 		inboxMessageParams := offchain_datagateway.CreateInboxMessageParameters{
 			SenderCredentialID:     &currentUser.UserId,
-			ReceiverCredentialID:   nil, // Empty as specified
+			ReceiverCredentialID:   nil,
 			ReceiverEmail:          participant.Email,
+			ReceiverWalletAddress:  participant.WalletAddress,
 			MessageType:            1, // event_registration_invitation
 			MessageContent:         string(messageContentJSON),
 			FallbackMessageContent: stringPtr("You have been invited to join the event"),

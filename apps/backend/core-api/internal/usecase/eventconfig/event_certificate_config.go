@@ -472,10 +472,28 @@ func (uc *EventConfigUsecase) createInboxMessagesForCertificates(ctx context.Con
 			continue
 		}
 
-		// Skip if no receiver email (required for inbox message)
-		if certificate.ReceiverEmail == nil || *certificate.ReceiverEmail == "" {
-			uc.logger.Warn("skipping certificate without receiver email", "certificate_id", certificate.Id)
+		// Skip if no receiver email AND no credential ID (can't identify the receiver)
+		if (certificate.ReceiverEmail == nil || *certificate.ReceiverEmail == "") && certificate.ReceiverCredentialId == nil {
+			uc.logger.Warn("skipping certificate without receiver email or credential ID", "certificate_id", certificate.Id)
 			continue
+		}
+
+		// Determine receiver email (may be empty for web3-only users)
+		var receiverEmail string
+		if certificate.ReceiverEmail != nil {
+			receiverEmail = *certificate.ReceiverEmail
+		}
+
+		// Look up wallet address if credential ID is available
+		var receiverWalletAddress *string
+		if certificate.ReceiverCredentialId != nil {
+			cred, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, *certificate.ReceiverCredentialId)
+			if err != nil {
+				uc.logger.Error("failed to get credential for certificate receiver", "error", err, "certificate_id", certificate.Id)
+				// Proceed without wallet address
+			} else {
+				receiverWalletAddress = &cred.WalletAddress
+			}
 		}
 
 		// Create message content with translations
@@ -495,7 +513,8 @@ func (uc *EventConfigUsecase) createInboxMessagesForCertificates(ctx context.Con
 		inboxMessage, err := uc.InboxMessageDg.CreateInboxMessage(ctx, offchain_datagateway.CreateInboxMessageParameters{
 			SenderCredentialID:     &currentUserID,
 			ReceiverCredentialID:   certificate.ReceiverCredentialId,
-			ReceiverEmail:          *certificate.ReceiverEmail,
+			ReceiverEmail:          receiverEmail,
+			ReceiverWalletAddress:  receiverWalletAddress,
 			MessageType:            int(entity.InboxMessageTypeEventCertificateInvitation),
 			MessageContent:         string(messageContentJSON),
 			FallbackMessageContent: &fallbackMessage,

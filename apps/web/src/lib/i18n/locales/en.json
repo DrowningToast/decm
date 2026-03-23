@@ -1199,7 +1199,8 @@
         "emptyFile": "The Excel file appears to be empty or has no data.",
         "parseError": "Failed to parse the Excel file. Please check the file format.",
         "invalidRowsFound": "Invalid data found in some rows",
-        "invalidRowsDescription": "Rows highlighted in red have missing required fields (first_name, last_name, or email). Please fix these in your Excel file and re-upload.",
+        "invalidRowsDescription": "Rows highlighted in red have invalid fields. Each row must have first_name, last_name, and exactly one of email or wallet_address (not both, not neither). Please fix these in your Excel file and re-upload.",
+        "eitherOrColumn": "Exactly one required (not both)",
         "requiredFormat": "Required Excel Format",
         "requiredFormatDescription": "Your Excel file must contain these exact column headers:",
         "columnHeader": "Required Column",
@@ -1211,6 +1212,7 @@
         "templateColumns": {
             "name": "name",
             "email": "email",
+            "walletAddress": "wallet_address",
             "phoneNumber": "phone_number",
             "academicInstitution": "academic_institution",
             "firstName": "first_name",

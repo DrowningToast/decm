@@ -16,6 +16,7 @@ type Participant struct {
 	FirstName           string  `json:"first_name"`
 	LastName            string  `json:"last_name"`
 	Email               string  `json:"email"`
+	WalletAddress       *string `json:"wallet_address"`
 	PhoneNumber         *string `json:"phone_number"`
 	AcademicInstitution *string `json:"academic_institution"`
 }

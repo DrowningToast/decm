@@ -20,7 +20,8 @@ type ImportEventParticipantsRequest struct {
 type ParticipantRequestItem struct {
 	FirstName           string  `json:"first_name" validate:"required"`
 	LastName            string  `json:"last_name" validate:"required"`
-	Email               string  `json:"email" validate:"required,email"`
+	Email               string  `json:"email" validate:"omitempty,email"`
+	WalletAddress       *string `json:"wallet_address,omitempty"`
 	PhoneNumber         *string `json:"phone_number,omitempty"`
 	AcademicInstitution *string `json:"academic_institution,omitempty"`
 }
@@ -67,6 +68,7 @@ func (h *Handler) ImportEventParticipants(ctx *fiber.Ctx) error {
 			FirstName:           participant.FirstName,
 			LastName:            participant.LastName,
 			Email:               participant.Email,
+			WalletAddress:       participant.WalletAddress,
 			PhoneNumber:         participant.PhoneNumber,
 			AcademicInstitution: participant.AcademicInstitution,
 		}
@@ -98,5 +100,16 @@ func (r *ImportEventParticipantsRequest) Parse(ctx *fiber.Ctx) error {
 
 // IsValid - Validate request fields
 func (r *ImportEventParticipantsRequest) IsValid() error {
-	return validatorutils.ValidateStruct(r)
+	if err := validatorutils.ValidateStruct(r); err != nil {
+		return err
+	}
+	for _, p := range r.Participants {
+		hasEmail := p.Email != ""
+		hasWallet := p.WalletAddress != nil && *p.WalletAddress != ""
+		if hasEmail == hasWallet {
+			return customerror.Parse(&customerror.ErrInvalidArgument,
+				fmt.Errorf("each participant must have exactly one of email or wallet_address, not both and not neither"))
+		}
+	}
+	return nil
 }

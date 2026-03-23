@@ -43,13 +43,24 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
 
     const downloadTemplate = () => {
         // Create a simple Excel template with the required columns
+        // Users should fill in EITHER email OR wallet_address (not both)
         const templateData = [
             {
                 [t("participantImport.templateColumns.firstName")]: "John",
                 [t("participantImport.templateColumns.lastName")]: "Doe",
                 [t("participantImport.templateColumns.email")]: "john.doe@example.com",
+                [t("participantImport.templateColumns.walletAddress")]: "",
                 [t("participantImport.templateColumns.phoneNumber")]: "+1234567890",
                 [t("participantImport.templateColumns.academicInstitution")]: "Example University",
+            },
+            {
+                [t("participantImport.templateColumns.firstName")]: "Jane",
+                [t("participantImport.templateColumns.lastName")]: "Smith",
+                [t("participantImport.templateColumns.email")]: "",
+                [t("participantImport.templateColumns.walletAddress")]:
+                    "0x1234567890abcdef1234567890abcdef12345678",
+                [t("participantImport.templateColumns.phoneNumber")]: "",
+                [t("participantImport.templateColumns.academicInstitution")]: "",
             },
         ];
 
@@ -62,6 +73,7 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
             { wch: 20 }, // first_name
             { wch: 20 }, // last_name
             { wch: 30 }, // email
+            { wch: 44 }, // wallet_address
             { wch: 20 }, // phone_number
             { wch: 30 }, // academic_institution
         ];
@@ -214,7 +226,7 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
                     </Typography>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                        {/* Required Fields */}
+                        {/* Always-required Fields */}
                         <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
                             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                                 <Typography
@@ -275,15 +287,17 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
                                 </Typography>
                             </div>
                         </div>
-                        <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
-                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+
+                        {/* Either/Or Fields — exactly one must be filled per row */}
+                        <div className="flex items-start space-x-3 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/40">
+                            <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center flex-shrink-0">
                                 <Typography
                                     variant="text"
                                     tag="span"
                                     color="foreground"
                                     className="text-sm font-bold"
                                 >
-                                    ✓
+                                    ⊕
                                 </Typography>
                             </div>
                             <div>
@@ -298,10 +312,40 @@ export const ParticipantImportPage = ({ eventId, event }: ParticipantImportPageP
                                 <Typography
                                     variant="text"
                                     tag="p"
-                                    color="primary"
+                                    color="background-alt"
                                     className="text-xs font-medium"
                                 >
-                                    {t("participantImport.columnHeader")}
+                                    {t("participantImport.eitherOrColumn")}
+                                </Typography>
+                            </div>
+                        </div>
+                        <div className="flex items-start space-x-3 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/40">
+                            <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center flex-shrink-0">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="foreground"
+                                    className="text-sm font-bold"
+                                >
+                                    ⊕
+                                </Typography>
+                            </div>
+                            <div>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background"
+                                    className="font-semibold"
+                                >
+                                    wallet_address
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background-alt"
+                                    className="text-xs font-medium"
+                                >
+                                    {t("participantImport.eitherOrColumn")}
                                 </Typography>
                             </div>
                         </div>

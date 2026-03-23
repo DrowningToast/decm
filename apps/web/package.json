@@ -6,7 +6,7 @@
     "scripts": {
         "dev": "dotenv -e ../../.env -- vite",
         "build": "dotenv -e ../../.env -- tsc --project tsconfig.app.json --noEmit && vite build",
-        "lint": "eslint .",
+        "lint": "eslint . --fix",
         "preview": "dotenv -e ../../.env -- vite preview",
         "test": "vitest",
         "test:ui": "vitest --ui",

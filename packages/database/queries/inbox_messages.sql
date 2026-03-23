@@ -3,6 +3,7 @@ INSERT INTO inbox_messages (
     sender_credential_id,
     receiver_credential_id,
     receiver_email,
+    receiver_wallet_address,
     message_type,
     message_content,
     fallback_message_content,
@@ -11,6 +12,7 @@ INSERT INTO inbox_messages (
     sqlc.narg(sender_credential_id),
     sqlc.narg(receiver_credential_id),
     sqlc.narg(receiver_email),
+    sqlc.narg(receiver_wallet_address),
     sqlc.arg(message_type),
     sqlc.narg(message_content),
     sqlc.narg(fallback_message_content),
@@ -58,8 +60,10 @@ WHERE id = sqlc.arg(id)
 RETURNING *;
 
 -- name: UpdateInboxMessageReadStatusAll :many
-UPDATE inbox_messages 
+UPDATE inbox_messages
 SET is_read = 1,
     updated_at = NOW()
 WHERE receiver_credential_id = sqlc.arg(receiver_credential_id)
+OR receiver_email = sqlc.narg(receiver_email)
+OR receiver_wallet_address = sqlc.narg(receiver_wallet_address)
 RETURNING *;

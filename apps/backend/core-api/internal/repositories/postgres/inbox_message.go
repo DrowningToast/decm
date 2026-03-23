@@ -32,6 +32,7 @@ func (r *Repository) CreateInboxMessage(ctx context.Context, params offchain_dat
 		SenderCredentialID:     pgmapper.UUIDPtrToPgUUID(params.SenderCredentialID),
 		ReceiverCredentialID:   pgmapper.UUIDPtrToPgUUID(params.ReceiverCredentialID),
 		ReceiverEmail:          encryptedEmail,
+		ReceiverWalletAddress:  pgmapper.StringPtrToPgText(params.ReceiverWalletAddress),
 		MessageType:            int32(params.MessageType),
 		MessageContent:         messageContent,
 		FallbackMessageContent: fallbackMessageContent,
@@ -356,8 +357,31 @@ func (r *Repository) UpdateInboxMessageReadStatus(ctx context.Context, id uuid.U
 	}, nil
 }
 
-func (r *Repository) UpdateInboxMessageReadStatusAll(ctx context.Context, credentialID uuid.UUID) ([]*entity.InboxMessage, error) {
-	results, err := r.queries.UpdateInboxMessageReadStatusAll(ctx, pgmapper.UUIDToPgUUID(credentialID))
+func (r *Repository) UpdateInboxMessageReadStatusAll(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
+	var err error
+
+	var encryptedReceiverEmail pgtype.Text
+	if params.ReceiverEmail != nil {
+		normalizedEmail := strings.ToLower(*params.ReceiverEmail)
+		encryptedReceiverEmail, err = pgmapper.EncryptStringPtrToPgText(&normalizedEmail, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var encryptedReceiverWalletAddress pgtype.Text
+	if params.ReceiverWalletAddress != nil {
+		encryptedReceiverWalletAddress, err = pgmapper.EncryptStringPtrToPgText(params.ReceiverWalletAddress, r.piiEncryptionKey)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	results, err := r.queries.UpdateInboxMessageReadStatusAll(ctx, generated.UpdateInboxMessageReadStatusAllParams{
+		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(params.CredentialID),
+		ReceiverEmail:         encryptedReceiverEmail,
+		ReceiverWalletAddress: encryptedReceiverWalletAddress,
+	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
 	}

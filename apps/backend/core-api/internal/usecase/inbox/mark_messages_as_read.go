@@ -2,6 +2,7 @@ package inbox
 
 import (
 	"apps/backend/common/customerror"
+	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"
@@ -32,7 +33,12 @@ func (uc *InboxUsecase) MarkMessageAsRead(ctx context.Context, user auth.JwtClai
 }
 
 func (uc *InboxUsecase) MarkAllMessagesAsRead(ctx context.Context, user auth.JwtClaims) ([]*entity.InboxMessage, error) {
-	messages, err := uc.InboxMessageDg.UpdateInboxMessageReadStatusAll(ctx, user.UserId)
+	walletAddress := user.WalletAddress
+	messages, err := uc.InboxMessageDg.UpdateInboxMessageReadStatusAll(ctx, offchain_datagateway.GetInboxMessagesByCredentialIDParameters{
+		CredentialID:          user.UserId,
+		ReceiverEmail:         user.Email,
+		ReceiverWalletAddress: &walletAddress,
+	})
 	if err != nil {
 		return nil, err
 	}

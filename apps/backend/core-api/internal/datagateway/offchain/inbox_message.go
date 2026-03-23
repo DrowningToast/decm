@@ -11,6 +11,7 @@ type CreateInboxMessageParameters struct {
 	SenderCredentialID     *uuid.UUID
 	ReceiverCredentialID   *uuid.UUID
 	ReceiverEmail          string
+	ReceiverWalletAddress  *string
 	MessageType            int
 	MessageContent         string
 	FallbackMessageContent *string
@@ -37,5 +38,5 @@ type InboxMessageDataGateway interface {
 	// Search with sender authentication credential ID
 	GetInboxMessagesBySenderCredentialID(ctx context.Context, credentialID uuid.UUID) ([]*entity.InboxMessage, error)
 	UpdateInboxMessageReadStatus(ctx context.Context, id uuid.UUID, isRead int) (*entity.InboxMessage, error)
-	UpdateInboxMessageReadStatusAll(ctx context.Context, credentialID uuid.UUID) ([]*entity.InboxMessage, error)
+	UpdateInboxMessageReadStatusAll(ctx context.Context, params GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error)
 }

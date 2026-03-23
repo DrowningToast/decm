@@ -6839,6 +6839,9 @@ const docTemplate = `{
                 },
                 "phone_number": {
                     "type": "string"
+                },
+                "wallet_address": {
+                    "type": "string"
                 }
             }
         },
