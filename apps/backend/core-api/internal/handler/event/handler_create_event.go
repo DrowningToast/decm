@@ -32,6 +32,9 @@ type CreateEventRequest struct {
 	Location         string `form:"location"`
 	GoogleMapQuery   string `form:"google_map_query"`
 	HostPassword     string `form:"host_password"`
+	// Wallet-based auth (alternative to host_password)
+	Signature   string `form:"signature"`
+	SignMessage  string `form:"sign_message"`
 }
 
 // @Summary Create a new event
@@ -118,6 +121,8 @@ func (h *Handler) CreateEvent(ctx *fiber.Ctx) error {
 		EventBanner:      bannerFile,
 		EventIcon:        iconFile,
 		HostPassword:     requestBody.HostPassword,
+		Signature:        requestBody.Signature,
+		SignMessage:      requestBody.SignMessage,
 	}
 
 	currentUser, err := h.AuthenticationService.GetUserContext(ctx)

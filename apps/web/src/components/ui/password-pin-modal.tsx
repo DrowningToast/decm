@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Typography } from "@/components/typography/typography";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ExternalLinkIcon, Eye, EyeOff } from "lucide-react";
+import { ExternalLinkIcon, Eye, EyeOff, Wallet } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -21,16 +21,27 @@ import { coreApiClient } from "@/lib/api/api";
 import { useAuth } from "@/context/AuthContext";
 import type { ProfileVerifyPasswordRequest } from "@decm/api";
 import { toast } from "sonner";
+import { walletSigningService } from "@/services/services";
+import {
+    WalletNotConnectedError,
+    WalletSigningRejectedError,
+} from "@/services/WalletSigningService/WalletSigningService";
+
+export type PasswordPinModalSuccessResult =
+    | { type: "pin" | "password"; value: string }
+    | { type: "wallet"; signature: string; signMessage: string };
 
 interface PasswordPinModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess?: (result: { type: "pin" | "password"; value: string }) => void;
+    onSuccess?: (result: PasswordPinModalSuccessResult) => void;
     onError?: (error: unknown) => void;
     title?: string;
     description?: string;
     showModeToggle?: boolean;
     showSigningDetails?: boolean;
+    allowWalletSigning?: boolean;
+    walletSignMessage?: string;
     signingDetails?: {
         contractAddress?: string;
         transactionType: string;
@@ -55,15 +66,19 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
     description,
     showModeToggle = true,
     showSigningDetails = false,
+    allowWalletSigning = false,
+    walletSignMessage,
     signingDetails,
 }) => {
     const { t } = useTranslation();
-    const [mode, setMode] = useState<"pin" | "password">("pin");
+    const [mode, setMode] = useState<"pin" | "password" | "wallet">("pin");
     const [showPassword, setShowPassword] = useState(false);
     const [pinValues, setPinValues] = useState<string[]>(["", "", "", "", "", ""]);
+    const [isWalletSigning, setIsWalletSigning] = useState(false);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
     const { user } = useAuth();
+    const isWalletOnlyUser = user?.solutionStatus === "BYOK";
 
     const {
         mutateAsync: _verifyPassword,
@@ -88,13 +103,16 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
     // Reset forms when modal opens/closes
     useEffect(() => {
         if (isOpen) {
-            setMode("pin");
+            const shouldDefaultToWallet =
+                (allowWalletSigning && walletSigningService.isConnected()) || isWalletOnlyUser;
+            setMode(shouldDefaultToWallet ? "wallet" : "pin");
             setShowPassword(false);
+            setIsWalletSigning(false);
             setPinValues(["", "", "", "", "", ""]);
             pinForm.reset();
             passwordForm.reset();
         }
-    }, [isOpen, pinForm, passwordForm]);
+    }, [isOpen, pinForm, passwordForm, allowWalletSigning]);
 
     // Auto-focus first PIN input when switching to PIN mode
     useEffect(() => {
@@ -160,11 +178,37 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
         }
     };
 
+    const handleWalletSign = async () => {
+        const message = walletSignMessage ?? signingDetails?.details ?? "";
+        if (!message) {
+            toast.error(t("common.networkError"));
+            return;
+        }
+
+        setIsWalletSigning(true);
+        try {
+            const signature = await walletSigningService.signMessage(message);
+            onSuccess?.({ type: "wallet", signature, signMessage: message });
+            onClose();
+        } catch (error) {
+            if (error instanceof WalletNotConnectedError) {
+                toast.error(t("wallet.notConnected", "Wallet is not connected"));
+            } else if (error instanceof WalletSigningRejectedError) {
+                toast.error(t("wallet.signingRejected", "Wallet signing was rejected"));
+            } else {
+                toast.error(t("common.networkError"));
+            }
+            onError?.(error);
+        } finally {
+            setIsWalletSigning(false);
+        }
+    };
+
     const handleCancel = () => {
         onClose();
     };
 
-    const handleModeSwitch = (newMode: "pin" | "password") => {
+    const handleModeSwitch = (newMode: "pin" | "password" | "wallet") => {
         setMode(newMode);
         if (newMode === "pin") {
             setTimeout(() => inputRefs.current[0]?.focus(), 100);
@@ -173,6 +217,7 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
 
     const isPinValid = pinValues.every((val) => val !== "");
     const isPasswordValid = passwordForm.formState.isValid;
+    const isWalletConnected = walletSigningService.isConnected();
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -281,7 +326,35 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
                 {/* Input Section */}
                 <form className="space-y-6">
                     <Form {...pinForm}>
-                        {mode === "pin" ? (
+                        {mode === "wallet" ? (
+                            /* Wallet Signing Mode */
+                            <div className="flex flex-col items-center gap-3 py-2">
+                                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 border-2 border-primary/30">
+                                    <Wallet className="w-8 h-8 text-primary" />
+                                </div>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    className="text-sm text-center text-black/70"
+                                >
+                                    {isWalletConnected
+                                        ? t(
+                                              "wallet.signPrompt",
+                                              "Click confirm to sign with your connected wallet",
+                                          )
+                                        : t("wallet.notConnected", "Wallet is not connected")}
+                                </Typography>
+                                {walletSigningService.getConnectedAddress() && (
+                                    <Typography
+                                        variant="text"
+                                        tag="p"
+                                        className="text-xs font-mono text-black/50 break-all text-center"
+                                    >
+                                        {walletSigningService.getConnectedAddress()}
+                                    </Typography>
+                                )}
+                            </div>
+                        ) : mode === "pin" ? (
                             /* PIN Input Mode */
                             <div className="flex justify-center gap-2">
                                 {pinValues.map((value, index) => (
@@ -336,7 +409,7 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
                         )}
 
                         {/* API Error Display */}
-                        {apiError && (
+                        {apiError && mode !== "wallet" && (
                             <div className="text-center">
                                 <Typography
                                     variant="text"
@@ -349,9 +422,10 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
                             </div>
                         )}
 
-                        {/* Mode Toggle */}
-                        {showModeToggle && (
-                            <div className="text-center">
+                        {/* Mode Toggles */}
+                        <div className="flex flex-col items-center gap-1">
+                            {/* PIN/Password toggle (only when not in wallet mode) */}
+                            {showModeToggle && mode !== "wallet" && (
                                 <button
                                     type="button"
                                     onClick={() =>
@@ -371,8 +445,31 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
                                             : t("onboard.preferPin")}
                                     </Typography>
                                 </button>
-                            </div>
-                        )}
+                            )}
+
+                            {/* Switch between wallet and PIN/password (hidden for wallet-only users) */}
+                            {allowWalletSigning && !isWalletOnlyUser && (
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        handleModeSwitch(mode === "wallet" ? "pin" : "wallet")
+                                    }
+                                    className="text-center inline-block"
+                                    disabled={isVerifying || isWalletSigning}
+                                >
+                                    <Typography
+                                        variant="text"
+                                        tag="span"
+                                        color="background-alt"
+                                        className="text-xs italic underline [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {mode === "wallet"
+                                            ? t("wallet.usePin", "Use PIN / Password instead")
+                                            : t("wallet.useWallet", "Sign with connected wallet")}
+                                    </Typography>
+                                </button>
+                            )}
+                        </div>
                     </Form>
                 </form>
 
@@ -388,7 +485,9 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
 
                     <Button
                         onClick={() => {
-                            if (mode === "pin") {
+                            if (mode === "wallet") {
+                                handleWalletSign();
+                            } else if (mode === "pin") {
                                 const pinValue = pinValues.join("");
                                 if (pinValue.length === 6) {
                                     handleConfirm({ type: "pin", value: pinValue });
@@ -400,13 +499,25 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
                                 }
                             }
                         }}
-                        disabled={isVerifying || (mode === "pin" ? !isPinValid : !isPasswordValid)}
+                        disabled={
+                            isWalletSigning ||
+                            isVerifying ||
+                            (mode === "wallet"
+                                ? !isWalletConnected
+                                : mode === "pin"
+                                  ? !isPinValid
+                                  : !isPasswordValid)
+                        }
                         className=" h-12 bg-primary hover:bg-primary/90 text-[#e9dede] rounded-xl text-base font-normal [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {isVerifying ? (
+                        {isWalletSigning || isVerifying ? (
                             <div className="flex items-center justify-center gap-2">
                                 <div className="w-4 h-4 border-2 border-[#e9dede] border-t-transparent rounded-full animate-spin" />
-                                <span>{t("common.verifying")}</span>
+                                <span>
+                                    {isWalletSigning
+                                        ? t("wallet.signing", "Signing...")
+                                        : t("common.verifying")}
+                                </span>
                             </div>
                         ) : (
                             t("common.confirm")

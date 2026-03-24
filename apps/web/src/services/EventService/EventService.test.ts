@@ -13,6 +13,9 @@ vi.mock("@/lib/api/api", () => ({
             getEventsByOwnerCredentialsId: vi.fn(),
             getEventIssuersByEventId: vi.fn(),
             publishEventCertificates: vi.fn(),
+            createEvent: vi.fn(),
+            updateEvent: vi.fn(),
+            deleteEventById: vi.fn(),
         },
     },
 }));
@@ -300,6 +303,245 @@ describe("EventService", () => {
                 eventId: "event-1",
             });
             expect(result).toEqual(mockResponse);
+        });
+    });
+
+    describe("createEventWithPassword", () => {
+        const mockFile = new File([], "test.png", { type: "image/png" });
+        const basePayload = {
+            banner: mockFile,
+            icon: mockFile,
+            contact_address: "123 Main St",
+            contact_number: "123-456-7890",
+            description: "Test description",
+            end_date: "2024-12-31T23:59:59Z",
+            start_date: "2024-12-01T00:00:00Z",
+            google_map_query: "Bangkok Thailand",
+            location: "Bangkok",
+            name: "Test Event",
+            seats_count: 100,
+            short_description: "Short desc",
+        };
+
+        it("should create event with host password and return event id", async () => {
+            vi.mocked(mockCoreApi.v1.createEvent).mockResolvedValue({ id: "event-1" });
+
+            const result = await eventService.createEventWithPassword({
+                ...basePayload,
+                hostPassword: "mypassword123",
+            });
+
+            expect(mockCoreApi.v1.createEvent).toHaveBeenCalledWith({
+                ...basePayload,
+                host_password: "mypassword123",
+            });
+            expect(result).toBe("event-1");
+        });
+
+        it("should return empty string when response has no id", async () => {
+            vi.mocked(mockCoreApi.v1.createEvent).mockResolvedValue({});
+
+            const result = await eventService.createEventWithPassword({
+                ...basePayload,
+                hostPassword: "mypassword123",
+            });
+
+            expect(result).toBe("");
+        });
+
+        it("should propagate API errors", async () => {
+            const error = new Error("API Error");
+            vi.mocked(mockCoreApi.v1.createEvent).mockRejectedValue(error);
+
+            await expect(
+                eventService.createEventWithPassword({
+                    ...basePayload,
+                    hostPassword: "mypassword123",
+                }),
+            ).rejects.toThrow("API Error");
+        });
+    });
+
+    describe("createEventWithSignature", () => {
+        const mockFile = new File([], "test.png", { type: "image/png" });
+        const basePayload = {
+            banner: mockFile,
+            icon: mockFile,
+            contact_address: "123 Main St",
+            contact_number: "123-456-7890",
+            description: "Test description",
+            end_date: "2024-12-31T23:59:59Z",
+            start_date: "2024-12-01T00:00:00Z",
+            google_map_query: "Bangkok Thailand",
+            location: "Bangkok",
+            name: "Test Event",
+            seats_count: 100,
+            short_description: "Short desc",
+        };
+
+        it("should create event with wallet signature and return event id", async () => {
+            vi.mocked(mockCoreApi.v1.createEvent).mockResolvedValue({ id: "event-1" });
+
+            const result = await eventService.createEventWithSignature({
+                ...basePayload,
+                signature: "0xabc123signature",
+                signMessage: "Authorize DECM event creation",
+            });
+
+            expect(mockCoreApi.v1.createEvent).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    ...basePayload,
+                    signature: "0xabc123signature",
+                    sign_message: "Authorize DECM event creation",
+                }),
+            );
+            expect(result).toBe("event-1");
+        });
+
+        it("should not include host_password when using wallet signature", async () => {
+            vi.mocked(mockCoreApi.v1.createEvent).mockResolvedValue({ id: "event-1" });
+
+            await eventService.createEventWithSignature({
+                ...basePayload,
+                signature: "0xabc123signature",
+                signMessage: "Authorize DECM event creation",
+            });
+
+            const callArg = vi.mocked(mockCoreApi.v1.createEvent).mock.calls[0][0];
+            expect(callArg).not.toHaveProperty("host_password");
+        });
+
+        it("should return empty string when response has no id", async () => {
+            vi.mocked(mockCoreApi.v1.createEvent).mockResolvedValue({});
+
+            const result = await eventService.createEventWithSignature({
+                ...basePayload,
+                signature: "0xabc123signature",
+                signMessage: "Authorize DECM event creation",
+            });
+
+            expect(result).toBe("");
+        });
+
+        it("should propagate API errors", async () => {
+            const error = new Error("Wallet signing rejected");
+            vi.mocked(mockCoreApi.v1.createEvent).mockRejectedValue(error);
+
+            await expect(
+                eventService.createEventWithSignature({
+                    ...basePayload,
+                    signature: "0xabc123signature",
+                    signMessage: "Authorize DECM event creation",
+                }),
+            ).rejects.toThrow("Wallet signing rejected");
+        });
+    });
+
+    describe("editEventWithPassword", () => {
+        it("should edit event with host password", async () => {
+            const mockResponse = { id: "event-1", title: "Updated Event" };
+            vi.mocked(mockCoreApi.v1.updateEvent).mockResolvedValue(mockResponse as never);
+
+            await eventService.editEventWithPassword("event-1", {
+                name: "Updated Event",
+                hostPassword: "mypassword123",
+            });
+
+            expect(mockCoreApi.v1.updateEvent).toHaveBeenCalledWith(
+                { eventId: "event-1" },
+                expect.objectContaining({ name: "Updated Event", host_password: "mypassword123" }),
+            );
+        });
+
+        it("should propagate API errors", async () => {
+            vi.mocked(mockCoreApi.v1.updateEvent).mockRejectedValue(new Error("API Error"));
+
+            await expect(
+                eventService.editEventWithPassword("event-1", {
+                    name: "Updated Event",
+                    hostPassword: "mypassword123",
+                }),
+            ).rejects.toThrow("API Error");
+        });
+    });
+
+    describe("editEventWithSignature", () => {
+        it("should edit event with wallet signature", async () => {
+            const mockResponse = { id: "event-1", title: "Updated Event" };
+            vi.mocked(mockCoreApi.v1.updateEvent).mockResolvedValue(mockResponse as never);
+
+            await eventService.editEventWithSignature("event-1", {
+                name: "Updated Event",
+                signature: "0xabc123signature",
+                signMessage: "Authorize DECM event update",
+            });
+
+            expect(mockCoreApi.v1.updateEvent).toHaveBeenCalledWith(
+                { eventId: "event-1" },
+                expect.objectContaining({
+                    name: "Updated Event",
+                    signature: "0xabc123signature",
+                    sign_message: "Authorize DECM event update",
+                }),
+            );
+        });
+
+        it("should not include host_password when using wallet signature", async () => {
+            const mockResponse = { id: "event-1" };
+            vi.mocked(mockCoreApi.v1.updateEvent).mockResolvedValue(mockResponse as never);
+
+            await eventService.editEventWithSignature("event-1", {
+                name: "Updated Event",
+                signature: "0xabc123signature",
+                signMessage: "Authorize DECM event update",
+            });
+
+            const callArg = vi.mocked(mockCoreApi.v1.updateEvent).mock.calls[0][1];
+            expect(callArg).not.toHaveProperty("host_password");
+        });
+    });
+
+    describe("deleteEventWithPassword", () => {
+        it("should delete event with host password", async () => {
+            vi.mocked(mockCoreApi.v1.deleteEventById).mockResolvedValue(undefined as never);
+
+            await eventService.deleteEventWithPassword("event-1", "mypassword123");
+
+            expect(mockCoreApi.v1.deleteEventById).toHaveBeenCalledWith(
+                { eventId: "event-1" },
+                { host_password: "mypassword123" },
+            );
+        });
+    });
+
+    describe("deleteEventWithSignature", () => {
+        it("should delete event with wallet signature", async () => {
+            vi.mocked(mockCoreApi.v1.deleteEventById).mockResolvedValue(undefined as never);
+
+            await eventService.deleteEventWithSignature("event-1", {
+                signature: "0xabc123signature",
+                signMessage: "Authorize DECM event deletion",
+            });
+
+            expect(mockCoreApi.v1.deleteEventById).toHaveBeenCalledWith(
+                { eventId: "event-1" },
+                expect.objectContaining({
+                    signature: "0xabc123signature",
+                    sign_message: "Authorize DECM event deletion",
+                }),
+            );
+        });
+
+        it("should not include host_password when using wallet signature", async () => {
+            vi.mocked(mockCoreApi.v1.deleteEventById).mockResolvedValue(undefined as never);
+
+            await eventService.deleteEventWithSignature("event-1", {
+                signature: "0xabc123signature",
+                signMessage: "Authorize DECM event deletion",
+            });
+
+            const callArg = vi.mocked(mockCoreApi.v1.deleteEventById).mock.calls[0][1];
+            expect(callArg).not.toHaveProperty("host_password");
         });
     });
 });

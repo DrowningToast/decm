@@ -49,7 +49,10 @@ func GetAddressFromSignature(message string, signature string) (ethCommon.Addres
 	if len(signature)%2 == 1 {
 		return ethCommon.Address{}, errors.Wrap(customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid ethereum signature")), "failed to get address from signature")
 	}
-	sig := hexutil.MustDecode(signature)
+	sig, err := hexutil.Decode(signature)
+	if err != nil {
+		return ethCommon.Address{}, errors.Wrap(customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid ethereum signature")), "failed to get address from signature")
+	}
 
 	// Reject non-ethereum signature format
 	if sig[crypto.RecoveryIDOffset] != 27 && sig[crypto.RecoveryIDOffset] != 28 {

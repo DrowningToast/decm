@@ -7,6 +7,33 @@ import {
 } from "./mapper";
 import type { EventRegistrationConfiguration } from "../EventRegistration/EventRegistration";
 import type { Profile } from "../AuthService/AuthService";
+import type { CreateEventPayload, UpdateEventPayload } from "@decm/api";
+
+type CreateEventCommonFields = Omit<CreateEventPayload, "host_password">;
+type EditEventCommonFields = Omit<UpdateEventPayload, "host_password">;
+
+export interface CreateEventWithPasswordInput extends CreateEventCommonFields {
+    hostPassword: string;
+}
+
+export interface CreateEventWithSignatureInput extends CreateEventCommonFields {
+    signature: string;
+    signMessage: string;
+}
+
+export interface EditEventWithPasswordInput extends EditEventCommonFields {
+    hostPassword: string;
+}
+
+export interface EditEventWithSignatureInput extends EditEventCommonFields {
+    signature: string;
+    signMessage: string;
+}
+
+export interface WalletSignatureAuth {
+    signature: string;
+    signMessage: string;
+}
 
 interface GetEventsListParams {
     includeActiveEvents?: boolean;
@@ -151,6 +178,62 @@ export class EventService {
 
     public async publishEventCertificates(eventId: string) {
         return await coreApiClient.v1.publishEventCertificates({ eventId });
+    }
+
+    public async createEventWithPassword(input: CreateEventWithPasswordInput): Promise<string> {
+        const { hostPassword, ...rest } = input;
+        const response = await this._coreApi.v1.createEvent({
+            ...rest,
+            host_password: hostPassword,
+        });
+        return response.id ?? "";
+    }
+
+    public async createEventWithSignature(input: CreateEventWithSignatureInput): Promise<string> {
+        const { signature, signMessage, ...rest } = input;
+        // Backend accepts signature + sign_message as alternative to host_password for wallet users
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const response = await (this._coreApi.v1.createEvent as any)({
+            ...rest,
+            signature,
+            sign_message: signMessage,
+        });
+        return response.id ?? "";
+    }
+
+    public async editEventWithPassword(
+        eventId: string,
+        input: EditEventWithPasswordInput,
+    ): Promise<void> {
+        const { hostPassword, ...rest } = input;
+        await this._coreApi.v1.updateEvent({ eventId }, { ...rest, host_password: hostPassword });
+    }
+
+    public async editEventWithSignature(
+        eventId: string,
+        input: EditEventWithSignatureInput,
+    ): Promise<void> {
+        const { signature, signMessage, ...rest } = input;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (this._coreApi.v1.updateEvent as any)(
+            { eventId },
+            { ...rest, signature, sign_message: signMessage },
+        );
+    }
+
+    public async deleteEventWithPassword(eventId: string, hostPassword: string): Promise<void> {
+        await this._coreApi.v1.deleteEventById({ eventId }, { host_password: hostPassword });
+    }
+
+    public async deleteEventWithSignature(
+        eventId: string,
+        auth: WalletSignatureAuth,
+    ): Promise<void> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (this._coreApi.v1.deleteEventById as any)(
+            { eventId },
+            { signature: auth.signature, sign_message: auth.signMessage },
+        );
     }
 }
 
