@@ -13,6 +13,8 @@ import { LOCAL_STORAGE_KEYS } from "@/lib/constants/localStorage";
 import { OnboardRegistrationMethod } from "@decm/api";
 import { handleUniversalError } from "@/common/Err";
 import { useCheckOnboardStatus } from "../Onboard/useCheckOnboardStatus";
+import { queryClient } from "@/lib/api/queryClient";
+import { QUERY_KEY } from "@/lib/queryKeys";
 
 import { OnboardMethods } from "@/pages/onboard/[method]";
 interface VerifySignMessagePageProps {
@@ -52,10 +54,13 @@ export const VerifySignMessagePage: React.FC<VerifySignMessagePageProps> = ({
                 signSignature: signature,
             });
             if (response?.profile_id) {
+                toast.dismiss(loadingToastId);
+                await queryClient.invalidateQueries({ queryKey: QUERY_KEY.user.profile });
                 await navigate("/app");
                 return;
             }
             if (response?.authentication_credential_id) {
+                toast.dismiss(loadingToastId);
                 await navigate("/onboard/:method", {
                     params: {
                         method: OnboardMethods.WALLET,
