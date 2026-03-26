@@ -51,7 +51,9 @@ export const ExcelPreview = ({
                     const workbook = XLSX.read(data, { type: "array" });
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet) as PreviewData[];
+                    const jsonData = (
+                        XLSX.utils.sheet_to_json(worksheet, { blankrows: false }) as PreviewData[]
+                    ).filter((row) => Object.values(row).some((v) => String(v).trim() !== ""));
 
                     if (jsonData.length > 0) {
                         const excelColumns = Object.keys(jsonData[0]);

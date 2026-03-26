@@ -58,8 +58,8 @@ func (uc *InboxUsecase) isAuthorizedToReadMessage(message *entity.InboxMessage, 
 		return true
 	}
 
-	// Check if receiver wallet address matches
-	if message.ReceiverWalletAddress != nil && *message.ReceiverWalletAddress == user.WalletAddress {
+	// Check if receiver wallet address matches (case-insensitive)
+	if message.ReceiverWalletAddress != nil && strings.EqualFold(*message.ReceiverWalletAddress, user.WalletAddress) {
 		return true
 	}
 

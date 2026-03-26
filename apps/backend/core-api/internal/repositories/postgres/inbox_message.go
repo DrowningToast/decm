@@ -23,6 +23,13 @@ func (r *Repository) CreateInboxMessage(ctx context.Context, params offchain_dat
 		return nil, err
 	}
 
+	// Normalize wallet address to lowercase plain text (wallet addresses are public, not PII-encrypted)
+	var normalizedWalletAddress *string
+	if params.ReceiverWalletAddress != nil {
+		lower := strings.ToLower(*params.ReceiverWalletAddress)
+		normalizedWalletAddress = &lower
+	}
+
 	// Convert message_content to pgtype.Text for JSONB field
 	messageContent := []byte(params.MessageContent)
 	fallbackMessageContent := pgmapper.StringPtrToPgText(params.FallbackMessageContent)
@@ -32,7 +39,7 @@ func (r *Repository) CreateInboxMessage(ctx context.Context, params offchain_dat
 		SenderCredentialID:     pgmapper.UUIDPtrToPgUUID(params.SenderCredentialID),
 		ReceiverCredentialID:   pgmapper.UUIDPtrToPgUUID(params.ReceiverCredentialID),
 		ReceiverEmail:          encryptedEmail,
-		ReceiverWalletAddress:  pgmapper.StringPtrToPgText(params.ReceiverWalletAddress),
+		ReceiverWalletAddress:  pgmapper.StringPtrToPgText(normalizedWalletAddress),
 		MessageType:            int32(params.MessageType),
 		MessageContent:         messageContent,
 		FallbackMessageContent: fallbackMessageContent,
@@ -114,19 +121,17 @@ func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params 
 		}
 	}
 
-	var encryptedReceiverWalletAddress pgtype.Text
-	receiverWalletAddress := params.ReceiverWalletAddress
-	if receiverWalletAddress != nil {
-		encryptedReceiverWalletAddress, err = pgmapper.EncryptStringPtrToPgText(receiverWalletAddress, r.piiEncryptionKey)
-		if err != nil {
-			return nil, err
-		}
+	// Wallet address is stored as plain text (not PII-encrypted); normalize to lowercase for matching
+	var plainWalletAddress pgtype.Text
+	if params.ReceiverWalletAddress != nil {
+		normalized := strings.ToLower(*params.ReceiverWalletAddress)
+		plainWalletAddress = pgtype.Text{String: normalized, Valid: true}
 	}
 
 	results, err := r.queries.GetInboxMessagesByCredentialID(ctx, generated.GetInboxMessagesByCredentialIDParams{
 		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(params.CredentialID),
 		ReceiverEmail:         encryptedReceiverEmail,
-		ReceiverWalletAddress: encryptedReceiverWalletAddress,
+		ReceiverWalletAddress: plainWalletAddress,
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
@@ -244,14 +249,9 @@ func (r *Repository) GetInboxMessagesByReceiverEmail(ctx context.Context, receiv
 }
 
 func (r *Repository) GetInboxMessagesByReceiverWalletAddress(ctx context.Context, receiverWalletAddress string) ([]*entity.InboxMessage, error) {
-	// Encrypt search term
-	encryptedWalletAddress, err := pgmapper.EncryptPII(receiverWalletAddress, r.piiEncryptionKey)
-	if err != nil {
-		return nil, err
-	}
-
+	// Wallet address is plain text; normalize to lowercase for case-insensitive matching
 	results, err := r.queries.GetInboxMessagesByReceiverWalletAddress(ctx, pgtype.Text{
-		String: encryptedWalletAddress,
+		String: strings.ToLower(receiverWalletAddress),
 		Valid:  true,
 	})
 	if err != nil {
@@ -369,18 +369,16 @@ func (r *Repository) UpdateInboxMessageReadStatusAll(ctx context.Context, params
 		}
 	}
 
-	var encryptedReceiverWalletAddress pgtype.Text
+	// Wallet address is plain text; normalize to lowercase for case-insensitive matching
+	var plainWalletAddress pgtype.Text
 	if params.ReceiverWalletAddress != nil {
-		encryptedReceiverWalletAddress, err = pgmapper.EncryptStringPtrToPgText(params.ReceiverWalletAddress, r.piiEncryptionKey)
-		if err != nil {
-			return nil, err
-		}
+		plainWalletAddress = pgtype.Text{String: strings.ToLower(*params.ReceiverWalletAddress), Valid: true}
 	}
 
 	results, err := r.queries.UpdateInboxMessageReadStatusAll(ctx, generated.UpdateInboxMessageReadStatusAllParams{
 		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(params.CredentialID),
 		ReceiverEmail:         encryptedReceiverEmail,
-		ReceiverWalletAddress: encryptedReceiverWalletAddress,
+		ReceiverWalletAddress: plainWalletAddress,
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)

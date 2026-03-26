@@ -9,6 +9,7 @@ import (
 	"apps/backend/services/log"
 	"context"
 	"decm-database/go/generated"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -309,9 +310,9 @@ func (r *Repository) GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddr
 		queryParams.GoogleConnectorRef = pgtype.Text{String: encryptedRef, Valid: true}
 	}
 
-	// Set wallet address if provided
+	// Set wallet address if provided; normalize to lowercase for case-insensitive matching
 	if params.WalletAddress != nil && *params.WalletAddress != "" {
-		queryParams.WalletAddress = pgtype.Text{String: *params.WalletAddress, Valid: true}
+		queryParams.WalletAddress = pgtype.Text{String: strings.ToLower(*params.WalletAddress), Valid: true}
 	}
 
 	query, err := r.queries.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx, queryParams)

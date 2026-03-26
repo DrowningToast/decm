@@ -167,6 +167,61 @@ func TestInboxUsecase_isAuthorizedToReadMessage_CaseInsensitiveEmail(t *testing.
 		assert.True(t, result, "Should authorize by wallet address even if email doesn't match")
 	})
 
+	t.Run("should authorize when wallet address stored as lowercase but user has EIP-55 checksum", func(t *testing.T) {
+		// Simulates: host imports participant with lowercase address, user registered with EIP-55 checksum
+		uc := &InboxUsecase{}
+		storedAddress := "0xf466e7ce6b06f9b3071557a790bd45f051c1c60a"          // lowercase (as stored)
+		userAddress := "0xf466e7cE6B06f9b3071557A790Bd45F051C1C60A"             // EIP-55 checksum (from JWT)
+
+		message := &entity.InboxMessage{
+			ReceiverWalletAddress: &storedAddress,
+		}
+
+		user := auth.JwtClaims{
+			WalletAddress: userAddress,
+		}
+
+		result := uc.isAuthorizedToReadMessage(message, user)
+
+		assert.True(t, result, "Should authorize with case-insensitive wallet address match")
+	})
+
+	t.Run("should authorize when wallet address stored as EIP-55 but user has lowercase", func(t *testing.T) {
+		uc := &InboxUsecase{}
+		storedAddress := "0xf466e7cE6B06f9b3071557A790Bd45F051C1C60A"           // EIP-55 (as stored)
+		userAddress := "0xf466e7ce6b06f9b3071557a790bd45f051c1c60a"             // lowercase (from JWT)
+
+		message := &entity.InboxMessage{
+			ReceiverWalletAddress: &storedAddress,
+		}
+
+		user := auth.JwtClaims{
+			WalletAddress: userAddress,
+		}
+
+		result := uc.isAuthorizedToReadMessage(message, user)
+
+		assert.True(t, result, "Should authorize with case-insensitive wallet address match")
+	})
+
+	t.Run("should not authorize when wallet addresses are completely different", func(t *testing.T) {
+		uc := &InboxUsecase{}
+		storedAddress := "0xf466e7ce6b06f9b3071557a790bd45f051c1c60a"
+		userAddress := "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+
+		message := &entity.InboxMessage{
+			ReceiverWalletAddress: &storedAddress,
+		}
+
+		user := auth.JwtClaims{
+			WalletAddress: userAddress,
+		}
+
+		result := uc.isAuthorizedToReadMessage(message, user)
+
+		assert.False(t, result, "Should not authorize with different wallet addresses")
+	})
+
 	t.Run("should not authorize when all fields are nil or don't match", func(t *testing.T) {
 		// Arrange
 		uc := &InboxUsecase{}
