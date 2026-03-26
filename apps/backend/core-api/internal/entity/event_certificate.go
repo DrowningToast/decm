@@ -12,6 +12,7 @@ type EventCertificate struct {
 	EventName               *string    `json:"event_name,omitempty"`
 	ReceiverCredentialId    *uuid.UUID `json:"receiver_credential_id,omitempty"`
 	ReceiverEmail           *string    `json:"receiver_email,omitempty"`
+	ReceiverWalletAddress   *string    `json:"receiver_wallet_address,omitempty"`
 	Name                    *string    `json:"name,omitempty"`
 	AcademicInstitution     *string    `json:"academic_institution,omitempty"`
 	CertificateTitle        *string    `json:"certificate_title,omitempty"`

@@ -1774,6 +1774,72 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/events/{event_id}/certificates/import/sign-message": {
+            "post": {
+                "description": "Deploys the certificate contract if not yet deployed, computes receiver hashes, and returns the sign message JSON that the host must sign with their wallet before calling the import endpoint.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Certificates"
+                ],
+                "summary": "Get sign message for certificate import (BYOK wallet users)",
+                "operationId": "get-certificate-import-sign-message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Receivers to import",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event.GetCertificateImportSignMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_event.GetCertificateImportSignMessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/events/{event_id}/certificates/list-viewmodel": {
             "get": {
                 "description": "Get event certificates separated by claimed and unclaimed status. Claimed certificates have token_id populated, unclaimed certificates have token_id null and certificate config is published. Only event hosts and issuers can access this endpoint.",
@@ -4739,11 +4805,25 @@ const docTemplate = `{
                 }
             }
         },
+        "core-api_internal_handler_event.GetCertificateImportSignMessageResponse": {
+            "type": "object",
+            "required": [
+                "event_certificate_address",
+                "sign_message"
+            ],
+            "properties": {
+                "event_certificate_address": {
+                    "type": "string"
+                },
+                "sign_message": {
+                    "type": "string"
+                }
+            }
+        },
         "core-api_internal_handler_event.ImportCertificateReceiversRequest": {
             "type": "object",
             "required": [
                 "event_id",
-                "host_pin",
                 "receivers"
             ],
             "properties": {
@@ -4751,6 +4831,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "host_pin": {
+                    "description": "PIN-based path (non-BYOK users): provide host_pin to decrypt server-side key",
+                    "type": "string"
+                },
+                "host_sign_message": {
+                    "description": "Wallet-based path (BYOK users): provide the sign_message returned by the sign-message endpoint\nand the wallet signature over that message",
+                    "type": "string"
+                },
+                "host_signature": {
                     "type": "string"
                 },
                 "receivers": {
@@ -5561,6 +5649,9 @@ const docTemplate = `{
                 "receiver_email": {
                     "type": "string"
                 },
+                "receiver_wallet_address": {
+                    "type": "string"
+                },
                 "revoked_at": {
                     "type": "string"
                 },
@@ -5933,6 +6024,9 @@ const docTemplate = `{
                 "receiver_email": {
                     "type": "string"
                 },
+                "receiver_wallet_address": {
+                    "type": "string"
+                },
                 "revoked_at": {
                     "type": "string"
                 },
@@ -6235,6 +6329,25 @@ const docTemplate = `{
                 }
             }
         },
+        "event.GetCertificateImportSignMessageRequest": {
+            "type": "object",
+            "required": [
+                "event_id",
+                "receivers"
+            ],
+            "properties": {
+                "event_id": {
+                    "type": "string"
+                },
+                "receivers": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/event.ImportCertificateReceiverRequest"
+                    }
+                }
+            }
+        },
         "event.GetCertificatesListViewModelResponse": {
             "type": "object",
             "required": [
@@ -6288,7 +6401,6 @@ const docTemplate = `{
                 "academic_institution",
                 "certificate_subtitle",
                 "certificate_title",
-                "email",
                 "first_name",
                 "last_name"
             ],
@@ -6309,6 +6421,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "last_name": {
+                    "type": "string"
+                },
+                "wallet_address": {
                     "type": "string"
                 }
             }
@@ -6435,6 +6550,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "receiver_email": {
+                    "type": "string"
+                },
+                "receiver_wallet_address": {
                     "type": "string"
                 },
                 "revoked_at": {

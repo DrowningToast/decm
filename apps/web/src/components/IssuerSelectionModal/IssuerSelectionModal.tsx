@@ -27,6 +27,7 @@ export interface Issuer {
     googleOAuthEmail?: string;
     phoneNumber?: string;
     organization?: string;
+    walletAddress?: string;
 }
 
 // Helper to render cell content with "(empty)" fallback
@@ -166,6 +167,9 @@ export const IssuerSelectionModal = ({
                                             <TableHead>
                                                 {t("certificateSettings.step1.table.organization")}
                                             </TableHead>
+                                            <TableHead>
+                                                {t("certificateSettings.step1.table.walletAddress")}
+                                            </TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -200,6 +204,9 @@ export const IssuerSelectionModal = ({
                                                 </TableCell>
                                                 <TableCell>
                                                     {renderCellContent(issuer.organization)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {renderCellContent(issuer.walletAddress)}
                                                 </TableCell>
                                             </TableRow>
                                         ))}

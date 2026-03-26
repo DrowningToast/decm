@@ -73,7 +73,7 @@ func (h *Handler) GetClaimCertificateSignMessage(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("certificate has been revoked"))
 	}
 
-	// 7. Basic eligibility check - user must match credential ID or email (if specified)
+	// 7. Basic eligibility check - user must match credential ID, email, or wallet_address (if specified)
 	if certificate.ReceiverCredentialId != nil {
 		if *certificate.ReceiverCredentialId != currentUser.UserId {
 			return customerror.Parse(&customerror.ErrForbidden, errors.New("you are not eligible to claim this certificate"))
@@ -82,8 +82,12 @@ func (h *Handler) GetClaimCertificateSignMessage(ctx *fiber.Ctx) error {
 		if currentUser.Email == nil || *currentUser.Email != *certificate.ReceiverEmail {
 			return customerror.Parse(&customerror.ErrForbidden, errors.New("you are not eligible to claim this certificate"))
 		}
+	} else if certificate.ReceiverWalletAddress != nil {
+		if !strings.EqualFold(currentUser.WalletAddress, *certificate.ReceiverWalletAddress) {
+			return customerror.Parse(&customerror.ErrForbidden, errors.New("you are not eligible to claim this certificate"))
+		}
 	}
-	// If both are nil, it's an open certificate - anyone can get sign message
+	// If all are nil, it's an open certificate - anyone can get sign message
 
 	signMessage, _, err := h.EventUc.GetClaimCertificateSignMessage(ctx.UserContext(), common.HexToAddress(currentUser.WalletAddress), *currentUser, common.HexToAddress(*certificate.EventCertificateAddress), nil)
 	if err != nil {

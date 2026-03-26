@@ -25,6 +25,7 @@ func (h *Handler) Mount(r fiber.Router) {
 
 	eventGroup.Post("/:event_id/issuers", metrics.MeasureHandlerDurationWrapper("event.CreateEventIssuer", h.CreateEventIssuer))
 	eventGroup.Get("/:event_id/participants", metrics.MeasureHandlerDurationWrapper("event.GetEventParticipants", h.GetEventParticipants))
+	eventGroup.Post("/:event_id/certificates/import/sign-message", metrics.MeasureHandlerDurationWrapper("event.GetCertificateImportSignMessage", h.GetCertificateImportSignMessage))
 	eventGroup.Post("/:event_id/certificates/import", metrics.MeasureHandlerDurationWrapper("event.ImportCertificateReceivers", h.ImportCertificateReceivers))
 	eventGroup.Post("/:event_id/certificates/publish", metrics.MeasureHandlerDurationWrapper("event.PublishEventCertificates", h.PublishEventCertificates))
 	eventGroup.Post("/:event_id/certificates/revoke", metrics.MeasureHandlerDurationWrapper("event.RevokeEventCertificates", h.RevokeEventCertificates))

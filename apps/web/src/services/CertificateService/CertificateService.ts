@@ -14,6 +14,8 @@ import {
     type MyCertificatesViewModel,
     type SignedCertificatesResult,
     type ImportCertificatesParams,
+    type GetCertificateImportSignMessageParams,
+    type GetCertificateImportSignMessageResult,
     type RevokeCertificatesParams,
     type Certificate,
     type ImportCertificatesResult,
@@ -137,15 +139,39 @@ export class CertificateService {
     public async importCertificates(
         params: ImportCertificatesParams,
     ): Promise<ImportCertificatesResult> {
+        const body =
+            "hostPin" in params
+                ? {
+                      event_id: params.eventId,
+                      host_pin: params.hostPin,
+                      receivers: params.receivers,
+                  }
+                : {
+                      event_id: params.eventId,
+                      host_sign_message: params.hostSignMessage,
+                      host_signature: params.hostSignature,
+                      receivers: params.receivers,
+                  };
         const response = await this._coreApi.v1.importCertificateReceivers(
             { eventId: params.eventId },
+            body,
+        );
+        return mapImportCertificatesResponse(response);
+    }
+
+    public async getCertificateImportSignMessage(
+        params: GetCertificateImportSignMessageParams,
+    ): Promise<GetCertificateImportSignMessageResult> {
+        const response = await this._coreApi.v1.getCertificateImportSignMessage(
+            { eventId: params.eventId },
             {
-                event_id: params.eventId,
-                host_pin: params.hostPin,
                 receivers: params.receivers,
             },
         );
-        return mapImportCertificatesResponse(response);
+        return {
+            signMessage: response.sign_message,
+            eventCertificateAddress: response.event_certificate_address,
+        };
     }
 
     /**

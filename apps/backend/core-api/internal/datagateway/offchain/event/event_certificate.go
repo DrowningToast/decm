@@ -12,6 +12,7 @@ type CreateEventCertificateParameters struct {
 	EventID                 uuid.UUID
 	ReceiverCredentialID    *uuid.UUID
 	ReceiverEmail           *string
+	ReceiverWalletAddress   *string
 	Name                    *string
 	AcademicInstitution     *string
 	CertificateTitle        *string

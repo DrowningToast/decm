@@ -91,10 +91,27 @@ export interface SignedCertificatesResult {
     totalSigned: number;
 }
 
-export interface ImportCertificatesParams {
+export type ImportCertificatesParams =
+    | {
+          eventId: string;
+          hostPin: string;
+          receivers: EventImportCertificateReceiverRequest[];
+      }
+    | {
+          eventId: string;
+          hostSignMessage: string;
+          hostSignature: string;
+          receivers: EventImportCertificateReceiverRequest[];
+      };
+
+export interface GetCertificateImportSignMessageParams {
     eventId: string;
-    hostPin: string;
     receivers: EventImportCertificateReceiverRequest[];
+}
+
+export interface GetCertificateImportSignMessageResult {
+    signMessage: string;
+    eventCertificateAddress: string;
 }
 
 export interface RevokeCertificatesParams {

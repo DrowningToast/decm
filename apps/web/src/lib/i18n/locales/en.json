@@ -1256,7 +1256,10 @@
         "emptyFile": "The Excel file appears to be empty or has no data.",
         "parseError": "Failed to parse Excel file. Please check file format.",
         "missingEmailError": "Email is required. Missing in rows: {{rows}}",
-        "columnsDescription": "Email is required. Other columns are optional.",
+        "columnsDescription": "Exactly one of email or wallet_address is required. Other columns are optional.",
+        "invalidRowsDescription": "Rows highlighted in red have invalid fields. Each row must have exactly one of email or wallet_address (not both, not neither). Please fix these in your Excel file and re-upload.",
+        "missingColumnsTitle": "Missing required columns",
+        "eitherOrColumn": "Exactly one required (not both)",
         "requiredFormat": "Required Excel Format",
         "requiredFormatDescription": "Your Excel file must contain these exact column headers:",
         "columnHeader": "Required Column",
@@ -1269,6 +1272,7 @@
         "templateFileName": "certificate_import_template",
         "templateColumns": {
             "email": "email",
+            "walletAddress": "wallet_address",
             "firstName": "first_name",
             "lastName": "last_name",
             "academicInstitution": "academic_institution",
@@ -1294,7 +1298,7 @@
             "title": "Step 1: Issuer Settings",
             "description": "Search and select certificate issuers for this event",
             "searchLabel": "Search Issuers",
-            "searchPlaceholder": "Enter name, email, or organization...",
+            "searchPlaceholder": "Enter name, email, or wallet address...",
             "searchButton": "Search",
             "searchNote": "Note: Search query must exactly match the issuer's first name, last name, or OAuth email.",
             "publishedWarning": "Certificate configuration has been published. Issuer settings cannot be modified.",
@@ -1308,6 +1312,7 @@
                 "googleOAuthEmail": "Google OAuth Email",
                 "phoneNumber": "Telephone Number",
                 "organization": "Organization",
+                "walletAddress": "Wallet Address",
                 "actions": "Actions"
             },
             "alert": {

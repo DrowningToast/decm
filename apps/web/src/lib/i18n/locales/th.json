@@ -1234,6 +1234,9 @@
         "missingColumns": "คอลัมน์ที่จำเป็นต้องมี: {{columns}} กรุณาตรวจสอบว่าไฟล์ Excel ของคุณมีคอลัมน์เหล่านี้",
         "emptyFile": "ไฟล์ Excel ดูเหมือนจะว่างเปล่าหรือไม่มีข้อมูล",
         "parseError": "ไม่สามารถแยกวิเคราะห์ไฟล์ Excel ได้ กรุณาตรวจสอบรูปแบบไฟล์",
+        "invalidRowsDescription": "แถวที่ไฮไลท์ด้วยสีแดงมีข้อมูลที่ไม่ถูกต้อง แต่ละแถวต้องกรอก email หรือ wallet_address อย่างใดอย่างหนึ่งเท่านั้น (ไม่ใช่ทั้งคู่ ไม่ใช่ไม่มีเลย) กรุณาแก้ไขในไฟล์ Excel และอัปโหลดใหม่",
+        "missingColumnsTitle": "คอลัมน์ที่จำเป็นขาดหายไป",
+        "eitherOrColumn": "ต้องกรอกอย่างใดอย่างหนึ่งเท่านั้น",
         "requiredFormat": "รูปแบบ Excel ที่จำเป็นต้องมี",
         "requiredFormatDescription": "ไฟล์ Excel ของคุณต้องมีส่วนหัวคอลัมน์เหล่านี้:",
         "columnHeader": "คอลัมน์ที่จำเป็น",
@@ -1245,6 +1248,8 @@
         "templateSheetName": "ใบรับรอง",
         "templateFileName": "certificate_import_template",
         "templateColumns": {
+            "email": "email",
+            "walletAddress": "wallet_address",
             "firstName": "first_name",
             "lastName": "last_name",
             "academicInstitution": "academic_institution",
@@ -1270,7 +1275,7 @@
             "title": "ขั้นตอนที่ 1: ตั้งค่าผู้ออกใบประกาศนียบัตร",
             "description": "ค้นหาและเลือกผู้ออกใบประกาศนียบัตรสำหรับกิจกรรมนี้",
             "searchLabel": "ค้นหาผู้ออกใบประกาศนียบัตร",
-            "searchPlaceholder": "ป้อนชื่อ อีเมล หรือองค์กร...",
+            "searchPlaceholder": "ป้อนชื่อ อีเมล หรือ wallet address...",
             "searchButton": "ค้นหา",
             "searchNote": "หมายเหตุ: ข้อความค้นหาต้องตรงกับชื่อจริง นามสกุล หรืออีเมล OAuth ของผู้ออกทุกตัวอักษร",
             "publishedWarning": "เผยแพร่การตั้งค่าใบรับรองแล้ว ไม่สามารถแก้ไขการตั้งค่าผู้ออกได้",
@@ -1284,6 +1289,7 @@
                 "googleOAuthEmail": "อีเมล Google OAuth",
                 "phoneNumber": "เบอร์โทรศัพท์",
                 "organization": "องค์กร",
+                "walletAddress": "Wallet Address",
                 "actions": "การดำเนินการ"
             },
             "alert": {

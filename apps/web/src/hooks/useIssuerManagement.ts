@@ -9,6 +9,7 @@ export interface Issuer {
     googleOAuthEmail?: string;
     phoneNumber?: string;
     organization?: string;
+    walletAddress?: string;
 }
 
 export interface UseIssuerManagementProps {
@@ -42,6 +43,7 @@ export const convertProfileToIssuer = (profile: Profile): Issuer => {
         googleOAuthEmail: profile.googleConnectorRef || undefined,
         phoneNumber: profile.phoneNumber || undefined,
         organization: profile.academicInstitution || profile.bio || undefined,
+        walletAddress: profile.walletAddress || undefined,
     };
 };
 

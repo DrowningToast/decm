@@ -13,7 +13,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
+
 
 func TestImportCertificateReceivers(t *testing.T) {
 	ctx := context.Background()
@@ -34,11 +36,11 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		currentUser := &auth.JwtClaims{UserId: userId}
 		requests := []ImportCertificateReceiversRequest{
-			{Email: "test@example.com", HostPin: hostPin},
+			{Email: strPtr("test@example.com")},
 		}
 
 		// Act
-		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, currentUser)
+		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, ImportCertificateReceiversOptions{HostPin: &hostPin}, currentUser)
 
 		// Assert
 		assert.Error(t, err)
@@ -65,11 +67,11 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		currentUser := &auth.JwtClaims{UserId: userId}
 		requests := []ImportCertificateReceiversRequest{
-			{Email: "test@example.com", HostPin: hostPin},
+			{Email: strPtr("test@example.com")},
 		}
 
 		// Act
-		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, currentUser)
+		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, ImportCertificateReceiversOptions{HostPin: &hostPin}, currentUser)
 
 		// Assert
 		assert.Error(t, err)
@@ -104,11 +106,11 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		currentUser := &auth.JwtClaims{UserId: userId}
 		requests := []ImportCertificateReceiversRequest{
-			{Email: "test@example.com", HostPin: hostPin},
+			{Email: strPtr("test@example.com")},
 		}
 
 		// Act
-		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, currentUser)
+		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, ImportCertificateReceiversOptions{HostPin: &hostPin}, currentUser)
 
 		// Assert
 		assert.Error(t, err)
@@ -154,11 +156,11 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		currentUser := &auth.JwtClaims{UserId: userId}
 		requests := []ImportCertificateReceiversRequest{
-			{Email: "test@example.com", HostPin: hostPin},
+			{Email: strPtr("test@example.com")},
 		}
 
 		// Act
-		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, currentUser)
+		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, ImportCertificateReceiversOptions{HostPin: &hostPin}, currentUser)
 
 		// Assert
 		assert.Error(t, err)
@@ -244,6 +246,9 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Return(nil)
 		mockCertDg.On("DeleteEventCertificate", ctx, oldCertID2).
 			Return(nil)
+		// Stop execution after deletion — we're only testing the deletion logic here
+		mockCertDg.On("CreateEventCertificate", ctx, mock.Anything).
+			Return(nil, errors.New("stop here"))
 
 		uc := &EventUsecase{
 			AuthenticationCredentialDg:           mockAuthDg,
@@ -258,13 +263,13 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		currentUser := &auth.JwtClaims{UserId: userId}
 		requests := []ImportCertificateReceiversRequest{
-			{Email: "new@example.com", HostPin: hostPin},
+			{Email: strPtr("new@example.com")},
 		}
 
 		// Act
 		// Note: This will fail at blockchain operations, but we're testing the deletion logic
 		// The deletion should happen before blockchain operations
-		_, err := uc.ImportCertificateReceivers(ctx, eventID, requests, currentUser)
+		_, err := uc.ImportCertificateReceivers(ctx, eventID, requests, ImportCertificateReceiversOptions{HostPin: &hostPin}, currentUser)
 
 		// Assert
 		// We expect an error due to blockchain operations, but deletion should have been called
@@ -323,11 +328,11 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		currentUser := &auth.JwtClaims{UserId: userId}
 		requests := []ImportCertificateReceiversRequest{
-			{Email: "test@example.com", HostPin: hostPin},
+			{Email: strPtr("test@example.com")},
 		}
 
 		// Act
-		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, currentUser)
+		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, ImportCertificateReceiversOptions{HostPin: &hostPin}, currentUser)
 
 		// Assert
 		assert.Error(t, err)
@@ -409,11 +414,11 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		currentUser := &auth.JwtClaims{UserId: userId}
 		requests := []ImportCertificateReceiversRequest{
-			{Email: "test@example.com", HostPin: hostPin},
+			{Email: strPtr("test@example.com")},
 		}
 
 		// Act
-		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, currentUser)
+		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, ImportCertificateReceiversOptions{HostPin: &hostPin}, currentUser)
 
 		// Assert
 		assert.Error(t, err)
@@ -490,11 +495,11 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		currentUser := &auth.JwtClaims{UserId: userId}
 		requests := []ImportCertificateReceiversRequest{
-			{Email: "test@example.com", HostPin: hostPin},
+			{Email: strPtr("test@example.com")},
 		}
 
 		// Act
-		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, currentUser)
+		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, ImportCertificateReceiversOptions{HostPin: &hostPin}, currentUser)
 
 		// Assert
 		assert.Error(t, err)
@@ -521,11 +526,11 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		currentUser := &auth.JwtClaims{UserId: userId}
 		requests := []ImportCertificateReceiversRequest{
-			{Email: "test@example.com", HostPin: hostPin},
+			{Email: strPtr("test@example.com")},
 		}
 
 		// Act
-		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, currentUser)
+		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, ImportCertificateReceiversOptions{HostPin: &hostPin}, currentUser)
 
 		// Assert
 		assert.Error(t, err)
@@ -607,11 +612,11 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		currentUser := &auth.JwtClaims{UserId: userId}
 		requests := []ImportCertificateReceiversRequest{
-			{Email: "test@example.com", HostPin: hostPin},
+			{Email: strPtr("test@example.com")},
 		}
 
 		// Act
-		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, currentUser)
+		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, ImportCertificateReceiversOptions{HostPin: &hostPin}, currentUser)
 
 		// Assert
 		assert.Error(t, err)
@@ -662,6 +667,10 @@ func TestImportCertificateReceivers(t *testing.T) {
 		mockCertDg := new(MockEventCertificateDataGateway)
 		mockCertDg.On("GetEventCertificatesByEventID", ctx, eventID).
 			Return([]*entity.EventCertificate{}, nil)
+		// CreateEventCertificate is called after contract address check — return error to stop execution.
+		// The key assertion is that deployCertificateContract panics if called (proving it was skipped).
+		mockCertDg.On("CreateEventCertificate", ctx, mock.Anything).
+			Return(nil, errors.New("stop here"))
 
 		configID := uuid.New()
 		mockCertConfigDg := new(MockEventCertificateConfigDataGateway)
@@ -689,14 +698,14 @@ func TestImportCertificateReceivers(t *testing.T) {
 
 		currentUser := &auth.JwtClaims{UserId: userId}
 		requests := []ImportCertificateReceiversRequest{
-			{Email: "test@example.com", HostPin: hostPin},
+			{Email: strPtr("test@example.com")},
 		}
 
-		// Act — expects error from DecryptPrivateKey (fake key), but deployCertificateContract must NOT be called
-		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, currentUser)
+		// Act — deployCertificateContract must NOT be called (would panic), but CreateEventCertificate will error to stop execution
+		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, ImportCertificateReceiversOptions{HostPin: &hostPin}, currentUser)
 
-		// Assert
-		assert.Error(t, err) // Error from DecryptPrivateKey with fake key
+		// Assert — error came from CreateEventCertificate mock, not from deployCertificateContract panic
+		assert.Error(t, err)
 		assert.Nil(t, result)
 		// No panic = deployCertificateContract was never called
 	})

@@ -13,8 +13,8 @@ import { useTranslation } from "react-i18next";
 import { useMyProfile } from "@/hooks/useMyProfile";
 import { useUpdateProfile } from "@/hooks/profile/useUpdateProfile";
 import { useNavigate } from "@/router";
-import { useEffect, useMemo } from "react";
-import { Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Loader2, Copy, Check } from "lucide-react";
 import { PrivateNavbar } from "@/components/layouts/navigations/PrivateNavbar";
 import { AxiosError, isAxiosError } from "axios";
 import { toast } from "sonner";
@@ -99,6 +99,14 @@ export const EditProfilePage: React.FC = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { data: profile, isLoading: isLoadingProfile } = useMyProfile();
+    const [copied, setCopied] = useState(false);
+
+    const handleCopyWalletAddress = () => {
+        if (!profile?.walletAddress) return;
+        navigator.clipboard.writeText(profile.walletAddress);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
     const { updateProfile, isLoading: isUpdating } = useUpdateProfile();
 
     const statusMap = useMemo<
@@ -352,12 +360,27 @@ export const EditProfilePage: React.FC = () => {
                                         <Label className="text-base leading-[15px] [text-shadow:rgba(255,255,255,0.3)_0px_0px_4px] tracking-[0.06px] font-normal text-background">
                                             {t("profile.wallet")}
                                         </Label>
-                                        <Input
-                                            value={profile?.walletAddress || ""}
-                                            readOnly
-                                            disabled
-                                            className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.3)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background/70 cursor-not-allowed"
-                                        />
+                                        <div className="relative">
+                                            <Input
+                                                value={profile?.walletAddress || ""}
+                                                readOnly
+                                                disabled
+                                                className="w-full h-12 backdrop-blur-[2px] backdrop-filter bg-[rgba(252,252,252,0.3)] border-[#b8b8b8] border-[0.5px] rounded-[12px] text-background/70 cursor-not-allowed pr-10"
+                                            />
+                                            {profile?.walletAddress && (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleCopyWalletAddress}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-background/70 hover:text-background transition-colors cursor-pointer"
+                                                >
+                                                    {copied ? (
+                                                        <Check size={16} />
+                                                    ) : (
+                                                        <Copy size={16} />
+                                                    )}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
 
                                     {/* Google OAuth Email (if exists) */}

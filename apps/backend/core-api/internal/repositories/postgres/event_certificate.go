@@ -39,10 +39,18 @@ func (r *Repository) CreateEventCertificate(ctx context.Context, params event_da
 		return nil, err
 	}
 
+	// Normalize wallet address to lowercase for case-insensitive comparison
+	normalizedWalletAddress := params.ReceiverWalletAddress
+	if params.ReceiverWalletAddress != nil && *params.ReceiverWalletAddress != "" {
+		lowercaseWallet := strings.ToLower(*params.ReceiverWalletAddress)
+		normalizedWalletAddress = &lowercaseWallet
+	}
+
 	result, err := r.queries.CreateEventCertificate(ctx, generated.CreateEventCertificateParams{
 		EventID:                 params.EventID,
 		ReceiverCredentialID:    pgmapper.UUIDPtrToPgUUID(params.ReceiverCredentialID),
 		ReceiverEmail:           receiverEmailEnc,
+		ReceiverWalletAddress:   pgmapper.StringPtrToPgText(normalizedWalletAddress),
 		Name:                    nameEnc,
 		AcademicInstitution:     academicInstitutionEnc,
 		CertificateTitle:        pgmapper.StringPtrToPgText(params.CertificateTitle),
@@ -78,6 +86,7 @@ func (r *Repository) CreateEventCertificate(ctx context.Context, params event_da
 		EventId:                 result.EventID,
 		ReceiverCredentialId:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 		ReceiverEmail:           receiverEmailDec,
+		ReceiverWalletAddress:   pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 		Name:                    nameDec,
 		AcademicInstitution:     academicInstitutionDec,
 		CertificateTitle:        pgmapper.PgTextToStringPtr(result.CertificateTitle),

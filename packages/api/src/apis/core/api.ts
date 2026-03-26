@@ -220,9 +220,21 @@ export interface CoreApiInternalHandlerEventEventResponse {
     updated_at: string;
 }
 
+export interface CoreApiInternalHandlerEventGetCertificateImportSignMessageResponse {
+    event_certificate_address: string;
+    sign_message: string;
+}
+
 export interface CoreApiInternalHandlerEventImportCertificateReceiversRequest {
     event_id: string;
-    host_pin: string;
+    /** PIN-based path (non-BYOK users): provide host_pin to decrypt server-side key */
+    host_pin?: string;
+    /**
+     * Wallet-based path (BYOK users): provide the sign_message returned by the sign-message endpoint
+     * and the wallet signature over that message
+     */
+    host_sign_message?: string;
+    host_signature?: string;
     /** @minItems 1 */
     receivers: EventImportCertificateReceiverRequest[];
 }
@@ -595,6 +607,7 @@ export interface EntityEventCertificate {
     name?: string;
     receiver_credential_id?: string;
     receiver_email?: string;
+    receiver_wallet_address?: string;
     revoked_at?: string;
     signature_created_at?: string;
     user_claim_signature_id?: string;
@@ -716,6 +729,7 @@ export interface EventClaimedCertificateViewModel {
     name?: string;
     receiver_credential_id?: string;
     receiver_email?: string;
+    receiver_wallet_address?: string;
     revoked_at?: string;
     signature_created_at?: string;
     status: string;
@@ -808,6 +822,12 @@ export interface EventEventViewModel {
     updated_at: string;
 }
 
+export interface EventGetCertificateImportSignMessageRequest {
+    event_id: string;
+    /** @minItems 1 */
+    receivers: EventImportCertificateReceiverRequest[];
+}
+
 export interface EventGetCertificatesListViewModelResponse {
     claimed_certificates: any;
     total_claimed: number;
@@ -827,9 +847,10 @@ export interface EventImportCertificateReceiverRequest {
     academic_institution: string;
     certificate_subtitle: string;
     certificate_title: string;
-    email: string;
+    email?: string;
     first_name: string;
     last_name: string;
+    wallet_address?: string;
 }
 
 export interface EventRegistrationConfigResponse {
@@ -937,6 +958,7 @@ export interface EventUnclaimedCertificateViewModel {
     name?: string;
     receiver_credential_id?: string;
     receiver_email?: string;
+    receiver_wallet_address?: string;
     revoked_at?: string;
     signature_created_at?: string;
     user_claim_signature_id?: string;
@@ -1086,6 +1108,16 @@ export interface GenerateCertificateImageParams {
      * @format uuid
      */
     certificateId: string;
+}
+
+export type GetCertificateImportSignMessageData =
+    CoreApiInternalHandlerEventGetCertificateImportSignMessageResponse;
+
+export type GetCertificateImportSignMessageError = CustomerrorErrResponse;
+
+export interface GetCertificateImportSignMessageParams {
+    /** Event ID */
+    eventId: string;
 }
 
 export type GetCertificateShareDataData = CertificateShareHandlerCertificateShareDataResponse;
@@ -2868,6 +2900,31 @@ export class Api<SecurityDataType extends unknown> {
         ) =>
             this.http.request<ImportCertificateReceiversData, ImportCertificateReceiversError>({
                 path: `/api/v1/events/${eventId}/certificates/import`,
+                method: "POST",
+                body: request,
+                type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Deploys the certificate contract if not yet deployed, computes receiver hashes, and returns the sign message JSON that the host must sign with their wallet before calling the import endpoint.
+         *
+         * @tags Event Certificates
+         * @name GetCertificateImportSignMessage
+         * @summary Get sign message for certificate import (BYOK wallet users)
+         * @request POST:/api/v1/events/{event_id}/certificates/import/sign-message
+         */
+        getCertificateImportSignMessage: (
+            { eventId, ...query }: GetCertificateImportSignMessageParams,
+            request: EventGetCertificateImportSignMessageRequest,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<
+                GetCertificateImportSignMessageData,
+                GetCertificateImportSignMessageError
+            >({
+                path: `/api/v1/events/${eventId}/certificates/import/sign-message`,
                 method: "POST",
                 body: request,
                 type: ContentType.Json,

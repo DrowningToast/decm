@@ -329,11 +329,30 @@ definitions:
     - title
     - updated_at
     type: object
+  core-api_internal_handler_event.GetCertificateImportSignMessageResponse:
+    properties:
+      event_certificate_address:
+        type: string
+      sign_message:
+        type: string
+    required:
+    - event_certificate_address
+    - sign_message
+    type: object
   core-api_internal_handler_event.ImportCertificateReceiversRequest:
     properties:
       event_id:
         type: string
       host_pin:
+        description: 'PIN-based path (non-BYOK users): provide host_pin to decrypt
+          server-side key'
+        type: string
+      host_sign_message:
+        description: |-
+          Wallet-based path (BYOK users): provide the sign_message returned by the sign-message endpoint
+          and the wallet signature over that message
+        type: string
+      host_signature:
         type: string
       receivers:
         items:
@@ -342,7 +361,6 @@ definitions:
         type: array
     required:
     - event_id
-    - host_pin
     - receivers
     type: object
   core-api_internal_handler_event.ImportCertificateReceiversResponse:
@@ -898,6 +916,8 @@ definitions:
         type: string
       receiver_email:
         type: string
+      receiver_wallet_address:
+        type: string
       revoked_at:
         type: string
       signature_created_at:
@@ -1159,6 +1179,8 @@ definitions:
         type: string
       receiver_email:
         type: string
+      receiver_wallet_address:
+        type: string
       revoked_at:
         type: string
       signature_created_at:
@@ -1381,6 +1403,19 @@ definitions:
     - title
     - updated_at
     type: object
+  event.GetCertificateImportSignMessageRequest:
+    properties:
+      event_id:
+        type: string
+      receivers:
+        items:
+          $ref: '#/definitions/event.ImportCertificateReceiverRequest'
+        minItems: 1
+        type: array
+    required:
+    - event_id
+    - receivers
+    type: object
   event.GetCertificatesListViewModelResponse:
     properties:
       claimed_certificates: {}
@@ -1427,11 +1462,12 @@ definitions:
         type: string
       last_name:
         type: string
+      wallet_address:
+        type: string
     required:
     - academic_institution
     - certificate_subtitle
     - certificate_title
-    - email
     - first_name
     - last_name
     type: object
@@ -1516,6 +1552,8 @@ definitions:
       receiver_credential_id:
         type: string
       receiver_email:
+        type: string
+      receiver_wallet_address:
         type: string
       revoked_at:
         type: string
@@ -4009,6 +4047,52 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Import certificate receivers for an event
+      tags:
+      - Event Certificates
+  /api/v1/events/{event_id}/certificates/import/sign-message:
+    post:
+      consumes:
+      - application/json
+      description: Deploys the certificate contract if not yet deployed, computes
+        receiver hashes, and returns the sign message JSON that the host must sign
+        with their wallet before calling the import endpoint.
+      operationId: get-certificate-import-sign-message
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Receivers to import
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/event.GetCertificateImportSignMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core-api_internal_handler_event.GetCertificateImportSignMessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get sign message for certificate import (BYOK wallet users)
       tags:
       - Event Certificates
   /api/v1/events/{event_id}/certificates/list-viewmodel:

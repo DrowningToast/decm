@@ -15,11 +15,17 @@ import (
 type ImportCertificateReceiversRequest struct {
 	EventID   uuid.UUID                          `json:"event_id" validate:"required"`
 	Receivers []ImportCertificateReceiverRequest `json:"receivers" validate:"required,min=1"`
-	HostPin   string                             `json:"host_pin" validate:"required"`
+	// PIN-based path (non-BYOK users): provide host_pin to decrypt server-side key
+	HostPin *string `json:"host_pin,omitempty"`
+	// Wallet-based path (BYOK users): provide the sign_message returned by the sign-message endpoint
+	// and the wallet signature over that message
+	HostSignMessage *string `json:"host_sign_message,omitempty"`
+	HostSignature   *string `json:"host_signature,omitempty"`
 }
 
 type ImportCertificateReceiverRequest struct {
-	Email               string  `json:"email" validate:"required,email"`
+	Email               *string `json:"email,omitempty"`
+	WalletAddress       *string `json:"wallet_address,omitempty"`
 	FirstName           *string `json:"first_name"`
 	LastName            *string `json:"last_name"`
 	AcademicInstitution *string `json:"academic_institution"`
@@ -62,17 +68,23 @@ func (h Handler) ImportCertificateReceivers(ctx *fiber.Ctx) error {
 	requests := make([]event.ImportCertificateReceiversRequest, 0, len(requestBody.Receivers))
 	for _, receiver := range requestBody.Receivers {
 		requests = append(requests, event.ImportCertificateReceiversRequest{
-			Email:               receiver.Email,               // Required string
-			FirstName:           receiver.FirstName,           // Already *string
-			LastName:            receiver.LastName,            // Already *string
-			AcademicInstitution: receiver.AcademicInstitution, // Already *string
-			CertificateTitle:    receiver.CertificateTitle,    // Already *string
-			CertificateSubtitle: receiver.CertificateSubtitle, // Already *string
-			HostPin:             requestBody.HostPin,
+			Email:               receiver.Email,
+			WalletAddress:       receiver.WalletAddress,
+			FirstName:           receiver.FirstName,
+			LastName:            receiver.LastName,
+			AcademicInstitution: receiver.AcademicInstitution,
+			CertificateTitle:    receiver.CertificateTitle,
+			CertificateSubtitle: receiver.CertificateSubtitle,
 		})
 	}
 
-	response, err := h.EventUc.ImportCertificateReceivers(ctx.UserContext(), requestBody.EventID, requests, currentUser)
+	importOpts := event.ImportCertificateReceiversOptions{
+		HostPin:         requestBody.HostPin,
+		HostSignMessage: requestBody.HostSignMessage,
+		HostSignature:   requestBody.HostSignature,
+	}
+
+	response, err := h.EventUc.ImportCertificateReceivers(ctx.UserContext(), requestBody.EventID, requests, importOpts, currentUser)
 	if err != nil {
 		return err
 	}
@@ -92,10 +104,26 @@ func (r *ImportCertificateReceiversRequest) IsValid() error {
 		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("at least one receiver is required"))
 	}
 
-	// Validate that each receiver has a required email
+	// Exactly one auth path must be used:
+	// PIN path: host_pin present
+	// Wallet path: both host_sign_message and host_signature present
+	hasPin := r.HostPin != nil && *r.HostPin != ""
+	hasWalletSig := r.HostSignMessage != nil && *r.HostSignMessage != "" &&
+		r.HostSignature != nil && *r.HostSignature != ""
+	if hasPin == hasWalletSig {
+		return customerror.Parse(&customerror.ErrInvalidArgument,
+			errors.New("must provide either host_pin (PIN-based) or both host_sign_message and host_signature (wallet-based)"))
+	}
+
+	// Validate that each receiver has exactly one of email or wallet_address
 	for i, receiver := range r.Receivers {
-		if receiver.Email == "" {
-			return customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("receiver at index %d: email is required", i))
+		hasEmail := receiver.Email != nil && *receiver.Email != ""
+		hasWallet := receiver.WalletAddress != nil && *receiver.WalletAddress != ""
+		if hasEmail == hasWallet {
+			return customerror.Parse(
+				&customerror.ErrInvalidArgument,
+				fmt.Errorf("receiver at index %d: must have exactly one of email or wallet_address, not both and not neither", i),
+			)
 		}
 	}
 
