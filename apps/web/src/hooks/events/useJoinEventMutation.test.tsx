@@ -8,6 +8,7 @@ import { useJoinEventMutation } from "./useJoinEventMutation";
 vi.mock("@/services/services", () => ({
     eventRegistrationService: {
         joinEventWithAccountPassword: vi.fn(),
+        joinEventWithSignature: vi.fn(),
     },
 }));
 
@@ -34,6 +35,7 @@ vi.mock("sonner", () => ({
 }));
 
 import { eventRegistrationService } from "@/services/services";
+import { act } from "@testing-library/react";
 
 const createWrapper = () => {
     const queryClient = new QueryClient({
@@ -213,6 +215,88 @@ describe("useJoinEventMutation", () => {
             await waitFor(() => expect(result.current.joinWithEventPassword.isError).toBe(true));
 
             expect(toast.error).toHaveBeenCalledWith("events.registration.piiForm.submitError");
+        });
+    });
+
+    describe("joinWithSignature", () => {
+        it("should call joinEventWithSignature with correct params", async () => {
+            vi.mocked(eventRegistrationService.joinEventWithSignature).mockResolvedValue(undefined);
+
+            const { result } = renderHook(() => useJoinEventMutation(), {
+                wrapper: createWrapper(),
+            });
+
+            act(() => {
+                result.current.joinWithSignature.mutate({
+                    eventId: "event-1",
+                    originalSignMessage: "0xWallet,0xContract,18500000",
+                    signature: "0xsig",
+                    registrationData,
+                });
+            });
+
+            await waitFor(() => expect(result.current.joinWithSignature.isSuccess).toBe(true));
+
+            expect(eventRegistrationService.joinEventWithSignature).toHaveBeenCalledWith({
+                eventId: "event-1",
+                originalSignMessage: "0xWallet,0xContract,18500000",
+                signature: "0xsig",
+                registrationData,
+            });
+        });
+
+        it("should show success toast on success", async () => {
+            vi.mocked(eventRegistrationService.joinEventWithSignature).mockResolvedValue(undefined);
+
+            const { result } = renderHook(() => useJoinEventMutation(), {
+                wrapper: createWrapper(),
+            });
+
+            act(() => {
+                result.current.joinWithSignature.mutate({
+                    eventId: "event-1",
+                    originalSignMessage: "0xWallet,0xContract,18500000",
+                    signature: "0xsig",
+                    registrationData,
+                });
+            });
+
+            await waitFor(() => expect(result.current.joinWithSignature.isSuccess).toBe(true));
+
+            expect(toast.success).toHaveBeenCalledWith("events.registration.piiForm.submitSuccess");
+        });
+
+        it("should show error toast on failure", async () => {
+            vi.mocked(eventRegistrationService.joinEventWithSignature).mockRejectedValue(
+                new Error("Signature invalid"),
+            );
+
+            const { result } = renderHook(() => useJoinEventMutation(), {
+                wrapper: createWrapper(),
+            });
+
+            act(() => {
+                result.current.joinWithSignature.mutate({
+                    eventId: "event-1",
+                    originalSignMessage: "0xWallet,0xContract,18500000",
+                    signature: "0xbadsig",
+                    registrationData,
+                });
+            });
+
+            await waitFor(() => expect(result.current.joinWithSignature.isError).toBe(true));
+
+            expect(toast.error).toHaveBeenCalledWith("events.registration.piiForm.submitError");
+        });
+
+        it("should start with idle status", () => {
+            const { result } = renderHook(() => useJoinEventMutation(), {
+                wrapper: createWrapper(),
+            });
+
+            expect(result.current.joinWithSignature.isPending).toBe(false);
+            expect(result.current.joinWithSignature.isSuccess).toBe(false);
+            expect(result.current.joinWithSignature.isError).toBe(false);
         });
     });
 });

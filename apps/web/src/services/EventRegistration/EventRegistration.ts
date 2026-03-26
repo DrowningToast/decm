@@ -161,6 +161,11 @@ export class EventRegistrationService {
         return;
     }
 
+    public async getJoinEventSignMessage(eventId: string): Promise<string> {
+        const response = await this._coreApi.v1.getJoinEventSignMessage({ eventId });
+        return response.sign_message;
+    }
+
     public async joinEventWithSignature({
         eventId,
         originalSignMessage,

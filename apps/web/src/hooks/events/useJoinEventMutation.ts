@@ -5,6 +5,22 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/context/AuthContext";
 
+interface JoinEventWithSignatureParams {
+    eventId: string;
+    originalSignMessage: string;
+    signature: string;
+    registrationData: {
+        firstName?: string;
+        lastName?: string;
+        bio?: string;
+        email?: string;
+        phoneNumber?: string;
+        address?: string;
+        academicEmail?: string;
+        academicInstitution?: string;
+    };
+}
+
 interface JoinEventWithPasswordParams {
     eventId: string;
     accountPassword: string;
@@ -177,8 +193,65 @@ export const useJoinEventMutation = () => {
         },
     });
 
+    const joinWithSignature = useMutation({
+        mutationFn: async (params: JoinEventWithSignatureParams) => {
+            return await eventRegistrationService.joinEventWithSignature({
+                eventId: params.eventId,
+                originalSignMessage: params.originalSignMessage,
+                signature: params.signature,
+                registrationData: params.registrationData as {
+                    firstName: string | undefined;
+                    lastName: string | undefined;
+                    bio: string | undefined;
+                    email: string | undefined;
+                    phoneNumber: string | undefined;
+                    address: string | undefined;
+                    academicEmail: string | undefined;
+                    academicInstitution: string | undefined;
+                },
+            });
+        },
+        onSuccess: (_, variables) => {
+            toast.success(t("events.registration.piiForm.submitSuccess"));
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEY.event.viewmodel(
+                    variables.eventId,
+                    user?.authenticationCredentialId,
+                ),
+            });
+            queryClient.invalidateQueries({
+                queryKey: ["event", variables.eventId, "viewmodel"],
+            });
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEY.event.byId(variables.eventId),
+            });
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEY.event.registrationConfig(variables.eventId),
+            });
+            queryClient.invalidateQueries({
+                queryKey: ["event", variables.eventId, "invitations"],
+            });
+            if (user?.walletAddress) {
+                queryClient.invalidateQueries({
+                    queryKey: QUERY_KEY.event.invitations.ofUserAndEventId(
+                        variables.eventId,
+                        user.walletAddress,
+                    ),
+                });
+            }
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEY.event.attendees.byEventId(variables.eventId),
+            });
+        },
+        onError: (error) => {
+            console.error("Failed to join event with wallet signature:", error);
+            toast.error(t("events.registration.piiForm.submitError"));
+        },
+    });
+
     return {
         joinWithAccountPassword,
         joinWithEventPassword,
+        joinWithSignature,
     };
 };

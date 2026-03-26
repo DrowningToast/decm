@@ -4,6 +4,7 @@ import (
 	"apps/backend/common/validatorutils"
 	"apps/backend/core-api/internal/entity"
 	"encoding/hex"
+	"strings"
 
 	customerror "apps/backend/common/customerror"
 
@@ -137,7 +138,8 @@ func (h *Handler) JoinEvent(ctx *fiber.Ctx) error {
 	}
 
 	if req.Signature != nil {
-		signature, err := hex.DecodeString(*req.Signature)
+		sigHex := strings.TrimPrefix(*req.Signature, "0x")
+		signature, err := hex.DecodeString(sigHex)
 		if err != nil {
 			return customerror.Parse(&customerror.ErrInvalidArgument, err)
 		}

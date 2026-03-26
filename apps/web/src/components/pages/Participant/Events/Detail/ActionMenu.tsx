@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { BottomNav } from "@/components/BottomNav/BottomNav";
 import { Typography } from "@/components/typography/typography";
 import { useEventViewModelUsecase } from "./useEventViewModelUsecase";
@@ -11,6 +11,12 @@ import type { RegistrationConfirmDataForm } from "./RegistrationConfirmDataFormS
 import { useSignPasswordModalStore } from "@/components/providers/SignPasswordModal/store";
 import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
 import { useJoinEventMutation } from "@/hooks/events/useJoinEventMutation";
+import { walletSigningService, eventRegistrationService } from "@/services/services";
+import {
+    WalletNotConnectedError,
+    WalletSigningRejectedError,
+} from "@/services/WalletSigningService/WalletSigningService";
+import { toast } from "sonner";
 
 interface ActionMenuProps {
     eventId: string;
@@ -19,7 +25,8 @@ interface ActionMenuProps {
 export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
     const { t, i18n } = useTranslation();
     const { user } = useAuth();
-    const { joinWithAccountPassword } = useJoinEventMutation();
+    const { joinWithAccountPassword, joinWithSignature } = useJoinEventMutation();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { bottomNavVariant, event: eventViewModel } = useEventViewModelUsecase({ eventId });
     const { showPreviewModal: _showPreviewModal, closePreviewModal } =
@@ -137,33 +144,58 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
         : "";
 
     const handleSubmit = async (data: RegistrationConfirmDataForm) => {
+        setIsSubmitting(true);
         try {
-            // password check
-            const checkedPassword = await openPasswordPrompt({
-                eventContractAddress: eventViewModel?.eventContractAddress ?? "",
-                transactionType: "Registration Confirmation",
-                title: t("participant.events.detail.instruction.passwordRequired"),
-                description: t("participant.events.detail.instruction.signatureRequest"),
-                details: `Confirming registration for ${eventViewModel?.title}`,
-            });
+            if (!registrationInvitation) {
+                throw new Error("No registration invitation found");
+            }
 
-            if (registrationInvitation) {
+            if (user?.solutionStatus === "BYOK") {
+                // BYOK flow: sign with wallet
+                const signMessage = await eventRegistrationService.getJoinEventSignMessage(eventId);
+                let signature: string;
+                try {
+                    signature = await walletSigningService.signMessage(signMessage);
+                } catch (error) {
+                    if (error instanceof WalletNotConnectedError) {
+                        toast.error(t("errors.walletNotConnected", "Wallet is not connected"));
+                    } else if (error instanceof WalletSigningRejectedError) {
+                        toast.error(t("errors.walletSigningRejected", "Signing request rejected"));
+                    } else {
+                        toast.error(t("errors.generic"));
+                    }
+                    return;
+                }
+                await joinWithSignature.mutateAsync({
+                    eventId,
+                    originalSignMessage: signMessage,
+                    signature,
+                    registrationData: data,
+                });
+            } else {
+                // SYSTEM_MANAGED flow: use account password
+                const checkedPassword = await openPasswordPrompt({
+                    eventContractAddress: eventViewModel?.eventContractAddress ?? "",
+                    transactionType: "Registration Confirmation",
+                    title: t("participant.events.detail.instruction.passwordRequired"),
+                    description: t("participant.events.detail.instruction.signatureRequest"),
+                    details: `Confirming registration for ${eventViewModel?.title}`,
+                });
                 await joinWithAccountPassword.mutateAsync({
                     eventId,
                     accountPassword: checkedPassword,
                     registrationData: data,
                 });
-            } else {
-                throw new Error("No registration invitation or event password found");
             }
 
             // Close modal after successful join
-            // The mutation's onSuccess handler will invalidate and refetch all relevant queries
             closePreviewModal();
         } catch (error) {
             console.error("Failed to submit Registration Confirm data:", error);
             // Error toast is handled by the mutation hook
             // Don't close modal on error so user can retry
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -188,7 +220,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ eventId }) => {
                         eventId={eventId}
                         onSubmit={handleSubmit}
                         onCancel={handleCancel}
-                        isSubmitting={joinWithAccountPassword.isPending}
+                        isSubmitting={isSubmitting}
                         profileData={prefilledProfile}
                         invitationData={registrationInvitation}
                     />

@@ -13,6 +13,7 @@ vi.mock("@/lib/api/api", () => ({
             getEventRegistrationInvitationByUserAndEvent: vi.fn(),
             updateEventRegistrationConfig: vi.fn(),
             joinEvent: vi.fn(),
+            getJoinEventSignMessage: vi.fn(),
         },
     },
 }));
@@ -286,40 +287,69 @@ describe("EventRegistrationService", () => {
         });
     });
 
-    describe("joinEventWithSignature", () => {
-        it("should join event with signature", async () => {
-            vi.mocked(mockCoreApi.v1.joinEvent).mockResolvedValue({
-                id: "attendee-1",
-                event_id: "event-1",
-                attendee_credential_id: "cred-1",
-                contract_address: "0x123",
-                wallet_address: "0xabc",
-                created_at: "2024-01-01T00:00:00Z",
-                is_attendee_accepted: true,
-                updated_at: "2024-01-01T00:00:00Z",
+    describe("getJoinEventSignMessage", () => {
+        it("should return the sign message string from the API", async () => {
+            vi.mocked(mockCoreApi.v1.getJoinEventSignMessage).mockResolvedValue({
+                sign_message: "0xUserWallet,0xEventContract,18500000",
             });
+
+            const result = await eventRegistrationService.getJoinEventSignMessage("event-1");
+
+            expect(mockCoreApi.v1.getJoinEventSignMessage).toHaveBeenCalledWith({
+                eventId: "event-1",
+            });
+            expect(result).toBe("0xUserWallet,0xEventContract,18500000");
+        });
+
+        it("should propagate errors from the API", async () => {
+            vi.mocked(mockCoreApi.v1.getJoinEventSignMessage).mockRejectedValue(
+                new Error("Not found"),
+            );
+
+            await expect(
+                eventRegistrationService.getJoinEventSignMessage("event-1"),
+            ).rejects.toThrow("Not found");
+        });
+    });
+
+    describe("joinEventWithSignature", () => {
+        const mockAttendeeResponse = {
+            id: "attendee-1",
+            event_id: "event-1",
+            attendee_credential_id: "cred-1",
+            contract_address: "0x123",
+            wallet_address: "0xabc",
+            created_at: "2024-01-01T00:00:00Z",
+            is_attendee_accepted: true,
+            updated_at: "2024-01-01T00:00:00Z",
+        };
+
+        const registrationData = {
+            firstName: "John",
+            lastName: "Doe",
+            email: "john@example.com",
+            bio: undefined,
+            phoneNumber: undefined,
+            address: undefined,
+            academicEmail: undefined,
+            academicInstitution: undefined,
+        };
+
+        it("should join event with signature", async () => {
+            vi.mocked(mockCoreApi.v1.joinEvent).mockResolvedValue(mockAttendeeResponse);
 
             await eventRegistrationService.joinEventWithSignature({
                 eventId: "event-1",
                 originalSignMessage: "Sign this message",
-                signature: "sig-123",
-                registrationData: {
-                    firstName: "John",
-                    lastName: "Doe",
-                    email: "john@example.com",
-                    bio: undefined,
-                    phoneNumber: undefined,
-                    address: undefined,
-                    academicEmail: undefined,
-                    academicInstitution: undefined,
-                },
+                signature: "0xabcdef1234567890",
+                registrationData,
             });
 
             expect(mockCoreApi.v1.joinEvent).toHaveBeenCalledWith(
                 { eventId: "event-1" },
                 {
                     sign_message: "Sign this message",
-                    signature: "sig-123",
+                    signature: "0xabcdef1234567890",
                     registration_data: {
                         first_name: "John",
                         last_name: "Doe",
