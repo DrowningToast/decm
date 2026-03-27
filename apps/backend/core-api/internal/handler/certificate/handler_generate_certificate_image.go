@@ -33,11 +33,17 @@ func (h *Handler) GenerateCertificateImage(ctx *fiber.Ctx) error {
 	}
 
 	// 3. Generate the certificate image with authorization checks
+	var walletAddress *string
+	if currentUser.WalletAddress != "" {
+		wa := currentUser.WalletAddress
+		walletAddress = &wa
+	}
 	pngBytes, err := h.EventUc.GenerateCertificateImageForParticipant(
 		ctx.Context(),
 		certificateID,
 		currentUser.UserId,
 		currentUser.Email,
+		walletAddress,
 	)
 	if err != nil {
 		h.Logger.Error("Failed to generate certificate image",
