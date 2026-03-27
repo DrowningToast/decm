@@ -8,6 +8,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
@@ -37,6 +38,8 @@ func (uc *CertificateShareUsecase) CreateCertificateShare(ctx context.Context, c
 		isOwner = *certificate.ReceiverCredentialId == currentUser.UserId
 	} else if certificate.ReceiverEmail != nil {
 		isOwner = currentUser.Email != nil && *currentUser.Email == *certificate.ReceiverEmail
+	} else if certificate.ReceiverWalletAddress != nil {
+		isOwner = strings.EqualFold(currentUser.WalletAddress, *certificate.ReceiverWalletAddress)
 	}
 	if !isOwner {
 		return nil, customerror.Parse(&customerror.ErrForbidden, errors.New("not authorized to share this certificate"))

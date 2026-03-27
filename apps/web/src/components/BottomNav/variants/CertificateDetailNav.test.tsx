@@ -14,11 +14,14 @@ vi.mock("../context", () => ({
 }));
 
 const mockSetIsShareModalOpen = vi.fn();
+const mockOnClickShareable = vi.fn();
 
 vi.mock("../stores/certificates", () => ({
     useCertificateDetailNavStore: vi.fn(() => ({
         certificateId: "cert-1",
         isClaimed: true,
+        onClickShareable: mockOnClickShareable,
+        isShareableLoading: false,
         setIsShareModalOpen: mockSetIsShareModalOpen,
     })),
 }));
@@ -44,6 +47,8 @@ describe("CertificateDetailNav", () => {
         vi.mocked(useCertificateDetailNavStore).mockReturnValue({
             certificateId: "cert-1",
             isClaimed: true,
+            onClickShareable: mockOnClickShareable,
+            isShareableLoading: false,
             setIsShareModalOpen: mockSetIsShareModalOpen,
         } as ReturnType<typeof useCertificateDetailNavStore>);
     });
@@ -76,29 +81,38 @@ describe("CertificateDetailNav", () => {
         expect(screen.queryByRole("button", { name: /download/i })).not.toBeInTheDocument();
     });
 
-    it("shows share certificate button when claimed", () => {
+    it("shows share button when claimed", () => {
         render(<CertificateDetailNav />);
-        expect(screen.getByRole("button", { name: /share certificate/i })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /^share$/i })).toBeInTheDocument();
     });
 
-    it("hides share certificate button when not claimed", () => {
+    it("hides share button when not claimed", () => {
         vi.mocked(useCertificateDetailNavStore).mockReturnValue({
             certificateId: "cert-1",
             isClaimed: false,
+            onClickShareable: mockOnClickShareable,
+            isShareableLoading: false,
             setIsShareModalOpen: mockSetIsShareModalOpen,
         } as ReturnType<typeof useCertificateDetailNavStore>);
 
         render(<CertificateDetailNav />);
-        expect(
-            screen.queryByRole("button", { name: /share certificate/i }),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: /^share$/i })).not.toBeInTheDocument();
     });
 
-    it("calls setIsShareModalOpen(true) when share button is clicked", async () => {
+    it("calls onClickShareable when share button is clicked and no shareable exists", async () => {
         const user = userEvent.setup();
         render(<CertificateDetailNav />);
-        await user.click(screen.getByRole("button", { name: /share certificate/i }));
+        await user.click(screen.getByRole("button", { name: /^share$/i }));
+        expect(mockOnClickShareable).toHaveBeenCalledOnce();
+        expect(mockSetIsShareModalOpen).not.toHaveBeenCalled();
+    });
+
+    it("calls setIsShareModalOpen(true) when share button is clicked and shareable exists", async () => {
+        const user = userEvent.setup();
+        render(<CertificateDetailNav overrideShowCreateShareButton={false} />);
+        await user.click(screen.getByRole("button", { name: /^share$/i }));
         expect(mockSetIsShareModalOpen).toHaveBeenCalledWith(true);
+        expect(mockOnClickShareable).not.toHaveBeenCalled();
     });
 
     it("calls getCertificateImage on download click", async () => {

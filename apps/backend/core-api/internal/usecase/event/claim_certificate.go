@@ -105,7 +105,15 @@ func (uc *EventUsecase) CheckClaimEligibility(ctx context.Context, certificate *
 		return nil
 	}
 
-	// If no receiver credential or email is set, anyone can claim (open certificate)
+	// Check if user is the intended receiver by wallet address (for BYOK users)
+	if certificate.ReceiverWalletAddress != nil {
+		if !strings.EqualFold(currentUser.WalletAddress, *certificate.ReceiverWalletAddress) {
+			return customerror.NewWithPreset(&customerror.ErrUnauthorized, errors.New(string(ClaimCertificateUserErrorNotEligible)))
+		}
+		return nil
+	}
+
+	// If no receiver credential, email, or wallet address is set, anyone can claim (open certificate)
 	return nil
 }
 
