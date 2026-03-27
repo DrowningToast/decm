@@ -9,9 +9,14 @@ import { useEventCertificates } from "@/hooks/useEventCertificates";
 import { useEventCertificateConfig } from "@/components/pages/HostPages/EventPages/useEventCertificateConfig";
 import { useEventContract } from "@/hooks/events/useEventContracts";
 import { useSignEventCertificates } from "@/hooks/useSignEventCertificates";
+import { useAuth } from "@/context/AuthContext";
+import { certificateService } from "@/services/services";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ChevronLeft, ExternalLinkIcon, CheckCircle, Clock } from "lucide-react";
-import { PasswordPinModal } from "@/components/ui/password-pin-modal";
+import {
+    PasswordPinModal,
+    type PasswordPinModalSuccessResult,
+} from "@/components/ui/password-pin-modal";
 import { TextLabelValue } from "@/components/ui/text-label-value";
 import { DataTable } from "@/components/ui/data-table";
 import { useCertificateColumns } from "@/components/pages/HostPages/EventsPage/columns/CertificateColumns";
@@ -19,7 +24,6 @@ import { formatEthereumAddress } from "@/lib/utils";
 import SectionContainer from "@/components/container/SectionContainer";
 import { IssuerStatusBadge } from "./IssuerStatusBadge";
 import { IssuersStatus } from "./IssuersStatus";
-import { useAuth } from "@/context/AuthContext";
 import { CertificatePreview } from "@/components/CertificatePreview";
 import { useFetchedCertificateSvg } from "@/components/pages/HostPages/EventPages/useFetchedCertificateSvg";
 import type { CertificateFontConfig } from "@/lib/certificateRenderer";
@@ -33,7 +37,9 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [showPinModal, setShowPinModal] = useState(false);
+    const [byokSignMessage, setByokSignMessage] = useState<string | undefined>(undefined);
     const { user: currentUser } = useAuth();
+    const isByok = currentUser?.solutionStatus === "BYOK";
 
     // Fetch event data
     const { event, isLoadingEventError } = useEvent(eventId);
@@ -152,7 +158,16 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
     // Get certificate columns
     const certificateColumns = useCertificateColumns();
 
-    const handleSignCertificates = () => {
+    const handleSignCertificates = async () => {
+        if (isByok) {
+            try {
+                const signMessage = await certificateService.getIssuerSignMessage(eventId);
+                setByokSignMessage(signMessage);
+            } catch {
+                // modal will open but wallet signing will use signingDetails.details fallback
+                setByokSignMessage(undefined);
+            }
+        }
         setShowPinModal(true);
     };
 
@@ -164,11 +179,19 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
         setShowPinModal(false);
     };
 
-    const handleSignWithPin = (pin: string) => {
-        signEventCertificates({
-            eventId,
-            issuerPin: pin,
-        });
+    const handleModalSuccess = (result: PasswordPinModalSuccessResult) => {
+        if (result.type === "wallet") {
+            signEventCertificates({
+                eventId,
+                issuerSignMessage: result.signMessage,
+                issuerSignature: result.signature,
+            });
+        } else {
+            signEventCertificates({
+                eventId,
+                issuerPin: result.value,
+            });
+        }
     };
 
     if (isLoadingEventError || !event) {
@@ -666,14 +689,14 @@ export default function IssuerSignPage({ eventId }: IssuerSignPageProps) {
                 <PasswordPinModal
                     isOpen={showPinModal}
                     onClose={handlePinModalClose}
-                    onSuccess={(result: { type: "pin" | "password"; value: string }) => {
-                        handleSignWithPin(result.value);
-                    }}
+                    onSuccess={handleModalSuccess}
                     title={t("issuer.sign.signatureRequest")}
                     description={t("issuer.sign.signatureRequestDescription")}
                     showSigningDetails={true}
+                    allowWalletSigning={isByok}
+                    walletSignMessage={byokSignMessage}
                     signingDetails={{
-                        contractAddress: eventContract?.event_contract_address,
+                        contractAddress: eventContract?.certificate_contract_address,
                         transactionType: "Certificate Signing",
                         details: `Signing ${certificatesToSign.length} certificates for ${event?.title}`,
                     }}

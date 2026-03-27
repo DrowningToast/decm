@@ -48,6 +48,7 @@ export interface Certificate {
     eventName?: string;
     receiverCredentialId?: string;
     receiverEmail?: string;
+    receiverWalletAddress?: string;
     name?: string;
     academicInstitution?: string;
     certificateTitle?: string;
@@ -231,6 +232,7 @@ export const mapCertificate = (cert: EntityEventCertificate): Certificate => {
         eventName: cert.event_name,
         receiverCredentialId: cert.receiver_credential_id,
         receiverEmail: cert.receiver_email,
+        receiverWalletAddress: cert.receiver_wallet_address,
         name: cert.name,
         academicInstitution: cert.academic_institution,
         certificateTitle: cert.certificate_title,

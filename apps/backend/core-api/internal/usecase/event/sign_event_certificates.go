@@ -3,18 +3,23 @@ package event
 import (
 	"apps/backend/common/customerror"
 	"apps/backend/core-api/internal/entity"
+	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 	"apps/backend/services/auth"
 	"context"
+	"crypto/ecdsa"
 	"fmt"
 
-	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
-
+	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/google/uuid"
 )
 
 type SignEventCertificatesRequest struct {
-	IssuerPin string `json:"issuer_pin"`
+	// For PIN-based (non-BYOK) users
+	IssuerPin *string `json:"issuer_pin,omitempty"`
+	// For wallet-based (BYOK) users
+	IssuerSignMessage *string `json:"issuer_sign_message,omitempty"`
+	IssuerSignature   *string `json:"issuer_signature,omitempty"`
 }
 
 type CertificateSignature struct {
@@ -35,6 +40,15 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 
 	if !credential.IsVerifiedIssuer {
 		return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("user is not a verified issuer"))
+	}
+
+	isByok := credential.EncryptedPrivateKey == nil
+
+	if isByok && (request.IssuerSignMessage == nil || request.IssuerSignature == nil) {
+		return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("issuer_sign_message and issuer_signature are required for BYOK users"))
+	}
+	if !isByok && (request.IssuerPin == nil || *request.IssuerPin == "") {
+		return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("issuer_pin is required for non-BYOK users"))
 	}
 
 	// 2. Check if event exists
@@ -67,10 +81,13 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 		return nil, customerror.Parse(&customerror.ErrNotFound, fmt.Errorf("event contract not found"))
 	}
 
-	// 5. Decrypt private key
-	privateKey, _, err := cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, request.IssuerPin)
-	if err != nil {
-		return nil, err
+	// 5. For PIN-based users: decrypt private key up front
+	var decryptedPrivateKey *ecdsa.PrivateKey
+	if !isByok {
+		decryptedPrivateKey, _, err = cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, *request.IssuerPin)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// 6. Get certificate config (same for all certificates in the event)
@@ -103,22 +120,41 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 			continue
 		}
 
-		// Sign the message
 		if targetSignature.SignMessage == nil {
 			return nil, customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("sign message not found for certificate %s", certificate.Id))
 		}
 
-		// Use HashEthereumMessage to match contract's recoverSigner which applies Ethereum prefix
-		signMessageDigest := cyptoutils.HashEthereumMessage(*targetSignature.SignMessage)
-		signature, err := cyptoutils.Sign(signMessageDigest.Bytes(), privateKey)
-		if err != nil {
-			return nil, err
+		var signatureStr string
+
+		if isByok {
+			// Verify the provided sign message matches the stored one
+			if *request.IssuerSignMessage != *targetSignature.SignMessage {
+				return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("issuer sign message does not match stored sign message"))
+			}
+			// Verify the signature against the issuer's wallet address
+			valid, verifyErr := cyptoutils.VerifySignedMessageByAddress(
+				ethCommon.HexToAddress(credential.WalletAddress),
+				*request.IssuerSignMessage,
+				*request.IssuerSignature,
+			)
+			if verifyErr != nil {
+				return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("signature verification failed: %w", verifyErr))
+			}
+			if !valid {
+				return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("issuer signature does not match wallet address"))
+			}
+			signatureStr = *request.IssuerSignature
+		} else {
+			// Use HashEthereumMessage to match contract's recoverSigner which applies Ethereum prefix
+			signMessageDigest := cyptoutils.HashEthereumMessage(*targetSignature.SignMessage)
+			rawSig, err := cyptoutils.Sign(signMessageDigest.Bytes(), decryptedPrivateKey)
+			if err != nil {
+				return nil, err
+			}
+			signatureStr = hexutil.Encode(rawSig)
 		}
 
 		// Convert signature to string for database storage
-		signatureStr := hexutil.Encode(signature)
-
-		// Update certificate signature in database
 		_, err = uc.EventCertificateSignatureDataGateway.UpdateEventCertificateIssuerSignature(ctx, targetSignature.Id, &signatureStr)
 		if err != nil {
 			return nil, err
@@ -127,7 +163,7 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 		// Add to response
 		signedCertificates = append(signedCertificates, CertificateSignature{
 			Certificate: certificate,
-			Signature:   fmt.Sprintf("0x%x", signature),
+			Signature:   signatureStr,
 		})
 	}
 

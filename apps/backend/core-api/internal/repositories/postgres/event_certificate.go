@@ -129,6 +129,7 @@ func (r *Repository) GetEventCertificateByID(ctx context.Context, id uuid.UUID) 
 		EventId:                 result.EventID,
 		ReceiverCredentialId:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 		ReceiverEmail:           receiverEmail,
+		ReceiverWalletAddress:   pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 		Name:                    name,
 		AcademicInstitution:     academicInstitution,
 		CertificateTitle:        pgmapper.PgTextToStringPtr(result.CertificateTitle),
@@ -195,6 +196,7 @@ func (r *Repository) GetEventCertificateByInboxMessageID(ctx context.Context, in
 		EventId:                 result.EventID,
 		ReceiverCredentialId:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 		ReceiverEmail:           receiverEmail,
+		ReceiverWalletAddress:   pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 		Name:                    name,
 		AcademicInstitution:     academicInstitution,
 		CertificateTitle:        pgmapper.PgTextToStringPtr(result.CertificateTitle),
@@ -239,6 +241,7 @@ func (r *Repository) GetEventCertificatesByEventID(ctx context.Context, eventID 
 			EventId:                 result.EventID,
 			ReceiverCredentialId:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 			ReceiverEmail:           receiverEmail,
+			ReceiverWalletAddress:   pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 			Name:                    name,
 			AcademicInstitution:     academicInstitution,
 			CertificateTitle:        pgmapper.PgTextToStringPtr(result.CertificateTitle),
@@ -465,6 +468,7 @@ func (r *Repository) GetUnclaimedReadyCertificatesByEventID(ctx context.Context,
 			EventId:                 result.EventID,
 			ReceiverCredentialId:    pgmapper.PgUUIDToUUIDPtr(result.ReceiverCredentialID),
 			ReceiverEmail:           receiverEmail,
+			ReceiverWalletAddress:   pgmapper.PgTextToStringPtr(result.ReceiverWalletAddress),
 			Name:                    name,
 			AcademicInstitution:     academicInstitution,
 			CertificateTitle:        pgmapper.PgTextToStringPtr(result.CertificateTitle),
@@ -482,7 +486,7 @@ func (r *Repository) GetUnclaimedReadyCertificatesByEventID(ctx context.Context,
 	return certificates, nil
 }
 
-func (r *Repository) GetClaimedCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
+func (r *Repository) GetClaimedCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string, walletAddress *string) ([]*entity.EventCertificate, error) {
 	// Normalize email to lowercase for case-insensitive comparison
 	normalizedEmail := email
 	if email != nil && *email != "" {
@@ -496,9 +500,17 @@ func (r *Repository) GetClaimedCertificatesByCredentialID(ctx context.Context, c
 		return nil, err
 	}
 
+	// Normalize wallet address to lowercase for case-insensitive comparison
+	normalizedWalletAddress := walletAddress
+	if walletAddress != nil && *walletAddress != "" {
+		lowercaseWallet := strings.ToLower(*walletAddress)
+		normalizedWalletAddress = &lowercaseWallet
+	}
+
 	results, err := r.queries.GetClaimedCertificatesByCredentialID(ctx, generated.GetClaimedCertificatesByCredentialIDParams{
-		ReceiverCredentialID: pgmapper.UUIDToPgUUID(credentialID),
-		ReceiverEmail:        encryptedEmail,
+		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(credentialID),
+		ReceiverEmail:         encryptedEmail,
+		ReceiverWalletAddress: pgmapper.StringPtrToPgText(normalizedWalletAddress),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)
@@ -550,7 +562,7 @@ func (r *Repository) GetClaimedCertificatesByCredentialID(ctx context.Context, c
 	return certificates, nil
 }
 
-func (r *Repository) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
+func (r *Repository) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string, walletAddress *string) ([]*entity.EventCertificate, error) {
 	// Normalize email to lowercase for case-insensitive comparison
 	normalizedEmail := email
 	if email != nil && *email != "" {
@@ -564,9 +576,17 @@ func (r *Repository) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Con
 		return nil, err
 	}
 
+	// Normalize wallet address to lowercase for case-insensitive comparison
+	normalizedWalletAddress := walletAddress
+	if walletAddress != nil && *walletAddress != "" {
+		lowercaseWallet := strings.ToLower(*walletAddress)
+		normalizedWalletAddress = &lowercaseWallet
+	}
+
 	results, err := r.queries.GetUnclaimedReadyCertificatesByCredentialID(ctx, generated.GetUnclaimedReadyCertificatesByCredentialIDParams{
-		ReceiverCredentialID: pgmapper.UUIDToPgUUID(credentialID),
-		ReceiverEmail:        encryptedEmail,
+		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(credentialID),
+		ReceiverEmail:         encryptedEmail,
+		ReceiverWalletAddress: pgmapper.StringPtrToPgText(normalizedWalletAddress),
 	})
 	if err != nil {
 		return nil, pgerrutils.ParsePgError(err)

@@ -472,9 +472,11 @@ func (uc *EventConfigUsecase) createInboxMessagesForCertificates(ctx context.Con
 			continue
 		}
 
-		// Skip if no receiver email AND no credential ID (can't identify the receiver)
-		if (certificate.ReceiverEmail == nil || *certificate.ReceiverEmail == "") && certificate.ReceiverCredentialId == nil {
-			uc.logger.Warn("skipping certificate without receiver email or credential ID", "certificate_id", certificate.Id)
+		// Skip if no receiver email, no credential ID, and no direct wallet address (can't identify the receiver)
+		if (certificate.ReceiverEmail == nil || *certificate.ReceiverEmail == "") &&
+			certificate.ReceiverCredentialId == nil &&
+			(certificate.ReceiverWalletAddress == nil || *certificate.ReceiverWalletAddress == "") {
+			uc.logger.Warn("skipping certificate without receiver email, credential ID, or wallet address", "certificate_id", certificate.Id)
 			continue
 		}
 
@@ -484,7 +486,7 @@ func (uc *EventConfigUsecase) createInboxMessagesForCertificates(ctx context.Con
 			receiverEmail = *certificate.ReceiverEmail
 		}
 
-		// Look up wallet address if credential ID is available
+		// Look up wallet address: prefer credential lookup, fall back to direct wallet address on the certificate
 		var receiverWalletAddress *string
 		if certificate.ReceiverCredentialId != nil {
 			cred, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, *certificate.ReceiverCredentialId)
@@ -494,6 +496,8 @@ func (uc *EventConfigUsecase) createInboxMessagesForCertificates(ctx context.Con
 			} else {
 				receiverWalletAddress = &cred.WalletAddress
 			}
+		} else if certificate.ReceiverWalletAddress != nil && *certificate.ReceiverWalletAddress != "" {
+			receiverWalletAddress = certificate.ReceiverWalletAddress
 		}
 
 		// Create message content with translations

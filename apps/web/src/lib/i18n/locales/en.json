@@ -468,7 +468,8 @@
                 "phoneNumber": "Phone Number",
                 "address": "Address",
                 "academicInstitution": "Academic Institution",
-                "academicEmail": "Academic Email"
+                "academicEmail": "Academic Email",
+                "walletAddress": "Wallet Address"
             }
         },
         "date": "Date",

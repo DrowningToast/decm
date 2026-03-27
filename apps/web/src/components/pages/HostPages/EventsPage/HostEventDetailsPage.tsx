@@ -885,6 +885,8 @@ export default function HostEventDetailsPage({
                                                         created_at: cert.createdAt,
                                                         revoked_at: cert.revokedAt,
                                                         inbox_message_id: cert.inboxMessageId,
+                                                        receiver_wallet_address:
+                                                            cert.receiverWalletAddress,
                                                         firstName: nameParts[0] || "",
                                                         lastName:
                                                             nameParts.slice(1).join(" ") || "",

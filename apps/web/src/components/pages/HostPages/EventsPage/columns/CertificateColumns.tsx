@@ -42,6 +42,23 @@ export function useCertificateColumns(
             enableSorting: true,
         },
         {
+            accessorKey: "receiver_wallet_address",
+            header: t("events.participants.fields.walletAddress"),
+            enableSorting: true,
+            cell: ({ row }) => {
+                const walletAddress = row.original.receiver_wallet_address;
+                if (!walletAddress) {
+                    return <span className="text-muted-foreground">-</span>;
+                }
+                const shortened = `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+                return (
+                    <span title={walletAddress} className="font-mono text-xs">
+                        {shortened}
+                    </span>
+                );
+            },
+        },
+        {
             accessorKey: "issuedAt",
             header: t("events.hostDetails.certificates.table.issuedAt"),
             enableSorting: true,

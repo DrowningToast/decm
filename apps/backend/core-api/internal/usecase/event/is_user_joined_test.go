@@ -171,16 +171,16 @@ func (m *mockEventCertificateDg) GetUnclaimedReadyCertificatesByEventID(ctx cont
 	return nil, nil
 }
 
-func (m *mockEventCertificateDg) GetClaimedCertificatesByCredentialID(ctx context.Context, id uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
-	args := m.Called(ctx, id, email)
+func (m *mockEventCertificateDg) GetClaimedCertificatesByCredentialID(ctx context.Context, id uuid.UUID, email *string, walletAddress *string) ([]*entity.EventCertificate, error) {
+	args := m.Called(ctx, id, email, walletAddress)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]*entity.EventCertificate), args.Error(1)
 }
 
-func (m *mockEventCertificateDg) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, id uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
-	args := m.Called(ctx, id, email)
+func (m *mockEventCertificateDg) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, id uuid.UUID, email *string, walletAddress *string) ([]*entity.EventCertificate, error) {
+	args := m.Called(ctx, id, email, walletAddress)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

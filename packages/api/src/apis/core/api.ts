@@ -277,7 +277,15 @@ export interface CoreApiInternalHandlerEventRevokeEventCertificatesResponse {
 }
 
 export interface CoreApiInternalHandlerEventSignEventCertificatesRequest {
-    issuer_pin: string;
+    /** For PIN-based (non-BYOK) users */
+    issuer_pin?: string;
+    /** For wallet-based (BYOK) users */
+    issuer_sign_message?: string;
+    issuer_signature?: string;
+}
+
+export interface CoreApiInternalHandlerEventGetIssuerSignMessageResponse {
+    sign_message: string;
 }
 
 export interface CoreApiInternalHandlerEventSignEventCertificatesResponse {
@@ -1886,6 +1894,15 @@ export interface RevokeEventCertificatesParams {
     eventId: string;
 }
 
+export type GetIssuerSignMessageData = CoreApiInternalHandlerEventGetIssuerSignMessageResponse;
+
+export type GetIssuerSignMessageError = CustomerrorErrResponse;
+
+export interface GetIssuerSignMessageParams {
+    /** Event ID */
+    eventId: string;
+}
+
 export type SignEventCertificatesData = CoreApiInternalHandlerEventSignEventCertificatesResponse;
 
 export type SignEventCertificatesError = CustomerrorErrResponse;
@@ -3018,6 +3035,23 @@ export class Api<SecurityDataType extends unknown> {
         /**
          * @description Sign all event certificates for an event by issuer
          *
+         * @tags Event Certificates
+         * @name GetIssuerSignMessage
+         * @summary Get sign message for BYOK issuer certificate signing
+         * @request GET:/api/v1/events/{event_id}/certificates/sign/message
+         */
+        getIssuerSignMessage: (
+            { eventId, ...query }: GetIssuerSignMessageParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetIssuerSignMessageData, GetIssuerSignMessageError>({
+                path: `/api/v1/events/${eventId}/certificates/sign/message`,
+                method: "GET",
+                format: "json",
+                ...params,
+            }),
+
+        /**
          * @tags Event Certificates
          * @name SignEventCertificates
          * @summary Sign event certificates

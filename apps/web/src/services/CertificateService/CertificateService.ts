@@ -116,20 +116,34 @@ export class CertificateService {
     }
 
     /**
-     * Signs event certificates with issuer PIN
+     * Signs event certificates. PIN-based users provide issuerPin; BYOK wallet users provide issuerSignMessage + issuerSignature.
      * @param eventId - The event ID
-     * @param issuerPin - The issuer's PIN for signing
+     * @param params - Either { issuerPin } for non-BYOK or { issuerSignMessage, issuerSignature } for BYOK
      * @returns SignedCertificatesResult with signed certificates
      */
     public async signEventCertificates(
         eventId: string,
-        issuerPin: string,
+        params: { issuerPin: string } | { issuerSignMessage: string; issuerSignature: string },
     ): Promise<SignedCertificatesResult> {
-        const response = await this._coreApi.v1.signEventCertificates(
-            { eventId },
-            { issuer_pin: issuerPin },
-        );
+        const body =
+            "issuerPin" in params
+                ? { issuer_pin: params.issuerPin }
+                : {
+                      issuer_sign_message: params.issuerSignMessage,
+                      issuer_signature: params.issuerSignature,
+                  };
+        const response = await this._coreApi.v1.signEventCertificates({ eventId }, body);
         return mapToSignedCertificatesResult(response);
+    }
+
+    /**
+     * Gets the sign message for a BYOK issuer to sign before calling signEventCertificates.
+     * @param eventId - The event ID
+     * @returns The sign message string
+     */
+    public async getIssuerSignMessage(eventId: string): Promise<string> {
+        const response = await this._coreApi.v1.getIssuerSignMessage({ eventId });
+        return response.sign_message;
     }
 
     /**

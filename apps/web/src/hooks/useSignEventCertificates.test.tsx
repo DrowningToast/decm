@@ -11,6 +11,7 @@ vi.mock("@/lib/api/api", () => ({
     coreApiClient: {
         v1: {
             signEventCertificates: vi.fn(),
+            getIssuerSignMessage: vi.fn(),
         },
     },
 }));
@@ -211,6 +212,55 @@ describe("useSignEventCertificates", () => {
         await waitFor(() => {
             expect(result.current.isSigning).toBe(false);
         });
+    });
+
+    it("should sign certificates with wallet signature (BYOK)", async () => {
+        vi.mocked(coreApiClient.v1.signEventCertificates).mockResolvedValue(mockResponse);
+
+        const { result } = renderHook(() => useSignEventCertificates(), {
+            wrapper: createWrapper(),
+        });
+
+        result.current.signEventCertificates({
+            eventId: mockEventId,
+            issuerSignMessage: '{"eventContractAddress":"0xABC","receivers":["0x123"]}',
+            issuerSignature: "0xdeadbeef",
+        });
+
+        await waitFor(() => {
+            expect(result.current.isSigning).toBe(false);
+        });
+
+        expect(coreApiClient.v1.signEventCertificates).toHaveBeenCalledWith(
+            { eventId: mockEventId },
+            {
+                issuer_sign_message: '{"eventContractAddress":"0xABC","receivers":["0x123"]}',
+                issuer_signature: "0xdeadbeef",
+            },
+        );
+        expect(toast.success).toHaveBeenCalledWith("Successfully signed 2 certificates");
+    });
+
+    it("should call API with issuer_pin when PIN-based", async () => {
+        vi.mocked(coreApiClient.v1.signEventCertificates).mockResolvedValue(mockResponse);
+
+        const { result } = renderHook(() => useSignEventCertificates(), {
+            wrapper: createWrapper(),
+        });
+
+        result.current.signEventCertificates({
+            eventId: mockEventId,
+            issuerPin: mockIssuerPin,
+        });
+
+        await waitFor(() => {
+            expect(result.current.isSigning).toBe(false);
+        });
+
+        expect(coreApiClient.v1.signEventCertificates).toHaveBeenCalledWith(
+            { eventId: mockEventId },
+            { issuer_pin: mockIssuerPin },
+        );
     });
 
     it("should handle multiple signature requests sequentially", async () => {

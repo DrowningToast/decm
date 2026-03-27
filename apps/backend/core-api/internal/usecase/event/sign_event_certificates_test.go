@@ -6,11 +6,13 @@ import (
 	"apps/backend/core-api/config"
 	"apps/backend/core-api/config/blockchain"
 	"apps/backend/core-api/internal/entity"
+	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 	"apps/backend/services/auth"
 	"context"
 	"encoding/hex"
 	"testing"
 
+	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
@@ -55,7 +57,7 @@ func TestSignEventCertificates(t *testing.T) {
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
-		request := SignEventCertificatesRequest{IssuerPin: issuerPin}
+		request := SignEventCertificatesRequest{IssuerPin: &issuerPin}
 
 		// Act
 		result, err := uc.SignEventCertificates(ctx, eventID, request, currentUser)
@@ -84,7 +86,7 @@ func TestSignEventCertificates(t *testing.T) {
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
-		request := SignEventCertificatesRequest{IssuerPin: issuerPin}
+		request := SignEventCertificatesRequest{IssuerPin: &issuerPin}
 
 		// Act
 		result, err := uc.SignEventCertificates(ctx, eventID, request, currentUser)
@@ -120,7 +122,7 @@ func TestSignEventCertificates(t *testing.T) {
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
-		request := SignEventCertificatesRequest{IssuerPin: issuerPin}
+		request := SignEventCertificatesRequest{IssuerPin: &issuerPin}
 
 		// Act
 		result, err := uc.SignEventCertificates(ctx, eventID, request, currentUser)
@@ -162,7 +164,7 @@ func TestSignEventCertificates(t *testing.T) {
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
-		request := SignEventCertificatesRequest{IssuerPin: issuerPin}
+		request := SignEventCertificatesRequest{IssuerPin: &issuerPin}
 
 		// Act
 		result, err := uc.SignEventCertificates(ctx, eventID, request, currentUser)
@@ -216,7 +218,7 @@ func TestSignEventCertificates(t *testing.T) {
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
-		request := SignEventCertificatesRequest{IssuerPin: issuerPin}
+		request := SignEventCertificatesRequest{IssuerPin: &issuerPin}
 
 		// Act
 		result, err := uc.SignEventCertificates(ctx, eventID, request, currentUser)
@@ -303,7 +305,7 @@ func TestSignEventCertificates(t *testing.T) {
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
-		request := SignEventCertificatesRequest{IssuerPin: password}
+		request := SignEventCertificatesRequest{IssuerPin: &password}
 
 		// Act
 		result, err := uc.SignEventCertificates(ctx, eventID, request, currentUser)
@@ -393,7 +395,7 @@ func TestSignEventCertificates(t *testing.T) {
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
-		request := SignEventCertificatesRequest{IssuerPin: password}
+		request := SignEventCertificatesRequest{IssuerPin: &password}
 
 		// Act
 		result, err := uc.SignEventCertificates(ctx, eventID, request, currentUser)
@@ -521,7 +523,7 @@ func TestSignEventCertificates_MultipleIssuers(t *testing.T) {
 		}
 
 		currentUser := &auth.JwtClaims{UserId: issuer1ID}
-		request := SignEventCertificatesRequest{IssuerPin: issuerPin}
+		request := SignEventCertificatesRequest{IssuerPin: &issuerPin}
 
 		// Act
 		result, err := uc.SignEventCertificates(ctx, eventID, request, currentUser)
@@ -537,6 +539,299 @@ func TestSignEventCertificates_MultipleIssuers(t *testing.T) {
 		mockEventDg.AssertExpectations(t)
 		mockCertDg.AssertExpectations(t)
 		mockContractDg.AssertExpectations(t)
+	})
+}
+
+func TestSignEventCertificates_BYOK(t *testing.T) {
+	ctx := context.Background()
+	eventID := uuid.New()
+	certificateID1 := uuid.New()
+	configID := uuid.New()
+	signatureID := uuid.New()
+	signMessage := `{"eventContractAddress":"0xD8F0b257d1150E35E0351E9eb735b1229396D6fa","receivers":["0x148d532c97fb3f21940c9f6923ab7b6a7df0489091da9fcfd4925fe05bdc49af"]}`
+	contractAddress := "0xD8F0b257d1150E35E0351E9eb735b1229396D6fa"
+
+	// Helper: build a BYOK credential (no EncryptedPrivateKey)
+	makeBYOKCredential := func(userID uuid.UUID, walletAddress string) *entity.AuthenticationCredential {
+		return &entity.AuthenticationCredential{
+			Id:                  userID,
+			IsVerifiedIssuer:    true,
+			EncryptedPrivateKey: nil, // BYOK
+			WalletAddress:       walletAddress,
+		}
+	}
+
+	// Helper: generate a valid wallet signature for signMessage
+	generateWalletSignature := func(t *testing.T) (walletAddress string, signature string) {
+		t.Helper()
+		pk, err := crypto.GenerateKey()
+		require.NoError(t, err)
+		addr := crypto.PubkeyToAddress(pk.PublicKey)
+		digest := cyptoutils.HashEthereumMessage(signMessage)
+		sig, err := cyptoutils.Sign(digest.Bytes(), pk)
+		require.NoError(t, err)
+		return addr.Hex(), hexutil.Encode(sig)
+	}
+
+	baseContract := &entity.EventContract{
+		EventId:                      eventID,
+		CertificateContractAddress:   &contractAddress,
+		EventContractAddress:         contractAddress,
+		AccessManagerContractAddress: "0x1234567890123456789012345678901234567890",
+	}
+
+	t.Run("BYOK: should fail when issuer_sign_message and issuer_signature are missing", func(t *testing.T) {
+		userID := uuid.New()
+		walletAddr := "0xabc"
+
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userID).
+			Return(makeBYOKCredential(userID, walletAddr), nil)
+
+		uc := &EventUsecase{
+			AuthenticationCredentialDg: mockAuthDg,
+			cfg:                        createMockConfigForSign(),
+		}
+
+		_, err := uc.SignEventCertificates(ctx, eventID, SignEventCertificatesRequest{}, &auth.JwtClaims{UserId: userID})
+		assert.Error(t, err)
+		customErr := customerror.TryParseAsCustomErr(err)
+		require.NotNil(t, customErr)
+		assert.Equal(t, customerror.ErrUnauthorized.Code, *customErr.Code)
+		mockAuthDg.AssertExpectations(t)
+	})
+
+	t.Run("BYOK: should fail when only issuer_sign_message is provided (no signature)", func(t *testing.T) {
+		userID := uuid.New()
+		walletAddr := "0xabc"
+
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userID).
+			Return(makeBYOKCredential(userID, walletAddr), nil)
+
+		uc := &EventUsecase{
+			AuthenticationCredentialDg: mockAuthDg,
+			cfg:                        createMockConfigForSign(),
+		}
+
+		_, err := uc.SignEventCertificates(ctx, eventID, SignEventCertificatesRequest{
+			IssuerSignMessage: &signMessage,
+		}, &auth.JwtClaims{UserId: userID})
+		assert.Error(t, err)
+		customErr := customerror.TryParseAsCustomErr(err)
+		require.NotNil(t, customErr)
+		assert.Equal(t, customerror.ErrUnauthorized.Code, *customErr.Code)
+		mockAuthDg.AssertExpectations(t)
+	})
+
+	t.Run("non-BYOK: should fail when issuer_pin is missing", func(t *testing.T) {
+		userID := uuid.New()
+		encKey := "some_encrypted_key"
+
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userID).
+			Return(&entity.AuthenticationCredential{
+				Id:                  userID,
+				IsVerifiedIssuer:    true,
+				EncryptedPrivateKey: &encKey,
+			}, nil)
+
+		uc := &EventUsecase{
+			AuthenticationCredentialDg: mockAuthDg,
+			cfg:                        createMockConfigForSign(),
+		}
+
+		_, err := uc.SignEventCertificates(ctx, eventID, SignEventCertificatesRequest{}, &auth.JwtClaims{UserId: userID})
+		assert.Error(t, err)
+		customErr := customerror.TryParseAsCustomErr(err)
+		require.NotNil(t, customErr)
+		assert.Equal(t, customerror.ErrUnauthorized.Code, *customErr.Code)
+		mockAuthDg.AssertExpectations(t)
+	})
+
+	t.Run("BYOK: should fail when provided sign message does not match stored sign message", func(t *testing.T) {
+		userID := uuid.New()
+
+		pk, err := crypto.GenerateKey()
+		require.NoError(t, err)
+		addr := crypto.PubkeyToAddress(pk.PublicKey)
+		wrongMessage := `{"eventContractAddress":"0xWRONG","receivers":[]}`
+		digest := cyptoutils.HashEthereumMessage(wrongMessage)
+		sig, err := cyptoutils.Sign(digest.Bytes(), pk)
+		require.NoError(t, err)
+		wrongSignature := hexutil.Encode(sig)
+
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userID).
+			Return(makeBYOKCredential(userID, addr.Hex()), nil)
+
+		mockEventDg := new(MockEventDataGateway)
+		mockEventDg.On("GetEventById", ctx, eventID).Return(&entity.Event{Id: eventID}, nil)
+
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockCertDg.On("GetEventCertificatesByEventID", ctx, eventID).
+			Return([]*entity.EventCertificate{{Id: certificateID1}}, nil)
+
+		mockContractDg := new(MockEventContractDataGateway)
+		mockContractDg.On("GetEventContractByEventID", ctx, eventID).Return(baseContract, nil)
+
+		mockCertConfigDg := new(MockEventCertificateConfigDataGateway)
+		mockCertConfigDg.On("GetEventCertificateConfigByEventID", ctx, eventID).
+			Return(&entity.EventCertificateConfig{ID: configID, EventID: eventID}, nil)
+
+		storedMessage := signMessage
+		mockSigDg := new(MockEventCertificateSignatureDataGateway)
+		mockSigDg.On("GetEventCertificateSignaturesByEventCertificateConfigID", ctx, configID).
+			Return([]*entity.EventCertificateSignature{{
+				Id:                       signatureID,
+				EventCertificateConfigId: configID,
+				IssuerCredentialId:       userID,
+				SignMessage:              &storedMessage,
+			}}, nil)
+
+		uc := &EventUsecase{
+			AuthenticationCredentialDg:           mockAuthDg,
+			EventDataGateway:                     mockEventDg,
+			EventCertificateDataGateway:          mockCertDg,
+			EventContractDataGateway:             mockContractDg,
+			EventCertificateSignatureDataGateway: mockSigDg,
+			EventCertificateConfigDg:             mockCertConfigDg,
+			cfg:                                  createMockConfigForSign(),
+		}
+
+		_, err = uc.SignEventCertificates(ctx, eventID, SignEventCertificatesRequest{
+			IssuerSignMessage: &wrongMessage,
+			IssuerSignature:   &wrongSignature,
+		}, &auth.JwtClaims{UserId: userID, WalletAddress: addr.Hex()})
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "sign message does not match")
+		mockAuthDg.AssertExpectations(t)
+	})
+
+	t.Run("BYOK: should fail when signature does not match wallet address", func(t *testing.T) {
+		userID := uuid.New()
+
+		// Sign with a different key than the registered wallet
+		pk, err := crypto.GenerateKey()
+		require.NoError(t, err)
+		differentAddr := crypto.PubkeyToAddress(pk.PublicKey)
+		digest := cyptoutils.HashEthereumMessage(signMessage)
+		sig, err := cyptoutils.Sign(digest.Bytes(), pk)
+		require.NoError(t, err)
+		signatureFromWrongKey := hexutil.Encode(sig)
+
+		// Register a different wallet address
+		registeredAddr := ethCommon.HexToAddress("0x1111111111111111111111111111111111111111")
+		require.NotEqual(t, differentAddr, registeredAddr)
+
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userID).
+			Return(makeBYOKCredential(userID, registeredAddr.Hex()), nil)
+
+		mockEventDg := new(MockEventDataGateway)
+		mockEventDg.On("GetEventById", ctx, eventID).Return(&entity.Event{Id: eventID}, nil)
+
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockCertDg.On("GetEventCertificatesByEventID", ctx, eventID).
+			Return([]*entity.EventCertificate{{Id: certificateID1}}, nil)
+
+		mockContractDg := new(MockEventContractDataGateway)
+		mockContractDg.On("GetEventContractByEventID", ctx, eventID).Return(baseContract, nil)
+
+		mockCertConfigDg := new(MockEventCertificateConfigDataGateway)
+		mockCertConfigDg.On("GetEventCertificateConfigByEventID", ctx, eventID).
+			Return(&entity.EventCertificateConfig{ID: configID, EventID: eventID}, nil)
+
+		storedMessage := signMessage
+		mockSigDg := new(MockEventCertificateSignatureDataGateway)
+		mockSigDg.On("GetEventCertificateSignaturesByEventCertificateConfigID", ctx, configID).
+			Return([]*entity.EventCertificateSignature{{
+				Id:                       signatureID,
+				EventCertificateConfigId: configID,
+				IssuerCredentialId:       userID,
+				SignMessage:              &storedMessage,
+			}}, nil)
+
+		uc := &EventUsecase{
+			AuthenticationCredentialDg:           mockAuthDg,
+			EventDataGateway:                     mockEventDg,
+			EventCertificateDataGateway:          mockCertDg,
+			EventContractDataGateway:             mockContractDg,
+			EventCertificateSignatureDataGateway: mockSigDg,
+			EventCertificateConfigDg:             mockCertConfigDg,
+			cfg:                                  createMockConfigForSign(),
+		}
+
+		_, err = uc.SignEventCertificates(ctx, eventID, SignEventCertificatesRequest{
+			IssuerSignMessage: &storedMessage,
+			IssuerSignature:   &signatureFromWrongKey,
+		}, &auth.JwtClaims{UserId: userID, WalletAddress: registeredAddr.Hex()})
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "wallet address")
+		mockAuthDg.AssertExpectations(t)
+	})
+
+	t.Run("BYOK: should succeed with valid wallet signature", func(t *testing.T) {
+		userID := uuid.New()
+		walletAddr, signature := generateWalletSignature(t)
+
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userID).
+			Return(makeBYOKCredential(userID, walletAddr), nil)
+
+		mockEventDg := new(MockEventDataGateway)
+		mockEventDg.On("GetEventById", ctx, eventID).Return(&entity.Event{Id: eventID}, nil)
+
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockCertDg.On("GetEventCertificatesByEventID", ctx, eventID).
+			Return([]*entity.EventCertificate{{Id: certificateID1}}, nil)
+
+		mockContractDg := new(MockEventContractDataGateway)
+		mockContractDg.On("GetEventContractByEventID", ctx, eventID).Return(baseContract, nil)
+
+		mockCertConfigDg := new(MockEventCertificateConfigDataGateway)
+		mockCertConfigDg.On("GetEventCertificateConfigByEventID", ctx, eventID).
+			Return(&entity.EventCertificateConfig{ID: configID, EventID: eventID}, nil)
+
+		storedMessage := signMessage
+		mockSigDg := new(MockEventCertificateSignatureDataGateway)
+		mockSigDg.On("GetEventCertificateSignaturesByEventCertificateConfigID", ctx, configID).
+			Return([]*entity.EventCertificateSignature{{
+				Id:                       signatureID,
+				EventCertificateConfigId: configID,
+				IssuerCredentialId:       userID,
+				SignMessage:              &storedMessage,
+			}}, nil)
+		mockSigDg.On("UpdateEventCertificateIssuerSignature", ctx, signatureID, &signature).
+			Return(&entity.EventCertificateSignature{}, nil)
+
+		mockIssuerDg := new(MockEventIssuerDataGateway)
+		mockIssuerDg.On("UpdateEventIssuerSigningStatus", ctx, eventID, userID, int32(1)).
+			Return(nil)
+
+		uc := &EventUsecase{
+			AuthenticationCredentialDg:           mockAuthDg,
+			EventDataGateway:                     mockEventDg,
+			EventCertificateDataGateway:          mockCertDg,
+			EventContractDataGateway:             mockContractDg,
+			EventCertificateSignatureDataGateway: mockSigDg,
+			EventCertificateConfigDg:             mockCertConfigDg,
+			EventIssuerDataGateway:               mockIssuerDg,
+			cfg:                                  createMockConfigForSign(),
+		}
+
+		result, err := uc.SignEventCertificates(ctx, eventID, SignEventCertificatesRequest{
+			IssuerSignMessage: &storedMessage,
+			IssuerSignature:   &signature,
+		}, &auth.JwtClaims{UserId: userID, WalletAddress: walletAddr})
+
+		assert.NoError(t, err)
+		require.NotNil(t, result)
+		assert.Len(t, result.Certificates, 1)
+		assert.Equal(t, signature, result.Certificates[0].Signature)
+		mockAuthDg.AssertExpectations(t)
+		mockSigDg.AssertExpectations(t)
+		mockIssuerDg.AssertExpectations(t)
 	})
 }
 

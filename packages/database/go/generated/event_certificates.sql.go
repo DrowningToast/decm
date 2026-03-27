@@ -133,7 +133,7 @@ func (q *Queries) GetAllEventCertificateIDsByEventID(ctx context.Context, eventI
 }
 
 const GetClaimedCertificatesByCredentialID = `-- name: GetClaimedCertificatesByCredentialID :many
-SELECT 
+SELECT
     ec.id,
     ec.event_id,
     ec.receiver_credential_id,
@@ -161,6 +161,7 @@ LEFT JOIN user_signature us ON ec.user_claim_signature_id = us.id
 WHERE (
     ec.receiver_credential_id = $1
     OR ec.receiver_email = $2
+    OR ec.receiver_wallet_address = $3
   )
   AND (ec.certificate_token_id IS NOT NULL OR ec.user_claim_signature_id IS NOT NULL)
   AND ec.revoked_at IS NULL
@@ -168,8 +169,9 @@ ORDER BY ec.created_at DESC
 `
 
 type GetClaimedCertificatesByCredentialIDParams struct {
-	ReceiverCredentialID pgtype.UUID `json:"receiver_credential_id"`
-	ReceiverEmail        pgtype.Text `json:"receiver_email"`
+	ReceiverCredentialID  pgtype.UUID `json:"receiver_credential_id"`
+	ReceiverEmail         pgtype.Text `json:"receiver_email"`
+	ReceiverWalletAddress pgtype.Text `json:"receiver_wallet_address"`
 }
 
 type GetClaimedCertificatesByCredentialIDRow struct {
@@ -197,7 +199,7 @@ type GetClaimedCertificatesByCredentialIDRow struct {
 }
 
 func (q *Queries) GetClaimedCertificatesByCredentialID(ctx context.Context, arg GetClaimedCertificatesByCredentialIDParams) ([]GetClaimedCertificatesByCredentialIDRow, error) {
-	rows, err := q.db.Query(ctx, GetClaimedCertificatesByCredentialID, arg.ReceiverCredentialID, arg.ReceiverEmail)
+	rows, err := q.db.Query(ctx, GetClaimedCertificatesByCredentialID, arg.ReceiverCredentialID, arg.ReceiverEmail, arg.ReceiverWalletAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -474,8 +476,9 @@ INNER JOIN events e ON ec.event_id = e.id
 WHERE (
     ec.receiver_credential_id = $1
     OR ec.receiver_email = $2
+    OR ec.receiver_wallet_address = $3
   )
-  AND ec.certificate_token_id IS NULL 
+  AND ec.certificate_token_id IS NULL
   AND ec.user_claim_signature_id IS NULL
   AND ecc.is_published = TRUE
   AND ec.revoked_at IS NULL
@@ -483,8 +486,9 @@ ORDER BY ec.created_at DESC
 `
 
 type GetUnclaimedReadyCertificatesByCredentialIDParams struct {
-	ReceiverCredentialID pgtype.UUID `json:"receiver_credential_id"`
-	ReceiverEmail        pgtype.Text `json:"receiver_email"`
+	ReceiverCredentialID  pgtype.UUID `json:"receiver_credential_id"`
+	ReceiverEmail         pgtype.Text `json:"receiver_email"`
+	ReceiverWalletAddress pgtype.Text `json:"receiver_wallet_address"`
 }
 
 type GetUnclaimedReadyCertificatesByCredentialIDRow struct {
@@ -508,7 +512,7 @@ type GetUnclaimedReadyCertificatesByCredentialIDRow struct {
 }
 
 func (q *Queries) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, arg GetUnclaimedReadyCertificatesByCredentialIDParams) ([]GetUnclaimedReadyCertificatesByCredentialIDRow, error) {
-	rows, err := q.db.Query(ctx, GetUnclaimedReadyCertificatesByCredentialID, arg.ReceiverCredentialID, arg.ReceiverEmail)
+	rows, err := q.db.Query(ctx, GetUnclaimedReadyCertificatesByCredentialID, arg.ReceiverCredentialID, arg.ReceiverEmail, arg.ReceiverWalletAddress)
 	if err != nil {
 		return nil, err
 	}

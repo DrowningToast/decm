@@ -581,7 +581,8 @@
                 "phoneNumber": "เบอร์โทรศัพท์",
                 "address": "ที่อยู่",
                 "academicInstitution": "สถาบันการศึกษา",
-                "academicEmail": "อีเมลสถาบัน"
+                "academicEmail": "อีเมลสถาบัน",
+                "walletAddress": "ที่อยู่กระเป๋าเงิน"
             }
         },
         "date": "วันที่",

@@ -121,11 +121,11 @@ func (m *mockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByEventID
 	return nil, nil
 }
 
-func (m *mockEventCertificateDataGateway) GetClaimedCertificatesByCredentialID(_ context.Context, _ uuid.UUID, _ *string) ([]*entity.EventCertificate, error) {
+func (m *mockEventCertificateDataGateway) GetClaimedCertificatesByCredentialID(_ context.Context, _ uuid.UUID, _ *string, _ *string) ([]*entity.EventCertificate, error) {
 	return nil, nil
 }
 
-func (m *mockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByCredentialID(_ context.Context, _ uuid.UUID, _ *string) ([]*entity.EventCertificate, error) {
+func (m *mockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByCredentialID(_ context.Context, _ uuid.UUID, _ *string, _ *string) ([]*entity.EventCertificate, error) {
 	return nil, nil
 }
 

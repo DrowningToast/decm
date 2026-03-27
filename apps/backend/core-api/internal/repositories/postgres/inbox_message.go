@@ -25,7 +25,7 @@ func (r *Repository) CreateInboxMessage(ctx context.Context, params offchain_dat
 
 	// Normalize wallet address to lowercase plain text (wallet addresses are public, not PII-encrypted)
 	var normalizedWalletAddress *string
-	if params.ReceiverWalletAddress != nil {
+	if params.ReceiverWalletAddress != nil && *params.ReceiverWalletAddress != "" {
 		lower := strings.ToLower(*params.ReceiverWalletAddress)
 		normalizedWalletAddress = &lower
 	}
@@ -123,7 +123,7 @@ func (r *Repository) GetInboxMessagesByCredentialID(ctx context.Context, params 
 
 	// Wallet address is stored as plain text (not PII-encrypted); normalize to lowercase for matching
 	var plainWalletAddress pgtype.Text
-	if params.ReceiverWalletAddress != nil {
+	if params.ReceiverWalletAddress != nil && *params.ReceiverWalletAddress != "" {
 		normalized := strings.ToLower(*params.ReceiverWalletAddress)
 		plainWalletAddress = pgtype.Text{String: normalized, Valid: true}
 	}
@@ -178,19 +178,17 @@ func (r *Repository) GetUnreadInboxMessageCountByCredentialID(ctx context.Contex
 		}
 	}
 
-	var encryptedReceiverWalletAddress pgtype.Text
-	receiverWalletAddress := params.ReceiverWalletAddress
-	if receiverWalletAddress != nil {
-		encryptedReceiverWalletAddress, err = pgmapper.EncryptStringPtrToPgText(receiverWalletAddress, r.piiEncryptionKey)
-		if err != nil {
-			return 0, err
-		}
+	// Wallet address is stored as plain text (not PII-encrypted); normalize to lowercase for matching
+	var plainWalletAddress pgtype.Text
+	if params.ReceiverWalletAddress != nil && *params.ReceiverWalletAddress != "" {
+		normalized := strings.ToLower(*params.ReceiverWalletAddress)
+		plainWalletAddress = pgtype.Text{String: normalized, Valid: true}
 	}
 
 	count, err := r.queries.GetUnreadInboxMessageCountByCredentialID(ctx, generated.GetUnreadInboxMessageCountByCredentialIDParams{
 		ReceiverCredentialID:  pgmapper.UUIDToPgUUID(params.CredentialID),
 		ReceiverEmail:         encryptedReceiverEmail,
-		ReceiverWalletAddress: encryptedReceiverWalletAddress,
+		ReceiverWalletAddress: plainWalletAddress,
 	})
 	if err != nil {
 		return 0, pgerrutils.ParsePgError(err)
@@ -371,7 +369,7 @@ func (r *Repository) UpdateInboxMessageReadStatusAll(ctx context.Context, params
 
 	// Wallet address is plain text; normalize to lowercase for case-insensitive matching
 	var plainWalletAddress pgtype.Text
-	if params.ReceiverWalletAddress != nil {
+	if params.ReceiverWalletAddress != nil && *params.ReceiverWalletAddress != "" {
 		plainWalletAddress = pgtype.Text{String: strings.ToLower(*params.ReceiverWalletAddress), Valid: true}
 	}
 

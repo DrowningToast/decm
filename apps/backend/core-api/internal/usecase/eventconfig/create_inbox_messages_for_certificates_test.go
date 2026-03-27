@@ -85,10 +85,10 @@ func (m *MockEventCertificateDataGateway) GetClaimedCertificatesByEventID(ctx co
 func (m *MockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error) {
 	return nil, nil
 }
-func (m *MockEventCertificateDataGateway) GetClaimedCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
+func (m *MockEventCertificateDataGateway) GetClaimedCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string, walletAddress *string) ([]*entity.EventCertificate, error) {
 	return nil, nil
 }
-func (m *MockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string) ([]*entity.EventCertificate, error) {
+func (m *MockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string, walletAddress *string) ([]*entity.EventCertificate, error) {
 	return nil, nil
 }
 func (m *MockEventCertificateDataGateway) UpdateEventCertificate(ctx context.Context, id uuid.UUID, params eventdatagateway.UpdateEventCertificateParameters) (*entity.EventCertificate, error) {
@@ -277,17 +277,60 @@ func TestCreateInboxMessagesForCertificates_Web3User(t *testing.T) {
 		mockAuthDg.AssertExpectations(t)
 	})
 
-	t.Run("should skip certificate with no email and no credential ID", func(t *testing.T) {
+	t.Run("should create inbox message for wallet-only receiver (no email, no credential ID)", func(t *testing.T) {
+		mockEventDg := new(MockEventDataGateway)
+		mockCertDg := new(MockEventCertificateDataGateway)
+		mockInboxDg := new(MockInboxMessageDgForCerts)
+		mockAuthDg := new(MockAuthCredentialDgForCerts)
+
+		directWallet := "0xDEADBEEF"
+		cert := &entity.EventCertificate{
+			Id:                    certID,
+			EventId:               eventID,
+			ReceiverCredentialId:  nil,
+			ReceiverEmail:         nil,
+			ReceiverWalletAddress: &directWallet,
+		}
+
+		mockEventDg.On("GetEventById", ctx, eventID).Return(&entity.Event{
+			Id:    eventID,
+			Title: eventTitle,
+		}, nil)
+		mockCertDg.On("GetEventCertificatesByEventID", ctx, eventID).Return([]*entity.EventCertificate{cert}, nil)
+		mockInboxDg.On("CreateInboxMessage", ctx, mock.MatchedBy(func(p offchain_datagateway.CreateInboxMessageParameters) bool {
+			return p.ReceiverWalletAddress != nil && *p.ReceiverWalletAddress == directWallet &&
+				p.ReceiverCredentialID == nil &&
+				p.ReceiverEmail == ""
+		})).Return(&entity.InboxMessage{Id: inboxMsgID}, nil)
+		mockCertDg.On("UpdateEventCertificateInboxMessageID", ctx, certID, inboxMsgID).Return(cert, nil)
+
+		uc := &EventConfigUsecase{
+			EventDataGateway:            mockEventDg,
+			EventCertificateDataGateway: mockCertDg,
+			InboxMessageDg:              mockInboxDg,
+			AuthenticationCredentialDg:  mockAuthDg,
+			logger:                      logger,
+		}
+
+		count, err := uc.createInboxMessagesForCertificates(ctx, eventID, senderID)
+
+		require.NoError(t, err)
+		assert.Equal(t, 1, count)
+		mockInboxDg.AssertExpectations(t)
+	})
+
+	t.Run("should skip certificate with no email, no credential ID, and no wallet address", func(t *testing.T) {
 		mockEventDg := new(MockEventDataGateway)
 		mockCertDg := new(MockEventCertificateDataGateway)
 		mockInboxDg := new(MockInboxMessageDgForCerts)
 		mockAuthDg := new(MockAuthCredentialDgForCerts)
 
 		cert := &entity.EventCertificate{
-			Id:                   certID,
-			EventId:              eventID,
-			ReceiverCredentialId: nil,
-			ReceiverEmail:        nil,
+			Id:                    certID,
+			EventId:               eventID,
+			ReceiverCredentialId:  nil,
+			ReceiverEmail:         nil,
+			ReceiverWalletAddress: nil,
 		}
 
 		mockEventDg.On("GetEventById", ctx, eventID).Return(&entity.Event{
@@ -308,7 +351,6 @@ func TestCreateInboxMessagesForCertificates_Web3User(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.Equal(t, 0, count)
-		// CreateInboxMessage should NOT be called
 		mockInboxDg.AssertNotCalled(t, "CreateInboxMessage")
 	})
 
