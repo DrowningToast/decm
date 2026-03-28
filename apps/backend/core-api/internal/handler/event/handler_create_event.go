@@ -34,7 +34,7 @@ type CreateEventRequest struct {
 	HostPassword     string `form:"host_password"`
 	// Wallet-based auth (alternative to host_password)
 	Signature   string `form:"signature"`
-	SignMessage  string `form:"sign_message"`
+	SignMessage string `form:"sign_message"`
 }
 
 // @Summary Create a new event
@@ -55,7 +55,9 @@ type CreateEventRequest struct {
 // @Param google_map_query formData string true "Google map query"
 // @Param banner formData file true "Event banner image (JPEG, PNG, WebP, max 10MB)"
 // @Param icon formData file true "Event icon image (JPEG, PNG, WebP, max 10MB)"
-// @Param host_password formData string true "Host password"
+// @Param host_password formData string false "Host password"
+// @Param signature formData string false "Wallet signature"
+// @Param sign_message formData string false "Wallet sign message"
 // @Success 201 {object} EventResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Router /api/v1/events [post]

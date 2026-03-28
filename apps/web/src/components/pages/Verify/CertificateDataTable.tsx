@@ -434,6 +434,11 @@ export function CertificateDataTable({ data }: { data: GetCertificateShareDataRe
                                             label={t("certificateVerify.table.fullName")}
                                             value={attendeeFullName}
                                             verified={nameVerified}
+                                            warningTooltip={
+                                                nameVerified === false
+                                                    ? `Attendee profile name ("${attendeeFullName}") does not match the name in the certificate record${decryptedCertificateData?.name ? ` ("${decryptedCertificateData.name}")` : ""}.`
+                                                    : undefined
+                                            }
                                         />
                                     )}
                                     {decryptedUserData.academic_institution && (

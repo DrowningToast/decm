@@ -9,9 +9,11 @@ import (
 	"encoding/hex"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -174,6 +176,69 @@ func TestUpdateEvent(t *testing.T) {
 		assert.Contains(t, err.Error(), "user is not the owner of the event")
 		mockAuthDg.AssertExpectations(t)
 		mockEventDg.AssertExpectations(t)
+	})
+
+	t.Run("should return error (not panic) when BYOK user sends only host_password", func(t *testing.T) {
+		// Arrange — BYOK user has no encrypted private key
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+		credential := &entity.AuthenticationCredential{
+			Id:                  userId,
+			IsVerifiedOrganizer: true,
+			EncryptedPrivateKey: nil, // BYOK: no server-side key
+			WalletAddress:       "0x1234567890123456789012345678901234567890",
+		}
+		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
+			Return(credential, nil)
+
+		seatsCount := 100
+		mockEventDg := new(MockEventDataGateway)
+		event := &entity.Event{
+			Id:                eventId,
+			OwnerCredentialId: userId,
+			MaxAttendees:      seatsCount,
+		}
+		mockEventDg.On("GetEventById", ctx, eventId).Return(event, nil)
+
+		contractAddress := "0x1234567890123456789012345678901234567890"
+		mockContractDg := new(MockEventContractDataGateway)
+		eventContract := &entity.EventContract{
+			EventId:              eventId,
+			EventContractAddress: contractAddress,
+		}
+		mockContractDg.On("GetEventContractByEventID", ctx, eventId).Return(eventContract, nil)
+
+		mockEventDg.On("UpdateEvent", ctx, eventId, mock.Anything).
+			Return(event, nil)
+
+		mockBlockchainDg := new(MockBlockchainClientDataGateway)
+		mockBlockchainDg.On("GetTransactOpts", ctx).Return(&bind.TransactOpts{}, nil)
+
+		uc := &EventUsecase{
+			AuthenticationCredentialDg: mockAuthDg,
+			EventDataGateway:           mockEventDg,
+			EventContractDataGateway:   mockContractDg,
+			BlockchainClientDg:         mockBlockchainDg,
+		}
+
+		currentUser := &auth.JwtClaims{UserId: userId}
+
+		// Act — BYOK user mistakenly sends only host_password (no signature/sign_message)
+		params := UpdateEventParameters{
+			SeatsCount:   &seatsCount,
+			HostPassword: "some-password",
+		}
+		updatedEvent, err := uc.UpdateEvent(ctx, eventId, params, currentUser)
+
+		// Assert — must return a proper error, not panic with a nil dereference
+		assert.Error(t, err)
+		assert.Nil(t, updatedEvent)
+		customErr := customerror.TryParseAsCustomErr(err)
+		assert.NotNil(t, customErr)
+		assert.Equal(t, customerror.ErrUnauthorized.Code, *customErr.Code)
+		mockAuthDg.AssertExpectations(t)
+		mockEventDg.AssertExpectations(t)
+		mockContractDg.AssertExpectations(t)
+		mockBlockchainDg.AssertExpectations(t)
 	})
 
 	t.Run("should fail when seats count is less than max attendees", func(t *testing.T) {

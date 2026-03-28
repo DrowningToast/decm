@@ -32,7 +32,7 @@ type CreateEventParameters struct {
 	EventIcon        *multipart.FileHeader
 	HostPassword     string
 	// Wallet-based auth (alternative to HostPassword)
-	Signature  string
+	Signature   string
 	SignMessage string
 }
 

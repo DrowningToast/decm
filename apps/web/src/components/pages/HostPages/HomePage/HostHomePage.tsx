@@ -62,8 +62,7 @@ interface MenuItemProps {
 function MenuItem({ title, to }: MenuItemProps) {
     return (
         <Link
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            to={to as any}
+            to={to}
             className="lg:py-5 lg:px-6 lg:border lg:border-[#D9D9D91A] lg:rounded-lg lg:bg-[#D9D9D905]"
         >
             <Typography

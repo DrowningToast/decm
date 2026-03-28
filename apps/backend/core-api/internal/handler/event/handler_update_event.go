@@ -26,6 +26,8 @@ type UpdateEventRequest struct {
 	Location         *string
 	GoogleMapQuery   *string
 	HostPassword     *string
+	Signature        *string
+	SignMessage      *string
 }
 
 // @Summary Update an event
@@ -46,7 +48,9 @@ type UpdateEventRequest struct {
 // @Param google_map_query formData string false "Google map query"
 // @Param banner formData file false "Event banner image (JPEG, PNG, WebP, max 10MB) - optional"
 // @Param icon formData file false "Event icon image (JPEG, PNG, WebP, max 10MB) - optional"
-// @Param host_password formData string true "Host password (required for contract update)"
+// @Param host_password formData string false "Host password (required for contract update if not using wallet)"
+// @Param signature formData string false "Wallet signature"
+// @Param sign_message formData string false "Wallet sign message"
 // @Success 200 {object} EventResponse
 // @Failure 400 {object} customerror.ErrResponse
 // @Failure 401 {object} customerror.ErrResponse
@@ -106,9 +110,9 @@ func (h *Handler) UpdateEvent(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	// HostPassword is required for decrypting the private key to sign the contract update
-	if params.HostPassword == nil {
-		return customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("host_password is required"))
+	// Either HostPassword or Signature+SignMessage is required
+	if params.HostPassword == nil && (params.Signature == nil || params.SignMessage == nil) {
+		return customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("either host_password or (signature + sign_message) is required"))
 	}
 
 	updateEventParams := eventUc.UpdateEventParameters{
@@ -122,7 +126,16 @@ func (h *Handler) UpdateEvent(ctx *fiber.Ctx) error {
 		ContactAddress:   params.ContactAddress,
 		Location:         params.Location,
 		GoogleMapQuery:   params.GoogleMapQuery,
-		HostPassword:     *params.HostPassword,
+	}
+
+	if params.HostPassword != nil {
+		updateEventParams.HostPassword = *params.HostPassword
+	}
+	if params.Signature != nil {
+		updateEventParams.Signature = *params.Signature
+	}
+	if params.SignMessage != nil {
+		updateEventParams.SignMessage = *params.SignMessage
 	}
 
 	bannerFile, _ := ctx.FormFile("banner") // Optional field
@@ -189,6 +202,12 @@ func (r *UpdateEventRequest) Parse(ctx *fiber.Ctx) error {
 	}
 	if hostPassword := ctx.FormValue("host_password"); hostPassword != "" {
 		r.HostPassword = &hostPassword
+	}
+	if signature := ctx.FormValue("signature"); signature != "" {
+		r.Signature = &signature
+	}
+	if signMessage := ctx.FormValue("sign_message"); signMessage != "" {
+		r.SignMessage = &signMessage
 	}
 
 	return nil

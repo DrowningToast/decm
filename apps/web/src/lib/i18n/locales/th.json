@@ -123,7 +123,8 @@
         "publicClientChainValue": "{{name}} (ID: {{id}})",
         "transportLabel": "ทรานสปอร์ต:",
         "transportUnknown": "ไม่ทราบ",
-        "viewRawSummary": "ดูข้อมูล Public Client แบบดิบ"
+        "viewRawSummary": "ดูข้อมูล Public Client แบบดิบ",
+        "byokNotSupported": "ระบบยังไม่รองรับการลงนามด้วย Self Custody ในขณะนี้"
     },
     "auth": {
         "signIn": "เข้าสู่ระบบ",
@@ -1114,6 +1115,8 @@
         "saveSettings": "บันทึกการตั้งค่า",
         "saveError": "ไม่สามารถบันทึกการตั้งค่าผู้เข้าร่วม กรุณาลองอีกครั้ง",
         "saveSuccess": "บันทึกการตั้งค่าผู้เข้าร่วมเรียบร้อยแล้ว",
+        "updateSuccess": "อัปเดตการตั้งค่าผู้เข้าร่วมเรียบร้อยแล้ว",
+        "updateError": "ไม่สามารถอัปเดตการตั้งค่าผู้เข้าร่วมได้",
         "formPreview": {
             "description": "นี่คือวิธีที่แบบฟอร์มการลงทะเบียนจะปรากฏต่อผู้เข้าร่วม",
             "title": "ตัวอย่างแบบฟอร์มการลงทะเบียน"

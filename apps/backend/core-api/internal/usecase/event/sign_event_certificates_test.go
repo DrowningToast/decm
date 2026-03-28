@@ -10,6 +10,7 @@ import (
 	"apps/backend/services/auth"
 	"context"
 	"encoding/hex"
+	"log/slog"
 	"testing"
 
 	ethCommon "github.com/ethereum/go-ethereum/common"
@@ -76,6 +77,7 @@ func TestSignEventCertificates(t *testing.T) {
 			IsVerifiedOrganizer: false,
 			IsVerifiedIssuer:    false, // Not a verified issuer
 			EncryptedPrivateKey: &encryptedPrivateKey,
+			WalletAddress:       "0x1234567890123456789012345678901234567890",
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -107,6 +109,7 @@ func TestSignEventCertificates(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedIssuer:    true,
 			EncryptedPrivateKey: &encryptedPrivateKey,
+			WalletAddress:       "0x1234567890123456789012345678901234567890",
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -141,6 +144,7 @@ func TestSignEventCertificates(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedIssuer:    true,
 			EncryptedPrivateKey: &encryptedPrivateKey,
+			WalletAddress:       "0x1234567890123456789012345678901234567890",
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -188,6 +192,7 @@ func TestSignEventCertificates(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedIssuer:    true,
 			EncryptedPrivateKey: &encryptedPrivateKey,
+			WalletAddress:       "0x1234567890123456789012345678901234567890",
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -247,6 +252,7 @@ func TestSignEventCertificates(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedIssuer:    true,
 			EncryptedPrivateKey: &encryptedKey,
+			WalletAddress:       "0x1234567890123456789012345678901234567890",
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -302,6 +308,7 @@ func TestSignEventCertificates(t *testing.T) {
 			EventCertificateSignatureDataGateway: mockSigDg,
 			EventCertificateConfigDg:             mockCertConfigDg,
 			cfg:                                  createMockConfigForSign(),
+			logger:                               slog.Default(),
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
@@ -337,6 +344,7 @@ func TestSignEventCertificates(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedIssuer:    true,
 			EncryptedPrivateKey: &encryptedKey,
+			WalletAddress:       "0x1234567890123456789012345678901234567890",
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -392,6 +400,7 @@ func TestSignEventCertificates(t *testing.T) {
 			EventCertificateSignatureDataGateway: mockSigDg,
 			EventCertificateConfigDg:             mockCertConfigDg,
 			cfg:                                  createMockConfigForSign(),
+			logger:                               slog.Default(),
 		}
 
 		currentUser := &auth.JwtClaims{UserId: userId}
@@ -437,6 +446,7 @@ func TestSignEventCertificates_MultipleIssuers(t *testing.T) {
 			Id:                  issuer1ID,
 			IsVerifiedIssuer:    true,
 			EncryptedPrivateKey: &encryptedPrivateKey,
+			WalletAddress:       "0x1234567890123456789012345678901234567890",
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, issuer1ID).
 			Return(credential, nil)
@@ -520,6 +530,7 @@ func TestSignEventCertificates_MultipleIssuers(t *testing.T) {
 			EventCertificateConfigDg:             mockCertConfigDg,
 			EventIssuerDataGateway:               mockIssuerDg,
 			cfg:                                  createMockConfigForSign(),
+			logger:                               slog.Default(),
 		}
 
 		currentUser := &auth.JwtClaims{UserId: issuer1ID}
@@ -697,6 +708,7 @@ func TestSignEventCertificates_BYOK(t *testing.T) {
 			EventCertificateSignatureDataGateway: mockSigDg,
 			EventCertificateConfigDg:             mockCertConfigDg,
 			cfg:                                  createMockConfigForSign(),
+			logger:                               slog.Default(),
 		}
 
 		_, err = uc.SignEventCertificates(ctx, eventID, SignEventCertificatesRequest{
@@ -760,6 +772,7 @@ func TestSignEventCertificates_BYOK(t *testing.T) {
 			EventCertificateSignatureDataGateway: mockSigDg,
 			EventCertificateConfigDg:             mockCertConfigDg,
 			cfg:                                  createMockConfigForSign(),
+			logger:                               slog.Default(),
 		}
 
 		_, err = uc.SignEventCertificates(ctx, eventID, SignEventCertificatesRequest{
@@ -818,6 +831,7 @@ func TestSignEventCertificates_BYOK(t *testing.T) {
 			EventCertificateConfigDg:             mockCertConfigDg,
 			EventIssuerDataGateway:               mockIssuerDg,
 			cfg:                                  createMockConfigForSign(),
+			logger:                               slog.Default(),
 		}
 
 		result, err := uc.SignEventCertificates(ctx, eventID, SignEventCertificatesRequest{

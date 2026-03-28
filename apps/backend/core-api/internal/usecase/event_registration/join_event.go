@@ -7,6 +7,7 @@ import (
 	"apps/backend/core-api/internal/usecase/cyptoutils"
 	"apps/backend/services/auth"
 	"context"
+	"log/slog"
 
 	eventcontract_datagateway "apps/backend/core-api/internal/datagateway/onchain/event_contract"
 
@@ -204,6 +205,7 @@ func (uc *EventRegistrationUsecase) JoinEventWithSignature(ctx context.Context, 
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to extract deadline block from sign message")
 	}
+
 	isValid, err := cyptoutils.ValidateSignMessage(signMessage, participantAddress, common.HexToAddress(entityEventContract.EventContractAddress), deadlineBlock)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to validate sign message")
@@ -224,6 +226,10 @@ func (uc *EventRegistrationUsecase) JoinEventWithSignature(ctx context.Context, 
 		return nil, errors.Wrap(err, "failed to verify signature by digest")
 	}
 	if !isValidHash {
+		slog.WarnContext(ctx, "security event: failed signature verification",
+			"participant_address", participantAddress.Hex(),
+			"context", "JoinEventWithSignature",
+		)
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("signature does not match the sign message"))
 	}
 

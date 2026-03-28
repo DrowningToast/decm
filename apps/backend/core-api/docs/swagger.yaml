@@ -339,6 +339,13 @@ definitions:
     - event_certificate_address
     - sign_message
     type: object
+  core-api_internal_handler_event.GetIssuerSignMessageResponse:
+    properties:
+      sign_message:
+        type: string
+    required:
+    - sign_message
+    type: object
   core-api_internal_handler_event.ImportCertificateReceiversRequest:
     properties:
       event_id:
@@ -425,9 +432,13 @@ definitions:
   core-api_internal_handler_event.SignEventCertificatesRequest:
     properties:
       issuer_pin:
+        description: For PIN-based (non-BYOK) users
         type: string
-    required:
-    - issuer_pin
+      issuer_sign_message:
+        description: For wallet-based (BYOK) users
+        type: string
+      issuer_signature:
+        type: string
     type: object
   core-api_internal_handler_event.SignEventCertificatesResponse:
     properties:
@@ -435,8 +446,11 @@ definitions:
         items:
           $ref: '#/definitions/core-api_internal_handler_event.CertificateSignature'
         type: array
+      total_signed:
+        type: integer
     required:
     - certificates
+    - total_signed
     type: object
   core-api_internal_handler_event_registration.JoinEventPayload:
     properties:
@@ -1229,8 +1243,10 @@ definitions:
     properties:
       host_password:
         type: string
-    required:
-    - host_password
+      sign_message:
+        type: string
+      signature:
+        type: string
     type: object
   event.EventIssuerResponse:
     properties:
@@ -3762,7 +3778,14 @@ paths:
       - description: Host password
         in: formData
         name: host_password
-        required: true
+        type: string
+      - description: Wallet signature
+        in: formData
+        name: signature
+        type: string
+      - description: Wallet sign message
+        in: formData
+        name: sign_message
         type: string
       produces:
       - application/json
@@ -3908,10 +3931,17 @@ paths:
         in: formData
         name: icon
         type: file
-      - description: Host password (required for contract update)
+      - description: Host password (required for contract update if not using wallet)
         in: formData
         name: host_password
-        required: true
+        type: string
+      - description: Wallet signature
+        in: formData
+        name: signature
+        type: string
+      - description: Wallet sign message
+        in: formData
+        name: sign_message
         type: string
       produces:
       - application/json
@@ -4265,7 +4295,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Sign all event certificates for an event by issuer
+      description: Sign all event certificates for an event by issuer. PIN-based users
+        provide issuer_pin; BYOK wallet users provide issuer_sign_message and issuer_signature.
       operationId: sign-event-certificates
       parameters:
       - description: Event ID
@@ -4303,6 +4334,39 @@ paths:
           schema:
             $ref: '#/definitions/customerror.ErrResponse'
       summary: Sign event certificates
+      tags:
+      - Event Certificates
+  /api/v1/events/{event_id}/certificates/sign/message:
+    get:
+      description: Returns the stored sign_message that a BYOK wallet issuer must
+        sign before calling the sign certificates endpoint.
+      operationId: get-issuer-sign-message
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core-api_internal_handler_event.GetIssuerSignMessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customerror.ErrResponse'
+      summary: Get sign message for BYOK issuer certificate signing
       tags:
       - Event Certificates
   /api/v1/events/{event_id}/certificates/text-config:

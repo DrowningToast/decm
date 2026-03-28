@@ -478,7 +478,7 @@ WHERE (
     OR ec.receiver_email = $2
     OR ec.receiver_wallet_address = $3
   )
-  AND ec.certificate_token_id IS NULL
+  AND ec.certificate_token_id IS NULL 
   AND ec.user_claim_signature_id IS NULL
   AND ecc.is_published = TRUE
   AND ec.revoked_at IS NULL

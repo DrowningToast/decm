@@ -225,6 +225,10 @@ export interface CoreApiInternalHandlerEventGetCertificateImportSignMessageRespo
     sign_message: string;
 }
 
+export interface CoreApiInternalHandlerEventGetIssuerSignMessageResponse {
+    sign_message: string;
+}
+
 export interface CoreApiInternalHandlerEventImportCertificateReceiversRequest {
     event_id: string;
     /** PIN-based path (non-BYOK users): provide host_pin to decrypt server-side key */
@@ -284,12 +288,9 @@ export interface CoreApiInternalHandlerEventSignEventCertificatesRequest {
     issuer_signature?: string;
 }
 
-export interface CoreApiInternalHandlerEventGetIssuerSignMessageResponse {
-    sign_message: string;
-}
-
 export interface CoreApiInternalHandlerEventSignEventCertificatesResponse {
     certificates: CoreApiInternalHandlerEventCertificateSignature[];
+    total_signed: number;
 }
 
 export interface CoreApiInternalHandlerEventconfigCertificateMintReadinessResponse {
@@ -409,7 +410,7 @@ export interface CreateEventPayload {
     /** Google map query */
     google_map_query: string;
     /** Host password */
-    host_password: string;
+    host_password?: string;
     /**
      * Event icon image (JPEG, PNG, WebP, max 10MB)
      * @format binary
@@ -423,6 +424,10 @@ export interface CreateEventPayload {
     seats_count: number;
     /** Event short description */
     short_description: string;
+    /** Wallet sign message */
+    sign_message?: string;
+    /** Wallet signature */
+    signature?: string;
     /** Start date (RFC3339 format) */
     start_date: string;
 }
@@ -757,7 +762,9 @@ export interface EventCreateEventIssuerRequest {
 }
 
 export interface EventDeleteEventRequest {
-    host_password: string;
+    host_password?: string;
+    sign_message?: string;
+    signature?: string;
 }
 
 export interface EventEventIssuerResponse {
@@ -1373,6 +1380,15 @@ export interface GetIssuerEventsViewmodelParams {
     offset?: number;
 }
 
+export type GetIssuerSignMessageData = CoreApiInternalHandlerEventGetIssuerSignMessageResponse;
+
+export type GetIssuerSignMessageError = CustomerrorErrResponse;
+
+export interface GetIssuerSignMessageParams {
+    /** Event ID */
+    eventId: string;
+}
+
 export type GetJoinEventSignMessageData = EventRegistrationGetJoinEventSignMessageResponse;
 
 export type GetJoinEventSignMessageError = CustomerrorErrResponse;
@@ -1894,15 +1910,6 @@ export interface RevokeEventCertificatesParams {
     eventId: string;
 }
 
-export type GetIssuerSignMessageData = CoreApiInternalHandlerEventGetIssuerSignMessageResponse;
-
-export type GetIssuerSignMessageError = CustomerrorErrResponse;
-
-export interface GetIssuerSignMessageParams {
-    /** Event ID */
-    eventId: string;
-}
-
 export type SignEventCertificatesData = CoreApiInternalHandlerEventSignEventCertificatesResponse;
 
 export type SignEventCertificatesError = CustomerrorErrResponse;
@@ -2071,8 +2078,8 @@ export interface UpdateEventPayload {
     end_date: string;
     /** Google map query */
     google_map_query?: string;
-    /** Host password (required for contract update) */
-    host_password: string;
+    /** Host password (required for contract update if not using wallet) */
+    host_password?: string;
     /**
      * Event icon image (JPEG, PNG, WebP, max 10MB) - optional
      * @format binary
@@ -2086,6 +2093,10 @@ export interface UpdateEventPayload {
     seats_count: number;
     /** Event short description */
     short_description?: string;
+    /** Wallet sign message */
+    sign_message?: string;
+    /** Wallet signature */
+    signature?: string;
     /** Start date (RFC3339 format) */
     start_date: string;
 }
@@ -3033,25 +3044,8 @@ export class Api<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Sign all event certificates for an event by issuer
+         * @description Sign all event certificates for an event by issuer. PIN-based users provide issuer_pin; BYOK wallet users provide issuer_sign_message and issuer_signature.
          *
-         * @tags Event Certificates
-         * @name GetIssuerSignMessage
-         * @summary Get sign message for BYOK issuer certificate signing
-         * @request GET:/api/v1/events/{event_id}/certificates/sign/message
-         */
-        getIssuerSignMessage: (
-            { eventId, ...query }: GetIssuerSignMessageParams,
-            params: RequestParams = {},
-        ) =>
-            this.http.request<GetIssuerSignMessageData, GetIssuerSignMessageError>({
-                path: `/api/v1/events/${eventId}/certificates/sign/message`,
-                method: "GET",
-                format: "json",
-                ...params,
-            }),
-
-        /**
          * @tags Event Certificates
          * @name SignEventCertificates
          * @summary Sign event certificates
@@ -3067,6 +3061,25 @@ export class Api<SecurityDataType extends unknown> {
                 method: "POST",
                 body: request,
                 type: ContentType.Json,
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Returns the stored sign_message that a BYOK wallet issuer must sign before calling the sign certificates endpoint.
+         *
+         * @tags Event Certificates
+         * @name GetIssuerSignMessage
+         * @summary Get sign message for BYOK issuer certificate signing
+         * @request GET:/api/v1/events/{event_id}/certificates/sign/message
+         */
+        getIssuerSignMessage: (
+            { eventId, ...query }: GetIssuerSignMessageParams,
+            params: RequestParams = {},
+        ) =>
+            this.http.request<GetIssuerSignMessageData, GetIssuerSignMessageError>({
+                path: `/api/v1/events/${eventId}/certificates/sign/message`,
+                method: "GET",
                 format: "json",
                 ...params,
             }),

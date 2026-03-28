@@ -1,6 +1,7 @@
 package event_registration
 
 import (
+	"apps/backend/services/auth"
 	"bytes"
 	"encoding/json"
 	"io"
@@ -11,7 +12,6 @@ import (
 
 	customerror "apps/backend/common/customerror"
 	eventRegistrationUc "apps/backend/core-api/internal/usecase/event_registration"
-	"apps/backend/services/auth"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"

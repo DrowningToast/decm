@@ -3,10 +3,10 @@ package postgres
 import (
 	"apps/backend/common/pgerrutils"
 	"apps/backend/common/pgmapper"
+	"apps/backend/common/utils"
 	"apps/backend/core-api/internal/entity"
 	"context"
 	"decm-database/go/generated"
-	"strings"
 
 	event_datagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 
@@ -27,23 +27,13 @@ func (r *Repository) CreateEventCertificate(ctx context.Context, params event_da
 		return nil, err
 	}
 
-	// Normalize email to lowercase for case-insensitive comparison
-	normalizedEmail := params.ReceiverEmail
-	if params.ReceiverEmail != nil && *params.ReceiverEmail != "" {
-		lowercaseEmail := strings.ToLower(*params.ReceiverEmail)
-		normalizedEmail = &lowercaseEmail
-	}
+	// Normalize email and wallet address to lowercase for case-insensitive comparison
+	normalizedEmail := utils.NormalizeToLower(params.ReceiverEmail)
+	normalizedWalletAddress := utils.NormalizeToLower(params.ReceiverWalletAddress)
 
 	receiverEmailEnc, err := pgmapper.EncryptStringPtrToPgText(normalizedEmail, r.piiEncryptionKey)
 	if err != nil {
 		return nil, err
-	}
-
-	// Normalize wallet address to lowercase for case-insensitive comparison
-	normalizedWalletAddress := params.ReceiverWalletAddress
-	if params.ReceiverWalletAddress != nil && *params.ReceiverWalletAddress != "" {
-		lowercaseWallet := strings.ToLower(*params.ReceiverWalletAddress)
-		normalizedWalletAddress = &lowercaseWallet
 	}
 
 	result, err := r.queries.CreateEventCertificate(ctx, generated.CreateEventCertificateParams{
@@ -487,24 +477,14 @@ func (r *Repository) GetUnclaimedReadyCertificatesByEventID(ctx context.Context,
 }
 
 func (r *Repository) GetClaimedCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string, walletAddress *string) ([]*entity.EventCertificate, error) {
-	// Normalize email to lowercase for case-insensitive comparison
-	normalizedEmail := email
-	if email != nil && *email != "" {
-		lowercaseEmail := strings.ToLower(*email)
-		normalizedEmail = &lowercaseEmail
-	}
+	// Normalize email and wallet address to lowercase for case-insensitive comparison
+	normalizedEmail := utils.NormalizeToLower(email)
+	normalizedWalletAddress := utils.NormalizeToLower(walletAddress)
 
 	// Encrypt email for query
 	encryptedEmail, err := pgmapper.EncryptStringPtrToPgText(normalizedEmail, r.piiEncryptionKey)
 	if err != nil {
 		return nil, err
-	}
-
-	// Normalize wallet address to lowercase for case-insensitive comparison
-	normalizedWalletAddress := walletAddress
-	if walletAddress != nil && *walletAddress != "" {
-		lowercaseWallet := strings.ToLower(*walletAddress)
-		normalizedWalletAddress = &lowercaseWallet
 	}
 
 	results, err := r.queries.GetClaimedCertificatesByCredentialID(ctx, generated.GetClaimedCertificatesByCredentialIDParams{
@@ -563,24 +543,14 @@ func (r *Repository) GetClaimedCertificatesByCredentialID(ctx context.Context, c
 }
 
 func (r *Repository) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string, walletAddress *string) ([]*entity.EventCertificate, error) {
-	// Normalize email to lowercase for case-insensitive comparison
-	normalizedEmail := email
-	if email != nil && *email != "" {
-		lowercaseEmail := strings.ToLower(*email)
-		normalizedEmail = &lowercaseEmail
-	}
+	// Normalize email and wallet address to lowercase for case-insensitive comparison
+	normalizedEmail := utils.NormalizeToLower(email)
+	normalizedWalletAddress := utils.NormalizeToLower(walletAddress)
 
 	// Encrypt email for query
 	encryptedEmail, err := pgmapper.EncryptStringPtrToPgText(normalizedEmail, r.piiEncryptionKey)
 	if err != nil {
 		return nil, err
-	}
-
-	// Normalize wallet address to lowercase for case-insensitive comparison
-	normalizedWalletAddress := walletAddress
-	if walletAddress != nil && *walletAddress != "" {
-		lowercaseWallet := strings.ToLower(*walletAddress)
-		normalizedWalletAddress = &lowercaseWallet
 	}
 
 	results, err := r.queries.GetUnclaimedReadyCertificatesByCredentialID(ctx, generated.GetUnclaimedReadyCertificatesByCredentialIDParams{

@@ -170,8 +170,8 @@ func TestInboxUsecase_isAuthorizedToReadMessage_CaseInsensitiveEmail(t *testing.
 	t.Run("should authorize when wallet address stored as lowercase but user has EIP-55 checksum", func(t *testing.T) {
 		// Simulates: host imports participant with lowercase address, user registered with EIP-55 checksum
 		uc := &InboxUsecase{}
-		storedAddress := "0xf466e7ce6b06f9b3071557a790bd45f051c1c60a"          // lowercase (as stored)
-		userAddress := "0xf466e7cE6B06f9b3071557A790Bd45F051C1C60A"             // EIP-55 checksum (from JWT)
+		storedAddress := "0xf466e7ce6b06f9b3071557a790bd45f051c1c60a" // lowercase (as stored)
+		userAddress := "0xf466e7cE6B06f9b3071557A790Bd45F051C1C60A"   // EIP-55 checksum (from JWT)
 
 		message := &entity.InboxMessage{
 			ReceiverWalletAddress: &storedAddress,
@@ -188,8 +188,8 @@ func TestInboxUsecase_isAuthorizedToReadMessage_CaseInsensitiveEmail(t *testing.
 
 	t.Run("should authorize when wallet address stored as EIP-55 but user has lowercase", func(t *testing.T) {
 		uc := &InboxUsecase{}
-		storedAddress := "0xf466e7cE6B06f9b3071557A790Bd45F051C1C60A"           // EIP-55 (as stored)
-		userAddress := "0xf466e7ce6b06f9b3071557a790bd45f051c1c60a"             // lowercase (from JWT)
+		storedAddress := "0xf466e7cE6B06f9b3071557A790Bd45F051C1C60A" // EIP-55 (as stored)
+		userAddress := "0xf466e7ce6b06f9b3071557a790bd45f051c1c60a"   // lowercase (from JWT)
 
 		message := &entity.InboxMessage{
 			ReceiverWalletAddress: &storedAddress,

@@ -2,6 +2,7 @@ package event
 
 import (
 	"apps/backend/common/customerror"
+	"apps/backend/common/utils"
 	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/core-api/internal/usecase/cyptoutils"
@@ -212,6 +213,7 @@ func (uc *EventUsecase) ClaimCertificateWithSignature(ctx context.Context, curre
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to extract deadline block from sign message")
 	}
+
 	isValid, err := cyptoutils.ValidateSignMessage(signMessage, participantAddress, common.HexToAddress(*certificate.EventCertificateAddress), deadlineBlock)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to validate sign message")
@@ -232,6 +234,11 @@ func (uc *EventUsecase) ClaimCertificateWithSignature(ctx context.Context, curre
 		return nil, nil, errors.Wrap(err, "failed to verify signature by digest")
 	}
 	if !isValidHash {
+		uc.logger.WarnContext(ctx, "security event: failed signature verification",
+			"certificate_id", certificateId,
+			"participant_address", participantAddress.Hex(),
+			"context", "ClaimCertificateWithSignature",
+		)
 		return nil, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("signature does not match the sign message"))
 	}
 
@@ -351,22 +358,10 @@ func (uc *EventUsecase) claimCertificate(ctx context.Context, currentUser *auth.
 	// Build UserData CSV structure (PII - Raw Certificate Data)
 	// UserData format: name,academic_institution,certificate_title,certificate_subtitle
 	// This matches the pattern used in import_certificate_receivers.go
-	name := ""
-	if certificate.Name != nil {
-		name = *certificate.Name
-	}
-	academicInstitution := ""
-	if certificate.AcademicInstitution != nil {
-		academicInstitution = *certificate.AcademicInstitution
-	}
-	certTitle := ""
-	if certificate.CertificateTitle != nil {
-		certTitle = *certificate.CertificateTitle
-	}
-	certSubtitle := ""
-	if certificate.CertificateSubtitle != nil {
-		certSubtitle = *certificate.CertificateSubtitle
-	}
+	name := utils.DerefOrEmpty(certificate.Name)
+	academicInstitution := utils.DerefOrEmpty(certificate.AcademicInstitution)
+	certTitle := utils.DerefOrEmpty(certificate.CertificateTitle)
+	certSubtitle := utils.DerefOrEmpty(certificate.CertificateSubtitle)
 
 	// ============================================
 	// DATA SECTION: Participant Profile from event_attendees

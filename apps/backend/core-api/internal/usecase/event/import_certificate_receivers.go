@@ -3,6 +3,7 @@ package event
 import (
 	"apps/backend/common/customerror"
 	"apps/backend/common/pgmapper"
+	"apps/backend/common/utils"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"
@@ -53,7 +54,34 @@ type SignMessage struct {
 	Receivers            []string `json:"receivers"`
 }
 
+// validateReceiverRequests enforces that every receiver has exactly one identifier
+// (email XOR wallet address) and that wallet addresses are valid hex strings.
+func validateReceiverRequests(requests []ImportCertificateReceiversRequest) error {
+	for i, receiver := range requests {
+		hasEmail := receiver.Email != nil && *receiver.Email != ""
+		hasWallet := receiver.WalletAddress != nil && *receiver.WalletAddress != ""
+		if hasEmail == hasWallet {
+			return customerror.Parse(
+				&customerror.ErrInvalidArgument,
+				fmt.Errorf("receiver at index %d: must have exactly one of email or wallet_address, not both and not neither", i),
+			)
+		}
+		if hasWallet && !common.IsHexAddress(*receiver.WalletAddress) {
+			return customerror.Parse(
+				&customerror.ErrInvalidArgument,
+				fmt.Errorf("receiver at index %d: invalid wallet address format", i),
+			)
+		}
+	}
+	return nil
+}
+
 func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID uuid.UUID, requests []ImportCertificateReceiversRequest, opts ImportCertificateReceiversOptions, currentUser *auth.JwtClaims) (*ImportCertificateReceiversResponse, error) {
+	// 0. Validate requests
+	if err := validateReceiverRequests(requests); err != nil {
+		return nil, err
+	}
+
 	// 1. Check if current user is authorized
 	credential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx, currentUser.UserId)
 	if err != nil {
@@ -66,7 +94,7 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 
 	// Determine auth path: PIN-based (non-BYOK) or wallet-based (BYOK)
 	isByok := credential.EncryptedPrivateKey == nil
-	if !isByok && (opts.HostPin == nil || *opts.HostPin == "") {
+	if !isByok && utils.DerefOrEmpty(opts.HostPin) == "" {
 		return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("host_pin is required for non-BYOK users"))
 	}
 	if isByok && (opts.HostSignMessage == nil || opts.HostSignature == nil) {
@@ -179,29 +207,15 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 
 	// 6. Save certificate data to event_certificates
 	certificates := make([]*entity.EventCertificate, 0, len(requests))
+	receivers := make([]string, 0, len(requests))
 
 	for _, req := range requests {
 		// Safely dereference pointer fields (use empty string if nil)
-		firstName := ""
-		if req.FirstName != nil {
-			firstName = *req.FirstName
-		}
-		lastName := ""
-		if req.LastName != nil {
-			lastName = *req.LastName
-		}
-		academicInstitution := ""
-		if req.AcademicInstitution != nil {
-			academicInstitution = *req.AcademicInstitution
-		}
-		certificateTitle := ""
-		if req.CertificateTitle != nil {
-			certificateTitle = *req.CertificateTitle
-		}
-		certificateSubtitle := ""
-		if req.CertificateSubtitle != nil {
-			certificateSubtitle = *req.CertificateSubtitle
-		}
+		firstName := utils.DerefOrEmpty(req.FirstName)
+		lastName := utils.DerefOrEmpty(req.LastName)
+		academicInstitution := utils.DerefOrEmpty(req.AcademicInstitution)
+		certificateTitle := utils.DerefOrEmpty(req.CertificateTitle)
+		certificateSubtitle := utils.DerefOrEmpty(req.CertificateSubtitle)
 
 		// Combine first and last name
 		name := fmt.Sprintf("%s %s", firstName, lastName)
@@ -212,6 +226,7 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 		// Hash the CSV value
 		hash := cyptoutils.HashMessage(csvValue)
 		encodedHash := hexutil.Encode(hash)
+		receivers = append(receivers, encodedHash)
 
 		// Create certificate - pass original pointers to preserve nil vs empty distinction
 		certificate, err := uc.EventCertificateDataGateway.CreateEventCertificate(ctx, eventdatagateway.CreateEventCertificateParameters{
@@ -238,42 +253,6 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 	// 7. Create NEW sign_message with NEW receiver hashes
 	// Note: The sign message contains the list of ALL receivers, so it must be regenerated
 	// when the receiver list changes. Old sign messages were deleted with old certificate signatures above.
-	receivers := make([]string, 0, len(requests))
-	for _, req := range requests {
-		// Safely dereference pointer fields (use empty string if nil)
-		firstName := ""
-		if req.FirstName != nil {
-			firstName = *req.FirstName
-		}
-		lastName := ""
-		if req.LastName != nil {
-			lastName = *req.LastName
-		}
-		academicInstitution := ""
-		if req.AcademicInstitution != nil {
-			academicInstitution = *req.AcademicInstitution
-		}
-		certificateTitle := ""
-		if req.CertificateTitle != nil {
-			certificateTitle = *req.CertificateTitle
-		}
-		certificateSubtitle := ""
-		if req.CertificateSubtitle != nil {
-			certificateSubtitle = *req.CertificateSubtitle
-		}
-
-		// Combine first and last name
-		name := fmt.Sprintf("%s %s", firstName, lastName)
-
-		// Create CSV value
-		csvValue := fmt.Sprintf("%s,%s,%s,%s", name, academicInstitution, certificateTitle, certificateSubtitle)
-
-		// Hash the CSV value
-		hash := cyptoutils.HashMessage(csvValue)
-		encodedHash := hexutil.Encode(hash)
-		receivers = append(receivers, encodedHash)
-	}
-
 	signMessage := SignMessage{
 		EventContractAddress: eventCertificateAddressStr,
 		Receivers:            receivers,
@@ -298,9 +277,20 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 			*opts.HostSignature,
 		)
 		if verifyErr != nil {
+			uc.logger.WarnContext(ctx, "security event: failed signature verification",
+				"event_id", eventID,
+				"wallet_address", currentUser.WalletAddress,
+				"error", verifyErr.Error(),
+				"context", "ImportCertificateReceivers",
+			)
 			return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("signature verification failed: %w", verifyErr))
 		}
 		if !valid {
+			uc.logger.WarnContext(ctx, "security event: failed signature verification",
+				"event_id", eventID,
+				"wallet_address", currentUser.WalletAddress,
+				"context", "ImportCertificateReceivers",
+			)
 			return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("host signature does not match wallet address"))
 		}
 		encodedHostSignature = *opts.HostSignature

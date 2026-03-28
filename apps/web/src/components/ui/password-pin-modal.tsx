@@ -112,7 +112,7 @@ export const PasswordPinModal: React.FC<PasswordPinModalProps> = ({
             pinForm.reset();
             passwordForm.reset();
         }
-    }, [isOpen, pinForm, passwordForm, allowWalletSigning]);
+    }, [isOpen, pinForm, passwordForm, allowWalletSigning, isWalletOnlyUser]);
 
     // Auto-focus first PIN input when switching to PIN mode
     useEffect(() => {

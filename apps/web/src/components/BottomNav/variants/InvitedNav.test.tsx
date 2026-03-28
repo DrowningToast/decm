@@ -2,6 +2,7 @@ import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
+import { i18n } from "i18next";
 import { InvitedNav } from "./InvitedNav";
 
 // Mock the context
@@ -18,6 +19,7 @@ vi.mock("../context", () => ({
 vi.mock("../stores/event-invitation", () => ({
     useEventInvitationNavStore: vi.fn(() => ({
         onAcceptCallback: mockOnAcceptCallback,
+        setOnAcceptCallback: vi.fn(),
     })),
 }));
 
@@ -30,8 +32,8 @@ vi.mock("react-i18next", () => ({
             }
             return fallback || key;
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        i18n: {} as any,
+
+        i18n: {} as i18n,
         ready: true,
     })),
 }));
@@ -86,8 +88,8 @@ describe("InvitedNav", () => {
 
         const { useEventInvitationNavStore } = await import("../stores/event-invitation");
         vi.mocked(useEventInvitationNavStore).mockReturnValue({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onAcceptCallback: null as any,
+            onAcceptCallback: undefined,
+            setOnAcceptCallback: vi.fn(),
         });
 
         render(<InvitedNav />);
@@ -104,8 +106,8 @@ describe("InvitedNav", () => {
 
         const { useEventInvitationNavStore } = await import("../stores/event-invitation");
         vi.mocked(useEventInvitationNavStore).mockReturnValue({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onAcceptCallback: undefined as any,
+            onAcceptCallback: undefined,
+            setOnAcceptCallback: vi.fn(),
         });
 
         render(<InvitedNav />);

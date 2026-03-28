@@ -160,9 +160,7 @@ describe("usePasswordPrompt", () => {
 
             await waitFor(() => expect(toast.error).toHaveBeenCalled());
 
-            expect(toast.error).toHaveBeenCalledWith(
-                "The system doesn't support signing with self custody yet.",
-            );
+            expect(toast.error).toHaveBeenCalledWith("walletDebug.byokNotSupported");
         });
 
         it("should not open the sign password modal", async () => {

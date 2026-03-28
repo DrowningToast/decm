@@ -18,6 +18,32 @@ func TestGetCertificateImportSignMessage(t *testing.T) {
 	eventID := uuid.New()
 	currentUser := &auth.JwtClaims{UserId: userID}
 
+	t.Run("fails when receiver has neither email nor wallet address", func(t *testing.T) {
+		uc := &EventUsecase{
+			cfg: createMockConfig(),
+		}
+
+		_, err := uc.GetCertificateImportSignMessage(ctx, eventID, []ImportCertificateReceiversRequest{
+			{FirstName: strPtr("John")}, // Missing both email and wallet
+		}, currentUser)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "must have exactly one of email or wallet_address")
+	})
+
+	t.Run("fails when receiver has both email and wallet address", func(t *testing.T) {
+		uc := &EventUsecase{
+			cfg: createMockConfig(),
+		}
+
+		_, err := uc.GetCertificateImportSignMessage(ctx, eventID, []ImportCertificateReceiversRequest{
+			{Email: strPtr("a@b.com"), WalletAddress: strPtr("0x123")}, // Has both
+		}, currentUser)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "must have exactly one of email or wallet_address")
+	})
+
 	t.Run("fails when user is not a verified organizer", func(t *testing.T) {
 		mockAuthDg := new(MockAuthenticationCredentialDg)
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userID).
@@ -93,6 +119,55 @@ func TestGetCertificateImportSignMessage(t *testing.T) {
 		require.Error(t, err)
 		mockAuthDg.AssertExpectations(t)
 		mockEventDg.AssertExpectations(t)
+	})
+}
+
+func TestValidateReceiverRequests(t *testing.T) {
+	t.Run("passes when receiver has only email", func(t *testing.T) {
+		err := validateReceiverRequests([]ImportCertificateReceiversRequest{
+			{Email: strPtr("a@b.com")},
+		})
+		assert.NoError(t, err)
+	})
+
+	t.Run("passes when receiver has only wallet address", func(t *testing.T) {
+		err := validateReceiverRequests([]ImportCertificateReceiversRequest{
+			{WalletAddress: strPtr("0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B")},
+		})
+		assert.NoError(t, err)
+	})
+
+	t.Run("fails when receiver has neither email nor wallet address", func(t *testing.T) {
+		err := validateReceiverRequests([]ImportCertificateReceiversRequest{
+			{FirstName: strPtr("John")},
+		})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "must have exactly one of email or wallet_address")
+	})
+
+	t.Run("fails when receiver has both email and wallet address", func(t *testing.T) {
+		err := validateReceiverRequests([]ImportCertificateReceiversRequest{
+			{Email: strPtr("a@b.com"), WalletAddress: strPtr("0x123")},
+		})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "must have exactly one of email or wallet_address")
+	})
+
+	t.Run("fails when wallet address is not a valid hex address", func(t *testing.T) {
+		err := validateReceiverRequests([]ImportCertificateReceiversRequest{
+			{WalletAddress: strPtr("not-a-valid-address")},
+		})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "invalid wallet address format")
+	})
+
+	t.Run("reports the correct index in error message", func(t *testing.T) {
+		err := validateReceiverRequests([]ImportCertificateReceiversRequest{
+			{Email: strPtr("valid@example.com")},
+			{FirstName: strPtr("missing-identifier")}, // index 1 is the bad one
+		})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "index 1")
 	})
 }
 

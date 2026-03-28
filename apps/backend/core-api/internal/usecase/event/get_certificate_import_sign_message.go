@@ -3,6 +3,7 @@ package event
 import (
 	"apps/backend/common/customerror"
 	"apps/backend/common/pgmapper"
+	"apps/backend/common/utils"
 	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 	"apps/backend/services/auth"
 	"context"
@@ -16,7 +17,7 @@ import (
 )
 
 type GetCertificateImportSignMessageResponse struct {
-	SignMessage              string `json:"sign_message"`
+	SignMessage             string `json:"sign_message"`
 	EventCertificateAddress string `json:"event_certificate_address"`
 }
 
@@ -29,7 +30,12 @@ func (uc *EventUsecase) GetCertificateImportSignMessage(
 	requests []ImportCertificateReceiversRequest,
 	currentUser *auth.JwtClaims,
 ) (*GetCertificateImportSignMessageResponse, error) {
-	// 1. Authorisation
+	// 1. Validate requests
+	if err := validateReceiverRequests(requests); err != nil {
+		return nil, err
+	}
+
+	// 2. Authorisation
 	credential, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx, currentUser.UserId)
 	if err != nil {
 		return nil, err
@@ -105,7 +111,7 @@ func (uc *EventUsecase) GetCertificateImportSignMessage(
 	}
 
 	return &GetCertificateImportSignMessageResponse{
-		SignMessage:              string(signMessageJSONBytes),
+		SignMessage:             string(signMessageJSONBytes),
 		EventCertificateAddress: eventCertificateAddressStr,
 	}, nil
 }
@@ -115,11 +121,11 @@ func (uc *EventUsecase) GetCertificateImportSignMessage(
 func buildReceiverHashes(requests []ImportCertificateReceiversRequest) []string {
 	hashes := make([]string, 0, len(requests))
 	for _, req := range requests {
-		firstName := derefOrEmpty(req.FirstName)
-		lastName := derefOrEmpty(req.LastName)
-		academicInstitution := derefOrEmpty(req.AcademicInstitution)
-		certificateTitle := derefOrEmpty(req.CertificateTitle)
-		certificateSubtitle := derefOrEmpty(req.CertificateSubtitle)
+		firstName := utils.DerefOrEmpty(req.FirstName)
+		lastName := utils.DerefOrEmpty(req.LastName)
+		academicInstitution := utils.DerefOrEmpty(req.AcademicInstitution)
+		certificateTitle := utils.DerefOrEmpty(req.CertificateTitle)
+		certificateSubtitle := utils.DerefOrEmpty(req.CertificateSubtitle)
 
 		name := fmt.Sprintf("%s %s", firstName, lastName)
 		csvValue := fmt.Sprintf("%s,%s,%s,%s", name, academicInstitution, certificateTitle, certificateSubtitle)
@@ -127,11 +133,4 @@ func buildReceiverHashes(requests []ImportCertificateReceiversRequest) []string 
 		hashes = append(hashes, hexutil.Encode(hash))
 	}
 	return hashes
-}
-
-func derefOrEmpty(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
 }

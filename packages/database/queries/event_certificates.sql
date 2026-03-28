@@ -167,6 +167,7 @@ INNER JOIN events e ON ec.event_id = e.id
 WHERE (
     ec.receiver_credential_id = sqlc.arg('receiver_credential_id')
     OR ec.receiver_email = sqlc.arg('receiver_email')
+    OR ec.receiver_wallet_address = sqlc.arg('receiver_wallet_address')
   )
   AND ec.certificate_token_id IS NULL 
   AND ec.user_claim_signature_id IS NULL

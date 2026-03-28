@@ -1,6 +1,7 @@
 package eventconfig
 
 import (
+	"apps/backend/common/utils"
 	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/s3"
@@ -422,7 +423,7 @@ func (uc *EventConfigUsecase) ToggleCertificatePublished(ctx context.Context, ev
 
 		// Check if all issuers have actually signed (issuer_signature is not null)
 		for _, signature := range signatures {
-			if signature.IssuerSignature == nil || *signature.IssuerSignature == "" {
+			if utils.DerefOrEmpty(signature.IssuerSignature) == "" {
 				return nil, fmt.Errorf("not all issuers have signed the certificates. Please ensure all issuers have completed signing before publishing")
 			}
 		}
@@ -473,9 +474,9 @@ func (uc *EventConfigUsecase) createInboxMessagesForCertificates(ctx context.Con
 		}
 
 		// Skip if no receiver email, no credential ID, and no direct wallet address (can't identify the receiver)
-		if (certificate.ReceiverEmail == nil || *certificate.ReceiverEmail == "") &&
+		if utils.DerefOrEmpty(certificate.ReceiverEmail) == "" &&
 			certificate.ReceiverCredentialId == nil &&
-			(certificate.ReceiverWalletAddress == nil || *certificate.ReceiverWalletAddress == "") {
+			utils.DerefOrEmpty(certificate.ReceiverWalletAddress) == "" {
 			uc.logger.Warn("skipping certificate without receiver email, credential ID, or wallet address", "certificate_id", certificate.Id)
 			continue
 		}
@@ -496,7 +497,7 @@ func (uc *EventConfigUsecase) createInboxMessagesForCertificates(ctx context.Con
 			} else {
 				receiverWalletAddress = &cred.WalletAddress
 			}
-		} else if certificate.ReceiverWalletAddress != nil && *certificate.ReceiverWalletAddress != "" {
+		} else if utils.DerefOrEmpty(certificate.ReceiverWalletAddress) != "" {
 			receiverWalletAddress = certificate.ReceiverWalletAddress
 		}
 

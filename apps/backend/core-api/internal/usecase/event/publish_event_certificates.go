@@ -13,6 +13,7 @@ package event
 
 import (
 	"apps/backend/common/customerror"
+	"apps/backend/common/utils"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"
@@ -96,7 +97,7 @@ func (uc *EventUsecase) PublishEventCertificates(ctx context.Context, eventID uu
 
 	// Check if all issuers have actually signed (issuer_signature is not null)
 	for _, signature := range signatures {
-		if signature.IssuerSignature == nil || *signature.IssuerSignature == "" {
+		if utils.DerefOrEmpty(signature.IssuerSignature) == "" {
 			return nil, customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("not all issuers have signed the certificates. Please ensure all issuers have completed signing before publishing"))
 		}
 	}
@@ -120,9 +121,9 @@ func (uc *EventUsecase) PublishEventCertificates(ctx context.Context, eventID uu
 		}
 
 		// Skip if no receiver email, no credential ID, and no direct wallet address (can't identify the receiver)
-		if (certificate.ReceiverEmail == nil || *certificate.ReceiverEmail == "") &&
+		if utils.DerefOrEmpty(certificate.ReceiverEmail) == "" &&
 			certificate.ReceiverCredentialId == nil &&
-			(certificate.ReceiverWalletAddress == nil || *certificate.ReceiverWalletAddress == "") {
+			utils.DerefOrEmpty(certificate.ReceiverWalletAddress) == "" {
 			continue
 		}
 
@@ -139,7 +140,7 @@ func (uc *EventUsecase) PublishEventCertificates(ctx context.Context, eventID uu
 			if err == nil {
 				receiverWalletAddress = &cred.WalletAddress
 			}
-		} else if certificate.ReceiverWalletAddress != nil && *certificate.ReceiverWalletAddress != "" {
+		} else if utils.DerefOrEmpty(certificate.ReceiverWalletAddress) != "" {
 			receiverWalletAddress = certificate.ReceiverWalletAddress
 		}
 

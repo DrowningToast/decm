@@ -122,7 +122,8 @@
         "publicClientChainValue": "{{name}} (ID: {{id}})",
         "transportLabel": "Transport:",
         "transportUnknown": "unknown",
-        "viewRawSummary": "View Raw Public Client"
+        "viewRawSummary": "View Raw Public Client",
+        "byokNotSupported": "The system doesn't support signing with self custody yet."
     },
     "auth": {
         "signIn": "Sign In",
@@ -1145,6 +1146,8 @@
         "saveSettings": "Save Settings",
         "saveError": "Failed to save participant settings. Please try again.",
         "saveSuccess": "Participant settings saved successfully",
+        "updateSuccess": "Participant setting updated successfully",
+        "updateError": "Failed to update participant setting",
         "formPreview": {
             "description": "This is how registration form will appear to participants",
             "title": "Registration Form Preview"

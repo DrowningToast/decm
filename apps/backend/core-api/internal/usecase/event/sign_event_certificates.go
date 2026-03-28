@@ -2,6 +2,7 @@ package event
 
 import (
 	"apps/backend/common/customerror"
+	"apps/backend/common/utils"
 	"apps/backend/core-api/internal/entity"
 	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 	"apps/backend/services/auth"
@@ -47,7 +48,7 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 	if isByok && (request.IssuerSignMessage == nil || request.IssuerSignature == nil) {
 		return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("issuer_sign_message and issuer_signature are required for BYOK users"))
 	}
-	if !isByok && (request.IssuerPin == nil || *request.IssuerPin == "") {
+	if !isByok && utils.DerefOrEmpty(request.IssuerPin) == "" {
 		return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("issuer_pin is required for non-BYOK users"))
 	}
 
@@ -138,9 +139,20 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 				*request.IssuerSignature,
 			)
 			if verifyErr != nil {
+				uc.logger.WarnContext(ctx, "security event: failed signature verification",
+					"event_id", eventID,
+					"wallet_address", credential.WalletAddress,
+					"error", verifyErr.Error(),
+					"context", "SignEventCertificates",
+				)
 				return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("signature verification failed: %w", verifyErr))
 			}
 			if !valid {
+				uc.logger.WarnContext(ctx, "security event: failed signature verification",
+					"event_id", eventID,
+					"wallet_address", credential.WalletAddress,
+					"context", "SignEventCertificates",
+				)
 				return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("issuer signature does not match wallet address"))
 			}
 			signatureStr = *request.IssuerSignature

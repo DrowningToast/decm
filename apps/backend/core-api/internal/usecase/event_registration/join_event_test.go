@@ -318,6 +318,9 @@ func TestJoinEventWithSignature(t *testing.T) {
 		WalletAddress: walletAddress,
 	}
 
+	mockBlockchainDg := new(MockBlockchainClientDg)
+	mockBlockchainDg.On("GetCurrentBlockNumber", ctx).Return(uint64(900000), nil).Maybe()
+
 	t.Run("should return error when user is not authenticated", func(t *testing.T) {
 		uc := &EventRegistrationUsecase{}
 
@@ -335,7 +338,8 @@ func TestJoinEventWithSignature(t *testing.T) {
 		mockContractDg.On("GetEventContractByEventID", ctx, eventID).Return(nil, nil)
 
 		uc := &EventRegistrationUsecase{
-			EventContractDg: mockContractDg,
+			EventContractDg:    mockContractDg,
+			BlockchainClientDg: mockBlockchainDg,
 		}
 
 		attendee, err := uc.JoinEventWithSignature(ctx, currentUser, eventID, CheckRegistrationEligibilityParams{}, JoinEventPayload{}, []byte("sig"), "message")
@@ -350,7 +354,8 @@ func TestJoinEventWithSignature(t *testing.T) {
 		mockContractDg.On("GetEventContractByEventID", ctx, eventID).Return(nil, errors.New("database error"))
 
 		uc := &EventRegistrationUsecase{
-			EventContractDg: mockContractDg,
+			EventContractDg:    mockContractDg,
+			BlockchainClientDg: mockBlockchainDg,
 		}
 
 		attendee, err := uc.JoinEventWithSignature(ctx, currentUser, eventID, CheckRegistrationEligibilityParams{}, JoinEventPayload{}, []byte("sig"), "message")
@@ -373,7 +378,8 @@ func TestJoinEventWithSignature(t *testing.T) {
 		mockContractDg.On("GetEventContractByEventID", ctx, eventID).Return(contract, nil)
 
 		uc := &EventRegistrationUsecase{
-			EventContractDg: mockContractDg,
+			EventContractDg:    mockContractDg,
+			BlockchainClientDg: mockBlockchainDg,
 		}
 
 		// Garbage sign message that can't be parsed
@@ -398,7 +404,8 @@ func TestJoinEventWithSignature(t *testing.T) {
 		mockContractDg.On("GetEventContractByEventID", ctx, eventID).Return(contract, nil)
 
 		uc := &EventRegistrationUsecase{
-			EventContractDg: mockContractDg,
+			EventContractDg:    mockContractDg,
+			BlockchainClientDg: mockBlockchainDg,
 		}
 
 		// Valid format sign message but signed by a different key
@@ -467,6 +474,7 @@ func TestJoinEventWithSignature(t *testing.T) {
 		uc := &EventRegistrationUsecase{
 			EventContractDg:               mockContractDg,
 			EventRegistrationInvitationDg: mockInvitationDg,
+			BlockchainClientDg:            mockBlockchainDg,
 		}
 
 		attendee, err := uc.JoinEventWithSignature(ctx, signerUser, eventID, CheckRegistrationEligibilityParams{}, JoinEventPayload{}, sig, signMessage)

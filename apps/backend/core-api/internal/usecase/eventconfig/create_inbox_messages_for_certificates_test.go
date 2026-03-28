@@ -1,6 +1,7 @@
 package eventconfig
 
 import (
+	"apps/backend/core-api/internal/entity"
 	"context"
 	"errors"
 	"log/slog"
@@ -9,7 +10,6 @@ import (
 
 	offchain_datagateway "apps/backend/core-api/internal/datagateway/offchain"
 	eventdatagateway "apps/backend/core-api/internal/datagateway/offchain/event"
-	"apps/backend/core-api/internal/entity"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -34,21 +34,27 @@ func (m *MockEventDataGateway) GetEventById(ctx context.Context, id uuid.UUID) (
 func (m *MockEventDataGateway) CreateEvent(ctx context.Context, params eventdatagateway.CreateEventParameters) (*entity.Event, error) {
 	return nil, nil
 }
+
 func (m *MockEventDataGateway) GetViewModelById(ctx context.Context, id uuid.UUID) (*entity.Event, *entity.EventRegistrationConfig, *entity.EventContract, error) {
 	return nil, nil, nil, nil
 }
+
 func (m *MockEventDataGateway) ListEventsByOwnerCredentialID(ctx context.Context, ownerCredentialID uuid.UUID, limitCount int32, offsetCount int32) ([]*entity.Event, error) {
 	return nil, nil
 }
+
 func (m *MockEventDataGateway) UpdateEvent(ctx context.Context, id uuid.UUID, params eventdatagateway.UpdateEventParameters) (*entity.Event, error) {
 	return nil, nil
 }
+
 func (m *MockEventDataGateway) DeleteEvent(ctx context.Context, id uuid.UUID) (*entity.Event, error) {
 	return nil, nil
 }
+
 func (m *MockEventDataGateway) ListEvents(ctx context.Context, limitCount *int32, offsetCount *int32) ([]*entity.Event, error) {
 	return nil, nil
 }
+
 func (m *MockEventDataGateway) ListEventsByEventAttendeeCredentialID(ctx context.Context, eventAttendeeCredentialID uuid.UUID, limitCount *int32, offsetCount *int32) ([]*entity.Event, error) {
 	return nil, nil
 }
@@ -60,15 +66,19 @@ type MockEventCertificateDataGateway struct {
 func (m *MockEventCertificateDataGateway) CreateEventCertificate(ctx context.Context, params eventdatagateway.CreateEventCertificateParameters) (*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *MockEventCertificateDataGateway) GetEventCertificateByID(ctx context.Context, id uuid.UUID) (*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *MockEventCertificateDataGateway) GetEventCertificateWithSignature(ctx context.Context, eventID uuid.UUID, credentialID uuid.UUID) (*eventdatagateway.EventCertificateWithSignature, error) {
 	return nil, nil
 }
+
 func (m *MockEventCertificateDataGateway) GetEventCertificateByInboxMessageID(ctx context.Context, inboxMessageID uuid.UUID) (*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *MockEventCertificateDataGateway) GetEventCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error) {
 	args := m.Called(ctx, eventID)
 	if args.Get(0) == nil {
@@ -76,24 +86,31 @@ func (m *MockEventCertificateDataGateway) GetEventCertificatesByEventID(ctx cont
 	}
 	return args.Get(0).([]*entity.EventCertificate), args.Error(1)
 }
+
 func (m *MockEventCertificateDataGateway) GetAllEventCertificateIDsByEventID(ctx context.Context, eventID uuid.UUID) ([]uuid.UUID, error) {
 	return nil, nil
 }
+
 func (m *MockEventCertificateDataGateway) GetClaimedCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *MockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByEventID(ctx context.Context, eventID uuid.UUID) ([]*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *MockEventCertificateDataGateway) GetClaimedCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string, walletAddress *string) ([]*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *MockEventCertificateDataGateway) GetUnclaimedReadyCertificatesByCredentialID(ctx context.Context, credentialID uuid.UUID, email *string, walletAddress *string) ([]*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *MockEventCertificateDataGateway) UpdateEventCertificate(ctx context.Context, id uuid.UUID, params eventdatagateway.UpdateEventCertificateParameters) (*entity.EventCertificate, error) {
 	return nil, nil
 }
+
 func (m *MockEventCertificateDataGateway) UpdateEventCertificateInboxMessageID(ctx context.Context, id uuid.UUID, inboxMessageID uuid.UUID) (*entity.EventCertificate, error) {
 	args := m.Called(ctx, id, inboxMessageID)
 	if args.Get(0) == nil {
@@ -101,6 +118,7 @@ func (m *MockEventCertificateDataGateway) UpdateEventCertificateInboxMessageID(c
 	}
 	return args.Get(0).(*entity.EventCertificate), args.Error(1)
 }
+
 func (m *MockEventCertificateDataGateway) DeleteEventCertificate(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
@@ -116,27 +134,35 @@ func (m *MockInboxMessageDgForCerts) CreateInboxMessage(ctx context.Context, par
 	}
 	return args.Get(0).(*entity.InboxMessage), args.Error(1)
 }
+
 func (m *MockInboxMessageDgForCerts) GetInboxMessageByID(ctx context.Context, id uuid.UUID) (*entity.InboxMessage, error) {
 	return nil, nil
 }
+
 func (m *MockInboxMessageDgForCerts) GetInboxMessagesByCredentialID(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
 	return nil, nil
 }
+
 func (m *MockInboxMessageDgForCerts) GetUnreadInboxMessageCountByCredentialID(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) (int, error) {
 	return 0, nil
 }
+
 func (m *MockInboxMessageDgForCerts) GetInboxMessagesByReceiverEmail(ctx context.Context, receiverEmail string) ([]*entity.InboxMessage, error) {
 	return nil, nil
 }
+
 func (m *MockInboxMessageDgForCerts) GetInboxMessagesByReceiverWalletAddress(ctx context.Context, walletAddress string) ([]*entity.InboxMessage, error) {
 	return nil, nil
 }
+
 func (m *MockInboxMessageDgForCerts) GetInboxMessagesBySenderCredentialID(ctx context.Context, credentialID uuid.UUID) ([]*entity.InboxMessage, error) {
 	return nil, nil
 }
+
 func (m *MockInboxMessageDgForCerts) UpdateInboxMessageReadStatus(ctx context.Context, id uuid.UUID, isRead int) (*entity.InboxMessage, error) {
 	return nil, nil
 }
+
 func (m *MockInboxMessageDgForCerts) UpdateInboxMessageReadStatusAll(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
 	return nil, nil
 }
@@ -152,24 +178,31 @@ func (m *MockAuthCredentialDgForCerts) GetAuthenticationCredentialById(ctx conte
 	}
 	return args.Get(0).(*entity.AuthenticationCredential), args.Error(1)
 }
+
 func (m *MockAuthCredentialDgForCerts) GetAuthenticationCredentialByIdWithEncryptedPrivateKey(ctx context.Context, id uuid.UUID) (*entity.AuthenticationCredential, error) {
 	return nil, nil
 }
+
 func (m *MockAuthCredentialDgForCerts) GetAuthenticationCredentialByWalletAddress(ctx context.Context, walletAddress string) (*entity.AuthenticationCredential, error) {
 	return nil, nil
 }
+
 func (m *MockAuthCredentialDgForCerts) GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Context, googleConnectorRef string) (*entity.AuthenticationCredential, error) {
 	return nil, nil
 }
+
 func (m *MockAuthCredentialDgForCerts) GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx context.Context, params offchain_datagateway.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters) (*entity.AuthenticationCredential, error) {
 	return nil, nil
 }
+
 func (m *MockAuthCredentialDgForCerts) CreateAuthenticationCredential(ctx context.Context, credential entity.AuthenticationCredential) (*entity.AuthenticationCredential, error) {
 	return nil, nil
 }
+
 func (m *MockAuthCredentialDgForCerts) UpdateAuthenticationCredential(ctx context.Context, id uuid.UUID, params offchain_datagateway.UpdateAuthenticationCredentialParameters) (*entity.AuthenticationCredential, error) {
 	return nil, nil
 }
+
 func (m *MockAuthCredentialDgForCerts) DeleteAuthenticationCredential(ctx context.Context, id uuid.UUID) error {
 	return nil
 }

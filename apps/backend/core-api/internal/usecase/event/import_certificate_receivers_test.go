@@ -16,12 +16,45 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-
 func TestImportCertificateReceivers(t *testing.T) {
 	ctx := context.Background()
 	userId := uuid.New()
 	eventID := uuid.New()
 	hostPin := "test-pin"
+
+	t.Run("should fail when receiver has neither email nor wallet address", func(t *testing.T) {
+		uc := &EventUsecase{
+			cfg: createMockConfig(),
+		}
+
+		currentUser := &auth.JwtClaims{UserId: userId}
+		requests := []ImportCertificateReceiversRequest{
+			{FirstName: strPtr("John")}, // Missing both email and wallet
+		}
+
+		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, ImportCertificateReceiversOptions{HostPin: &hostPin}, currentUser)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "must have exactly one of email or wallet_address")
+	})
+
+	t.Run("should fail when receiver has both email and wallet address", func(t *testing.T) {
+		uc := &EventUsecase{
+			cfg: createMockConfig(),
+		}
+
+		currentUser := &auth.JwtClaims{UserId: userId}
+		requests := []ImportCertificateReceiversRequest{
+			{Email: strPtr("a@b.com"), WalletAddress: strPtr("0x123")}, // Has both
+		}
+
+		result, err := uc.ImportCertificateReceivers(ctx, eventID, requests, ImportCertificateReceiversOptions{HostPin: &hostPin}, currentUser)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Contains(t, err.Error(), "must have exactly one of email or wallet_address")
+	})
 
 	t.Run("should fail when user is not authenticated", func(t *testing.T) {
 		// Arrange

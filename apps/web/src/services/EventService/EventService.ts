@@ -7,10 +7,35 @@ import {
 } from "./mapper";
 import type { EventRegistrationConfiguration } from "../EventRegistration/EventRegistration";
 import type { Profile } from "../AuthService/AuthService";
-import type { CreateEventPayload, UpdateEventPayload } from "@decm/api";
+import type {
+    CreateEventPayload,
+    UpdateEventPayload,
+    CreateEventData,
+    UpdateEventData,
+    DeleteEventByIdData,
+    UpdateEventParams,
+    DeleteEventByIdParams,
+} from "@decm/api";
 
 type CreateEventCommonFields = Omit<CreateEventPayload, "host_password">;
 type EditEventCommonFields = Omit<UpdateEventPayload, "host_password">;
+
+type CreateEventWalletPayload = CreateEventCommonFields & {
+    signature: string;
+    sign_message: string;
+};
+type UpdateEventWalletPayload = EditEventCommonFields & { signature: string; sign_message: string };
+type DeleteEventWalletPayload = { signature: string; sign_message: string };
+
+type CreateEventFn = (data: CreateEventWalletPayload) => Promise<CreateEventData>;
+type UpdateEventFn = (
+    params: UpdateEventParams,
+    data: UpdateEventWalletPayload,
+) => Promise<UpdateEventData>;
+type DeleteEventFn = (
+    params: DeleteEventByIdParams,
+    data: DeleteEventWalletPayload,
+) => Promise<DeleteEventByIdData>;
 
 export interface CreateEventWithPasswordInput extends CreateEventCommonFields {
     hostPassword: string;
@@ -191,9 +216,8 @@ export class EventService {
 
     public async createEventWithSignature(input: CreateEventWithSignatureInput): Promise<string> {
         const { signature, signMessage, ...rest } = input;
-        // Backend accepts signature + sign_message as alternative to host_password for wallet users
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response = await (this._coreApi.v1.createEvent as any)({
+        const createEventWithWallet = this._coreApi.v1.createEvent as unknown as CreateEventFn;
+        const response = await createEventWithWallet({
             ...rest,
             signature,
             sign_message: signMessage,
@@ -214,11 +238,8 @@ export class EventService {
         input: EditEventWithSignatureInput,
     ): Promise<void> {
         const { signature, signMessage, ...rest } = input;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (this._coreApi.v1.updateEvent as any)(
-            { eventId },
-            { ...rest, signature, sign_message: signMessage },
-        );
+        const updateEventWithWallet = this._coreApi.v1.updateEvent as unknown as UpdateEventFn;
+        await updateEventWithWallet({ eventId }, { ...rest, signature, sign_message: signMessage });
     }
 
     public async deleteEventWithPassword(eventId: string, hostPassword: string): Promise<void> {
@@ -229,8 +250,8 @@ export class EventService {
         eventId: string,
         auth: WalletSignatureAuth,
     ): Promise<void> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (this._coreApi.v1.deleteEventById as any)(
+        const deleteEventWithWallet = this._coreApi.v1.deleteEventById as unknown as DeleteEventFn;
+        await deleteEventWithWallet(
             { eventId },
             { signature: auth.signature, sign_message: auth.signMessage },
         );

@@ -513,8 +513,7 @@ describe("CertificateService", () => {
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const result = await (certificateService as any).claimCertificateWithPin({
+            const result = await certificateService.claimCertificate({
                 certificateId: "cert-123",
                 accountPassword: "password123",
             });
@@ -545,8 +544,7 @@ describe("CertificateService", () => {
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const result = await (certificateService as any).claimCertificateWithPin({
+            const result = await certificateService.claimCertificate({
                 certificateId: "cert-123",
                 accountPassword: "password123",
             });
@@ -574,8 +572,7 @@ describe("CertificateService", () => {
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const result = await (certificateService as any).claimCertificateWithSignature({
+            const result = await certificateService.claimCertificate({
                 certificateId: "cert-123",
                 signature: "sig-123",
                 signMessage: "Sign this",

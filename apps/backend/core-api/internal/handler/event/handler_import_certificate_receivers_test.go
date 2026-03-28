@@ -1,6 +1,7 @@
 package event
 
 import (
+	"apps/backend/services/auth"
 	"bytes"
 	"encoding/json"
 	"io"
@@ -10,7 +11,6 @@ import (
 	"testing"
 
 	customerror "apps/backend/common/customerror"
-	"apps/backend/services/auth"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
