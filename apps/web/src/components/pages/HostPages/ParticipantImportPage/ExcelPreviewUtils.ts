@@ -71,7 +71,6 @@ export const buildParticipant = (row: PreviewData): EventRegistrationParticipant
     const participant: EventRegistrationParticipantRequestItem = {
         first_name: String(row.first_name || ""),
         last_name: String(row.last_name || ""),
-        email: "",
     };
 
     const email = normalizeOptional(row.email);

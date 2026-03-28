@@ -314,7 +314,7 @@ describe("VerifyPage", () => {
         expect(screen.getAllByText("certificateVerify.verified").length).toBeGreaterThan(0);
     });
 
-    it("shows invalid badge on name when it does not match decryptedCertificateData", async () => {
+    it("shows warning indicator on name when it does not match decryptedCertificateData", async () => {
         const dataWithMismatch = {
             ...mockVcData,
             decryptedUserData: {
@@ -352,7 +352,7 @@ describe("VerifyPage", () => {
         await waitFor(() => {
             expect(screen.getAllByText("Alice Smith").length).toBeGreaterThan(0);
         });
-        expect(screen.getAllByText("certificateVerify.invalid").length).toBeGreaterThan(0);
+        expect(screen.getByTestId("mock-alerttriangle")).toBeInTheDocument();
     });
 
     it("shows password required alert when unlock clicked with empty password", async () => {

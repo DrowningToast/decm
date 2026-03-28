@@ -1,0 +1,1 @@
+export { usePasswordPrompt } from "./usePassowordPrompt";
