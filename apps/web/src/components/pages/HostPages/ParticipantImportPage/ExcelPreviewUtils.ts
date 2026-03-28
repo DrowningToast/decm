@@ -68,10 +68,12 @@ export const validateRow = (row: PreviewData): RowValidationResult => {
 
 // Build a participant request item from a parsed Excel row
 export const buildParticipant = (row: PreviewData): EventRegistrationParticipantRequestItem => {
-    const participant: EventRegistrationParticipantRequestItem = {
+    // email is typed as required in the generated API type, but the backend also accepts
+    // wallet_address in place of email — use a cast to accommodate wallet-only participants
+    const participant = {
         first_name: String(row.first_name || ""),
         last_name: String(row.last_name || ""),
-    };
+    } as EventRegistrationParticipantRequestItem;
 
     const email = normalizeOptional(row.email);
     const walletAddress = normalizeOptional(row.wallet_address);
