@@ -179,6 +179,7 @@ export class CertificateService {
         const response = await this._coreApi.v1.getCertificateImportSignMessage(
             { eventId: params.eventId },
             {
+                event_id: params.eventId,
                 receivers: params.receivers,
             },
         );

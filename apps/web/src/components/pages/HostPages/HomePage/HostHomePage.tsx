@@ -1,7 +1,7 @@
 import SectionContainer from "@/components/container/SectionContainer";
 import TitleSubtitle from "@/components/TitleSubtitle";
 import { Typography } from "@/components/typography/typography";
-import { Link, type Path } from "@/router";
+import { Link, type Params, type Path } from "@/router";
 import { useTranslation } from "react-i18next";
 
 export default function HostHomePage() {
@@ -57,7 +57,7 @@ export default function HostHomePage() {
 
 interface MenuItemProps {
     title: string;
-    to: Path;
+    to: Exclude<Path, keyof Params>;
 }
 function MenuItem({ title, to }: MenuItemProps) {
     return (
