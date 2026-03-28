@@ -494,7 +494,7 @@ func (uc *EventConfigUsecase) createInboxMessagesForCertificates(ctx context.Con
 			if err != nil {
 				uc.logger.Error("failed to get credential for certificate receiver", "error", err, "certificate_id", certificate.Id)
 				// Proceed without wallet address
-			} else {
+			} else if cred != nil {
 				receiverWalletAddress = &cred.WalletAddress
 			}
 		} else if utils.DerefOrEmpty(certificate.ReceiverWalletAddress) != "" {

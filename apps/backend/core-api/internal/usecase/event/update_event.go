@@ -70,56 +70,6 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("seats count is less than the max attendees"))
 	}
 
-	newEventBannerStorageKey := dbEvent.BannerStorageKey // Keep existing by default
-	newEventIconStorageKey := dbEvent.IconStorageKey     // Keep existing by default
-
-	// Only upload new banner if a new file is provided
-	if params.EventBanner != nil {
-		previousBannerStorageKey := dbEvent.BannerStorageKey
-		err := uc.S3DataGateway.DeleteFile(ctx, previousBannerStorageKey)
-		if err != nil {
-			return nil, err
-		}
-
-		newBannerStorageKey, err := uc.UploadEventBanner(ctx, uuid.New(), params.EventBanner)
-		if err != nil {
-			return nil, err
-		}
-		newEventBannerStorageKey = newBannerStorageKey
-	}
-
-	// Only upload new icon if a new file is provided
-	if params.EventIcon != nil {
-		previousIconStorageKey := dbEvent.IconStorageKey
-
-		newIconStorageKey, err := uc.UploadEventIcon(ctx, uuid.New(), params.EventIcon)
-		if err != nil {
-			return nil, err
-		}
-		newEventIconStorageKey = newIconStorageKey
-
-		err = uc.S3DataGateway.DeleteFile(ctx, previousIconStorageKey)
-		if err != nil {
-			return nil, err
-		}
-
-	}
-
-	updateEventParams := datagateway.UpdateEventParameters{
-		Name:             params.Name,
-		ShortDescription: params.ShortDescription,
-		Description:      params.Description,
-		StartDate:        params.StartDate,
-		EndDate:          params.EndDate,
-		SeatsCount:       params.SeatsCount,
-		ContactNumber:    params.ContactNumber,
-		ContactAddress:   params.ContactAddress,
-		Location:         params.Location,
-		GoogleMapQuery:   params.GoogleMapQuery,
-		BannerStorageKey: &newEventBannerStorageKey,
-		IconStorageKey:   &newEventIconStorageKey,
-	}
-
 	dbEventContracts, err := uc.EventContractDataGateway.GetEventContractByEventID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -130,16 +80,7 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("event contract not found"))
 	}
 
-	event, err := uc.EventDataGateway.UpdateEvent(ctx, id, updateEventParams)
-	if err != nil {
-		return nil, err
-	}
-
-	transactor, err := uc.BlockchainClientDg.GetTransactOpts(ctx)
-	if err != nil {
-		return nil, err
-	}
-
+	// Authenticate host BEFORE any S3 uploads or DB writes.
 	var signature []byte
 	var signMessage string
 
@@ -195,6 +136,66 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		}
 	} else {
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("either host_password or (signature + sign_message) is required"))
+	}
+
+	newEventBannerStorageKey := dbEvent.BannerStorageKey // Keep existing by default
+	newEventIconStorageKey := dbEvent.IconStorageKey     // Keep existing by default
+
+	// Only upload new banner if a new file is provided
+	if params.EventBanner != nil {
+		previousBannerStorageKey := dbEvent.BannerStorageKey
+		err := uc.S3DataGateway.DeleteFile(ctx, previousBannerStorageKey)
+		if err != nil {
+			return nil, err
+		}
+
+		newBannerStorageKey, err := uc.UploadEventBanner(ctx, uuid.New(), params.EventBanner)
+		if err != nil {
+			return nil, err
+		}
+		newEventBannerStorageKey = newBannerStorageKey
+	}
+
+	// Only upload new icon if a new file is provided
+	if params.EventIcon != nil {
+		previousIconStorageKey := dbEvent.IconStorageKey
+
+		newIconStorageKey, err := uc.UploadEventIcon(ctx, uuid.New(), params.EventIcon)
+		if err != nil {
+			return nil, err
+		}
+		newEventIconStorageKey = newIconStorageKey
+
+		err = uc.S3DataGateway.DeleteFile(ctx, previousIconStorageKey)
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	updateEventParams := datagateway.UpdateEventParameters{
+		Name:             params.Name,
+		ShortDescription: params.ShortDescription,
+		Description:      params.Description,
+		StartDate:        params.StartDate,
+		EndDate:          params.EndDate,
+		SeatsCount:       params.SeatsCount,
+		ContactNumber:    params.ContactNumber,
+		ContactAddress:   params.ContactAddress,
+		Location:         params.Location,
+		GoogleMapQuery:   params.GoogleMapQuery,
+		BannerStorageKey: &newEventBannerStorageKey,
+		IconStorageKey:   &newEventIconStorageKey,
+	}
+
+	event, err := uc.EventDataGateway.UpdateEvent(ctx, id, updateEventParams)
+	if err != nil {
+		return nil, err
+	}
+
+	transactor, err := uc.BlockchainClientDg.GetTransactOpts(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	instance, err := eventContract.NewEvent(eventContractAddress, uc.ethClient)

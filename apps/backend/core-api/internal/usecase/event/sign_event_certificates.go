@@ -87,7 +87,7 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 	if !isByok {
 		decryptedPrivateKey, _, err = cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, *request.IssuerPin)
 		if err != nil {
-			return nil, err
+			return nil, customerror.Parse(&customerror.ErrUnauthorized, err)
 		}
 	}
 
@@ -161,7 +161,7 @@ func (uc *EventUsecase) SignEventCertificates(ctx context.Context, eventID uuid.
 			signMessageDigest := cyptoutils.HashEthereumMessage(*targetSignature.SignMessage)
 			rawSig, err := cyptoutils.Sign(signMessageDigest.Bytes(), decryptedPrivateKey)
 			if err != nil {
-				return nil, err
+				return nil, customerror.Parse(&customerror.ErrInternalServer, err)
 			}
 			signatureStr = hexutil.Encode(rawSig)
 		}

@@ -2,18 +2,25 @@ package event
 
 import (
 	"apps/backend/common/customerror"
+	"apps/backend/common/encryptutils"
 	"apps/backend/core-api/internal/entity"
+	cyptoutils "apps/backend/core-api/internal/usecase/cyptoutils"
 	"apps/backend/services/auth"
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"log/slog"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestImportCertificateReceivers(t *testing.T) {
@@ -21,6 +28,12 @@ func TestImportCertificateReceivers(t *testing.T) {
 	userId := uuid.New()
 	eventID := uuid.New()
 	hostPin := "test-pin"
+
+	// Generate a real encrypted private key for tests that reach the early PIN decryption step.
+	rawKey, err := crypto.GenerateKey()
+	require.NoError(t, err)
+	realEncryptedKey, err := encryptutils.EncryptAESGCM(hex.EncodeToString(crypto.FromECDSA(rawKey)), hostPin)
+	require.NoError(t, err)
 
 	t.Run("should fail when receiver has neither email nor wallet address", func(t *testing.T) {
 		uc := &EventUsecase{
@@ -122,7 +135,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: strPtr("encrypted-key"),
+			EncryptedPrivateKey: strPtr(realEncryptedKey),
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -162,7 +175,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: strPtr("encrypted-key"),
+			EncryptedPrivateKey: strPtr(realEncryptedKey),
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -213,7 +226,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: strPtr("encrypted-key"),
+			EncryptedPrivateKey: strPtr(realEncryptedKey),
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -318,7 +331,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: strPtr("encrypted-key"),
+			EncryptedPrivateKey: strPtr(realEncryptedKey),
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -380,7 +393,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: strPtr("encrypted-key"),
+			EncryptedPrivateKey: strPtr(realEncryptedKey),
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -466,7 +479,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: strPtr("encrypted-key"),
+			EncryptedPrivateKey: strPtr(realEncryptedKey),
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -581,7 +594,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: strPtr("encrypted-key"),
+			EncryptedPrivateKey: strPtr(realEncryptedKey),
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -668,7 +681,7 @@ func TestImportCertificateReceivers(t *testing.T) {
 			Id:                  userId,
 			IsVerifiedOrganizer: true,
 			IsVerifiedIssuer:    false,
-			EncryptedPrivateKey: strPtr("encrypted-key"),
+			EncryptedPrivateKey: strPtr(realEncryptedKey),
 		}
 		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).
 			Return(credential, nil)
@@ -741,5 +754,143 @@ func TestImportCertificateReceivers(t *testing.T) {
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		// No panic = deployCertificateContract was never called
+	})
+
+	// M1: empty receiver list must be rejected before any DB access
+	t.Run("should fail when receiver list is empty", func(t *testing.T) {
+		uc := &EventUsecase{cfg: createMockConfig()}
+		currentUser := &auth.JwtClaims{UserId: userId}
+
+		result, err := uc.ImportCertificateReceivers(
+			ctx, eventID,
+			[]ImportCertificateReceiversRequest{},
+			ImportCertificateReceiversOptions{HostPin: &hostPin},
+			currentUser,
+		)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		customErr := customerror.TryParseAsCustomErr(err)
+		require.NotNil(t, customErr)
+		assert.Equal(t, customerror.ErrInvalidArgument.Code, *customErr.Code)
+		assert.Contains(t, err.Error(), "at least one receiver")
+	})
+
+	// C2: wrong PIN must fail BEFORE any destructive database operations
+	t.Run("should fail with wrong PIN before performing destructive operations", func(t *testing.T) {
+		privateKey, err := crypto.GenerateKey()
+		require.NoError(t, err)
+		encryptedKey, err := encryptutils.EncryptAESGCM(hex.EncodeToString(crypto.FromECDSA(privateKey)), "correct-pin")
+		require.NoError(t, err)
+
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+		credential := &entity.AuthenticationCredential{
+			Id:                  userId,
+			IsVerifiedOrganizer: true,
+			EncryptedPrivateKey: &encryptedKey,
+		}
+		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).Return(credential, nil)
+
+		mockEventDg := new(MockEventDataGateway)
+		event := &entity.Event{Id: eventID, OwnerCredentialId: userId}
+		mockEventDg.On("GetEventById", ctx, eventID).Return(event, nil)
+
+		certAddr := "0xCertContractAddress"
+		mockContractDg := new(MockEventContractDataGateway)
+		mockContractDg.On("GetEventContractByEventID", ctx, eventID).Return(&entity.EventContract{
+			EventId:                    eventID,
+			EventContractAddress:       "0xEventContractAddress",
+			CertificateContractAddress: &certAddr,
+		}, nil)
+
+		// Intentionally provide NO expectations on the issuer gateway.
+		// Any call to ResetAllEventIssuersSigningStatus means auth ran too late.
+		mockIssuerDg := new(MockEventIssuerDataGateway)
+
+		uc := &EventUsecase{
+			AuthenticationCredentialDg: mockAuthDg,
+			EventDataGateway:           mockEventDg,
+			EventContractDataGateway:   mockContractDg,
+			EventIssuerDataGateway:     mockIssuerDg,
+			cfg:                        createMockConfig(),
+		}
+
+		wrongPin := "wrong-pin"
+		result, err := uc.ImportCertificateReceivers(
+			ctx, eventID,
+			[]ImportCertificateReceiversRequest{{Email: strPtr("test@example.com")}},
+			ImportCertificateReceiversOptions{HostPin: &wrongPin},
+			&auth.JwtClaims{UserId: userId},
+		)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		mockIssuerDg.AssertNotCalled(t, "ResetAllEventIssuersSigningStatus")
+		mockAuthDg.AssertExpectations(t)
+		mockEventDg.AssertExpectations(t)
+		mockContractDg.AssertExpectations(t)
+	})
+
+	// C2: invalid BYOK signature must fail BEFORE any destructive database operations
+	t.Run("should fail with invalid BYOK signature before performing destructive operations", func(t *testing.T) {
+		walletKey, err := crypto.GenerateKey()
+		require.NoError(t, err)
+		walletAddr := crypto.PubkeyToAddress(walletKey.PublicKey)
+
+		// Sign the wrong message so the signature is valid-format but wrong
+		wrongHash := cyptoutils.HashEthereumMessage("wrong message content")
+		wrongSig, err := cyptoutils.Sign(wrongHash.Bytes(), walletKey)
+		require.NoError(t, err)
+		invalidSig := hexutil.Encode(wrongSig)
+
+		mockAuthDg := new(MockAuthenticationCredentialDg)
+		credential := &entity.AuthenticationCredential{
+			Id:                  userId,
+			IsVerifiedOrganizer: true,
+			EncryptedPrivateKey: nil, // BYOK
+			WalletAddress:       walletAddr.Hex(),
+		}
+		mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).Return(credential, nil)
+
+		mockEventDg := new(MockEventDataGateway)
+		event := &entity.Event{Id: eventID, OwnerCredentialId: userId}
+		mockEventDg.On("GetEventById", ctx, eventID).Return(event, nil)
+
+		certAddr := "0xCertContractAddress"
+		mockContractDg := new(MockEventContractDataGateway)
+		mockContractDg.On("GetEventContractByEventID", ctx, eventID).Return(&entity.EventContract{
+			EventId:                    eventID,
+			EventContractAddress:       "0xEventContractAddress",
+			CertificateContractAddress: &certAddr,
+		}, nil)
+
+		mockIssuerDg := new(MockEventIssuerDataGateway)
+
+		uc := &EventUsecase{
+			AuthenticationCredentialDg: mockAuthDg,
+			EventDataGateway:           mockEventDg,
+			EventContractDataGateway:   mockContractDg,
+			EventIssuerDataGateway:     mockIssuerDg,
+			cfg:                        createMockConfig(),
+			logger:                     slog.Default(),
+		}
+
+		hostSignMessage := "ignored"
+		result, err := uc.ImportCertificateReceivers(
+			ctx, eventID,
+			[]ImportCertificateReceiversRequest{{Email: strPtr("test@example.com")}},
+			ImportCertificateReceiversOptions{
+				HostSignature:   &invalidSig,
+				HostSignMessage: &hostSignMessage,
+			},
+			&auth.JwtClaims{UserId: userId, WalletAddress: walletAddr.Hex()},
+		)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		customErr := customerror.TryParseAsCustomErr(err)
+		require.NotNil(t, customErr)
+		assert.Equal(t, customerror.ErrUnauthorized.Code, *customErr.Code)
+		mockIssuerDg.AssertNotCalled(t, "ResetAllEventIssuersSigningStatus")
 	})
 }

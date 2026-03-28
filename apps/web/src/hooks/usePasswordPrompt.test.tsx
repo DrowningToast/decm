@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode } from "react";
 import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import { toast } from "sonner";
-import { usePasswordPrompt } from "./usePassowordPrompt";
+import { usePasswordPrompt } from "./usePasswordPrompt";
 
 const mockOpen = vi.fn();
 const mockSetOnSuccess = vi.fn();

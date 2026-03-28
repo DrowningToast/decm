@@ -7,6 +7,7 @@ import (
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"
+	"crypto/ecdsa"
 	"decm-database/go/generated"
 	"encoding/json"
 	"fmt"
@@ -57,6 +58,12 @@ type SignMessage struct {
 // validateReceiverRequests enforces that every receiver has exactly one identifier
 // (email XOR wallet address) and that wallet addresses are valid hex strings.
 func validateReceiverRequests(requests []ImportCertificateReceiversRequest) error {
+	if len(requests) == 0 {
+		return customerror.Parse(
+			&customerror.ErrInvalidArgument,
+			fmt.Errorf("at least one receiver is required"),
+		)
+	}
 	for i, receiver := range requests {
 		hasEmail := receiver.Email != nil && *receiver.Email != ""
 		hasWallet := receiver.WalletAddress != nil && *receiver.WalletAddress != ""
@@ -124,6 +131,65 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 
 	if eventContract == nil {
 		return nil, customerror.Parse(&customerror.ErrNotFound, fmt.Errorf("event contract not found"))
+	}
+
+	// 3.5. Authenticate host BEFORE any destructive operations.
+	// For PIN users: decrypt private key to validate the PIN is correct.
+	// For BYOK users: verify the wallet signature against the expected sign message.
+	// This prevents a bad PIN or invalid signature from leaving the DB in a half-applied state.
+	var hostPrivateKey *ecdsa.PrivateKey
+	var encodedHostSignature string
+
+	if isByok {
+		// BYOK users must have called GetCertificateImportSignMessage first (which deploys the
+		// certificate contract). Without the deployed address we cannot reconstruct the expected
+		// sign message, so we cannot verify the signature.
+		if eventContract.CertificateContractAddress == nil {
+			return nil, customerror.Parse(
+				&customerror.ErrInvalidArgument,
+				fmt.Errorf("certificate contract not deployed; call the sign-message endpoint first"),
+			)
+		}
+		// Reconstruct the sign message the host was asked to sign and verify immediately.
+		previewReceivers := buildReceiverHashes(requests)
+		previewMsg := SignMessage{
+			EventContractAddress: *eventContract.CertificateContractAddress,
+			Receivers:            previewReceivers,
+		}
+		previewJSON, err := json.Marshal(previewMsg)
+		if err != nil {
+			return nil, err
+		}
+		valid, verifyErr := cyptoutils.VerifySignedMessageByAddress(
+			common.HexToAddress(currentUser.WalletAddress),
+			string(previewJSON),
+			*opts.HostSignature,
+		)
+		if verifyErr != nil {
+			uc.logger.WarnContext(ctx, "security event: failed signature verification",
+				"event_id", eventID,
+				"wallet_address", currentUser.WalletAddress,
+				"error", verifyErr.Error(),
+				"context", "ImportCertificateReceivers/earlyAuth",
+			)
+			return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("signature verification failed: %w", verifyErr))
+		}
+		if !valid {
+			uc.logger.WarnContext(ctx, "security event: failed signature verification",
+				"event_id", eventID,
+				"wallet_address", currentUser.WalletAddress,
+				"context", "ImportCertificateReceivers/earlyAuth",
+			)
+			return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("host signature does not match wallet address"))
+		}
+		encodedHostSignature = *opts.HostSignature
+	} else {
+		// PIN path: decrypt the private key now; an incorrect PIN is caught before we touch the DB.
+		var decryptErr error
+		hostPrivateKey, _, decryptErr = cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, *opts.HostPin)
+		if decryptErr != nil {
+			return nil, decryptErr
+		}
 	}
 
 	// Reset all event issuers' signing status
@@ -265,42 +331,15 @@ func (uc *EventUsecase) ImportCertificateReceivers(ctx context.Context, eventID 
 	}
 	signMessageJSON := string(signMessageJSONBytes)
 
-	// 8. Produce host signature — two paths depending on BYOK status
-	var encodedHostSignature string
+	// 8. Produce host signature — auth was already validated in step 3.5.
 	signMessageDigest := cyptoutils.HashEthereumMessage(signMessageJSON)
 
 	if isByok {
-		// Wallet path: frontend signed the message; verify and use the provided signature.
-		valid, verifyErr := cyptoutils.VerifySignedMessageByAddress(
-			common.HexToAddress(currentUser.WalletAddress),
-			signMessageJSON,
-			*opts.HostSignature,
-		)
-		if verifyErr != nil {
-			uc.logger.WarnContext(ctx, "security event: failed signature verification",
-				"event_id", eventID,
-				"wallet_address", currentUser.WalletAddress,
-				"error", verifyErr.Error(),
-				"context", "ImportCertificateReceivers",
-			)
-			return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("signature verification failed: %w", verifyErr))
-		}
-		if !valid {
-			uc.logger.WarnContext(ctx, "security event: failed signature verification",
-				"event_id", eventID,
-				"wallet_address", currentUser.WalletAddress,
-				"context", "ImportCertificateReceivers",
-			)
-			return nil, customerror.Parse(&customerror.ErrUnauthorized, fmt.Errorf("host signature does not match wallet address"))
-		}
-		encodedHostSignature = *opts.HostSignature
+		// Signature was already verified against the reconstructed sign message in step 3.5.
+		// encodedHostSignature was set there; nothing more to do here.
 	} else {
-		// PIN path: decrypt private key server-side and sign.
-		privateKey, _, err := cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, *opts.HostPin)
-		if err != nil {
-			return nil, err
-		}
-		rawSignature, err := cyptoutils.Sign(signMessageDigest.Bytes(), privateKey)
+		// PIN path: sign with the pre-decrypted private key from step 3.5.
+		rawSignature, err := cyptoutils.Sign(signMessageDigest.Bytes(), hostPrivateKey)
 		if err != nil {
 			return nil, err
 		}

@@ -869,4 +869,62 @@ func TestSignEventCertificates_ReceiverListChanges(t *testing.T) {
 		t.Log("6. New signature records are created for all issuers")
 		t.Log("7. All issuers must sign again")
 	})
+
+}
+
+// M11: wrong PIN must surface as ErrUnauthorized, not a raw decryption error
+func TestSignEventCertificates_WrongPIN(t *testing.T) {
+	ctx := context.Background()
+	userId := uuid.New()
+	eventID := uuid.New()
+	certID := uuid.New()
+
+	privateKey, err := crypto.GenerateKey()
+	require.NoError(t, err)
+	encryptedKey, err := encryptutils.EncryptAESGCM(hex.EncodeToString(crypto.FromECDSA(privateKey)), "correct-pin")
+	require.NoError(t, err)
+
+	mockAuthDg := new(MockAuthenticationCredentialDg)
+	credential := &entity.AuthenticationCredential{
+		Id:                  userId,
+		IsVerifiedIssuer:    true,
+		EncryptedPrivateKey: &encryptedKey,
+		WalletAddress:       "0x1234567890123456789012345678901234567890",
+	}
+	mockAuthDg.On("GetAuthenticationCredentialByIdWithEncryptedPrivateKey", ctx, userId).Return(credential, nil)
+
+	mockEventDg := new(MockEventDataGateway)
+	mockEventDg.On("GetEventById", ctx, eventID).Return(&entity.Event{Id: eventID, OwnerCredentialId: uuid.New()}, nil)
+
+	certAddr := "0xCertAddr"
+	mockCertDg := new(MockEventCertificateDataGateway)
+	mockCertDg.On("GetEventCertificatesByEventID", ctx, eventID).Return([]*entity.EventCertificate{
+		{Id: certID, EventId: eventID, EventCertificateAddress: &certAddr},
+	}, nil)
+
+	mockContractDg := new(MockEventContractDataGateway)
+	mockContractDg.On("GetEventContractByEventID", ctx, eventID).Return(&entity.EventContract{
+		EventId:                    eventID,
+		EventContractAddress:       "0xEventContract",
+		CertificateContractAddress: &certAddr,
+	}, nil)
+
+	uc := &EventUsecase{
+		AuthenticationCredentialDg:  mockAuthDg,
+		EventDataGateway:            mockEventDg,
+		EventCertificateDataGateway: mockCertDg,
+		EventContractDataGateway:    mockContractDg,
+		cfg:                         createMockConfigForSign(),
+		logger:                      slog.Default(),
+	}
+
+	wrongPin := "wrong-pin"
+	result, err := uc.SignEventCertificates(ctx, eventID, SignEventCertificatesRequest{IssuerPin: &wrongPin}, &auth.JwtClaims{UserId: userId})
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	customErr := customerror.TryParseAsCustomErr(err)
+	require.NotNil(t, customErr, "error must be wrapped as customerror, got: %v", err)
+	assert.Equal(t, customerror.ErrUnauthorized.Code, *customErr.Code)
+	mockAuthDg.AssertExpectations(t)
 }

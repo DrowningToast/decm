@@ -73,7 +73,10 @@ export function Row({
                     {verified !== undefined &&
                         (verified === false && warningTooltip ? (
                             <Tooltip>
-                                <TooltipTrigger className="inline-flex cursor-default">
+                                <TooltipTrigger
+                                    className="inline-flex cursor-default"
+                                    aria-label={warningTooltip}
+                                >
                                     <AlertTriangle className="w-3.5 h-3.5 text-yellow-500 shrink-0" />
                                 </TooltipTrigger>
                                 <TooltipContent
