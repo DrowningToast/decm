@@ -3,6 +3,7 @@ INSERT INTO event_certificates (
     event_id,
     receiver_credential_id,
     receiver_email,
+    receiver_wallet_address,
     name,
     academic_institution,
     certificate_title,
@@ -16,6 +17,7 @@ INSERT INTO event_certificates (
     sqlc.arg('event_id'),
     sqlc.arg('receiver_credential_id'),
     sqlc.arg('receiver_email'),
+    sqlc.arg('receiver_wallet_address'),
     sqlc.arg('name'),
     sqlc.arg('academic_institution'),
     sqlc.arg('certificate_title'),
@@ -106,7 +108,7 @@ WHERE ec.event_id = sqlc.arg('event_id')
 ORDER BY ec.created_at DESC;
 
 -- name: GetClaimedCertificatesByCredentialID :many
-SELECT 
+SELECT
     ec.id,
     ec.event_id,
     ec.receiver_credential_id,
@@ -134,6 +136,7 @@ LEFT JOIN user_signature us ON ec.user_claim_signature_id = us.id
 WHERE (
     ec.receiver_credential_id = sqlc.arg('receiver_credential_id')
     OR ec.receiver_email = sqlc.arg('receiver_email')
+    OR ec.receiver_wallet_address = sqlc.arg('receiver_wallet_address')
   )
   AND (ec.certificate_token_id IS NOT NULL OR ec.user_claim_signature_id IS NOT NULL)
   AND ec.revoked_at IS NULL
@@ -164,6 +167,7 @@ INNER JOIN events e ON ec.event_id = e.id
 WHERE (
     ec.receiver_credential_id = sqlc.arg('receiver_credential_id')
     OR ec.receiver_email = sqlc.arg('receiver_email')
+    OR ec.receiver_wallet_address = sqlc.arg('receiver_wallet_address')
   )
   AND ec.certificate_token_id IS NULL 
   AND ec.user_claim_signature_id IS NULL

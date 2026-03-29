@@ -76,8 +76,8 @@ func (m *MockInboxMessageDataGateway) UpdateInboxMessageReadStatus(ctx context.C
 	return args.Get(0).(*entity.InboxMessage), args.Error(1)
 }
 
-func (m *MockInboxMessageDataGateway) UpdateInboxMessageReadStatusAll(ctx context.Context, credentialID uuid.UUID) ([]*entity.InboxMessage, error) {
-	args := m.Called(ctx, credentialID)
+func (m *MockInboxMessageDataGateway) UpdateInboxMessageReadStatusAll(ctx context.Context, params offchain_datagateway.GetInboxMessagesByCredentialIDParameters) ([]*entity.InboxMessage, error) {
+	args := m.Called(ctx, params)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -283,7 +283,7 @@ func TestInboxUsecase_MarkMessageAsRead(t *testing.T) {
 }
 
 func TestInboxUsecase_MarkAllMessagesAsRead(t *testing.T) {
-	t.Run("should mark all messages as read", func(t *testing.T) {
+	t.Run("should mark all messages as read passing credential ID, email, and wallet address", func(t *testing.T) {
 		// Arrange
 		ctx := context.Background()
 		userID := uuid.New()
@@ -302,7 +302,11 @@ func TestInboxUsecase_MarkAllMessagesAsRead(t *testing.T) {
 		}
 
 		mockInboxDg := new(MockInboxMessageDataGateway)
-		mockInboxDg.On("UpdateInboxMessageReadStatusAll", ctx, userID).Return(updatedMessages, nil)
+		mockInboxDg.On("UpdateInboxMessageReadStatusAll", ctx, mock.MatchedBy(func(p offchain_datagateway.GetInboxMessagesByCredentialIDParameters) bool {
+			return p.CredentialID == userID &&
+				p.ReceiverEmail != nil && *p.ReceiverEmail == email &&
+				p.ReceiverWalletAddress != nil && *p.ReceiverWalletAddress == walletAddress
+		})).Return(updatedMessages, nil)
 
 		uc := &InboxUsecase{
 			InboxMessageDg: mockInboxDg,
@@ -315,6 +319,43 @@ func TestInboxUsecase_MarkAllMessagesAsRead(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, results)
 		assert.Len(t, results, 2)
+		mockInboxDg.AssertExpectations(t)
+	})
+
+	t.Run("should mark all messages as read for web3-only user (no email)", func(t *testing.T) {
+		// Arrange
+		ctx := context.Background()
+		userID := uuid.New()
+		walletAddress := "0xABC123"
+
+		user := auth.JwtClaims{
+			UserId:        userID,
+			Email:         nil, // web3-only user has no email
+			WalletAddress: walletAddress,
+		}
+
+		updatedMessages := []*entity.InboxMessage{
+			{Id: uuid.New(), IsRead: 1},
+		}
+
+		mockInboxDg := new(MockInboxMessageDataGateway)
+		mockInboxDg.On("UpdateInboxMessageReadStatusAll", ctx, mock.MatchedBy(func(p offchain_datagateway.GetInboxMessagesByCredentialIDParameters) bool {
+			return p.CredentialID == userID &&
+				p.ReceiverEmail == nil &&
+				p.ReceiverWalletAddress != nil && *p.ReceiverWalletAddress == walletAddress
+		})).Return(updatedMessages, nil)
+
+		uc := &InboxUsecase{
+			InboxMessageDg: mockInboxDg,
+		}
+
+		// Act
+		results, err := uc.MarkAllMessagesAsRead(ctx, user)
+
+		// Assert
+		require.NoError(t, err)
+		require.NotNil(t, results)
+		assert.Len(t, results, 1)
 		mockInboxDg.AssertExpectations(t)
 	})
 
@@ -332,7 +373,7 @@ func TestInboxUsecase_MarkAllMessagesAsRead(t *testing.T) {
 		}
 
 		mockInboxDg := new(MockInboxMessageDataGateway)
-		mockInboxDg.On("UpdateInboxMessageReadStatusAll", ctx, userID).Return(nil, errors.New("database error"))
+		mockInboxDg.On("UpdateInboxMessageReadStatusAll", ctx, mock.Anything).Return(nil, errors.New("database error"))
 
 		uc := &InboxUsecase{
 			InboxMessageDg: mockInboxDg,

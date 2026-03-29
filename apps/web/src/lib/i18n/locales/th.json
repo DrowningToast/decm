@@ -123,7 +123,8 @@
         "publicClientChainValue": "{{name}} (ID: {{id}})",
         "transportLabel": "ทรานสปอร์ต:",
         "transportUnknown": "ไม่ทราบ",
-        "viewRawSummary": "ดูข้อมูล Public Client แบบดิบ"
+        "viewRawSummary": "ดูข้อมูล Public Client แบบดิบ",
+        "byokNotSupported": "ระบบยังไม่รองรับการลงนามด้วย Self Custody ในขณะนี้"
     },
     "auth": {
         "signIn": "เข้าสู่ระบบ",
@@ -581,7 +582,8 @@
                 "phoneNumber": "เบอร์โทรศัพท์",
                 "address": "ที่อยู่",
                 "academicInstitution": "สถาบันการศึกษา",
-                "academicEmail": "อีเมลสถาบัน"
+                "academicEmail": "อีเมลสถาบัน",
+                "walletAddress": "ที่อยู่กระเป๋าเงิน"
             }
         },
         "date": "วันที่",
@@ -1113,6 +1115,8 @@
         "saveSettings": "บันทึกการตั้งค่า",
         "saveError": "ไม่สามารถบันทึกการตั้งค่าผู้เข้าร่วม กรุณาลองอีกครั้ง",
         "saveSuccess": "บันทึกการตั้งค่าผู้เข้าร่วมเรียบร้อยแล้ว",
+        "updateSuccess": "อัปเดตการตั้งค่าผู้เข้าร่วมเรียบร้อยแล้ว",
+        "updateError": "ไม่สามารถอัปเดตการตั้งค่าผู้เข้าร่วมได้",
         "formPreview": {
             "description": "นี่คือวิธีที่แบบฟอร์มการลงทะเบียนจะปรากฏต่อผู้เข้าร่วม",
             "title": "ตัวอย่างแบบฟอร์มการลงทะเบียน"
@@ -1178,7 +1182,8 @@
         "emptyFile": "ไฟล์ Excel ดูเห็นว่างหรือไม่มีข้อมูล",
         "parseError": "ไม่สามารถอ่านไฟล์ Excel กรุณาตรวจสอบรูปแบบไฟล์",
         "invalidRowsFound": "พบข้อมูลที่ไม่ถูกต้องในบางแถว",
-        "invalidRowsDescription": "แถวที่ไฮไลท์ด้วยสีแดงมีข้อมูลที่จำเป็นไม่ครบถ้วน (ชื่อ, นามสกุล หรืออีเมล) กรุณาแก้ไขในไฟล์ Excel ของคุณและอัปโหลดใหม่อีกครั้ง",
+        "invalidRowsDescription": "แถวที่ไฮไลท์ด้วยสีแดงมีข้อมูลที่ไม่ถูกต้อง แต่ละแถวต้องมี first_name, last_name และกรอกเพียง email หรือ wallet_address อย่างใดอย่างหนึ่งเท่านั้น (ไม่ใช่ทั้งคู่ ไม่ใช่ไม่มีเลย) กรุณาแก้ไขในไฟล์ Excel และอัปโหลดใหม่",
+        "eitherOrColumn": "ต้องกรอกอย่างใดอย่างหนึ่งเท่านั้น",
         "requiredFormat": "รูปแบบ Excel ที่กำหนด",
         "requiredFormatDescription": "ไฟล์ Excel ของคุณต้องมีคอลัมน์หัวตองเหล่านี้:",
         "columnHeader": "คอลัมน์ที่จำเป็น",
@@ -1190,6 +1195,7 @@
         "templateColumns": {
             "name": "name",
             "email": "email",
+            "walletAddress": "wallet_address",
             "phoneNumber": "phone_number",
             "academicInstitution": "academic_institution",
             "firstName": "first_name",
@@ -1232,6 +1238,9 @@
         "missingColumns": "คอลัมน์ที่จำเป็นต้องมี: {{columns}} กรุณาตรวจสอบว่าไฟล์ Excel ของคุณมีคอลัมน์เหล่านี้",
         "emptyFile": "ไฟล์ Excel ดูเหมือนจะว่างเปล่าหรือไม่มีข้อมูล",
         "parseError": "ไม่สามารถแยกวิเคราะห์ไฟล์ Excel ได้ กรุณาตรวจสอบรูปแบบไฟล์",
+        "invalidRowsDescription": "แถวที่ไฮไลท์ด้วยสีแดงมีข้อมูลที่ไม่ถูกต้อง แต่ละแถวต้องกรอก email หรือ wallet_address อย่างใดอย่างหนึ่งเท่านั้น (ไม่ใช่ทั้งคู่ ไม่ใช่ไม่มีเลย) กรุณาแก้ไขในไฟล์ Excel และอัปโหลดใหม่",
+        "missingColumnsTitle": "คอลัมน์ที่จำเป็นขาดหายไป",
+        "eitherOrColumn": "ต้องกรอกอย่างใดอย่างหนึ่งเท่านั้น",
         "requiredFormat": "รูปแบบ Excel ที่จำเป็นต้องมี",
         "requiredFormatDescription": "ไฟล์ Excel ของคุณต้องมีส่วนหัวคอลัมน์เหล่านี้:",
         "columnHeader": "คอลัมน์ที่จำเป็น",
@@ -1243,6 +1252,8 @@
         "templateSheetName": "ใบรับรอง",
         "templateFileName": "certificate_import_template",
         "templateColumns": {
+            "email": "email",
+            "walletAddress": "wallet_address",
             "firstName": "first_name",
             "lastName": "last_name",
             "academicInstitution": "academic_institution",
@@ -1268,7 +1279,7 @@
             "title": "ขั้นตอนที่ 1: ตั้งค่าผู้ออกใบประกาศนียบัตร",
             "description": "ค้นหาและเลือกผู้ออกใบประกาศนียบัตรสำหรับกิจกรรมนี้",
             "searchLabel": "ค้นหาผู้ออกใบประกาศนียบัตร",
-            "searchPlaceholder": "ป้อนชื่อ อีเมล หรือองค์กร...",
+            "searchPlaceholder": "ป้อนชื่อ อีเมล หรือ wallet address...",
             "searchButton": "ค้นหา",
             "searchNote": "หมายเหตุ: ข้อความค้นหาต้องตรงกับชื่อจริง นามสกุล หรืออีเมล OAuth ของผู้ออกทุกตัวอักษร",
             "publishedWarning": "เผยแพร่การตั้งค่าใบรับรองแล้ว ไม่สามารถแก้ไขการตั้งค่าผู้ออกได้",
@@ -1282,6 +1293,7 @@
                 "googleOAuthEmail": "อีเมล Google OAuth",
                 "phoneNumber": "เบอร์โทรศัพท์",
                 "organization": "องค์กร",
+                "walletAddress": "Wallet Address",
                 "actions": "การดำเนินการ"
             },
             "alert": {
@@ -1544,6 +1556,16 @@
                 "checkboxes": {
                     "acceptRisk": "ฉันตกลง",
                     "acknowledgePasswordLoss": "ฉันรับทราบว่าการสูญเสียรหัส PIN/รหัสผ่านของฉันจะส่งผลให้สูญเสียบัญชีทั้งหมด"
+                }
+            },
+            "wallet": {
+                "description": {
+                    "part1": "ใบรับรองใช้เทคโนโลยีบล็อกเชนเป็นแหล่งความจริง บัญชีของคุณถูกผูกกับ EVM wallet ของคุณอย่างถาวร",
+                    "part2": "หากคุณสูญเสีย wallet ของคุณ คุณจะไม่สามารถเข้าถึงพอร์ตโฟลิโอของคุณได้อีก"
+                },
+                "checkboxes": {
+                    "acceptRisk": "ฉันตกลง",
+                    "acknowledgeWalletLoss": "ฉันรับทราบว่าการสูญเสีย wallet ของฉันจะส่งผลให้สูญเสียบัญชีทั้งหมด"
                 }
             }
         }

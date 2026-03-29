@@ -6,6 +6,7 @@ import (
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"
+	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
@@ -43,7 +44,8 @@ func (uc *CertificateShareUsecase) UpdateCertificateShare(
 
 	ownerByCredential := certificate.ReceiverCredentialId != nil && *certificate.ReceiverCredentialId == currentUser.UserId
 	ownerByEmail := certificate.ReceiverEmail != nil && currentUser.Email != nil && *certificate.ReceiverEmail == *currentUser.Email
-	if !ownerByCredential && !ownerByEmail {
+	ownerByWallet := certificate.ReceiverWalletAddress != nil && strings.EqualFold(currentUser.WalletAddress, *certificate.ReceiverWalletAddress)
+	if !ownerByCredential && !ownerByEmail && !ownerByWallet {
 		return nil, customerror.Parse(&customerror.ErrForbidden, errors.New("not authorized to update this share"))
 	}
 

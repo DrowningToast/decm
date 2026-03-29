@@ -31,6 +31,9 @@ type CreateEventParameters struct {
 	EventBanner      *multipart.FileHeader
 	EventIcon        *multipart.FileHeader
 	HostPassword     string
+	// Wallet-based auth (alternative to HostPassword)
+	Signature   string
+	SignMessage string
 }
 
 func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParameters, currentUser *auth.JwtClaims) (*entity.Event, common.Address, common.Address, *types.Transaction, error) {
@@ -42,6 +45,28 @@ func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParam
 	isVerifiedOrganizer := credential.IsVerifiedOrganizer
 	if !isVerifiedOrganizer {
 		return nil, common.Address{}, common.Address{}, nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("user is not a verified organizer"))
+	}
+
+	// Resolve host address early (before file uploads) so we fail fast on bad auth
+	var hostAddress common.Address
+	if params.Signature != "" {
+		// Wallet path: recover address from signature and verify against stored wallet address
+		recoveredAddress, err := cyptoutils.GetAddressFromSignature(params.SignMessage, params.Signature)
+		if err != nil {
+			return nil, common.Address{}, common.Address{}, nil, err
+		}
+		credentialAddress := common.HexToAddress(credential.WalletAddress)
+		if recoveredAddress != credentialAddress {
+			return nil, common.Address{}, common.Address{}, nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("wallet signature does not match credential wallet address"))
+		}
+		hostAddress = recoveredAddress
+	} else {
+		// Password path: decrypt private key to get host address
+		_, addr, err := cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, params.HostPassword)
+		if err != nil {
+			return nil, common.Address{}, common.Address{}, nil, err
+		}
+		hostAddress = *addr
 	}
 
 	bannerStorageKey, err := uc.UploadEventBanner(ctx, uuid.New(), params.EventBanner)
@@ -95,15 +120,10 @@ func (uc *EventUsecase) CreateEvent(ctx context.Context, params CreateEventParam
 		return nil, common.Address{}, common.Address{}, nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("DecmAccessManagerAddress is required"))
 	}
 
-	_, hostAddress, err := cyptoutils.DecryptPrivateKey(*credential.EncryptedPrivateKey, params.HostPassword)
-	if err != nil {
-		return nil, common.Address{}, common.Address{}, nil, err
-	}
-
 	// Create smart contracts using the factory
 	contractResponse, err := uc.EventContractFactoryDg.CreateContract(ctx, eventcontract_datagateway.CreateContractParams{
 		AccessManagerContractAddress: decmAccessManagerAddress,
-		HostAddress:                  *hostAddress,
+		HostAddress:                  hostAddress,
 		EventName:                    event.Title,
 		EventDescription:             event.ShortDescription,
 		SeatsCount:                   int64(event.MaxAttendees),

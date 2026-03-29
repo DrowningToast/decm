@@ -1292,8 +1292,19 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Host password",
                         "name": "host_password",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet signature",
+                        "name": "signature",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet sign message",
+                        "name": "sign_message",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -1512,10 +1523,21 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Host password (required for contract update)",
+                        "description": "Host password (required for contract update if not using wallet)",
                         "name": "host_password",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet signature",
+                        "name": "signature",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet sign message",
+                        "name": "sign_message",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -1745,6 +1767,72 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/core-api_internal_handler_event.ImportCertificateReceiversResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{event_id}/certificates/import/sign-message": {
+            "post": {
+                "description": "Deploys the certificate contract if not yet deployed, computes receiver hashes, and returns the sign message JSON that the host must sign with their wallet before calling the import endpoint.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Certificates"
+                ],
+                "summary": "Get sign message for certificate import (BYOK wallet users)",
+                "operationId": "get-certificate-import-sign-message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Receivers to import",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/event.GetCertificateImportSignMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_event.GetCertificateImportSignMessageResponse"
                         }
                     },
                     "400": {
@@ -2021,7 +2109,7 @@ const docTemplate = `{
         },
         "/api/v1/events/{event_id}/certificates/sign": {
             "post": {
-                "description": "Sign all event certificates for an event by issuer",
+                "description": "Sign all event certificates for an event by issuer. PIN-based users provide issuer_pin; BYOK wallet users provide issuer_sign_message and issuer_signature.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2078,6 +2166,54 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/events/{event_id}/certificates/sign/message": {
+            "get": {
+                "description": "Returns the stored sign_message that a BYOK wallet issuer must sign before calling the sign certificates endpoint.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Event Certificates"
+                ],
+                "summary": "Get sign message for BYOK issuer certificate signing",
+                "operationId": "get-issuer-sign-message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "event_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/core-api_internal_handler_event.GetIssuerSignMessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerror.ErrResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/customerror.ErrResponse"
                         }
@@ -4739,11 +4875,36 @@ const docTemplate = `{
                 }
             }
         },
+        "core-api_internal_handler_event.GetCertificateImportSignMessageResponse": {
+            "type": "object",
+            "required": [
+                "event_certificate_address",
+                "sign_message"
+            ],
+            "properties": {
+                "event_certificate_address": {
+                    "type": "string"
+                },
+                "sign_message": {
+                    "type": "string"
+                }
+            }
+        },
+        "core-api_internal_handler_event.GetIssuerSignMessageResponse": {
+            "type": "object",
+            "required": [
+                "sign_message"
+            ],
+            "properties": {
+                "sign_message": {
+                    "type": "string"
+                }
+            }
+        },
         "core-api_internal_handler_event.ImportCertificateReceiversRequest": {
             "type": "object",
             "required": [
                 "event_id",
-                "host_pin",
                 "receivers"
             ],
             "properties": {
@@ -4751,6 +4912,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "host_pin": {
+                    "description": "PIN-based path (non-BYOK users): provide host_pin to decrypt server-side key",
+                    "type": "string"
+                },
+                "host_sign_message": {
+                    "description": "Wallet-based path (BYOK users): provide the sign_message returned by the sign-message endpoint\nand the wallet signature over that message",
+                    "type": "string"
+                },
+                "host_signature": {
                     "type": "string"
                 },
                 "receivers": {
@@ -4852,11 +5021,16 @@ const docTemplate = `{
         },
         "core-api_internal_handler_event.SignEventCertificatesRequest": {
             "type": "object",
-            "required": [
-                "issuer_pin"
-            ],
             "properties": {
                 "issuer_pin": {
+                    "description": "For PIN-based (non-BYOK) users",
+                    "type": "string"
+                },
+                "issuer_sign_message": {
+                    "description": "For wallet-based (BYOK) users",
+                    "type": "string"
+                },
+                "issuer_signature": {
                     "type": "string"
                 }
             }
@@ -4864,7 +5038,8 @@ const docTemplate = `{
         "core-api_internal_handler_event.SignEventCertificatesResponse": {
             "type": "object",
             "required": [
-                "certificates"
+                "certificates",
+                "total_signed"
             ],
             "properties": {
                 "certificates": {
@@ -4872,6 +5047,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/core-api_internal_handler_event.CertificateSignature"
                     }
+                },
+                "total_signed": {
+                    "type": "integer"
                 }
             }
         },
@@ -5561,6 +5739,9 @@ const docTemplate = `{
                 "receiver_email": {
                     "type": "string"
                 },
+                "receiver_wallet_address": {
+                    "type": "string"
+                },
                 "revoked_at": {
                     "type": "string"
                 },
@@ -5933,6 +6114,9 @@ const docTemplate = `{
                 "receiver_email": {
                     "type": "string"
                 },
+                "receiver_wallet_address": {
+                    "type": "string"
+                },
                 "revoked_at": {
                     "type": "string"
                 },
@@ -5991,11 +6175,14 @@ const docTemplate = `{
         },
         "event.DeleteEventRequest": {
             "type": "object",
-            "required": [
-                "host_password"
-            ],
             "properties": {
                 "host_password": {
+                    "type": "string"
+                },
+                "sign_message": {
+                    "type": "string"
+                },
+                "signature": {
                     "type": "string"
                 }
             }
@@ -6235,6 +6422,25 @@ const docTemplate = `{
                 }
             }
         },
+        "event.GetCertificateImportSignMessageRequest": {
+            "type": "object",
+            "required": [
+                "event_id",
+                "receivers"
+            ],
+            "properties": {
+                "event_id": {
+                    "type": "string"
+                },
+                "receivers": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/event.ImportCertificateReceiverRequest"
+                    }
+                }
+            }
+        },
         "event.GetCertificatesListViewModelResponse": {
             "type": "object",
             "required": [
@@ -6288,7 +6494,6 @@ const docTemplate = `{
                 "academic_institution",
                 "certificate_subtitle",
                 "certificate_title",
-                "email",
                 "first_name",
                 "last_name"
             ],
@@ -6309,6 +6514,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "last_name": {
+                    "type": "string"
+                },
+                "wallet_address": {
                     "type": "string"
                 }
             }
@@ -6435,6 +6643,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "receiver_email": {
+                    "type": "string"
+                },
+                "receiver_wallet_address": {
                     "type": "string"
                 },
                 "revoked_at": {
@@ -6838,6 +7049,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "phone_number": {
+                    "type": "string"
+                },
+                "wallet_address": {
                     "type": "string"
                 }
             }

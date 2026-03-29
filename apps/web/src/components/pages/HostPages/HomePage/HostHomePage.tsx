@@ -1,7 +1,7 @@
 import SectionContainer from "@/components/container/SectionContainer";
 import TitleSubtitle from "@/components/TitleSubtitle";
 import { Typography } from "@/components/typography/typography";
-import { Link, type Path } from "@/router";
+import { Link, type Params, type Path } from "@/router";
 import { useTranslation } from "react-i18next";
 
 export default function HostHomePage() {
@@ -57,13 +57,12 @@ export default function HostHomePage() {
 
 interface MenuItemProps {
     title: string;
-    to: Path;
+    to: Exclude<Path, keyof Params>;
 }
 function MenuItem({ title, to }: MenuItemProps) {
     return (
         <Link
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            to={to as any}
+            to={to}
             className="lg:py-5 lg:px-6 lg:border lg:border-[#D9D9D91A] lg:rounded-lg lg:bg-[#D9D9D905]"
         >
             <Typography

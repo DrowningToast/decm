@@ -3,21 +3,28 @@ import type { EventFormData } from "@/lib/schemas/eventFormSchema";
 
 import SectionContainer from "@/components/container/SectionContainer";
 import TitleSubtitle from "@/components/TitleSubtitle";
-import type { GetEventContractByEventIdData, UpdateEventPayload } from "@decm/api";
+import type { GetEventContractByEventIdData } from "@decm/api";
 import { useEditEvent } from "./useEditEvent";
 import { useDeleteEvent } from "./useDeleteEvent";
 import type { EventViewModelExtended } from "@/services/EventService/EventService";
+import type { PasswordPinModalSuccessResult } from "@/components/ui/password-pin-modal";
+import { useWallet } from "@/hooks/useWallet";
 
 interface EditEventPageProps {
     event: EventViewModelExtended;
     eventContract?: GetEventContractByEventIdData;
 }
 export const EditEventPage = ({ event, eventContract }: EditEventPageProps) => {
-    const { editEvent, isEditingEvent } = useEditEvent(event.id ?? "");
-    const { deleteEvent, isDeletingEvent } = useDeleteEvent(event.id ?? "");
+    const { editEventWithPassword, editEventWithSignature, isEditingEvent } = useEditEvent(
+        event.id ?? "",
+    );
+    const { deleteEventWithPassword, deleteEventWithSignature, isDeletingEvent } = useDeleteEvent(
+        event.id ?? "",
+    );
+    const { isConnected } = useWallet();
 
-    const handleEditEvent = async (data: EventFormData, hostPassword: string) => {
-        const req: UpdateEventPayload = {
+    const handleEditEvent = async (data: EventFormData, auth: PasswordPinModalSuccessResult) => {
+        const commonFields = {
             name: data.name,
             short_description: data.shortDescription,
             description: data.description ?? "",
@@ -28,21 +35,33 @@ export const EditEventPage = ({ event, eventContract }: EditEventPageProps) => {
             seats_count: data.seatsCount,
             contact_address: data.contactAddress,
             contact_number: data.contactNumber,
-            host_password: hostPassword,
+            ...(data.eventBanner ? { banner: data.eventBanner } : {}),
+            ...(data.eventIcon ? { icon: data.eventIcon } : {}),
         };
 
-        if (data.eventBanner) {
-            req.banner = data.eventBanner;
+        if (auth.type === "wallet") {
+            await editEventWithSignature({
+                ...commonFields,
+                signature: auth.signature,
+                signMessage: auth.signMessage,
+            });
+        } else {
+            await editEventWithPassword({
+                ...commonFields,
+                hostPassword: auth.value,
+            });
         }
-        if (data.eventIcon) {
-            req.icon = data.eventIcon;
-        }
-
-        await editEvent(req);
     };
 
-    const handleDeleteEvent = async (hostPassword: string) => {
-        await deleteEvent(hostPassword);
+    const handleDeleteEvent = async (auth: PasswordPinModalSuccessResult) => {
+        if (auth.type === "wallet") {
+            await deleteEventWithSignature({
+                signature: auth.signature,
+                signMessage: auth.signMessage,
+            });
+        } else {
+            await deleteEventWithPassword(auth.value);
+        }
     };
 
     return (
@@ -60,6 +79,7 @@ export const EditEventPage = ({ event, eventContract }: EditEventPageProps) => {
                     onDelete={handleDeleteEvent}
                     mode="edit"
                     isLoading={isEditingEvent || isDeletingEvent}
+                    allowWalletSigning={isConnected}
                     defaultValues={{
                         contactAddress: event?.location ?? "",
                         contactNumber: event?.contactNumber ?? "",

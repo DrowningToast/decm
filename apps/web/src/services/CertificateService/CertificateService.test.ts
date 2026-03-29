@@ -11,6 +11,7 @@ vi.mock("@/lib/api/api", () => ({
             getEventCertificates: vi.fn(),
             getEventCertificateFontFamilies: vi.fn(),
             signEventCertificates: vi.fn(),
+            getIssuerSignMessage: vi.fn(),
             importCertificateReceivers: vi.fn(),
             revokeEventCertificates: vi.fn(),
             revokeAllEventCertificates: vi.fn(),
@@ -185,24 +186,26 @@ describe("CertificateService", () => {
     });
 
     describe("signEventCertificates", () => {
-        it("should sign event certificates with PIN", async () => {
-            const mockResponse = {
-                certificates: [
-                    {
-                        certificate: {
-                            id: "cert-1",
-                            event_id: "event-1",
-                            event_contract_address: "0x123",
-                            created_at: "2024-01-01T00:00:00Z",
-                        },
-                        signature: "sig-123",
+        const mockSignResponse = {
+            certificates: [
+                {
+                    certificate: {
+                        id: "cert-1",
+                        event_id: "event-1",
+                        event_contract_address: "0x123",
+                        created_at: "2024-01-01T00:00:00Z",
                     },
-                ],
-            };
+                    signature: "sig-123",
+                },
+            ],
+        };
 
-            vi.mocked(mockCoreApi.v1.signEventCertificates).mockResolvedValue(mockResponse);
+        it("should sign event certificates with PIN (non-BYOK)", async () => {
+            vi.mocked(mockCoreApi.v1.signEventCertificates).mockResolvedValue(mockSignResponse);
 
-            const result = await certificateService.signEventCertificates("event-1", "1234");
+            const result = await certificateService.signEventCertificates("event-1", {
+                issuerPin: "1234",
+            });
 
             expect(mockCoreApi.v1.signEventCertificates).toHaveBeenCalledWith(
                 { eventId: "event-1" },
@@ -211,6 +214,41 @@ describe("CertificateService", () => {
             expect(result.certificates).toHaveLength(1);
             expect(result.totalSigned).toBe(1);
             expect(result.certificates[0].certificateId).toBe("cert-1");
+        });
+
+        it("should sign event certificates with wallet signature (BYOK)", async () => {
+            vi.mocked(mockCoreApi.v1.signEventCertificates).mockResolvedValue(mockSignResponse);
+
+            const signMessage = '{"eventContractAddress":"0xABC","receivers":["0x123"]}';
+            const signature = "0xdeadbeef";
+
+            const result = await certificateService.signEventCertificates("event-1", {
+                issuerSignMessage: signMessage,
+                issuerSignature: signature,
+            });
+
+            expect(mockCoreApi.v1.signEventCertificates).toHaveBeenCalledWith(
+                { eventId: "event-1" },
+                { issuer_sign_message: signMessage, issuer_signature: signature },
+            );
+            expect(result.totalSigned).toBe(1);
+        });
+    });
+
+    describe("getIssuerSignMessage", () => {
+        it("should fetch sign message for BYOK issuer", async () => {
+            const mockResponse = {
+                sign_message: '{"eventContractAddress":"0xABC","receivers":["0x123"]}',
+            };
+
+            vi.mocked(mockCoreApi.v1.getIssuerSignMessage).mockResolvedValue(mockResponse);
+
+            const result = await certificateService.getIssuerSignMessage("event-1");
+
+            expect(mockCoreApi.v1.getIssuerSignMessage).toHaveBeenCalledWith({
+                eventId: "event-1",
+            });
+            expect(result).toBe(mockResponse.sign_message);
         });
     });
 
@@ -475,8 +513,7 @@ describe("CertificateService", () => {
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const result = await (certificateService as any).claimCertificateWithPin({
+            const result = await certificateService.claimCertificate({
                 certificateId: "cert-123",
                 accountPassword: "password123",
             });
@@ -507,8 +544,7 @@ describe("CertificateService", () => {
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const result = await (certificateService as any).claimCertificateWithPin({
+            const result = await certificateService.claimCertificate({
                 certificateId: "cert-123",
                 accountPassword: "password123",
             });
@@ -536,8 +572,7 @@ describe("CertificateService", () => {
 
             vi.mocked(mockCoreApi.v1.claimCertificate).mockResolvedValue(mockResponse);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const result = await (certificateService as any).claimCertificateWithSignature({
+            const result = await certificateService.claimCertificate({
                 certificateId: "cert-123",
                 signature: "sig-123",
                 signMessage: "Sign this",

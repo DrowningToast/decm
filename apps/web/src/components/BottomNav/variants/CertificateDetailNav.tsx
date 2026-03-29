@@ -92,16 +92,19 @@ export const CertificateDetailNav = ({
                 <ChevronLeft className="w-5 h-5 text-white" />
             </button>
             <div className="flex gap-1.5 flex-wrap justify-center items-stretch">
-                {/* Shareable Link Button - only shown when certificate is claimed */}
-                {isClaimed && overrideShowCreateShareButton !== false && (
+                {/* Share Button - creates link if no shareable yet, opens modal if shareable exists */}
+                {isClaimed && (
                     <Button
-                        loading={isShareableLoading}
-                        onClick={onClickShareable}
+                        loading={
+                            overrideShowCreateShareButton !== false ? isShareableLoading : false
+                        }
+                        onClick={
+                            overrideShowCreateShareButton !== false
+                                ? onClickShareable
+                                : () => setIsShareModalOpen(true)
+                        }
                         className="cursor-pointer flex items-center justify-center gap-2 px-3 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0"
-                        aria-label={t(
-                            "participant.certificates.detail.createShareableLink",
-                            "Create shareable link",
-                        )}
+                        aria-label={t("participant.certificates.detail.share", "Share")}
                     >
                         <Share2 className="w-5 h-5 text-background-alt flex-shrink-0" />
                         <span className="text-xs text-background-alt whitespace-nowrap">
@@ -129,26 +132,6 @@ export const CertificateDetailNav = ({
                         />
                         <span className="text-xs text-background-alt whitespace-nowrap">
                             {t("participant.certificates.detail.download", "Download")}
-                        </span>
-                    </button>
-                )}
-
-                {/* Share Modal Button - only shown when certificate is claimed */}
-                {isClaimed && (
-                    <button
-                        onClick={() => setIsShareModalOpen(true)}
-                        className="cursor-pointer flex items-center justify-center gap-2 px-3 h-10 bg-white rounded-[10px] hover:bg-white/90 transition-colors flex-shrink-0"
-                        aria-label={t(
-                            "participant.certificates.detail.openShareModal",
-                            "Share certificate",
-                        )}
-                    >
-                        <Share2 className="w-5 h-5 text-background-alt flex-shrink-0" />
-                        <span className="text-xs text-background-alt whitespace-nowrap">
-                            {t(
-                                "participant.certificates.detail.openShareModal",
-                                "Share certificate",
-                            )}
                         </span>
                     </button>
                 )}

@@ -5,6 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTranslation } from "react-i18next";
 import type { EventRegistrationParticipantRequestItem } from "@decm/api";
+import {
+    ALL_COLUMNS,
+    ALWAYS_REQUIRED_COLUMNS,
+    EITHER_OR_COLUMNS,
+    validateRow,
+    buildParticipant,
+    type PreviewData,
+    type RowValidationResult,
+} from "./ExcelPreviewUtils";
 
 interface ExcelPreviewProps {
     file: File;
@@ -12,82 +21,6 @@ interface ExcelPreviewProps {
     onCancel: () => void;
     disabled?: boolean;
 }
-
-interface PreviewData {
-    [key: string]: string | number | undefined;
-}
-
-interface RowValidationResult {
-    isValid: boolean;
-    missingFields: string[];
-}
-
-// Fixed column names that Excel files must have
-const REQUIRED_COLUMNS = {
-    firstName: "first_name",
-    lastName: "last_name",
-    email: "email",
-};
-
-// Optional columns that can be included in Excel files
-const OPTIONAL_COLUMNS = {
-    phoneNumber: "phone_number",
-    academicInstitution: "academic_institution",
-};
-
-// All columns for display purposes
-const ALL_COLUMNS = {
-    ...REQUIRED_COLUMNS,
-    ...OPTIONAL_COLUMNS,
-};
-
-// Helper to normalize optional field: returns undefined if empty/null/whitespace
-const normalizeOptional = (value: unknown): string | undefined => {
-    if (value == null) return undefined;
-    const trimmed = String(value).trim();
-    return trimmed || undefined;
-};
-
-// Helper to validate a row
-const validateRow = (row: PreviewData): RowValidationResult => {
-    const missingFields: string[] = [];
-
-    if (!normalizeOptional(row[REQUIRED_COLUMNS.firstName])) {
-        missingFields.push(REQUIRED_COLUMNS.firstName);
-    }
-    if (!normalizeOptional(row[REQUIRED_COLUMNS.lastName])) {
-        missingFields.push(REQUIRED_COLUMNS.lastName);
-    }
-    if (!normalizeOptional(row[REQUIRED_COLUMNS.email])) {
-        missingFields.push(REQUIRED_COLUMNS.email);
-    }
-
-    return {
-        isValid: missingFields.length === 0,
-        missingFields,
-    };
-};
-
-// Helper to build participant from Excel row data
-const buildParticipant = (row: PreviewData): EventRegistrationParticipantRequestItem => {
-    const participant: EventRegistrationParticipantRequestItem = {
-        first_name: String(row.first_name || ""),
-        last_name: String(row.last_name || ""),
-        email: String(row.email || ""),
-    };
-
-    const phoneNumber = normalizeOptional(row.phone_number);
-    const academicInstitution = normalizeOptional(row.academic_institution);
-
-    if (phoneNumber) {
-        participant.phone_number = phoneNumber;
-    }
-    if (academicInstitution) {
-        participant.academic_institution = academicInstitution;
-    }
-
-    return participant;
-};
 
 export const ExcelPreview = ({
     file,
@@ -118,15 +51,31 @@ export const ExcelPreview = ({
                     const workbook = XLSX.read(data, { type: "array" });
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet) as PreviewData[];
+                    const jsonData = (
+                        XLSX.utils.sheet_to_json(worksheet, { blankrows: false }) as PreviewData[]
+                    ).filter((row) => Object.values(row).some((v) => String(v).trim() !== ""));
 
                     if (jsonData.length > 0) {
                         const excelColumns = Object.keys(jsonData[0]);
 
-                        // Validate that all required columns exist
-                        const missing = Object.values(REQUIRED_COLUMNS).filter(
+                        // Always-required columns must be present in the file
+                        const missingAlways = Object.values(ALWAYS_REQUIRED_COLUMNS).filter(
                             (col) => !excelColumns.includes(col),
                         );
+
+                        // At least one of the either/or columns must be present in the file
+                        const hasAnyEitherOr = Object.values(EITHER_OR_COLUMNS).some((col) =>
+                            excelColumns.includes(col),
+                        );
+
+                        const missing = [
+                            ...missingAlways,
+                            ...(hasAnyEitherOr
+                                ? []
+                                : [
+                                      `${EITHER_OR_COLUMNS.email} or ${EITHER_OR_COLUMNS.walletAddress}`,
+                                  ]),
+                        ];
 
                         const validations = jsonData.map(validateRow);
                         setPreviewData(jsonData);
@@ -199,7 +148,10 @@ export const ExcelPreview = ({
                             {t("participantImport.missingColumnsTitle")}
                         </Typography>
                         <div className="flex flex-wrap gap-2">
-                            {Object.values(REQUIRED_COLUMNS).map((col) => {
+                            {[
+                                ...Object.values(ALWAYS_REQUIRED_COLUMNS),
+                                `${EITHER_OR_COLUMNS.email} or ${EITHER_OR_COLUMNS.walletAddress}`,
+                            ].map((col) => {
                                 const isMissing = missingColumns.includes(col);
                                 return (
                                     <div

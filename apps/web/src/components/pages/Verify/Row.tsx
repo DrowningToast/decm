@@ -1,4 +1,4 @@
-import { Info } from "lucide-react";
+import { Info, AlertTriangle } from "lucide-react";
 import { Typography } from "@/components/typography/typography";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { VerifiedBadge } from "./VerifiedBadge";
@@ -24,6 +24,7 @@ export function Row({
     copyValue,
     verified,
     labelTooltip,
+    warningTooltip,
 }: {
     label: string;
     value: React.ReactNode;
@@ -31,6 +32,7 @@ export function Row({
     copyValue?: string;
     verified?: boolean | null;
     labelTooltip?: string;
+    warningTooltip?: string;
 }) {
     return (
         <tr className="border-b border-muted/10 last:border-0">
@@ -68,7 +70,25 @@ export function Row({
                     ) : (
                         value
                     )}
-                    {verified !== undefined && <VerifiedBadge verified={verified ?? null} />}
+                    {verified !== undefined &&
+                        (verified === false && warningTooltip ? (
+                            <Tooltip>
+                                <TooltipTrigger
+                                    className="inline-flex cursor-default"
+                                    aria-label={warningTooltip}
+                                >
+                                    <AlertTriangle className="w-3.5 h-3.5 text-yellow-500 shrink-0" />
+                                </TooltipTrigger>
+                                <TooltipContent
+                                    side="right"
+                                    className="max-w-64 text-xs leading-relaxed"
+                                >
+                                    {warningTooltip}
+                                </TooltipContent>
+                            </Tooltip>
+                        ) : (
+                            <VerifiedBadge verified={verified ?? null} />
+                        ))}
                     {copyValue && <CopyButton value={copyValue} />}
                 </div>
             </td>

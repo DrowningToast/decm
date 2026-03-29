@@ -13,7 +13,9 @@ import (
 )
 
 type DeleteEventRequest struct {
-	HostPassword string `json:"host_password"`
+	HostPassword string `json:"host_password,omitempty"`
+	Signature    string `json:"signature,omitempty"`
+	SignMessage  string `json:"sign_message,omitempty"`
 }
 
 // DeleteEvent godoc
@@ -50,7 +52,13 @@ func (h *Handler) DeleteEvent(ctx *fiber.Ctx) error {
 		return customerror.Parse(&customerror.ErrInvalidArgument, err)
 	}
 
-	event, err := h.EventUc.DeleteEvent(ctxWithTimeout, eventID, currentUser, request.HostPassword)
+	params := event_uc.DeleteEventParameters{
+		HostPassword: request.HostPassword,
+		Signature:    request.Signature,
+		SignMessage:  request.SignMessage,
+	}
+
+	event, err := h.EventUc.DeleteEvent(ctxWithTimeout, eventID, currentUser, params)
 	if err != nil {
 		return err
 	}

@@ -158,10 +158,10 @@ RETURNING *;
 -- name: GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress :one
 -- Fetch authentication credential by Google OAuth email OR wallet address
 -- At least one parameter must be provided (non-null)
-SELECT * FROM authentication_credentials 
+SELECT * FROM authentication_credentials
 WHERE (
     (sqlc.narg(google_connector_ref)::text IS NOT NULL AND google_connector_ref = sqlc.narg(google_connector_ref))
-    OR 
-    (sqlc.narg(wallet_address)::text IS NOT NULL AND wallet_address = sqlc.narg(wallet_address))
+    OR
+    (sqlc.narg(wallet_address)::text IS NOT NULL AND LOWER(wallet_address) = sqlc.narg(wallet_address))
 )
 LIMIT 1;

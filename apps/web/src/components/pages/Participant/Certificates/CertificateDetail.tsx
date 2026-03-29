@@ -8,6 +8,13 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
 import { useClaimCertificate } from "@/hooks/useClaimCertificate";
+import { useAuth } from "@/context/AuthContext";
+import { certificateService, walletSigningService } from "@/services/services";
+import {
+    WalletNotConnectedError,
+    WalletSigningRejectedError,
+} from "@/services/WalletSigningService/WalletSigningService";
+import { toast } from "sonner";
 import { useCertificateImage } from "@/hooks/useCertificateImage";
 import {
     useCertificateDetailNavStore,
@@ -26,6 +33,7 @@ interface CertificateDetailProps {
 
 export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => {
     const { t, i18n } = useTranslation();
+    const { user } = useAuth();
     const { certificate, formattedDate, isLoading, isError } =
         useCertificateDetailUsecase(certificateId);
     const { mutateAsync: openPasswordPrompt } = usePasswordPrompt();
@@ -102,25 +110,48 @@ export const CertificateDetail = ({ certificateId }: CertificateDetailProps) => 
         try {
             setIsProcessing(true);
 
-            // Open password/PIN prompt
-            const accountPassword = await openPasswordPrompt({
-                eventContractAddress: certificate.eventContractAddress || "",
-                transactionType: "Certificate Claim",
-                title: t("participant.certificates.claimTitle", "Claim Certificate"),
-                description: t(
-                    "participant.certificates.claimDescription",
-                    "Enter your account password to claim your certificate on the blockchain",
-                ),
-                details: t("participant.certificates.claimingCertificate", {
-                    name: certificate.name,
-                }),
-            });
-
-            // Claim the certificate with the verified password (PIN flow)
-            await claimCertificate({
-                certificateId: certificate.id,
-                accountPassword,
-            });
+            if (user?.solutionStatus === "BYOK") {
+                // BYOK flow: sign with wallet extension (MetaMask, WalletConnect, etc.)
+                const { signMessage } = await certificateService.getClaimCertificateSignMessage(
+                    certificate.id,
+                );
+                let signature: string;
+                try {
+                    signature = await walletSigningService.signMessage(signMessage);
+                } catch (error) {
+                    if (error instanceof WalletNotConnectedError) {
+                        toast.error(t("errors.walletNotConnected", "Wallet is not connected"));
+                    } else if (error instanceof WalletSigningRejectedError) {
+                        toast.error(t("errors.walletSigningRejected", "Signing request rejected"));
+                    } else {
+                        toast.error(t("errors.generic", "An unexpected error occurred"));
+                    }
+                    return;
+                }
+                await claimCertificate({
+                    certificateId: certificate.id,
+                    signature,
+                    signMessage,
+                });
+            } else {
+                // SYSTEM_MANAGED flow: decrypt private key with account password/PIN
+                const accountPassword = await openPasswordPrompt({
+                    eventContractAddress: certificate.eventContractAddress || "",
+                    transactionType: "Certificate Claim",
+                    title: t("participant.certificates.claimTitle", "Claim Certificate"),
+                    description: t(
+                        "participant.certificates.claimDescription",
+                        "Enter your account password to claim your certificate on the blockchain",
+                    ),
+                    details: t("participant.certificates.claimingCertificate", {
+                        name: certificate.name,
+                    }),
+                });
+                await claimCertificate({
+                    certificateId: certificate.id,
+                    accountPassword,
+                });
+            }
         } catch (error) {
             console.error("Failed to claim certificate:", error);
             // Error toast is already shown by the hook

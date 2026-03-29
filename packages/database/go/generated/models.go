@@ -214,7 +214,8 @@ type EventCertificate struct {
 	RevokedAt               pgtype.Timestamptz `json:"revoked_at"`
 	InboxMessageID          pgtype.UUID        `json:"inbox_message_id"`
 	// Reference to the signature used when claiming this certificate (optional)
-	UserClaimSignatureID pgtype.UUID `json:"user_claim_signature_id"`
+	UserClaimSignatureID  pgtype.UUID `json:"user_claim_signature_id"`
+	ReceiverWalletAddress pgtype.Text `json:"receiver_wallet_address"`
 }
 
 type EventCertificateConfig struct {

@@ -11,21 +11,35 @@ interface UseImportCertificatesOptions {
     onError?: (error: Error) => void;
 }
 
+type ImportCertificatesInput =
+    | { hostPin: string; receivers: EventImportCertificateReceiverRequest[] }
+    | {
+          hostSignMessage: string;
+          hostSignature: string;
+          receivers: EventImportCertificateReceiverRequest[];
+      };
+
 export function useImportCertificates(eventId: string, options?: UseImportCertificatesOptions) {
     const navigate = useNavigate();
     const { t } = useTranslation();
 
     const { mutateAsync: importCertificates, isPending: isImportingCertificates } = useMutation({
         mutationKey: ["import-certificates"],
-        mutationFn: (data: {
-            hostPin: string;
-            receivers: EventImportCertificateReceiverRequest[];
-        }) =>
-            certificateService.importCertificates({
+        mutationFn: (data: ImportCertificatesInput) => {
+            if ("hostPin" in data) {
+                return certificateService.importCertificates({
+                    eventId,
+                    hostPin: data.hostPin,
+                    receivers: data.receivers,
+                });
+            }
+            return certificateService.importCertificates({
                 eventId,
-                hostPin: data.hostPin,
+                hostSignMessage: data.hostSignMessage,
+                hostSignature: data.hostSignature,
                 receivers: data.receivers,
-            }),
+            });
+        },
         onSuccess: () => {
             toast.success(t("certificateImport.importSuccess"));
             queryClient.invalidateQueries({ queryKey: QUERY_KEY.event.all });
@@ -36,13 +50,20 @@ export function useImportCertificates(eventId: string, options?: UseImportCertif
                 description: error.message,
             });
             console.error(error);
-            // Call the onError callback if provided (e.g., to set error state)
             options?.onError?.(error);
         },
+    });
+
+    const { mutateAsync: getSignMessage, isPending: isGettingSignMessage } = useMutation({
+        mutationKey: ["certificate-import-sign-message", eventId],
+        mutationFn: (receivers: EventImportCertificateReceiverRequest[]) =>
+            certificateService.getCertificateImportSignMessage({ eventId, receivers }),
     });
 
     return {
         importCertificates,
         isImportingCertificates,
+        getSignMessage,
+        isGettingSignMessage,
     };
 }

@@ -15,18 +15,22 @@ import {
     WrappedInputFile,
 } from "@/components/forms/styled-inputs";
 import ConfirmModal from "@/components/ConfirmModal";
-import { PasswordPinModal } from "@/components/ui/password-pin-modal";
+import {
+    PasswordPinModal,
+    type PasswordPinModalSuccessResult,
+} from "@/components/ui/password-pin-modal";
 import type { GetEventContractByEventIdData } from "@decm/api";
 
 interface EventFormProps {
     defaultValues?: Partial<EventFormData>;
-    onSubmit: (data: EventFormData, hostPassword: string) => void | Promise<void>;
-    onDelete?: (hostPassword: string) => void | Promise<void>;
+    onSubmit: (data: EventFormData, auth: PasswordPinModalSuccessResult) => void | Promise<void>;
+    onDelete?: (auth: PasswordPinModalSuccessResult) => void | Promise<void>;
     isLoading?: boolean;
     mode?: "create" | "edit";
     previewBannerUrl?: string;
     previewIconUrl?: string;
     eventContract?: GetEventContractByEventIdData;
+    allowWalletSigning?: boolean;
 }
 
 export const EventForm = ({
@@ -38,6 +42,7 @@ export const EventForm = ({
     previewBannerUrl,
     previewIconUrl,
     eventContract,
+    allowWalletSigning = false,
 }: EventFormProps) => {
     const { t } = useTranslation();
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -72,10 +77,7 @@ export const EventForm = ({
         setShowPasswordModal(true);
     };
 
-    const onPasswordVerificationSuccess = async (result: {
-        type: "pin" | "password";
-        value: string;
-    }) => {
+    const onPasswordVerificationSuccess = async (result: PasswordPinModalSuccessResult) => {
         const data = getValues();
         const eventBanner = data.eventBanner ?? null;
         const eventIcon = data.eventIcon ?? null;
@@ -86,7 +88,7 @@ export const EventForm = ({
                 eventBanner: eventBanner,
                 eventIcon: eventIcon,
             },
-            result.value,
+            result,
         );
     };
 
@@ -437,6 +439,7 @@ export const EventForm = ({
                 onClose={() => setShowPasswordModal(false)}
                 onSuccess={onPasswordVerificationSuccess}
                 showSigningDetails
+                allowWalletSigning={allowWalletSigning}
                 signingDetails={{
                     details:
                         mode === "create"
@@ -450,8 +453,9 @@ export const EventForm = ({
             <PasswordPinModal
                 isOpen={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}
-                onSuccess={(result) => onDelete?.(result.value)}
+                onSuccess={(result) => onDelete?.(result)}
                 showSigningDetails
+                allowWalletSigning={allowWalletSigning}
                 signingDetails={{
                     details: "You're about to delete the event. Please confirm to proceed.",
                     transactionType: "Delete Event",

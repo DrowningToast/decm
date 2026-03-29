@@ -25,10 +25,12 @@ func (h *Handler) Mount(r fiber.Router) {
 
 	eventGroup.Post("/:event_id/issuers", metrics.MeasureHandlerDurationWrapper("event.CreateEventIssuer", h.CreateEventIssuer))
 	eventGroup.Get("/:event_id/participants", metrics.MeasureHandlerDurationWrapper("event.GetEventParticipants", h.GetEventParticipants))
+	eventGroup.Post("/:event_id/certificates/import/sign-message", metrics.MeasureHandlerDurationWrapper("event.GetCertificateImportSignMessage", h.GetCertificateImportSignMessage))
 	eventGroup.Post("/:event_id/certificates/import", metrics.MeasureHandlerDurationWrapper("event.ImportCertificateReceivers", h.ImportCertificateReceivers))
 	eventGroup.Post("/:event_id/certificates/publish", metrics.MeasureHandlerDurationWrapper("event.PublishEventCertificates", h.PublishEventCertificates))
 	eventGroup.Post("/:event_id/certificates/revoke", metrics.MeasureHandlerDurationWrapper("event.RevokeEventCertificates", h.RevokeEventCertificates))
 	eventGroup.Post("/:event_id/certificates/revoke-all", metrics.MeasureHandlerDurationWrapper("event.RevokeAllEventCertificates", h.RevokeAllEventCertificates))
+	eventGroup.Get("/:event_id/certificates/sign/message", metrics.MeasureHandlerDurationWrapper("event.GetIssuerSignMessage", h.GetIssuerSignMessage))
 	eventGroup.Post("/:event_id/certificates/sign", metrics.MeasureHandlerDurationWrapper("event.SignEventCertificates", h.SignEventCertificates))
 	eventGroup.Get("/:event_id/certificates", metrics.MeasureHandlerDurationWrapper("event.GetEventCertificates", h.GetEventCertificates))
 	eventGroup.Get("/:event_id/certificates/list-viewmodel", metrics.MeasureHandlerDurationWrapper("event.GetCertificatesListViewModel", h.GetCertificatesListViewModel))

@@ -7,7 +7,7 @@ import (
 
 type Repository struct {
 	db               pgclient.Client
-	queries          *generated.Queries
+	queries          generated.Querier
 	piiEncryptionKey string
 }
 

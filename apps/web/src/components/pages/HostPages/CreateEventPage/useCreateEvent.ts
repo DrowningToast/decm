@@ -1,30 +1,51 @@
-import { coreApiClient } from "@/lib/api/api";
 import { useNavigate } from "@/router";
-import type { CreateEventPayload } from "@decm/api";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { eventService } from "@/services/services";
+import type {
+    CreateEventWithPasswordInput,
+    CreateEventWithSignatureInput,
+} from "@/services/EventService/EventService";
 
 export function useCreateEvent() {
     const { t } = useTranslation();
     const navigate = useNavigate();
 
-    const { mutateAsync: _createEvent, isPending: isCreatingEvent } = useMutation({
-        mutationKey: ["createEvent"],
-        mutationFn: async (event: CreateEventPayload) => {
-            return await coreApiClient.v1.createEvent(event);
-        },
-    });
+    const { mutateAsync: _createEventWithPassword, isPending: isCreatingWithPassword } =
+        useMutation({
+            mutationKey: ["createEvent", "password"],
+            mutationFn: (input: CreateEventWithPasswordInput) =>
+                eventService.createEventWithPassword(input),
+        });
 
-    async function createEvent(event: CreateEventPayload) {
+    const { mutateAsync: _createEventWithSignature, isPending: isCreatingWithSignature } =
+        useMutation({
+            mutationKey: ["createEvent", "signature"],
+            mutationFn: (input: CreateEventWithSignatureInput) =>
+                eventService.createEventWithSignature(input),
+        });
+
+    async function createEventWithPassword(input: CreateEventWithPasswordInput) {
         try {
-            const response = await _createEvent(event);
+            const eventId = await _createEventWithPassword(input);
             toast.success(t("createEvent.success"));
-
             navigate("/host/events/:eventId/settings/participant", {
-                params: {
-                    eventId: response.id ?? "",
-                },
+                params: { eventId },
+            });
+        } catch (error) {
+            console.error(error);
+            toast.error(t("errors.generic"));
+            throw error;
+        }
+    }
+
+    async function createEventWithSignature(input: CreateEventWithSignatureInput) {
+        try {
+            const eventId = await _createEventWithSignature(input);
+            toast.success(t("createEvent.success"));
+            navigate("/host/events/:eventId/settings/participant", {
+                params: { eventId },
             });
         } catch (error) {
             console.error(error);
@@ -34,7 +55,8 @@ export function useCreateEvent() {
     }
 
     return {
-        createEvent,
-        isCreatingEvent,
+        createEventWithPassword,
+        createEventWithSignature,
+        isCreatingEvent: isCreatingWithPassword || isCreatingWithSignature,
     };
 }

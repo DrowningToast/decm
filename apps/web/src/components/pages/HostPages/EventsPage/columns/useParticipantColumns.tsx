@@ -4,6 +4,7 @@ import { useCancelEventInvitation } from "@/hooks/events/useCancelEventInvitatio
 import ConfirmModal from "@/components/ConfirmModal";
 import { Typography } from "@/components/typography/typography";
 import { useTranslation } from "react-i18next";
+import { CopyButton } from "@/components/ui/copy-button";
 
 export interface Participant {
     id: string;
@@ -99,6 +100,35 @@ export function useParticipantColumns(eventId: string) {
                     academicInstitution,
                     "font-mono text-xs",
                     t("common.empty"),
+                );
+            },
+        },
+        {
+            accessorKey: "walletAddress",
+            header: t("events.hostDetails.attendees.walletAddress"),
+            enableSorting: false,
+            cell: ({ row }) => {
+                const address = row.getValue("walletAddress") as string | null | undefined;
+                if (!address || address.trim() === "") {
+                    return (
+                        <Typography
+                            variant="text"
+                            tag="span"
+                            className="font-mono text-xs"
+                            color="muted-foreground"
+                        >
+                            <span className="italic">{t("common.empty")}</span>
+                        </Typography>
+                    );
+                }
+                const truncated = `${address.slice(0, 6)}...${address.slice(-4)}`;
+                return (
+                    <div className="flex items-center gap-2">
+                        <Typography variant="text" tag="span" className="font-mono text-xs">
+                            {truncated}
+                        </Typography>
+                        <CopyButton text={address} iconSize={14} />
+                    </div>
                 );
             },
         },

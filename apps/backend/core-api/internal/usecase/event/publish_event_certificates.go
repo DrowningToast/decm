@@ -13,6 +13,7 @@ package event
 
 import (
 	"apps/backend/common/customerror"
+	"apps/backend/common/utils"
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"
@@ -96,7 +97,7 @@ func (uc *EventUsecase) PublishEventCertificates(ctx context.Context, eventID uu
 
 	// Check if all issuers have actually signed (issuer_signature is not null)
 	for _, signature := range signatures {
-		if signature.IssuerSignature == nil || *signature.IssuerSignature == "" {
+		if utils.DerefOrEmpty(signature.IssuerSignature) == "" {
 			return nil, customerror.Parse(&customerror.ErrInvalidArgument, fmt.Errorf("not all issuers have signed the certificates. Please ensure all issuers have completed signing before publishing"))
 		}
 	}
@@ -119,10 +120,28 @@ func (uc *EventUsecase) PublishEventCertificates(ctx context.Context, eventID uu
 			continue
 		}
 
-		// Validate that receiver email exists (required for inbox message)
-		if certificate.ReceiverEmail == nil || *certificate.ReceiverEmail == "" {
-			return nil, customerror.Parse(&customerror.ErrInvalidArgument,
-				fmt.Errorf("certificate %s is missing receiver email, which is required for creating inbox messages", certificate.Id))
+		// Skip if no receiver email, no credential ID, and no direct wallet address (can't identify the receiver)
+		if utils.DerefOrEmpty(certificate.ReceiverEmail) == "" &&
+			certificate.ReceiverCredentialId == nil &&
+			utils.DerefOrEmpty(certificate.ReceiverWalletAddress) == "" {
+			continue
+		}
+
+		// Determine receiver email (may be empty for web3-only users)
+		var receiverEmail string
+		if certificate.ReceiverEmail != nil {
+			receiverEmail = *certificate.ReceiverEmail
+		}
+
+		// Look up wallet address: prefer credential lookup, fall back to direct wallet address on the certificate
+		var receiverWalletAddress *string
+		if certificate.ReceiverCredentialId != nil {
+			cred, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialById(ctx, *certificate.ReceiverCredentialId)
+			if err == nil {
+				receiverWalletAddress = &cred.WalletAddress
+			}
+		} else if utils.DerefOrEmpty(certificate.ReceiverWalletAddress) != "" {
+			receiverWalletAddress = certificate.ReceiverWalletAddress
 		}
 
 		// Create message content with translations
@@ -138,12 +157,11 @@ func (uc *EventUsecase) PublishEventCertificates(ctx context.Context, eventID uu
 		fallbackMessage := "You have been invited to claim your certificate"
 
 		// Create inbox message (supports both authenticated and non-authenticated receivers)
-		// ReceiverCredentialID is optional (nil for non-authenticated users)
-		// ReceiverEmail is required (used for both authenticated and non-authenticated users)
 		inboxMessage, err := uc.InboxMessageDg.CreateInboxMessage(ctx, offchain_datagateway.CreateInboxMessageParameters{
 			SenderCredentialID:     &currentUser.UserId,
-			ReceiverCredentialID:   certificate.ReceiverCredentialId, // Optional - can be nil
-			ReceiverEmail:          *certificate.ReceiverEmail,       // Required
+			ReceiverCredentialID:   certificate.ReceiverCredentialId,
+			ReceiverEmail:          receiverEmail,
+			ReceiverWalletAddress:  receiverWalletAddress,
 			MessageType:            int(entity.InboxMessageTypeEventCertificateInvitation),
 			MessageContent:         string(messageContentJSON),
 			FallbackMessageContent: &fallbackMessage,

@@ -30,36 +30,57 @@ export const ImportEventCertificatesPage = ({
         setImportError(null);
     };
 
-    const { importCertificates, isImportingCertificates } = useImportCertificates(eventId, {
-        onError: (error: Error) => {
-            // On error, keep the preview open so user can see the error and re-upload
-            // The ExcelPreview component will show a "Re-upload File" button
-            setImportError(error.message || "An error occurred during import");
-        },
-    });
+    const { importCertificates, isImportingCertificates, getSignMessage, isGettingSignMessage } =
+        useImportCertificates(eventId, {
+            onError: (error: Error) => {
+                // On error, keep the preview open so user can see the error and re-upload
+                // The ExcelPreview component will show a "Re-upload File" button
+                setImportError(error.message || "An error occurred during import");
+            },
+        });
+
+    const [walletSignMessage, setWalletSignMessage] = useState<string | null>(null);
 
     const handleFileSelect = (file: File) => {
         setSelectedFile(file);
         setShowPreview(true);
         setImportError(null); // Clear any previous errors when selecting a new file
+        setWalletSignMessage(null);
+    };
+
+    const handlePreSign = async (certificateData: EventImportCertificateReceiverRequest[]) => {
+        const result = await getSignMessage(certificateData);
+        setWalletSignMessage(result.signMessage);
+        return result.signMessage;
     };
 
     const handleImport = (
         certificateData: EventImportCertificateReceiverRequest[],
-        hostPin: string,
+        auth:
+            | { type: "pin" | "password"; value: string }
+            | { type: "wallet"; signature: string; signMessage: string },
     ) => {
-        importCertificates({
-            hostPin,
-            receivers: certificateData,
-        });
+        if (auth.type === "wallet") {
+            importCertificates({
+                hostSignMessage: auth.signMessage,
+                hostSignature: auth.signature,
+                receivers: certificateData,
+            });
+        } else {
+            importCertificates({
+                hostPin: auth.value,
+                receivers: certificateData,
+            });
+        }
     };
 
     const downloadTemplate = () => {
         // Create a simple Excel template with the required columns
-        // First row is headers, second row is demo data
+        // Users should fill in EITHER email OR wallet_address (not both)
         const templateData = [
             {
                 [t("certificateImport.templateColumns.email")]: "john.doe@example.com",
+                [t("certificateImport.templateColumns.walletAddress")]: "",
                 [t("certificateImport.templateColumns.firstName")]: "John",
                 [t("certificateImport.templateColumns.lastName")]: "Doe",
                 [t("certificateImport.templateColumns.academicInstitution")]: "Example University",
@@ -67,6 +88,16 @@ export const ImportEventCertificatesPage = ({
                     "Certificate of Achievement",
                 [t("certificateImport.templateColumns.certificateSubtitle")]:
                     "For outstanding performance in the event",
+            },
+            {
+                [t("certificateImport.templateColumns.email")]: "",
+                [t("certificateImport.templateColumns.walletAddress")]:
+                    "0x1234567890abcdef1234567890abcdef12345678",
+                [t("certificateImport.templateColumns.firstName")]: "Jane",
+                [t("certificateImport.templateColumns.lastName")]: "Smith",
+                [t("certificateImport.templateColumns.academicInstitution")]: "",
+                [t("certificateImport.templateColumns.certificateTitle")]: "",
+                [t("certificateImport.templateColumns.certificateSubtitle")]: "",
             },
         ];
 
@@ -77,6 +108,7 @@ export const ImportEventCertificatesPage = ({
         // Set column widths for better spacing
         const columnWidths = [
             { wch: 30 }, // email
+            { wch: 44 }, // wallet_address
             { wch: 15 }, // first_name
             { wch: 15 }, // last_name
             { wch: 25 }, // academic_institution
@@ -232,16 +264,16 @@ export const ImportEventCertificatesPage = ({
                     </Typography>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                        {/* Required Field - Email */}
-                        <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
-                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                        {/* Either/Or Fields — exactly one must be filled per row */}
+                        <div className="flex items-start space-x-3 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/40">
+                            <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center flex-shrink-0">
                                 <Typography
                                     variant="text"
                                     tag="span"
                                     color="foreground"
                                     className="text-sm font-bold"
                                 >
-                                    ✓
+                                    ⊕
                                 </Typography>
                             </div>
                             <div>
@@ -256,10 +288,40 @@ export const ImportEventCertificatesPage = ({
                                 <Typography
                                     variant="text"
                                     tag="p"
-                                    color="primary"
+                                    color="background-alt"
                                     className="text-xs font-medium"
                                 >
-                                    {t("certificateImport.columnHeader")}
+                                    {t("certificateImport.eitherOrColumn")}
+                                </Typography>
+                            </div>
+                        </div>
+                        <div className="flex items-start space-x-3 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/40">
+                            <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center flex-shrink-0">
+                                <Typography
+                                    variant="text"
+                                    tag="span"
+                                    color="foreground"
+                                    className="text-sm font-bold"
+                                >
+                                    ⊕
+                                </Typography>
+                            </div>
+                            <div>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background"
+                                    className="font-semibold"
+                                >
+                                    {t("certificateImport.templateColumns.walletAddress")}
+                                </Typography>
+                                <Typography
+                                    variant="text"
+                                    tag="p"
+                                    color="background-alt"
+                                    className="text-xs font-medium"
+                                >
+                                    {t("certificateImport.eitherOrColumn")}
                                 </Typography>
                             </div>
                         </div>
@@ -461,9 +523,11 @@ export const ImportEventCertificatesPage = ({
                     <ExcelPreview
                         file={selectedFile!}
                         onConfirm={handleImport}
+                        onPreSign={handlePreSign}
                         onCancel={handleCancel}
-                        disabled={isImportingCertificates}
+                        disabled={isImportingCertificates || isGettingSignMessage}
                         importError={importError}
+                        walletSignMessage={walletSignMessage ?? undefined}
                     />
                 )}
             </div>

@@ -245,6 +245,122 @@ func TestCheckClaimEligibility_Fail_CredentialIdMismatch(t *testing.T) {
 	assert.Contains(t, err.Error(), "not_eligible")
 }
 
+func TestCheckClaimEligibility_Success_WalletAddressMatch(t *testing.T) {
+	uc := setupTestUsecase(t)
+	ctx := context.Background()
+
+	walletAddress := "0x742d35cc6634c0532925a3b844bc9e7595f0beb1"
+	certificate := &entity.EventCertificate{
+		Id:                      uuid.New(),
+		EventId:                 uuid.New(),
+		ReceiverCredentialId:    nil,
+		ReceiverEmail:           nil,
+		ReceiverWalletAddress:   &walletAddress,
+		EventCertificateAddress: strPtr("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1"),
+		CertificateTokenId:      nil,
+		RevokedAt:               nil,
+		CreatedAt:               time.Now(),
+	}
+
+	currentUser := &auth.JwtClaims{
+		UserId:        uuid.New(),
+		WalletAddress: walletAddress,
+		Email:         strPtr("byok@example.com"),
+	}
+
+	err := uc.CheckClaimEligibility(ctx, certificate, currentUser)
+	assert.NoError(t, err)
+}
+
+func TestCheckClaimEligibility_Success_WalletAddressMatchCaseInsensitive(t *testing.T) {
+	uc := setupTestUsecase(t)
+	ctx := context.Background()
+
+	// Certificate stores checksummed address; user JWT has lowercase
+	certWalletAddress := "0x742d35CC6634C0532925a3b844Bc9e7595f0bEb1"
+	userWalletAddress := "0x742d35cc6634c0532925a3b844bc9e7595f0beb1"
+
+	certificate := &entity.EventCertificate{
+		Id:                      uuid.New(),
+		EventId:                 uuid.New(),
+		ReceiverCredentialId:    nil,
+		ReceiverEmail:           nil,
+		ReceiverWalletAddress:   &certWalletAddress,
+		EventCertificateAddress: strPtr("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1"),
+		CertificateTokenId:      nil,
+		RevokedAt:               nil,
+		CreatedAt:               time.Now(),
+	}
+
+	currentUser := &auth.JwtClaims{
+		UserId:        uuid.New(),
+		WalletAddress: userWalletAddress,
+		Email:         strPtr("byok@example.com"),
+	}
+
+	err := uc.CheckClaimEligibility(ctx, certificate, currentUser)
+	assert.NoError(t, err)
+}
+
+func TestCheckClaimEligibility_Fail_WalletAddressMismatch(t *testing.T) {
+	uc := setupTestUsecase(t)
+	ctx := context.Background()
+
+	certWalletAddress := "0x742d35cc6634c0532925a3b844bc9e7595f0beb1"
+	differentWalletAddress := "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+
+	certificate := &entity.EventCertificate{
+		Id:                      uuid.New(),
+		EventId:                 uuid.New(),
+		ReceiverCredentialId:    nil,
+		ReceiverEmail:           nil,
+		ReceiverWalletAddress:   &certWalletAddress,
+		EventCertificateAddress: strPtr("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1"),
+		CertificateTokenId:      nil,
+		RevokedAt:               nil,
+		CreatedAt:               time.Now(),
+	}
+
+	currentUser := &auth.JwtClaims{
+		UserId:        uuid.New(),
+		WalletAddress: differentWalletAddress,
+		Email:         strPtr("byok@example.com"),
+	}
+
+	err := uc.CheckClaimEligibility(ctx, certificate, currentUser)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not_eligible")
+}
+
+func TestCheckClaimEligibility_Fail_WalletAddressEmpty(t *testing.T) {
+	// User whose JWT has no wallet address cannot claim a wallet-gated certificate
+	uc := setupTestUsecase(t)
+	ctx := context.Background()
+
+	certWalletAddress := "0x742d35cc6634c0532925a3b844bc9e7595f0beb1"
+	certificate := &entity.EventCertificate{
+		Id:                      uuid.New(),
+		EventId:                 uuid.New(),
+		ReceiverCredentialId:    nil,
+		ReceiverEmail:           nil,
+		ReceiverWalletAddress:   &certWalletAddress,
+		EventCertificateAddress: strPtr("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1"),
+		CertificateTokenId:      nil,
+		RevokedAt:               nil,
+		CreatedAt:               time.Now(),
+	}
+
+	currentUser := &auth.JwtClaims{
+		UserId:        uuid.New(),
+		WalletAddress: "", // no wallet address in JWT
+		Email:         strPtr("byok@example.com"),
+	}
+
+	err := uc.CheckClaimEligibility(ctx, certificate, currentUser)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not_eligible")
+}
+
 func TestCheckClaimEligibility_Fail_EmailMismatch(t *testing.T) {
 	uc := setupTestUsecase(t)
 	ctx := context.Background()

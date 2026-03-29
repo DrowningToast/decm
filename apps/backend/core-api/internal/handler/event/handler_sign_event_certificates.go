@@ -12,7 +12,11 @@ import (
 )
 
 type SignEventCertificatesRequest struct {
-	IssuerPin string `json:"issuer_pin" validate:"required"`
+	// For PIN-based (non-BYOK) users
+	IssuerPin *string `json:"issuer_pin,omitempty"`
+	// For wallet-based (BYOK) users
+	IssuerSignMessage *string `json:"issuer_sign_message,omitempty"`
+	IssuerSignature   *string `json:"issuer_signature,omitempty"`
 }
 
 type CertificateSignature struct {
@@ -22,10 +26,11 @@ type CertificateSignature struct {
 
 type SignEventCertificatesResponse struct {
 	Certificates []CertificateSignature `json:"certificates"`
+	TotalSigned  int                    `json:"total_signed"`
 }
 
 // @Summary Sign event certificates
-// @Description Sign all event certificates for an event by issuer
+// @Description Sign all event certificates for an event by issuer. PIN-based users provide issuer_pin; BYOK wallet users provide issuer_sign_message and issuer_signature.
 // @ID sign-event-certificates
 // @Tags Event Certificates
 // @Accept json
@@ -56,7 +61,9 @@ func (h Handler) SignEventCertificates(ctx *fiber.Ctx) error {
 	currentUser := ctx.Locals("user").(*auth.JwtClaims)
 
 	response, err := h.EventUc.SignEventCertificates(ctx.UserContext(), eventID, event.SignEventCertificatesRequest{
-		IssuerPin: requestBody.IssuerPin,
+		IssuerPin:         requestBody.IssuerPin,
+		IssuerSignMessage: requestBody.IssuerSignMessage,
+		IssuerSignature:   requestBody.IssuerSignature,
 	}, currentUser)
 	if err != nil {
 		return err
@@ -73,6 +80,7 @@ func (h Handler) SignEventCertificates(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusOK).JSON(SignEventCertificatesResponse{
 		Certificates: certificates,
+		TotalSigned:  len(certificates),
 	})
 }
 
@@ -84,8 +92,10 @@ func (r *SignEventCertificatesRequest) Parse(ctx *fiber.Ctx) error {
 }
 
 func (r *SignEventCertificatesRequest) IsValid() error {
-	if r.IssuerPin == "" {
-		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("issuer_pin is required"))
+	hasPinAuth := r.IssuerPin != nil && *r.IssuerPin != ""
+	hasWalletAuth := r.IssuerSignMessage != nil && r.IssuerSignature != nil
+	if !hasPinAuth && !hasWalletAuth {
+		return customerror.Parse(&customerror.ErrInvalidArgument, errors.New("either issuer_pin or (issuer_sign_message and issuer_signature) is required"))
 	}
 	return nil
 }

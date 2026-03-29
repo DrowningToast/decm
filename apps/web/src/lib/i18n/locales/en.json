@@ -122,7 +122,8 @@
         "publicClientChainValue": "{{name}} (ID: {{id}})",
         "transportLabel": "Transport:",
         "transportUnknown": "unknown",
-        "viewRawSummary": "View Raw Public Client"
+        "viewRawSummary": "View Raw Public Client",
+        "byokNotSupported": "The system doesn't support signing with self custody yet."
     },
     "auth": {
         "signIn": "Sign In",
@@ -468,7 +469,8 @@
                 "phoneNumber": "Phone Number",
                 "address": "Address",
                 "academicInstitution": "Academic Institution",
-                "academicEmail": "Academic Email"
+                "academicEmail": "Academic Email",
+                "walletAddress": "Wallet Address"
             }
         },
         "date": "Date",
@@ -1144,6 +1146,8 @@
         "saveSettings": "Save Settings",
         "saveError": "Failed to save participant settings. Please try again.",
         "saveSuccess": "Participant settings saved successfully",
+        "updateSuccess": "Participant setting updated successfully",
+        "updateError": "Failed to update participant setting",
         "formPreview": {
             "description": "This is how registration form will appear to participants",
             "title": "Registration Form Preview"
@@ -1199,7 +1203,8 @@
         "emptyFile": "The Excel file appears to be empty or has no data.",
         "parseError": "Failed to parse the Excel file. Please check the file format.",
         "invalidRowsFound": "Invalid data found in some rows",
-        "invalidRowsDescription": "Rows highlighted in red have missing required fields (first_name, last_name, or email). Please fix these in your Excel file and re-upload.",
+        "invalidRowsDescription": "Rows highlighted in red have invalid fields. Each row must have first_name, last_name, and exactly one of email or wallet_address (not both, not neither). Please fix these in your Excel file and re-upload.",
+        "eitherOrColumn": "Exactly one required (not both)",
         "requiredFormat": "Required Excel Format",
         "requiredFormatDescription": "Your Excel file must contain these exact column headers:",
         "columnHeader": "Required Column",
@@ -1211,6 +1216,7 @@
         "templateColumns": {
             "name": "name",
             "email": "email",
+            "walletAddress": "wallet_address",
             "phoneNumber": "phone_number",
             "academicInstitution": "academic_institution",
             "firstName": "first_name",
@@ -1254,7 +1260,10 @@
         "emptyFile": "The Excel file appears to be empty or has no data.",
         "parseError": "Failed to parse Excel file. Please check file format.",
         "missingEmailError": "Email is required. Missing in rows: {{rows}}",
-        "columnsDescription": "Email is required. Other columns are optional.",
+        "columnsDescription": "Exactly one of email or wallet_address is required. Other columns are optional.",
+        "invalidRowsDescription": "Rows highlighted in red have invalid fields. Each row must have exactly one of email or wallet_address (not both, not neither). Please fix these in your Excel file and re-upload.",
+        "missingColumnsTitle": "Missing required columns",
+        "eitherOrColumn": "Exactly one required (not both)",
         "requiredFormat": "Required Excel Format",
         "requiredFormatDescription": "Your Excel file must contain these exact column headers:",
         "columnHeader": "Required Column",
@@ -1267,6 +1276,7 @@
         "templateFileName": "certificate_import_template",
         "templateColumns": {
             "email": "email",
+            "walletAddress": "wallet_address",
             "firstName": "first_name",
             "lastName": "last_name",
             "academicInstitution": "academic_institution",
@@ -1292,7 +1302,7 @@
             "title": "Step 1: Issuer Settings",
             "description": "Search and select certificate issuers for this event",
             "searchLabel": "Search Issuers",
-            "searchPlaceholder": "Enter name, email, or organization...",
+            "searchPlaceholder": "Enter name, email, or wallet address...",
             "searchButton": "Search",
             "searchNote": "Note: Search query must exactly match the issuer's first name, last name, or OAuth email.",
             "publishedWarning": "Certificate configuration has been published. Issuer settings cannot be modified.",
@@ -1306,6 +1316,7 @@
                 "googleOAuthEmail": "Google OAuth Email",
                 "phoneNumber": "Telephone Number",
                 "organization": "Organization",
+                "walletAddress": "Wallet Address",
                 "actions": "Actions"
             },
             "alert": {

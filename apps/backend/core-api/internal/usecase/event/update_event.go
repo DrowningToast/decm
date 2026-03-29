@@ -5,6 +5,7 @@ import (
 	"apps/backend/core-api/internal/entity"
 	"apps/backend/services/auth"
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
@@ -37,6 +38,8 @@ type UpdateEventParameters struct {
 	EventBanner      *multipart.FileHeader
 	EventIcon        *multipart.FileHeader
 	HostPassword     string
+	Signature        string
+	SignMessage      string
 }
 
 func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params UpdateEventParameters, currentUser *auth.JwtClaims) (*entity.Event, error) {
@@ -65,6 +68,74 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 
 	if *params.SeatsCount < dbEvent.MaxAttendees {
 		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("seats count is less than the max attendees"))
+	}
+
+	dbEventContracts, err := uc.EventContractDataGateway.GetEventContractByEventID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	eventContractAddress := common.HexToAddress(dbEventContracts.EventContractAddress)
+	if eventContractAddress == (common.Address{}) {
+		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("event contract not found"))
+	}
+
+	// Authenticate host BEFORE any S3 uploads or DB writes.
+	var signature []byte
+	var signMessage string
+
+	if params.Signature != "" && params.SignMessage != "" {
+		// Wallet path: use provided signature and sign message
+		sigHex := params.Signature
+		if len(sigHex) >= 2 && sigHex[:2] == "0x" {
+			sigHex = sigHex[2:]
+		}
+		sig, err := hex.DecodeString(sigHex)
+		if err != nil {
+			return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("invalid signature format"))
+		}
+		signature = sig
+		signMessage = params.SignMessage
+
+		// Verify signature matches credential wallet address
+		recoveredAddress, err := cyptoutils.GetAddressFromSignature(signMessage, params.Signature)
+		if err != nil {
+			return nil, err
+		}
+		credentialAddress := common.HexToAddress(credential.WalletAddress)
+		if recoveredAddress != credentialAddress {
+			return nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("wallet signature does not match credential wallet address"))
+		}
+	} else if params.HostPassword != "" {
+		// Password path: decrypt private key to generate signature
+		if credential.EncryptedPrivateKey == nil {
+			return nil, customerror.Parse(&customerror.ErrUnauthorized, errors.New("host_password is not supported for BYOK users; provide signature and sign_message instead"))
+		}
+		privateKey, hostAddress, err := cyptoutils.DecryptPrivateKey(
+			*credential.EncryptedPrivateKey,
+			params.HostPassword,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		calculatedDeadlineBlock, err := uc.BlockchainClientDg.GetCalculatedDeadlineBlock(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		signMessage, err = cyptoutils.GetSignMessage(*hostAddress, eventContractAddress, calculatedDeadlineBlock)
+		if err != nil {
+			return nil, err
+		}
+
+		messageHash := cyptoutils.HashEthereumMessage(signMessage)
+		signature, err = cyptoutils.Sign(messageHash.Bytes(), privateKey)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, customerror.Parse(&customerror.ErrInvalidArgument, errors.New("either host_password or (signature + sign_message) is required"))
 	}
 
 	newEventBannerStorageKey := dbEvent.BannerStorageKey // Keep existing by default
@@ -117,16 +188,6 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		IconStorageKey:   &newEventIconStorageKey,
 	}
 
-	dbEventContracts, err := uc.EventContractDataGateway.GetEventContractByEventID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	eventContractAddress := common.HexToAddress(dbEventContracts.EventContractAddress)
-	if eventContractAddress == (common.Address{}) {
-		return nil, customerror.Parse(&customerror.ErrNotFound, errors.New("event contract not found"))
-	}
-
 	event, err := uc.EventDataGateway.UpdateEvent(ctx, id, updateEventParams)
 	if err != nil {
 		return nil, err
@@ -137,31 +198,7 @@ func (uc *EventUsecase) UpdateEvent(ctx context.Context, id uuid.UUID, params Up
 		return nil, err
 	}
 
-	privateKey, hostAddress, err := cyptoutils.DecryptPrivateKey(
-		*credential.EncryptedPrivateKey,
-		params.HostPassword,
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	instance, err := eventContract.NewEvent(eventContractAddress, uc.ethClient)
-	if err != nil {
-		return nil, err
-	}
-
-	calculatedDeadlineBlock, err := uc.BlockchainClientDg.GetCalculatedDeadlineBlock(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	signMessage, err := cyptoutils.GetSignMessage(*hostAddress, eventContractAddress, calculatedDeadlineBlock)
-	if err != nil {
-		return nil, err
-	}
-
-	messageHash := cyptoutils.HashEthereumMessage(signMessage)
-	signature, err := cyptoutils.Sign(messageHash.Bytes(), privateKey)
 	if err != nil {
 		return nil, err
 	}

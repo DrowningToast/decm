@@ -2,9 +2,11 @@ import { useSignPasswordModalStore } from "@/components/providers/SignPasswordMo
 import { useAuth } from "@/context/AuthContext";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export const usePasswordPrompt = () => {
     const { user } = useAuth();
+    const { t } = useTranslation();
 
     const { open, setOnSuccess, setOnError } = useSignPasswordModalStore();
 
@@ -52,7 +54,7 @@ export const usePasswordPrompt = () => {
                         },
                     );
                 } else if (user?.solutionStatus === "BYOK") {
-                    toast.error("The system doesn't support signing with self custody yet.");
+                    toast.error(t("walletDebug.byokNotSupported"));
                 }
             });
         },

@@ -161,11 +161,11 @@ func (q *Queries) GetAuthenticationCredentialByGoogleConnectorRef(ctx context.Co
 }
 
 const GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress = `-- name: GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress :one
-SELECT id, solution_status, hashed_password, encrypted_private_key, wallet_address, google_connector_ref, github_connector_ref, is_verified_organizer, is_verified_issuer, is_verified_student, created_at, updated_at FROM authentication_credentials 
+SELECT id, solution_status, hashed_password, encrypted_private_key, wallet_address, google_connector_ref, github_connector_ref, is_verified_organizer, is_verified_issuer, is_verified_student, created_at, updated_at FROM authentication_credentials
 WHERE (
     ($1::text IS NOT NULL AND google_connector_ref = $1)
-    OR 
-    ($2::text IS NOT NULL AND wallet_address = $2)
+    OR
+    ($2::text IS NOT NULL AND LOWER(wallet_address) = $2)
 )
 LIMIT 1
 `

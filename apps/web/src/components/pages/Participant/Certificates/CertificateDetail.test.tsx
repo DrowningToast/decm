@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { CertificateDetail } from "./CertificateDetail";
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
@@ -80,6 +80,51 @@ vi.mock("@/hooks/events/useEvent", () => ({
     useEvent: vi.fn(() => ({ event: null, isLoadingEvent: false, isLoadingEventError: false })),
 }));
 
+// ─── BYOK / Auth / Services mocks ────────────────────────────────────────────
+
+const mockGetClaimCertificateSignMessage = vi.hoisted(() => vi.fn());
+const mockWalletSignMessage = vi.hoisted(() => vi.fn());
+
+vi.mock("@/context/AuthContext", () => ({
+    useAuth: vi.fn(() => ({
+        user: { solutionStatus: "SYSTEM_MANAGED" },
+        isFetching: false,
+        isAuthenticated: true,
+        refetch: vi.fn(),
+    })),
+}));
+
+vi.mock("@/services/services", () => ({
+    certificateService: {
+        getClaimCertificateSignMessage: mockGetClaimCertificateSignMessage,
+    },
+    walletSigningService: {
+        signMessage: mockWalletSignMessage,
+    },
+}));
+
+vi.mock("@/services/WalletSigningService/WalletSigningService", () => ({
+    WalletNotConnectedError: class WalletNotConnectedError extends Error {
+        constructor() {
+            super("Wallet is not connected");
+            this.name = "WalletNotConnectedError";
+        }
+    },
+    WalletSigningRejectedError: class WalletSigningRejectedError extends Error {
+        constructor() {
+            super("User rejected the signing request");
+            this.name = "WalletSigningRejectedError";
+        }
+    },
+}));
+
+vi.mock("sonner", () => ({
+    toast: {
+        success: vi.fn(),
+        error: vi.fn(),
+    },
+}));
+
 vi.mock("@/components/BottomNav/BottomNav", () => ({
     BottomNav: ({ variant }: { variant: string }) => (
         <div data-testid="bottom-nav" data-variant={variant} />
@@ -102,6 +147,10 @@ vi.mock("./CertificateShareModal", () => ({
 // ─── Import mocked hooks so we can control return values per test ─────────────
 
 import { useCertificateDetailUsecase } from "./useCertificateDetailUsecase";
+import { useAuth } from "@/context/AuthContext";
+import { useClaimCertificate } from "@/hooks/useClaimCertificate";
+import { usePasswordPrompt } from "@/hooks/usePassowordPrompt";
+import { toast } from "sonner";
 import { useCertificateImage } from "@/hooks/useCertificateImage";
 import { useEvent } from "@/hooks/events/useEvent";
 import { useCertificateDetailsSharedNavStore } from "@/components/BottomNav/stores/certificates";
@@ -445,5 +494,274 @@ describe("CertificateDetail", () => {
 
         render(<CertificateDetail certificateId="cert-1" />);
         expect(screen.getByTestId("password-dialog")).toBeInTheDocument();
+    });
+});
+
+// ─── BYOK Tests ──────────────────────────────────────────────────────────────
+
+describe("CertificateDetail – BYOK user claiming", () => {
+    const mockClaimCertificate = vi.fn().mockResolvedValue({ status: "queued" });
+    const mockOpenPasswordPrompt = vi.fn();
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+
+        // BYOK user
+        vi.mocked(useAuth).mockReturnValue({
+            user: { solutionStatus: "BYOK" } as ReturnType<typeof useAuth>["user"],
+            isFetching: false,
+            isAuthenticated: true,
+            refetch: vi.fn(),
+        });
+
+        vi.mocked(usePasswordPrompt).mockReturnValue({
+            mutateAsync: mockOpenPasswordPrompt,
+        } as ReturnType<typeof usePasswordPrompt>);
+
+        vi.mocked(useClaimCertificate).mockReturnValue({
+            claimCertificate: mockClaimCertificate,
+            isClaiming: false,
+            claimError: null,
+        });
+
+        vi.mocked(useCertificateDetailsSharedNavStore).mockReturnValue({
+            setOnChangePublish: mockSetOnChangePublish,
+            setIsPublished: mockSetIsPublished,
+            setIsPasswordProtected: vi.fn(),
+            setShareableHandle: mockSetShareableHandle,
+            isPasswordDialogOpen: false,
+            setIsPasswordDialogOpen: mockSetIsPasswordDialogOpen,
+        } as ReturnType<typeof useCertificateDetailsSharedNavStore>);
+
+        vi.mocked(useCertificateImage).mockReturnValue({
+            imageUrl: null,
+            imageData: null,
+            isLoading: false,
+            error: null,
+        });
+
+        vi.mocked(useEvent).mockReturnValue({
+            event: { isJoined: true },
+            isLoadingEvent: false,
+            isLoadingEventError: false,
+        } as ReturnType<typeof useEvent>);
+
+        mockGetClaimCertificateSignMessage.mockResolvedValue({
+            signMessage: "signer,contract,99999",
+        });
+        mockWalletSignMessage.mockResolvedValue("0xabc123signature");
+    });
+
+    it("does not open password prompt when BYOK user claims", async () => {
+        vi.mocked(useCertificateDetailUsecase).mockReturnValue({
+            certificate: { ...baseCertificate, status: "pending" },
+            formattedDate: "Jun 15, 2024",
+            isLoading: false,
+            isError: false,
+        });
+
+        render(<CertificateDetail certificateId="cert-1" />);
+        fireEvent.click(screen.getByRole("button", { name: /claim certificate/i }));
+
+        await waitFor(() => {
+            expect(mockOpenPasswordPrompt).not.toHaveBeenCalled();
+        });
+    });
+
+    it("calls walletSigningService.signMessage with the fetched sign message", async () => {
+        vi.mocked(useCertificateDetailUsecase).mockReturnValue({
+            certificate: { ...baseCertificate, status: "pending" },
+            formattedDate: "Jun 15, 2024",
+            isLoading: false,
+            isError: false,
+        });
+
+        render(<CertificateDetail certificateId="cert-1" />);
+        fireEvent.click(screen.getByRole("button", { name: /claim certificate/i }));
+
+        await waitFor(() => {
+            expect(mockGetClaimCertificateSignMessage).toHaveBeenCalledWith("cert-1");
+            expect(mockWalletSignMessage).toHaveBeenCalledWith("signer,contract,99999");
+        });
+    });
+
+    it("calls claimCertificate with signature params (not accountPassword) for BYOK", async () => {
+        vi.mocked(useCertificateDetailUsecase).mockReturnValue({
+            certificate: { ...baseCertificate, status: "pending" },
+            formattedDate: "Jun 15, 2024",
+            isLoading: false,
+            isError: false,
+        });
+
+        render(<CertificateDetail certificateId="cert-1" />);
+        fireEvent.click(screen.getByRole("button", { name: /claim certificate/i }));
+
+        await waitFor(() => {
+            expect(mockClaimCertificate).toHaveBeenCalledWith({
+                certificateId: "cert-1",
+                signature: "0xabc123signature",
+                signMessage: "signer,contract,99999",
+            });
+        });
+
+        expect(mockClaimCertificate).not.toHaveBeenCalledWith(
+            expect.objectContaining({ accountPassword: expect.anything() }),
+        );
+    });
+
+    it("shows wallet-not-connected error toast when wallet is not connected", async () => {
+        const { WalletNotConnectedError } = await import(
+            "@/services/WalletSigningService/WalletSigningService"
+        );
+        mockWalletSignMessage.mockRejectedValue(new WalletNotConnectedError());
+
+        vi.mocked(useCertificateDetailUsecase).mockReturnValue({
+            certificate: { ...baseCertificate, status: "pending" },
+            formattedDate: "Jun 15, 2024",
+            isLoading: false,
+            isError: false,
+        });
+
+        render(<CertificateDetail certificateId="cert-1" />);
+        fireEvent.click(screen.getByRole("button", { name: /claim certificate/i }));
+
+        await waitFor(() => {
+            expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+                expect.stringMatching(/wallet.*not.*connected/i),
+            );
+        });
+        expect(mockClaimCertificate).not.toHaveBeenCalled();
+    });
+
+    it("shows signing-rejected error toast when user rejects wallet signing", async () => {
+        const { WalletSigningRejectedError } = await import(
+            "@/services/WalletSigningService/WalletSigningService"
+        );
+        mockWalletSignMessage.mockRejectedValue(new WalletSigningRejectedError());
+
+        vi.mocked(useCertificateDetailUsecase).mockReturnValue({
+            certificate: { ...baseCertificate, status: "pending" },
+            formattedDate: "Jun 15, 2024",
+            isLoading: false,
+            isError: false,
+        });
+
+        render(<CertificateDetail certificateId="cert-1" />);
+        fireEvent.click(screen.getByRole("button", { name: /claim certificate/i }));
+
+        await waitFor(() => {
+            expect(vi.mocked(toast.error)).toHaveBeenCalledWith(expect.stringMatching(/rejected/i));
+        });
+        expect(mockClaimCertificate).not.toHaveBeenCalled();
+    });
+
+    it("does not call claimCertificate when fetching sign message fails", async () => {
+        mockGetClaimCertificateSignMessage.mockRejectedValue(new Error("network error"));
+
+        vi.mocked(useCertificateDetailUsecase).mockReturnValue({
+            certificate: { ...baseCertificate, status: "pending" },
+            formattedDate: "Jun 15, 2024",
+            isLoading: false,
+            isError: false,
+        });
+
+        render(<CertificateDetail certificateId="cert-1" />);
+        fireEvent.click(screen.getByRole("button", { name: /claim certificate/i }));
+
+        await waitFor(() => {
+            expect(mockWalletSignMessage).not.toHaveBeenCalled();
+            expect(mockClaimCertificate).not.toHaveBeenCalled();
+        });
+    });
+});
+
+// ─── SYSTEM_MANAGED regression Tests ─────────────────────────────────────────
+
+describe("CertificateDetail – SYSTEM_MANAGED user claiming", () => {
+    const mockClaimCertificate = vi.fn().mockResolvedValue({ status: "queued" });
+    const mockOpenPasswordPrompt = vi.fn().mockResolvedValue("correct-password");
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+
+        vi.mocked(useAuth).mockReturnValue({
+            user: { solutionStatus: "SYSTEM_MANAGED" } as ReturnType<typeof useAuth>["user"],
+            isFetching: false,
+            isAuthenticated: true,
+            refetch: vi.fn(),
+        });
+
+        vi.mocked(usePasswordPrompt).mockReturnValue({
+            mutateAsync: mockOpenPasswordPrompt,
+        } as ReturnType<typeof usePasswordPrompt>);
+
+        vi.mocked(useClaimCertificate).mockReturnValue({
+            claimCertificate: mockClaimCertificate,
+            isClaiming: false,
+            claimError: null,
+        });
+
+        vi.mocked(useCertificateDetailsSharedNavStore).mockReturnValue({
+            setOnChangePublish: mockSetOnChangePublish,
+            setIsPublished: mockSetIsPublished,
+            setIsPasswordProtected: vi.fn(),
+            setShareableHandle: mockSetShareableHandle,
+            isPasswordDialogOpen: false,
+            setIsPasswordDialogOpen: mockSetIsPasswordDialogOpen,
+        } as ReturnType<typeof useCertificateDetailsSharedNavStore>);
+
+        vi.mocked(useCertificateImage).mockReturnValue({
+            imageUrl: null,
+            imageData: null,
+            isLoading: false,
+            error: null,
+        });
+
+        vi.mocked(useEvent).mockReturnValue({
+            event: { isJoined: true },
+            isLoadingEvent: false,
+            isLoadingEventError: false,
+        } as ReturnType<typeof useEvent>);
+    });
+
+    it("opens password prompt (not wallet signing) for SYSTEM_MANAGED user", async () => {
+        vi.mocked(useCertificateDetailUsecase).mockReturnValue({
+            certificate: { ...baseCertificate, status: "pending" },
+            formattedDate: "Jun 15, 2024",
+            isLoading: false,
+            isError: false,
+        });
+
+        render(<CertificateDetail certificateId="cert-1" />);
+        fireEvent.click(screen.getByRole("button", { name: /claim certificate/i }));
+
+        await waitFor(() => {
+            expect(mockOpenPasswordPrompt).toHaveBeenCalled();
+            expect(mockGetClaimCertificateSignMessage).not.toHaveBeenCalled();
+            expect(mockWalletSignMessage).not.toHaveBeenCalled();
+        });
+    });
+
+    it("calls claimCertificate with accountPassword for SYSTEM_MANAGED user", async () => {
+        vi.mocked(useCertificateDetailUsecase).mockReturnValue({
+            certificate: { ...baseCertificate, status: "pending" },
+            formattedDate: "Jun 15, 2024",
+            isLoading: false,
+            isError: false,
+        });
+
+        render(<CertificateDetail certificateId="cert-1" />);
+        fireEvent.click(screen.getByRole("button", { name: /claim certificate/i }));
+
+        await waitFor(() => {
+            expect(mockClaimCertificate).toHaveBeenCalledWith({
+                certificateId: "cert-1",
+                accountPassword: "correct-password",
+            });
+        });
+
+        expect(mockClaimCertificate).not.toHaveBeenCalledWith(
+            expect.objectContaining({ signature: expect.anything() }),
+        );
     });
 });

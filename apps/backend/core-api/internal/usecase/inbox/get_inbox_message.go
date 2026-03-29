@@ -39,7 +39,7 @@ func (uc *InboxUsecase) GetInboxMessage(ctx context.Context, user auth.JwtClaims
 
 	switch entity.InboxMessageType(message.MessageType) {
 	case entity.InboxMessageTypeEventRegistrationInvitation:
-		eventRegistrationInvitation, event, eventAttendee, err := uc.GetRelatedEventRegistrationInvitation(ctx, message.Id)
+		eventRegistrationInvitation, event, eventAttendee, err := uc.GetRelatedEventRegistrationInvitation(ctx, message.Id, message.ReceiverWalletAddress)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get related event registration invitation")
 		}
@@ -67,7 +67,7 @@ func (uc *InboxUsecase) GetInboxMessage(ctx context.Context, user auth.JwtClaims
 	}, nil
 }
 
-func (uc *InboxUsecase) GetRelatedEventRegistrationInvitation(ctx context.Context, inboxId uuid.UUID) (*entity.EventRegistrationInvitation, *entity.Event, *entity.EventAttendee, error) {
+func (uc *InboxUsecase) GetRelatedEventRegistrationInvitation(ctx context.Context, inboxId uuid.UUID, receiverWalletAddress *string) (*entity.EventRegistrationInvitation, *entity.Event, *entity.EventAttendee, error) {
 	eventRegistrationInvitation, err := uc.EventRegistrationInvitationDg.GetEventRegistrationInvitationByInboxMessageID(ctx, inboxId)
 	if err != nil {
 		return nil, nil, nil, errors.Wrap(err, "failed to get event registration invitation by inbox message id")
@@ -85,8 +85,7 @@ func (uc *InboxUsecase) GetRelatedEventRegistrationInvitation(ctx context.Contex
 	// check if the invited is onboarded or not
 	targetUser, err := uc.AuthenticationCredentialDg.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddress(ctx, offchain_datagateway.GetAuthenticationCredentialByGoogleConnectorRefOrWalletAddressParameters{
 		GoogleConnectorRef: eventRegistrationInvitation.Email,
-		// TODO: Allow wallet address to be used as well
-		WalletAddress: nil,
+		WalletAddress:      receiverWalletAddress,
 	})
 	if err != nil {
 		return nil, nil, nil, errors.Wrap(err, "failed to get authentication credential by email and wallet address")

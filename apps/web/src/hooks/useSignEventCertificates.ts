@@ -4,10 +4,9 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { QUERY_KEY } from "@/lib/queryKeys";
 
-interface SignEventCertificatesParams {
-    eventId: string;
-    issuerPin: string;
-}
+type SignEventCertificatesParams =
+    | { eventId: string; issuerPin: string }
+    | { eventId: string; issuerSignMessage: string; issuerSignature: string };
 
 export function useSignEventCertificates() {
     const queryClient = useQueryClient();
@@ -18,8 +17,18 @@ export function useSignEventCertificates() {
         isPending: isSigning,
         error: signingError,
     } = useMutation({
-        mutationFn: ({ eventId, issuerPin }: SignEventCertificatesParams) =>
-            certificateService.signEventCertificates(eventId, issuerPin),
+        mutationFn: (params: SignEventCertificatesParams) => {
+            const { eventId, ...rest } = params;
+            if ("issuerPin" in rest) {
+                return certificateService.signEventCertificates(eventId, {
+                    issuerPin: rest.issuerPin,
+                });
+            }
+            return certificateService.signEventCertificates(eventId, {
+                issuerSignMessage: rest.issuerSignMessage,
+                issuerSignature: rest.issuerSignature,
+            });
+        },
         onSuccess: (data) => {
             const certificatesCount = data.totalSigned;
             toast.success(t("issuer.sign.signingSuccess", { count: certificatesCount }));

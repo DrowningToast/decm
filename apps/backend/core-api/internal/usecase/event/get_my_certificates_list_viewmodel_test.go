@@ -21,6 +21,45 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 		UserId: userID,
 		Email:  &email,
 	}
+	var nilWalletAddr *string
+
+	t.Run("BYOK wallet user sees certificates assigned by wallet_address", func(t *testing.T) {
+		mockCertDg := new(mockEventCertificateDg)
+		mockShareDg := new(mockCertificateShareDg)
+		uc := &event_usecase.EventUsecase{
+			EventCertificateDataGateway: mockCertDg,
+			CertificateShareDataGateway: mockShareDg,
+		}
+
+		walletAddr := "0xabc123"
+		walletAddrLower := "0xabc123"
+		walletUser := &auth.JwtClaims{
+			UserId:        userID,
+			WalletAddress: walletAddr,
+		}
+
+		certID := uuid.New()
+		unclaimed := []*entity.EventCertificate{
+			{
+				Id:                    certID,
+				EventId:               uuid.New(),
+				ReceiverWalletAddress: &walletAddrLower,
+			},
+		}
+
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, (*string)(nil), &walletAddrLower).Return([]*entity.EventCertificate{}, nil)
+		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, (*string)(nil), &walletAddrLower).Return(unclaimed, nil)
+		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
+
+		result, err := uc.GetMyCertificatesListViewModel(ctx, walletUser)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Len(t, result.UnclaimedCertificates, 1)
+		assert.Equal(t, certID, result.UnclaimedCertificates[0].Id)
+		mockCertDg.AssertExpectations(t)
+		mockShareDg.AssertExpectations(t)
+	})
 
 	t.Run("Returns claimed and unclaimed certificates", func(t *testing.T) {
 		mockCertDg := new(mockEventCertificateDg)
@@ -47,8 +86,8 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 			},
 		}
 
-		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
-		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return(unclaimed, nil)
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return(claimed, nil)
+		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return(unclaimed, nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID1).Return(nil, nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID2).Return(nil, nil)
 
@@ -82,8 +121,8 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 			},
 		}
 
-		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
-		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return(claimed, nil)
+		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return([]*entity.EventCertificate{}, nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
@@ -113,8 +152,8 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 			},
 		}
 
-		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
-		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return(claimed, nil)
+		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return([]*entity.EventCertificate{}, nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
@@ -143,8 +182,8 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 			},
 		}
 
-		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
-		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return(claimed, nil)
+		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return([]*entity.EventCertificate{}, nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
@@ -174,8 +213,8 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 			},
 		}
 
-		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
-		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return(claimed, nil)
+		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return([]*entity.EventCertificate{}, nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
@@ -205,8 +244,8 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 			},
 		}
 
-		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
-		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return(claimed, nil)
+		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return([]*entity.EventCertificate{}, nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
@@ -235,8 +274,8 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 			},
 		}
 
-		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
-		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return(claimed, nil)
+		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return([]*entity.EventCertificate{}, nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
@@ -255,8 +294,8 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 			CertificateShareDataGateway: mockShareDg,
 		}
 
-		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
-		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return([]*entity.EventCertificate{}, nil)
+		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return([]*entity.EventCertificate{}, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
 
@@ -279,7 +318,7 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 		}
 
 		expectedErr := errors.New("database error")
-		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(nil, expectedErr)
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return(nil, expectedErr)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
 
@@ -298,8 +337,8 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 		}
 
 		expectedErr := errors.New("database error")
-		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
-		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return(nil, expectedErr)
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return([]*entity.EventCertificate{}, nil)
+		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return(nil, expectedErr)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
 
@@ -351,8 +390,8 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 			},
 		}
 
-		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
-		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return(claimed, nil)
+		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return([]*entity.EventCertificate{}, nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID1).Return(nil, nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID2).Return(nil, nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID3).Return(nil, nil)
@@ -393,8 +432,8 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 			},
 		}
 
-		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
-		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return(claimed, nil)
+		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return([]*entity.EventCertificate{}, nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(nil, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)
@@ -437,8 +476,8 @@ func TestGetMyCertificatesListViewModel(t *testing.T) {
 			},
 		}
 
-		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email).Return(claimed, nil)
-		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email).Return([]*entity.EventCertificate{}, nil)
+		mockCertDg.On("GetClaimedCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return(claimed, nil)
+		mockCertDg.On("GetUnclaimedReadyCertificatesByCredentialID", ctx, userID, &email, nilWalletAddr).Return([]*entity.EventCertificate{}, nil)
 		mockShareDg.On("GetCertificateShareByEventCertificateID", ctx, certID).Return(share, nil)
 
 		result, err := uc.GetMyCertificatesListViewModel(ctx, currentUser)

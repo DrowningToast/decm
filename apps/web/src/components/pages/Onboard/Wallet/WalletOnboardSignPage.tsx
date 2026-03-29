@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useCallback, useContext } from "react";
+import { useCallback, useContext, useEffect } from "react";
 import { WalletOnboardContext } from "./WalletOnboardContext";
 import { useSignMessage, useWalletClient } from "wagmi";
 import { ErrorPage } from "../../Error";
@@ -15,10 +15,15 @@ export const WalletOnboardSignPage = () => {
     const { data: walletClient } = useWalletClient();
     const { signMessageAsync } = useSignMessage();
     const { signMessage, isPending } = useContext(WalletOnboardContext);
-    const [, setSignSignature] = useLocalStorage<string | undefined>(
+    const [, setSignSignature, removeSignSignature] = useLocalStorage<string | undefined>(
         LOCAL_STORAGE_KEYS.AUTH_SIGN_SIGNATURE,
         undefined,
     );
+
+    useEffect(() => {
+        removeSignSignature();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleSignSignature = useCallback(async () => {
         if (!walletClient || !signMessage) {

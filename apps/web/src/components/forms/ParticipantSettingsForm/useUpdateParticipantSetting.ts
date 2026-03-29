@@ -5,9 +5,11 @@ import { toast } from "sonner";
 import { QUERY_KEY } from "@/lib/queryKeys";
 import { eventRegistrationService } from "@/services/services";
 import type { EventRegistrationConfiguration } from "@/services/EventRegistration/EventRegistration";
+import { useTranslation } from "react-i18next";
 
 export function useUpdateParticipantSetting(eventId: string) {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const { mutateAsync: _updateParticipantSetting, isPending: isUpdatingParticipantSetting } =
         useMutation({
@@ -31,7 +33,7 @@ export function useUpdateParticipantSetting(eventId: string) {
     async function updateParticipantSetting(configuration: EventRegistrationConfiguration) {
         try {
             await _updateParticipantSetting(configuration);
-            toast.success("Participant setting updated successfully");
+            toast.success(t("participantSettings.updateSuccess"));
             navigate("/host/events/:eventId", {
                 params: {
                     eventId,
@@ -39,7 +41,7 @@ export function useUpdateParticipantSetting(eventId: string) {
             });
         } catch (error) {
             console.error(error);
-            toast.error("Failed to update participant setting");
+            toast.error(t("participantSettings.updateError"));
         }
     }
 

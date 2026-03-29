@@ -1,6 +1,7 @@
 package eventconfig
 
 import (
+	"apps/backend/common/utils"
 	"context"
 	"fmt"
 	"log/slog"
@@ -86,7 +87,7 @@ func (uc *EventConfigUsecase) CheckCertificateMintReadiness(ctx context.Context,
 		} else {
 			return nil, errors.Wrap(err, "failed to check event contract")
 		}
-	} else if eventContract != nil && eventContract.CertificateContractAddress != nil && *eventContract.CertificateContractAddress != "" {
+	} else if eventContract != nil && utils.DerefOrEmpty(eventContract.CertificateContractAddress) != "" {
 		response.HasCertificateContract = true
 		response.CertificateContractAddress = eventContract.CertificateContractAddress
 	} else {

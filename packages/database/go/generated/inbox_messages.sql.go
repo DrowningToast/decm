@@ -17,6 +17,7 @@ INSERT INTO inbox_messages (
     sender_credential_id,
     receiver_credential_id,
     receiver_email,
+    receiver_wallet_address,
     message_type,
     message_content,
     fallback_message_content,
@@ -28,7 +29,8 @@ INSERT INTO inbox_messages (
     $4,
     $5,
     $6,
-    $7
+    $7,
+    $8
 )
 RETURNING id, sender_credential_id, receiver_credential_id, receiver_email, receiver_wallet_address, message_type, message_content, fallback_message_content, is_read, created_at, updated_at, hidden_at, deleted_at
 `
@@ -37,6 +39,7 @@ type CreateInboxMessageParams struct {
 	SenderCredentialID     pgtype.UUID `json:"sender_credential_id"`
 	ReceiverCredentialID   pgtype.UUID `json:"receiver_credential_id"`
 	ReceiverEmail          pgtype.Text `json:"receiver_email"`
+	ReceiverWalletAddress  pgtype.Text `json:"receiver_wallet_address"`
 	MessageType            int32       `json:"message_type"`
 	MessageContent         []byte      `json:"message_content"`
 	FallbackMessageContent pgtype.Text `json:"fallback_message_content"`
@@ -48,6 +51,7 @@ func (q *Queries) CreateInboxMessage(ctx context.Context, arg CreateInboxMessage
 		arg.SenderCredentialID,
 		arg.ReceiverCredentialID,
 		arg.ReceiverEmail,
+		arg.ReceiverWalletAddress,
 		arg.MessageType,
 		arg.MessageContent,
 		arg.FallbackMessageContent,
@@ -98,10 +102,10 @@ func (q *Queries) GetInboxMessageByID(ctx context.Context, id uuid.UUID) (InboxM
 }
 
 const GetInboxMessagesByCredentialID = `-- name: GetInboxMessagesByCredentialID :many
-SELECT id, sender_credential_id, receiver_credential_id, receiver_email, receiver_wallet_address, message_type, message_content, fallback_message_content, is_read, created_at, updated_at, hidden_at, deleted_at FROM inbox_messages 
+SELECT id, sender_credential_id, receiver_credential_id, receiver_email, receiver_wallet_address, message_type, message_content, fallback_message_content, is_read, created_at, updated_at, hidden_at, deleted_at FROM inbox_messages
 WHERE receiver_credential_id = $1
 OR receiver_email = $2
-OR receiver_wallet_address = $3
+OR LOWER(receiver_wallet_address) = $3
 ORDER BY created_at DESC
 `
 
@@ -186,8 +190,8 @@ func (q *Queries) GetInboxMessagesByReceiverEmail(ctx context.Context, receiverE
 }
 
 const GetInboxMessagesByReceiverWalletAddress = `-- name: GetInboxMessagesByReceiverWalletAddress :many
-SELECT id, sender_credential_id, receiver_credential_id, receiver_email, receiver_wallet_address, message_type, message_content, fallback_message_content, is_read, created_at, updated_at, hidden_at, deleted_at FROM inbox_messages 
-WHERE receiver_wallet_address = $1
+SELECT id, sender_credential_id, receiver_credential_id, receiver_email, receiver_wallet_address, message_type, message_content, fallback_message_content, is_read, created_at, updated_at, hidden_at, deleted_at FROM inbox_messages
+WHERE LOWER(receiver_wallet_address) = $1
 ORDER BY created_at DESC
 `
 
@@ -266,10 +270,10 @@ func (q *Queries) GetInboxMessagesBySenderCredentialID(ctx context.Context, send
 }
 
 const GetUnreadInboxMessageCountByCredentialID = `-- name: GetUnreadInboxMessageCountByCredentialID :one
-SELECT COUNT(*) FROM inbox_messages 
+SELECT COUNT(*) FROM inbox_messages
 WHERE (receiver_credential_id = $1
 OR receiver_email = $2
-OR receiver_wallet_address = $3)
+OR LOWER(receiver_wallet_address) = $3)
 AND is_read = 0
 `
 
@@ -321,15 +325,23 @@ func (q *Queries) UpdateInboxMessageReadStatus(ctx context.Context, arg UpdateIn
 }
 
 const UpdateInboxMessageReadStatusAll = `-- name: UpdateInboxMessageReadStatusAll :many
-UPDATE inbox_messages 
+UPDATE inbox_messages
 SET is_read = 1,
     updated_at = NOW()
 WHERE receiver_credential_id = $1
+OR receiver_email = $2
+OR LOWER(receiver_wallet_address) = $3
 RETURNING id, sender_credential_id, receiver_credential_id, receiver_email, receiver_wallet_address, message_type, message_content, fallback_message_content, is_read, created_at, updated_at, hidden_at, deleted_at
 `
 
-func (q *Queries) UpdateInboxMessageReadStatusAll(ctx context.Context, receiverCredentialID pgtype.UUID) ([]InboxMessage, error) {
-	rows, err := q.db.Query(ctx, UpdateInboxMessageReadStatusAll, receiverCredentialID)
+type UpdateInboxMessageReadStatusAllParams struct {
+	ReceiverCredentialID  pgtype.UUID `json:"receiver_credential_id"`
+	ReceiverEmail         pgtype.Text `json:"receiver_email"`
+	ReceiverWalletAddress pgtype.Text `json:"receiver_wallet_address"`
+}
+
+func (q *Queries) UpdateInboxMessageReadStatusAll(ctx context.Context, arg UpdateInboxMessageReadStatusAllParams) ([]InboxMessage, error) {
+	rows, err := q.db.Query(ctx, UpdateInboxMessageReadStatusAll, arg.ReceiverCredentialID, arg.ReceiverEmail, arg.ReceiverWalletAddress)
 	if err != nil {
 		return nil, err
 	}

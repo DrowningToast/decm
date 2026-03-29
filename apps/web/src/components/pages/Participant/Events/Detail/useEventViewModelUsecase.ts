@@ -16,7 +16,7 @@ export const useEventViewModelUsecase = ({ eventId }: UseEventDetailUsecaseOptio
         isLoading,
         error,
     } = useQuery({
-        queryKey: [QUERY_KEY.event.viewmodel(eventId, user?.authenticationCredentialId)],
+        queryKey: QUERY_KEY.event.viewmodel(eventId, user?.authenticationCredentialId),
         queryFn: async () => {
             try {
                 const response = await eventService.getEventViewModelExtended(eventId);

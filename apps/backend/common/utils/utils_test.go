@@ -6,6 +6,49 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestDerefOrEmpty(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    *string
+		expected string
+	}{
+		{name: "nil pointer returns empty string", input: nil, expected: ""},
+		{name: "empty string pointer returns empty string", input: strPtr(""), expected: ""},
+		{name: "non-empty string pointer returns value", input: strPtr("hello"), expected: "hello"},
+		{name: "whitespace string returns as-is", input: strPtr("  "), expected: "  "},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, DerefOrEmpty(tt.input))
+		})
+	}
+}
+
+func TestNormalizeToLower(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    *string
+		expected *string
+	}{
+		{name: "nil pointer returns nil", input: nil, expected: nil},
+		{name: "empty string pointer returns nil", input: strPtr(""), expected: nil},
+		{name: "lowercase string returns same value", input: strPtr("hello@example.com"), expected: strPtr("hello@example.com")},
+		{name: "uppercase string returns lowercased", input: strPtr("HELLO@EXAMPLE.COM"), expected: strPtr("hello@example.com")},
+		{name: "mixed case returns lowercased", input: strPtr("0xAbCdEf"), expected: strPtr("0xabcdef")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := NormalizeToLower(tt.input)
+			if tt.expected == nil {
+				assert.Nil(t, result)
+			} else {
+				assert.NotNil(t, result)
+				assert.Equal(t, *tt.expected, *result)
+			}
+		})
+	}
+}
+
 func TestGenerateSecureRandomString(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -68,3 +111,5 @@ func TestGenerateSecureRandomString_Uniqueness(t *testing.T) {
 		generated[result] = true
 	}
 }
+
+func strPtr(s string) *string { return &s }

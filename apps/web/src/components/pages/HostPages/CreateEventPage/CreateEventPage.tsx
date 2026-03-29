@@ -5,19 +5,21 @@ import { toast } from "sonner";
 import SectionContainer from "@/components/container/SectionContainer";
 import TitleSubtitle from "@/components/TitleSubtitle";
 import { useCreateEvent } from "./useCreateEvent";
-import type { CreateEventPayload } from "@decm/api";
+import type { PasswordPinModalSuccessResult } from "@/components/ui/password-pin-modal";
+import { useWallet } from "@/hooks/useWallet";
 
 export const CreateEventPage = () => {
     const { t } = useTranslation();
-    const { createEvent, isCreatingEvent } = useCreateEvent();
+    const { createEventWithPassword, createEventWithSignature, isCreatingEvent } = useCreateEvent();
+    const { isConnected } = useWallet();
 
-    const handleCreateEvent = async (data: EventFormData, hostPassword: string) => {
+    const handleCreateEvent = async (data: EventFormData, auth: PasswordPinModalSuccessResult) => {
         if (!data.eventBanner || !data.eventIcon) {
             toast.error(t("errors.generic"));
             return;
         }
 
-        const req: CreateEventPayload = {
+        const commonPayload = {
             banner: data.eventBanner,
             contact_address: data.contactAddress,
             contact_number: data.contactNumber,
@@ -30,10 +32,20 @@ export const CreateEventPage = () => {
             icon: data.eventIcon,
             location: data.location,
             name: data.name,
-            host_password: hostPassword,
         };
 
-        await createEvent(req);
+        if (auth.type === "wallet") {
+            await createEventWithSignature({
+                ...commonPayload,
+                signature: auth.signature,
+                signMessage: auth.signMessage,
+            });
+        } else {
+            await createEventWithPassword({
+                ...commonPayload,
+                hostPassword: auth.value,
+            });
+        }
     };
 
     return (
@@ -47,7 +59,12 @@ export const CreateEventPage = () => {
             </SectionContainer>
 
             <SectionContainer>
-                <EventForm onSubmit={handleCreateEvent} mode="create" isLoading={isCreatingEvent} />
+                <EventForm
+                    onSubmit={handleCreateEvent}
+                    mode="create"
+                    isLoading={isCreatingEvent}
+                    allowWalletSigning={isConnected}
+                />
             </SectionContainer>
         </div>
     );

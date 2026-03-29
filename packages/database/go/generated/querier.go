@@ -175,7 +175,7 @@ type Querier interface {
 	UpdateEventRegistrationInvitation(ctx context.Context, arg UpdateEventRegistrationInvitationParams) (EventRegistrationInvitation, error)
 	UpdateEventRegistrationInvitationAcceptedStatus(ctx context.Context, arg UpdateEventRegistrationInvitationAcceptedStatusParams) (EventRegistrationInvitation, error)
 	UpdateInboxMessageReadStatus(ctx context.Context, arg UpdateInboxMessageReadStatusParams) (InboxMessage, error)
-	UpdateInboxMessageReadStatusAll(ctx context.Context, receiverCredentialID pgtype.UUID) ([]InboxMessage, error)
+	UpdateInboxMessageReadStatusAll(ctx context.Context, arg UpdateInboxMessageReadStatusAllParams) ([]InboxMessage, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateProfileByAuthenticationCredentialId(ctx context.Context, arg UpdateProfileByAuthenticationCredentialIdParams) (Profile, error)
 	UpdateSystemStatusSchedule(ctx context.Context, arg UpdateSystemStatusScheduleParams) (SystemStatusSchedule, error)

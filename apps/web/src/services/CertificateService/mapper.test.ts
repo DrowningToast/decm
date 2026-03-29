@@ -84,6 +84,20 @@ describe("mapCertificate", () => {
         expect(result.userClaimSignatureId).toBe("sig-1");
     });
 
+    it("maps receiver_wallet_address to receiverWalletAddress", () => {
+        const certWithWallet: EntityEventCertificate = {
+            ...baseCert,
+            receiver_wallet_address: "0xABCDEF1234567890",
+        };
+        const result = mapCertificate(certWithWallet);
+        expect(result.receiverWalletAddress).toBe("0xABCDEF1234567890");
+    });
+
+    it("leaves receiverWalletAddress undefined when not present", () => {
+        const result = mapCertificate(baseCert);
+        expect(result.receiverWalletAddress).toBeUndefined();
+    });
+
     it("handles optional fields as undefined", () => {
         const minimal: EntityEventCertificate = {
             id: "cert-2",
